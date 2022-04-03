@@ -62,7 +62,7 @@ public class TestMbfs {
 
     @Test
     public void testRandom() {
-        RandomUtil.getInstance().setSeed(8388428832L);
+        RandomUtil.getInstance().setSeed(83888832L);
 
         List<Node> nodes1 = new ArrayList<>();
 

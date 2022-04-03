@@ -49,6 +49,8 @@ public class TestStandardizedSem {
     // Test the code that standardizes a data set.
     @Test
     public void test1() {
+        RandomUtil.getInstance().setSeed(1949993L);
+
         List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
@@ -157,6 +159,8 @@ public class TestStandardizedSem {
     // This tests what the user is going to try to do in the GUI.
     @Test
     public void test4() {
+        RandomUtil.getInstance().setSeed(1949993L);
+
         List<Node> nodes = new ArrayList<>();
 
         for (int i1 = 0; i1 < 10; i1++) {
@@ -221,6 +225,8 @@ public class TestStandardizedSem {
 
     @Test
     public void test6() {
+        RandomUtil.getInstance().setSeed(1949993L);
+
         SemGraph graph = new SemGraph();
         graph.setShowErrorTerms(true);
 
@@ -254,7 +260,7 @@ public class TestStandardizedSem {
     @Test
     public void test7() {
         RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(9394929393L);
+        random.setSeed(1949993L);
 
         List<Node> nodes1 = new ArrayList<>();
 
