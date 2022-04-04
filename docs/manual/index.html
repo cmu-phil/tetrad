@@ -2330,6 +2330,18 @@ tabs will not appear.</p> -->
         parameters such as number of variables, maximum and average degrees, and
         the probability of the graph containing at least one cycle.</p>
 
+    <p> It is very important when dealing with cyclic models to realize
+        that the potential exists always to instantiate these models with
+        coefficients that are too large. Always, to keep simulations from
+        "exploding" ("diverging"--i.e., having simulation values that
+        tend to infinity over time), it is necessary to make sure that
+        coefficient values are relatively small, usually less than 1.
+        One can tell whether a model will produce simulations that diverge
+        in value by testing the eigenvalues of the covariance matrix
+        of the data. If any of these eigenvalues are greater than 1,
+        the potential exists for the simulation to "explode" toward
+        infinity over time.</p>
+
     <h5>Random One Factor MIM</h5>
 
     <p> This option creates a one-factor multiple indicator model. You
