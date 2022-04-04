@@ -107,6 +107,7 @@ public class GeneralSemSimulation implements Simulation {
         System.out.println(this.pm);
 
         this.im = new GeneralizedSemIm(this.pm);
+        this.im.setGuaranteeIid(parameters.getBoolean(Params.GUARANTEE_IID));
 
         System.out.println(this.im);
 
@@ -153,6 +154,7 @@ public class GeneralSemSimulation implements Simulation {
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
+        parameters.add(Params.GUARANTEE_IID);
 
         return parameters;
     }

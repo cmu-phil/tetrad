@@ -83,6 +83,7 @@ public final class Params {
     public static final String GENERAL_SEM_FUNCTION_TEMPLATE_LATENT = "generalSemFunctionTemplateLatent";
     public static final String GENERAL_SEM_FUNCTION_TEMPLATE_MEASURED = "generalSemFunctionTemplateMeasured";
     public static final String GENERAL_SEM_PARAMETER_TEMPLATE = "generalSemParameterTemplate";
+    public static final String GUARANTEE_IID = "guaranteeIid";
     public static final String IA = "ia";
     public static final String INCLUDE_NEGATIVE_COEFS = "includeNegativeCoefs";
     public static final String INCLUDE_NEGATIVE_SKEWS_FOR_BETA = "includeNegativeSkewsForBeta";

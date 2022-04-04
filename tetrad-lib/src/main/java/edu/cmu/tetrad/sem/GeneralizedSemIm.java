@@ -63,6 +63,7 @@ public class GeneralizedSemIm implements IM, Simulator {
      * Variables do not appear in this list. All freeParameters are double-valued.
      */
     private final Map<String, Double> parameterValues;
+    private boolean guaranteeIid = true;
 
     /**
      * Constructs a new GeneralizedSemIm from the given GeneralizedSemPm by picking values for each of
@@ -820,7 +821,12 @@ public class GeneralizedSemIm implements IM, Simulator {
 
                 variableValues.put(error.getName(), value);
                 shocks[j] = value;
-                t2[j] += shocks[j];
+
+                if (guaranteeIid) {
+                    t2[j] = shocks[j];
+                } else {
+                    t2[j] += shocks[j];
+                }
             }
 
             for (int i = 0; i < intervalBetweenShocks; i++) {
@@ -1083,6 +1089,10 @@ public class GeneralizedSemIm implements IM, Simulator {
                 this.parameterValues.put(parameter, parameterValues.get(parameter));
             }
         }
+    }
+
+    public void setGuaranteeIid(boolean guaranteeIid) {
+        this.guaranteeIid = guaranteeIid;
     }
 }
 
