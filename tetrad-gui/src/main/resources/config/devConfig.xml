@@ -199,7 +199,7 @@
         <!--<model-chooser title="Graph Types"/>-->
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
                  <br> (1) No inputs
                  <br> (2) Data (to extract variables)
                  <br> (3) Also (to extract a graph) any of these: Search, PM, IM, Estimator, Updator
@@ -246,7 +246,7 @@
         <model-chooser title="Types of Parameterized Models"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
                  <br> (1) Graph, OR
                  <br> (2) Graph AND Data (to extract discrete categories)
                  <br> (3) Also (to extract a PM) any of these: IM, Estimator
@@ -318,7 +318,7 @@
         <model-chooser title="Types of Instantiated Models"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
                  <br> (1) PM (Bayes or SEM), OR
                  <br> (2) Estimator (to extract IM)
                  <br> Note that for the parent boxes, models need to have been created.
@@ -817,7 +817,7 @@
         </model-chooser>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
                  <br> (1) Data, OR
                  <br> (2) Data Manipulation Node
                  <br> Note that for the parent boxes, models need to have been created.
@@ -838,7 +838,7 @@
         <model-chooser title="Simulation"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
                  <br> (1) Simulated Data, OR
                  <br> (2) Data Manipulation Node
                  <br> Note that for the parent boxes, models need to have been created.
@@ -911,7 +911,7 @@
         <model-chooser title="Types of Estimators"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
                  <br> (1) PM and Data, OR
                  <br> (2) IM and Data (shortcut for IM->PM + Data)
                  <br> Note that for the parent boxes, models need to have been created.
@@ -976,7 +976,7 @@
         <model-chooser title="Types of Updaters"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
                  <br> (1) IM (Bayes only)
                  <br> Note that for the parent boxes, models need to have been created.
                 </html>
@@ -1000,7 +1000,7 @@
         </model-chooser>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
                  <br> (1) Data or Simulation, OR
                  <br> (2) Graph (searches directly over graph) OR
                  <br> Note that for the parent boxes, models need to have been created.
@@ -1133,7 +1133,7 @@
         </model-chooser>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
                  <br> (1) Simulation and Search
                  <br> (2) Several boxes containing graphs.
                  <br> (3) Several boxes containing independence tests.
@@ -1204,7 +1204,7 @@
         <model-chooser title="Types of Knowledge"/>
         <node-specific-message>
             <![CDATA[
-               <html> Sorry, this box certain inputs; please see the manual. Possible inputs are:
+               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
                  <br> (1) Any box that contains a set of variables.
                  <br> Note that for the parent boxes, models need to have been created.
                </html>

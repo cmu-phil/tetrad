@@ -33,35 +33,45 @@ import java.awt.event.ActionEvent;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-final class WarrantyAction extends AbstractAction {
+final class ContributorsAction extends AbstractAction {
 
     /**
      * Creates a new close session action for the given desktop.
      */
-    public WarrantyAction() {
-        super("Warranty");
+    public ContributorsAction() {
+        super("Contributors");
     }
 
     /**
      * Closes the frontmost session of this action's desktop.
      */
     public void actionPerformed(ActionEvent e) {
-        String license = LicenseUtils.license();
+        String msg = "Grateful thanks to many who have worked on this project--most " +
+                "recently under guidance from the Center for Causal Discovery (Carnegie " +
+                "Mellon University Department of Philosophy, University of Pittsburgh " +
+                "Department of Bioinformatics). Contributors include (but are not limited " +
+                "to): Clark Glymour, Peter Spirtes, Richard Scheines, Greg Cooper, Kun Zhang, " +
+                "Joe Ramsey, J Espino, Kevin Bui, Zhou Yuan, Kong Wongchakprasitti, " +
+                "Harry Hochheiser, Bryan Andrews, Ruben Sanchez, Fataneh Jabari, Ricardo Silva, " +
+                "Dan Malinksy, Kevin Kelly, Madelyn Glymour, Don Crimbchin, Frank Wimberly, " +
+                "Matt Easterday, Tyler Gibson.";
 
-        int index = license.indexOf("SUCH DAMAGES");
+        int index = msg.indexOf("Grateful");
 
-        JTextArea textArea = new JTextArea(license);
-        textArea.setEditable(false);
+        JTextArea textArea = new JTextArea(msg);
         textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setEditable(false);
         JScrollPane scroll = new JScrollPane(textArea);
-        scroll.setPreferredSize(new Dimension(600, 400));
+        scroll.setPreferredSize(new Dimension(400, 200));
         textArea.setCaretPosition(index);
 
         Box b = Box.createVerticalBox();
         b.add(scroll);
 
         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), b,
-                "Warranty", JOptionPane.PLAIN_MESSAGE);
+                "Contributors", JOptionPane.PLAIN_MESSAGE);
     }
 }
 

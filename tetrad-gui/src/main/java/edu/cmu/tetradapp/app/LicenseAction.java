@@ -49,6 +49,7 @@ final class LicenseAction extends AbstractAction {
         String license = LicenseUtils.license();
 
         JTextArea textArea = new JTextArea(license);
+        textArea.setEditable(false);
         textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(600, 400));
