@@ -216,6 +216,7 @@ final class TetradMenuBar extends JMenuBar {
         helpMenu.add(new WarrantyAction());
         helpMenu.add(new LicenseAction());
         helpMenu.add(new LaunchManualAction());
+        helpMenu.add(new LaunchFlowchartAction());
     }
 
     //========================= Inner Classes ==========================================//

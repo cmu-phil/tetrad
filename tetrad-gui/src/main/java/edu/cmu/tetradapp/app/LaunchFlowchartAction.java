@@ -39,7 +39,7 @@ final class LaunchFlowchartAction extends AbstractAction {
      * Creates a new close session action for the given desktop.
      */
     public LaunchFlowchartAction() {
-        super("Algorithm Choice Flowchart");
+        super("Launch Algorithm Flowchart");
     }
 
     /**
@@ -48,8 +48,8 @@ final class LaunchFlowchartAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         Desktop d = Desktop.getDesktop();
         try {
-            d.browse(new URI("https://htmlpreview.github.io/?https:///github.com/cmu-phil/" +
-                    "tetrad/blob/development/docs/manual/index.html"));
+            d.browse(new URI("https://htmlpreview.github.io/?https://raw.githubusercontent.com/cmu-phil/tetrad/" +
+                    "tetrad-joe-fixes-2022-03-28/docs/manual/flowchart.html"));
         } catch (IOException | URISyntaxException e2) {
             e2.printStackTrace();
         }
