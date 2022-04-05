@@ -2615,6 +2615,16 @@ tabs will not appear.</p> -->
             adjusted by the user. The procedures make no adjustment for multiple
             testing. (For PC, CPC, JPC, JCPC, FCI, all testing searches.) </p>
 
+        <p>The PC algorithm as given in Causation, Prediction and Search (Spirtes,
+        Glymour, and Scheines, 2000) comes with three heuristics designed
+        to reduce dependence on the order of the variables. The heuristic PC-1
+        simple sorts the variables in alphabetical order. The heuristic PC-2
+        and PC-3 sort edges by their p-values in the search. PP-3 further sorts
+        parents of nodes in reverse order by the p-values of the conditional
+        independence facts used to removed edges in the search. Please see
+        Causation, Prediction, and Search for more details for these
+        heuristics.</p>
+
     </div>
 
     <h4>Input Assumptions</h4>
@@ -3693,11 +3703,11 @@ tabs will not appear.</p> -->
     <p>A fully directed, potentially cyclic, causal graph.</p>
 
 
-    <h3>The MultiFASK Algorithm</h3>
+    <h3>The FASK-Vote Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="multi-fask"><p>Multi-FASK is a metascript that learns a
+    <div id="fask-vote"><p>FASK-Vote is a metascript that learns a
         model from a list of datasets in a method similar to IMaGES (see). For
         adjacencies, it uses FAS-Stable with the voting-based score from IMaGES
         used as a test (using all of the datasets, standardized), producing a
@@ -4207,7 +4217,7 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="addOriginalDataset_short_desc">Yes, if adding an original dataset
+                    id="addOriginalDataset_short_desc">Yes, if adding the original dataset
         as another bootstrapping</span></li>
             <li>Long Description: <span
                     id="addOriginalDataset_long_desc"> Select “Yes” here to include an
@@ -5131,8 +5141,9 @@ tabs will not appear.</p> -->
                     id="fasHeuristic_short_desc">Test ordering: 1 = PC-1 1, 2 = PC-2, 3 =
         PC-3</span></li>
             <li>Long Description: <span
-                    id="fasHeuristic_long_desc">See Causation, Prediction, and Search
-        (2000).</span></li>
+                    id="fasHeuristic_long_desc">PC-1 = sort nodes alphabetically; PC-1 = sort
+            edges by p-value; PC-3 = additionally sorted edges in reverse order using p-values
+            of associated independence facts. See manual.</span></li>
             <li>Default Value: <span
                     id="fasHeuristic_default_value">1</span></li>
             <li>Lower Bound: <span

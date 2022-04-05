@@ -15,7 +15,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ import static edu.cmu.tetrad.util.Params.*;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
+public class FASK implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper, TakesExternalGraph {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
@@ -46,12 +45,13 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     private Algorithm algorithm;
 
     // Don't delete.
-    public Fask() {
+    public FASK() {
 
     }
 
-    public Fask(IndependenceWrapper test) {
+    public FASK(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
+        this.score = score;
     }
 
     private Graph getGraph(edu.cmu.tetrad.search.Fask search) {
@@ -122,7 +122,7 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             search.setKnowledge(this.knowledge);
             return getGraph(search);
         } else {
-            Fask fask = new Fask(this.test);
+            FASK fask = new FASK(this.test, this.score);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data,

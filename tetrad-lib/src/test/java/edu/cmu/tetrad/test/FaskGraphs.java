@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FASK;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
@@ -109,7 +109,7 @@ public class FaskGraphs {
                                 "*", true, Delimiter.TAB);
                         this.filenames.add(name);
                         this.datasets.add(dataSet);
-                        Fask fask = new Fask();
+                        FASK fask = new FASK();
                         Graph search = fask.search(dataSet, parameters);
                         this.graphs.add(search);
                     } else if (name.contains("typical")) {
@@ -118,7 +118,7 @@ public class FaskGraphs {
                                 "*", true, Delimiter.TAB);
                         this.filenames.add(name);
                         this.datasets.add(dataSet);
-                        Fask fask = new Fask();
+                        FASK fask = new FASK();
                         Graph search = fask.search(dataSet, parameters);
                         this.graphs.add(search);
                     }

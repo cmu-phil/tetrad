@@ -529,12 +529,7 @@ class RandomGraphEditor extends JPanel {
 
 
     private void setMaxEdges(int numEdges) {
-        if (isConnected() && numEdges < getNumNodes()) {
-            throw new IllegalArgumentException("When assuming connectedness, " +
-                    "the number of edges must be at least the number of nodes.");
-        }
-
-        if (!isConnected() && numEdges < 0) {
+        if (/*!isConnected() &&*/ numEdges < 0) {
             throw new IllegalArgumentException(
                     "Number of edges Must be greater than or equal to 0: " + numEdges);
         }

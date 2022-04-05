@@ -238,7 +238,7 @@ public final class GraphUtils {
                     "NumNodes most be > 0");
         }
 
-        // Believe it or not this is needed.
+        // Believe it or not ths is needed.
         long size = nodes.size();
 
         if (numEdges < 0 || numEdges > size * (size - 1)) {
@@ -253,8 +253,6 @@ public final class GraphUtils {
                     + numLatentConfounders);
         }
 
-        Graph dag = new EdgeListGraph(nodes);
-
         LinkedList<List<Integer>> allEdges = new LinkedList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
@@ -266,41 +264,40 @@ public final class GraphUtils {
             }
         }
 
-        shuffle(allEdges);
+        Graph dag;
 
-        int trials = 0;
+        int numTriesForGraph = 0;
 
-        while (!allEdges.isEmpty() && dag.getNumEdges() < numEdges) {
-            List<Integer> e = allEdges.removeFirst();
+        do {
+            dag = new EdgeListGraph(nodes);
 
-            Node n1 = nodes.get(e.get(0));
-            Node n2 = nodes.get(e.get(1));
+            shuffle(allEdges);
 
-            if (dag.getIndegree(n2) >= maxIndegree) {
-                continue;
+            while (!allEdges.isEmpty() && dag.getNumEdges() < numEdges) {
+                List<Integer> e = allEdges.removeFirst();
+
+                Node n1 = nodes.get(e.get(0));
+                Node n2 = nodes.get(e.get(1));
+
+                if (dag.getIndegree(n2) >= maxIndegree) {
+                    continue;
+                }
+
+                if (dag.getOutdegree(n1) >= maxOutdegree) {
+                    continue;
+                }
+
+                if (dag.getIndegree(n1) + dag.getOutdegree(n1) >= maxDegree) {
+                    continue;
+                }
+
+                if (dag.getIndegree(n2) + dag.getOutdegree(n2) >= maxDegree) {
+                    continue;
+                }
+
+                dag.addDirectedEdge(n1, n2);
             }
-
-            if (dag.getOutdegree(n1) >= maxOutdegree) {
-                continue;
-            }
-
-            if (dag.getIndegree(n1) + dag.getOutdegree(n1) >= maxDegree) {
-                continue;
-            }
-
-            if (dag.getIndegree(n2) + dag.getOutdegree(n2) >= maxDegree) {
-                continue;
-            }
-
-            if (connected && dag.getNumEdges() > 0 && dag.getDegree(n1) == 0 && dag.getDegree(n2) == 0) {
-                if (trials > 10 * allEdges.size()) break;
-                allEdges.addLast(e);
-                trials++;
-                continue;
-            }
-
-            dag.addDirectedEdge(n1, n2);
-        }
+        } while (++numTriesForGraph < 1000 && connected && (connectedComponents(dag).size() != 1));
 
         GraphUtils.fixLatents4(numLatentConfounders, dag);
 
@@ -309,6 +306,16 @@ public final class GraphUtils {
         }
 
         return dag;
+    }
+
+    private static boolean existsDisconnectedNode(Graph dag) {
+        for (Node node : dag.getNodes()) {
+            if (dag.getDegree(node) == 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static Graph scaleFreeGraph(int numNodes, int numLatentConfounders,
@@ -1064,6 +1071,7 @@ public final class GraphUtils {
      * of nodes.
      */
     public static List<List<Node>> connectedComponents(Graph graph) {
+        graph = new EdgeListGraph(graph);
         List<List<Node>> components = new LinkedList<>();
         LinkedList<Node> unsortedNodes = new LinkedList<>(graph.getNodes());
 

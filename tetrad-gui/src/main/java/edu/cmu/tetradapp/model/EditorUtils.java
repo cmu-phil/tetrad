@@ -147,7 +147,7 @@ public class EditorUtils {
             }
 
             int ret3 = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                    "Save session to directory " + outfile.getParent() + "?",
+                    "Save to directory " + outfile.getParent() + "?",
                     "Confirm", JOptionPane.OK_CANCEL_OPTION);
             if (ret3 == JOptionPane.OK_OPTION) {
                 break;

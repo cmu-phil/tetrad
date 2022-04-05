@@ -72,7 +72,7 @@ public final class TimeLagGraphEditor extends JPanel
     private final EdgeTypeTable edgeTypeTable;
 
     //===========================CONSTRUCTOR========================//
-    public TimeLagGraphEditor(TimeLagGraphWrapper timeLagGraphWrapper, CopyLayoutAction copyLayoutAction) {
+    public TimeLagGraphEditor(TimeLagGraphWrapper timeLagGraphWrapper) {
         setLayout(new BorderLayout());
         this.layoutEditable = this;
         this.edgeTypeTable = new EdgeTypeTable();

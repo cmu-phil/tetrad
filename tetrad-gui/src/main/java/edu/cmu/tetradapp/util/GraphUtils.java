@@ -97,7 +97,7 @@ public class GraphUtils {
             if (graphRandomFoward) {
                 graph = edu.cmu.tetrad.graph.GraphUtils.randomGraphRandomForwardEdges(nodes, newGraphNumLatents,
                         newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
-                        false, true);
+                        randomGraphConnected, true);
                 edu.cmu.tetrad.graph.GraphUtils.arrangeBySourceGraph(graph, _graph);
                 HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphUtils.grabLayout(nodes);
                 edu.cmu.tetrad.graph.GraphUtils.arrangeByLayout(graph, layout);

@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetradapp.util.LicenseUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,14 +45,15 @@ final class ContributorsAction extends AbstractAction {
      * Closes the frontmost session of this action's desktop.
      */
     public void actionPerformed(ActionEvent e) {
-        String msg = "Grateful thanks to many who have worked on this project--most " +
+        String msg = "Grateful thanks to many who have contributed to this project--most " +
                 "recently under guidance from the Center for Causal Discovery (Carnegie " +
-                "Mellon University Department of Philosophy, University of Pittsburgh " +
+                "Mellon University, Department of Philosophy, and University of Pittsburgh, " +
                 "Department of Bioinformatics). Contributors include (but are not limited " +
                 "to): Clark Glymour, Peter Spirtes, Richard Scheines, Greg Cooper, Kun Zhang, " +
                 "Joe Ramsey, J Espino, Kevin Bui, Zhou Yuan, Kong Wongchakprasitti, " +
-                "Harry Hochheiser, Bryan Andrews, Ruben Sanchez, Fataneh Jabari, Ricardo Silva, " +
-                "Dan Malinksy, Kevin Kelly, Madelyn Glymour, Don Crimbchin, Frank Wimberly, " +
+                "Harry Hochheiser, Bryan Andrews, Ruben Sanchez, Fattaneh Jabbari, Ricardo Silva, " +
+                "Dan Malinsky, Erich Kummerfeld, Juan Miguel Ogarrio, David Danks, Kevin Kelly, " +
+                "Eric Strobl, Shyam Visweswaran, Shuyan Wang, Madelyn Glymour, Frank Wimberly, " +
                 "Matt Easterday, Tyler Gibson.";
 
         int index = msg.indexOf("Grateful");
@@ -64,7 +64,7 @@ final class ContributorsAction extends AbstractAction {
         textArea.setWrapStyleWord(true);
         textArea.setEditable(false);
         JScrollPane scroll = new JScrollPane(textArea);
-        scroll.setPreferredSize(new Dimension(400, 200));
+        scroll.setPreferredSize(new Dimension(400, 250));
         textArea.setCaretPosition(index);
 
         Box b = Box.createVerticalBox();

@@ -9,13 +9,14 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Score;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,12 +33,12 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "MultiFask",
-        command = "multi-fask",
+        name = "FASK-Vote",
+        command = "fask-vote",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-//@Bootstrapping
+@Bootstrapping
 public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -47,6 +48,12 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     private IndependenceWrapper test;
 
     public FaskVote() {
+
+    }
+
+    public FaskVote(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
+        this.score = score;
     }
 
     @Override
@@ -68,7 +75,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
             search.setKnowledge(this.knowledge);
             return search.search(parameters);
         } else {
-            FaskVote imagesSemBic = new FaskVote();
+            FaskVote imagesSemBic = new FaskVote(this.test, this.score);
 
             List<DataSet> datasets = new ArrayList<>();
 
@@ -118,7 +125,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
 
     @Override
     public String getDescription() {
-        return "MultiFask";
+        return "FASK-Vote";
     }
 
     @Override
@@ -129,7 +136,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ImagesSemBic().getParameters();
-        parameters.addAll(new Fask().getParameters());
+        parameters.addAll(new FASK().getParameters());
 
         return parameters;
     }

@@ -304,7 +304,7 @@ public class Fas implements IFas {
         }
 
         if (this.heuristic == 3) {
-            ppx.sort(Comparator.comparing(scores2::get));
+            ppx .sort(Comparator.comparing(scores2::get));
             Collections.reverse(ppx);
         }
 
