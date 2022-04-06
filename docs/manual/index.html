@@ -1055,12 +1055,15 @@
         bottom of the window (shown above for the edge parameter between X1 and
         X2). Click and drag the slider to change the value of the parameter, or
         enter the specific value you wish into the box. The value must stay
-        within a certain range in order for the Normal distribution to stay
-        standardized, so if you attempt to overwrite the text box on the bottom
-        right with a value outside the listed range, Tetrad will not allow it. In
-        a standardized SEM IM, error terms are not considered parameters and
-        cannot be edited, but you can view them by clicking Parameters: Show
-        Error Terms. </p>
+        within a certain range in order for the variables in the model to
+        remain standard Normal (N(0, 1)), so if you attempt to overwrite
+        the text box on the bottom right with a value outside the listed range,
+        Tetrad will not allow it. That is, given that the variables are all
+        distributed as N(0, 1), there is a limited range in which each parameter
+        may be adjusted; these ranges vary parameter by parameter, given
+        the values of the other parameters. In a standardized SEM IM, error
+        terms are not considered parameters and cannot be edited, but you can
+        view them by clicking Parameters: Show Error Terms. </p>
 
     <p>The Implied Matrices tab works in the same way that it does in a
         normal SEM IM.</p>
