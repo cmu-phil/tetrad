@@ -2628,6 +2628,11 @@ tabs will not appear.</p> -->
         Causation, Prediction, and Search for more details for these
         heuristics.</p>
 
+        <p>Note: If one wants to analyze time series data using this algorithms,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+
     </div>
 
     <h4>Input Assumptions</h4>
@@ -2700,6 +2705,12 @@ tabs will not appear.</p> -->
             adjusted by the user. The procedures make no adjustment for multiple
             testing. (For PC, CPC, JPC, JCPC, FCI, all testing searches.) </p>
 
+        <p>Note: If one wants to analyze time series data using this algorithms,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+
+
     </div>
 
     <h4>Input Assumptions</h4>
@@ -2739,6 +2750,12 @@ tabs will not appear.</p> -->
             X->Y<->Z<-W. If this happens, pick one of the other of these triples
             or orient as a collider, arbitrarily. This guarantees that the
             resulting graph will be a CPDAG.</p>
+
+        <p>Note: If one wants to analyze time series data using this algorithms,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+
 
     </div>
 
@@ -2787,6 +2804,12 @@ tabs will not appear.</p> -->
             the BDeu score) or a mixture of continuous and discrete data (using
             the Conditional Gaussian score); these are all decomposable scores.
         </p>
+
+        <p>Note: If one wants to analyze time series data using this algorithms,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+
 
     </div>
 
@@ -2905,6 +2928,11 @@ tabs will not appear.</p> -->
             adjacencies to orient as many of the edges as possible. See [Spirtes,
             1993].</p>
 
+        <p>Note: If one wants to analyze time series data using this algorithms,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+
     </div>
 
     <h4>Input Assumptions</h4>
@@ -2931,6 +2959,12 @@ tabs will not appear.</p> -->
 
         <p>The FCI-Max algorithm simply changes the first collider
             orientation rule in FCI to use the PC-Max orientation.</p>
+
+        <p>Note: If one wants to analyze time series data using this algorithms,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+
 
     </div>
 
@@ -2962,6 +2996,12 @@ tabs will not appear.</p> -->
             interpreted. In most cases this runs faster than FCI (which can be
             slow in some steps) and is almost as informative. See Colombo et al.,
             2012.</p>
+
+        <p>Note: If one wants to analyze time series data using this algorithms,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+
 
     </div>
 
@@ -3057,6 +3097,12 @@ tabs will not appear.</p> -->
                     href="https://www.ccd.pitt.edu//wp-content/uploads/2018/10/GFCIc-
         overview-11_22_2016.pdf">here (continuous variables)</a>.</p>
 
+        <p>Note: If one wants to analyze time series data using this algorithms,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+
+
     </div>
 
     <h4>Input Assumptions</h4>
@@ -3087,7 +3133,14 @@ tabs will not appear.</p> -->
             "raw" conditional independence judgment. Ultimately this independence
             judgment can be decided using the same scoring apparatus as the other
             permutation steps, so ultimatly GRaSP-FCI can be treated as a scoring
-            algorithm.</div>
+            algorithm.</p>
+
+        <p>Note: If one wants to analyze time series data using this algorithms,
+            one may set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform. The same goes for any
+            algorithm that has this parameter available in the interface.</p>
+    </div>
+
 
     <h4>Input Assumptions</h4>
 
@@ -3122,6 +3175,11 @@ tabs will not appear.</p> -->
             to specify the number of lags (n), and a new data set will be created
             with the above naming convention. The new sample size will be the old
             sample size minus n.</p>
+
+        <p>Since this algorithms specifically requires time series data,
+            one must set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform.</p>
+
 
     </div>
 
@@ -3163,6 +3221,11 @@ tabs will not appear.</p> -->
             removed, and so on for additional lags if they exist. When some edge
             is removed as the result of a score increase, all similar (or
             “homologous”) edges are also removed. </p>
+
+        <p>Since this algorithms specifically requires time series data,
+            one must set the time lag parameter to a value greater than 0, which
+            will automatically apply the time lag transform.</p>
+
 
     </div>
 
