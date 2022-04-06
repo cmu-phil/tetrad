@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.TimeLagGraphWrapper;
 import edu.cmu.tetradapp.ui.PaddingPanel;
-import edu.cmu.tetradapp.util.CopyLayoutAction;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;

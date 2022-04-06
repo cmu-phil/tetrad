@@ -21,9 +21,6 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetradapp.util.LicenseUtils;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
