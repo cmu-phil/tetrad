@@ -10,6 +10,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -46,12 +47,21 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                DataSet dataSet = (DataSet) dataModel;
+                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
+                }
+                dataModel = timeSeries;
+                knowledge = timeSeries.getKnowledge();
+            }
 
             int parallelism = parameters.getInt(Params.PARALLELISM);
 
-            Score score = this.score.getScore(dataSet, parameters);
+            Score score = this.score.getScore(dataModel, parameters);
             Graph graph;
 
             edu.cmu.tetrad.search.Fges search
@@ -74,7 +84,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
         } else {
             Fges fges = new Fges(this.score);
 
-            DataSet data = (DataSet) dataSet;
+            DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(
                     data, fges, parameters.getInt(Params.NUMBER_RESAMPLING),
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
@@ -108,6 +118,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
         parameters.add(Params.MAX_DEGREE);
         parameters.add(Params.PARALLELISM);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
+        parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
         parameters.add(Params.MEEK_VERBOSE);

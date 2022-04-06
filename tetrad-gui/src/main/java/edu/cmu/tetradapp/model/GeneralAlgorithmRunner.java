@@ -370,16 +370,31 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
         }
 
-        if (getKnowledge().getVariablesNotInTiers().size()
-                < getKnowledge().getVariables().size()) {
-            for (Graph graph : graphList) {
-                SearchGraphUtils.arrangeByKnowledgeTiers(graph, getKnowledge());
+        if (algo instanceof HasKnowledge && ((HasKnowledge) algo).getKnowledge().getVariablesNotInTiers().size()
+                < ((HasKnowledge) algo).getKnowledge().getVariables().size()) {
+            IKnowledge _knowledge = ((HasKnowledge) algo).getKnowledge();
+            if (_knowledge.getVariablesNotInTiers().size()
+                    < _knowledge.getVariables().size()) {
+                for (Graph graph : graphList) {
+                    SearchGraphUtils.arrangeByKnowledgeTiers(graph, _knowledge);
+                }
             }
         } else {
             for (Graph graph : graphList) {
                 GraphUtils.circleLayout(graph, 225, 200, 150);
             }
         }
+
+//        if (algo.getKnowledge().getVariablesNotInTiers().size()
+//                < algo.getKnowledge().getVariables().size()) {
+//            for (Graph graph : graphList) {
+//                SearchGraphUtils.arrangeByKnowledgeTiers(graph, algo.getKnowledge());
+//            }
+//        } else {
+//            for (Graph graph : graphList) {
+//                GraphUtils.circleLayout(graph, 225, 200, 150);
+//            }
+//        }
 
         this.graphList = graphList;
     }

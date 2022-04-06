@@ -15,6 +15,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.search.TsDagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -53,14 +54,24 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (this.knowledge != null) {
-                dataSet.setKnowledge(this.knowledge);
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                DataSet dataSet = (DataSet) dataModel;
+                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
+                }
+                dataModel = timeSeries;
+                knowledge = timeSeries.getKnowledge();
             }
-            edu.cmu.tetrad.search.SvarGFci search = new edu.cmu.tetrad.search.SvarGFci(this.test.getTest(dataSet, parameters),
-                    this.score.getScore(dataSet, parameters));
+
+            if (this.knowledge != null) {
+                dataModel.setKnowledge(this.knowledge);
+            }
+            edu.cmu.tetrad.search.SvarGFci search = new edu.cmu.tetrad.search.SvarGFci(this.test.getTest(dataModel, parameters),
+                    this.score.getScore(dataModel, parameters));
             search.setKnowledge(this.knowledge);
 
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -69,7 +80,7 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
         } else {
             SvarGfci algorithm = new SvarGfci(this.test, this.score);
 
-            DataSet data = (DataSet) dataSet;
+            DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
 
@@ -99,6 +110,7 @@ public class SvarGfci implements Algorithm, HasKnowledge, TakesIndependenceWrapp
 
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_INDEGREE);
+        parameters.add(Params.TIME_LAG);
 //        parameters.add(Params.PRINT_STREAM);
 
         parameters.add(Params.VERBOSE);

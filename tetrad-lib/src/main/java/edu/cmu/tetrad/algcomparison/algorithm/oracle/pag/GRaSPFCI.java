@@ -12,6 +12,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GraspFci;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -55,9 +56,19 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            GraspFci search = new GraspFci(this.test.getTest(dataSet, parameters), this.score.getScore(dataSet, parameters));
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                DataSet dataSet = (DataSet) dataModel;
+                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
+                }
+                dataModel = timeSeries;
+                knowledge = timeSeries.getKnowledge();
+            }
+
+            GraspFci search = new GraspFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
             search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -86,7 +97,7 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             return search.search();
         } else {
             GRaSPFCI algorithm = new GRaSPFCI(this.score, this.test);
-            DataSet data = (DataSet) dataSet;
+            DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
             search.setParameters(parameters);
@@ -128,6 +139,7 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.GRASP_USE_VERMA_PEARL);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
+        params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 
         // Parameters

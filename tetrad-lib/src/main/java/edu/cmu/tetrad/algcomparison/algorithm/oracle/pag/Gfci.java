@@ -12,6 +12,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -49,9 +50,21 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            GFci search = new GFci(this.test.getTest(dataSet, parameters), this.score.getScore(dataSet, parameters));
+            if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+                if (parameters.getInt(Params.TIME_LAG) > 0) {
+                    DataSet dataSet = (DataSet) dataModel;
+                    DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                    if (dataSet.getName() != null) {
+                        timeSeries.setName(dataSet.getName());
+                    }
+                    dataModel = timeSeries;
+                    knowledge = timeSeries.getKnowledge();
+                }
+            }
+
+            GFci search = new GFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -69,7 +82,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         } else {
             Gfci algorithm = new Gfci(this.test, this.score);
 
-            DataSet data = (DataSet) dataSet;
+            DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
 
@@ -104,6 +117,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 //        parameters.add("printStream");
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
+        parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
         return parameters;
