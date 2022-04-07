@@ -195,14 +195,14 @@ public class Kci implements IndependenceTest {
             double p = getPValue();
 
             if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, p));
+                System.out.println(fact + " INDEPENDENT p = " + p);
+                TetradLogger.getInstance().log("info", fact + " Independent");
+
             } else {
-                TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.dependenceFactMsg(x, y, z, p));
+                System.out.println(fact + " dependent p = " + p);
+                TetradLogger.getInstance().log("info", fact.toString());
             }
         }
-
 
         return independent;
     }
@@ -355,10 +355,6 @@ public class Kci implements IndependenceTest {
     public void setThreshold(double threshold) {
         if (threshold < 0.0) throw new IllegalArgumentException("Threshold must be >= 0.0: " + threshold);
         this.threshold = threshold;
-    }
-
-    public double getEpsilon() {
-        return this.epsilon;
     }
 
     public void setEpsilon(double epsilon) {
@@ -740,6 +736,36 @@ public class Kci implements IndependenceTest {
                 RealVector t = ed.getEigenvector(topIndices.get(i));
                 this.V.assignColumn(i, new Vector(t.toArray()));
             }
+//            } else {
+//                SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(k.toArray()));
+//
+//                List<Double> evxAll = asList(svd.getSingularValues());
+//
+//                List<Integer> indx = series(evxAll.size()); // 1 2 3...
+//                topIndices = getTopIndices(evxAll, indx, getThreshold());
+//
+//                D = new Matrix(topIndices.size(), topIndices.size());
+//
+//                for (int i = 0; i < topIndices.size(); i++) {
+//                    D.set(i, i, Math.sqrt(evxAll.get(topIndices.get(i))));
+//                }
+//
+//                RealMatrix V0 = svd.getV();
+//
+//                V = new Matrix(V0.getRowDimension(), topIndices.size());
+//
+//                for (int i = 0; i < V.columns(); i++) {
+//                    double[] t = V0.getColumn(topIndices.get(i));
+//                    V.assignColumn(i, new Vector(t));
+//                }
+//
+//                topEigenvalues = new ArrayList<>();
+//
+//                for (int t : topIndices) {
+//                    getTopEigenvalues().add(evxAll.get(t));
+//                }
+//
+//            }
 
             return this;
         }
