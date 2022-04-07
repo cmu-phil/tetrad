@@ -40,7 +40,7 @@ public class MetadataFileReader implements MetadataReader {
 
     @Override
     public Metadata read() throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(metadataFile)) {
+        try (BufferedReader reader = Files.newBufferedReader(this.metadataFile)) {
             return (new ObjectMapper()).readValue(reader, Metadata.class);
         }
     }

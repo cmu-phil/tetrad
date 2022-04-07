@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -64,81 +64,7 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
     // If from a regular BayesIm, the new probability values are
     // the marginalized values of the allowUnfaithfulness probability values in
     // the old BayesIm, stored in a JPD
-    //
-//    public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper,
-//							 BayesImWrapperObs oldBayesImwrapper,
-//							 Parameters params) {
-//        if (bayesPmWrapper == null) {
-//            throw new NullPointerException("BayesPmWrapper must not be null.");
-//        }
-//
-//        if (params == null) {
-//            throw new NullPointerException("Parameters must not be null.");
-//        }
-//
-//        BayesPm bayesPm = new BayesPm(bayesPmWrapper.getBayesPm());
-//        BayesIm oldBayesIm = oldBayesImwrapper.getBayesIm();
-//
-//        if (params.getString("initializationMode", "manualRetain").equals("manualRetain")) {
-//            this.bayesIm = new MlBayesImObs(bayesPm, oldBayesIm, MlBayesIm.MANUAL);
-//        } else if (params.getString("initializationMode", "manualRetain").equals("randomRetain")) {
-//            this.bayesIm = new MlBayesImObs(bayesPm, oldBayesIm, MlBayesIm.RANDOM);
-//        } else if (params.getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-//            this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
-//        }
-//
-//        log(bayesIm);
-//    }
 
-    /*
-    public BayesImWrapperObs(BayesEstimatorWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = wrapper.getEstimatedBayesIm();
-        log(bayesIm);
-    }
-
-    public BayesImWrapperObs(DirichletEstimatorWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = wrapper.getEstimatedBayesIm();
-        log(bayesIm);
-    }
-
-    public BayesImWrapperObs(DirichletBayesImWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = new MlBayesIm(wrapper.getDirichletBayesIm());
-        log(bayesIm);
-    }
-
-    public BayesImWrapperObs(RowSummingExactWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = wrapper.getBayesUpdater().getUpdatedBayesIm();
-        log(bayesIm);
-    }
-
-    public BayesImWrapperObs(CptInvariantUpdaterWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = wrapper.getBayesUpdater().getUpdatedBayesIm();
-        log(bayesIm);
-    }
-
-    public BayesImWrapperObs(ApproximateUpdaterWrapper wrapper) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        this.bayesIm = wrapper.getBayesUpdater().getUpdatedBayesIm();
-        log(bayesIm);
-    }
-     */
     public BayesImWrapperObs(BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null.");
@@ -158,39 +84,8 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
             this.bayesIm = new MlBayesImObs(bayesPm, MlBayesIm.RANDOM);
         }
 
-        log(bayesIm);
+        log(this.bayesIm);
     }
-
-//	// from regular allowUnfaithfulness BayesIm
-//	// marginalize the probability values from the old BayesIm
-//    public BayesImWrapperObs(BayesImWrapper bayesImWrapper) {
-//        if (bayesImWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.bayesIm = new MlBayesImObs(bayesImWrapper.getBayesIm());
-//
-//		log(bayesIm);
-//    }
-//	// from BayesIm with only observed variables
-//    public BayesImWrapperObs(BayesImWrapperObs bayesImWrapperObs) {
-//        if (bayesImWrapperObs == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.bayesIm = new MlBayesImObs(bayesImWrapperObs.getBayesIm());
-//
-//        log(bayesIm);
-//    }
-//	// brand new BayesIm
-//    public BayesImWrapperObs() {
-//        Dag graph = new Dag();
-//        BayesPm pm = new BayesPm(graph);
-//
-//        this.bayesIm = new MlBayesImObs(pm);
-//
-//        log(bayesIm);
-//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -207,11 +102,11 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
     }
 
     public Graph getGraph() {
-        return bayesIm.getBayesPm().getDag();
+        return this.bayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -234,15 +129,12 @@ public class BayesImWrapperObs implements SessionModel, Memorable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
     }

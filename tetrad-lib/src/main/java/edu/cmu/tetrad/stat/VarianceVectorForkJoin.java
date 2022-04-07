@@ -19,6 +19,7 @@
 package edu.cmu.tetrad.stat;
 
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 /**
@@ -40,16 +41,16 @@ public class VarianceVectorForkJoin implements Variance {
         this.data = data;
         this.numOfRows = data.length;
         this.numOfCols = data[0].length;
-        this.numOfThreads = (numOfThreads > numOfCols) ? numOfCols : numOfThreads;
+        this.numOfThreads = (numOfThreads > this.numOfCols) ? this.numOfCols : numOfThreads;
     }
 
     @Override
     public float[] compute(boolean biasCorrected) {
-        float[] means = new float[numOfCols];
+        float[] means = new float[this.numOfCols];
 
-        ForkJoinPool pool = new ForkJoinPool(numOfThreads);
-        pool.invoke(new MeanAction(data, means, 0, numOfCols - 1));
-        pool.invoke(new VarianceAction(data, means, biasCorrected, 0, numOfCols - 1));
+        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));
+        pool.invoke(new VarianceAction(this.data, means, biasCorrected, 0, this.numOfCols - 1));
         pool.shutdown();
 
         return means;
@@ -74,32 +75,32 @@ public class VarianceVectorForkJoin implements Variance {
         }
 
         private void computeVariance() {
-            for (int col = start; col <= end; col++) {
-                float mean = means[col];
+            for (int col = this.start; col <= this.end; col++) {
+                float mean = this.means[col];
                 float value = 0;
                 float squareValue = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    float val = data[row][col] - mean;
+                for (int row = 0; row < VarianceVectorForkJoin.this.numOfRows; row++) {
+                    float val = this.data[row][col] - mean;
                     squareValue += val * val;
                     value += val;
                 }
-                means[col] = (biasCorrected)
-                        ? (squareValue - (value * value / numOfRows)) / (numOfRows - 1.0f)
-                        : (squareValue - (value * value / numOfRows)) / numOfRows;
+                this.means[col] = (this.biasCorrected)
+                        ? (squareValue - (value * value / VarianceVectorForkJoin.this.numOfRows)) / (VarianceVectorForkJoin.this.numOfRows - 1.0f)
+                        : (squareValue - (value * value / VarianceVectorForkJoin.this.numOfRows)) / VarianceVectorForkJoin.this.numOfRows;
             }
         }
 
         @Override
         protected void compute() {
-            int length = end - start;
-            int limit = numOfCols / numOfThreads;
-            int delta = numOfCols % numOfThreads;
+            int length = this.end - this.start;
+            int limit = VarianceVectorForkJoin.this.numOfCols / VarianceVectorForkJoin.this.numOfThreads;
+            int delta = VarianceVectorForkJoin.this.numOfCols % VarianceVectorForkJoin.this.numOfThreads;
             int size = limit + delta;
             if (length <= size) {
                 computeVariance();
             } else {
-                int middle = (end + start) / 2;
-                invokeAll(new VarianceAction(data, means, biasCorrected, start, middle), new VarianceAction(data, means, biasCorrected, middle + 1, end));
+                int middle = (this.end + this.start) / 2;
+                ForkJoinTask.invokeAll(new VarianceAction(this.data, this.means, this.biasCorrected, this.start, middle), new VarianceAction(this.data, this.means, this.biasCorrected, middle + 1, this.end));
             }
         }
 
@@ -122,26 +123,26 @@ public class VarianceVectorForkJoin implements Variance {
         }
 
         private void computeMean() {
-            for (int col = start; col <= end; col++) {
+            for (int col = this.start; col <= this.end; col++) {
                 float sum = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    sum += data[row][col];
+                for (int row = 0; row < VarianceVectorForkJoin.this.numOfRows; row++) {
+                    sum += this.data[row][col];
                 }
-                means[col] = sum / numOfRows;
+                this.means[col] = sum / VarianceVectorForkJoin.this.numOfRows;
             }
         }
 
         @Override
         protected void compute() {
-            int length = end - start;
-            int limit = numOfCols / numOfThreads;
-            int delta = numOfCols % numOfThreads;
+            int length = this.end - this.start;
+            int limit = VarianceVectorForkJoin.this.numOfCols / VarianceVectorForkJoin.this.numOfThreads;
+            int delta = VarianceVectorForkJoin.this.numOfCols % VarianceVectorForkJoin.this.numOfThreads;
             int size = limit + delta;
             if (length <= size) {
                 computeMean();
             } else {
-                int middle = (end + start) / 2;
-                invokeAll(new MeanAction(data, means, start, middle), new MeanAction(data, means, middle + 1, end));
+                int middle = (this.end + this.start) / 2;
+                ForkJoinTask.invokeAll(new MeanAction(this.data, this.means, this.start, middle), new MeanAction(this.data, this.means, middle + 1, this.end));
             }
         }
     }

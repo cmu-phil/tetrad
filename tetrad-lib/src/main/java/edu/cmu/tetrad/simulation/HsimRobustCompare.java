@@ -1,9 +1,5 @@
 package edu.cmu.tetrad.simulation;
 
-/**
- * Created by Erich on 6/19/2016.
- */
-
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
@@ -25,6 +21,8 @@ import java.util.List;
  * create resimulated data and hybrid resimulated data with various parameters
  * calculate errors of FGES on the resimulated and hsim data
  * compare errors across all data sets. which simulated data errors are closest to original?
+ *
+ * Created by Erich on 6/19/2016.
  */
 public class HsimRobustCompare {
 
@@ -34,8 +32,8 @@ public class HsimRobustCompare {
         //public static void main(String[] args) {
         //first generate the data
         RandomUtil.getInstance().setSeed(1450184147770L);
-        char delimiter = ',';//'\t';
-        final int numEdges = (int) (numVars * edgesPerNode);
+        final char delimiter = ',';//'\t';
+        int numEdges = (int) (numVars * edgesPerNode);
 
         List<Node> vars = new ArrayList<>();
         double[] oErrors = new double[5];
@@ -60,7 +58,6 @@ public class HsimRobustCompare {
         BDeuScore oscore = new BDeuScore(oData);
         Fges fges = new Fges(oscore);
         fges.setVerbose(false);
-        fges.setPenaltyDiscount(penaltyDiscount);
         Graph oGraphOut = fges.search();
         if (verbose) System.out.println(oGraphOut);
 
@@ -79,7 +76,7 @@ public class HsimRobustCompare {
         BayesPm simBayesPm = new BayesPm(fgesdag2, bayesPm);
         DirichletBayesIm simIM = DirichletBayesIm.symmetricDirichletIm(simBayesPm, 1.0);
         DirichletEstimator simEstimator = new DirichletEstimator();
-        DirichletBayesIm fittedIM = simEstimator.estimate(simIM, oData);
+        DirichletBayesIm fittedIM = DirichletEstimator.estimate(simIM, oData);
         DataSet simData = fittedIM.simulateData(numCases, false);
 
         ////next let's do a schedule of small hsims
@@ -91,7 +88,6 @@ public class HsimRobustCompare {
         BDeuScore simscore = new BDeuScore(simData);
         Fges simfges = new Fges(simscore);
         simfges.setVerbose(false);
-        simfges.setPenaltyDiscount(penaltyDiscount);
         Graph simGraphOut = simfges.search();
         //simErrors = new double[5];
         simErrors = HsimUtils.errorEval(simGraphOut, fgesdag2);
@@ -107,14 +103,6 @@ public class HsimRobustCompare {
                 " " + hsimErrors[2] + " " + hsimErrors[3] + " " + hsimErrors[4]);
 
         //then, let's try to squeeze these numbers down into something more tractable.
-        //double[] ErrorDifferenceDifferences;
-        //ErrorDifferenceDifferences = new double[5];
-        //ErrorDifferenceDifferences[0] = Math.abs(oErrors[0]-simErrors[0])-Math.abs(oErrors[0]-hsimErrors[0]);
-        //ErrorDifferenceDifferences[1] = Math.abs(oErrors[1]-simErrors[1])-Math.abs(oErrors[1]-hsimErrors[1]);
-        //ErrorDifferenceDifferences[2] = Math.abs(oErrors[2]-simErrors[2])-Math.abs(oErrors[2]-hsimErrors[2]);
-        //ErrorDifferenceDifferences[3] = Math.abs(oErrors[3]-simErrors[3])-Math.abs(oErrors[3]-hsimErrors[3]);
-        //ErrorDifferenceDifferences[4] = Math.abs(oErrors[4]-simErrors[4])-Math.abs(oErrors[4]-hsimErrors[4]);
-        //System.out.println("resim error errors - hsim error errors: " + ErrorDifferenceDifferences[0] + " " + ErrorDifferenceDifferences[1] + " " + ErrorDifferenceDifferences[2] + " " + ErrorDifferenceDifferences[3] + " " + ErrorDifferenceDifferences[4]);
 
         output.add(oErrors);
         output.add(simErrors);

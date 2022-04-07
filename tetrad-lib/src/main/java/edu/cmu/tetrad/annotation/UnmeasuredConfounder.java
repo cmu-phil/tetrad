@@ -25,7 +25,7 @@ import java.lang.annotation.*;
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Target({ElementType.TYPE})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface UnmeasuredConfounder {

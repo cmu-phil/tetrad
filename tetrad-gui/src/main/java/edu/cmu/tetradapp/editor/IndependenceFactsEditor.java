@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -63,7 +63,7 @@ public class IndependenceFactsEditor extends JPanel {
     private int sortDir;
     private int lastSortCol;
     private final NumberFormat nf = new DecimalFormat("0.0000");
-    private boolean showPs = false;
+    private boolean showPs;
 
     public IndependenceFactsEditor(IndTestModel model) {
         this.indTestProducers = model.getIndTestProducers();
@@ -83,14 +83,14 @@ public class IndependenceFactsEditor extends JPanel {
 
         resetText();
 
-        if (indTestProducers.isEmpty()) {
+        if (this.indTestProducers.isEmpty()) {
             throw new IllegalArgumentException("At least one source must be specified");
         }
 
-        List<String> names = indTestProducers.get(0).getIndependenceTest().getVariableNames();
+        List<String> names = this.indTestProducers.get(0).getIndependenceTest().getVariableNames();
 
-        for (int i = 1; i < indTestProducers.size(); i++) {
-            List<String> _names = indTestProducers.get(i).getIndependenceTest().getVariableNames();
+        for (int i = 1; i < this.indTestProducers.size(); i++) {
+            List<String> _names = this.indTestProducers.get(i).getIndependenceTest().getVariableNames();
 
             if (!new HashSet<>(names).equals(new HashSet<>(_names))) {
                 throw new IllegalArgumentException("All sources must have the same variable names.");
@@ -107,13 +107,13 @@ public class IndependenceFactsEditor extends JPanel {
      */
     private void buildGui() {
 //        this.independenceTest = getIndTestProducer().getIndependenceTest();
-        final List<String> varNames = new ArrayList<>();
+        List<String> varNames = new ArrayList<>();
         varNames.add("VAR");
         varNames.addAll(getDataVars());
         varNames.add("?");
         varNames.add("+");
 
-        final JComboBox<String> variableBox = new JComboBox<>();
+        JComboBox<String> variableBox = new JComboBox<>();
         DefaultComboBoxModel<String> aModel1 = new DefaultComboBoxModel<>(varNames.toArray(new String[0]));
         aModel1.setSelectedItem("VAR");
         variableBox.setModel(aModel1);
@@ -153,7 +153,7 @@ public class IndependenceFactsEditor extends JPanel {
             variableBox.setModel(aModel);
         });
 
-        final JButton delete = new JButton("Delete");
+        JButton delete = new JButton("Delete");
 
         delete.addActionListener(e -> {
             if (!getVars().isEmpty()) {
@@ -162,14 +162,14 @@ public class IndependenceFactsEditor extends JPanel {
             }
         });
 
-        textField.addKeyListener(new KeyAdapter() {
+        this.textField.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e) {
                 if ('?' == e.getKeyChar()) {
                     variableBox.setSelectedItem("?");
                 } else if ('+' == e.getKeyChar()) {
                     variableBox.setSelectedItem("+");
                 } else if ('\b' == e.getKeyChar()) {
-                    vars.removeLast();
+                    IndependenceFactsEditor.this.vars.removeLast();
                     resetText();
                 }
 
@@ -184,7 +184,7 @@ public class IndependenceFactsEditor extends JPanel {
                 } else if ('+' == e.getKeyChar()) {
                     variableBox.setSelectedItem("+");
                 } else if ('\b' == e.getKeyChar()) {
-                    vars.removeLast();
+                    IndependenceFactsEditor.this.vars.removeLast();
                     resetText();
                 }
             }
@@ -195,7 +195,7 @@ public class IndependenceFactsEditor extends JPanel {
                 super.keyTyped(e);
 
                 if ('\b' == e.getKeyChar()) {
-                    vars.removeLast();
+                    IndependenceFactsEditor.this.vars.removeLast();
                     resetText();
                 }
             }
@@ -213,9 +213,9 @@ public class IndependenceFactsEditor extends JPanel {
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
-        for (int i = 0; i < indTestProducers.size(); i++) {
+        for (int i = 0; i < this.indTestProducers.size(); i++) {
             Box b2a = Box.createHorizontalBox();
-            b2a.add(new JLabel(indTestProducers.get(i).getName() + ": " + getIndependenceTest(i).toString()));
+            b2a.add(new JLabel(this.indTestProducers.get(i).getName() + ": " + getIndependenceTest(i).toString()));
             b2a.add(Box.createHorizontalGlue());
             b1.add(b2a);
         }
@@ -229,7 +229,7 @@ public class IndependenceFactsEditor extends JPanel {
         b1.add(b3);
         b1.add(Box.createVerticalStrut(10));
 
-        tableModel = new AbstractTableModel() {
+        this.tableModel = new AbstractTableModel() {
             public String getColumnName(int column) {
                 if (column == 0) {
                     return "Index";
@@ -237,33 +237,33 @@ public class IndependenceFactsEditor extends JPanel {
                 if (column == 1) {
                     return "Fact";
                 } else if (column >= 2) {
-                    return indTestProducers.get(column - 2).getName();//  "Judgment";
+                    return IndependenceFactsEditor.this.indTestProducers.get(column - 2).getName();//  "Judgment";
                 }
 
                 return null;
             }
 
             public int getColumnCount() {
-                return 2 + indTestProducers.size();
+                return 2 + IndependenceFactsEditor.this.indTestProducers.size();
             }
 
             public int getRowCount() {
-                return results.size();
+                return IndependenceFactsEditor.this.results.size();
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > results.size()) return null;
+                if (rowIndex > IndependenceFactsEditor.this.results.size()) return null;
 
                 if (columnIndex == 0) {
-                    return results.get(rowIndex).get(0).getIndex();
+                    return IndependenceFactsEditor.this.results.get(rowIndex).get(0).getIndex();
                 }
                 if (columnIndex == 1) {
-                    return results.get(rowIndex).get(0).getFact();
+                    return IndependenceFactsEditor.this.results.get(rowIndex).get(0).getFact();
                 }
 
-                IndependenceResult independenceResult = results.get(rowIndex).get(columnIndex - 2);
+                IndependenceResult independenceResult = IndependenceFactsEditor.this.results.get(rowIndex).get(columnIndex - 2);
 
-                for (int i = 0; i < indTestProducers.size(); i++) {
+                for (int i = 0; i < IndependenceFactsEditor.this.indTestProducers.size(); i++) {
                     if (columnIndex == i + 2) {
                         if (getIndependenceTest(i) instanceof IndTestDSep) {
                             if (independenceResult.getType() == IndependenceResult.Type.INDEPENDENT) {
@@ -274,7 +274,7 @@ public class IndependenceFactsEditor extends JPanel {
                                 return "*";
                             }
                         } else {
-                            if (isShowPs()) {
+                            if (IndependenceFactsEditor.this.isShowPs()) {
                                 return nf.format(independenceResult.getpValue());
                             } else {
                                 if (independenceResult.getType() == IndependenceResult.Type.INDEPENDENT) {
@@ -328,7 +328,7 @@ public class IndependenceFactsEditor extends JPanel {
                 int col = header.columnAtPoint(point);
                 int sortCol = header.getTable().convertColumnIndexToModel(col);
 
-                sortByColumn(sortCol);
+                IndependenceFactsEditor.this.sortByColumn(sortCol);
             }
         });
 
@@ -340,11 +340,11 @@ public class IndependenceFactsEditor extends JPanel {
         b4.add(new JLabel("Limit list to "));
 
 
-        IntTextField field = new IntTextField(getListLimit(), 7);
+        IntTextField field = new IntTextField(this.getListLimit(), 7);
 
         field.setFilter((value, oldValue) -> {
             try {
-                setListLimit(value);
+                this.setListLimit(value);
                 return value;
             } catch (Exception e) {
                 return oldValue;
@@ -356,11 +356,11 @@ public class IndependenceFactsEditor extends JPanel {
 
         b4.add(Box.createHorizontalStrut(10));
 
-        final JButton showPValues = new JButton("Show P Values");
+        JButton showPValues = new JButton("Show P Values");
         showPValues.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                toggleShowPs();
+                IndependenceFactsEditor.this.toggleShowPs();
 
                 if (showPs) {
                     showPValues.setText("Show Independencies");
@@ -386,22 +386,23 @@ public class IndependenceFactsEditor extends JPanel {
 
     //=============================PRIVATE METHODS=======================//
 
-    private void sortByColumn(final int sortCol) {
-        if (sortCol == getLastSortCol()) {
-            setSortDir(-1 * getSortDir());
+    private void sortByColumn(int sortCol) {
+        if (sortCol == this.getLastSortCol()) {
+            this.setSortDir(-1 * this.getSortDir());
         } else {
-            setSortDir(1);
+            this.setSortDir(1);
         }
 
-        setLastSortCol(sortCol);
+        this.setLastSortCol(sortCol);
 
         results.sort((r1, r2) -> {
             switch (sortCol) {
                 case 0:
                 case 1:
-                    return getSortDir() * (r1.get(0).getIndex() - r2.get(0).getIndex());
+                    return this.getSortDir() * (r1.get(0).getIndex() - r2.get(0).getIndex());
                 default:
-                    int ind1, ind2;
+                    int ind1;
+                    int ind2;
                     int col = sortCol - 2;
 
                     if (r1.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
@@ -420,7 +421,7 @@ public class IndependenceFactsEditor extends JPanel {
                         ind2 = 2;
                     }
 
-                    return getSortDir() * (ind1 - ind2);
+                    return this.getSortDir() * (ind1 - ind2);
             }
         });
 
@@ -432,7 +433,7 @@ public class IndependenceFactsEditor extends JPanel {
     }
 
     private void toggleShowPs() {
-        this.showPs = !this.showPs;
+        showPs = !showPs;
         tableModel.fireTableDataChanged();
     }
 
@@ -443,7 +444,6 @@ public class IndependenceFactsEditor extends JPanel {
         private boolean selected;
 
         public Renderer(IndependenceFactsEditor editor) {
-            super();
             this.editor = editor;
         }
 
@@ -453,8 +453,8 @@ public class IndependenceFactsEditor extends JPanel {
             int numCols = table.getModel().getColumnCount();
 
             if (selected) {
-                super.setForeground(table.getSelectionForeground());
-                super.setBackground(table.getSelectionBackground());
+                setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
             } else {
                 for (int i = 2; i < numCols; i++) {
                     Object _value = table.getModel().getValueAt(row, i);
@@ -464,75 +464,75 @@ public class IndependenceFactsEditor extends JPanel {
                     }
                 }
 
-                setForeground(table.getForeground());
+                this.setForeground(table.getForeground());
 
                 if (!editor.isShowPs()) {
                     if (!(indep == 0 || indep == numCols - 2)) {
-                        setBackground(Color.YELLOW);
+                        this.setBackground(Color.YELLOW);
                     } else {
-                        setBackground(table.getBackground());
+                        this.setBackground(table.getBackground());
                     }
                 } else {
-                    setBackground(table.getBackground());
+                    this.setBackground(table.getBackground());
                 }
             }
 
-            setText((String) value);
+            this.setText((String) value);
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             this.table = table;
             this.row = row;
-            this.selected = isSelected;
+            selected = isSelected;
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
 
 
     private List<String> getDataVars() {
-        return getIndependenceTest(0).getVariableNames();
+        return this.getIndependenceTest(0).getVariableNames();
     }
 
     private void resetText() {
         StringBuilder buf = new StringBuilder();
 
-        if (getVars().size() == 0) {
+        if (this.getVars().size() == 0) {
             buf.append("Choose variables and wildcards from dropdown-->");
         }
 
-        if (getVars().size() > 0) {
-            buf.append(" ").append(getVars().get(0));
+        if (this.getVars().size() > 0) {
+            buf.append(" ").append(this.getVars().get(0));
             buf.append(" _||_ ");
         }
 
-        if (getVars().size() > 1) {
-            buf.append(getVars().get(1));
+        if (this.getVars().size() > 1) {
+            buf.append(this.getVars().get(1));
         }
 
-        if (getVars().size() > 2) {
+        if (this.getVars().size() > 2) {
             buf.append(" | ");
         }
 
-        for (int i = 2; i < getVars().size() - 1; i++) {
-            buf.append(getVars().get(i));
+        for (int i = 2; i < this.getVars().size() - 1; i++) {
+            buf.append(this.getVars().get(i));
             buf.append(", ");
         }
 
-        if (getVars().size() > 2) {
-            buf.append(getVars().get(getVars().size() - 1));
+        if (this.getVars().size() > 2) {
+            buf.append(this.getVars().get(this.getVars().size() - 1));
         }
 
-        model.setVars(getVars());
+        model.setVars(this.getVars());
         textField.setText(buf.toString());
     }
 
     private void generateResults() {
         results = new ArrayList<>();
 
-        List<String> dataVars = getDataVars();
+        List<String> dataVars = this.getDataVars();
 
-        if (getVars().size() < 2) {
+        if (this.getVars().size() < 2) {
             tableModel.fireTableDataChanged();
             return;
         }
@@ -621,7 +621,7 @@ public class IndependenceFactsEditor extends JPanel {
                             vars4[plusIndices[i]] = vars3.get(choice3[i]);
                         }
 
-                        IndependenceTest independenceTest = getIndependenceTest(prod);
+                        IndependenceTest independenceTest = this.getIndependenceTest(prod);
 
                         Node x = independenceTest.getVariable(vars4[0]);
                         Node y = independenceTest.getVariable(vars4[1]);
@@ -643,18 +643,18 @@ public class IndependenceFactsEditor extends JPanel {
                             pValue = Double.NaN;
                         }
 
-                        results.get(results.size() - 1).add(new IndependenceResult(results.size(),
-                                factString(x, y, z), indep, pValue));
+                        this.results.get(this.results.size() - 1).add(new IndependenceResult(this.results.size(),
+                                IndependenceFactsEditor.factString(x, y, z), indep, pValue));
                     }
 
-                    if (results.size() > getListLimit()) break LOOP;
+                    if (this.results.size() > getListLimit()) break LOOP;
                 }
             }
         }
 
-        model.setResults(results);
+        this.model.setResults(this.results);
 
-        tableModel.fireTableDataChanged();
+        this.tableModel.fireTableDataChanged();
     }
 
     private static List<String> asList(int[] indices, List<String> nodes) {
@@ -668,11 +668,11 @@ public class IndependenceFactsEditor extends JPanel {
     }
 
     private LinkedList<String> getVars() {
-        return vars;
+        return this.vars;
     }
 
     private JTextField getTextField() {
-        return textField;
+        return this.textField;
     }
 
     public IndependenceFactsEditor(LayoutManager layout, boolean isDoubleBuffered) {
@@ -703,7 +703,7 @@ public class IndependenceFactsEditor extends JPanel {
     }
 
     private IndependenceTest getIndependenceTest(int i) {
-        return indTestProducers.get(i).getIndependenceTest();
+        return this.indTestProducers.get(i).getIndependenceTest();
     }
 
     private int getLastSortCol() {

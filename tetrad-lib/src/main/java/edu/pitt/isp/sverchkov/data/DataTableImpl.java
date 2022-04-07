@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -35,40 +35,40 @@ public class DataTableImpl<N, V> implements DataTable<N, V> {
     private final List<List<V>> rows;
 
     public DataTableImpl(List<? extends N> vars) {
-        variables = Collections.unmodifiableList(new ArrayList<>(vars));
-        rows = new ArrayList<>();
+        this.variables = Collections.unmodifiableList(new ArrayList<>(vars));
+        this.rows = new ArrayList<>();
     }
 
     @Override
     public List<N> variables() {
-        return variables;
+        return this.variables;
     }
 
     @Override
     public int columnCount() {
-        return variables.size();
+        return this.variables.size();
     }
 
     @Override
     public int rowCount() {
-        return rows.size();
+        return this.rows.size();
     }
 
     @Override
     public void addRow(List<? extends V> row) {
-        final int
-                m = row.size(),
-                w = columnCount();
+        int
+                m = row.size();
+        int w = columnCount();
 
         if (m != w)
             throw new IllegalArgumentException("Tried to insert a row of length " + m + " into a table of width " + w + ".");
 
-        rows.add(Collections.unmodifiableList(new ArrayList<>(row)));
+        this.rows.add(Collections.unmodifiableList(new ArrayList<>(row)));
     }
 
     @Override
     public Iterator<List<V>> iterator() {
-        return Collections.unmodifiableList(rows).listIterator();
+        return Collections.unmodifiableList(this.rows).listIterator();
     }
 
 }

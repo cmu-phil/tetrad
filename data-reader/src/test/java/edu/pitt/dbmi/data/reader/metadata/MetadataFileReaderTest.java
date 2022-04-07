@@ -45,7 +45,7 @@ public class MetadataFileReaderTest {
      */
     @Test
     public void testRead() throws IOException {
-        MetadataReader metadataReader = new MetadataFileReader(metadataFile);
+        MetadataReader metadataReader = new MetadataFileReader(this.metadataFile);
         Metadata metadata = metadataReader.read();
 
         List<ColumnMetadata> domainCols = metadata.getDomainColumnns();

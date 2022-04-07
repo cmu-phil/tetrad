@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,7 +41,7 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     /**
      * The first graph source.
@@ -69,7 +69,7 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
     public void setup() {
         List<GraphSource> graphSources = new LinkedList<>();
 
-        for (Object parentModel : parentModels) {
+        for (Object parentModel : this.parentModels) {
             if (parentModel instanceof GraphSource) {
                 graphSources.add((GraphSource) parentModel);
             }
@@ -86,27 +86,27 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         System.out.println("In body, name1 = " + name1 + " name2 = " + name2 + ", storedName = " + storedName);
 
         if (name1.startsWith("Simulation")) {
-            model1 = (SessionModel) graphSources.get(0);
-            model2 = (SessionModel) graphSources.get(1);
+            this.model1 = (SessionModel) graphSources.get(0);
+            this.model2 = (SessionModel) graphSources.get(1);
         } else if (name2.startsWith("Simulation")) {
-            model1 = (SessionModel) graphSources.get(1);
-            model2 = (SessionModel) graphSources.get(0);
+            this.model1 = (SessionModel) graphSources.get(1);
+            this.model2 = (SessionModel) graphSources.get(0);
         } else if (storedName.equals(name1)) {
-            model1 = (SessionModel) graphSources.get(0);
-            model2 = (SessionModel) graphSources.get(1);
+            this.model1 = (SessionModel) graphSources.get(0);
+            this.model2 = (SessionModel) graphSources.get(1);
         } else if (storedName.equals(name2)) {
-            model1 = (SessionModel) graphSources.get(1);
-            model2 = (SessionModel) graphSources.get(0);
+            this.model1 = (SessionModel) graphSources.get(1);
+            this.model2 = (SessionModel) graphSources.get(0);
         } else {
-            model1 = (SessionModel) graphSources.get(0);
-            model2 = (SessionModel) graphSources.get(1);
+            this.model1 = (SessionModel) graphSources.get(0);
+            this.model2 = (SessionModel) graphSources.get(1);
         }
 
-        System.out.println("Decision: reference = " + model1.getName() + ", target = " + model2.getName());
+        System.out.println("Decision: reference = " + this.model1.getName() + ", target = " + this.model2.getName());
 
 //        Preferences.userRoot().put("__referenceSessionModel", model1.getName());
-        params.set("referenceGraphName", model1.getName());
-        params.getString("targetGraphName", model2.getName());
+        this.params.set("referenceGraphName", this.model1.getName());
+        this.params.getString("targetGraphName", this.model2.getName());
 
         setLayout(new BorderLayout());
 
@@ -142,22 +142,22 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         }
 
         // True graph?
-        JRadioButton graph1 = new JRadioButton(model1.getName());
-        JRadioButton graph2 = new JRadioButton(model2.getName());
+        JRadioButton graph1 = new JRadioButton(this.model1.getName());
+        JRadioButton graph2 = new JRadioButton(this.model2.getName());
 
         graph1.addActionListener(e -> {
-            System.out.println("Graph1 button reference = " + model1.getName() + ", target = " + model2.getName());
-            Preferences.userRoot().put("__referenceSessionModel", model1.getName());
-            params.set("referenceGraphName", model1.getName());
-            params.getString("targetGraphName", model1.getName());
+            System.out.println("Graph1 button reference = " + this.model1.getName() + ", target = " + this.model2.getName());
+            Preferences.userRoot().put("__referenceSessionModel", this.model1.getName());
+            this.params.set("referenceGraphName", this.model1.getName());
+            this.params.getString("targetGraphName", this.model1.getName());
         });
 
         graph2.addActionListener(e -> {
-            System.out.println("Graph2 button reference = " + model2.getName() + ", target = " + model1.getName());
+            System.out.println("Graph2 button reference = " + this.model2.getName() + ", target = " + this.model1.getName());
 
-            Preferences.userRoot().put("__referenceSessionModel", model2.getName());
-            params.set("referenceGraphName", model2.getName());
-            params.getString("targetGraphName", model1.getName());
+            Preferences.userRoot().put("__referenceSessionModel", this.model2.getName());
+            this.params.set("referenceGraphName", this.model2.getName());
+            this.params.getString("targetGraphName", this.model1.getName());
         });
 
         ButtonGroup group = new ButtonGroup();

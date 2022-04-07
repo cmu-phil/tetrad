@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.prefs.Preferences;
 
 /**
  * Compares a target workbench with a reference workbench by counting errors of
@@ -51,7 +50,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     private final Graph targetGraph;
     private final Graph referenceGraph;
     private final Parameters params;
-    private DataModel dataModel = null;
+    private final DataModel dataModel = null;
     private String name;
     private Map<String, String> allParamSettings;
     private DataSet dataSet;
@@ -89,20 +88,20 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
         String model1Name = model1.getName();
         String model2Name = model2.getName();
 
-        if (referenceName.equals(model1Name)) {
+        if (this.referenceName.equals(model1Name)) {
             this.referenceGraph = model1.getGraph();
             this.targetGraph = model2.getGraph();
-        } else if (referenceName.equals(model2Name)) {
+        } else if (this.referenceName.equals(model2Name)) {
             this.referenceGraph = model2.getGraph();
             this.targetGraph = model1.getGraph();
-        }  else {
+        } else {
             this.referenceGraph = model1.getGraph();
             this.targetGraph = model2.getGraph();
         }
 
-        if (targetGraph.isPag() || referenceGraph.isPag()) {
-            targetGraph.setPag(true);
-            referenceGraph.setPag(true);
+        if (this.targetGraph.isPag() || this.referenceGraph.isPag()) {
+            this.targetGraph.setPag(true);
+            this.referenceGraph.setPag(true);
         }
 
         newExecution();
@@ -113,32 +112,32 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     private void newExecution() {
-        statistics = new ArrayList<>();
-        statistics.add(new AdjacencyPrecision());
-        statistics.add(new AdjacencyRecall());
-        statistics.add(new ArrowheadPrecision());
-        statistics.add(new ArrowheadRecall());
-        statistics.add(new TwoCyclePrecision());
-        statistics.add(new TwoCycleRecall());
-        statistics.add(new TwoCycleFalsePositive());
+        this.statistics = new ArrayList<>();
+        this.statistics.add(new AdjacencyPrecision());
+        this.statistics.add(new AdjacencyRecall());
+        this.statistics.add(new ArrowheadPrecision());
+        this.statistics.add(new ArrowheadRecall());
+        this.statistics.add(new TwoCyclePrecision());
+        this.statistics.add(new TwoCycleRecall());
+        this.statistics.add(new TwoCycleFalsePositive());
 
         List<Node> variables = new ArrayList<>();
 
-        for (Statistic statistic : statistics) {
+        for (Statistic statistic : this.statistics) {
             variables.add(new ContinuousVariable(statistic.getAbbreviation()));
         }
 
-        dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
-        dataSet.setNumberFormat(new DecimalFormat("0.00"));
+        this.dataSet = new BoxDataSet(new DoubleDataBox(0, variables.size()), variables);
+        this.dataSet.setNumberFormat(new DecimalFormat("0.00"));
     }
 
     private void addRecord() {
-        int newRow = dataSet.getNumRows();
+        int newRow = this.dataSet.getNumRows();
 
-        for (int j = 0; j < statistics.size(); j++) {
-            Statistic statistic = statistics.get(j);
+        for (int j = 0; j < this.statistics.size(); j++) {
+            Statistic statistic = this.statistics.get(j);
             double value = statistic.getValue(this.referenceGraph, this.targetGraph, null);
-            dataSet.setDouble(newRow, j, value);
+            this.dataSet.setDouble(newRow, j, value);
         }
     }
 
@@ -158,7 +157,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -189,7 +188,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
+        return this.allParamSettings;
     }
 
     @Override
@@ -198,15 +197,15 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     public Graph getReferenceGraph() {
-        return referenceGraph;
+        return this.referenceGraph;
     }
 
     public Graph getTargetGraph() {
-        return targetGraph;
+        return this.targetGraph;
     }
 
     public String getTargetName() {
-        return targetName;
+        return this.targetName;
     }
 
     public void setTargetName(String targetName) {
@@ -214,7 +213,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     public String getReferenceName() {
-        return referenceName;
+        return this.referenceName;
     }
 
     public void setReferenceName(String referenceName) {
@@ -222,10 +221,10 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
     }
 
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 
     public DataModel getDataModel() {
-        return dataModel;
+        return this.dataModel;
     }
 }

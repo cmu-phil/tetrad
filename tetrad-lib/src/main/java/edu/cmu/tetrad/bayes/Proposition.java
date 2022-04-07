@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -49,12 +49,12 @@ public final class Proposition implements TetradSerializable {
     /**
      * @serial Cannot be null.
      */
-    private VariableSource variableSource;
+    private final VariableSource variableSource;
 
     /**
      * @serial Cannot be null.
      */
-    private boolean[][] allowedCategories;
+    private final boolean[][] allowedCategories;
 
     //===========================CONSTRUCTORS===========================//
 
@@ -78,13 +78,13 @@ public final class Proposition implements TetradSerializable {
             }
         }
 
-        allowedCategories = new boolean[variables.size()][];
+        this.allowedCategories = new boolean[variables.size()][];
 
         for (int i = 0; i < variables.size(); i++) {
             DiscreteVariable discreteVariable =
                     (DiscreteVariable) variables.get(i);
             int numCategories = discreteVariable.getNumCategories();
-            allowedCategories[i] = new boolean[numCategories];
+            this.allowedCategories[i] = new boolean[numCategories];
         }
 
         setToTautology();
@@ -123,8 +123,8 @@ public final class Proposition implements TetradSerializable {
             }
 
             if (oldIndex != -1) {
-                for (int j = 0; j < allowedCategories[i].length; j++) {
-                    allowedCategories[i][j] =
+                for (int j = 0; j < this.allowedCategories[i].length; j++) {
+                    this.allowedCategories[i][j] =
                             proposition.isAllowed(oldIndex, j);
                 }
             }
@@ -140,12 +140,12 @@ public final class Proposition implements TetradSerializable {
         this.allowedCategories =
                 new boolean[proposition.allowedCategories.length][];
 
-        for (int i = 0; i < allowedCategories.length; i++) {
+        for (int i = 0; i < this.allowedCategories.length; i++) {
             this.allowedCategories[i] =
                     new boolean[proposition.allowedCategories[i].length];
 
             System.arraycopy(proposition.allowedCategories[i], 0,
-                    allowedCategories[i], 0, allowedCategories[i].length);
+                    this.allowedCategories[i], 0, this.allowedCategories[i].length);
         }
     }
 
@@ -171,7 +171,7 @@ public final class Proposition implements TetradSerializable {
     }
 
     public void removeCategory(int variable, int category) {
-        allowedCategories[variable][category] = false;
+        this.allowedCategories[variable][category] = false;
     }
 
     /**
@@ -179,9 +179,9 @@ public final class Proposition implements TetradSerializable {
      * other categories for the given variable.
      */
     public void disallowComplement(int variable, int category) {
-        for (int i = 0; i < allowedCategories[variable].length; i++) {
+        for (int i = 0; i < this.allowedCategories[variable].length; i++) {
             if (i != category) {
-                allowedCategories[variable][i] = false;
+                this.allowedCategories[variable][i] = false;
             }
         }
     }
@@ -196,18 +196,11 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * @return true iff all categories for the given variable are allowed.
-     */
-    public boolean isUnconditioned(int variable) {
-        return !isConditioned(variable);
-    }
-
-    /**
      * @return true iff the given point is true for this proposition.
      */
     public boolean isPermissibleCombination(int[] point) {
-        for (int i = 0; i < allowedCategories.length; i++) {
-            if (!allowedCategories[i][point[i]]) {
+        for (int i = 0; i < this.allowedCategories.length; i++) {
+            if (!this.allowedCategories[i][point[i]]) {
                 return false;
             }
         }
@@ -221,7 +214,7 @@ public final class Proposition implements TetradSerializable {
      */
     public boolean existsCombination() {
         loop:
-        for (boolean[] allowedCategory : allowedCategories) {
+        for (boolean[] allowedCategory : this.allowedCategories) {
             for (boolean anAllowedCategory : allowedCategory) {
                 if (anAllowedCategory) {
                     continue loop;
@@ -254,8 +247,8 @@ public final class Proposition implements TetradSerializable {
         int count = 0;
         int lastEncountered = -1;
 
-        for (int i = 0; i < allowedCategories[variable].length; i++) {
-            if (allowedCategories[variable][i]) {
+        for (int i = 0; i < this.allowedCategories[variable].length; i++) {
+            if (this.allowedCategories[variable][i]) {
                 lastEncountered = i;
                 count++;
             }
@@ -278,31 +271,14 @@ public final class Proposition implements TetradSerializable {
                     "propositions for the same variable source.");
         }
 
-        for (int i = 0; i < allowedCategories.length; i++) {
-            for (int j = 0; j < allowedCategories[i].length; j++) {
+        for (int i = 0; i < this.allowedCategories.length; i++) {
+            for (int j = 0; j < this.allowedCategories[i].length; j++) {
                 if (!proposition.allowedCategories[i][j]) {
                     this.allowedCategories[i][j] = false;
                 }
             }
         }
     }
-
-//    /**
-//     * Restricts this proposition to the categories for the given variable that
-//     * are true in the given proposition.
-//     */
-//    public void restrictToProposition(Proposition proposition, int variable) {
-//        if (proposition.getVariableSource() != this.variableSource) {
-//            throw new IllegalArgumentException("Can only restrict to " +
-//                    "propositions for the same variable source.");
-//        }
-//
-//        for (int j = 0; j < allowedCategories[variable].length; j++) {
-//            if (!proposition.isAllowed(variable, j)) {
-//                removeCategory(variable, j);
-//            }
-//        }
-//    }
 
     /**
      * @return the index of the variable with the given name, or -1 if such a
@@ -328,7 +304,7 @@ public final class Proposition implements TetradSerializable {
     }
 
     public void addCategory(int variable, int category) {
-        allowedCategories[variable][category] = true;
+        this.allowedCategories[variable][category] = true;
     }
 
     /**
@@ -342,14 +318,14 @@ public final class Proposition implements TetradSerializable {
      * @return the number of variables for the proposition.
      */
     public int getNumVariables() {
-        return allowedCategories.length;
+        return this.allowedCategories.length;
     }
 
     /**
      * @return the number of categories for the given variable.
      */
     public int getNumCategories(int variable) {
-        return allowedCategories[variable].length;
+        return this.allowedCategories[variable].length;
     }
 
     /**
@@ -357,9 +333,7 @@ public final class Proposition implements TetradSerializable {
      * allowed (true) or all disallowed (false).
      */
     public void setVariable(int variable, boolean allowed) {
-        for (int i = 0; i < allowedCategories[variable].length; i++) {
-            allowedCategories[variable][i] = allowed;
-        }
+        Arrays.fill(this.allowedCategories[variable], allowed);
     }
 
     /**
@@ -368,7 +342,7 @@ public final class Proposition implements TetradSerializable {
      * categories.
      */
     public void setToTautology() {
-        for (int i = 0; i < allowedCategories.length; i++) {
+        for (int i = 0; i < this.allowedCategories.length; i++) {
             setVariable(i, true);
         }
     }
@@ -377,7 +351,7 @@ public final class Proposition implements TetradSerializable {
      * @return true iff the given category for the given variable is allowed.
      */
     public boolean isAllowed(int variable, int category) {
-        return allowedCategories[variable][category];
+        return this.allowedCategories[variable][category];
     }
 
     /**
@@ -404,13 +378,13 @@ public final class Proposition implements TetradSerializable {
 
         Proposition proposition = (Proposition) o;
 
-        if (!(variableSource == proposition.variableSource)) {
+        if (!(this.variableSource == proposition.variableSource)) {
             return false;
         }
 
-        for (int i = 0; i < allowedCategories.length; i++) {
-            for (int j = 0; j < allowedCategories[i].length; j++) {
-                if (allowedCategories[i][j] !=
+        for (int i = 0; i < this.allowedCategories.length; i++) {
+            for (int j = 0; j < this.allowedCategories[i].length; j++) {
+                if (this.allowedCategories[i][j] !=
                         proposition.allowedCategories[i][j]) {
                     return false;
                 }
@@ -422,8 +396,8 @@ public final class Proposition implements TetradSerializable {
 
     public int hashCode() {
         int hashCode = 37;
-        hashCode = 19 * hashCode + variableSource.hashCode();
-        hashCode = 19 * hashCode + Arrays.deepHashCode(allowedCategories);
+        hashCode = 19 * hashCode + this.variableSource.hashCode();
+        hashCode = 19 * hashCode + Arrays.deepHashCode(this.allowedCategories);
         return hashCode;
     }
 
@@ -484,19 +458,16 @@ public final class Proposition implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (variableSource == null) {
+        if (this.variableSource == null) {
             throw new NullPointerException();
         }
 
-        if (allowedCategories == null) {
+        if (this.allowedCategories == null) {
             throw new NullPointerException();
         }
     }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,12 +24,13 @@ package edu.cmu.tetrad.study;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FASK;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FAS;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R3;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.RSkew;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -65,7 +66,7 @@ public class LingamStudy {
         algorithms.add(new Lingam());
         algorithms.add(new R3(new FAS(new FisherZ())));
         algorithms.add(new RSkew(new FAS(new FisherZ())));
-        algorithms.add(new Fask(new FisherZ()));
+        algorithms.add(new FASK(new FisherZ(), new SemBicScore()));
 
         Comparison comparison = new Comparison();
 
@@ -78,7 +79,7 @@ public class LingamStudy {
         Simulations simulations = new Simulations();
         simulations.add(new LinearFisherModel(new RandomForward()));
 
-        comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, getParameters());
+        comparison.compareFromSimulations("lingam", simulations, algorithms, statistics, LingamStudy.getParameters());
 
     }
 

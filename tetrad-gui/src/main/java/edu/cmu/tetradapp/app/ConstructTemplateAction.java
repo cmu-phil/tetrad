@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -47,7 +47,7 @@ final class ConstructTemplateAction extends AbstractAction {
     /**
      * The names of the templates supported by this action.
      */
-    private static final String[] TEMPLATE_NAMES = new String[]{
+    private static final String[] TEMPLATE_NAMES = {
             "Simulate from a given graph, then search",
             "Simulate, search, then compare",
             "Load data and search",
@@ -59,12 +59,7 @@ final class ConstructTemplateAction extends AbstractAction {
     /**
      * The name of the template.
      */
-    private String templateName;
-
-    /**
-     * The session graph.
-     */
-    private SessionWrapper sessionWrapper;
+    private final String templateName;
 
     /**
      * The session workbench. Needed for selection.
@@ -93,9 +88,9 @@ final class ConstructTemplateAction extends AbstractAction {
      * @return a copy of the template names. Must be public.
      */
     public static String[] getTemplateNames() {
-        String[] templateNamesCopy = new String[TEMPLATE_NAMES.length];
-        System.arraycopy(TEMPLATE_NAMES, 0, templateNamesCopy, 0,
-                TEMPLATE_NAMES.length);
+        String[] templateNamesCopy = new String[ConstructTemplateAction.TEMPLATE_NAMES.length];
+        System.arraycopy(ConstructTemplateAction.TEMPLATE_NAMES, 0, templateNamesCopy, 0,
+                ConstructTemplateAction.TEMPLATE_NAMES.length);
         return templateNamesCopy;
     }
 
@@ -108,15 +103,15 @@ final class ConstructTemplateAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         int leftX = getLeftX();
 
-        if (this.templateName.equals(getTemplateNames()[0])) {
+        if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[0])) {
             simulateDataFixedIM(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[1])) {
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[1])) {
             searchFromSimulatedDataWithCompare(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[2])) {
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[2])) {
             searchFromLoadedOrSimulatedData(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[3])) {
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[3])) {
             estimateFromSimulatedData(leftX);
-        } else if (this.templateName.equals(getTemplateNames()[4])) {
+        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[4])) {
             estimateThenUpdateUsingSearchResult(leftX);
         }
         // Removed 4/9/2019 Folded into FOFC
@@ -128,14 +123,8 @@ final class ConstructTemplateAction extends AbstractAction {
         }
     }
 
-    public void addChild(SessionEditorNode thisNode, String type) {
-        String name = nextName(type);
-        addNode(type, name, thisNode.getX() + 100, thisNode.getY() + 100);
-        addEdge(thisNode.getName(), name);
-    }
-
     public void addParent(SessionEditorNode thisNode, String type) {
-        String name = nextName(type);
+        String name = ConstructTemplateAction.nextName(type);
         addNode(type, name, thisNode.getX() - 50, thisNode.getY() - 50);
         addEdge(name, thisNode.getName());
     }
@@ -174,15 +163,15 @@ final class ConstructTemplateAction extends AbstractAction {
 
         List<Node> nodes = new LinkedList<>();
 
-        String data = nextName("Data");
-        String search = nextName("Search");
+        String data = ConstructTemplateAction.nextName("Data");
+        String search = ConstructTemplateAction.nextName("Search");
 
         nodes.add(addNode("Data", data, leftX, 100));
         nodes.add(addNode("Search", search, 125 + leftX, 100));
 
         addEdge(data, search);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
     private void simulateDataFixedIM(int leftX) {
@@ -190,11 +179,11 @@ final class ConstructTemplateAction extends AbstractAction {
 
         List<Node> nodes = new LinkedList<>();
 
-        String graph = nextName("Graph");
-        String pm = nextName("PM");
-        String im = nextName("IM");
-        String data = nextName("Simulation");
-        String search = nextName("Search");
+        String graph = ConstructTemplateAction.nextName("Graph");
+        String pm = ConstructTemplateAction.nextName("PM");
+        String im = ConstructTemplateAction.nextName("IM");
+        String data = ConstructTemplateAction.nextName("Simulation");
+        String search = ConstructTemplateAction.nextName("Search");
 
         nodes.add(addNode("Graph", graph, leftX, 100));
         nodes.add(addNode("PM", pm, leftX, 200));
@@ -207,7 +196,7 @@ final class ConstructTemplateAction extends AbstractAction {
         addEdge(im, data);
         addEdge(data, search);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
     private void searchFromSimulatedDataWithCompare(int leftX) {
@@ -220,9 +209,9 @@ final class ConstructTemplateAction extends AbstractAction {
 
         List<Node> nodes = new LinkedList<>();
 
-        String data = nextName("Simulation");
-        String search = nextName("Search");
-        String compare = nextName("Compare");
+        String data = ConstructTemplateAction.nextName("Simulation");
+        String search = ConstructTemplateAction.nextName("Search");
+        String compare = ConstructTemplateAction.nextName("Compare");
 
         nodes.add(addNode("Simulation", data, leftX, 100));
         nodes.add(addNode("Search", search, 150 + leftX, 100));
@@ -232,7 +221,7 @@ final class ConstructTemplateAction extends AbstractAction {
         addEdge(data, compare);
         addEdge(search, compare);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
     private void estimateFromSimulatedData(int leftX) {
@@ -245,19 +234,19 @@ final class ConstructTemplateAction extends AbstractAction {
 
         List<Node> nodes = new LinkedList<>();
 
-        String data = nextName("Data");
-        String search = nextName("Search");
+        String data = ConstructTemplateAction.nextName("Data");
+        String search = ConstructTemplateAction.nextName("Search");
 
         nodes.add(addNode("Data", data, leftX, 100));
         nodes.add(addNode("Search", search, leftX + 150, 100));
 
-        String graph = nextName("Graph");
+        String graph = ConstructTemplateAction.nextName("Graph");
         nodes.add(addNode("Graph", graph, leftX + 150, 200));
 
-        String pm = nextName("PM");
+        String pm = ConstructTemplateAction.nextName("PM");
         nodes.add(addNode("PM", pm, leftX + 150, 300));
 
-        String estimator = nextName("Estimator");
+        String estimator = ConstructTemplateAction.nextName("Estimator");
         nodes.add(addNode("Estimator", estimator, leftX, 300));
 
         addEdge(data, search);
@@ -267,66 +256,8 @@ final class ConstructTemplateAction extends AbstractAction {
         addEdge(data, pm);
         addEdge(pm, estimator);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
-
-    private void updateFromSimulatedData(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef
-                = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
-                = sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
-
-        List<Node> nodes = new LinkedList<>();
-
-        String data = nextName("Data");
-        String search = nextName("Search");
-        String estimator = nextName("Estimator");
-        String updater = nextName("Updater");
-
-        nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Search", search, 150 + leftX, 100));
-        nodes.add(addNode("Estimator", estimator, 80 + leftX, 200));
-        nodes.add(addNode("Updater", updater, 80 + leftX, 300));
-
-        addEdge(data, search);
-        addEdge(data, estimator);
-        addEdge(search, estimator);
-        addEdge(estimator, updater);
-
-        selectSubgraph(nodes);
-    }
-
-    // Removed 4/9/2019 Folded into FOFC
-//    private void mimbuild(int leftX) {
-//        getSessionWorkbench().deselectAll();
-//
-//        List<Node> nodes = new LinkedList<>();
-//
-//        String graph = nextName("Graph");
-//        String pm = nextName("PM");
-//        String im = nextName("IM");
-//        String data = nextName("Simulation");
-//        String search = nextName("Search");
-//        String mimbuild = nextName("MIMBuild");
-//
-//        nodes.add(addNode("Graph", graph, leftX, 100));
-//        nodes.add(addNode("PM", pm, leftX, 200));
-//        nodes.add(addNode("IM", im, leftX, 300));
-//        nodes.add(addNode("Simulation", data, leftX, 400));
-//        nodes.add(addNode("Search", search, 125 + leftX, 400));
-//        nodes.add(addNode("Search", mimbuild, 65 + leftX, 500));
-//
-//        addEdge(graph, pm);
-//        addEdge(pm, im);
-//        addEdge(im, data);
-//        addEdge(data, search);
-//        addEdge(data, mimbuild);
-//        addEdge(search, mimbuild);
-//
-//        selectSubgraph(nodes);
-//    }
 
     private void estimateThenUpdateUsingSearchResult(int leftX) {
         SessionEditorIndirectRef sessionEditorRef
@@ -338,22 +269,22 @@ final class ConstructTemplateAction extends AbstractAction {
 
         List<Node> nodes = new LinkedList<>();
 
-        String data = nextName("Data");
-        String search = nextName("Search");
+        String data = ConstructTemplateAction.nextName("Data");
+        String search = ConstructTemplateAction.nextName("Search");
 
         nodes.add(addNode("Data", data, leftX, 100));
         nodes.add(addNode("Search", search, leftX + 150, 100));
 
-        String graph = nextName("Graph");
+        String graph = ConstructTemplateAction.nextName("Graph");
         nodes.add(addNode("Graph", graph, leftX + 150, 200));
 
-        String pm = nextName("PM");
+        String pm = ConstructTemplateAction.nextName("PM");
         nodes.add(addNode("PM", pm, leftX + 150, 300));
 
-        String estimator = nextName("Estimator");
+        String estimator = ConstructTemplateAction.nextName("Estimator");
         nodes.add(addNode("Estimator", estimator, leftX, 300));
 
-        String updater = nextName("Updater");
+        String updater = ConstructTemplateAction.nextName("Updater");
         nodes.add(addNode("Updater", updater, leftX, 400));
 
         addEdge(data, search);
@@ -364,7 +295,7 @@ final class ConstructTemplateAction extends AbstractAction {
         addEdge(pm, estimator);
         addEdge(estimator, updater);
 
-        selectSubgraph(nodes);
+        ConstructTemplateAction.selectSubgraph(nodes);
     }
 
     private static void selectSubgraph(List<Node> nodes) {
@@ -416,10 +347,8 @@ final class ConstructTemplateAction extends AbstractAction {
             i++;
             String name = base + i;
 
-            for (Object o : graph.getNodes()) {
-                Node node = (Node) (o);
-
-                if (node.getName().equals(name)) {
+            for (Node o : graph.getNodes()) {
+                if (o.getName().equals(name)) {
                     continue loop;
                 }
             }
@@ -438,15 +367,10 @@ final class ConstructTemplateAction extends AbstractAction {
                 = sessionEditor.getSessionWorkbench();
         sessionWorkbench.deselectAll();
         return sessionWorkbench.getSessionWrapper();
-
-//        if (sessionWrapper == null) {
-//            this.sessionWrapper = getSessionWorkbench().getSessionWrapper();
-//        }
-//        return sessionWrapper;
     }
 
     private SessionEditorWorkbench getSessionWorkbench() {
-        if (sessionWorkbench == null) {
+        if (this.sessionWorkbench == null) {
             SessionEditorIndirectRef sessionEditorRef
                     = DesktopController.getInstance().getFrontmostSessionEditor();
             SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
@@ -460,12 +384,12 @@ final class ConstructTemplateAction extends AbstractAction {
 
             this.sessionWorkbench = sessionEditor.getSessionWorkbench();
         }
-        return sessionWorkbench;
+        return this.sessionWorkbench;
     }
 
     private Node addNode(String nodeType, String nodeName, int centerX,
                          int centerY) {
-        SessionNodeWrapper node = getNewModelNode(nodeType, nodeName);
+        SessionNodeWrapper node = ConstructTemplateAction.getNewModelNode(nodeType, nodeName);
         node.setCenter(centerX, centerY);
         getSessionWrapper().addNode(node);
         return node;
@@ -509,7 +433,7 @@ final class ConstructTemplateAction extends AbstractAction {
                     "Next button type must be a " + "non-null string.");
         }
 
-        Class[] modelClasses = getModelClasses(nextButtonType);
+        Class[] modelClasses = ConstructTemplateAction.getModelClasses(nextButtonType);
         SessionNode newNode
                 = new SessionNode(nextButtonType, name, modelClasses);
         SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);

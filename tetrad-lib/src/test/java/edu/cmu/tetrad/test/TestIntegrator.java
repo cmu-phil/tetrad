@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -31,7 +31,7 @@ public class TestIntegrator {
     private Function function;
 
     private void setUp() {
-        function = new Function() {
+        this.function = new Function() {
             public double valueAt(double x) {
                 return x;
             }
@@ -46,7 +46,7 @@ public class TestIntegrator {
     public void testPdfIntegration() {
         setUp();
         assertEquals("Integrator not integrate properly under the function: " +
-                        function, 0.5, Integrator.getArea(function, 0.0, 1.0, 10000),
+                        this.function, 0.5, Integrator.getArea(this.function, 0.0, 1.0, 10000),
                 0.000000001);
     }
 }

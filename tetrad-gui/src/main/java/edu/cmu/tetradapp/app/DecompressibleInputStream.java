@@ -50,13 +50,13 @@ public class DecompressibleInputStream extends ObjectInputStream {
         try {
             localClass = Class.forName(resultClassDescriptor.getName());
         } catch (ClassNotFoundException e) {
-            LOGGER.error("No local class for " + resultClassDescriptor.getName(), e);
+            DecompressibleInputStream.LOGGER.error("No local class for " + resultClassDescriptor.getName(), e);
             return resultClassDescriptor;
         }
         ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
         if (localClassDescriptor != null) { // only if class implements serializable
-            final long localSUID = localClassDescriptor.getSerialVersionUID();
-            final long streamSUID = resultClassDescriptor.getSerialVersionUID();
+            long localSUID = localClassDescriptor.getSerialVersionUID();
+            long streamSUID = resultClassDescriptor.getSerialVersionUID();
             if (streamSUID != localSUID) { // check for serialVersionUID mismatch.
                 resultClassDescriptor = localClassDescriptor; // Use local class descriptor for deserialization
             }

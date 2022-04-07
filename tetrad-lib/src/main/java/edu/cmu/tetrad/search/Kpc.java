@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -43,7 +43,7 @@ public class Kpc implements GraphSearch {
     /**
      * The independence test used for the PC search.
      */
-    private IndTestHsic independenceTest;
+    private final IndTestHsic independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -74,12 +74,12 @@ public class Kpc implements GraphSearch {
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
      * graphs).
      */
-    private boolean aggressivelyPreventCycles = false;
+    private boolean aggressivelyPreventCycles;
 
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * In an enumeration of triple types, these are the collider triples.
@@ -97,35 +97,15 @@ public class Kpc implements GraphSearch {
     private int numIndependenceTests;
 
     /**
-     * The true graph, for purposes of comparison. Temporary.
-     */
-    private Graph trueGraph;
-
-    /**
-     * The number of dependence judgements from FAS. Temporary.
-     */
-    private int numDependenceJudgements;
-
-    /**
      * The threshold for rejecting the null
      */
     private double alpha;
 
     /**
-     * Use incomplete Choleksy factorization for Gram matrices
-     */
-    private double useIncompleteCholesky = 1e-18;
-
-    /**
-     * The regularizer for singular matrices
-     */
-    private double regularizer = .0001;
-
-    /**
      * The number of bootstrap samples to generate during independence testing
      */
     private int perms = 100;
-    private boolean verbose = false;
+    private boolean verbose;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -164,14 +144,14 @@ public class Kpc implements GraphSearch {
      * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -189,7 +169,7 @@ public class Kpc implements GraphSearch {
      * @return the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
      */
     public SepsetMap getSepset() {
-        return sepset;
+        return this.sepset;
     }
 
     /**
@@ -197,7 +177,7 @@ public class Kpc implements GraphSearch {
      * independence checked.
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
@@ -228,7 +208,7 @@ public class Kpc implements GraphSearch {
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      */
     public Graph search() {
-        return search(independenceTest.getVariables());
+        return search(this.independenceTest.getVariables());
     }
 
     /**
@@ -252,49 +232,47 @@ public class Kpc implements GraphSearch {
             throw new NullPointerException();
         }
 
-        List allNodes = getIndependenceTest().getVariables();
+        List<Node> allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
 
-        graph = new EdgeListGraph(nodes);
-        graph.fullyConnect(Endpoint.TAIL);
+        this.graph = new EdgeListGraph(nodes);
+        this.graph.fullyConnect(Endpoint.TAIL);
 
         Fas fas = new Fas(getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setTrueGraph(trueGraph);
-        graph = fas.search();
+        this.graph = fas.search();
         this.sepset = fas.getSepsets();
         this.numIndependenceTests = fas.getNumIndependenceTests();
-        this.numDependenceJudgements = fas.getNumDependenceJudgments();
 
         enumerateTriples();
 
-        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(sepset, knowledge, graph, verbose, true);
+        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        SearchGraphUtils.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        rules.setKnowledge(knowledge);
-        rules.orientImplied(graph);
+        rules.setKnowledge(this.knowledge);
+        rules.orientImplied(this.graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
+        this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
         this.elapsedTime = System.currentTimeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.log("info", "Finishing PC Algorithm.");
         this.logger.flush();
 
-        return graph;
+        return this.graph;
     }
 
     /**
      * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     /**
@@ -302,7 +280,7 @@ public class Kpc implements GraphSearch {
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedColliders() {
-        return unshieldedColliders;
+        return this.unshieldedColliders;
     }
 
     /**
@@ -310,7 +288,7 @@ public class Kpc implements GraphSearch {
      * <code>search</code> is called.
      */
     public Set<Triple> getUnshieldedNoncolliders() {
-        return unshieldedNoncolliders;
+        return this.unshieldedNoncolliders;
     }
 
     //===============================ADDED FOR KPC=========================//
@@ -324,16 +302,7 @@ public class Kpc implements GraphSearch {
         }
 
         this.alpha = alpha;
-        independenceTest.setAlpha(alpha);
-    }
-
-    /**
-     * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value <= 0
-     * indicates that the Incomplete Cholesky method should not be used and instead use the exact matrices.
-     */
-    public void setIncompleteCholesky(double precision) {
-        this.useIncompleteCholesky = precision;
-        independenceTest.setIncompleteCholesky(precision);
+        this.independenceTest.setAlpha(alpha);
     }
 
     /**
@@ -341,15 +310,7 @@ public class Kpc implements GraphSearch {
      */
     public void setPerms(int perms) {
         this.perms = perms;
-        independenceTest.setPerms(perms);
-    }
-
-    /**
-     * Sets the regularizer
-     */
-    public void setRegularizer(double regularizer) {
-        this.regularizer = regularizer;
-        independenceTest.setRegularizer(regularizer);
+        this.independenceTest.setPerms(perms);
     }
 
     /**
@@ -363,7 +324,7 @@ public class Kpc implements GraphSearch {
      * Gets the getModel precision for the Incomplete Cholesky
      */
     public double getPrecision() {
-        return this.useIncompleteCholesky;
+        return 1e-18;
     }
 
     /**
@@ -373,21 +334,14 @@ public class Kpc implements GraphSearch {
         return this.perms;
     }
 
-    /**
-     * Gets the getModel regularizer
-     */
-    public double getRegularizer() {
-        return this.regularizer;
-    }
-
     //===============================PRIVATE METHODS=======================//
 
     private void enumerateTriples() {
         this.unshieldedColliders = new HashSet<>();
         this.unshieldedNoncolliders = new HashSet<>();
 
-        for (Node y : graph.getNodes()) {
-            List<Node> adj = graph.getAdjacentNodes(y);
+        for (Node y : this.graph.getNodes()) {
+            List<Node> adj = this.graph.getAdjacentNodes(y);
 
             if (adj.size() < 2) {
                 continue;
@@ -400,7 +354,7 @@ public class Kpc implements GraphSearch {
                 Node x = adj.get(choice[0]);
                 Node z = adj.get(choice[1]);
 
-                List<Node> nodes = sepset.get(x, z);
+                List<Node> nodes = this.sepset.get(x, z);
 
                 // Note that checking adj(x, z) does not suffice when knowledge
                 // has been specified.
@@ -418,15 +372,7 @@ public class Kpc implements GraphSearch {
     }
 
     public int getNumIndependenceTests() {
-        return numIndependenceTests;
-    }
-
-    public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
-    }
-
-    public int getNumDependenceJudgements() {
-        return numDependenceJudgements;
+        return this.numIndependenceTests;
     }
 
     public void setVerbose(boolean verbose) {

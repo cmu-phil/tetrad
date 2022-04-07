@@ -21,11 +21,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "CCI-Score (Conditional Correlation Independence Score)",
-        command = "cci-score",
-        dataType = {DataType.Continuous}
-)
+@edu.cmu.tetrad.annotation.Score(name = "CCI-Score (Conditional Correlation Independence Score)", command = "cci-score", dataType = DataType.Continuous)
 @General
 @Experimental
 public class CciScore implements ScoreWrapper {
@@ -36,7 +32,7 @@ public class CciScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
+        IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.CCI_SCORE_ALPHA));
         if (parameters.getInt(Params.KERNEL_TYPE) == 1) {
             cci.setKernel(ConditionalCorrelationIndependence.Kernel.Gaussian);
@@ -86,7 +82,7 @@ public class CciScore implements ScoreWrapper {
 
     @Override
     public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+        return this.dataSet.getVariable(name);
     }
 
 }

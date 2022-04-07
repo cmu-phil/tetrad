@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -56,11 +56,11 @@ public abstract class AbstractNbComponent implements NbComponent {
     }
 
     public double getValue() {
-        return value;
+        return this.value;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setValue(double level) {
@@ -101,7 +101,7 @@ public abstract class AbstractNbComponent implements NbComponent {
     public abstract void update();
 
     public NbComponent[] getParents() {
-        return parents;
+        return this.parents;
     }
 
     public void setParents(NbComponent[] parents) {
@@ -109,7 +109,7 @@ public abstract class AbstractNbComponent implements NbComponent {
     }
 
     public int[] getInhibitExcite() {
-        return inhibitExcite;
+        return this.inhibitExcite;
     }
 
     public void setInhibitExcite(int[] inhibitExcite) {
@@ -117,7 +117,7 @@ public abstract class AbstractNbComponent implements NbComponent {
     }
 
     public int getNparents() {
-        return nparents;
+        return this.nparents;
     }
 
     public void setNparents(int nparents) {
@@ -134,7 +134,7 @@ public abstract class AbstractNbComponent implements NbComponent {
     }
 
     public double getFactor() {
-        return factor;
+        return this.factor;
     }
 
     public void setFactor(double factor) {
@@ -142,7 +142,7 @@ public abstract class AbstractNbComponent implements NbComponent {
     }
 
     public double getPower() {
-        return power;
+        return this.power;
     }
 
     public void setPower(double power) {
@@ -150,7 +150,7 @@ public abstract class AbstractNbComponent implements NbComponent {
     }
 
     public double getSd() {
-        return sd;
+        return this.sd;
     }
 
     public void setSd(double sd) {

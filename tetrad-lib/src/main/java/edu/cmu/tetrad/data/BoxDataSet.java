@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,7 +24,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -63,17 +62,13 @@ import java.util.*;
  * @see edu.cmu.tetrad.data.Variable
  * @see edu.cmu.tetrad.data.Knowledge2
  */
-public final class BoxDataSet implements DataSet, TetradSerializable {
+public final class BoxDataSet implements DataSet {
 
     static final long serialVersionUID = 23L;
     private Map<String, String> columnToTooltip;
 
     public Map<String, String> getColumnToTooltip() {
-        return columnToTooltip;
-    }
-
-    public void setColumnToTooltip(Map<String, String> columnToTooltip) {
-        this.columnToTooltip = columnToTooltip;
+        return this.columnToTooltip;
     }
 
     /**
@@ -157,12 +152,12 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Makes of copy of the given data set.
      */
     public BoxDataSet(BoxDataSet dataSet) {
-        name = dataSet.name;
-        variables = new LinkedList<>(dataSet.variables);
-        dataBox = dataSet.dataBox.copy();
-        selection = new HashSet<>(dataSet.selection);
-        multipliers = new HashMap<>(dataSet.multipliers);
-        knowledge = dataSet.knowledge.copy();
+        this.name = dataSet.name;
+        this.variables = new LinkedList<>(dataSet.variables);
+        this.dataBox = dataSet.dataBox.copy();
+        this.selection = new HashSet<>(dataSet.selection);
+        this.multipliers = new HashMap<>(dataSet.multipliers);
+        this.knowledge = dataSet.knowledge.copy();
     }
 
     /**
@@ -181,14 +176,14 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     /**
      * Gets the name of the data set.
      */
-    public final String getName() {
+    public String getName() {
         return this.name;
     }
 
     /**
      * Sets the name of the data set.
      */
-    public final void setName(String name) {
+    public void setName(String name) {
         if (name == null) {
             return;
 //            throw new NullPointerException("Name must not be null.");
@@ -199,16 +194,16 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     /**
      * @return the number of variables in the data set.
      */
-    public final int getNumColumns() {
-        return variables.size();
+    public int getNumColumns() {
+        return this.variables.size();
     }
 
     /**
      * @return the number of rows in the rectangular data set, which is the
      * maximum of the number of rows in the list of wrapped columns.
      */
-    public final int getNumRows() {
-        return dataBox.numRows();
+    public int getNumRows() {
+        return this.dataBox.numRows();
     }
 
     /**
@@ -218,7 +213,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @param row    The index of the case.
      * @param column The index of the variable.
      */
-    public final void setInt(int row, int column, int value) {
+    public void setInt(int row, int column, int value) {
         ensureRows(row + 1);
 
         Node variable = getVariable(column);
@@ -251,13 +246,6 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
                 throw new IllegalArgumentException(
                         "Row or columns out of range.");
             }
-
-            // The data set shouldn't resize because of a set command--it the <row, col> are out of bounds,
-            // it should complain
-//            int newRows = Math.max(row + 1, dataBox.numRows());
-//            int newCols = Math.max(column + 1, dataBox.numCols());
-//            resize(newRows, newCols);
-//            setIntPrivate(row, column, value);
         }
     }
 
@@ -268,23 +256,16 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @param row    The index of the case.
      * @param column The index of the variable.
      */
-    public final void setDouble(int row, int column, double value) {
+    public void setDouble(int row, int column, double value) {
         ensureRows(row + 1);
 
         try {
-            dataBox.set(row, column, value);
+            this.dataBox.set(row, column, value);
         } catch (Exception e) {
             if (row < 0 || column < 0 || row >= getNumRows() || column >= getNumColumns()) {
                 throw new IllegalArgumentException(
                         "Row or columns out of range.");
             }
-
-            // The data set shouldn't resize because of a set command--it the <row, col> are out of bounds,
-            // it should complain
-///            int newRows = Math.max(row + 1, dataBox.numRows());
-//            int newCols = Math.max(column + 1, dataBox.numCols());
-//            resize(newRows, newCols);
-//            dataBox.set(row, column, value);
         }
     }
 
@@ -296,7 +277,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Primitives will be returned as corresponding wrapping objects (for
      * example, doubles as Doubles).
      */
-    public final Object getObject(int row, int col) {
+    public Object getObject(int row, int col) {
         Object variable = getVariable(col);
 
         if (variable instanceof ContinuousVariable) {
@@ -319,11 +300,11 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @param row The index of the case.
      * @param col The index of the variable.
      */
-    public final void setObject(int row, int col, Object value) {
+    public void setObject(int row, int col, Object value) {
         Object variable = getVariable(col);
 
         if (variable instanceof ContinuousVariable) {
-            setDouble(row, col, getValueFromObjectContinuous(value));
+            setDouble(row, col, BoxDataSet.getValueFromObjectContinuous(value));
         } else if (variable instanceof DiscreteVariable) {
             setInt(row, col, getValueFromObjectDiscrete(value,
                     (DiscreteVariable) variable));
@@ -337,7 +318,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     /**
      * @return the indices of the currently selected variables.
      */
-    public final int[] getSelectedIndices() {
+    public int[] getSelectedIndices() {
         List<Node> variables = getVariables();
         Set<Node> selection = getSelection();
 
@@ -353,13 +334,6 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         return indices;
     }
 
-//    /**
-//     * @return the set of currently selected variables.
-//     */
-//    public final Set<Node> getSelectedVariables() {
-//        return new HashSet<>(selection);
-//    }
-
     /**
      * Adds the given variable to the data set, increasing the number of columns
      * by one, moving columns i >= <code>index</code> to column i + 1, and
@@ -368,22 +342,22 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @throws IllegalArgumentException if the variable already exists in the
      *                                  dataset.
      */
-    public final void addVariable(Node variable) {
-        if (variables.contains(variable)) {
+    public void addVariable(Node variable) {
+        if (this.variables.contains(variable)) {
             throw new IllegalArgumentException("Expecting a new variable: " + variable);
         }
 
         try {
-            variables.add(variable);
+            this.variables.add(variable);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        resize(dataBox.numRows(), variables.size());
-        int col = dataBox.numCols() - 1;
+        resize(this.dataBox.numRows(), this.variables.size());
+        int col = this.dataBox.numCols() - 1;
 
-        for (int i = 0; i < dataBox.numRows(); i++) {
-            dataBox.set(i, col, null);
+        for (int i = 0; i < this.dataBox.numRows(); i++) {
+            this.dataBox.set(i, col, null);
         }
     }
 
@@ -392,33 +366,32 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * by one, moving columns i >= <code>index</code> to column i + 1, and
      * inserting a column of missing values at column i.
      */
-    public final void addVariable(int index, Node variable) {
-        if (variables.contains(variable)) {
+    public void addVariable(int index, Node variable) {
+        if (this.variables.contains(variable)) {
             throw new IllegalArgumentException("Expecting a new variable.");
         }
 
-        if (index < 0 || index > variables.size()) {
+        if (index < 0 || index > this.variables.size()) {
             throw new IndexOutOfBoundsException("Index must in (0, #vars).");
         }
 
-        variables.add(index, variable);
-        resize(dataBox.numRows(), variables.size());
+        this.variables.add(index, variable);
+        resize(this.dataBox.numRows(), this.variables.size());
 
-        Number[][] _data
-                = new Number[dataBox.numRows()][dataBox.numCols()];
+        Number[][] _data = new Number[this.dataBox.numRows()][this.dataBox.numCols()];
 
-        for (int j = 0; j < dataBox.numCols(); j++) {
+        for (int j = 0; j < this.dataBox.numCols(); j++) {
             if (j < index) {
-                for (int i = 0; i < dataBox.numRows(); i++) {
-                    _data[i][j] = dataBox.get(i, j);
+                for (int i = 0; i < this.dataBox.numRows(); i++) {
+                    _data[i][j] = this.dataBox.get(i, j);
                 }
             } else if (j == index) {
-                for (int i = 0; i < dataBox.numRows(); i++) {
+                for (int i = 0; i < this.dataBox.numRows(); i++) {
                     _data[i][j] = null;
                 }
             } else {
-                for (int i = 0; i < dataBox.numRows(); i++) {
-                    _data[i][j] = dataBox.get(i, j - 1);
+                for (int i = 0; i < this.dataBox.numRows(); i++) {
+                    _data[i][j] = this.dataBox.get(i, j - 1);
                 }
             }
         }
@@ -427,16 +400,16 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     /**
      * @return the variable at the given column.
      */
-    public final Node getVariable(int col) {
-        return variables.get(col);
+    public Node getVariable(int col) {
+        return this.variables.get(col);
     }
 
     /**
      * @return the index of the column of the given variable. You can also get
      * this by calling getVariables().indexOf(variable).
      */
-    public final int getColumn(Node variable) {
-        return variables.indexOf(variable);
+    public int getColumn(Node variable) {
+        return this.variables.indexOf(variable);
     }
 
     /**
@@ -445,8 +418,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      *
      * @throws IllegalArgumentException if the given change is not supported.
      */
-    @SuppressWarnings({"ConstantConditions"})
-    public final void changeVariable(Node from, Node to) {
+    public void changeVariable(Node from, Node to) {
         if (!(from instanceof DiscreteVariable
                 && to instanceof DiscreteVariable)) {
             throw new IllegalArgumentException(
@@ -456,7 +428,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         DiscreteVariable _from = (DiscreteVariable) from;
         DiscreteVariable _to = (DiscreteVariable) to;
 
-        int col = variables.indexOf(_from);
+        int col = this.variables.indexOf(_from);
 
         List<String> oldCategories = _from.getCategories();
         List<String> newCategories = _to.getCategories();
@@ -468,7 +440,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         }
 
         for (int i = 0; i < getNumRows(); i++) {
-            if (dataBox.get(i, col) == null) {
+            if (this.dataBox.get(i, col) == null) {
                 break;
             }
 
@@ -481,20 +453,20 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             }
 
             if (newIndex == -1) {
-                dataBox.set(i, col, null);
+                this.dataBox.set(i, col, null);
             } else {
                 setInt(i, col, newIndex);
             }
         }
 
-        variables.set(col, _to);
+        this.variables.set(col, _to);
     }
 
     /**
      * @return the variable with the given name.
      */
-    public final Node getVariable(String varName) {
-        for (Node variable1 : variables) {
+    public Node getVariable(String varName) {
+        for (Node variable1 : this.variables) {
             if (variable1.getName().equals(varName)) {
                 return variable1;
             }
@@ -507,22 +479,22 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @return (a copy of) the List of Variables for the data set, in the order
      * of their columns.
      */
-    public final List<Node> getVariables() {
-        return new LinkedList<>(variables);
+    public List<Node> getVariables() {
+        return new LinkedList<>(this.variables);
     }
 
     /**
      * @return a copy of the knowledge associated with this data set. (Cannot be
      * null.)
      */
-    public final IKnowledge getKnowledge() {
+    public IKnowledge getKnowledge() {
         return this.knowledge.copy();
     }
 
     /**
      * Sets knowledge to be associated with this data set. May not be null.
      */
-    public final void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -534,7 +506,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @return (a copy of) the List of Variables for the data set, in the order
      * of their columns.
      */
-    public final List<String> getVariableNames() {
+    public List<String> getVariableNames() {
         List<Node> vars = getVariables();
         List<String> names = new ArrayList<>();
 
@@ -550,12 +522,12 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Marks the given column as selected if 'selected' is true or deselected if
      * 'selected' is false.
      */
-    public final void setSelected(Node variable, boolean selected) {
+    public void setSelected(Node variable, boolean selected) {
         if (selected) {
-            if (variables.contains(variable)) {
+            if (this.variables.contains(variable)) {
                 getSelection().add(variable);
             }
-        } else if (variables.contains(variable)) {
+        } else if (this.variables.contains(variable)) {
             getSelection().remove(variable);
         }
     }
@@ -563,7 +535,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     /**
      * Marks all variables as deselected.
      */
-    public final void clearSelection() {
+    public void clearSelection() {
         getSelection().clear();
     }
 
@@ -605,11 +577,11 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     public boolean existsMissingValue() {
         for (int i = 0; i < getNumRows(); i++) {
             for (int j = 0; j < getNumColumns(); j++) {
-                if (variables.get(j) instanceof ContinuousVariable) {
+                if (this.variables.get(j) instanceof ContinuousVariable) {
                     if (Double.isNaN(getDouble(i, j))) return true;
                 }
 
-                if (variables.get(j) instanceof DiscreteVariable) {
+                if (this.variables.get(j) instanceof DiscreteVariable) {
                     if (getInt(i, j) == -99) return true;
                 }
             }
@@ -621,7 +593,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     /**
      * @return true iff the given column has been marked as selected.
      */
-    public final boolean isSelected(Node variable) {
+    public boolean isSelected(Node variable) {
         return getSelection().contains(variable);
     }
 
@@ -629,46 +601,44 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Removes the column for the variable at the given index, reducing the
      * number of columns by one.
      */
-    public final void removeColumn(int index) {
-        if (index < 0 || index >= variables.size()) {
+    public void removeColumn(int index) {
+        if (index < 0 || index >= this.variables.size()) {
             throw new IllegalArgumentException("Not a column in this data set: " + index);
         }
 
-        variables.remove(index);
+        this.variables.remove(index);
 
-        int[] rows = new int[dataBox.numRows()];
+        int[] rows = new int[this.dataBox.numRows()];
 
-        for (int i = 0; i < dataBox.numRows(); i++) {
+        for (int i = 0; i < this.dataBox.numRows(); i++) {
             rows[i] = i;
         }
 
-        int[] cols = new int[dataBox.numCols()];
+        int[] cols = new int[this.dataBox.numCols()];
 
         int m = -1;
 
-        for (int i = 0; i < dataBox.numCols(); i++) {
+        for (int i = 0; i < this.dataBox.numCols(); i++) {
             if (i != index) {
                 cols[++m] = i;
             }
         }
 
-        dataBox = viewSelection(rows, cols);
+        this.dataBox = viewSelection(rows, cols);
     }
 
     private DataBox viewSelection(int[] rows, int[] cols) {
-        return dataBox.viewSelection(rows, cols);
+        return this.dataBox.viewSelection(rows, cols);
 
     }
 
     /**
      * Removes the columns for the given variable from the dataset, reducing the
      * number of columns by one.
-     *
-     * @param variable
      */
     @Override
-    public final void removeColumn(Node variable) {
-        int index = variables.indexOf(variable);
+    public void removeColumn(Node variable) {
+        int index = this.variables.indexOf(variable);
 
         if (index != -1) {
             removeColumn(index);
@@ -681,11 +651,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * ordering of the elements of vars will be the same as in the list of
      * variables in this DataSet.
      */
-    public final DataSet subsetColumns(List<Node> vars) {
-//        if (vars.isEmpty()) {
-//            throw new IllegalArgumentException("Subset must not be empty.");
-//        }
-
+    public DataSet subsetColumns(List<Node> vars) {
         if (!(getVariables().containsAll(vars))) {
             List<Node> missingVars = new ArrayList<>(vars);
             missingVars.removeAll(getVariables());
@@ -694,7 +660,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
                     "All vars must be original vars: " + missingVars);
         }
 
-        int[] rows = new int[dataBox.numRows()];
+        int[] rows = new int[this.dataBox.numRows()];
 
         for (int i = 0; i < rows.length; i++) {
             rows[i] = i;
@@ -713,51 +679,12 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 //        _dataSet.name = name + "_copy";
         _dataSet.variables = vars;
         _dataSet.selection = new HashSet<>();
-        _dataSet.multipliers = new HashMap<>(multipliers);
+        _dataSet.multipliers = new HashMap<>(this.multipliers);
 
         // Might have to delete some knowledge.
-        _dataSet.knowledge = knowledge.copy();
+        _dataSet.knowledge = this.knowledge.copy();
 
         return _dataSet;
-    }
-
-//    /**
-//     * @return true if case multipliers are being used for this data set.
-//     */
-//    public final boolean isMulipliersCollapsed() {
-//        return !getMultipliers().keySet().isEmpty();
-//    }
-//    /**
-//     * @return the case multiplise for the given case (i.e. row) in the data
-//     * set. Is this is n > 1, the interpretation is that the data set
-//     * effectively contains n copies of that case.
-//     */
-//    public final int getMultiplier(int caseNumber) {
-//        Integer multiplierInt = getMultipliers().get(caseNumber);
-//        return multiplierInt == null ? 1 : multiplierInt;
-//    }
-
-    /**
-     * Sets the case ID fo the given case numnber to the given value.
-     *
-     * @throws IllegalArgumentException if the given case ID is already used.
-     */
-    public final void setCaseId(int caseNumber, String id) {
-        if (id == null) {
-            caseIds.remove(caseNumber);
-        } else if (caseIds.values().contains(id)) {
-            throw new IllegalArgumentException("Case ID's must be unique; that one "
-                    + "has already been used: " + id);
-        } else {
-            caseIds.put(caseNumber, id);
-        }
-    }
-
-    /**
-     * @return the case ID for the given case number.
-     */
-    public final String getCaseId(int caseNumber) {
-        return caseIds.get(caseNumber);
     }
 
     /**
@@ -765,9 +692,9 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * in it is continuous. (By implication, empty datasets are both discrete
      * and continuous.)
      */
-    public final boolean isContinuous() {
+    public boolean isContinuous() {
         for (int i = 0; i < getNumColumns(); i++) {
-            Node variable = variables.get(i);
+            Node variable = this.variables.get(i);
 
             if (!(variable instanceof ContinuousVariable)) {
                 return false;
@@ -782,9 +709,9 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * it is discrete. (By implication, empty datasets are both discrete and
      * continuous.)
      */
-    public final boolean isDiscrete() {
+    public boolean isDiscrete() {
         for (int i = 0; i < getNumColumns(); i++) {
-            Node column = variables.get(i);
+            Node column = this.variables.get(i);
 
             if (!(column instanceof DiscreteVariable)) {
                 return false;
@@ -798,12 +725,12 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @return true if this is a mixed data set--that is, if it contains at
      * least one continuous column and one discrete columnn.
      */
-    public final boolean isMixed() {
+    public boolean isMixed() {
         int numContinuous = 0;
         int numDiscrete = 0;
 
         for (int i = 0; i < getNumColumns(); i++) {
-            Node column = variables.get(i);
+            Node column = this.variables.get(i);
 
             if (column instanceof ContinuousVariable) {
                 numContinuous++;
@@ -827,7 +754,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * Double.NaN, although all of the on-diagonal elements are 1.0. If that's
      * not the desired behavior, missing values can be removed or imputed first.
      */
-    public final Matrix getCorrelationMatrix() {
+    public Matrix getCorrelationMatrix() {
         if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
@@ -843,7 +770,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * that's not the desired behavior, missing values can be removed or imputed
      * first.
      */
-    public final Matrix getCovarianceMatrix() {
+    public Matrix getCovarianceMatrix() {
         if (!isContinuous()) {
             throw new IllegalStateException("Not a continuous data set.");
         }
@@ -851,32 +778,14 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         if (getNumColumns() == 0) return new Matrix(0, 0);
 
         return new CovarianceMatrix(this).getMatrix();
-
-//        TetradMatrix cov = new TetradMatrix(dataBox.numCols(), dataBox.numCols());
-//
-//        double[] x = new double[dataBox.numRows()];
-//        double[] y = new double[dataBox.numRows()];
-//
-//        for (int i = 0; i < dataBox.numCols(); i++) {
-//            for (int j = 0; j < dataBox.numCols(); j++) {
-//                for (int k = 0; k < dataBox.numRows(); k++) {
-//                    x[k] = dataBox.get(k, i).doubleValue();
-//                    y[k] = dataBox.get(k, j).doubleValue();
-//
-//                    cov.set(i, j, StatUtils.covariance(x, y));
-//                }
-//            }
-//        }
-//
-//        return cov;
     }
 
     /**
      * @return the value at the given row and column, rounded to the nearest
      * integer, or DiscreteVariable.MISSING_VALUE if the value is missing.
      */
-    public final int getInt(int row, int column) {
-        Number value = dataBox.get(row, column);
+    public int getInt(int row, int column) {
+        Number value = this.dataBox.get(row, column);
 
         if (value == null) {
             return DiscreteVariable.MISSING_VALUE;
@@ -891,8 +800,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * given row and column may be missing, in which case Double.NaN is
      * returned.
      */
-    public final double getDouble(int row, int column) {
-        Number value = dataBox.get(row, column);
+    public double getDouble(int row, int column) {
+        Number value = this.dataBox.get(row, column);
 
         if (value == null) {
             return ContinuousVariable.getDoubleMissingValue();
@@ -900,28 +809,6 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             return value.doubleValue();
         }
     }
-
-//    /**
-//     * Sets the case multiplier for the given case to the given number (must be
-//     * >= 1).
-//     */
-//    public final void setMultiplier(int caseNumber, int multiplier) {
-//        if (caseNumber < 0) {
-//            throw new IllegalArgumentException(
-//                    "Case numbers must be >= 0: " + caseNumber);
-//        }
-//
-//        if (multiplier < 0) {
-//            throw new IllegalArgumentException(
-//                    "Multipliers must be >= 0: " + multiplier);
-//        }
-//
-//        if (multiplier == 1) {
-//            getMultipliers().remove(caseNumber);
-//        } else {
-//            getMultipliers().put(caseNumber, multiplier);
-//        }
-//    }
 
     /**
      * @return a string, suitable for printing, of the dataset. Lines are
@@ -933,7 +820,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @see #setOutputDelimiter(Character)
      * @see DataWriter
      */
-    public final String toString() {
+    public String toString() {
         StringBuilder buf = new StringBuilder();
         List<Node> variables = getVariables();
 
@@ -943,7 +830,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             buf.append(variables.get(i));
 
             if (i < getNumColumns() - 1) {
-                buf.append(outputDelimiter);
+                buf.append(this.outputDelimiter);
             }
         }
 
@@ -961,7 +848,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
                     }
 
                     if (j < getNumColumns() - 1) {
-                        buf.append(outputDelimiter);
+                        buf.append(this.outputDelimiter);
                     }
                 } else if (variable instanceof DiscreteVariable) {
                     DiscreteVariable _variable = (DiscreteVariable) variable;
@@ -972,7 +859,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
                     } else {
                         String category = _variable.getCategory(value);
 
-                        if (category.indexOf((int) outputDelimiter) == -1) {
+                        if (category.indexOf(this.outputDelimiter) == -1) {
                             buf.append(category);
                         } else {
                             buf.append("\"").append(category).append("\"");
@@ -980,7 +867,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
                     }
 
                     if (j < getNumColumns() - 1) {
-                        buf.append(outputDelimiter);
+                        buf.append(this.outputDelimiter);
                     }
                 } else {
                     throw new IllegalStateException(
@@ -995,8 +882,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 
         buf.append("\n");
 
-        if (knowledge != null && !knowledge.isEmpty()) {
-            buf.append(knowledge);
+        if (this.knowledge != null && !this.knowledge.isEmpty()) {
+            buf.append(this.knowledge);
         }
 
         return buf.toString();
@@ -1016,12 +903,12 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @throws IllegalStateException if this is not a continuous data set.
      * @see #getVariables
      */
-    public final Matrix getDoubleData() {
-        Matrix copy = new Matrix(dataBox.numRows(), dataBox.numCols());
+    public Matrix getDoubleData() {
+        Matrix copy = new Matrix(this.dataBox.numRows(), this.dataBox.numCols());
 
-        for (int i = 0; i < dataBox.numRows(); i++) {
-            for (int j = 0; j < dataBox.numCols(); j++) {
-                Number number = dataBox.get(i, j);
+        for (int i = 0; i < this.dataBox.numRows(); i++) {
+            for (int j = 0; j < this.dataBox.numCols(); j++) {
+                Number number = this.dataBox.get(i, j);
                 if (number == null) {
                     copy.set(i, j, Double.NaN);
                 } else {
@@ -1037,7 +924,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @return a new data set in which the the column at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (Moved over from Purify.)
      */
-    public final DataSet subsetColumns(int[] indices) {
+    public DataSet subsetColumns(int[] indices) {
         List<Node> variables = getVariables();
         List<Node> _variables = new LinkedList<>();
 
@@ -1045,7 +932,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             _variables.add(variables.get(index));
         }
 
-        int[] rows = new int[dataBox.numRows()];
+        int[] rows = new int[this.dataBox.numRows()];
 
         for (int i = 0; i < rows.length; i++) {
             rows[i] = i;
@@ -1055,17 +942,17 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         BoxDataSet _dataSet = new BoxDataSet(_data, _variables);
 
 //        _dataSet.name = name + "_copy";
-        _dataSet.name = name;
+        _dataSet.name = this.name;
         _dataSet.variables = _variables;
         _dataSet.selection = new HashSet<>();
-        _dataSet.multipliers = new HashMap<>(multipliers);
+        _dataSet.multipliers = new HashMap<>(this.multipliers);
 
         // Might have to delete some knowledge.
-        _dataSet.knowledge = knowledge.copy();
+        _dataSet.knowledge = this.knowledge.copy();
         return _dataSet;
     }
 
-    public final DataSet subsetRows(int[] rows) {
+    public DataSet subsetRows(int[] rows) {
         int[] cols = new int[this.dataBox.numCols()];
 
         for (int i = 0; i < cols.length; i++) {
@@ -1081,7 +968,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     }
 
     @Override
-    public final DataSet subsetRowsColumns(int[] rows, int[] columns) {
+    public DataSet subsetRowsColumns(int[] rows, int[] columns) {
         List<Node> variables = getVariables();
         List<Node> _variables = new LinkedList<>();
 
@@ -1094,63 +981,31 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         BoxDataSet _dataSet = new BoxDataSet(_data, _variables);
 
 //        _dataSet.name = name + "_copy";
-        _dataSet.name = name;
+        _dataSet.name = this.name;
         _dataSet.variables = _variables;
         _dataSet.selection = new HashSet<>();
-        _dataSet.multipliers = new HashMap<>(multipliers);
+        _dataSet.multipliers = new HashMap<>(this.multipliers);
 
         // Might have to delete some knowledge.
-        _dataSet.knowledge = knowledge.copy();
+        _dataSet.knowledge = this.knowledge.copy();
         return _dataSet;
     }
 
     /**
-     * Shifts the given column
-     */
-    public final void shiftColumnDown(int row, int col, int numRowsShifted) {
-
-        if (row >= getNumRows() || col >= getNumColumns()) {
-            throw new IllegalArgumentException("Out of range:  row = " + row + " col = " + col);
-        }
-
-        int lastRow = -1;
-
-        for (int i = getNumRows() - 1; i >= row; i--) {
-            if (dataBox.get(i, col) != null) {
-                lastRow = i;
-                break;
-            }
-        }
-
-        if (lastRow == -1) {
-            return;
-        }
-
-        resize(getNumRows() + numRowsShifted, getNumColumns());
-
-        for (int i = getNumRows() - 1; i >= row + numRowsShifted; i--) {
-            dataBox.set(i, col, dataBox.get(i - numRowsShifted, col));
-            dataBox.set(i - numRowsShifted, col, null);
-        }
-    }
-
-    /**
      * Removes the given columns from the data set.
-     *
-     * @param cols
      */
     @Override
-    public final void removeCols(int[] cols) {
-        int[] rows = new int[dataBox.numRows()];
+    public void removeCols(int[] cols) {
+        int[] rows = new int[this.dataBox.numRows()];
 
-        for (int i = 0; i < dataBox.numRows(); i++) {
+        for (int i = 0; i < this.dataBox.numRows(); i++) {
             rows[i] = i;
         }
 
-        int[] retainedCols = new int[variables.size() - cols.length];
+        int[] retainedCols = new int[this.variables.size() - cols.length];
         int i = -1;
 
-        for (int j = 0; j < variables.size(); j++) {
+        for (int j = 0; j < this.variables.size(); j++) {
             if (Arrays.binarySearch(cols, j) < 0) {
                 retainedCols[++i] = j;
             }
@@ -1159,46 +1014,42 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         List<Node> retainedVars = new LinkedList<>();
 
         for (int retainedCol : retainedCols) {
-            retainedVars.add(variables.get(retainedCol));
+            retainedVars.add(this.variables.get(retainedCol));
         }
 
-        dataBox = viewSelection(rows, cols);
-        variables = retainedVars;
-        selection = new HashSet<>();
-        multipliers = new HashMap<>(multipliers);
-        knowledge = knowledge.copy(); // Might have to delete some knowledge.
+        this.dataBox = viewSelection(rows, cols);
+        this.variables = retainedVars;
+        this.selection = new HashSet<>();
+        this.multipliers = new HashMap<>(this.multipliers);
+        this.knowledge = this.knowledge.copy(); // Might have to delete some knowledge.
     }
 
     /**
      * Removes the given rows from the data set.
      */
-    public final void removeRows(int[] selectedRows) {
+    public void removeRows(int[] selectedRows) {
 
-        int[] cols = new int[dataBox.numCols()];
+        int[] cols = new int[this.dataBox.numCols()];
 
-        for (int i = 0; i < dataBox.numCols(); i++) {
+        for (int i = 0; i < this.dataBox.numCols(); i++) {
             cols[i] = i;
         }
 
-        int[] retainedRows = new int[dataBox.numRows() - selectedRows.length];
+        int[] retainedRows = new int[this.dataBox.numRows() - selectedRows.length];
         int i = -1;
 
-        for (int j = 0; j < dataBox.numRows(); j++) {
+        for (int j = 0; j < this.dataBox.numRows(); j++) {
             if (Arrays.binarySearch(selectedRows, j) < 0) {
                 retainedRows[++i] = j;
             }
         }
 
-        dataBox = viewSelection(retainedRows, cols);
-        selection = new HashSet<>();
-        multipliers = new HashMap<>(multipliers);
-        knowledge = knowledge.copy(); // Might have to delete some knowledge.
+        this.dataBox = viewSelection(retainedRows, cols);
+        this.selection = new HashSet<>();
+        this.multipliers = new HashMap<>(this.multipliers);
+        this.knowledge = this.knowledge.copy(); // Might have to delete some knowledge.
     }
 
-    /**
-     * @param obj
-     * @return
-     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -1226,7 +1077,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             return false;
         }
 
-        Node[] nodes = getVariables().toArray(new Node[getVariables().size()]);
+        Node[] nodes = getVariables().toArray(new Node[0]);
         for (int i = 0; i < getNumRows(); i++) {
             for (int j = 0; j < getNumColumns(); j++) {
                 Node variable = nodes[j];
@@ -1236,7 +1087,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
                     if (Double.isNaN(val) ^ Double.isNaN(otherVal)) {
                         return false;
                     } else if (!(Double.isNaN(val) && Double.isNaN(otherVal))) {
-                        if (Double.compare(Double.parseDouble(nf.format(val)), Double.parseDouble(nf.format(otherVal))) != 0) {
+                        if (Double.compare(Double.parseDouble(this.nf.format(val)), Double.parseDouble(this.nf.format(otherVal))) != 0) {
                             return false;
                         }
                     }
@@ -1258,7 +1109,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 
     @Override
     public DataSet like() {
-        return new BoxDataSet(dataBox.like(), variables);
+        return new BoxDataSet(this.dataBox.like(), this.variables);
     }
 
     public void setNumberFormat(NumberFormat nf) {
@@ -1291,11 +1142,11 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 
         Collections.shuffle(permutation);
 
-        DataBox data2 = dataBox.like();
+        DataBox data2 = this.dataBox.like();
 
         for (int i = 0; i < getNumRows(); i++) {
             for (int j = 0; j < getNumColumns(); j++) {
-                data2.set(i, j, dataBox.get(permutation.get(i), j));
+                data2.set(i, j, this.dataBox.get(permutation.get(i), j));
             }
         }
 
@@ -1304,11 +1155,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
 
     //===============================PRIVATE METHODS=====================//
     private void setIntPrivate(int row, int col, int value) {
-        if (value == -99) {
-            dataBox.set(row, col, -99);
-        } else {
-            dataBox.set(row, col, value);
-        }
+        this.dataBox.set(row, col, value);
     }
 
     /**
@@ -1321,11 +1168,7 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @param cols The number of columns in the redimensioned data.
      */
     private void resize(int rows, int cols) {
-//        for (int i = getNumColumns(); i < cols; i++) {
-//            variables.add(new ContinuousVariable("X" + i));
-//        }
-
-        MixedDataBox newBox = new MixedDataBox(variables, rows);
+        MixedDataBox newBox = new MixedDataBox(this.variables, rows);
 
         for (int j = 0; j < cols; j++) {
             for (int i = 0; i < rows; i++) {
@@ -1339,13 +1182,6 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
     }
 
     /**
-     * @return the set of case multipliers..
-     */
-    private Map<Integer, Integer> getMultipliers() {
-        return multipliers;
-    }
-
-    /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of
      * the method must begin with "s.defaultReadObject();". Other than that, any
@@ -1354,9 +1190,6 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private static void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -1367,10 +1200,10 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @return the set of selected nodes, creating a new set if necessary.
      */
     private Set<Node> getSelection() {
-        if (selection == null) {
-            selection = new HashSet<>();
+        if (this.selection == null) {
+            this.selection = new HashSet<>();
         }
-        return selection;
+        return this.selection;
     }
 
     /**
@@ -1431,17 +1264,12 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
             } else if (element instanceof String) {
                 String label = (String) element;
 
-                if ("".equals(label)) {
-                    throw new IllegalArgumentException(
-                            "Blank category names not permitted.");
-                }
-
                 variable = accomodateCategory(variable, label);
                 int index = variable.getIndex(label);
 
                 if (index == -1) {
                     throw new IllegalArgumentException(
-                            "Not a category for this variable: " + index);
+                            "Not a category for this variable: " + -1);
                 }
 
                 return index;
@@ -1527,9 +1355,8 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
         List<String> newCategories = new LinkedList<>(categories);
 
         if (categories.size() > numCategories) {
-            for (int i = variable.getCategories().size() - 1;
-                 i >= numCategories; i++) {
-                newCategories.remove(i);
+            if (variable.getCategories().size() > 0) {
+                newCategories.subList(0, variable.getCategories().size()).clear();
             }
         } else if (categories.size() < numCategories) {
             for (int i = categories.size(); i < numCategories; i++) {
@@ -1555,14 +1382,14 @@ public final class BoxDataSet implements DataSet, TetradSerializable {
      * @see #setNumberFormat(java.text.NumberFormat)
      */
     public NumberFormat getNumberFormat() {
-        if (nf == null) {
-            nf = NumberFormatUtil.getInstance().getNumberFormat();
+        if (this.nf == null) {
+            this.nf = NumberFormatUtil.getInstance().getNumberFormat();
         }
 
-        return nf;
+        return this.nf;
     }
 
     public DataBox getDataBox() {
-        return dataBox;
+        return this.dataBox;
     }
 }

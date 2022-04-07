@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.parser.ExpressionParser;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -43,13 +42,13 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 class GeneralizedExpressionParameterizer extends JComponent {
-    private Node node;
-    private GeneralizedSemPm semPm;
+    private final Node node;
+    private final GeneralizedSemPm semPm;
 
-    private Map<String, Double> substitutedValues;
-    private JTextArea resultTextPane;
+    private final Map<String, Double> substitutedValues;
+    private final JTextArea resultTextPane;
 
-    public GeneralizedExpressionParameterizer(final GeneralizedSemIm semIm, final Node node) {
+    public GeneralizedExpressionParameterizer(GeneralizedSemIm semIm, Node node) {
         if (semIm == null) {
             throw new NullPointerException("SEM IM must be provided.");
         }
@@ -63,10 +62,8 @@ class GeneralizedExpressionParameterizer extends JComponent {
         }
 
         this.semPm = semIm.getSemPm();
-        GeneralizedSemIm semIm1 = semIm;
         this.node = node;
 
-        Node errorNode = this.semPm.getErrorNode(node);
         String expressionString1 = this.semPm.getNodeExpressionString(node);
 
         Set<String> otherVariables = new LinkedHashSet<>();
@@ -88,26 +85,25 @@ class GeneralizedExpressionParameterizer extends JComponent {
         }
 
 
-        Expression expression = semPm.getNodeExpression(node);
-        String expressionString = semPm.getNodeExpressionString(node);
-        final Set<String> referencedParameters = semPm.getReferencedParameters(node);
+        String expressionString = this.semPm.getNodeExpressionString(node);
+        Set<String> referencedParameters = this.semPm.getReferencedParameters(node);
 
-        substitutedValues = new HashMap<>();
+        this.substitutedValues = new HashMap<>();
 
         for (String parameter : referencedParameters) {
-            substitutedValues.put(parameter, semIm.getParameterValue(parameter));
+            this.substitutedValues.put(parameter, semIm.getParameterValue(parameter));
         }
 
         String substitutedString = semIm.getNodeSubstitutedString(node, this.substitutedValues);
 
         if (node.getNodeType() == NodeType.ERROR) {
-            resultTextPane = new JTextArea(node + " ~ " + substitutedString);
+            this.resultTextPane = new JTextArea(node + " ~ " + substitutedString);
         } else {
-            resultTextPane = new JTextArea(node + " = " + substitutedString);
+            this.resultTextPane = new JTextArea(node + " = " + substitutedString);
         }
 
-        resultTextPane.setEditable(false);
-        resultTextPane.setBackground(Color.LIGHT_GRAY);
+        this.resultTextPane.setEditable(false);
+        this.resultTextPane.setBackground(Color.LIGHT_GRAY);
 
         Box b = Box.createVerticalBox();
 
@@ -135,7 +131,7 @@ class GeneralizedExpressionParameterizer extends JComponent {
 
         // Need to keep these in a particular order.
         class MyTextField extends DoubleTextField {
-            private String parameter;
+            private final String parameter;
 
             public MyTextField(String parameter, double value, int width, NumberFormat format) {
                 super(value, width, format);
@@ -150,16 +146,14 @@ class GeneralizedExpressionParameterizer extends JComponent {
         for (String parameter : referencedParameters) {
             Box c = Box.createHorizontalBox();
             c.add(new JLabel(parameter + " = "));
-            final MyTextField field = new MyTextField(parameter, semIm.getParameterValue(parameter), 8,
+            MyTextField field = new MyTextField(parameter, semIm.getParameterValue(parameter), 8,
                     NumberFormatUtil.getInstance().getNumberFormat());
 
-            field.setFilter(new DoubleTextField.Filter() {
-                public double filter(double value, double oldValue) {
-                    GeneralizedExpressionParameterizer.this.substitutedValues.put(field.getParameter(), value);
-                    resultTextPane.setText(node + " = " + semIm.getNodeSubstitutedString(node,
-                            GeneralizedExpressionParameterizer.this.substitutedValues));
-                    return value;
-                }
+            field.setFilter((value, oldValue) -> {
+                GeneralizedExpressionParameterizer.this.substitutedValues.put(field.getParameter(), value);
+                GeneralizedExpressionParameterizer.this.resultTextPane.setText(node + " = " + semIm.getNodeSubstitutedString(node,
+                        GeneralizedExpressionParameterizer.this.substitutedValues));
+                return value;
             });
 
             c.add(field);
@@ -174,7 +168,7 @@ class GeneralizedExpressionParameterizer extends JComponent {
         b.add(b6);
         b.add(Box.createVerticalStrut(5));
 
-        JScrollPane resultScroll = new JScrollPane(resultTextPane);
+        JScrollPane resultScroll = new JScrollPane(this.resultTextPane);
         resultScroll.setPreferredSize(new Dimension(500, 50));
         Box b7 = Box.createHorizontalBox();
         b7.add(resultScroll);
@@ -191,13 +185,13 @@ class GeneralizedExpressionParameterizer extends JComponent {
     }
 
     public Map<String, Double> getParameterValues() {
-        return substitutedValues;
+        return this.substitutedValues;
     }
 
     private String parameterString(ExpressionParser parser) {
         Set<String> parameters = new LinkedHashSet<>(parser.getParameters());
 
-        for (Node _node : semPm.getNodes()) {
+        for (Node _node : this.semPm.getNodes()) {
             parameters.remove(_node.getName());
         }
 
@@ -207,8 +201,8 @@ class GeneralizedExpressionParameterizer extends JComponent {
         for (int i = 0; i < parametersList.size(); i++) {
             buf.append(parametersList.get(i));
 
-            Set<Node> referencingNodes = semPm.getReferencingNodes(parametersList.get(i));
-            referencingNodes.remove(node);
+            Set<Node> referencingNodes = this.semPm.getReferencingNodes(parametersList.get(i));
+            referencingNodes.remove(this.node);
 
             if (referencingNodes.size() > 0) {
                 buf.append("*");

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
@@ -39,64 +38,58 @@ import java.util.List;
  */
 public class ShiftSearch {
 
-    private List<DataModel> dataSets;
+    private final List<DataModel> dataSets;
 
     private int maxShift = 2;
     private IKnowledge knowledge = new Knowledge2();
     private int c = 4;
     private int maxNumShifts;
     private PrintStream out = System.out;
-    private boolean scheduleStop = false;
+    private boolean scheduleStop;
     private boolean forwardSearch;
 
     public ShiftSearch(List<DataModel> dataSets) {
-        this(dataSets, null);
-    }
-
-    public ShiftSearch(List<DataModel> dataSets, Graph measuredDag) {
         this.dataSets = dataSets;
     }
 
     public int[] search() {
-        if (maxShift < 1) {
-            throw new IllegalStateException("Max shift should be >= 1: " + maxShift);
+        if (this.maxShift < 1) {
+            throw new IllegalStateException("Max shift should be >= 1: " + this.maxShift);
         }
 
-        int numVars = ((DataSet) dataSets.get(0)).getNumColumns();
-        List<Node> nodes = dataSets.get(0).getVariables();
+        int numVars = ((DataSet) this.dataSets.get(0)).getNumColumns();
+        List<Node> nodes = this.dataSets.get(0).getVariables();
         int[] shifts;
         int[] bestshifts = new int[numVars];
-        int maxNumRows = ((DataSet) dataSets.get(0)).getNumRows() - maxShift;
+        int maxNumRows = ((DataSet) this.dataSets.get(0)).getNumRows() - this.maxShift;
 
-        double b = getAvgBic(dataSets);
+        double b = getAvgBic(this.dataSets);
 
         printShifts(bestshifts, b, nodes);
 
         DepthChoiceGenerator generator = new DepthChoiceGenerator(nodes.size(), getMaxNumShifts());
         int[] choice;
 
-        CHOICE:
         while ((choice = generator.next()) != null) {
             shifts = new int[nodes.size()];
 
             double zSize = Math.pow(getMaxShift(), choice.length);
-            int iIndex = dataSets.get(0).getVariables().indexOf(((DataSet) dataSets.get(0)).getVariable("I"));
+            int iIndex = this.dataSets.get(0).getVariables().indexOf(this.dataSets.get(0).getVariable("I"));
 
-            Z:
             for (int z = 0; z < zSize; z++) {
-                if (scheduleStop) break;
+                if (this.scheduleStop) break;
 
                 int _z = z;
 
-                for (int i = 0; i < choice.length; i++) {
-                    if (choice[i] == iIndex) {
+                for (int j : choice) {
+                    if (j == iIndex) {
                         continue;
                     }
 
-                    shifts[choice[i]] = (_z % (getMaxShift()) + 1);
+                    shifts[j] = (_z % (getMaxShift()) + 1);
 
-                    if (!forwardSearch) {
-                        shifts[choice[i]] = -shifts[choice[i]];
+                    if (!this.forwardSearch) {
+                        shifts[j] = -shifts[j];
                     }
 
                     _z /= getMaxShift();
@@ -126,7 +119,7 @@ public class ShiftSearch {
         StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < shifts.length; i++) {
-            buf.append(nodes.get(i) + "=" + shifts[i] + " ");
+            buf.append(nodes.get(i)).append("=").append(shifts[i]).append(" ");
         }
 
         buf.append(b);
@@ -136,35 +129,21 @@ public class ShiftSearch {
     private void println(String s) {
         System.out.println(s);
 
-        if (out != null) {
-            out.println(s);
-            out.flush();
+        if (this.out != null) {
+            this.out.println(s);
+            this.out.flush();
         }
     }
 
     private List<DataModel> getShiftedDataSets(int[] shifts, int maxNumRows) {
         List<DataModel> shiftedDataSets2 = new ArrayList<>();
 
-        for (DataModel dataSet : dataSets) {
+        for (DataModel dataSet : this.dataSets) {
             DataSet shiftedData = TimeSeriesUtils.createShiftedData((DataSet) dataSet, shifts);
             shiftedDataSets2.add(shiftedData);
         }
 
         return ensureNumRows(shiftedDataSets2, maxNumRows);
-
-//        return shiftedDataSets2;
-    }
-
-    private List<DataSet> truncateDataSets(List<DataSet> dataSets, int topMargin, int bottomMargin) {
-        List<DataSet> truncatedData = new ArrayList<>();
-
-        for (DataSet dataSet : dataSets) {
-            Matrix mat = dataSet.getDoubleData();
-            Matrix mat2 = mat.getPart(topMargin, mat.rows() - topMargin - bottomMargin - 1, 0, mat.columns() - 1);
-            truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
-        }
-
-        return truncatedData;
     }
 
     private List<DataModel> ensureNumRows(List<DataModel> dataSets, int numRows) {
@@ -182,15 +161,15 @@ public class ShiftSearch {
 
     private double getAvgBic(List<DataModel> dataSets) {
         SemBicScoreImages fgesScore = new SemBicScoreImages(dataSets);
-        fgesScore.setPenaltyDiscount(c);
+        fgesScore.setPenaltyDiscount(this.c);
         Fges images = new Fges(fgesScore);
-        images.setKnowledge(knowledge);
+        images.setKnowledge(this.knowledge);
         images.search();
         return -images.getModelScore() / dataSets.size();
     }
 
     public int getMaxShift() {
-        return maxShift;
+        return this.maxShift;
     }
 
     public void setMaxShift(int maxShift) {
@@ -198,7 +177,7 @@ public class ShiftSearch {
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -206,7 +185,7 @@ public class ShiftSearch {
     }
 
     public int getC() {
-        return c;
+        return this.c;
     }
 
     public void setC(int c) {
@@ -214,7 +193,7 @@ public class ShiftSearch {
     }
 
     public int getMaxNumShifts() {
-        return maxNumShifts;
+        return this.maxNumShifts;
     }
 
     public void setMaxNumShifts(int maxNumShifts) {

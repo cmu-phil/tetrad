@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -47,30 +47,23 @@ public class BCInference {
 
     private int[] counts;
 
-    private double[] logfact;
+    private final double[] logfact;
 
     private int[][] parents;
 
     /**
      * Maximum cases (samples) to read from a text file.
      */
-    private int maxCases;
+    private final int maxCases;
 
     /**
      * Maximum number of measured nodes.
      */
-    private int maxNodes;
+    private final int maxNodes;
 
     private int maxParents;
 
-    /**
-     * Max value per node.
-     */
-    private int maxValues;
-
     private int maxCells;
-
-    private int maxLogFact;
 
     private int countsTreePtr;
 
@@ -78,15 +71,15 @@ public class BCInference {
 
     private int numberOfNodes;
 
-    private int numberOfCases;
+    private final int numberOfCases;
 
-    private int[][] cases;
+    private final int[][] cases;
 
-    private int[] nodeDimension;
+    private final int[] nodeDimension;
 
-    private int scoreFn;
+    private final int scoreFn;
 
-    private double[][] scores;
+    private final double[][] scores;
 
     private int numberOfScores;
 
@@ -112,11 +105,14 @@ public class BCInference {
         this.numberOfNodes = nodeDimension.length - 2;
         this.numberOfCases = cases.length - 1;
 
-        this.maxCases = numberOfCases;
+        this.maxCases = this.numberOfCases;
 //        this.maxCases = max(numberOfCases, 1);
-        this.maxNodes = numberOfNodes;
-        this.maxValues = findMaxValue(nodeDimension);
-        this.maxLogFact = (2 * maxCases) + maxValues;
+        this.maxNodes = this.numberOfNodes;
+        /**
+         * Max value per node.
+         */
+        int maxValues = findMaxValue(nodeDimension);
+        int maxLogFact = (2 * this.maxCases) + maxValues;
 
         this.scoreFn = 1;
 
@@ -129,12 +125,12 @@ public class BCInference {
 
 
 //            maxCells = maxParents * maxValues * maxCases ;
-        maxCells = maxParents * g1 * g2 * maxCases;
+        this.maxCells = this.maxParents * g1 * g2 * this.maxCases;
 
-        this.parents = new int[maxNodes + 2][maxParents + 1];
-        this.countsTree = new int[maxCells + 1];
-        this.counts = new int[maxCells + 1];
-        this.scores = new double[maxCases + 1][4];
+        this.parents = new int[this.maxNodes + 2][this.maxParents + 1];
+        this.countsTree = new int[this.maxCells + 1];
+        this.counts = new int[this.maxCells + 1];
+        this.scores = new double[this.maxCases + 1][4];
     }
 
     /**
@@ -168,76 +164,69 @@ public class BCInference {
 
         double p = 0;
 
-        logfact[0] = 0;
-        for (int i = 1; i < logfact.length; i++) {
-            logfact[i] = log(i) + logfact[i - 1];
+        this.logfact[0] = 0;
+        for (int i = 1; i < this.logfact.length; i++) {
+            this.logfact[i] = log(i) + this.logfact[i - 1];
         }
-        logfact[0] = 0;
+        this.logfact[0] = 0;
 
-        if (z.length > maxParents) {
-            int maxConditioningNodes = z.length;  // max size of set Z in ind(X, Y, | Z)
-            maxParents = maxConditioningNodes;
+        if (z.length > this.maxParents) {
+            this.maxParents = z.length;
 
-            int[] _nodeDimension = Arrays.copyOf(nodeDimension, nodeDimension.length);
+            int[] _nodeDimension = Arrays.copyOf(this.nodeDimension, this.nodeDimension.length);
             Arrays.sort(_nodeDimension);
             int g1 = _nodeDimension[_nodeDimension.length - 1];
             int g2 = _nodeDimension[_nodeDimension.length - 2];
 
 
 //            maxCells = maxParents * maxValues * maxCases ;
-            maxCells = maxParents * g1 * g2 * maxCases;
+            this.maxCells = this.maxParents * g1 * g2 * this.maxCases;
 
-            parents = new int[maxNodes + 2][maxParents + 1];
-            countsTree = new int[maxCells + 1];
-            counts = new int[maxCells + 1];
+            this.parents = new int[this.maxNodes + 2][this.maxParents + 1];
+            this.countsTree = new int[this.maxCells + 1];
+            this.counts = new int[this.maxCells + 1];
         }
 
         int n = z[0];
-        parents[x][0] = n;
-        for (int i = 1; i <= n; i++) {
-            parents[x][i] = z[i];
-        }
+        this.parents[x][0] = n;
+        if (n >= 0) System.arraycopy(z, 1, this.parents[x], 1, n);
         double lnMarginalLikelihood_X = scoreNode(x, 1);  // the 1 indicates the scoring of X
-        parents[y][0] = n;
-        for (int i = 1; i <= n; i++) {
-            parents[y][i] = z[i];
-        }
+        this.parents[y][0] = n;
+        if (n >= 0) System.arraycopy(z, 1, this.parents[y], 1, n);
         double lnMarginalLikelihood_Y = scoreNode(y, 2);  // the 2 indicates the scoring of Y
         double lnMarginalLikelihood_X_Y = lnMarginalLikelihood_X + lnMarginalLikelihood_Y;  // lnMarginalLikelihood_X_Y is the ln of the marginal likelihood, assuming X and Y are conditionally independence given Z.
         p = priorIndependent(x, y, z); // p should be in (0, 1), and thus, not 0 or 1.
-        double lnPrior_X_Y = Math.log(p);
+        double lnPrior_X_Y = log(p);
         double score_X_Y = lnMarginalLikelihood_X_Y + lnPrior_X_Y;
 
-        numberOfNodes++;
-        int xy = numberOfNodes;  // this is a constructed variable that represents the Cartesian product of X and Y.
-        for (int casei = 1; casei <= numberOfCases; casei++) {  // derive and store values for the new variable XY.
-            int xValue = cases[casei][x];
-            int yValue = cases[casei][y];
+        this.numberOfNodes++;
+        int xy = this.numberOfNodes;  // this is a constructed variable that represents the Cartesian product of X and Y.
+        for (int casei = 1; casei <= this.numberOfCases; casei++) {  // derive and store values for the new variable XY.
+            int xValue = this.cases[casei][x];
+            int yValue = this.cases[casei][y];
 //            cases[casei][xy] = (xValue - 1) * nodeDimension[x] + yValue;  // a value in the Cartesian product of X and Y
-            if (y >= nodeDimension.length) {
-                System.out.println("y:" + y + " nodeDimension:" + nodeDimension.length);
+            if (y >= this.nodeDimension.length) {
+                System.out.println("y:" + y + " nodeDimension:" + this.nodeDimension.length);
             }
-            if (casei >= cases.length) {
-                System.out.println("casei:" + casei + " cases:" + cases.length);
+            if (casei >= this.cases.length) {
+                System.out.println("casei:" + casei + " cases:" + this.cases.length);
             }
-            if (xy >= cases[casei].length) {
-                System.out.println("xy:" + xy + " cases[casei]:" + cases[casei].length);
+            if (xy >= this.cases[casei].length) {
+                System.out.println("xy:" + xy + " cases[casei]:" + this.cases[casei].length);
             }
-            cases[casei][xy] = (xValue - 1) * nodeDimension[y] + yValue;  // a value in the Cartesian product of X and Y
+            this.cases[casei][xy] = (xValue - 1) * this.nodeDimension[y] + yValue;  // a value in the Cartesian product of X and Y
         }
-        nodeDimension[xy] = nodeDimension[x] * nodeDimension[y];
-        parents[xy][0] = n;
-        for (int i = 1; i <= n; i++) {
-            parents[xy][i] = z[i];
-        }
+        this.nodeDimension[xy] = this.nodeDimension[x] * this.nodeDimension[y];
+        this.parents[xy][0] = n;
+        if (n >= 0) System.arraycopy(z, 1, this.parents[xy], 1, n);
         double lnMarginalLikelihood_XY = scoreNode(xy, 3);  // the 3 indicates the scoring of XY, which assumes X and Y are dependent given Z;
         //Note: lnMarginalLikelihood_XY is not used, but the above call to ScoreNode creates scores^[*, 3], which is used below
-        numberOfNodes--;
-        double lnTermPrior_X_Y = Math.log(p) / numberOfScores;  // this is equal to ln(p^(1/numberOfScores))
-        double lnTermPrior_XY = Math.log(1 - Math.exp(lnTermPrior_X_Y));  // this is equal to ln(1 - p^(1/numberOfScores))
+        this.numberOfNodes--;
+        double lnTermPrior_X_Y = log(p) / this.numberOfScores;  // this is equal to ln(p^(1/numberOfScores))
+        double lnTermPrior_XY = log(1 - Math.exp(lnTermPrior_X_Y));  // this is equal to ln(1 - p^(1/numberOfScores))
         double scoreAll = 0;  // will contain the sum over the scores of all hypotheses
-        for (int i = 1; i <= numberOfScores; i++) {
-            scoreAll += lnXpluslnY(lnTermPrior_X_Y + (scores[i][1] + scores[i][2]), lnTermPrior_XY + scores[i][3]);
+        for (int i = 1; i <= this.numberOfScores; i++) {
+            scoreAll += lnXpluslnY(lnTermPrior_X_Y + (this.scores[i][1] + this.scores[i][2]), lnTermPrior_XY + this.scores[i][3]);
         }
         double probInd = Math.exp(score_X_Y - scoreAll);
 
@@ -258,7 +247,8 @@ public class BCInference {
      * @return natural log of x plus y
      */
     protected double lnXpluslnY(double lnX, double lnY) {
-        double lnYminusLnX, temp;
+        double lnYminusLnX;
+        double temp;
 
         if (lnY > lnX) {
             temp = lnX;
@@ -268,7 +258,7 @@ public class BCInference {
 
         lnYminusLnX = lnY - lnX;
 
-        if (lnYminusLnX < MININUM_EXPONENT) {
+        if (lnYminusLnX < BCInference.MININUM_EXPONENT) {
             return lnX;
         } else {
             return Math.log1p(Math.exp(lnYminusLnX)) + lnX;
@@ -289,43 +279,43 @@ public class BCInference {
     private double scoreNode(int node, int whichList) {
         double totalScore = 0;
 
-        if (parents[node][0] > 0) {
-            int firstParentSize = nodeDimension[parents[node][1]];
+        if (this.parents[node][0] > 0) {
+            int firstParentSize = this.nodeDimension[this.parents[node][1]];
             for (int i = 1; i <= firstParentSize; i++) {
-                countsTree[i] = 0;
+                this.countsTree[i] = 0;
             }
-            countsTreePtr = firstParentSize + 1;
-            countsPtr = 1;
+            this.countsTreePtr = firstParentSize + 1;
+            this.countsPtr = 1;
         } else {
-            countsTreePtr = 1;
-            countsPtr = nodeDimension[node] + 1;
-            for (int i = 1; i <= nodeDimension[node]; i++) {
-                counts[i] = 0;
+            this.countsTreePtr = 1;
+            this.countsPtr = this.nodeDimension[node] + 1;
+            for (int i = 1; i <= this.nodeDimension[node]; i++) {
+                this.counts[i] = 0;
             }
         }
 
-        for (int casei = 1; casei <= numberOfCases; casei++) {
+        for (int casei = 1; casei <= this.numberOfCases; casei++) {
             fileCase(node, casei);
         }
         int instancePtr = 1;
 
         int q = 1;  // state space size of parent instantiations
-        for (int i = 1; i <= parents[node][0]; i++) {
-            q *= nodeDimension[parents[node][i]];
+        for (int i = 1; i <= this.parents[node][0]; i++) {
+            q *= this.nodeDimension[this.parents[node][i]];
         }
 
-        numberOfScores = 0;
-        while (instancePtr < countsPtr) {
+        this.numberOfScores = 0;
+        while (instancePtr < this.countsPtr) {
             double score;
-            if (scoreFn == 1) {
-                score = scoringFn1(node, instancePtr, q, priorEquivalentSampleSize);
+            if (this.scoreFn == 1) {
+                score = scoringFn1(node, instancePtr, q, this.priorEquivalentSampleSize);
             } else {
                 score = scoringFn2(node, instancePtr);
             }
-            numberOfScores++;
-            scores[numberOfScores][whichList] = score;
+            this.numberOfScores++;
+            this.scores[this.numberOfScores][whichList] = score;
             totalScore += score;
-            instancePtr += nodeDimension[node];
+            instancePtr += this.nodeDimension[node];
         }
 
         return totalScore;
@@ -334,29 +324,29 @@ public class BCInference {
     private double scoreNode(int node) {
         double score = 0;
 
-        if (parents[node][0] > 0) {
-            int firstParentSize = nodeDimension[parents[node][1]];
+        if (this.parents[node][0] > 0) {
+            int firstParentSize = this.nodeDimension[this.parents[node][1]];
             for (int i = 1; i <= firstParentSize; i++) {
-                countsTree[i] = 0;
+                this.countsTree[i] = 0;
             }
-            countsTreePtr = firstParentSize + 1;
-            countsPtr = 1;
+            this.countsTreePtr = firstParentSize + 1;
+            this.countsPtr = 1;
         } else {
-            countsTreePtr = 1;
-            countsPtr = nodeDimension[node] + 1;
-            for (int i = 1; i <= nodeDimension[node]; i++) {
-                counts[i] = 0;
+            this.countsTreePtr = 1;
+            this.countsPtr = this.nodeDimension[node] + 1;
+            for (int i = 1; i <= this.nodeDimension[node]; i++) {
+                this.counts[i] = 0;
             }
         }
-        for (int casei = 1; casei <= numberOfCases; casei++) {
+        for (int casei = 1; casei <= this.numberOfCases; casei++) {
             fileCase(node, casei);
         }
         int instancePtr = 1;
         score = 0;
 
-        while (instancePtr < countsPtr) {
+        while (instancePtr < this.countsPtr) {
             score += scoringFn2(node, instancePtr);
-            instancePtr += nodeDimension[node];
+            instancePtr += this.nodeDimension[node];
         }
 
         return score;
@@ -370,13 +360,12 @@ public class BCInference {
     private double scoringFn1(int node, int instancePtr, double q, double pess) {
         int Nij = 0;
         double scoreOfSum = 0;
-        int r = nodeDimension[node];
-        double rr = r;
-        double pessDivQR = pess / (q * rr);
+        int r = this.nodeDimension[node];
+        double pessDivQR = pess / (q * (double) r);
         double pessDivQ = pess / q;
         double lngammPessDivQR = gammln(pessDivQR);
         for (int k = 0; k <= (r - 1); k++) {
-            int Nijk = counts[instancePtr + k];
+            int Nijk = this.counts[instancePtr + k];
             Nij += Nijk;
             scoreOfSum += gammln(Nijk + pessDivQR) - lngammPessDivQR;
         }
@@ -392,16 +381,16 @@ public class BCInference {
                 return gammlnCore(xx);
             } else {
                 double z = 1 - xx;
-                return Math.log(Math.PI * z) - gammlnCore(1 + z) - Math.log(Math.sin(Math.PI * z));
+                return log(Math.PI * z) - gammlnCore(1 + z) - log(Math.sin(Math.PI * z));
             }
         }
     }
 
     private double gammlnCore(double xx) {
-        double stp = 2.50662827465;
-        double half = 0.5;
-        double one = 1.0;
-        double fpf = 5.5;
+        final double stp = 2.50662827465;
+        final double half = 0.5;
+        final double one = 1.0;
+        final double fpf = 5.5;
         double[] cof = {
                 0,
                 76.18009173,
@@ -414,14 +403,14 @@ public class BCInference {
 
         double x = xx - one;
         double tmp = x + fpf;
-        tmp = (x + half) * Math.log(tmp) - tmp;
+        tmp = (x + half) * log(tmp) - tmp;
         double ser = one;
         for (int j = 1; j <= 6; j++) {
             x += one;
             ser += cof[j] / x;
         }
 
-        return tmp + Math.log(stp * ser);
+        return tmp + log(stp * ser);
     }
 
     /**
@@ -430,12 +419,12 @@ public class BCInference {
     private double scoringFn2(int node, int instancePtr) {
         int hits = 0;
         double scoreNI = 0;
-        for (int i = 0; i <= (nodeDimension[node] - 1); i++) {
-            int count = counts[instancePtr + i];
+        for (int i = 0; i <= (this.nodeDimension[node] - 1); i++) {
+            int count = this.counts[instancePtr + i];
             hits += count;
-            scoreNI += logfact[count];
+            scoreNI += this.logfact[count];
         }
-        scoreNI += logfact[nodeDimension[node] - 1] - logfact[hits + nodeDimension[node] - 1];
+        scoreNI += this.logfact[this.nodeDimension[node] - 1] - this.logfact[hits + this.nodeDimension[node] - 1];
 
         return scoreNI;
     }
@@ -446,18 +435,18 @@ public class BCInference {
         int cPtr = 0;
         int parenti = 0;
 
-        int nodeValue = cases[casei][node];
+        int nodeValue = this.cases[casei][node];
         if (nodeValue == 0) {
 //            System.exit(1);
             throw new IllegalArgumentException();
         }
-        int numberOfParents = parents[node][0];
+        int numberOfParents = this.parents[node][0];
 
         // Throws an exception if a missing value exists among the parents of node.
-        boolean missingValue = false;
+        final boolean missingValue = false;
         for (int i = 1; i <= numberOfParents; i++) {
-            parent = parents[node][i];
-            parentValue = cases[casei][parent];
+            parent = this.parents[node][i];
+            parentValue = this.cases[casei][parent];
             if (parentValue == 0) {
                 throw new IllegalArgumentException();
             }
@@ -466,9 +455,9 @@ public class BCInference {
         int ctPtr = 1;
         int ptr = 1;
         for (int i = 1; i <= numberOfParents; i++) {
-            parent = parents[node][i];
-            parentValue = cases[casei][parent];
-            ptr = countsTree[ctPtr + parentValue - 1];
+            parent = this.parents[node][i];
+            parentValue = this.cases[casei][parent];
+            ptr = this.countsTree[ctPtr + parentValue - 1];
 
             if (ptr > 0) {
                 ctPtr = ptr;
@@ -480,65 +469,64 @@ public class BCInference {
 
         if (ptr > 0) {
             cPtr = ctPtr;
-            counts[cPtr + nodeValue - 1]++;
         } else {
             // GrowBranch
             for (int i = parenti; i <= numberOfParents; i++) {
-                parent = parents[node][i];
-                parentValue = cases[casei][parent];
+                parent = this.parents[node][i];
+                parentValue = this.cases[casei][parent];
 
                 if (i == numberOfParents) {
-                    countsTree[ctPtr + parentValue - 1] = countsPtr;
+                    this.countsTree[ctPtr + parentValue - 1] = this.countsPtr;
                 } else {
-                    countsTree[ctPtr + parentValue - 1] = countsTreePtr;
+                    this.countsTree[ctPtr + parentValue - 1] = this.countsTreePtr;
 
-                    for (int j = countsTreePtr; j <= (countsTreePtr + nodeDimension[parents[node][i + 1]] - 1); j++) {
-                        countsTree[j] = 0;
+                    for (int j = this.countsTreePtr; j <= (this.countsTreePtr + this.nodeDimension[this.parents[node][i + 1]] - 1); j++) {
+                        this.countsTree[j] = 0;
                     }
 
-                    ctPtr = countsTreePtr;
-                    countsTreePtr += nodeDimension[parents[node][i + 1]];
+                    ctPtr = this.countsTreePtr;
+                    this.countsTreePtr += this.nodeDimension[this.parents[node][i + 1]];
 
-                    if (countsPtr > maxCells) {
-                        System.out.println(maxCells);
-                        System.out.println(countsTreePtr);
+                    if (this.countsPtr > this.maxCells) {
+                        System.out.println(this.maxCells);
+                        System.out.println(this.countsTreePtr);
                         System.out.println(ctPtr);
-                        System.out.println(countsPtr);
-                        System.out.println(nodeDimension[parents[node][i + 1]]);
+                        System.out.println(this.countsPtr);
+                        System.out.println(this.nodeDimension[this.parents[node][i + 1]]);
                         throw new IllegalArgumentException();
                     }
                 }
             }
 
-            if (countsPtr > maxCells) {
-                System.out.println(maxCells);
-                System.out.println(countsTreePtr);
+            if (this.countsPtr > this.maxCells) {
+                System.out.println(this.maxCells);
+                System.out.println(this.countsTreePtr);
                 System.out.println(ctPtr);
-                System.out.println(countsPtr);
+                System.out.println(this.countsPtr);
                 System.out.println(node);
-                System.out.println(nodeDimension[node]);
+                System.out.println(this.nodeDimension[node]);
                 throw new IllegalArgumentException();
             }
 
-            for (int j = countsPtr; j <= (countsPtr + nodeDimension[node] - 1); j++) {
-                counts[j] = 0;
+            for (int j = this.countsPtr; j <= (this.countsPtr + this.nodeDimension[node] - 1); j++) {
+                this.counts[j] = 0;
             }
 
-            cPtr = countsPtr;
+            cPtr = this.countsPtr;
 
-            countsPtr += nodeDimension[node];
-            if (countsPtr > maxCells) {
-                System.out.println(maxCells);
-                System.out.println(countsTreePtr);
+            this.countsPtr += this.nodeDimension[node];
+            if (this.countsPtr > this.maxCells) {
+                System.out.println(this.maxCells);
+                System.out.println(this.countsTreePtr);
                 System.out.println(ctPtr);
-                System.out.println("Max nodes = " + maxNodes);
+                System.out.println("Max nodes = " + this.maxNodes);
                 System.out.println("Node = " + node);
-                System.out.println(nodeDimension[node]);
+                System.out.println(this.nodeDimension[node]);
                 throw new IllegalArgumentException();
             }
             // end of GrowBranch
-            counts[cPtr + nodeValue - 1]++;
         } // end of else
+        this.counts[cPtr + nodeValue - 1]++;
     }
 
     private int findMaxValue(int[] nodeDimension) {

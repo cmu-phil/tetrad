@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -71,40 +71,40 @@ final class FontSelectionAction extends AbstractAction
 
         String[] fontFamilies =
                 graphicsEnvironment.getAvailableFontFamilyNames();
-        fontFamilyBox = new JComboBox(fontFamilies);
-        fontFamilyBox.setBackground(Color.white);
-        fontFamilyBox.addActionListener(new ActionListener() {
+        this.fontFamilyBox = new JComboBox(fontFamilies);
+        this.fontFamilyBox.setBackground(Color.white);
+        this.fontFamilyBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 resetFont();
             }
         });
 
-        String[] styles = new String[]{"Plain", "Italic", "Bold"};
-        styleBox = new JComboBox(styles);
-        styleBox.setBackground(Color.white);
-        styleBox.addActionListener(new ActionListener() {
+        String[] styles = {"Plain", "Italic", "Bold"};
+        this.styleBox = new JComboBox(styles);
+        this.styleBox.setBackground(Color.white);
+        this.styleBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 resetFont();
             }
         });
 
-        String[] sizes = new String[]{"8", "9", "10", "11", "12", "14", "16",
+        String[] sizes = {"8", "9", "10", "11", "12", "14", "16",
                 "18", "20", "22", "24", "26", "28", "36", "48", "72"};
-        sizesBox = new JComboBox(sizes);
-        sizesBox.setBackground(Color.white);
-        sizesBox.addActionListener(new ActionListener() {
+        this.sizesBox = new JComboBox(sizes);
+        this.sizesBox.setBackground(Color.white);
+        this.sizesBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 resetFont();
             }
         });
 
-        testArea = new JTextArea() {
+        this.testArea = new JTextArea() {
             public Dimension getPreferredSize() {
                 return new Dimension(100, 50);
             }
         };
-        testArea.setText("Sample...");
-        testArea.setBorder(new CompoundBorder(new LineBorder(Color.DARK_GRAY),
+        this.testArea.setText("Sample...");
+        this.testArea.setBorder(new CompoundBorder(new LineBorder(Color.DARK_GRAY),
                 new MatteBorder(3, 3, 3, 3, Color.WHITE)));
 
         Box b1 = Box.createHorizontalBox();
@@ -117,7 +117,7 @@ final class FontSelectionAction extends AbstractAction
 
         Box b4 = Box.createHorizontalBox();
         b4.add(Box.createHorizontalStrut(5));
-        b4.add(fontFamilyBox);
+        b4.add(this.fontFamilyBox);
         b2.add(b4);
 
         Box b5 = Box.createVerticalBox();
@@ -128,7 +128,7 @@ final class FontSelectionAction extends AbstractAction
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalStrut(5));
-        b7.add(styleBox);
+        b7.add(this.styleBox);
         b5.add(b7);
 
         Box b8 = Box.createVerticalBox();
@@ -139,7 +139,7 @@ final class FontSelectionAction extends AbstractAction
 
         Box b10 = Box.createHorizontalBox();
         b10.add(Box.createHorizontalStrut(5));
-        b10.add(sizesBox);
+        b10.add(this.sizesBox);
         b8.add(b10);
 
         b1.add(b2);
@@ -158,7 +158,7 @@ final class FontSelectionAction extends AbstractAction
 
         Box b13 = Box.createHorizontalBox();
         b13.add(Box.createHorizontalStrut(5));
-        b13.add(testArea);
+        b13.add(this.testArea);
 
         b11.add(b12);
         b11.add(b13);
@@ -174,9 +174,9 @@ final class FontSelectionAction extends AbstractAction
     }
 
     private void resetFont() {
-        String family = (String) fontFamilyBox.getSelectedItem();
-        String styleString = (String) styleBox.getSelectedItem();
-        String sizeString = (String) sizesBox.getSelectedItem();
+        String family = (String) this.fontFamilyBox.getSelectedItem();
+        String styleString = (String) this.styleBox.getSelectedItem();
+        String sizeString = (String) this.sizesBox.getSelectedItem();
 
         int style;
 
@@ -197,8 +197,8 @@ final class FontSelectionAction extends AbstractAction
             throw new IllegalArgumentException("Size Must be greater than or equal to 1: " + size);
         }
 
-        font = new Font(family, style, size);
-        testArea.setFont(getFont());
+        this.font = new Font(family, style, size);
+        this.testArea.setFont(getFont());
     }
 
     /**
@@ -208,7 +208,7 @@ final class FontSelectionAction extends AbstractAction
     }
 
     private Font getFont() {
-        return font;
+        return this.font;
     }
 }
 

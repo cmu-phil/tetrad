@@ -30,7 +30,7 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        final IndTestConditionalGaussianLRT test
+        IndTestConditionalGaussianLRT test
                 = new IndTestConditionalGaussianLRT(DataUtils.getMixedDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA),
                 parameters.getBoolean(Params.DISCRETIZE));

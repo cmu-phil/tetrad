@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,17 +42,17 @@ import static java.lang.Math.*;
  */
 public final class IndTestFisherZPercentIndependent implements IndependenceTest {
     private final List<Node> variables;
-    private List<DataSet> dataSets;
+    private final List<DataSet> dataSets;
     private double alpha;
     private double pValue = Double.NaN;
-    private int[] rows;
-    private List<Matrix> data;
-    private List<Matrix> ncov;
-    private Map<Node, Integer> variablesMap;
+    private final int[] rows;
+    private final List<Matrix> data;
+    private final List<Matrix> ncov;
+    private final Map<Node, Integer> variablesMap;
     private double percent = .75;
     private boolean fdr = true;
     private final ArrayList<RecursivePartialCorrelation> recursivePartialCorrelation;
-    private boolean verbose = false;
+    private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -64,29 +64,29 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
-        data = new ArrayList<>();
+        this.data = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
             dataSet = DataUtils.center(dataSet);
             Matrix _data = dataSet.getDoubleData();
-            data.add(_data);
+            this.data.add(_data);
         }
 
-        ncov = new ArrayList<>();
-        for (Matrix d : this.data) ncov.add(d.transpose().times(d).scalarMult(1.0 / d.rows()));
+        this.ncov = new ArrayList<>();
+        for (Matrix d : this.data) this.ncov.add(d.transpose().times(d).scalarMult(1.0 / d.rows()));
 
         setAlpha(alpha);
-        rows = new int[dataSets.get(0).getNumRows()];
+        this.rows = new int[dataSets.get(0).getNumRows()];
         for (int i = 0; i < getRows().length; i++) getRows()[i] = i;
 
-        variablesMap = new HashMap<>();
-        for (int i = 0; i < variables.size(); i++) {
-            variablesMap.put(variables.get(i), i);
+        this.variablesMap = new HashMap<>();
+        for (int i = 0; i < this.variables.size(); i++) {
+            this.variablesMap.put(this.variables.get(i), i);
         }
 
         this.recursivePartialCorrelation = new ArrayList<>();
-        for (Matrix covMatrix : ncov) {
-            recursivePartialCorrelation.add(new RecursivePartialCorrelation(getVariables(), covMatrix, dataSets.get(0).getNumRows()));
+        for (Matrix covMatrix : this.ncov) {
+            this.recursivePartialCorrelation.add(new RecursivePartialCorrelation(getVariables(), covMatrix, dataSets.get(0).getNumRows()));
         }
     }
 
@@ -98,21 +98,21 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         int[] all = new int[z.size() + 2];
-        all[0] = variablesMap.get(x);
-        all[1] = variablesMap.get(y);
+        all[0] = this.variablesMap.get(x);
+        all[1] = this.variablesMap.get(y);
         for (int i = 0; i < z.size(); i++) {
-            all[i + 2] = variablesMap.get(z.get(i));
+            all[i + 2] = this.variablesMap.get(z.get(i));
         }
 
-        int sampleSize = data.get(0).rows();
+        int sampleSize = this.data.get(0).rows();
         List<Double> pValues = new ArrayList<>();
 
-        for (int m = 0; m < ncov.size(); m++) {
-            Matrix _ncov = ncov.get(m).getSelection(all, all);
+        for (int m = 0; m < this.ncov.size(); m++) {
+            Matrix _ncov = this.ncov.get(m).getSelection(all, all);
             Matrix inv = _ncov.inverse();
             double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
 
-            double fisherZ = sqrt(sampleSize - z.size() - 3.0) * 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+            double fisherZ = sqrt(sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
             double pValue;
 
             if (Double.isInfinite(fisherZ)) {
@@ -124,14 +124,14 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             pValues.add(pValue);
         }
 
-        double _cutoff = alpha;
+        double _cutoff = this.alpha;
 
-        if (fdr) {
-            _cutoff = StatUtils.fdrCutoff(alpha, pValues, false);
+        if (this.fdr) {
+            _cutoff = StatUtils.fdrCutoff(this.alpha, pValues, false);
         }
 
         Collections.sort(pValues);
-        int index = (int) round((1.0 - percent) * pValues.size());
+        int index = (int) round((1.0 - this.percent) * pValues.size());
         this.pValue = pValues.get(index);
 
 //        if (this.pValue == 0) {
@@ -140,14 +140,10 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
         boolean independent = this.pValue > _cutoff;
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies",
+                TetradLogger.getInstance().forceLogMessage(
                         SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-//            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getScore()));
-            } else {
-                TetradLogger.getInstance().log("dependencies",
-                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
             }
         }
 
@@ -239,32 +235,32 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * @throws UnsupportedOperationException
      */
     public DataSet getData() {
-        return DataUtils.concatenate(dataSets);
+        return DataUtils.concatenate(this.dataSets);
     }
 
     public ICovarianceMatrix getCov() {
         List<DataSet> _dataSets = new ArrayList<>();
 
-        for (DataSet d : dataSets) {
+        for (DataSet d : this.dataSets) {
             _dataSets.add(DataUtils.standardizeData(d));
         }
 
-        return new CovarianceMatrix(DataUtils.concatenate(dataSets));
+        return new CovarianceMatrix(DataUtils.concatenate(this.dataSets));
     }
 
     @Override
     public List<DataSet> getDataSets() {
-        return dataSets;
+        return this.dataSets;
     }
 
     @Override
     public int getSampleSize() {
-        return dataSets.get(0).getNumRows();
+        return this.dataSets.get(0).getNumRows();
     }
 
     @Override
     public List<Matrix> getCovMatrices() {
-        return ncov;
+        return this.ncov;
     }
 
     @Override
@@ -276,15 +272,15 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Fisher Z, Percent Independent Percent = " + round(pValue * 100);
+        return "Fisher Z, Percent Independent Percent = " + round(this.pValue * 100);
     }
 
     public int[] getRows() {
-        return rows;
+        return this.rows;
     }
 
     public double getPercent() {
-        return percent;
+        return this.percent;
     }
 
     public void setPercent(double percent) {
@@ -297,7 +293,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -114,7 +114,7 @@ public class Ricf {
                     continue;
                 }
 
-                int[] v = new int[]{_v};
+                int[] v = {_v};
                 int[] vcomp = complement(p, v);
                 int[] all = range(0, p - 1);
                 int[] parv = pars[_v];
@@ -356,7 +356,7 @@ public class Ricf {
                     continue;
                 }
 
-                int[] v = new int[]{_v};
+                int[] v = {_v};
                 int[] vcomp = complement(p, v);
                 int[] all = range(0, p - 1);
                 int[] parv = pars[_v];
@@ -558,7 +558,7 @@ public class Ricf {
 
             int moved = -1;
 
-            while (true) {
+            do {
                 addNodesToRight(L1, L2, graph, nodes, moved);
 
                 if (isMaximal(L1, L2, graph, nodes)) {
@@ -567,10 +567,7 @@ public class Ricf {
 
                 moved = moveLastBack(L1, L2);
 
-                if (moved == -1) {
-                    break;
-                }
-            }
+            } while (moved != -1);
         }
 
         return cliques;
@@ -699,7 +696,7 @@ public class Ricf {
         return vcomp;
     }
 
-    private int[] complement(int all[], int[] remove) {
+    private int[] complement(int[] all, int[] remove) {
         Arrays.sort(remove);
         int[] vcomp = new int[all.length - remove.length];
 
@@ -756,9 +753,6 @@ public class Ricf {
             List<Node> list1 = mag.getNodesOutTo(nodes.get(i), Endpoint.ARROW);
             List<Node> list2 = mag.getNodesInTo(nodes.get(i), Endpoint.ARROW);
             list1.retainAll(list2);
-
-            List<Node> list3 = new LinkedList<>(nodes);
-            list3.removeAll(list1);
 
             int[] indices = new int[list1.size()];
 
@@ -850,12 +844,12 @@ public class Ricf {
 
     public static class RicfResult {
         private final ICovarianceMatrix covMatrix;
-        private DoubleMatrix2D shat;
-        private DoubleMatrix2D lhat;
-        private DoubleMatrix2D bhat;
-        private DoubleMatrix2D ohat;
-        private int iterations;
-        private double diff;
+        private final DoubleMatrix2D shat;
+        private final DoubleMatrix2D lhat;
+        private final DoubleMatrix2D bhat;
+        private final DoubleMatrix2D ohat;
+        private final int iterations;
+        private final double diff;
 
         public RicfResult(DoubleMatrix2D shat, DoubleMatrix2D lhat, DoubleMatrix2D bhat,
                           DoubleMatrix2D ohat, int iterations, double diff, ICovarianceMatrix covMatrix) {
@@ -871,41 +865,41 @@ public class Ricf {
         public String toString() {
 
             return "\nSigma hat\n" +
-                    MatrixUtils.toStringSquare(getShat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()) +
+                    MatrixUtils.toStringSquare(getShat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
                     "\n\nLambda hat\n" +
-                    MatrixUtils.toStringSquare(getLhat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()) +
+                    MatrixUtils.toStringSquare(getLhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
                     "\n\nBeta hat\n" +
-                    MatrixUtils.toStringSquare(getBhat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()) +
+                    MatrixUtils.toStringSquare(getBhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
                     "\n\nOmega hat\n" +
-                    MatrixUtils.toStringSquare(getOhat().toArray(), new DecimalFormat("0.0000"), covMatrix.getVariableNames()) +
+                    MatrixUtils.toStringSquare(getOhat().toArray(), new DecimalFormat("0.0000"), this.covMatrix.getVariableNames()) +
                     "\n\nIterations\n" +
                     getIterations() +
-                    "\n\ndiff = " + diff;
+                    "\n\ndiff = " + this.diff;
         }
 
         public DoubleMatrix2D getShat() {
-            return shat;
+            return this.shat;
         }
 
         public DoubleMatrix2D getLhat() {
-            return lhat;
+            return this.lhat;
         }
 
         public DoubleMatrix2D getBhat() {
-            return bhat;
+            return this.bhat;
         }
 
         public DoubleMatrix2D getOhat() {
-            return ohat;
+            return this.ohat;
         }
 
         public int getIterations() {
-            return iterations;
+            return this.iterations;
         }
     }
 
     public static class FitConGraphResult {
-        private DoubleMatrix2D shat;
+        private final DoubleMatrix2D shat;
         double deviance;
         int df;
         int iterations;
@@ -921,13 +915,13 @@ public class Ricf {
         public String toString() {
 
             return "\nSigma hat\n" +
-                    shat +
+                    this.shat +
                     "\nDeviance\n" +
-                    deviance +
+                    this.deviance +
                     "\nDf\n" +
-                    df +
+                    this.df +
                     "\nIterations\n" +
-                    iterations;
+                    this.iterations;
         }
     }
 }

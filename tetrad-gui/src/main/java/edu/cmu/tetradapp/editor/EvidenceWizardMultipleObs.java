@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -33,11 +33,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.NumberFormat;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -49,8 +45,8 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 class EvidenceWizardMultipleObs extends JPanel {
-    private UpdaterWrapper updaterWrapper;
-    private GraphWorkbench workbench;
+    private final UpdaterWrapper updaterWrapper;
+    private final GraphWorkbench workbench;
     private final EvidenceEditorObs evidenceEditor;
     private JTextArea textArea = new JTextArea("Nothing to display");
 
@@ -89,9 +85,9 @@ class EvidenceWizardMultipleObs extends JPanel {
         b0.add(Box.createHorizontalGlue());
         add(b0);
         add(Box.createVerticalStrut(10));
-        evidenceEditor = new EvidenceEditorObs(updaterWrapper.getBayesUpdater().getEvidence());
-        getUpdaterWrapper().getParams().set("evidence", evidenceEditor.getEvidence());
-        add(evidenceEditor);
+        this.evidenceEditor = new EvidenceEditorObs(updaterWrapper.getBayesUpdater().getEvidence());
+        getUpdaterWrapper().getParams().set("evidence", this.evidenceEditor.getEvidence());
+        add(this.evidenceEditor);
         add(Box.createVerticalStrut(10));
 
         Box b2 = Box.createHorizontalBox();
@@ -101,60 +97,56 @@ class EvidenceWizardMultipleObs extends JPanel {
         add(Box.createVerticalGlue());
 
         // Add listeners.
-        calcMarginalsAndJointButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                List<DisplayNode> selectedGraphNodes =
-                        getWorkbench().getSelectedNodes();
+        calcMarginalsAndJointButton.addActionListener(e -> {
+            List<DisplayNode> selectedGraphNodes =
+                    getWorkbench().getSelectedNodes();
 
-                getUpdaterWrapper().getBayesUpdater().setEvidence(evidenceEditor.getEvidence());
+            getUpdaterWrapper().getBayesUpdater().setEvidence(EvidenceWizardMultipleObs.this.evidenceEditor.getEvidence());
 
-                Graph updatedGraph = getUpdaterWrapper().getBayesUpdater().getManipulatedGraph();
-                getWorkbench().setGraph(updatedGraph);
+            Graph updatedGraph = getUpdaterWrapper().getBayesUpdater().getManipulatedGraph();
+            getWorkbench().setGraph(updatedGraph);
 
-                BayesIm manipulatedIm = getUpdaterWrapper()
-                        .getBayesUpdater().getManipulatedBayesIm();
+            BayesIm manipulatedIm = getUpdaterWrapper()
+                    .getBayesUpdater().getManipulatedBayesIm();
 
-                List<Node> selectedNodes = new LinkedList<>();
+            List<Node> selectedNodes = new LinkedList<>();
 
-                for (DisplayNode selectedGraphNode : selectedGraphNodes) {
-                    Node tetradNode = selectedGraphNode.getModelNode();
-                    String selectedNodeName = tetradNode.getName();
-                    Node selectedNode = updatedGraph.getNode(selectedNodeName);
-                    // skip latent variables
-                    if (selectedNode.getNodeType() == NodeType.MEASURED) {
-                        selectedNodes.add(selectedNode);
-                    }
+            for (DisplayNode selectedGraphNode : selectedGraphNodes) {
+                Node tetradNode = selectedGraphNode.getModelNode();
+                String selectedNodeName = tetradNode.getName();
+                Node selectedNode = updatedGraph.getNode(selectedNodeName);
+                // skip latent variables
+                if (selectedNode.getNodeType() == NodeType.MEASURED) {
+                    selectedNodes.add(selectedNode);
                 }
-
-                for (Node node : selectedNodes) {
-                    getWorkbench().selectNode(node);
-                }
-
-                Collections.sort(selectedNodes, new Comparator<Node>() {
-                    public int compare(Node o1, Node o2) {
-                        String name1 = o1.getName();
-                        String name2 = o2.getName();
-                        return name1.compareTo(name2);
-                    }
-                });
-
-                JTextArea marginalsArea = new JTextArea();
-                marginalsArea.setEditable(false);
-
-                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-                if (selectedNodes.size() == 0) {
-                    marginalsArea.append("\nNo nodes selected.");
-                } else {
-                    appendMarginals(selectedNodes, marginalsArea, manipulatedIm,
-                            nf);
-                    appendJoint(selectedNodes, marginalsArea, manipulatedIm,
-                            nf);
-                }
-
-                textArea = marginalsArea;
-                firePropertyChange("updateButtonPressed", null, null);
             }
+
+            for (Node node : selectedNodes) {
+                getWorkbench().selectNode(node);
+            }
+
+            selectedNodes.sort((o1, o2) -> {
+                String name1 = o1.getName();
+                String name2 = o2.getName();
+                return name1.compareTo(name2);
+            });
+
+            JTextArea marginalsArea = new JTextArea();
+            marginalsArea.setEditable(false);
+
+            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+            if (selectedNodes.size() == 0) {
+                marginalsArea.append("\nNo nodes selected.");
+            } else {
+                appendMarginals(selectedNodes, marginalsArea, manipulatedIm,
+                        nf);
+                appendJoint(selectedNodes, marginalsArea, manipulatedIm,
+                        nf);
+            }
+
+            EvidenceWizardMultipleObs.this.textArea = marginalsArea;
+            firePropertyChange("updateButtonPressed", null, null);
         });
     }
 
@@ -216,8 +208,8 @@ class EvidenceWizardMultipleObs extends JPanel {
 
         marginalsArea.append("\n\nJOINT OVER SELECTED VARIABLES:\n\n");
 
-        for (int i = 0; i < numNodes; i++) {
-            marginalsArea.append(selectedNodes.get(i) + "\t");
+        for (Node selectedNode : selectedNodes) {
+            marginalsArea.append(selectedNode + "\t");
         }
 
         marginalsArea.append("Joint\tLog odds\n");
@@ -257,20 +249,16 @@ class EvidenceWizardMultipleObs extends JPanel {
         return values;
     }
 
-    public BayesIm getBayesIM() {
-        return getUpdaterWrapper().getBayesUpdater().getUpdatedBayesIm();
-    }
-
     private UpdaterWrapper getUpdaterWrapper() {
-        return updaterWrapper;
+        return this.updaterWrapper;
     }
 
     private GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     public JTextArea getTextArea() {
-        return textArea;
+        return this.textArea;
     }
 }
 

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -96,8 +96,8 @@ public class TestStatUtils {
 
     @Test
     public void testRankCorr() {
-        double[] a1 = new double[]{2, 2, 3};
-        double[] a2 = new double[]{2, 3, 4};
+        double[] a1 = {2, 2, 3};
+        double[] a2 = {2, 3, 4};
 
         double r = StatUtils.rankCorrelation(a1, a2);
         assertEquals(0.87, r, 0.01);
@@ -106,7 +106,7 @@ public class TestStatUtils {
     @Test
     public void testChiSqCdf() {
         ChiSquaredDistribution dist = new ChiSquaredDistribution(1);
-        double log = Math.log(1000);
+        double log = log(1000);
         double p = 1.0 - dist.cumulativeProbability(log);
         assertEquals(0.008, p, 0.001);
     }
@@ -114,13 +114,13 @@ public class TestStatUtils {
     @Test
     public void testSpecial() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int numCases = 1000;
+        final int numCases = 1000;
 
         double x, y, z, w;
-        double _x[] = new double[numCases];
-        double _y[] = new double[numCases];
-        double _z[] = new double[numCases];
-        double _w[] = new double[numCases];
+        double[] _x = new double[numCases];
+        double[] _y = new double[numCases];
+        double[] _z = new double[numCases];
+        double[] _w = new double[numCases];
 
         for (int i = 0; i < numCases; i++) {
             x = RandomUtil.getInstance().nextDouble();
@@ -156,8 +156,8 @@ public class TestStatUtils {
     //    @Test
     public void testNongaussianSums() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int numTrials = 10;
-        int sampleSize = 1000;
+        final int numTrials = 10;
+        final int sampleSize = 1000;
         int count = 0;
         int failed = 0;
 
@@ -165,8 +165,8 @@ public class TestStatUtils {
             double d1 = RandomUtil.getInstance().nextUniform(.1, 2.0);
             double d2 = RandomUtil.getInstance().nextUniform(.1, 2.0);
 
-            double c1 = 1.0; //RandomUtil.getInstance().nextUniform(-1, 1);
-            double c2 = 1.0; //RandomUtil.getInstance().nextUniform(-1, 1);
+            final double c1 = 1.0; //RandomUtil.getInstance().nextUniform(-1, 1);
+            final double c2 = 1.0; //RandomUtil.getInstance().nextUniform(-1, 1);
 
             double[] col1 = new double[sampleSize];
             double[] col2 = new double[sampleSize];
@@ -183,15 +183,15 @@ public class TestStatUtils {
                 switch (dist1) {
                     case 0:
                         double v = RandomUtil.getInstance().nextUniform(0, 1);
-                        col1[i] = signum(v) * Math.pow(Math.abs(v), d1);
+                        col1[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
                         double v1 = RandomUtil.getInstance().nextNormal(0, 1);
-                        col1[i] = signum(v1) * Math.pow(Math.abs(v1), d1);
+                        col1[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
                         double v2 = RandomUtil.getInstance().nextBeta(2, 5);
-                        col1[i] = signum(v2) * Math.pow(v2, d1);
+                        col1[i] = signum(v2) * pow(v2, d1);
                         if (orientation1 < 0.5) col1[i] = -col1[i];
                         break;
                     default:
@@ -201,15 +201,15 @@ public class TestStatUtils {
                 switch (dist2) {
                     case 0:
                         double v = RandomUtil.getInstance().nextUniform(0, 1);
-                        col2[i] = signum(v) * Math.pow(Math.abs(v), d2);
+                        col2[i] = signum(v) * pow(abs(v), d2);
                         break;
                     case 1:
                         double v1 = RandomUtil.getInstance().nextNormal(0, 1);
-                        col2[i] = signum(v1) * Math.pow(Math.abs(v1), d2);
+                        col2[i] = signum(v1) * pow(abs(v1), d2);
                         break;
                     case 2:
                         double v2 = RandomUtil.getInstance().nextBeta(2, 5);
-                        col2[i] = signum(v2) * Math.pow(v2, d2);
+                        col2[i] = signum(v2) * pow(v2, d2);
                         if (orientation2 < 0.5) col1[i] = -col1[i];
                         break;
                     default:
@@ -237,12 +237,12 @@ public class TestStatUtils {
     //    @Test
     public void testNongaussianSums2() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int sampleSize = 1000;
+        final int sampleSize = 1000;
         int count = 0;
         int failed = 0;
 
-        double bound = 2.0;
-        double step = 0.1;
+        final double bound = 2.0;
+        final double step = 0.1;
 
         int dist1 = RandomUtil.getInstance().nextInt(4);
         int dist2 = RandomUtil.getInstance().nextInt(4);
@@ -312,7 +312,7 @@ public class TestStatUtils {
     //    @Test
     public void testNongaussianSums3() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int n = 1000;
+        final int n = 1000;
         int count = 0;
         int positive = 0;
 
@@ -328,8 +328,8 @@ public class TestStatUtils {
             double e2 = RandomUtil.getInstance().nextUniform(0, 3);
 
             for (int i = 0; i < n; i++) {
-                col1[i] = Math.pow(RandomUtil.getInstance().nextNormal(0, 1), e1);
-                col2[i] = Math.pow(RandomUtil.getInstance().nextNormal(0, 1), e2);
+                col1[i] = pow(RandomUtil.getInstance().nextNormal(0, 1), e1);
+                col2[i] = pow(RandomUtil.getInstance().nextNormal(0, 1), e2);
                 sum[i] = d1 * col1[i] + d2 * col2[i];
             }
 
@@ -351,7 +351,7 @@ public class TestStatUtils {
     //    @Test
     public void testNongaussianSums4() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int n = 1000;
+        final int n = 1000;
         int count = 0;
         int positive = 0;
 
@@ -400,8 +400,8 @@ public class TestStatUtils {
     //    @Test
     public void testNongaussianSums5() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int numTrials = 10;
-        int sampleSize = 10;
+        final int numTrials = 10;
+        final int sampleSize = 10;
         int count = 0;
         int failed = 0;
 
@@ -426,15 +426,15 @@ public class TestStatUtils {
                 switch (dist1) {
                     case 0:
                         double v = RandomUtil.getInstance().nextUniform(0, 1);
-                        col1[i] = signum(v) * Math.pow(Math.abs(v), d1);
+                        col1[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
                         double v1 = RandomUtil.getInstance().nextNormal(0, 1);
-                        col1[i] = signum(v1) * Math.pow(Math.abs(v1), d1);
+                        col1[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
                         double v2 = RandomUtil.getInstance().nextBeta(2, 5);
-                        col1[i] = signum(v2) * Math.pow(v2, d1);
+                        col1[i] = signum(v2) * pow(v2, d1);
                         if (orientation1 < 0.5) col1[i] = -col1[i];
                         break;
                     default:
@@ -444,15 +444,15 @@ public class TestStatUtils {
                 switch (dist1) {
                     case 0:
                         double v = RandomUtil.getInstance().nextUniform(0, 1);
-                        col2[i] = signum(v) * Math.pow(Math.abs(v), d1);
+                        col2[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
                         double v1 = RandomUtil.getInstance().nextNormal(0, 1);
-                        col2[i] = signum(v1) * Math.pow(Math.abs(v1), d1);
+                        col2[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
                         double v2 = RandomUtil.getInstance().nextBeta(2, 5);
-                        col2[i] = signum(v2) * Math.pow(v2, d1);
+                        col2[i] = signum(v2) * pow(v2, d1);
                         if (orientation2 < 0.5) col1[i] = -col1[i];
                         break;
                     default:
@@ -462,15 +462,15 @@ public class TestStatUtils {
                 switch (dist1) {
                     case 0:
                         double v = RandomUtil.getInstance().nextUniform(0, 1);
-                        col3[i] = signum(v) * Math.pow(Math.abs(v), d1);
+                        col3[i] = signum(v) * pow(abs(v), d1);
                         break;
                     case 1:
                         double v1 = RandomUtil.getInstance().nextNormal(0, 1);
-                        col3[i] = signum(v1) * Math.pow(Math.abs(v1), d1);
+                        col3[i] = signum(v1) * pow(abs(v1), d1);
                         break;
                     case 2:
                         double v2 = RandomUtil.getInstance().nextBeta(2, 5);
-                        col3[i] = signum(v2) * Math.pow(v2, d1);
+                        col3[i] = signum(v2) * pow(v2, d1);
                         if (orientation3 < 0.5) col1[i] = -col1[i];
                         break;
                     default:
@@ -500,13 +500,13 @@ public class TestStatUtils {
         String OS = System.getProperty("os.name").toLowerCase();
         System.out.println("OS is " + OS);
         double expectedPercentFailed = 0.6;
-        if (OS.indexOf("win") >= 0) {
+        if (OS.contains("win")) {
             expectedPercentFailed = 0.6;
-        } else if (OS.indexOf("mac") >= 0) {
+        } else if (OS.contains("mac")) {
             expectedPercentFailed = 0.6;
-        } else if (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0) {
+        } else if (OS.contains("nix") || OS.contains("nux") || OS.indexOf("aix") > 0) {
             expectedPercentFailed = 0.7;
-        } else if (OS.indexOf("sunos") >= 0) {
+        } else if (OS.contains("sunos")) {
             expectedPercentFailed = 0.6;
         } else {
             assertFalse("Your OS is not supported for this unit test!!", true);
@@ -520,8 +520,8 @@ public class TestStatUtils {
     @Test
     public void testNongaussianSums6() {
         RandomUtil.getInstance().setSeed(3829483L);
-        int numTrials = 10;
-        int sampleSize = 1000;
+        final int numTrials = 10;
+        final int sampleSize = 1000;
         int count = 0;
         int failed = 0;
 
@@ -547,35 +547,35 @@ public class TestStatUtils {
                 switch (dist1) {
                     case 0:
                         double v = RandomUtil.getInstance().nextUniform(0, 1);
-                        ex[i] = signum(v) * Math.pow(Math.abs(v), c);
+                        ex[i] = signum(v) * pow(abs(v), c);
 
                         v = RandomUtil.getInstance().nextUniform(0, 1);
-                        ey[i] = signum(v) * Math.pow(Math.abs(v), c);
+                        ey[i] = signum(v) * pow(abs(v), c);
 
                         v = RandomUtil.getInstance().nextUniform(0, 1);
-                        ez[i] = signum(v) * Math.pow(Math.abs(v), c);
+                        ez[i] = signum(v) * pow(abs(v), c);
                         break;
                     case 1:
                         double v1 = RandomUtil.getInstance().nextNormal(0, 1);
-                        ex[i] = signum(v1) * Math.pow(Math.abs(v1), c);
+                        ex[i] = signum(v1) * pow(abs(v1), c);
 
                         v1 = RandomUtil.getInstance().nextNormal(0, 1);
-                        ey[i] = signum(v1) * Math.pow(Math.abs(v1), c);
+                        ey[i] = signum(v1) * pow(abs(v1), c);
 
                         v1 = RandomUtil.getInstance().nextNormal(0, 1);
-                        ez[i] = signum(v1) * Math.pow(Math.abs(v1), c);
+                        ez[i] = signum(v1) * pow(abs(v1), c);
                         break;
                     case 2:
                         double v2 = RandomUtil.getInstance().nextBeta(2, 5);
-                        ex[i] = signum(v2) * Math.pow(v2, c);
+                        ex[i] = signum(v2) * pow(v2, c);
                         if (orientation < 0.5) ex[i] = -ex[i];
 
                         v2 = RandomUtil.getInstance().nextBeta(2, 5);
-                        ey[i] = signum(v2) * Math.pow(v2, c);
+                        ey[i] = signum(v2) * pow(v2, c);
                         if (orientation < 0.5) ey[i] = -ey[i];
 
                         v2 = RandomUtil.getInstance().nextBeta(2, 5);
-                        ez[i] = signum(v2) * Math.pow(v2, c);
+                        ez[i] = signum(v2) * pow(v2, c);
                         if (orientation < 0.5) ez[i] = -ez[i];
                         break;
                     default:
@@ -612,12 +612,12 @@ public class TestStatUtils {
     public void testLogCoshExp() {
         RandomUtil.getInstance().setSeed(3848293L);
         double sum = 0.0;
-        int numSamples = 100;
+        final int numSamples = 100;
 
         for (int i = 0; i < numSamples; i++) {
             double randNorm = RandomUtil.getInstance().nextNormal(0, 1);
 
-            double a = Math.log(Math.cosh(randNorm));
+            double a = log(cosh(randNorm));
 
             sum += a;
         }
@@ -629,14 +629,14 @@ public class TestStatUtils {
 
     @Test
     public void testMaxEnt() {
-        double[] x = new double[]{1, 2, 3, 4, 5};
+        double[] x = {1, 2, 3, 4, 5};
 
         double maxEnt = StatUtils.maxEntApprox(x);
         assertEquals(1.75, maxEnt, 0.01);
     }
 
     public void test2() {
-        double d = .06;
+        final double d = .06;
         double sum = 0.0;
 
         for (int n = 1; n <= 1000; n++) {
@@ -650,7 +650,7 @@ public class TestStatUtils {
     //    @Test
     public void test3() {
         int count = 0;
-        int total = 100000;
+        final int total = 100000;
 
         for (int i = 0; i < total; i++) {
             double v1 = RandomUtil.getInstance().nextUniform(0, 100);
@@ -672,8 +672,6 @@ public class TestStatUtils {
 
             if (holds) count++;
 
-//            System.out.println(
-            //x);// + " v1 = " + v1  + " v2 = " + v2  + " m1 = " + m1  + " m2 = " + m2);
         }
 
         System.out.println(count);

@@ -40,7 +40,7 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
 
     public VerticalDiscreteTabularDatasetFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
-        this.hasHeader = hasHeader = true;
+        this.hasHeader = this.hasHeader = true;
         this.quoteChar = '"';
     }
 
@@ -51,40 +51,40 @@ public class VerticalDiscreteTabularDatasetFileReader extends DatasetFileReader 
 
     @Override
     public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteChar);
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteChar);
 
-        boolean isDiscrete = true;
-        DataColumn[] dataColumns = hasHeader
+        final boolean isDiscrete = true;
+        DataColumn[] dataColumns = this.hasHeader
                 ? columnReader.readInDataColumns(namesOfColumnsToExclude, isDiscrete)
                 : columnReader.generateColumns(new int[0], isDiscrete);
 
-        TabularDataReader dataReader = new TabularDataFileReader(dataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteChar);
-        dataReader.setMissingDataMarker(missingDataMarker);
+        TabularDataReader dataReader = new TabularDataFileReader(this.dataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteChar);
+        dataReader.setMissingDataMarker(this.missingDataMarker);
 
-        return dataReader.read(dataColumns, hasHeader);
+        return dataReader.read(dataColumns, this.hasHeader);
     }
 
     @Override
     public Data readInData(int[] columnsToExclude) throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteChar);
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteChar);
 
-        boolean isDiscrete = true;
-        DataColumn[] dataColumns = hasHeader
+        final boolean isDiscrete = true;
+        DataColumn[] dataColumns = this.hasHeader
                 ? columnReader.readInDataColumns(columnsToExclude, isDiscrete)
                 : columnReader.generateColumns(columnsToExclude, isDiscrete);
 
-        TabularDataReader dataReader = new TabularDataFileReader(dataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteChar);
-        dataReader.setMissingDataMarker(missingDataMarker);
+        TabularDataReader dataReader = new TabularDataFileReader(this.dataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteChar);
+        dataReader.setMissingDataMarker(this.missingDataMarker);
 
-        return dataReader.read(dataColumns, hasHeader);
+        return dataReader.read(dataColumns, this.hasHeader);
     }
 
     @Override

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -56,18 +56,12 @@ class DescriptiveStatsAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot generate descriptive statistics on an empty data set.");
             return;
         }
         // if there are missing values warn and don't display descriptive statistics.
-//        if(DataUtils.containsMissingValue(dataSet)){
-//            JOptionPane.showMessageDialog(findOwner(), new JLabel("<html>Data has missing values, " +
-//                    "remove all missing values before<br>" +
-//                    "generating descriptive statistics.</html>"));
-//            return;
-//        }
 
         Node selected = null;
 
@@ -81,7 +75,7 @@ class DescriptiveStatsAction extends AbstractAction {
         JPanel panel = createDescriptiveStatsDialog(selected);
 
         EditorWindow window = new EditorWindow(panel,
-                "Descriptive Statistics", "Close", false, dataEditor);
+                "Descriptive Statistics", "Close", false, this.dataEditor);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -94,12 +88,16 @@ class DescriptiveStatsAction extends AbstractAction {
      * one is selected for you)
      */
     private JPanel createDescriptiveStatsDialog(Node selected) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
         //if nothing is selected, select something by default
-        if (selected == null && dataSet.getNumColumns() != 0) {
-            selected = dataSet.getVariable(0);
+        if (selected == null) {
+            assert dataSet != null;
+            if (dataSet.getNumColumns() != 0) {
+                selected = dataSet.getVariable(0);
+            }
         }
+        assert dataSet != null;
         DescriptiveStatsEditorPanel editorPanel = new DescriptiveStatsEditorPanel(selected, dataSet);
 
         JTextArea display = new JTextArea(DescriptiveStats.generateDescriptiveStats(dataSet,
@@ -131,7 +129,7 @@ class DescriptiveStatsAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, dataEditor);
+                JFrame.class, this.dataEditor);
     }
 
     //================================= Inner Class ======================================//

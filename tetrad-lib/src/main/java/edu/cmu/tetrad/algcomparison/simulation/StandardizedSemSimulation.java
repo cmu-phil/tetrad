@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class StandardizedSemSimulation implements Simulation {
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private SemPm pm;
     private StandardizedSemIm standardizedIm;
     private List<DataSet> dataSets = new ArrayList<>();
@@ -48,47 +48,47 @@ public class StandardizedSemSimulation implements Simulation {
     public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean("differentGraphs") && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+        return this.graphs.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Linear, Gaussian SEM simulation using " + randomGraph.getDescription();
+        return "Linear, Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 
-        if (!(randomGraph instanceof SingleGraph)) {
-            parameters.addAll(randomGraph.getParameters());
+        if (!(this.randomGraph instanceof SingleGraph)) {
+            parameters.addAll(this.randomGraph.getParameters());
         }
 
         parameters.add(Params.NUM_RUNS);
@@ -99,7 +99,7 @@ public class StandardizedSemSimulation implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
@@ -108,16 +108,16 @@ public class StandardizedSemSimulation implements Simulation {
     }
 
     private DataSet simulate(Graph graph, Parameters parameters) {
-        if (standardizedIm == null) {
+        if (this.standardizedIm == null) {
             SemPm pm = this.pm;
 
             if (pm == null) {
                 pm = new SemPm(graph);
             }
 
-            standardizedIm = new StandardizedSemIm(new SemIm(pm), parameters);
+            this.standardizedIm = new StandardizedSemIm(new SemIm(pm), parameters);
         }
 
-        return standardizedIm.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
+        return this.standardizedIm.simulateData(parameters.getInt(Params.SAMPLE_SIZE), false);
     }
 }

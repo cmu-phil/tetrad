@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -35,7 +35,7 @@ public final class DisplayNameHandler {
      * Converts the given lagged factor into a display string.
      */
     public static String getDisplayString(LaggedFactor laggedFactor) {
-        return getDisplayString(laggedFactor.getFactor(),
+        return DisplayNameHandler.getDisplayString(laggedFactor.getFactor(),
                 laggedFactor.getLag());
     }
 
@@ -51,8 +51,8 @@ public final class DisplayNameHandler {
      */
     public static LaggedFactor getLaggedFactor(String displayString) {
 
-        String factor = extractFactor_Display(displayString);
-        int lag = extractLag_Display(displayString);
+        String factor = DisplayNameHandler.extractFactor_Display(displayString);
+        int lag = DisplayNameHandler.extractLag_Display(displayString);
 
         return new LaggedFactor(factor, lag);
     }
@@ -64,9 +64,8 @@ public final class DisplayNameHandler {
     public static String extractFactor_Display(String laggedFactor) {
 
         int colonIndex = laggedFactor.indexOf(":L");
-        String factor = laggedFactor.substring(0, colonIndex);
 
-        return factor;
+        return laggedFactor.substring(0, colonIndex);
     }
 
     /**
@@ -79,10 +78,9 @@ public final class DisplayNameHandler {
     public static int extractLag_Display(String laggedFactor) {
 
         int colonIndex = laggedFactor.indexOf(":L");
-        int lag = Integer.parseInt(
-                laggedFactor.substring(colonIndex + 2, laggedFactor.length()));
 
-        return lag;
+        return Integer.parseInt(
+                laggedFactor.substring(colonIndex + 2));
     }
 }
 

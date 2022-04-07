@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -75,7 +75,7 @@ final class LoadSessionAction extends AbstractAction {
             return;
         }
 
-        final File file = chooser.getSelectedFile();
+        File file = chooser.getSelectedFile();
 //        final File file = EditorUtils.ensureSuffix(file0, "tet");
 
         if (file == null) {
@@ -122,10 +122,8 @@ final class LoadSessionAction extends AbstractAction {
                             throw e1;
                         } catch (Exception e2) {
                             e2.printStackTrace();
-                            sessionWrapper = null;
                         }
                     } else if (o instanceof SessionWrapper) {
-                        metadata = null;
                         sessionWrapper = (SessionWrapper) o;
                     }
 
@@ -169,7 +167,7 @@ final class LoadSessionAction extends AbstractAction {
     }
 
 
-    public class DecompressibleInputStream extends ObjectInputStream {
+    public static class DecompressibleInputStream extends ObjectInputStream {
 
         public DecompressibleInputStream(InputStream in) throws IOException {
             super(in);
@@ -187,14 +185,9 @@ final class LoadSessionAction extends AbstractAction {
             }
             ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
             if (localClassDescriptor != null) { // only if class implements serializable
-                final long localSUID = localClassDescriptor.getSerialVersionUID();
-                final long streamSUID = resultClassDescriptor.getSerialVersionUID();
+                long localSUID = localClassDescriptor.getSerialVersionUID();
+                long streamSUID = resultClassDescriptor.getSerialVersionUID();
                 if (streamSUID != localSUID) { // check for serialVersionUID mismatch.
-//                    final StringBuffer s = new StringBuffer("Overriding serialized class version mismatch: ");
-//                    s.append("local serialVersionUID = ").append(localSUID);
-//                    s.append(" stream serialVersionUID = ").append(streamSUID);
-//                    Exception e = new InvalidClassException(s.toString());
-//                    TetradLogger.getInstance().forceLogMessage("Potentially Fatal Deserialization Operation.");
                     resultClassDescriptor = localClassDescriptor; // Use local class descriptor for deserialization
                 }
             }

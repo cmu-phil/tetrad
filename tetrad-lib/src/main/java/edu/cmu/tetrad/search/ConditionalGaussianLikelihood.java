@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.Discretizer.Discretization;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
@@ -31,7 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static edu.cmu.tetrad.data.Discretizer.*;
+import static edu.cmu.tetrad.data.Discretizer.discretize;
+import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
 import static java.lang.Math.log;
 
 /**
@@ -68,7 +70,7 @@ public class ConditionalGaussianLikelihood {
     private List<Integer> rows;
 
     // Discretize the parents
-    private boolean discretize = false;
+    private boolean discretize;
 
     // A constant.
     private static final double LOG2PI = log(2.0 * Math.PI);
@@ -91,15 +93,15 @@ public class ConditionalGaussianLikelihood {
         }
 
         public double getLik() {
-            return lik;
+            return this.lik;
         }
 
         public int getDof() {
-            return dof;
+            return this.dof;
         }
 
         public String toString() {
-            return "lik = " + lik + " dof = " + dof;
+            return "lik = " + this.lik + " dof = " + this.dof;
         }
     }
 
@@ -114,7 +116,7 @@ public class ConditionalGaussianLikelihood {
         this.mixedDataSet = dataSet;
         this.mixedVariables = dataSet.getVariables();
 
-        continuousData = new double[dataSet.getNumColumns()][];
+        this.continuousData = new double[dataSet.getNumColumns()][];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
@@ -126,28 +128,28 @@ public class ConditionalGaussianLikelihood {
                     col[i] = dataSet.getDouble(i, j);
                 }
 
-                continuousData[j] = col;
+                this.continuousData[j] = col;
             }
         }
 
-        nodesHash = new HashMap<>();
+        this.nodesHash = new HashMap<>();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
-            nodesHash.put(v, j);
+            this.nodesHash.put(v, j);
         }
 
         this.dataSet = useErsatzVariables();
 
-        rows = new ArrayList<>();
-        for (int i = 0; i < dataSet.getNumRows(); i++) rows.add(i);
+        this.rows = new ArrayList<>();
+        for (int i = 0; i < dataSet.getNumRows(); i++) this.rows.add(i);
     }
 
     private DataSet useErsatzVariables() {
         List<Node> nodes = new ArrayList<>();
-        int numCategories = numCategoriesToDiscretize;
+        int numCategories = this.numCategoriesToDiscretize;
 
-        for (Node x : mixedVariables) {
+        for (Node x : this.mixedVariables) {
             if (x instanceof ContinuousVariable) {
                 nodes.add(new DiscreteVariable(x.getName(), numCategories));
             } else {
@@ -155,15 +157,15 @@ public class ConditionalGaussianLikelihood {
             }
         }
 
-        DataSet replaced = new BoxDataSet(new VerticalIntDataBox(mixedDataSet.getNumRows(), mixedDataSet.getNumColumns()), nodes);
+        DataSet replaced = new BoxDataSet(new VerticalIntDataBox(this.mixedDataSet.getNumRows(), this.mixedDataSet.getNumColumns()), nodes);
 
-        for (int j = 0; j < mixedVariables.size(); j++) {
-            if (mixedVariables.get(j) instanceof DiscreteVariable) {
-                for (int i = 0; i < mixedDataSet.getNumRows(); i++) {
-                    replaced.setInt(i, j, mixedDataSet.getInt(i, j));
+        for (int j = 0; j < this.mixedVariables.size(); j++) {
+            if (this.mixedVariables.get(j) instanceof DiscreteVariable) {
+                for (int i = 0; i < this.mixedDataSet.getNumRows(); i++) {
+                    replaced.setInt(i, j, this.mixedDataSet.getInt(i, j));
                 }
             } else {
-                double[] column = continuousData[j];
+                double[] column = this.continuousData[j];
 
                 double[] breakpoints = getEqualFrequencyBreakPoints(column, numCategories);
 
@@ -173,9 +175,9 @@ public class ConditionalGaussianLikelihood {
                     categoryNames.add("" + i);
                 }
 
-                Discretization d = discretize(column, breakpoints, mixedVariables.get(j).getName(), categoryNames);
+                Discretization d = discretize(column, breakpoints, this.mixedVariables.get(j).getName(), categoryNames);
 
-                for (int i = 0; i < mixedDataSet.getNumRows(); i++) {
+                for (int i = 0; i < this.mixedDataSet.getNumRows(); i++) {
                     replaced.setInt(i, j, d.getData()[i]);
                 }
             }
@@ -193,13 +195,13 @@ public class ConditionalGaussianLikelihood {
      * @return The likelihood.
      */
     public Ret getLikelihood(int i, int[] parents) {
-        Node target = mixedVariables.get(i);
+        Node target = this.mixedVariables.get(i);
 
         List<ContinuousVariable> X = new ArrayList<>();
         List<DiscreteVariable> A = new ArrayList<>();
 
         for (int p : parents) {
-            Node parent = mixedVariables.get(p);
+            Node parent = this.mixedVariables.get(p);
 
             if (parent instanceof ContinuousVariable) {
                 X.add((ContinuousVariable) parent);
@@ -217,14 +219,14 @@ public class ConditionalGaussianLikelihood {
             APlus.add((DiscreteVariable) target);
         }
 
-        Ret ret1 = likelihoodJoint(XPlus, APlus, target, rows);
-        Ret ret2 = likelihoodJoint(X, A, target, rows);
+        Ret ret1 = likelihoodJoint(XPlus, APlus, target, this.rows);
+        Ret ret2 = likelihoodJoint(X, A, target, this.rows);
 
         return new Ret(ret1.getLik() - ret2.getLik(), ret1.getDof() - ret2.getDof());
     }
 
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     public void setPenaltyDiscount(double penaltyDiscount) {
@@ -246,10 +248,10 @@ public class ConditionalGaussianLikelihood {
         A = new ArrayList<>(A);
         X = new ArrayList<>(X);
 
-        if (discretize) {
+        if (this.discretize) {
             if (target instanceof DiscreteVariable) {
                 for (ContinuousVariable x : new ArrayList<>(X)) {
-                    final Node variable = dataSet.getVariable(x.getName());
+                    Node variable = this.dataSet.getVariable(x.getName());
 
                     if (variable != null) {
                         A.add((DiscreteVariable) variable);
@@ -262,7 +264,7 @@ public class ConditionalGaussianLikelihood {
         int k = X.size();
 
         int[] continuousCols = new int[k];
-        for (int j = 0; j < k; j++) continuousCols[j] = nodesHash.get(X.get(j));
+        for (int j = 0; j < k; j++) continuousCols[j] = this.nodesHash.get(X.get(j));
 
         double c1 = 0, c2 = 0;
 
@@ -294,7 +296,7 @@ public class ConditionalGaussianLikelihood {
 
         double lnL = c1 + c2;
 
-        final int dof = f(A) * h(X) + f(A);
+        int dof = f(A) * h(X) + f(A);
 
         return new Ret(lnL, dof);
     }
@@ -305,7 +307,7 @@ public class ConditionalGaussianLikelihood {
 
     // One record.
     private double gaussianLikelihood(int k, Matrix sigma) {
-        return -0.5 * log(sigma.det()) - 0.5 * k * (1 + LOG2PI);
+        return -0.5 * log(sigma.det()) - 0.5 * k * (1 + ConditionalGaussianLikelihood.LOG2PI);
     }
 
     private Matrix cov(Matrix x) {
@@ -318,7 +320,7 @@ public class ConditionalGaussianLikelihood {
 
         for (int i = 0; i < cell.size(); i++) {
             for (int j = 0; j < continuousCols.length; j++) {
-                subset.set(i, j, continuousData[continuousCols[j]][cell.get(i)]);
+                subset.set(i, j, this.continuousData[continuousCols[j]][cell.get(i)]);
             }
         }
 
@@ -352,7 +354,7 @@ public class ConditionalGaussianLikelihood {
             List<Integer> key = new ArrayList<>();
 
             for (DiscreteVariable discrete_parent : discrete_parents) {
-                key.add((dataSet.getInt(i, dataSet.getColumn(discrete_parent))));
+                key.add((this.dataSet.getInt(i, this.dataSet.getColumn(discrete_parent))));
             }
 
             if (!keys.containsKey(key)) {

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -54,11 +54,11 @@ public class SessionEvent extends EventObject {
         super(source);
 
         switch (type) {
-            case EXECUTION_STARTED:
+            case SessionEvent.EXECUTION_STARTED:
                 this.type = type;
                 break;
 
-            case ADDING_EDGE:
+            case SessionEvent.ADDING_EDGE:
                 this.type = type;
                 break;
 
@@ -84,22 +84,22 @@ public class SessionEvent extends EventObject {
         }
 
         switch (type) {
-            case NODE_ADDED:
+            case SessionEvent.NODE_ADDED:
 
                 // Falls through!
-            case NODE_REMOVED:
+            case SessionEvent.NODE_REMOVED:
 
                 // Falls through!
-            case MODEL_CREATED:
+            case SessionEvent.MODEL_CREATED:
 
                 // Falls through!
-            case MODEL_DESTROYED:
+            case SessionEvent.MODEL_DESTROYED:
 
                 // Falls through!
-            case MODEL_UNCLEAR:
+            case SessionEvent.MODEL_UNCLEAR:
 
                 // Falls through!
-            case REPETITION_CHANGED:
+            case SessionEvent.REPETITION_CHANGED:
                 this.type = type;
                 break;
 
@@ -123,10 +123,10 @@ public class SessionEvent extends EventObject {
         this.child = child;
 
         switch (type) {
-            case PARENT_ADDED:
+            case SessionEvent.PARENT_ADDED:
 
                 // Falls through!
-            case PARENT_REMOVED:
+            case SessionEvent.PARENT_REMOVED:
                 this.type = type;
                 break;
 

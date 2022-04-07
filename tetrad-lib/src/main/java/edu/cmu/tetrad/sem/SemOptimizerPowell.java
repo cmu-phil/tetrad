@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,7 +42,7 @@ import java.util.List;
 public class SemOptimizerPowell implements SemOptimizer {
     static final long serialVersionUID = 23L;
 
-    private int numRestarts = 0;
+    private int numRestarts;
 
     //=========================CONSTRUCTORS============================//
 
@@ -65,7 +65,7 @@ public class SemOptimizerPowell implements SemOptimizer {
         double min = Double.POSITIVE_INFINITY;
         double[] point = null;
 
-        for (int count = 0; count < numRestarts + 1; count++) {
+        for (int count = 0; count < this.numRestarts + 1; count++) {
 //            System.out.println("Trial " + (count + 1));
             SemIm _sem2 = new SemIm(semIm);
 
@@ -122,7 +122,7 @@ public class SemOptimizerPowell implements SemOptimizer {
 
     @Override
     public int getNumRestarts() {
-        return numRestarts;
+        return this.numRestarts;
     }
 
 
@@ -139,7 +139,7 @@ public class SemOptimizerPowell implements SemOptimizer {
          */
         private final SemIm sem;
 
-        private List<Parameter> freeParameters;
+        private final List<Parameter> freeParameters;
 
         /**
          * Constructs a new CoefFittingFunction for the given Sem.
@@ -165,20 +165,16 @@ public class SemOptimizerPowell implements SemOptimizer {
             }
 
             for (int i = 0; i < parameters.length; i++) {
-                if (freeParameters.get(i).getType() == ParamType.VAR && parameters[i] <= 0.0) {
+                if (this.freeParameters.get(i).getType() == ParamType.VAR && parameters[i] <= 0.0) {
                     return 100000;
                 }
             }
 
-            sem.setFreeParamValues(parameters);
+            this.sem.setFreeParamValues(parameters);
 
-            double fml = sem.getScore();
+            double fml = this.sem.getScore();
 
             if (Double.isNaN(fml) || Double.isInfinite(fml)) {
-                return 100000;
-            }
-
-            if (Double.isNaN(fml)) {
                 return 100000;
             }
 

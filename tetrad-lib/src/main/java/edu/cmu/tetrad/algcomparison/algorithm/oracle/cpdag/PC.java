@@ -9,11 +9,12 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,74 +44,68 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.PcAll.ColliderDiscovery colliderDiscovery
-                    = edu.cmu.tetrad.search.PcAll.ColliderDiscovery.FAS_SEPSETS;
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                DataSet dataSet = (DataSet) dataModel;
+                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
+                }
+                dataModel = timeSeries;
+                knowledge = timeSeries.getKnowledge();
+            }
 
-            edu.cmu.tetrad.search.PcAll.ConflictRule conflictRule;
+            final PcAll.ColliderDiscovery colliderDiscovery
+                    = PcAll.ColliderDiscovery.FAS_SEPSETS;
+
+            PcAll.ConflictRule conflictRule;
 
             switch (parameters.getInt(Params.CONFLICT_RULE)) {
                 case 1:
-                    conflictRule = edu.cmu.tetrad.search.PcAll.ConflictRule.OVERWRITE;
+                    conflictRule = PcAll.ConflictRule.OVERWRITE;
                     break;
                 case 2:
-                    conflictRule = edu.cmu.tetrad.search.PcAll.ConflictRule.BIDIRECTED;
+                    conflictRule = PcAll.ConflictRule.BIDIRECTED;
                     break;
                 case 3:
-                    conflictRule = edu.cmu.tetrad.search.PcAll.ConflictRule.PRIORITY;
+                    conflictRule = PcAll.ConflictRule.PRIORITY;
                     break;
                 default:
                     throw new IllegalArgumentException("Not a choice.");
             }
 
-            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(this.test.getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
 
             if (parameters.getBoolean(Params.STABLE_FAS)) {
-                search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
+                search.setFasType(PcAll.FasType.STABLE);
             } else {
-                search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.REGULAR);
+                search.setFasType(PcAll.FasType.REGULAR);
             }
 
             if (parameters.getBoolean(Params.CONCURRENT_FAS)) {
-                search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.YES);
+                search.setConcurrent(PcAll.Concurrent.YES);
             } else {
-                search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
+                search.setConcurrent(PcAll.Concurrent.NO);
             }
 
             search.setColliderDiscovery(colliderDiscovery);
             search.setConflictRule(conflictRule);
             search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
             search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
+            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
         } else {
-            PC pcAll = new PC(test);
+            PC pcAll = new PC(this.test);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            DataSet data = (DataSet) dataModel;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -125,12 +120,12 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "PC using " + test.getDescription();
+        return "PC using " + this.test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
@@ -144,6 +139,7 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         parameters.add(Params.FAS_HEURISTIC);
         parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
         parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
+        parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
         return parameters;
@@ -151,7 +147,7 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
@@ -161,7 +157,7 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
     @Override

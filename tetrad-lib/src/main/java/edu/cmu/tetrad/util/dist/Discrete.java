@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -52,13 +52,13 @@ public class Discrete implements Distribution {
      *
      * @return The exemplar.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static Discrete serializableInstance() {
         return new Discrete(.1, .4, .9);
     }
 
     public int getNumParameters() {
-        return p.length;
+        return this.p.length;
     }
 
     public String getName() {
@@ -66,11 +66,11 @@ public class Discrete implements Distribution {
     }
 
     public void setParameter(int index, double value) {
-        p[index] = value;
+        this.p[index] = value;
     }
 
     public double getParameter(int index) {
-        return p[index];
+        return this.p[index];
     }
 
     public String getParameterName(int index) {
@@ -80,15 +80,15 @@ public class Discrete implements Distribution {
     public double nextRandom() {
         double r = RandomUtil.getInstance().nextDouble();
 
-        for (int i = 0; i < p.length; i++) {
-            if (r < p[i]) return i;
+        for (int i = 0; i < this.p.length; i++) {
+            if (r < this.p[i]) return i;
         }
 
         throw new IllegalArgumentException();
     }
 
     public String toString() {
-        return "Discrete(" + Arrays.toString(p) + ")";
+        return "Discrete(" + Arrays.toString(this.p) + ")";
     }
 
     //=============================PRIVATE METHODS=========================//

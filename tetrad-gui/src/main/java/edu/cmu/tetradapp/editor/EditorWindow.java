@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,10 +23,9 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.session.ModificationRegistery;
 import edu.cmu.tetradapp.util.EditorWindowIndirectRef;
 import edu.cmu.tetradapp.util.FinalizingEditor;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,17 +43,17 @@ public class EditorWindow extends JInternalFrame
     /**
      * Set to true if the dialog was canceled.
      */
-    private boolean canceled = false;
+    private boolean canceled;
 
     /**
      * The name of the main button; normally "Save."
      */
-    private String buttonName;
+    private final String buttonName;
 
     /**
      * The bounds of the source component.
      */
-    private Component centeringComp;
+    private final Component centeringComp;
 
     /**
      * The button the user clicks to dismiss the dialog.
@@ -72,9 +71,6 @@ public class EditorWindow extends JInternalFrame
             throw new NullPointerException("Editor must not be null.");
         }
 
-//        if (buttonName == null) {
-//            throw new NullPointerException("Button name must not be null.");
-//        }
         this.buttonName = buttonName;
         doSetup(editor, cancellable);
 
@@ -84,7 +80,7 @@ public class EditorWindow extends JInternalFrame
     }
 
     @Override
-    public int compareTo(Object o) {
+    public int compareTo(@NotNull Object o) {
         EditorWindow to = (EditorWindow) o;
         return ((EditorWindow) o).getName().compareTo(to.getName());
 
@@ -95,25 +91,17 @@ public class EditorWindow extends JInternalFrame
      */
     private void doSetup(JPanel editor, boolean cancellable) {
         this.editor = editor;
+        this.okButton = null;
 
-        addInternalFrameListener(new InternalFrameAdapter() {
-            public void InternalFrameClosing(InternalFrameEvent evt) {
-                canceled = true;
-                closeDialog();
-            }
-        });
-
-        okButton = null;
-
-        if (buttonName != null) {
-            okButton = new JButton(buttonName);
+        if (this.buttonName != null) {
+            this.okButton = new JButton(this.buttonName);
         }
 
         JButton cancelButton = new JButton("Cancel");
 
-        if (okButton != null) {
-            okButton.setPreferredSize(new Dimension(100, 50));
-            okButton.addActionListener(new OkListener());
+        if (this.okButton != null) {
+            this.okButton.setPreferredSize(new Dimension(100, 50));
+            this.okButton.addActionListener(new OkListener());
         }
 
         cancelButton.setPreferredSize(new Dimension(100, 50));
@@ -123,8 +111,8 @@ public class EditorWindow extends JInternalFrame
         Box b = Box.createHorizontalBox();
 
         b.add(Box.createHorizontalGlue());
-        if (okButton != null) {
-            b.add(okButton);
+        if (this.okButton != null) {
+            b.add(this.okButton);
         }
         b.add(Box.createHorizontalStrut(5));
 
@@ -154,7 +142,7 @@ public class EditorWindow extends JInternalFrame
         // jdramsey 5/5/02
         JRootPane root = SwingUtilities.getRootPane(this);
         if (root != null) {
-            root.setDefaultButton(okButton);
+            root.setDefaultButton(this.okButton);
         }
 
         pack();
@@ -170,22 +158,22 @@ public class EditorWindow extends JInternalFrame
     }
 
     public boolean isCanceled() {
-        return canceled;
+        return this.canceled;
     }
 
     private JComponent getEditor() {
-        return editor;
+        return this.editor;
     }
 
     public Component getCenteringComp() {
-        return centeringComp;
+        return this.centeringComp;
     }
 
     private class OkListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            if (editor instanceof FinalizingEditor) {
-                boolean ok = ((FinalizingEditor) editor).finalizeEditor();
+            if (EditorWindow.this.editor instanceof FinalizingEditor) {
+                boolean ok = ((FinalizingEditor) EditorWindow.this.editor).finalizeEditor();
                 if (ok) {
                     closeDialog();
                 }
@@ -198,7 +186,7 @@ public class EditorWindow extends JInternalFrame
     private class CancelListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            canceled = true;
+            EditorWindow.this.canceled = true;
             closeDialog();
         }
     }
@@ -207,8 +195,8 @@ public class EditorWindow extends JInternalFrame
      * Adds the action listener to the OK button if it's not null.
      */
     public void addActionListener(ActionListener l) {
-        if (okButton != null) {
-            okButton.addActionListener(l);
+        if (this.okButton != null) {
+            this.okButton.addActionListener(l);
         }
     }
 }

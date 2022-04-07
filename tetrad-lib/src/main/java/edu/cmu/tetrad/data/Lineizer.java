@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,17 +42,17 @@ final class Lineizer {
      * Stores the line read by hasMoreLines, until it is retrieved by nextLine,
      * at which point it is null.
      */
-    private String tempLine = null;
+    private String tempLine;
 
     /**
      * The comment marker.
      */
-    private String commentMarker;
+    private final String commentMarker;
 
     /**
      * The line number of the line most recently read.
      */
-    private int lineNumber = 0;
+    private int lineNumber;
 
     /**
      * Constructs a tokenizer for the given input line, using the given Pattern
@@ -74,11 +74,11 @@ final class Lineizer {
     /**
      * @return true iff more tokens exist in the line.
      */
-    public final boolean hasMoreLines() {
-        if (tempLine == null) {
+    public boolean hasMoreLines() {
+        if (this.tempLine == null) {
             try {
-                tempLine = readLine();
-                return tempLine != null;
+                this.tempLine = readLine();
+                return this.tempLine != null;
             } catch (IOException e) {
                 return false;
             }
@@ -90,18 +90,18 @@ final class Lineizer {
     /**
      * Return the next token in the line.
      */
-    public final String nextLine() {
-        lineNumber++;
+    public String nextLine() {
+        this.lineNumber++;
 
-        if (tempLine == null) {
+        if (this.tempLine == null) {
             try {
                 return readLine();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         } else {
-            String line = tempLine;
-            tempLine = null;
+            String line = this.tempLine;
+            this.tempLine = null;
             return line;
         }
     }
@@ -109,12 +109,12 @@ final class Lineizer {
     private String readLine() throws IOException {
         String line;
 
-        while ((line = reader.readLine()) != null) {
+        while ((line = this.reader.readLine()) != null) {
             if ("".equals(line)) {
                 continue;
             }
 
-            if (line.startsWith(commentMarker)) {
+            if (line.startsWith(this.commentMarker)) {
                 continue;
             }
 
@@ -125,7 +125,7 @@ final class Lineizer {
     }
 
     public int getLineNumber() {
-        return lineNumber;
+        return this.lineNumber;
     }
 }
 

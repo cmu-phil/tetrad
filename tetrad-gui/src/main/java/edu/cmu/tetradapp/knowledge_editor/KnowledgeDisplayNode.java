@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,6 +21,7 @@
 
 package edu.cmu.tetradapp.knowledge_editor;
 
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -121,7 +122,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
             else if (nodes != null) {
                 for (Node node : nodes) {
                     if (newName.equals(node.toString()) &&
-                            !newName.equals(super.getModelNode().getName())) {
+                            !newName.equals(this.getModelNode().getName())) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(), "The name '" +
                                         newName + "' is already being used." +
@@ -136,14 +137,14 @@ public class KnowledgeDisplayNode extends DisplayNode {
 
         boolean changed = false;
 
-        if (super.getModelNode() != null /*&&
+        if (this.getModelNode() != null /*&&
                 !newName.equals(super.getModelNode().getNode())*/) {
-            super.getModelNode().setName(newName);
+            this.getModelNode().setName(newName);
             changed = true;
         }
 
         if (latentCheckBox.isSelected()) {
-            super.getModelNode().setNodeType(NodeType.LATENT);
+            this.getModelNode().setNodeType(NodeType.LATENT);
             firePropertyChange("resetGraph", null, null);
             changed = true;
         }
@@ -157,7 +158,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
      * Launches an editor for this node.
      */
     public void doDoubleClickAction() {
-        doDoubleClickAction(null);
+        doDoubleClickAction(new EdgeListGraph());
     }
 
     /**
@@ -168,7 +169,7 @@ public class KnowledgeDisplayNode extends DisplayNode {
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        int stringX = 6;
+        final int stringX = 6;
         int stringY = fm.getMaxAscent() + 1;
 
         g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : DisplayNodeUtils.getNodeFillColor());

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -59,8 +59,6 @@ public class Condition2 {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new ElapsedTime());
-//        statistics.add(new PercentBidirectedEdges());
-//        statistics.add(new NumAmbiguousTriples());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
@@ -68,12 +66,6 @@ public class Condition2 {
         statistics.setWeight("AHR", 0.5);
 
         Algorithms algorithms = new Algorithms();
-
-//        algorithms.add(new Pc(new FisherZ()));
-//        algorithms.add(new PcStable(new FisherZ()));
-//        algorithms.add(new PcStableMax(new FisherZ(), false));
-//        algorithms.add(new Cpc(new FisherZ()));
-//        algorithms.add(new CpcStable(new FisherZ()));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -84,7 +76,7 @@ public class Condition2 {
 
         comparison.compareFromFiles("/Users/user/comparison-data/condition_2",
                 "/Users/user/causal-comparisons/condition_2",
-                algorithms, statistics, parameters);
+                algorithms);
     }
 
     public void compileTable() {
@@ -159,17 +151,6 @@ public class Condition2 {
 
         algorithms.add(new ExternalAlgorithmBnlearnMmhc("MMHC"));
 
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=cor"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-cor"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-mi-g"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mc-zf"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mi-g"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=mi-g-sh"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-cor"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-mi-g"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=smc-zf"));
-//        algorithms.add(new ExternalAlgorithmBnlearnMmhc("iamb_alpha_=_0.001.test=zf"));
-
         algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.01"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
         algorithms.add(new ExternalAlgorithmPcalgPc("PC-Stable_pcalg_ncores=4_alpha_=_0.01"));
@@ -184,25 +165,6 @@ public class Condition2 {
 
         algorithms.add(new ExternalAlgorithmBNTPc("learn.struct.pdag.pc_bnt_alpha_=_0.01"));
         algorithms.add(new ExternalAlgorithmBNTPc("learn.struct.pdag.pc_bnt_alpha_=_0.001"));
-
-//        algorithms.add(new ExternalAlgorithmIntersection("Intersection (Tetrad) CPC, PC_Stable-Max, CPC-Stable",
-//                new ExternalAlgorithmTetrad("CPC_(Conservative_\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"),
-//                new ExternalAlgorithmTetrad("PC-Stable-Max_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"),
-//                new ExternalAlgorithmTetrad("CPC-Stable_(Conservative_\"Peter_and_Clark\"_Stable),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001")
-//
-//        ));
-//
-//        algorithms.add(new ExternalAlgorithmIntersection("Intersection FGES alpha .001, 1e-8, penalty 2",
-//                new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_0.001"),
-//                new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Fisher_Z_Score,_alpha_=_1.0E-8"),
-//                new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score,_penalty_discount_=_2.0")
-//        ));
-//
-//        algorithms.add(new ExternalAlgorithmIntersection("Intersection PC, CPC, CPC majority, pcalg",
-//                new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"),
-//                new ExternalAlgorithmPcalgPc("CPC_pcalg_defaults_alpha_=_0.001"),
-//                new ExternalAlgorithmPcalgPc("CPC_majority_pcalg_defaults_alpha_=_0.001")
-//        ));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);

@@ -45,10 +45,10 @@ public interface TabularDataReader extends DatasetReader {
      * @param hasHeader
      * @throws IOException
      */
-    public void determineDiscreteDataColumns(DataColumn[] dataColumns, int numberOfCategories, boolean hasHeader) throws IOException;
+    void determineDiscreteDataColumns(DataColumn[] dataColumns, int numberOfCategories, boolean hasHeader) throws IOException;
 
-    public Data read(DataColumn[] dataColumns, boolean hasHeader) throws IOException;
+    Data read(DataColumn[] dataColumns, boolean hasHeader) throws IOException;
 
-    public Data read(DataColumn[] dataColumns, boolean hasHeader, Metadata metadata) throws IOException;
+    Data read(DataColumn[] dataColumns, boolean hasHeader, Metadata metadata) throws IOException;
 
 }

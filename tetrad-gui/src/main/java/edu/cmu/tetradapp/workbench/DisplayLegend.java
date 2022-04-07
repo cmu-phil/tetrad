@@ -1,6 +1,3 @@
-/**
- *
- */
 package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
@@ -38,8 +35,8 @@ public class DisplayLegend extends JComponent implements TetradSerializableExclu
         JPanel attributesPanel = new JPanel();
         attributesPanel.setLayout(new BoxLayout(attributesPanel, BoxLayout.PAGE_AXIS));
 
-        for (String key : attributes.keySet()) {
-            Object value = attributes.get(key);
+        for (String key : this.attributes.keySet()) {
+            Object value = this.attributes.get(key);
 
             JLabel attributeLabel = new JLabel(key + ":\t" + value.toString());
             attributesPanel.add(attributeLabel);
@@ -48,7 +45,7 @@ public class DisplayLegend extends JComponent implements TetradSerializableExclu
         add(attributesPanel, BorderLayout.CENTER);
 
         // Set the bounds of the display node.
-        Dimension dim = new Dimension(150, 20 + 15 * attributes.size());
+        Dimension dim = new Dimension(150, 20 + 15 * this.attributes.size());
         setSize(dim);
 
         setBorder(BorderFactory.createLineBorder(Color.red));

@@ -19,25 +19,25 @@ import java.util.*;
 public class AdLeafTree {
 
     // The data set the tree is for.
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // Contains the root of the tree.
     private List<Vary> baseCase;
 
     // Indices of variables.
-    private Map<Node, Integer> nodesHash;
+    private final Map<Node, Integer> nodesHash;
 
     // Discrete data only.
-    private int[][] discreteData;
+    private final int[][] discreteData;
 
     // Dimensions of the discrete variables (otherwise 0).
-    private int[] dims;
+    private final int[] dims;
 
     public AdLeafTree(DataSet dataSet) {
         this.dataSet = dataSet;
 
-        discreteData = new int[dataSet.getNumColumns()][];
-        dims = new int[dataSet.getNumColumns()];
+        this.discreteData = new int[dataSet.getNumColumns()][];
+        this.dims = new int[dataSet.getNumColumns()];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
@@ -49,16 +49,16 @@ public class AdLeafTree {
                     col[i] = dataSet.getInt(i, j);
                 }
 
-                discreteData[j] = col;
-                dims[j] = ((DiscreteVariable) v).getNumCategories();
+                this.discreteData[j] = col;
+                this.dims[j] = ((DiscreteVariable) v).getNumCategories();
             }
         }
 
-        nodesHash = new HashMap<>();
+        this.nodesHash = new HashMap<>();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
-            nodesHash.put(v, j);
+            this.nodesHash.put(v, j);
         }
 
     }
@@ -72,18 +72,18 @@ public class AdLeafTree {
      * and so on, to the last variable.
      */
     public List<List<Integer>> getCellLeaves(List<DiscreteVariable> A) {
-        A.sort(Comparator.comparingInt(o -> nodesHash.get(o)));
+        A.sort(Comparator.comparingInt(this.nodesHash::get));
 
-        if (baseCase == null) {
+        if (this.baseCase == null) {
             Vary vary = new Vary();
             this.baseCase = new ArrayList<>();
-            baseCase.add(vary);
+            this.baseCase.add(vary);
         }
 
-        List<Vary> varies = baseCase;
+        List<Vary> varies = this.baseCase;
 
         for (DiscreteVariable v : A) {
-            varies = getVaries(varies, nodesHash.get(v));
+            varies = getVaries(varies, this.nodesHash.get(v));
         }
 
         List<List<Integer>> rows = new ArrayList<>();
@@ -104,31 +104,25 @@ public class AdLeafTree {
      * and so on, to the last variable.
      */
     public List<List<List<Integer>>> getCellLeaves(List<DiscreteVariable> A, DiscreteVariable B) {
-        Collections.sort(A, new Comparator<DiscreteVariable>() {
+        A.sort(Comparator.comparingInt(AdLeafTree.this.nodesHash::get));
 
-            @Override
-            public int compare(DiscreteVariable o1, DiscreteVariable o2) {
-                return Integer.compare(nodesHash.get(o1), nodesHash.get(o2));
-            }
-        });
-
-        if (baseCase == null) {
+        if (this.baseCase == null) {
             Vary vary = new Vary();
             this.baseCase = new ArrayList<>();
-            baseCase.add(vary);
+            this.baseCase.add(vary);
         }
 
-        List<Vary> varies = baseCase;
+        List<Vary> varies = this.baseCase;
 
         for (DiscreteVariable v : A) {
-            varies = getVaries(varies, nodesHash.get(v));
+            varies = getVaries(varies, this.nodesHash.get(v));
         }
 
         List<List<List<Integer>>> rows = new ArrayList<>();
 
         for (Vary vary : varies) {
             for (int i = 0; i < vary.getNumCategories(); i++) {
-                Vary subvary = vary.getSubvary(nodesHash.get(B), i);
+                Vary subvary = vary.getSubvary(this.nodesHash.get(B), i);
                 rows.add(subvary.getRows());
             }
         }
@@ -137,7 +131,7 @@ public class AdLeafTree {
     }
 
     public void setColumn(DiscreteVariable var, int[] col) {
-        discreteData[dataSet.getColumn(var)] = col;
+        this.discreteData[this.dataSet.getColumn(var)] = col;
     }
 
     private List<Vary> getVaries(List<Vary> varies, int v) {
@@ -161,15 +155,15 @@ public class AdLeafTree {
         // Base case.
         public Vary() {
             List<Integer> _rows = new ArrayList<>();
-            for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int i = 0; i < AdLeafTree.this.dataSet.getNumRows(); i++) {
                 _rows.add(i);
             }
 
-            subVaries.add(new HashMap<Integer, Vary>());
-            numCategories = 1;
-            rows.add(_rows);
-            subVaries = new ArrayList<>();
-            subVaries.add(new HashMap<Integer, Vary>());
+            this.subVaries.add(new HashMap<>());
+            this.numCategories = 1;
+            this.rows.add(_rows);
+            this.subVaries = new ArrayList<>();
+            this.subVaries.add(new HashMap<>());
         }
 
         public Vary(int col, int numCategories, List<Integer> supRows, int[][] discreteData) {
@@ -177,38 +171,38 @@ public class AdLeafTree {
             this.numCategories = numCategories;
 
             for (int i = 0; i < numCategories; i++) {
-                rows.add(new ArrayList<Integer>());
+                this.rows.add(new ArrayList<>());
             }
 
             for (int i = 0; i < numCategories; i++) {
-                subVaries.add(new HashedMap<Integer, Vary>());
+                this.subVaries.add(new HashedMap<>());
             }
 
             for (int i : supRows) {
                 int index = discreteData[col][i];
                 if (index != -99) {
-                    rows.get(index).add(i);
+                    this.rows.get(index).add(i);
                 }
             }
         }
 
         public List<List<Integer>> getRows() {
-            return rows;
+            return this.rows;
         }
 
         public Vary getSubvary(int w, int cat) {
-            Vary vary = subVaries.get(cat).get(w);
+            Vary vary = this.subVaries.get(cat).get(w);
 
             if (vary == null) {
-                vary = new Vary(w, dims[w], rows.get(cat), discreteData);
-                subVaries.get(cat).put(w, vary);
+                vary = new Vary(w, AdLeafTree.this.dims[w], this.rows.get(cat), AdLeafTree.this.discreteData);
+                this.subVaries.get(cat).put(w, vary);
             }
 
             return vary;
         }
 
         public int getNumCategories() {
-            return numCategories;
+            return this.numCategories;
         }
     }
 }

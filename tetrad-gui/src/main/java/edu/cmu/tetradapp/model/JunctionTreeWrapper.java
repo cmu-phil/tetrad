@@ -90,9 +90,9 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
-            bayesUpdater = new JunctionTreeUpdater(bayesIm);
+            this.bayesUpdater = new JunctionTreeUpdater(bayesIm);
         } else {
-            bayesUpdater = new JunctionTreeUpdater(bayesIm,
+            this.bayesUpdater = new JunctionTreeUpdater(bayesIm,
                     (Evidence) params.get("evidence", null));
         }
 
@@ -148,17 +148,17 @@ public class JunctionTreeWrapper implements SessionModel, UpdaterWrapper, Unmars
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     @Override
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 
     @Override
     public ManipulatingBayesUpdater getBayesUpdater() {
-        return bayesUpdater;
+        return this.bayesUpdater;
     }
 
 }

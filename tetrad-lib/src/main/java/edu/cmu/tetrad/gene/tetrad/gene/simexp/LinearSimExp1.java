@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,7 +41,7 @@ public class LinearSimExp1 {
     /**
      * The measurement simulator.
      */
-    private MeasurementSimulator simulator;
+    private final MeasurementSimulator simulator;
 
     public LinearSimExp1(String stub) {
         this.simulator = new MeasurementSimulator(new Parameters());
@@ -71,7 +71,7 @@ public class LinearSimExp1 {
     }
 
     private UpdateFunction createFunction() {
-        String[] factors = new String[]{"G1", "G2", "G3"};
+        String[] factors = {"G1", "G2", "G3"};
 
         LagGraph lagGraph = new BasicLagGraph();
         lagGraph.addFactor(factors[0]);
@@ -97,17 +97,6 @@ public class LinearSimExp1 {
         function.setIntercept("G3", 0.4);
         function.setCoefficient("G3", new LaggedFactor("G3", 1), 0.9);
 
-        /*
-        function.setIntercept(0, 0.0);
-        function.setCoefficient(0, 0, 0.5);
-        function.setIntercept(1, 0.1);
-        function.setCoefficient(1, 0, 1.5);
-        function.setCoefficient(1, 1, -1.5);
-        function.setCoefficient(1, 2, +1.3);
-        function.setIntercept(2, -1.8);
-        function.setCoefficient(2, 0, 1.1);
-        */
-
         System.out.println(function);
 
         return function;
@@ -125,23 +114,23 @@ public class LinearSimExp1 {
         int[] timeSteps = this.simulator.getTimeSteps();
 
         out.print("Dish\tInd\t");
-        for (int i = 0; i < timeSteps.length; i++) {
+        for (int timeStep : timeSteps) {
             for (int j = 0; j < updateFunction.getNumFactors(); j++) {
-                out.print("G" + j + ":t" + timeSteps[i] + "\t");
+                out.print("G" + j + ":t" + timeStep + "\t");
             }
         }
         out.println();
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        int cellsPerDish = simulator.getNumCellsPerDish();
+        int cellsPerDish = this.simulator.getNumCellsPerDish();
 
         for (int i = 0; i < data[0][0].length; i++) {
             out.print((i / cellsPerDish + 1) + "\t");
             out.print((i + 1) + "\t");
             for (int j = 0; j < data[0].length; j++) {
-                for (int k = 0; k < data.length; k++) {
-                    out.print(nf.format(data[k][j][i]) + "\t");
+                for (double[][] datum : data) {
+                    out.print(nf.format(datum[j][i]) + "\t");
                 }
             }
             out.println();
@@ -156,22 +145,22 @@ public class LinearSimExp1 {
 
         out.print("Dish\tChip\t");
 
-        for (int i = 0; i < timeSteps.length; i++) {
+        for (int timeStep : timeSteps) {
             for (int j = 0; j < updateFunction.getNumFactors(); j++) {
-                out.print("G" + j + ":t" + timeSteps[i] + "\t");
+                out.print("G" + j + ":t" + timeStep + "\t");
             }
         }
         out.println();
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        int samplesPerDish = simulator.getNumSamplesPerDish();
+        int samplesPerDish = this.simulator.getNumSamplesPerDish();
 
         for (int i = 0; i < data[0][0].length; i++) {
             out.print((i / samplesPerDish + 1) + "\t");
             out.print((i + 1) + "\t");
             for (int j = 0; j < data[0].length; j++) {
-                for (int k = 0; k < data.length; k++) {
-                    out.print(nf.format(data[k][j][i]) + "\t");
+                for (double[][] datum : data) {
+                    out.print(nf.format(datum[j][i]) + "\t");
                 }
             }
             out.println();

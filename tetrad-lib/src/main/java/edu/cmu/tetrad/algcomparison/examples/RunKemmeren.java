@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FAS;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DoubleDataBox;
@@ -27,8 +26,6 @@ public class RunKemmeren {
 
 //        Path path = Paths.get("/home/bandrews/Desktop/Kemmeren/data_kemmeren_centered.txt");
         Path path = Paths.get("/home/bandrews/Desktop/Kemmeren/obs_data.txt");
-//        Path path = Paths.get("/home/bandrews/Desktop/Kemmeren/subsampled_data.txt");
-//        Path path = Paths.get("/home/bandrews/Desktop/test.txt");
 
         System.out.println("Loading Data");
 
@@ -48,26 +45,6 @@ public class RunKemmeren {
 
             Knowledge2 knowledge = new Knowledge2(dataSet.getVariableNames());
 
-//            Set<String> meta = new HashSet<>();
-//            Set<String> domain = new HashSet<>();
-//            for(String node : dataSet.getVariableNames()) {
-//                if(node.startsWith("I_")) {
-//                    meta.add(node);
-//                    knowledge.addToTier(0, node);
-//                } else {
-//                    domain.add(node);
-//                    knowledge.addToTier(1, node);
-//                }
-//            }
-//            knowledge.addKnowledgeGroup(new KnowledgeGroup(2, meta, domain));
-//            knowledge.setTierForbiddenWithin(0, true);
-//
-//            for(String node : meta) {
-//                if(domain.contains(node.substring(2))) {
-//                    knowledge.setRequired(node, node.substring(2));
-//                }
-//            }
-
             System.out.println("Running Search");
 
             Parameters parameters = new Parameters();
@@ -80,7 +57,6 @@ public class RunKemmeren {
             parameters.set("sepsetsReturnEmptyIfNotFixed", true);
             parameters.set("verbose", true);
 
-            SemBicScore score = new SemBicScore();
             SemBicTest test = new SemBicTest();
 
 //            Fges search = new Fges(score);

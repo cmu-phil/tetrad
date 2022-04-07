@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -56,11 +56,11 @@ public class CPDAGFitEditor extends JPanel {
     //============================ Private Methods =========================//
 
     private void setup() {
-        JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
+        JTabbedPane pane = new JTabbedPane(SwingConstants.LEFT);
 
-        DataModelList data = comparison.getDataModelList();
-        List<BayesIm> bayesIms = comparison.getBayesIms();
-        List<SemPm> semPms = comparison.getSemPms();
+        DataModelList data = this.comparison.getDataModelList();
+        List<BayesIm> bayesIms = this.comparison.getBayesIms();
+        List<SemPm> semPms = this.comparison.getSemPms();
 
         if (bayesIms != null && semPms != null) {
             throw new IllegalArgumentException("That's weird; both Bayes and SEM estimations were done. Please complain.");

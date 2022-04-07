@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,14 +39,14 @@ public class TestFdr {
 
     @Test
     public void testSimpleCase() {
-        double[] p = new double[]{
+        double[] p = {
                 .8, .01, .2, .07, .003, .9, .05, .03, .0001
         };
 
         List<Double> pValues = new ArrayList<>();
         for (double _p : p) pValues.add(_p);
 
-        double alpha = 0.05;
+        final double alpha = 0.05;
         boolean negativelyCorrelated = false;
 
         double cutoff = StatUtils.fdrCutoff(alpha, pValues, negativelyCorrelated);

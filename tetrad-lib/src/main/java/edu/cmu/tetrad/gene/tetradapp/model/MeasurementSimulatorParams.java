@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,7 +42,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
     /**
      * @serial Cannot be null.
      */
-    private MeasurementSimulator simulator;
+    private final MeasurementSimulator simulator;
     private boolean includeDishAndChipVariables;
 
     //==============================CONSTRUCTORS=========================//
@@ -54,7 +54,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
      * @throws NullPointerException if the history argument is null.
      */
     public MeasurementSimulatorParams(Parameters parameters) {
-        simulator = new MeasurementSimulator(parameters);
+        this.simulator = new MeasurementSimulator(parameters);
     }
 
     /**
@@ -179,7 +179,7 @@ public class MeasurementSimulatorParams implements TetradSerializable {
     }
 
     public MeasurementSimulator getSimulator() {
-        return simulator;
+        return this.simulator;
     }
 
     public void simulate(GeneHistory history) {
@@ -207,15 +207,12 @@ public class MeasurementSimulatorParams implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (simulator == null) {
+        if (this.simulator == null) {
             throw new NullPointerException();
         }
     }

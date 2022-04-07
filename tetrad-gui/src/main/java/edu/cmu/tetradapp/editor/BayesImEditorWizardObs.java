@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,8 +26,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * Allows the user to choose a variable in a Bayes net and edit the parameters
@@ -42,9 +40,8 @@ public final class BayesImEditorWizardObs extends JPanel {
 
     private static final long serialVersionUID = -2275425522013903246L;
 
-    private BayesIm bayesIm;
-    private JComboBox varNamesComboBox;
-    private GraphWorkbench workbench;
+    private final BayesIm bayesIm;
+    private final GraphWorkbench workbench;
 
     private boolean enableEditing = true;
 
@@ -63,11 +60,9 @@ public final class BayesImEditorWizardObs extends JPanel {
         setFont(new Font("SanSerif", Font.BOLD, 12));
 
         BayesImNodeEditingTableObs editingTable = new BayesImNodeEditingTableObs(bayesIm);
-        editingTable.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        editingTable.addPropertyChangeListener(evt -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -117,15 +112,11 @@ public final class BayesImEditorWizardObs extends JPanel {
     }
 
     public BayesIm getBayesIm() {
-        return bayesIm;
-    }
-
-    private GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.bayesIm;
     }
 
     public boolean isEnableEditing() {
-        return enableEditing;
+        return this.enableEditing;
     }
 
     public void enableEditing(boolean enableEditing) {

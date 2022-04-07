@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -87,13 +87,13 @@ public class TestPc {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D",
+        checkWithKnowledge(
                 knowledge);
     }
 
     @Test
     public void testCites() {
-        String citesString = "164\n" +
+        final String citesString = "164\n" +
                 "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
                 "1.0\n" +
                 ".62\t1.0\n" +
@@ -121,7 +121,7 @@ public class TestPc {
 
         Graph CPDAG = pc.search();
 
-        String trueString = "Graph Nodes:\n" +
+        final String trueString = "Graph Nodes:\n" +
                 "ABILITY;GPQ;PREPROD;QFJ;SEX;CITES;PUBS\n" +
                 "\n" +
                 "Graph Edges:\n" +
@@ -168,12 +168,6 @@ public class TestPc {
         Graph trueGraph = GraphConverter.convert(outputGraph);
 
         // PrintUtil out problem and graphs.
-//        System.out.println("\nInput graph:");
-//        System.out.println(graph);
-//        System.out.println("\nResult graph:");
-//        System.out.println(resultGraph);
-//        System.out.println("\nTrue graph:");
-//        System.out.println(trueGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -185,10 +179,9 @@ public class TestPc {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String inputGraph, String outputGraph,
-                                    IKnowledge knowledge) {
+    private void checkWithKnowledge(IKnowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -202,7 +195,7 @@ public class TestPc {
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
 
 //        System.out.println("Knowledge = " + knowledge);
         System.out.println("True graph = " + graph);
@@ -231,23 +224,22 @@ public class TestPc {
         String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI"};
         String[] statLabels = {"AP", "TP", "BP", "NA", "NT", "NB", "E"/*, "AP/E"*/};
 
-        int numMeasures = 200;
-        double edgeFactor = 1.0;
+        final int numMeasures = 200;
+        final double edgeFactor = 1.0;
 
-        int numRuns = 5;
-        int maxLatents = numMeasures;
-        int jumpLatents = maxLatents / 5;
-        double alpha = 0.01;
-        double penaltyDiscount = 2.0;
-        double ofInterestCutoff = 0.1;
+        final int numRuns = 5;
+        final int jumpLatents = numMeasures / 5;
+        final double alpha = 0.01;
+        final double penaltyDiscount = 2.0;
+        final double ofInterestCutoff = 0.1;
 
-        if (maxLatents % jumpLatents != 0) throw new IllegalStateException();
-        int numLatentGroups = maxLatents / jumpLatents + 1;
+        if (numMeasures % jumpLatents != 0) throw new IllegalStateException();
+        final int numLatentGroups = numMeasures / jumpLatents + 1;
 
         double[][][] allAllRet = new double[numLatentGroups][][];
         int latentIndex = -1;
 
-        for (int numLatents = 0; numLatents <= maxLatents; numLatents += jumpLatents) {
+        for (int numLatents = 0; numLatents <= numMeasures; numLatents += jumpLatents) {
             latentIndex++;
 
             System.out.println();
@@ -262,8 +254,8 @@ public class TestPc {
             double[][] allRet = new double[algorithms.length][];
 
             for (int t = 0; t < algorithms.length; t++) {
-                allRet[t] = printStats(algorithms, t, true, numRuns, alpha, penaltyDiscount, maxLatents,
-                        numLatents, edgeFactor);
+                allRet[t] = printStats(algorithms, t,
+                        numLatents);
             }
 
             allAllRet[latentIndex] = allRet;
@@ -279,7 +271,7 @@ public class TestPc {
         System.out.println("NT = Average Number of Tails; NB = Average Number of Bidirected");
         System.out.println("E = Averaged Elapsed Time (ms), AP/P");
         System.out.println();
-        System.out.println("num latents = 0 to " + maxLatents);
+        System.out.println("num latents = 0 to " + numMeasures);
         System.out.println("alpha = " + alpha);
         System.out.println("penaltyDiscount = " + penaltyDiscount);
         System.out.println("num runs = " + numRuns);
@@ -288,13 +280,11 @@ public class TestPc {
         System.out.println("edge factor = " + edgeFactor);
 
 
-        printBestStats(allAllRet, algorithms, statLabels, maxLatents, jumpLatents, ofInterestCutoff);
+        printBestStats(allAllRet, algorithms, statLabels, numMeasures, jumpLatents, ofInterestCutoff);
     }
 
-    private double[] printStats(String[] algorithms, int t, boolean directed, int numRuns,
-                                double alpha, double penaltyDiscount,
-                                int numMeasures, int numLatents,
-                                double edgeFactor) {
+    private double[] printStats(String[] algorithms, int t,
+                                int numLatents) {
         NumberFormat nf = new DecimalFormat("0.00");
 
         double sumArrowPrecision = 0.0;
@@ -310,13 +300,13 @@ public class TestPc {
         int countTP = 0;
         int countBP = 0;
 
-        for (int i = 0; i < numRuns; i++) {
-            int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
+        for (int i = 0; i < 5; i++) {
+            int numEdges = (int) (1.0 * (200 + numLatents));
 
             List<Node> nodes = new ArrayList<>();
             List<String> names = new ArrayList<>();
 
-            for (int r = 0; r < numMeasures + numLatents; r++) {
+            for (int r = 0; r < 200 + numLatents; r++) {
                 String name = "X" + (r + 1);
                 nodes.add(new ContinuousVariable(name));
                 names.add(name);
@@ -328,10 +318,10 @@ public class TestPc {
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(1000, false);
 
-            IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+            IndTestFisherZ test = new IndTestFisherZ(data, 0.01);
 
             SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-            score.setPenaltyDiscount(penaltyDiscount);
+            score.setPenaltyDiscount(2.0);
             GraphSearch search;
 
             switch (t) {
@@ -381,7 +371,7 @@ public class TestPc {
 //            out = outClosure(out);
 
             for (Edge edge : out.getEdges()) {
-                if (directed && !(edge.isDirected() || Edges.isBidirectedEdge(edge))) {
+                if (true && !(edge.isDirected() || Edges.isBidirectedEdge(edge))) {
                     continue;
                 }
 
@@ -468,10 +458,10 @@ public class TestPc {
         double avgNumArrows = numArrows / (double) count;
         double avgNumTails = numTails / (double) count;
         double avgNumBidirected = numBidirected / (double) count;
-        double avgElapsed = totalElapsed / (double) numRuns;
+        double avgElapsed = totalElapsed / (double) 5;
 //        double avgRatioPrecisionToElapsed = avgArrowPrecision / avgElapsed;
 
-        double[] ret = new double[]{
+        double[] ret = {
                 avgArrowPrecision,
                 avgTailPrecision,
                 avgBidirectedPrecision,
@@ -528,8 +518,8 @@ public class TestPc {
         int latentIndex = -1;
 
         class Pair {
-            private String algorithm;
-            private double stat;
+            private final String algorithm;
+            private final double stat;
 
             public Pair(String algorithm, double stat) {
                 this.algorithm = algorithm;
@@ -537,11 +527,11 @@ public class TestPc {
             }
 
             public String getAlgorithm() {
-                return algorithm;
+                return this.algorithm;
             }
 
             public double getStat() {
-                return stat;
+                return this.stat;
             }
         }
 
@@ -599,7 +589,7 @@ public class TestPc {
 
         System.out.println();
 
-        System.out.println(table.toString());
+        System.out.println(table);
     }
 
     //    @Test
@@ -608,24 +598,23 @@ public class TestPc {
         String[] algorithms = {"PC", "CPC", "FGES", "FCI", "GFCI", "RFCI", "CFCI", "Regression"};
         String[] statLabels = {"AP", "AR"};
 
-        int numMeasures = 10;
-        double edgeFactor = 2.0;
+        final int numMeasures = 10;
+        final double edgeFactor = 2.0;
 
-        int numRuns = 5;
-        int maxLatents = numMeasures;
-        int jumpLatents = maxLatents / 5;
-        double alpha = 0.1;
-        double penaltyDiscount = 4.0;
-        double ofInterestCutoff = 0.01;
-        int sampleSize = 10000;
+        final int numRuns = 5;
+        final int jumpLatents = numMeasures / 5;
+        final double alpha = 0.1;
+        final double penaltyDiscount = 4.0;
+        final double ofInterestCutoff = 0.01;
+        final int sampleSize = 10000;
 
-        if (maxLatents % jumpLatents != 0) throw new IllegalStateException();
-        int numLatentGroups = maxLatents / jumpLatents + 1;
+        if (numMeasures % jumpLatents != 0) throw new IllegalStateException();
+        final int numLatentGroups = numMeasures / jumpLatents + 1;
 
         double[][][] allAllRet = new double[numLatentGroups][][];
         int latentIndex = -1;
 
-        for (int numLatents = 0; numLatents <= maxLatents; numLatents += jumpLatents) {
+        for (int numLatents = 0; numLatents <= numMeasures; numLatents += jumpLatents) {
             latentIndex++;
 
             System.out.println();
@@ -641,8 +630,8 @@ public class TestPc {
             double[][] allRet = new double[algorithms.length][];
 
             for (int t = 0; t < algorithms.length; t++) {
-                allRet[t] = printStatsPcRegression(algorithms, t, true, numRuns, alpha, penaltyDiscount, maxLatents,
-                        numLatents, edgeFactor, sampleSize);
+                allRet[t] = printStatsPcRegression(algorithms, t,
+                        numLatents);
             }
 
             allAllRet[latentIndex] = allRet;
@@ -655,7 +644,7 @@ public class TestPc {
         System.out.println();
         System.out.println("AP = Average Adjacency Precision; AR = Average Adjacency Recall");
         System.out.println();
-        System.out.println("num latents = 0 to " + maxLatents);
+        System.out.println("num latents = 0 to " + numMeasures);
         System.out.println("alpha = " + alpha);
         System.out.println("penaltyDiscount = " + penaltyDiscount);
         System.out.println("num runs = " + numRuns);
@@ -664,26 +653,24 @@ public class TestPc {
         System.out.println("edge factor = " + edgeFactor);
 
 
-        printBestStats(allAllRet, algorithms, statLabels, maxLatents, jumpLatents, ofInterestCutoff);
+        printBestStats(allAllRet, algorithms, statLabels, numMeasures, jumpLatents, ofInterestCutoff);
     }
 
-    private double[] printStatsPcRegression(String[] algorithms, int t, boolean directed, int numRuns,
-                                            double alpha, double penaltyDiscount,
-                                            int numMeasures, int numLatents,
-                                            double edgeFactor, int sampleSize) {
+    private double[] printStatsPcRegression(String[] algorithms, int t,
+                                            int numLatents) {
         NumberFormat nf = new DecimalFormat("0.00");
 
         double sumAdjPrecision = 0.0;
         double sumAdjRecall = 0.0;
         int count = 0;
 
-        for (int i = 0; i < numRuns; i++) {
-            int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
+        for (int i = 0; i < 5; i++) {
+            int numEdges = (int) (2.0 * (10 + numLatents));
 
             List<Node> nodes = new ArrayList<>();
             List<String> names = new ArrayList<>();
 
-            for (int r = 0; r < numMeasures + numLatents; r++) {
+            for (int r = 0; r < 10 + numLatents; r++) {
                 String name = "X" + (r + 1);
                 nodes.add(new ContinuousVariable(name));
                 names.add(name);
@@ -693,17 +680,17 @@ public class TestPc {
                     10, 10, 10, false);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
-            DataSet data = im.simulateData(sampleSize, false);
+            DataSet data = im.simulateData(10000, false);
 
 //            Graph comparison = dag;
-            Graph comparison = new DagToPag2(dag).convert();
+            Graph comparison = new DagToPag(dag).convert();
 //            Graph comparison = new Pc(new IndTestDSep(dag)).search();
 
-            IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+            IndTestFisherZ test = new IndTestFisherZ(data, 0.1);
 
 
             SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-            score.setPenaltyDiscount(penaltyDiscount);
+            score.setPenaltyDiscount(4.0);
             GraphSearch search;
             Graph out;
 
@@ -805,7 +792,7 @@ public class TestPc {
         double avgAdjPrecision = sumAdjPrecision / (double) count;
         double avgAdjRecall = sumAdjRecall / (double) count;
 
-        double[] ret = new double[]{
+        double[] ret = {
                 avgAdjPrecision,
                 avgAdjRecall,
         };

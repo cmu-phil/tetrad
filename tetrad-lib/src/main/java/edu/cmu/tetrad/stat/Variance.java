@@ -25,6 +25,6 @@ package edu.cmu.tetrad.stat;
  */
 public interface Variance {
 
-    public float[] compute(boolean biasCorrected);
+    float[] compute(boolean biasCorrected);
 
 }

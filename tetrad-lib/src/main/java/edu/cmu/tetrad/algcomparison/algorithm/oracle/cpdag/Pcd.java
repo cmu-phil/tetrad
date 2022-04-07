@@ -11,7 +11,6 @@ import edu.cmu.tetrad.search.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,32 +49,15 @@ public class Pcd implements Algorithm, HasKnowledge {
 
             edu.cmu.tetrad.search.Pcd search = new edu.cmu.tetrad.search.Pcd(test);
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
             Pcd algorithm = new Pcd();
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -112,7 +94,7 @@ public class Pcd implements Algorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override

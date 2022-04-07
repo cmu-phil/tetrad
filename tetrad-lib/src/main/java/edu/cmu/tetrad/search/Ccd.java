@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,11 +40,11 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public final class Ccd implements GraphSearch {
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
     private int depth = -1;
     private IKnowledge knowledge;
-    private List<Node> nodes;
-    private boolean applyR1 = false;
+    private final List<Node> nodes;
+    private boolean applyR1;
 
     public Ccd(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
@@ -66,11 +66,11 @@ public final class Ccd implements GraphSearch {
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
         // Step A.
-        Fas fas = new Fas(independenceTest);
+        Fas fas = new Fas(this.independenceTest);
         Graph psi = fas.search();
         psi.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetProducer sepsets = new SepsetsSet(fas.getSepsets(), independenceTest);
+        SepsetProducer sepsets = new SepsetsSet(fas.getSepsets(), this.independenceTest);
 
         stepB(psi);
         stepC(psi, sepsets);
@@ -99,11 +99,11 @@ public final class Ccd implements GraphSearch {
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     public void setDepth(int depth) {
@@ -124,10 +124,10 @@ public final class Ccd implements GraphSearch {
     //======================================== PRIVATE METHODS ====================================//
 
     private void stepB(Graph graph) {
-        final Map<Triple, Double> colliders = new HashMap<>();
-        final Map<Triple, Double> noncolliders = new HashMap<>();
+        Map<Triple, Double> colliders = new HashMap<>();
+        Map<Triple, Double> noncolliders = new HashMap<>();
 
-        for (Node node : nodes) {
+        for (Node node : this.nodes) {
             doNodeCollider(graph, colliders, noncolliders, node);
         }
 
@@ -182,8 +182,8 @@ public final class Ccd implements GraphSearch {
 
             while ((comb2 = cg2.next()) != null) {
                 List<Node> s = GraphUtils.asList(comb2, adja);
-                independenceTest.isIndependent(a, c, s);
-                double _score = independenceTest.getScore();
+                this.independenceTest.isIndependent(a, c, s);
+                double _score = this.independenceTest.getScore();
 
                 if (_score < score) {
                     score = _score;
@@ -198,8 +198,8 @@ public final class Ccd implements GraphSearch {
 
             while ((comb3 = cg3.next()) != null) {
                 List<Node> s = GraphUtils.asList(comb3, adjc);
-                independenceTest.isIndependent(c, a, s);
-                double _score = independenceTest.getScore();
+                this.independenceTest.isIndependent(c, a, s);
+                double _score = this.independenceTest.getScore();
 
                 if (_score < score) {
                     score = _score;
@@ -241,7 +241,7 @@ public final class Ccd implements GraphSearch {
             }
 
             // Check each A
-            for (Node a : nodes) {
+            for (Node a : this.nodes) {
                 if (a == x) continue;
                 if (a == y) continue;
 
@@ -274,14 +274,14 @@ public final class Ccd implements GraphSearch {
         }
     }
 
-    private void stepD(Graph psi, SepsetProducer sepsets, final Map<Triple, Set<Node>> supSepsets) {
+    private void stepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) {
         Map<Node, List<Node>> local = new HashMap<>();
 
         for (Node node : psi.getNodes()) {
             local.put(node, local(psi, node));
         }
 
-        for (Node node : nodes) {
+        for (Node node : this.nodes) {
             doNodeStepD(psi, sepsets, supSepsets, local, node);
         }
     }
@@ -491,7 +491,7 @@ public final class Ccd implements GraphSearch {
     }
 
     public boolean isApplyR1() {
-        return applyR1;
+        return this.applyR1;
     }
 
     public void setApplyR1(boolean applyR1) {

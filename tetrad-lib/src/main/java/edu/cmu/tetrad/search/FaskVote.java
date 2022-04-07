@@ -36,25 +36,25 @@ public class FaskVote {
     public Graph search(Parameters parameters) {
         List<DataModel> _dataSets = new ArrayList<>();
 
-        for (DataSet dataSet : dataSets) {
+        for (DataSet dataSet : this.dataSets) {
             _dataSets.add(DataUtils.standardizeData(dataSet));
         }
 
         ImagesSemBic imagesSemBic = new ImagesSemBic();
-        imagesSemBic.setKnowledge(knowledge);
+        imagesSemBic.setKnowledge(this.knowledge);
         Graph G0 = imagesSemBic.search(_dataSets, parameters);
 
-        List<Node> V = dataSets.get(0).getVariables();
+        List<Node> V = this.dataSets.get(0).getVariables();
         Graph G = new EdgeListGraph(V);
 
         List<Graph> fasks = new ArrayList<>();
 
         List<Node> nodes = G0.getNodes();
 
-        for (DataSet dataSet : dataSets) {
+        for (DataSet dataSet : this.dataSets) {
             Fask fask = new Fask(dataSet,
-                    score.getScore(dataSet, parameters),
-                    test.getTest(dataSet, parameters));
+                    this.score.getScore(dataSet, parameters),
+                    this.test.getTest(dataSet, parameters));
             fask.setExternalGraph(GraphUtils.undirectedGraph(G0));
             fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
             fask.setEmpirical(!parameters.getBoolean(FASK_NONEMPIRICAL));
@@ -64,12 +64,9 @@ public class FaskVote {
             fask.setDelta(parameters.getDouble(FASK_DELTA));
             fask.setTwoCycleScreeningCutoff(parameters.getDouble(TWO_CYCLE_SCREENING_THRESHOLD));
             fask.setOrientationAlpha(parameters.getDouble(ORIENTATION_ALPHA));
-            fask.setKnowledge(knowledge);
+            fask.setKnowledge(this.knowledge);
 
 
-//            Lingam lingam = new Lingam();
-//            Graph g = lingam.search(dataSet);
-//
             Graph g = fask.search();
             g = GraphUtils.replaceNodes(g, nodes);
             fasks.add(g);

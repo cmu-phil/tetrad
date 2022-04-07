@@ -1,6 +1,3 @@
-/**
- *
- */
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Edge;
@@ -30,7 +27,7 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
     /**
      * The desktop containing the target session editor.
      */
-    private GraphWorkbench workbench;
+    private final GraphWorkbench workbench;
 
     public HideShowNoConnectionNodesAction(GraphWorkbench workbench) {
         super("Hide/Show No Connections Node");
@@ -45,8 +42,8 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Graph graph = workbench.getGraph();
-        for (Component comp : workbench.getComponents()) {
+        Graph graph = this.workbench.getGraph();
+        for (Component comp : this.workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
                 Node node = ((DisplayNode) comp).getModelNode();
                 List<Edge> edges = graph.getEdges(node);

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -58,15 +58,6 @@ class TabularDataTable extends AbstractTableModel {
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**
-     * Table header notations
-     */
-    private final String columnHeaderNotationDefault = "C";
-    private final String columnHeaderNotationContinuous = "-C";
-    private final String columnHeaderNotationDiscrete = "-D";
-    private final String columnHeaderNotationInterventionStatus = "-I_S";
-    private final String columnHeaderNotationInterventionValue = "-I_V";
-
-    /**
      * Constructs a new DisplayTableModel to wrap the given dataSet.
      *
      * @param dataSet the dataSet.
@@ -87,8 +78,8 @@ class TabularDataTable extends AbstractTableModel {
      * this number will be at least 100.
      */
     public int getRowCount() {
-        int maxRowCount = dataSet.getNumRows() + 3;
-        return (maxRowCount < 100) ? 100 : maxRowCount;
+        int maxRowCount = this.dataSet.getNumRows() + 3;
+        return Math.max(maxRowCount, 100);
     }
 
     /**
@@ -96,8 +87,8 @@ class TabularDataTable extends AbstractTableModel {
      * this number will be at least 30.
      */
     public int getColumnCount() {
-        return (dataSet.getNumColumns() < 30) ? 30
-                : dataSet.getNumColumns() + getNumLeadingCols() + 1;
+        return (this.dataSet.getNumColumns() < 30) ? 30
+                : this.dataSet.getNumColumns() + getNumLeadingCols() + 1;
     }
 
     /**
@@ -123,31 +114,36 @@ class TabularDataTable extends AbstractTableModel {
 //        }
 //        else
         if (col >= getNumLeadingCols()
-                && col < dataSet.getNumColumns() + getNumLeadingCols()) {
-            Node variable = dataSet.getVariable(columnIndex);
+                && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
+            Node variable = this.dataSet.getVariable(columnIndex);
 
             if (row == 0) {
                 // Append "-D" notation to discrete variables, "-C" for continuous
                 // and append additional "-I" for those added interventional variables - Zhou
-                String columnHeader = columnHeaderNotationDefault + Integer.toString(columnIndex + 1);
+                String columnHeaderNotationDefault = "C";
+                String columnHeader = columnHeaderNotationDefault + (columnIndex + 1);
 
                 if (variable instanceof DiscreteVariable) {
+                    String columnHeaderNotationDiscrete = "-D";
                     columnHeader += columnHeaderNotationDiscrete;
                 } else if (variable instanceof ContinuousVariable) {
+                    String columnHeaderNotationContinuous = "-C";
                     columnHeader += columnHeaderNotationContinuous;
                 }
 
                 // Add header notations for interventional status and value
                 if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) {
+                    String columnHeaderNotationInterventionStatus = "-I_S";
                     columnHeader += columnHeaderNotationInterventionStatus;
                 } else if (variable.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE) {
+                    String columnHeaderNotationInterventionValue = "-I_V";
                     columnHeader += columnHeaderNotationInterventionValue;
                 }
 
                 return columnHeader;
             } else if (row == 1) {
-                return dataSet.getVariable(columnIndex).getName();
-            } else if (rowIndex >= dataSet.getNumRows()) {
+                return this.dataSet.getVariable(columnIndex).getName();
+            } else if (rowIndex >= this.dataSet.getNumRows()) {
                 return null;
             } else {
                 if (variable instanceof DiscreteVariable) {
@@ -155,7 +151,7 @@ class TabularDataTable extends AbstractTableModel {
                             isCategoryNamesShown());
                 }
 
-                Object value = dataSet.getObject(rowIndex, columnIndex);
+                Object value = this.dataSet.getObject(rowIndex, columnIndex);
 
                 if (((Variable) variable).isMissingValue(value)) {
                     return "*";
@@ -163,9 +159,9 @@ class TabularDataTable extends AbstractTableModel {
                     return value;
                 }
             }
-        } else if (col >= dataSet.getNumColumns() + getNumLeadingCols()) {
+        } else if (col >= this.dataSet.getNumColumns() + getNumLeadingCols()) {
             if (row == 0) {
-                return "C" + Integer.toString(columnIndex + 1);
+                return "C" + (columnIndex + 1);
             }
         }
 
@@ -185,15 +181,15 @@ class TabularDataTable extends AbstractTableModel {
      * given coordinates is returned.
      */
     public void setValueAt(Object value, int row, int col) {
-        dataSet.ensureColumns(col - getNumLeadingCols() + 1, new ArrayList<>());
-        dataSet.ensureRows(row - getNumLeadingRows() + 1);
+        this.dataSet.ensureColumns(col - getNumLeadingCols() + 1, new ArrayList<>());
+        this.dataSet.ensureRows(row - getNumLeadingRows() + 1);
 
         if (col == 0) {
-            throw new IllegalArgumentException("Bad col index: " + col);
+            throw new IllegalArgumentException("Bad col index: " + 0);
         }
 
         if (col >= getNumLeadingCols()
-                && col < dataSet.getNumColumns() + getNumLeadingCols()) {
+                && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
             if (row == 1) {
                 setColumnName(col, value);
             } else if (row > 1) {
@@ -201,75 +197,27 @@ class TabularDataTable extends AbstractTableModel {
                     pasteIntoColumn(row, col, value);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    pcs.firePropertyChange("modelChanged", null, null);
+                    this.pcs.firePropertyChange("modelChanged", null, null);
                     return;
                 }
             }
         }
 
         fireTableDataChanged();
-        pcs.firePropertyChange("modelChanged", null, null);
-    }
-
-    /**
-     * Col index here is JTable index.
-     */
-    private void addColumnsOutTo(int col) {
-        for (int i = dataSet.getNumColumns() + getNumLeadingCols();
-             i <= col; i++) {
-            ContinuousVariable var = new ContinuousVariable("");
-            dataSet.addVariable(var);
-
-            System.out.println("Adding " + var + " col " + dataSet.getColumn(var));
-        }
-
-        pcs.firePropertyChange("modelChanged", null, null);
-    }
-
-    private String newColumnName(String suggestedName) {
-        if (!existsColByName(suggestedName)) {
-            return suggestedName;
-        }
-
-        int i = 0;
-
-        while (true) {
-            String proposedName = suggestedName + "-" + (++i);
-            if (!existsColByName(proposedName)) {
-                return proposedName;
-            }
-        }
-    }
-
-    private boolean existsColByName(String proposedName) {
-        for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            String name = dataSet.getVariable(i).getName();
-            if (name.equals(proposedName)) {
-                return true;
-            }
-        }
-        return false;
+        this.pcs.firePropertyChange("modelChanged", null, null);
     }
 
     private void setColumnName(int col, Object value) {
-        String oldName = dataSet.getVariable(col - getNumLeadingCols()).getName();
+        String oldName = this.dataSet.getVariable(col - getNumLeadingCols()).getName();
         String newName = (String) value;
 
         if (oldName.equals(newName)) {
             return;
         }
 
-//        try {
-//            pcs.firePropertyChange("propesedVariableNameChange", oldName, newName);
-//        } catch (IllegalArgumentException e) {
-//            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e.getMessage());
-//            return;
-//        }
-//
-//        pcs.firePropertyChange("variableNameChange", oldName, newName);
-        dataSet.getVariable(col - getNumLeadingCols()).setName(newName);
-        pcs.firePropertyChange("modelChanged", null, null);
-        pcs.firePropertyChange("variableNameChanged", oldName, newName);
+        this.dataSet.getVariable(col - getNumLeadingCols()).setName(newName);
+        this.pcs.firePropertyChange("modelChanged", null, null);
+        this.pcs.firePropertyChange("variableNameChanged", oldName, newName);
     }
 
     /**
@@ -278,10 +226,10 @@ class TabularDataTable extends AbstractTableModel {
     private void pasteIntoColumn(int row, int col, Object value) {
         int dataRow = row - getNumLeadingRows();
         int dataCol = col - getNumLeadingCols();
-        Node variable = dataSet.getVariable(dataCol);
+        Node variable = this.dataSet.getVariable(dataCol);
 
         if (variable instanceof ContinuousVariable && value instanceof Number) {
-            dataSet.setObject(dataRow, dataCol, value);
+            this.dataSet.setObject(dataRow, dataCol, value);
             return;
         }
 
@@ -298,18 +246,18 @@ class TabularDataTable extends AbstractTableModel {
         }
 
         if (!(variable instanceof DiscreteVariable)
-                && isEmpty(dataSet, dataCol)
+                && isEmpty(this.dataSet, dataCol)
                 && (quoted || !isNumber((String) value))) {
             variable = swapDiscreteColumnForContinuous(col);
         }
 
-        if (value instanceof String && ((String) value).trim().equals("*")) {
+        if (((String) value).trim().equals("*")) {
             value = ((Variable) variable).getMissingValueMarker();
         }
 
-        dataSet.setObject(dataRow, dataCol, value);
+        this.dataSet.setObject(dataRow, dataCol, value);
 
-        pcs.firePropertyChange("modelChanged", null, null);
+        this.pcs.firePropertyChange("modelChanged", null, null);
     }
 
     private boolean isEmpty(DataSet dataSet, int column) {
@@ -326,19 +274,19 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     private Node swapDiscreteColumnForContinuous(int col) {
-        Node variable = dataSet.getVariable(col - getNumLeadingCols());
+        Node variable = this.dataSet.getVariable(col - getNumLeadingCols());
         if (variable == null) {
             throw new NullPointerException();
         }
-        if (!isEmpty(dataSet, col - getNumLeadingCols())) {
+        if (!isEmpty(this.dataSet, col - getNumLeadingCols())) {
             throw new IllegalArgumentException("Old column not empty.");
         }
         String name = variable.getName();
         DiscreteVariable var = new DiscreteVariable(name);
         var.setCategoryNamesDisplayed(true);
-        dataSet.removeColumn(col - getNumLeadingCols());
-        dataSet.addVariable(col - getNumLeadingCols(), var);
-        pcs.firePropertyChange("modelChanged", null, null);
+        this.dataSet.removeColumn(col - getNumLeadingCols());
+        this.dataSet.addVariable(col - getNumLeadingCols(), var);
+        this.pcs.firePropertyChange("modelChanged", null, null);
         return var;
     }
 
@@ -355,7 +303,7 @@ class TabularDataTable extends AbstractTableModel {
      * @return the DataSet being presented.
      */
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     public void setDataSet(DataSet data) {
@@ -370,8 +318,7 @@ class TabularDataTable extends AbstractTableModel {
       The number of initial "special" columns not used to display the data
       set.
          */
-        int numLeadingRows = 2;
-        return numLeadingRows;
+        return 2;
     }
 
     private int getNumLeadingCols() {
@@ -379,8 +326,8 @@ class TabularDataTable extends AbstractTableModel {
       The number of initial "special" columns not used to display the data
       set.
          */
-        int numLeadingCols = 1;
-        return numLeadingCols;
+
+        return 1;
     }
 
     public void setCategoryNamesShown(boolean selected) {
@@ -389,10 +336,10 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     public boolean isCategoryNamesShown() {
-        return categoryNamesShown;
+        return this.categoryNamesShown;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
+        this.pcs.addPropertyChangeListener(listener);
     }
 }

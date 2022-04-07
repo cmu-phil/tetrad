@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,10 +36,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * Allows the user to execute a multiple linear regression in the GUI. Contains
@@ -60,13 +56,13 @@ public class RegressionEditor extends JPanel {
      * The workbench used to display the graph of significant regression into
      * the target.
      */
-    private GraphWorkbench workbench;
+    private final GraphWorkbench workbench;
 
     /**
      * A large text area into which the (String) output of the regression result
      * is dumped. (This is what needs to change.)
      */
-    private JTextArea reportText = new JTextArea();
+    private final JTextArea reportText;
 
     /**
      * Presents the same information in reportText as a text preamble with a
@@ -93,45 +89,41 @@ public class RegressionEditor extends JPanel {
         this.runner = regressionRunner;
         Graph outGraph = new EdgeListGraph();
 
-        final JButton executeButton = new JButton("Execute");
-        executeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                runRegression();
-                TetradLogger.getInstance().log("result", reportText.getText());
-            }
+        JButton executeButton = new JButton("Execute");
+        executeButton.addActionListener(e -> {
+            runRegression();
+            TetradLogger.getInstance().log("result", RegressionEditor.this.reportText.getText());
         });
 
-        workbench = new GraphWorkbench(outGraph);
+        this.workbench = new GraphWorkbench(outGraph);
 
-        JScrollPane workbenchScroll = new JScrollPane(workbench);
+        JScrollPane workbenchScroll = new JScrollPane(this.workbench);
         workbenchScroll.setPreferredSize(new Dimension(400, 400));
 
-        reportText = new JTextArea();
-        reportText.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        reportText.setTabSize(10);
+        this.reportText = new JTextArea();
+        this.reportText.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        this.reportText.setTabSize(10);
 
-        if (runner != null && runner.getResult() != null) {
-            reportText.setText(runner.getResult().toString());
+        if (this.runner.getResult() != null) {
+            this.reportText.setText(this.runner.getResult().toString());
         }
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(600, 400));
-        tabbedPane.add("Model", new JScrollPane(reportText));
+        tabbedPane.add("Model", new JScrollPane(this.reportText));
 //        tabbedPane.add("Tabularized Model", new JScrollPane(textWithTable));
         tabbedPane.add("Output Graph", workbenchScroll);
 
         Box b = Box.createVerticalBox();
         Box b1 = Box.createHorizontalBox();
-        RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(runner, runner.getParams(),
+        RegressionParamsEditorPanel editorPanel = new RegressionParamsEditorPanel(this.runner, this.runner.getParams(),
                 this.runner.getDataModel(), false);
 
-        editorPanel.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
+        editorPanel.addPropertyChangeListener(evt -> {
+            String propertyName = evt.getPropertyName();
 
-                if ("significanceChanged".equals(propertyName)) {
-                    runRegression();
-                }
+            if ("significanceChanged".equals(propertyName)) {
+                runRegression();
             }
         });
 
@@ -147,19 +139,19 @@ public class RegressionEditor extends JPanel {
         setLayout(new BorderLayout());
         add(b, BorderLayout.CENTER);
 
-        int numModels = runner.getNumModels();
+        int numModels = this.runner.getNumModels();
 
         if (numModels > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
+            JComboBox<Integer> comp = new JComboBox<>();
 
             for (int i = 0; i < numModels; i++) {
                 comp.addItem(i + 1);
             }
 
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    runner.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
+            comp.addActionListener(e -> {
+                Object selectedItem = comp.getSelectedItem();
+                if (selectedItem instanceof Integer) {
+                    RegressionEditor.this.runner.setModelIndex((Integer) selectedItem - 1);
                 }
             });
 
@@ -169,7 +161,7 @@ public class RegressionEditor extends JPanel {
             c.add(new JLabel("Using model"));
             c.add(comp);
             c.add(new JLabel("from "));
-            c.add(new JLabel(runner.getModelSourceName()));
+            c.add(new JLabel(this.runner.getModelSourceName()));
             c.add(Box.createHorizontalGlue());
 
             add(c, BorderLayout.NORTH);
@@ -193,19 +185,19 @@ public class RegressionEditor extends JPanel {
      * Runs the regression, resetting the text output and graph output.
      */
     private void runRegression() {
-        runner.execute();
-        Graph graph = runner.getOutGraph();
+        this.runner.execute();
+        Graph graph = this.runner.getOutGraph();
         GraphUtils.circleLayout(graph, 200, 200, 150);
         GraphUtils.fruchtermanReingoldLayout(graph);
-        workbench.setGraph(graph);
-        RegressionResult report = runner.getResult();
-        reportText.setText(report.toString());
-        textWithTable.removeAll();
-        textWithTable.setLayout(new BorderLayout());
-        textWithTable.add(TextWithTable.component(report.getPreamble(),
+        this.workbench.setGraph(graph);
+        RegressionResult report = this.runner.getResult();
+        this.reportText.setText(report.toString());
+        this.textWithTable.removeAll();
+        this.textWithTable.setLayout(new BorderLayout());
+        this.textWithTable.add(TextWithTable.component(report.getPreamble(),
                 report.getResultsTable()));
-        textWithTable.revalidate();
-        textWithTable.repaint();
+        this.textWithTable.revalidate();
+        this.textWithTable.repaint();
 
     }
 
@@ -252,7 +244,7 @@ public class RegressionEditor extends JPanel {
             return panel;
         }
 
-        private JTable getJTableFor(final TextTable textTable) {
+        private JTable getJTableFor(TextTable textTable) {
 
             TableModel model = new AbstractTableModel() {
 
@@ -285,7 +277,7 @@ public class RegressionEditor extends JPanel {
                         Component renderer = super.getTableCellRendererComponent(table,
                                 value, isSelected, hasFocus, row, column);
                         setText((String) value);
-                        setHorizontalAlignment(JLabel.RIGHT);
+                        setHorizontalAlignment(SwingConstants.RIGHT);
                         return renderer;
                     }
                 });

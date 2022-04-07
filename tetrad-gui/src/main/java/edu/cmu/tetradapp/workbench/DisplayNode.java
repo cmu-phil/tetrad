@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,8 +29,6 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +48,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     /**
      * True iff this display node is selected.
      */
-    private boolean selected = false;
+    private boolean selected;
 
     /**
      * Node variable type (domain, interventional status, interventional
@@ -62,9 +60,9 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
      * The component that displays.
      */
     private DisplayComp displayComp;
-    private int uniqueId = AbstractVariable.LAST_ID++;
+    private final int uniqueId = AbstractVariable.LAST_ID++;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //===========================CONSTRUCTORS==============================//
     protected DisplayNode() {
@@ -80,11 +78,9 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         this.modelNode = modelNode;
         setName(modelNode.getName());
 
-        modelNode.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("name".equals(evt.getPropertyName())) {
-                    setName((String) (evt.getNewValue()));
-                }
+        modelNode.addPropertyChangeListener(evt -> {
+            if ("name".equals(evt.getPropertyName())) {
+                setName((String) (evt.getNewValue()));
             }
         });
     }
@@ -93,7 +89,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
      * @return the model node corresponding to this workbench node. May be null.
      */
     public final Node getModelNode() {
-        return modelNode;
+        return this.modelNode;
     }
 
     /**
@@ -106,8 +102,8 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
 
         super.setName(name);
 
-        if (displayComp != null) {
-            displayComp.setName(name);
+        if (this.displayComp != null) {
+            this.displayComp.setName(name);
         }
 
         repaint();
@@ -121,8 +117,8 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
         this.selected = selected;
         firePropertyChange("selected", oldSelected, selected);
 
-        if (displayComp != null) {
-            displayComp.setSelected(selected);
+        if (this.displayComp != null) {
+            this.displayComp.setSelected(selected);
         }
 
         repaint();
@@ -168,7 +164,7 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
     }
 
     protected DisplayComp getDisplayComp() {
-        return displayComp;
+        return this.displayComp;
     }
 
     protected void setDisplayComp(DisplayComp displayComp) {
@@ -216,9 +212,9 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
 
     @Override
     public int compareTo(Node node) {
-        final String name = getName();
+        String name = getName();
         String[] tokens1 = name.split(":");
-        final String _name = node.getName();
+        String _name = node.getName();
         String[] tokens2 = _name.split(":");
 
         if (tokens1.length == 1) {
@@ -251,22 +247,22 @@ public class DisplayNode extends JComponent implements Node, TetradSerializableE
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
     public Object getAttribute(String key) {
-        return attributes.get(key);
+        return this.attributes.get(key);
     }
 
     @Override
     public void removeAttribute(String key) {
-        attributes.remove(key);
+        this.attributes.remove(key);
     }
 
     @Override
     public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+        this.attributes.put(key, value);
     }
 
 }

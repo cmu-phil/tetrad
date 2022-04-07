@@ -69,7 +69,7 @@ public class CovLINone implements CovarianceFunction {
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        final double it2 = Math.exp(-2 * loghyper.get(0, 0));
+        double it2 = Math.exp(-2 * loghyper.get(0, 0));
 
         Matrix A = X.times(X.transpose());
         return addValue(A, 1).times(it2);
@@ -87,7 +87,7 @@ public class CovLINone implements CovarianceFunction {
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        final double it2 = Math.exp(-2 * loghyper.get(0, 0));
+        double it2 = Math.exp(-2 * loghyper.get(0, 0));
 
         Matrix A = sumRows(Xstar.arrayTimes(Xstar));
 
@@ -115,7 +115,7 @@ public class CovLINone implements CovarianceFunction {
         if (index > numParameters() - 1)
             throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
-        final double it2 = Math.exp(-2 * loghyper.get(0, 0));
+        double it2 = Math.exp(-2 * loghyper.get(0, 0));
         Matrix A = X.times(X.transpose());
         return addValue(A, 1).times(-2 * it2);
     }
@@ -128,7 +128,7 @@ public class CovLINone implements CovarianceFunction {
 
         Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
 
-        System.out.println("");
+        System.out.println();
         Matrix K = cf.compute(logtheta, X);
         K.print(K.getColumnDimension(), 8);
 

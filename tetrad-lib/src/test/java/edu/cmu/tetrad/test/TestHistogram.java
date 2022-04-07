@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -61,7 +61,7 @@ public final class TestHistogram {
         }
 
         Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 5, 30, 15, 15, false));
-        int sampleSize = 1000;
+        final int sampleSize = 1000;
 
         // Continuous
         SemPm semPm = new SemPm(trueGraph);
@@ -102,15 +102,11 @@ public final class TestHistogram {
         Histogram histogram2 = new Histogram(data2);
         histogram2.setTarget("X1");
         int[] frequencies1 = histogram2.getFrequencies();
-//        assertEquals(928, frequencies1[0]);
-//        assertEquals(72, frequencies1[1]);
 
         histogram2.setTarget("X1");
         histogram2.addConditioningVariable("X2", 0);
         histogram2.addConditioningVariable("X3", 1);
         int[] frequencies = histogram2.getFrequencies();
-//        assertEquals(377, frequencies[0]);
-//        assertEquals(28, frequencies[1]);
     }
 }
 

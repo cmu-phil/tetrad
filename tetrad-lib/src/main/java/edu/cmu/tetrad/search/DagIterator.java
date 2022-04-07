@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,7 +40,7 @@ public class DagIterator {
      * The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether or not
      * these edges have already been oriented left and/or right.
      */
-    private LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
+    private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
     private Graph storedDag;
 
     /**
@@ -60,12 +60,7 @@ public class DagIterator {
                     "directed and undirected edges: " + edge);
         }
 
-//        if (CPDAG.existsDirectedCycle()) {
-//            throw new IllegalArgumentException("The graph must be acyclic: " +
-//                    DataGraphUtils.directedCycle(CPDAG));
-//        }
-
-        decoratedGraphs.add(new DecoratedGraph(CPDAG));
+        this.decoratedGraphs.add(new DecoratedGraph(CPDAG));
     }
 
     /**
@@ -80,74 +75,74 @@ public class DagIterator {
      * an exception.
      */
     public Graph next() {
-        if (storedDag != null) {
-            Graph temp = storedDag;
-            storedDag = null;
+        if (this.storedDag != null) {
+            Graph temp = this.storedDag;
+            this.storedDag = null;
             return temp;
         }
 
-        if (decoratedGraphs.isEmpty()) {
+        if (this.decoratedGraphs.isEmpty()) {
             return null;
         }
 
         // If it's a DAG
-        if (!decoratedGraphs.getLast().hasUndirectedEdge()) {
+        if (!this.decoratedGraphs.getLast().hasUndirectedEdge()) {
 
             // Go back to the lastmost decorated graph whose successor is
             // oriented right, and add a graph with that oriented left.
             while (true) {
-                if (decoratedGraphs.isEmpty()) {
+                if (this.decoratedGraphs.isEmpty()) {
                     return null;
                 }
 
-                DecoratedGraph graph = decoratedGraphs.removeLast();
+                DecoratedGraph graph = this.decoratedGraphs.removeLast();
 
                 if (graph.hasUndirectedEdge() && !graph.wasDirectedRight()) {
                     throw new IllegalStateException();
                 }
 
-                if (decoratedGraphs.isEmpty() && !graph.hasUndirectedEdge()) {
+                if (this.decoratedGraphs.isEmpty() && !graph.hasUndirectedEdge()) {
                     return new EdgeListGraph(graph.getGraph());
                 }
 
                 if (graph.wasDirectedRight() && !graph.wasDirectedLeft()) {
-                    decoratedGraphs.add(graph);
+                    this.decoratedGraphs.add(graph);
                     DecoratedGraph graph1 = graph.directLeft();
 
                     if (graph1 == null) {
                         continue;
                     }
 
-                    decoratedGraphs.add(graph1);
+                    this.decoratedGraphs.add(graph1);
                     break;
                 }
             }
         }
 
         // Apply right orientations and Meek orientations until there's a DAG.
-        while (decoratedGraphs.getLast().hasUndirectedEdge()) {
-            DecoratedGraph graph = decoratedGraphs.getLast().directRight();
+        while (this.decoratedGraphs.getLast().hasUndirectedEdge()) {
+            DecoratedGraph graph = this.decoratedGraphs.getLast().directRight();
 
             if (graph == null) {
                 continue;
             }
 
-            decoratedGraphs.add(graph);
+            this.decoratedGraphs.add(graph);
         }
 
         // Return the DAG.
-        return new EdgeListGraph(decoratedGraphs.getLast().getGraph());
+        return new EdgeListGraph(this.decoratedGraphs.getLast().getGraph());
     }
 
     /**
      * @return true just in case there is still a DAG remaining in the enumeration of DAGs for this pattern.
      */
     public boolean hasNext() {
-        if (storedDag == null) {
-            storedDag = next();
+        if (this.storedDag == null) {
+            this.storedDag = next();
         }
 
-        return storedDag != null;
+        return this.storedDag != null;
     }
 
     //==============================CLASSES==============================//
@@ -155,8 +150,8 @@ public class DagIterator {
     private static class DecoratedGraph {
         private Graph graph;
         private Edge edge;
-        private boolean wasDirectedRight = false;
-        private boolean wasDirectedLeft = false;
+        private boolean wasDirectedRight;
+        private boolean wasDirectedLeft;
 
         public DecoratedGraph(Graph graph) {
             this.setGraph(graph);
@@ -174,11 +169,11 @@ public class DagIterator {
         }
 
         private boolean hasUndirectedEdge() {
-            return edge != null;
+            return this.edge != null;
         }
 
         public Graph getGraph() {
-            return graph;
+            return this.graph;
         }
 
         public void setGraph(Graph graph) {
@@ -186,7 +181,7 @@ public class DagIterator {
         }
 
         public Edge getEdge() {
-            return edge;
+            return this.edge;
         }
 
         public void setEdge(Edge edge) {
@@ -194,30 +189,30 @@ public class DagIterator {
         }
 
         public boolean wasDirectedRight() {
-            return wasDirectedRight;
+            return this.wasDirectedRight;
         }
 
         public boolean wasDirectedLeft() {
-            return wasDirectedLeft;
+            return this.wasDirectedLeft;
         }
 
         public DecoratedGraph directLeft() {
-            if (edge == null) {
+            if (this.edge == null) {
                 throw new IllegalArgumentException();
             }
 
-            if (graph.isAncestorOf(edge.getNode1(), edge.getNode2())
-                    && !graph.isAncestorOf(edge.getNode2(), edge.getNode1())) {
-                wasDirectedLeft = true;
+            if (this.graph.isAncestorOf(this.edge.getNode1(), this.edge.getNode2())
+                    && !this.graph.isAncestorOf(this.edge.getNode2(), this.edge.getNode1())) {
+                this.wasDirectedLeft = true;
                 return directRight();
             }
 
-            if (!wasDirectedLeft) {
+            if (!this.wasDirectedLeft) {
                 Graph graph = new EdgeListGraph(this.graph);
-                graph.removeEdge(edge.getNode1(), edge.getNode2());
-                graph.addDirectedEdge(edge.getNode2(), edge.getNode1());
+                graph.removeEdge(this.edge.getNode1(), this.edge.getNode2());
+                graph.addDirectedEdge(this.edge.getNode2(), this.edge.getNode1());
 //                System.out.println("Orienting " + graph.getEdge(edge.getNode1(), edge.getNode2()));
-                wasDirectedLeft = true;
+                this.wasDirectedLeft = true;
                 return new DecoratedGraph(graph);
             }
 
@@ -225,22 +220,22 @@ public class DagIterator {
         }
 
         public DecoratedGraph directRight() {
-            if (edge == null) {
+            if (this.edge == null) {
                 throw new IllegalArgumentException();
             }
 
-            if (graph.isAncestorOf(edge.getNode2(), edge.getNode1())
-                    && !graph.isAncestorOf(edge.getNode1(), edge.getNode2())) {
-                wasDirectedRight = true;
+            if (this.graph.isAncestorOf(this.edge.getNode2(), this.edge.getNode1())
+                    && !this.graph.isAncestorOf(this.edge.getNode1(), this.edge.getNode2())) {
+                this.wasDirectedRight = true;
                 return directLeft();
             }
 
-            if (!wasDirectedRight) {
+            if (!this.wasDirectedRight) {
                 Graph graph = new EdgeListGraph(this.graph);
-                graph.removeEdge(edge.getNode1(), edge.getNode2());
-                graph.addDirectedEdge(edge.getNode1(), edge.getNode2());
+                graph.removeEdge(this.edge.getNode1(), this.edge.getNode2());
+                graph.addDirectedEdge(this.edge.getNode1(), this.edge.getNode2());
 //                System.out.println("Orienting " + graph.getEdge(edge.getNode1(), edge.getNode2()));
-                wasDirectedRight = true;
+                this.wasDirectedRight = true;
                 return new DecoratedGraph(graph);
             }
 
@@ -248,7 +243,7 @@ public class DagIterator {
         }
 
         public String toString() {
-            return graph.toString();
+            return this.graph.toString();
         }
     }
 }

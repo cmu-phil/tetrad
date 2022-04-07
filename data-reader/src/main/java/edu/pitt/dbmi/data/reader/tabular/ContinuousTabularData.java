@@ -38,12 +38,12 @@ public class ContinuousTabularData implements ContinuousData {
 
     @Override
     public DataColumn[] getDataColumns() {
-        return dataColumns;
+        return this.dataColumns;
     }
 
     @Override
     public double[][] getData() {
-        return data;
+        return this.data;
     }
 
 }

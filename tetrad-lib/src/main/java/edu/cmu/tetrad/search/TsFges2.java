@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -89,7 +89,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     /**
      * If non-null, edges not adjacent in this graph will not be added.
      */
-    private Graph boundGraph = null;
+    private Graph boundGraph;
 
     /**
      * Elapsed time of the most recent search.
@@ -109,31 +109,31 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
      */
-    private LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
+    private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
 
     /**
      * The number of top CPDAGs to store.
      */
-    private int numCPDAGsToStore = 0;
+    private int numCPDAGsToStore;
 
     /**
      * True if verbose output should be printed.
      */
-    private boolean verbose = false;
+    private boolean verbose;
 
     // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
-    private SortedSet<Arrow> sortedArrows = null;
+    private SortedSet<Arrow> sortedArrows;
 
     // Arrows added to sortedArrows for each <i, j>.
-    private Map<OrderedPair<Node>, Set<Arrow>> lookupArrows = null;
+    private Map<OrderedPair<Node>, Set<Arrow>> lookupArrows;
 
     // A utility map to help with orientation.
-    private Map<Node, Set<Node>> neighbors = null;
+    private Map<Node, Set<Node>> neighbors;
 
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
@@ -147,21 +147,18 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
 
-    // The minimum number of operations to do before parallelizing.
-    private final int minChunk = 100;
-
     // Where printed output is sent.
     private PrintStream out = System.out;
 
     // A initial adjacencies graph.
-    private Graph adjacencies = null;
+    private Graph adjacencies;
 
     // The graph being constructed.
     private Graph graph;
 
     // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
     // The ordering doesn't matter; it just have to be transitive.
-    int arrowIndex = 0;
+    int arrowIndex;
 
     // The final totalScore after search.
     private double modelScore;
@@ -206,7 +203,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * @return true if it is assumed that all path pairs with one length 1 path do not cancel.
      */
     public boolean isFaithfulnessAssumed() {
-        return faithfulnessAssumed;
+        return this.faithfulnessAssumed;
     }
 
     /**
@@ -216,24 +213,24 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * @return the resulting CPDAG.
      */
     public Graph search() {
-        topGraphs.clear();
+        this.topGraphs.clear();
 
-        lookupArrows = new ConcurrentHashMap<>();
-        final List<Node> nodes = new ArrayList<>(variables);
-        graph = new EdgeListGraph(nodes);
+        this.lookupArrows = new ConcurrentHashMap<>();
+        List<Node> nodes = new ArrayList<>(this.variables);
+        this.graph = new EdgeListGraph(nodes);
 
-        if (adjacencies != null) {
-            adjacencies = GraphUtils.replaceNodes(adjacencies, nodes);
+        if (this.adjacencies != null) {
+            this.adjacencies = GraphUtils.replaceNodes(this.adjacencies, nodes);
         }
 
-        if (externalGraph != null) {
-            graph = new EdgeListGraph(externalGraph);
-            graph = GraphUtils.replaceNodes(graph, nodes);
+        if (this.externalGraph != null) {
+            this.graph = new EdgeListGraph(this.externalGraph);
+            this.graph = GraphUtils.replaceNodes(this.graph, nodes);
         }
 
-        addRequiredEdges(graph);
+        addRequiredEdges(this.graph);
 
-        if (faithfulnessAssumed) {
+        if (this.faithfulnessAssumed) {
             initializeForwardEdgesFromEmptyGraph(getVariables());
 
             // Do forward search.
@@ -243,8 +240,6 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
             this.mode = Mode.coverNoncolliders;
             initializeTwoStepEdges(getVariables());
-            fes();
-            bes();
         } else {
             initializeForwardEdgesFromEmptyGraph(getVariables());
 
@@ -255,23 +250,23 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
             this.mode = Mode.allowUnfaithfulness;
             initializeForwardEdgesFromExistingGraph(getVariables());
-            fes();
-            bes();
         }
+        fes();
+        bes();
 
         long start = System.currentTimeMillis();
-        totalScore = 0.0;
+        this.totalScore = 0.0;
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
-        this.logger.log("graph", "\nReturning this graph: " + graph);
+        this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
-        this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.flush();
 
-        this.modelScore = totalScore;
+        this.modelScore = this.totalScore;
 
-        return graph;
+        return this.graph;
     }
 
     /**
@@ -279,7 +274,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      */
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -293,7 +288,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     }
 
     public long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     /**
@@ -314,14 +309,14 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * @return the list of top scoring graphs.
      */
     public LinkedList<ScoredGraph> getTopGraphs() {
-        return topGraphs;
+        return this.topGraphs;
     }
 
     /**
      * @return the number of patterns to store.
      */
     public int getnumCPDAGsToStore() {
-        return numCPDAGsToStore;
+        return this.numCPDAGsToStore;
     }
 
     /**
@@ -340,7 +335,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * proceeds from there.
      */
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     /**
@@ -348,14 +343,14 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      */
     public void setExternalGraph(Graph externalGraph) {
         if (externalGraph != null) {
-            externalGraph = GraphUtils.replaceNodes(externalGraph, variables);
+            externalGraph = GraphUtils.replaceNodes(externalGraph, this.variables);
 
-            if (verbose) {
-                out.println("Initial graph variables: " + externalGraph.getNodes());
-                out.println("Data set variables: " + variables);
+            if (this.verbose) {
+                this.out.println("Initial graph variables: " + externalGraph.getNodes());
+                this.out.println("Data set variables: " + this.variables);
             }
 
-            if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(variables))) {
+            if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(this.variables))) {
                 throw new IllegalArgumentException("Variables aren't the same.");
             }
         }
@@ -382,7 +377,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
-        return out;
+        return this.out;
     }
 
     /**
@@ -390,7 +385,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * will not be added.
      */
     public Graph getAdjacencies() {
-        return adjacencies;
+        return this.adjacencies;
     }
 
     /**
@@ -405,7 +400,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * A bound on cycle length.
      */
     public int getCycleBound() {
-        return cycleBound;
+        return this.cycleBound;
     }
 
     /**
@@ -439,8 +434,8 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * @deprecated Use the getters on the individual scores instead.
      */
     public double getPenaltyDiscount() {
-        if (score instanceof ISemBicScore) {
-            return ((ISemBicScore) score).getPenaltyDiscount();
+        if (this.score instanceof ISemBicScore) {
+            return ((ISemBicScore) this.score).getPenaltyDiscount();
         } else {
             return 2.0;
         }
@@ -450,8 +445,8 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setSamplePrior(double samplePrior) {
-        if (score instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) score).setSamplePrior(samplePrior);
+        if (this.score instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) this.score).setSamplePrior(samplePrior);
         }
     }
 
@@ -459,8 +454,8 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setStructurePrior(double expectedNumParents) {
-        if (score instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) score).setStructurePrior(expectedNumParents);
+        if (this.score instanceof LocalDiscreteScore) {
+            ((LocalDiscreteScore) this.score).setStructurePrior(expectedNumParents);
         }
     }
 
@@ -470,8 +465,8 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
-        if (score instanceof ISemBicScore) {
-            ((ISemBicScore) score).setPenaltyDiscount(penaltyDiscount);
+        if (this.score instanceof ISemBicScore) {
+            ((ISemBicScore) this.score).setPenaltyDiscount(penaltyDiscount);
         }
     }
 
@@ -481,7 +476,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * @return -1 for unlimited.
      */
     public int getMaxIndegree() {
-        return maxIndegree;
+        return this.maxIndegree;
     }
 
     /**
@@ -510,13 +505,15 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
         buildIndexing(totalScore.getVariables());
 
-        this.maxIndegree = score.getMaxDegree();
+        this.maxIndegree = this.score.getMaxDegree();
     }
 
     final int[] count = new int[1];
 
     public int getMinChunk(int n) {
-        return Math.max(n / maxThreads, minChunk);
+        // The minimum number of operations to do before parallelizing.
+        int minChunk = 100;
+        return Math.max(n / this.maxThreads, minChunk);
     }
 
     class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
@@ -534,50 +531,50 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
         @Override
         protected Boolean compute() {
-            for (int i = from; i < to; i++) {
+            for (int i = this.from; i < this.to; i++) {
                 if ((i + 1) % 1000 == 0) {
-                    count[0] += 1000;
-                    out.println("Initializing effect edges: " + (count[0]));
+                    TsFges2.this.count[0] += 1000;
+                    TsFges2.this.out.println("Initializing effect edges: " + (TsFges2.this.count[0]));
                 }
 
-                Node y = nodes.get(i);
-                neighbors.put(y, emptySet);
+                Node y = this.nodes.get(i);
+                TsFges2.this.neighbors.put(y, this.emptySet);
 
-                for (int j = i + 1; j < nodes.size(); j++) {
+                for (int j = i + 1; j < this.nodes.size(); j++) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
 
-                    Node x = nodes.get(j);
+                    Node x = this.nodes.get(j);
 
                     if (existsKnowledge()) {
                         if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
                             continue;
                         }
 
-                        if (!validSetByKnowledge(y, emptySet)) {
+                        if (!validSetByKnowledge(y, this.emptySet)) {
                             continue;
                         }
                     }
 
-                    if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+                    if (TsFges2.this.adjacencies != null && !TsFges2.this.adjacencies.isAdjacentTo(x, y)) {
                         continue;
                     }
 
-                    int child = hashIndices.get(y);
-                    int parent = hashIndices.get(x);
-                    double bump = score.localScoreDiff(parent, child);
+                    int child = TsFges2.this.hashIndices.get(y);
+                    int parent = TsFges2.this.hashIndices.get(x);
+                    double bump = TsFges2.this.score.localScoreDiff(parent, child);
 
-                    if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) continue;
+                    if (TsFges2.this.boundGraph != null && !TsFges2.this.boundGraph.isAdjacentTo(x, y)) continue;
 
                     if (bump > 0) {
-                        final Edge edge = Edges.undirectedEdge(x, y);
-                        effectEdgesGraph.addEdge(edge);
+                        Edge edge = Edges.undirectedEdge(x, y);
+                        TsFges2.this.effectEdgesGraph.addEdge(edge);
                     }
 
                     if (bump > 0.0) {
-                        addArrow(x, y, emptySet, emptySet, bump);
-                        addArrow(y, x, emptySet, emptySet, bump);
+                        addArrow(x, y, this.emptySet, this.emptySet, bump);
+                        addArrow(y, x, this.emptySet, this.emptySet, bump);
                     }
                 }
             }
@@ -586,15 +583,12 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         }
     }
 
-    private void initializeForwardEdgesFromEmptyGraph(final List<Node> nodes) {
-//        if (verbose) {
-//            System.out.println("heuristicSpeedup = true");
-//        }
+    private void initializeForwardEdgesFromEmptyGraph(List<Node> nodes) {
 
-        sortedArrows = new ConcurrentSkipListSet<>();
-        lookupArrows = new ConcurrentHashMap<>();
-        neighbors = new ConcurrentHashMap<>();
-        final Set<Node> emptySet = new HashSet<>();
+        this.sortedArrows = new ConcurrentSkipListSet<>();
+        this.lookupArrows = new ConcurrentHashMap<>();
+        this.neighbors = new ConcurrentHashMap<>();
+        Set<Node> emptySet = new HashSet<>();
 
         long start = System.currentTimeMillis();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
@@ -608,7 +602,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
-                int numNodesPerTask = Math.max(100, nodes.size() / maxThreads);
+                int numNodesPerTask = Math.max(100, nodes.size() / TsFges2.this.maxThreads);
 
                 for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
                     NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
@@ -623,7 +617,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                         }
                     }
 
-                    while (tasks.size() > maxThreads) {
+                    while (tasks.size() > TsFges2.this.maxThreads) {
                         NodeTaskEmptyGraph _task = tasks.poll();
                         _task.join();
                     }
@@ -637,44 +631,41 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             }
         }
 
-        pool.invoke(new InitializeFromEmptyGraphTask());
+        this.pool.invoke(new InitializeFromEmptyGraphTask());
 
         long stop = System.currentTimeMillis();
 
-        if (verbose) {
-            out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
+        if (this.verbose) {
+            this.out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
         }
     }
 
-    private void initializeTwoStepEdges(final List<Node> nodes) {
-//        if (verbose) {
-//            System.out.println("heuristicSpeedup = false");
-//        }
+    private void initializeTwoStepEdges(List<Node> nodes) {
 
-        count[0] = 0;
+        this.count[0] = 0;
 
-        sortedArrows = new ConcurrentSkipListSet<>();
-        lookupArrows = new ConcurrentHashMap<>();
-        neighbors = new ConcurrentHashMap<>();
+        this.sortedArrows = new ConcurrentSkipListSet<>();
+        this.lookupArrows = new ConcurrentHashMap<>();
+        this.neighbors = new ConcurrentHashMap<>();
 
         if (this.effectEdgesGraph == null) {
             this.effectEdgesGraph = new EdgeListGraph(nodes);
         }
 
-        if (externalGraph != null) {
-            for (Edge edge : externalGraph.getEdges()) {
-                if (!effectEdgesGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                    effectEdgesGraph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+        if (this.externalGraph != null) {
+            for (Edge edge : this.externalGraph.getEdges()) {
+                if (!this.effectEdgesGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                    this.effectEdgesGraph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
                 }
             }
         }
 
-        final Set<Node> emptySet = new HashSet<>(0);
+        Set<Node> emptySet = new HashSet<>(0);
 
         class InitializeFromExistingGraphTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public InitializeFromExistingGraphTask(int chunk, int from, int to) {
                 this.chunk = chunk;
@@ -686,24 +677,24 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 if (TaskManager.getInstance().isCanceled()) return false;
 
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
+                if (this.to - this.from <= this.chunk) {
+                    for (int i = this.from; i < this.to; i++) {
                         if ((i + 1) % 1000 == 0) {
-                            count[0] += 1000;
-                            out.println("Initializing effect edges: " + (count[0]));
+                            TsFges2.this.count[0] += 1000;
+                            TsFges2.this.out.println("Initializing effect edges: " + (TsFges2.this.count[0]));
                         }
 
                         Node y = nodes.get(i);
 
                         Set<Node> g = new HashSet<>();
 
-                        for (Node n : graph.getAdjacentNodes(y)) {
-                            for (Node m : graph.getAdjacentNodes(n)) {
-                                if (graph.isAdjacentTo(y, m)) {
+                        for (Node n : TsFges2.this.graph.getAdjacentNodes(y)) {
+                            for (Node m : TsFges2.this.graph.getAdjacentNodes(n)) {
+                                if (TsFges2.this.graph.isAdjacentTo(y, m)) {
                                     continue;
                                 }
 
-                                if (graph.isDefCollider(m, n, y)) {
+                                if (TsFges2.this.graph.isDefCollider(m, n, y)) {
                                     continue;
                                 }
 
@@ -722,11 +713,11 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                                 }
                             }
 
-                            if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+                            if (TsFges2.this.adjacencies != null && !TsFges2.this.adjacencies.isAdjacentTo(x, y)) {
                                 continue;
                             }
 
-                            if (removedEdges.contains(Edges.undirectedEdge(x, y))) {
+                            if (TsFges2.this.removedEdges.contains(Edges.undirectedEdge(x, y))) {
                                 continue;
                             }
 
@@ -734,54 +725,50 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                         }
                     }
 
-                    return true;
                 } else {
-                    int mid = (to + from) / 2;
+                    int mid = (this.to + this.from) / 2;
 
-                    InitializeFromExistingGraphTask left = new InitializeFromExistingGraphTask(chunk, from, mid);
-                    InitializeFromExistingGraphTask right = new InitializeFromExistingGraphTask(chunk, mid, to);
+                    InitializeFromExistingGraphTask left = new InitializeFromExistingGraphTask(this.chunk, this.from, mid);
+                    InitializeFromExistingGraphTask right = new InitializeFromExistingGraphTask(this.chunk, mid, this.to);
 
                     left.fork();
                     right.compute();
                     left.join();
 
-                    return true;
                 }
+                return true;
             }
         }
 
-        pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
     }
 
-    private void initializeForwardEdgesFromExistingGraph(final List<Node> nodes) {
-//        if (verbose) {
-//            System.out.println("heuristicSpeedup = false");
-//        }
+    private void initializeForwardEdgesFromExistingGraph(List<Node> nodes) {
 
-        count[0] = 0;
+        this.count[0] = 0;
 
-        sortedArrows = new ConcurrentSkipListSet<>();
-        lookupArrows = new ConcurrentHashMap<>();
-        neighbors = new ConcurrentHashMap<>();
+        this.sortedArrows = new ConcurrentSkipListSet<>();
+        this.lookupArrows = new ConcurrentHashMap<>();
+        this.neighbors = new ConcurrentHashMap<>();
 
         if (this.effectEdgesGraph == null) {
             this.effectEdgesGraph = new EdgeListGraph(nodes);
         }
 
-        if (externalGraph != null) {
-            for (Edge edge : externalGraph.getEdges()) {
-                if (!effectEdgesGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                    effectEdgesGraph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+        if (this.externalGraph != null) {
+            for (Edge edge : this.externalGraph.getEdges()) {
+                if (!this.effectEdgesGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                    this.effectEdgesGraph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
                 }
             }
         }
 
-        final Set<Node> emptySet = new HashSet<>(0);
+        Set<Node> emptySet = new HashSet<>(0);
 
         class InitializeFromExistingGraphTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public InitializeFromExistingGraphTask(int chunk, int from, int to) {
                 this.chunk = chunk;
@@ -793,23 +780,22 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 if (TaskManager.getInstance().isCanceled()) return false;
 
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
+                if (this.to - this.from <= this.chunk) {
+                    for (int i = this.from; i < this.to; i++) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
                         }
 
                         if ((i + 1) % 1000 == 0) {
-                            count[0] += 1000;
-                            out.println("Initializing effect edges: " + (count[0]));
+                            TsFges2.this.count[0] += 1000;
+                            TsFges2.this.out.println("Initializing effect edges: " + (TsFges2.this.count[0]));
                         }
 
                         Node y = nodes.get(i);
-                        Set<Node> D = new HashSet<>();
                         List<Node> cond = new ArrayList<>();
-                        D.addAll(GraphUtils.getDconnectedVars(y, cond, graph));
+                        Set<Node> D = new HashSet<>(GraphUtils.getDconnectedVars(y, cond, TsFges2.this.graph));
                         D.remove(y);
-                        D.removeAll(effectEdgesGraph.getAdjacentNodes(y));
+                        TsFges2.this.effectEdgesGraph.getAdjacentNodes(y).forEach(D::remove);
 
                         for (Node x : D) {
                             if (existsKnowledge()) {
@@ -822,7 +808,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                                 }
                             }
 
-                            if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+                            if (TsFges2.this.adjacencies != null && !TsFges2.this.adjacencies.isAdjacentTo(x, y)) {
                                 continue;
                             }
 
@@ -830,40 +816,39 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                         }
                     }
 
-                    return true;
                 } else {
-                    int mid = (to + from) / 2;
+                    int mid = (this.to + this.from) / 2;
 
-                    InitializeFromExistingGraphTask left = new InitializeFromExistingGraphTask(chunk, from, mid);
-                    InitializeFromExistingGraphTask right = new InitializeFromExistingGraphTask(chunk, mid, to);
+                    InitializeFromExistingGraphTask left = new InitializeFromExistingGraphTask(this.chunk, this.from, mid);
+                    InitializeFromExistingGraphTask right = new InitializeFromExistingGraphTask(this.chunk, mid, this.to);
 
                     left.fork();
                     right.compute();
                     left.join();
 
-                    return true;
                 }
+                return true;
             }
         }
 
-        pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
+        this.pool.invoke(new InitializeFromExistingGraphTask(getMinChunk(nodes.size()), 0, nodes.size()));
     }
 
     private void fes() {
         TetradLogger.getInstance().log("info", "** FORWARD EQUIVALENCE SEARCH");
 
-        while (!sortedArrows.isEmpty()) {
+        while (!this.sortedArrows.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Arrow arrow = sortedArrows.first();
-            sortedArrows.remove(arrow);
+            Arrow arrow = this.sortedArrows.first();
+            this.sortedArrows.remove(arrow);
 
             Node x = arrow.getA();
             Node y = arrow.getB();
 
-            if (graph.isAdjacentTo(x, y)) {
+            if (this.graph.isAdjacentTo(x, y)) {
                 continue;
             }
 
@@ -885,7 +870,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             boolean inserted = insert(x, y, T, bump);
             if (!inserted) continue;
 
-            totalScore += bump;
+            this.totalScore += bump;
 
             Set<Node> visited = reapplyOrientation(x, y, null);
             Set<Node> toProcess = new HashSet<>();
@@ -895,8 +880,8 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                     break;
                 }
 
-                final Set<Node> neighbors1 = getNeighbors(node);
-                final Set<Node> storedNeighbors = this.neighbors.get(node);
+                Set<Node> neighbors1 = getNeighbors(node);
+                Set<Node> storedNeighbors = this.neighbors.get(node);
 
                 if (!(neighbors1.equals(storedNeighbors))) {
                     toProcess.add(node);
@@ -914,19 +899,19 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     private void bes() {
         TetradLogger.getInstance().log("info", "** BACKWARD EQUIVALENCE SEARCH");
 
-        sortedArrows = new ConcurrentSkipListSet<>();
-        lookupArrows = new ConcurrentHashMap<>();
-        neighbors = new ConcurrentHashMap<>();
+        this.sortedArrows = new ConcurrentSkipListSet<>();
+        this.lookupArrows = new ConcurrentHashMap<>();
+        this.neighbors = new ConcurrentHashMap<>();
 
         initializeArrowsBackward();
 
-        while (!sortedArrows.isEmpty()) {
+        while (!this.sortedArrows.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            Arrow arrow = sortedArrows.first();
-            sortedArrows.remove(arrow);
+            Arrow arrow = this.sortedArrows.first();
+            this.sortedArrows.remove(arrow);
 
             Node x = arrow.getA();
             Node y = arrow.getB();
@@ -935,9 +920,9 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            if (!graph.isAdjacentTo(x, y)) continue;
+            if (!this.graph.isAdjacentTo(x, y)) continue;
 
-            Edge edge = graph.getEdge(x, y);
+            Edge edge = this.graph.getEdge(x, y);
             if (edge.pointsTowards(x)) continue;
 
             HashSet<Node> diff = new HashSet<>(arrow.getNaYX());
@@ -951,7 +936,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             boolean deleted = delete(x, y, H, bump, arrow.getNaYX());
             if (!deleted) continue;
 
-            totalScore += bump;
+            this.totalScore += bump;
 
             clearArrow(x, y);
 
@@ -960,8 +945,8 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             Set<Node> toProcess = new HashSet<>();
 
             for (Node node : visited) {
-                final Set<Node> neighbors1 = getNeighbors(node);
-                final Set<Node> storedNeighbors = this.neighbors.get(node);
+                Set<Node> neighbors1 = getNeighbors(node);
+                Set<Node> storedNeighbors = this.neighbors.get(node);
 
                 if (!(neighbors1.equals(storedNeighbors))) {
                     toProcess.add(node);
@@ -980,8 +965,8 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     }
 
     private Set<Node> getCommonAdjacents(Node x, Node y) {
-        Set<Node> commonChildren = new HashSet<>(graph.getAdjacentNodes(x));
-        commonChildren.retainAll(graph.getAdjacentNodes(y));
+        Set<Node> commonChildren = new HashSet<>(this.graph.getAdjacentNodes(x));
+        commonChildren.retainAll(this.graph.getAdjacentNodes(y));
         return commonChildren;
     }
 
@@ -999,13 +984,13 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
     // Returns true if knowledge is not empty.
     private boolean existsKnowledge() {
-        return !knowledge.isEmpty();
+        return !this.knowledge.isEmpty();
     }
 
 
     // Initiaizes the sorted arrows lists for the backward search.
     private void initializeArrowsBackward() {
-        for (Edge edge : graph.getEdges()) {
+        for (Edge edge : this.graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
@@ -1037,12 +1022,12 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     }
 
     // Calcuates new arrows based on changes in the graph for the forward search.
-    private void reevaluateForward(final Set<Node> nodes, final Arrow arrow) {
+    private void reevaluateForward(Set<Node> nodes, Arrow arrow) {
         class AdjTask extends RecursiveTask<Boolean> {
             private final List<Node> nodes;
-            private int from;
-            private int to;
-            private int chunk;
+            private final int from;
+            private final int to;
+            private final int chunk;
 
             public AdjTask(int chunk, List<Node> nodes, int from, int to) {
                 this.nodes = nodes;
@@ -1053,28 +1038,28 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
             @Override
             protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int _w = from; _w < to; _w++) {
+                if (this.to - this.from <= this.chunk) {
+                    for (int _w = this.from; _w < this.to; _w++) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
                         }
 
-                        Node x = nodes.get(_w);
+                        Node x = this.nodes.get(_w);
 
                         List<Node> adj;
 
-                        if (mode == Mode.heuristicSpeedup) {
-                            adj = effectEdgesGraph.getAdjacentNodes(x);
-                        } else if (mode == Mode.coverNoncolliders) {
+                        if (TsFges2.this.mode == Mode.heuristicSpeedup) {
+                            adj = TsFges2.this.effectEdgesGraph.getAdjacentNodes(x);
+                        } else if (TsFges2.this.mode == Mode.coverNoncolliders) {
                             Set<Node> g = new HashSet<>();
 
-                            for (Node n : graph.getAdjacentNodes(x)) {
-                                for (Node m : graph.getAdjacentNodes(n)) {
-                                    if (graph.isAdjacentTo(x, m)) {
+                            for (Node n : TsFges2.this.graph.getAdjacentNodes(x)) {
+                                for (Node m : TsFges2.this.graph.getAdjacentNodes(n)) {
+                                    if (TsFges2.this.graph.isAdjacentTo(x, m)) {
                                         continue;
                                     }
 
-                                    if (graph.isDefCollider(m, n, x)) {
+                                    if (TsFges2.this.graph.isDefCollider(m, n, x)) {
                                         continue;
                                     }
 
@@ -1083,9 +1068,8 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                             }
 
                             adj = new ArrayList<>(g);
-                        } else if (mode == Mode.allowUnfaithfulness) {
-                            HashSet<Node> D = new HashSet<>();
-                            D.addAll(GraphUtils.getDconnectedVars(x, new ArrayList<Node>(), graph));
+                        } else if (TsFges2.this.mode == Mode.allowUnfaithfulness) {
+                            HashSet<Node> D = new HashSet<>(GraphUtils.getDconnectedVars(x, new ArrayList<>(), TsFges2.this.graph));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {
@@ -1093,43 +1077,42 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                         }
 
                         for (Node w : adj) {
-                            if (adjacencies != null && !(adjacencies.isAdjacentTo(w, x))) {
+                            if (TsFges2.this.adjacencies != null && !(TsFges2.this.adjacencies.isAdjacentTo(w, x))) {
                                 continue;
                             }
 
                             if (w == x) continue;
 
-                            if (!graph.isAdjacentTo(w, x)) {
+                            if (!TsFges2.this.graph.isAdjacentTo(w, x)) {
                                 clearArrow(w, x);
                                 calculateArrowsForward(w, x);
                             }
                         }
                     }
 
-                    return true;
                 } else {
-                    int mid = (to - from) / 2;
+                    int mid = (this.to - this.from) / 2;
 
                     List<AdjTask> tasks = new ArrayList<>();
 
-                    tasks.add(new AdjTask(chunk, nodes, from, from + mid));
-                    tasks.add(new AdjTask(chunk, nodes, from + mid, to));
+                    tasks.add(new AdjTask(this.chunk, this.nodes, this.from, this.from + mid));
+                    tasks.add(new AdjTask(this.chunk, this.nodes, this.from + mid, this.to));
 
-                    invokeAll(tasks);
+                    ForkJoinTask.invokeAll(tasks);
 
-                    return true;
                 }
+                return true;
             }
         }
 
-        final AdjTask task = new AdjTask(getMinChunk(nodes.size()), new ArrayList<>(nodes), 0, nodes.size());
-        pool.invoke(task);
+        AdjTask task = new AdjTask(getMinChunk(nodes.size()), new ArrayList<>(nodes), 0, nodes.size());
+        this.pool.invoke(task);
     }
 
     // Calculates the new arrows for an a->b edge.
     private void calculateArrowsForward(Node a, Node b) {
-        if (mode == Mode.heuristicSpeedup && !effectEdgesGraph.isAdjacentTo(a, b)) return;
-        if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) return;
+        if (this.mode == Mode.heuristicSpeedup && !this.effectEdgesGraph.isAdjacentTo(a, b)) return;
+        if (this.adjacencies != null && !this.adjacencies.isAdjacentTo(a, b)) return;
         this.neighbors.put(b, getNeighbors(b));
 
         if (existsKnowledge()) {
@@ -1142,17 +1125,17 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         if (!GraphUtils.isClique(naYX, this.graph)) return;
 
         List<Node> TNeighbors = getTNeighbors(a, b);
-        int _maxIndegree = maxIndegree == -1 ? 1000 : maxIndegree;
+        int _maxIndegree = this.maxIndegree == -1 ? 1000 : this.maxIndegree;
 
-        final int _max = Math.min(TNeighbors.size(), _maxIndegree - graph.getIndegree(b));
+        int _max = Math.min(TNeighbors.size(), _maxIndegree - this.graph.getIndegree(b));
 
         Set<Set<Node>> previousCliques = new HashSet<>();
-        previousCliques.add(new HashSet<Node>());
+        previousCliques.add(new HashSet<>());
         Set<Set<Node>> newCliques = new HashSet<>();
 
         FOR:
         for (int i = 0; i <= _max; i++) {
-            final ChoiceGenerator gen = new ChoiceGenerator(TNeighbors.size(), i);
+            ChoiceGenerator gen = new ChoiceGenerator(TNeighbors.size(), i);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -1181,16 +1164,12 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 if (!GraphUtils.isClique(union, this.graph)) continue;
                 newCliques.add(union);
 
-                double bump = insertEval(a, b, T, naYX, hashIndices);
+                double bump = insertEval(a, b, T, naYX, this.hashIndices);
 
                 if (bump > 0.0) {
                     addArrow(a, b, naYX, T, bump);
                 }
 
-//                if (mode == Mode.heuristicSpeedup && union.isEmpty() && score.isEffectEdge(bump) &&
-//                        !effectEdgesGraph.isAdjacentTo(a, b) && graph.getParents(b).isEmpty()) {
-//                    effectEdgesGraph.addUndirectedEdge(a, b);
-//                }
             }
 
             previousCliques = newCliques;
@@ -1199,8 +1178,8 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     }
 
     private void addArrow(Node a, Node b, Set<Node> naYX, Set<Node> hOrT, double bump) {
-        Arrow arrow = new Arrow(bump, a, b, hOrT, naYX, arrowIndex++);
-        sortedArrows.add(arrow);
+        Arrow arrow = new Arrow(bump, a, b, hOrT, naYX, this.arrowIndex++);
+        this.sortedArrows.add(arrow);
         addLookupArrow(a, b, arrow);
     }
 
@@ -1208,11 +1187,11 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     private void reevaluateBackward(Set<Node> toProcess) {
         class BackwardTask extends RecursiveTask<Boolean> {
             private final Node r;
-            private List<Node> adj;
-            private Map<Node, Integer> hashIndices;
-            private int chunk;
-            private int from;
-            private int to;
+            private final List<Node> adj;
+            private final Map<Node, Integer> hashIndices;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public BackwardTask(Node r, List<Node> adj, int chunk, int from, int to,
                                 Map<Node, Integer> hashIndices) {
@@ -1226,48 +1205,47 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
             @Override
             protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int _w = from; _w < to; _w++) {
-                        final Node w = adj.get(_w);
-                        Edge e = graph.getEdge(w, r);
+                if (this.to - this.from <= this.chunk) {
+                    for (int _w = this.from; _w < this.to; _w++) {
+                        Node w = this.adj.get(_w);
+                        Edge e = TsFges2.this.graph.getEdge(w, this.r);
 
                         if (e != null) {
-                            if (e.pointsTowards(r)) {
-                                clearArrow(w, r);
-                                clearArrow(r, w);
+                            if (e.pointsTowards(this.r)) {
+                                clearArrow(w, this.r);
+                                clearArrow(this.r, w);
 
-                                calculateArrowsBackward(w, r);
-                            } else if (Edges.isUndirectedEdge(graph.getEdge(w, r))) {
-                                clearArrow(w, r);
-                                clearArrow(r, w);
+                                calculateArrowsBackward(w, this.r);
+                            } else if (Edges.isUndirectedEdge(TsFges2.this.graph.getEdge(w, this.r))) {
+                                clearArrow(w, this.r);
+                                clearArrow(this.r, w);
 
-                                calculateArrowsBackward(w, r);
-                                calculateArrowsBackward(r, w);
+                                calculateArrowsBackward(w, this.r);
+                                calculateArrowsBackward(this.r, w);
                             }
                         }
                     }
 
-                    return true;
                 } else {
-                    int mid = (to - from) / 2;
+                    int mid = (this.to - this.from) / 2;
 
                     List<BackwardTask> tasks = new ArrayList<>();
 
-                    tasks.add(new BackwardTask(r, adj, chunk, from, from + mid, hashIndices));
-                    tasks.add(new BackwardTask(r, adj, chunk, from + mid, to, hashIndices));
+                    tasks.add(new BackwardTask(this.r, this.adj, this.chunk, this.from, this.from + mid, this.hashIndices));
+                    tasks.add(new BackwardTask(this.r, this.adj, this.chunk, this.from + mid, this.to, this.hashIndices));
 
-                    invokeAll(tasks);
+                    ForkJoinTask.invokeAll(tasks);
 
-                    return true;
                 }
+                return true;
             }
         }
 
         for (Node r : toProcess) {
             this.neighbors.put(r, getNeighbors(r));
-            List<Node> adjacentNodes = graph.getAdjacentNodes(r);
-            pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0,
-                    adjacentNodes.size(), hashIndices));
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(r);
+            this.pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0,
+                    adjacentNodes.size(), this.hashIndices));
         }
     }
 
@@ -1283,10 +1261,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
         List<Node> _naYX = new ArrayList<>(naYX);
 
-        final int _depth = _naYX.size();
+        int _depth = _naYX.size();
 
         for (int i = 0; i <= _depth; i++) {
-            final ChoiceGenerator gen = new ChoiceGenerator(_naYX.size(), i);
+            ChoiceGenerator gen = new ChoiceGenerator(_naYX.size(), i);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -1305,7 +1283,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                     }
                 }
 
-                double bump = deleteEval(a, b, diff, naYX, hashIndices);
+                double bump = deleteEval(a, b, diff, naYX, this.hashIndices);
 
                 if (bump > 0.0) {
                     addArrow(a, b, naYX, h, bump);
@@ -1315,7 +1293,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     }
 
     public double getModelScore() {
-        return modelScore;
+        return this.modelScore;
     }
 
     // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with
@@ -1324,12 +1302,12 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
     // as the "bump".
     private static class Arrow implements Comparable<Arrow> {
-        private double bump;
-        private Node a;
-        private Node b;
-        private Set<Node> hOrT;
-        private Set<Node> naYX;
-        private int index = 0;
+        private final double bump;
+        private final Node a;
+        private final Node b;
+        private final Set<Node> hOrT;
+        private final Set<Node> naYX;
+        private final int index;
 
         public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX, int index) {
             this.bump = bump;
@@ -1341,23 +1319,23 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         }
 
         public double getBump() {
-            return bump;
+            return this.bump;
         }
 
         public Node getA() {
-            return a;
+            return this.a;
         }
 
         public Node getB() {
-            return b;
+            return this.b;
         }
 
         public Set<Node> getHOrT() {
-            return hOrT;
+            return this.hOrT;
         }
 
         public Set<Node> getNaYX() {
-            return naYX;
+            return this.naYX;
         }
 
         // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
@@ -1369,7 +1347,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         public int compareTo(Arrow arrow) {
             if (arrow == null) throw new NullPointerException();
 
-            final int compare = Double.compare(arrow.getBump(), getBump());
+            int compare = Double.compare(arrow.getBump(), getBump());
 
             if (compare == 0) {
                 return Integer.compare(getIndex(), arrow.getIndex());
@@ -1379,17 +1357,17 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         }
 
         public String toString() {
-            return "Arrow<" + a + "->" + b + " bump = " + bump + " t/h = " + hOrT + " naYX = " + naYX + ">";
+            return "Arrow<" + this.a + "->" + this.b + " bump = " + this.bump + " t/h = " + this.hOrT + " naYX = " + this.naYX + ">";
         }
 
         public int getIndex() {
-            return index;
+            return this.index;
         }
     }
 
     // Get all adj that are connected to Y by an undirected edge and not adjacent to X.
     private List<Node> getTNeighbors(Node x, Node y) {
-        List<Edge> yEdges = graph.getEdges(y);
+        List<Edge> yEdges = this.graph.getEdges(y);
         List<Node> tNeighbors = new ArrayList<>();
 
         for (Edge edge : yEdges) {
@@ -1399,7 +1377,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
             Node z = edge.getDistalNode(y);
 
-            if (graph.isAdjacentTo(z, x)) {
+            if (this.graph.isAdjacentTo(z, x)) {
                 continue;
             }
 
@@ -1411,7 +1389,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
     // Get all adj that are connected to Y.
     private Set<Node> getNeighbors(Node y) {
-        List<Edge> yEdges = graph.getEdges(y);
+        List<Edge> yEdges = this.graph.getEdges(y);
         Set<Node> neighbors = new HashSet<>();
 
         for (Edge edge : yEdges) {
@@ -1432,7 +1410,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                               Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(naYX);
         set.addAll(t);
-        set.addAll(graph.getParents(y));
+        set.addAll(this.graph.getParents(y));
         return scoreGraphChange(y, set, x, hashIndices);
     }
 
@@ -1440,50 +1418,50 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     private double deleteEval(Node x, Node y, Set<Node> diff, Set<Node> naYX,
                               Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(diff);
-        set.addAll(graph.getParents(y));
+        set.addAll(this.graph.getParents(y));
         set.remove(x);
         return -scoreGraphChange(y, set, x, hashIndices);
     }
 
     // Do an actual insertion. (Definition 12 from Chickering, 2002).
     private boolean insert(Node x, Node y, Set<Node> T, double bump) {
-        if (graph.isAdjacentTo(x, y)) {
+        if (this.graph.isAdjacentTo(x, y)) {
             return false; // The initial graph may already have put this edge in the graph.
         }
 
         Edge trueEdge = null;
 
-        if (trueGraph != null) {
-            Node _x = trueGraph.getNode(x.getName());
-            Node _y = trueGraph.getNode(y.getName());
-            trueEdge = trueGraph.getEdge(_x, _y);
+        if (this.trueGraph != null) {
+            Node _x = this.trueGraph.getNode(x.getName());
+            Node _y = this.trueGraph.getNode(y.getName());
+            trueEdge = this.trueGraph.getEdge(_x, _y);
         }
 
-        if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) return false;
+        if (this.boundGraph != null && !this.boundGraph.isAdjacentTo(x, y)) return false;
 
-        graph.addDirectedEdge(x, y);
-        /** Adding similar edges to enforce repeating structure **/
+        this.graph.addDirectedEdge(x, y);
+        //  Adding similar edges to enforce repeating structure **/
         addSimilarEdges(x, y);
-        /** **/
+        //  **/
 
-        if (verbose) {
-            String label = trueGraph != null && trueEdge != null ? "*" : "";
-            TetradLogger.getInstance().log("insertedEdges", graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
+        if (this.verbose) {
+            String label = this.trueGraph != null && trueEdge != null ? "*" : "";
+            TetradLogger.getInstance().log("insertedEdges", this.graph.getNumEdges() + ". INSERT " + this.graph.getEdge(x, y) +
                     " " + T + " " + bump + " " + label);
         }
 
-        int numEdges = graph.getNumEdges();
+        int numEdges = this.graph.getNumEdges();
 
 //        if (verbose) {
-        if (numEdges % 1000 == 0) out.println("Num edges added: " + numEdges);
+        if (numEdges % 1000 == 0) this.out.println("Num edges added: " + numEdges);
 //        }
 
-        if (verbose) {
-            String label = trueGraph != null && trueEdge != null ? "*" : "";
-            out.println(graph.getNumEdges() + ". INSERT " + graph.getEdge(x, y) +
+        if (this.verbose) {
+            String label = this.trueGraph != null && trueEdge != null ? "*" : "";
+            this.out.println(this.graph.getNumEdges() + ". INSERT " + this.graph.getEdge(x, y) +
                     " " + T + " " + bump + " " + label
-                    + " degree = " + GraphUtils.getDegree(graph)
-                    + " indegree = " + GraphUtils.getIndegree(graph));
+                    + " degree = " + GraphUtils.getDegree(this.graph)
+                    + " indegree = " + GraphUtils.getIndegree(this.graph));
         }
 
         for (Node _t : T) {
@@ -1491,21 +1469,21 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 break;
             }
 
-            graph.removeEdge(_t, y);
-            /** removing similar edges to enforce repeating structure **/
+            this.graph.removeEdge(_t, y);
+            //  removing similar edges to enforce repeating structure **/
             removeSimilarEdges(_t, y);
-            /** **/
-            if (boundGraph != null && !boundGraph.isAdjacentTo(_t, y)) continue;
+            //  **/
+            if (this.boundGraph != null && !this.boundGraph.isAdjacentTo(_t, y)) continue;
 
-            graph.addDirectedEdge(_t, y);
-            /** Adding similar edges to enforce repeating structure **/
+            this.graph.addDirectedEdge(_t, y);
+            //  Adding similar edges to enforce repeating structure **/
             addSimilarEdges(_t, y);
-            /** **/
+            //  **/
 
-            if (verbose) {
-                String message = "--- Directing " + graph.getEdge(_t, y);
+            if (this.verbose) {
+                String message = "--- Directing " + this.graph.getEdge(_t, y);
                 TetradLogger.getInstance().log("directedEdges", message);
-                out.println(message);
+                this.out.println(message);
             }
         }
 
@@ -1518,71 +1496,71 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     private boolean delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX) {
         Edge trueEdge = null;
 
-        if (trueGraph != null) {
-            Node _x = trueGraph.getNode(x.getName());
-            Node _y = trueGraph.getNode(y.getName());
-            trueEdge = trueGraph.getEdge(_x, _y);
+        if (this.trueGraph != null) {
+            Node _x = this.trueGraph.getNode(x.getName());
+            Node _y = this.trueGraph.getNode(y.getName());
+            trueEdge = this.trueGraph.getEdge(_x, _y);
         }
 
-        Edge oldxy = graph.getEdge(x, y);
+        Edge oldxy = this.graph.getEdge(x, y);
 
         Set<Node> diff = new HashSet<>(naYX);
         diff.removeAll(H);
 
-        graph.removeEdge(oldxy);
-        removedEdges.add(Edges.undirectedEdge(x, y));
-        /** removing similar edges to enforce repeating structure **/
+        this.graph.removeEdge(oldxy);
+        this.removedEdges.add(Edges.undirectedEdge(x, y));
+        //  removing similar edges to enforce repeating structure **/
         removeSimilarEdges(x, y);
-        /** **/
+        //  **/
 
 //        if (verbose) {
-        int numEdges = graph.getNumEdges();
-        if (numEdges % 1000 == 0) out.println("Num edges (backwards) = " + numEdges);
+        int numEdges = this.graph.getNumEdges();
+        if (numEdges % 1000 == 0) this.out.println("Num edges (backwards) = " + numEdges);
 //        }
 
-        if (verbose) {
-            String label = trueGraph != null && trueEdge != null ? "*" : "";
-            String message = (graph.getNumEdges()) + ". DELETE " + x + "-->" + y +
+        if (this.verbose) {
+            String label = this.trueGraph != null && trueEdge != null ? "*" : "";
+            String message = (this.graph.getNumEdges()) + ". DELETE " + x + "-->" + y +
                     " H = " + H + " NaYX = " + naYX + " diff = " + diff + " (" + bump + ") " + label;
             TetradLogger.getInstance().log("deletedEdges", message);
-            out.println(message);
+            this.out.println(message);
         }
 
         for (Node h : H) {
-            if (graph.isParentOf(h, y) || graph.isParentOf(h, x)) continue;
+            if (this.graph.isParentOf(h, y) || this.graph.isParentOf(h, x)) continue;
 
-            Edge oldyh = graph.getEdge(y, h);
+            Edge oldyh = this.graph.getEdge(y, h);
 
-            graph.removeEdge(oldyh);
+            this.graph.removeEdge(oldyh);
 
-            graph.addEdge(Edges.directedEdge(y, h));
-            /** removing similar edges (which should be undirected) and adding similar directed edges **/
+            this.graph.addEdge(Edges.directedEdge(y, h));
+            //  removing similar edges (which should be undirected) and adding similar directed edges **/
             removeSimilarEdges(y, h);
             addSimilarEdges(y, h);
-            /** **/
+            //  **/
 
-            if (verbose) {
+            if (this.verbose) {
                 TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldyh + " to " +
-                        graph.getEdge(y, h));
-                out.println("--- Directing " + oldyh + " to " + graph.getEdge(y, h));
+                        this.graph.getEdge(y, h));
+                this.out.println("--- Directing " + oldyh + " to " + this.graph.getEdge(y, h));
             }
 
-            Edge oldxh = graph.getEdge(x, h);
+            Edge oldxh = this.graph.getEdge(x, h);
 
             if (Edges.isUndirectedEdge(oldxh)) {
-                graph.removeEdge(oldxh);
+                this.graph.removeEdge(oldxh);
 
-                graph.addEdge(Edges.directedEdge(x, h));
+                this.graph.addEdge(Edges.directedEdge(x, h));
 
-                /** removing similar edges (which should be undirected) and adding similar directed edges **/
+                //  removing similar edges (which should be undirected) and adding similar directed edges **/
                 removeSimilarEdges(x, h);
                 addSimilarEdges(x, h);
-                /** **/
+                //  **/
 
-                if (verbose) {
+                if (this.verbose) {
                     TetradLogger.getInstance().log("directedEdges", "--- Directing " + oldxh + " to " +
-                            graph.getEdge(x, h));
-                    out.println("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
+                            this.graph.getEdge(x, h));
+                    this.out.println("--- Directing " + oldxh + " to " + this.graph.getEdge(x, h));
                 }
             }
         }
@@ -1596,12 +1574,12 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         boolean violatesKnowledge = false;
 
         if (existsKnowledge()) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
+            if (this.knowledge.isForbidden(x.getName(), y.getName())) {
                 violatesKnowledge = true;
             }
 
             for (Node t : T) {
-                if (knowledge.isForbidden(t.getName(), y.getName())) {
+                if (this.knowledge.isForbidden(t.getName(), y.getName())) {
                     violatesKnowledge = true;
                 }
             }
@@ -1610,7 +1588,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         Set<Node> union = new HashSet<>(T);
         union.addAll(naYX);
         boolean clique = GraphUtils.isClique(union, this.graph);
-        boolean noCycle = !existsUnblockedSemiDirectedPath(y, x, union, cycleBound);
+        boolean noCycle = !existsUnblockedSemiDirectedPath(y, x, union, this.cycleBound);
         return clique && noCycle && !violatesKnowledge;
     }
 
@@ -1619,11 +1597,11 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
         if (existsKnowledge()) {
             for (Node h : H) {
-                if (knowledge.isForbidden(x.getName(), h.getName())) {
+                if (this.knowledge.isForbidden(x.getName(), h.getName())) {
                     violatesKnowledge = true;
                 }
 
-                if (knowledge.isForbidden(y.getName(), h.getName())) {
+                if (this.knowledge.isForbidden(y.getName(), h.getName())) {
                     violatesKnowledge = true;
                 }
             }
@@ -1659,10 +1637,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 break;
             }
 
-            final String A = edge.getNode1().getName();
-            final String B = edge.getNode2().getName();
+            String A = edge.getNode1().getName();
+            String B = edge.getNode2().getName();
 
-            if (knowledge.isForbidden(A, B)) {
+            if (this.knowledge.isForbidden(A, B)) {
                 Node nodeA = edge.getNode1();
                 Node nodeB = edge.getNode2();
                 if (nodeA == null || nodeB == null) throw new NullPointerException();
@@ -1682,7 +1660,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                     }
                 }
-            } else if (knowledge.isForbidden(B, A)) {
+            } else if (this.knowledge.isForbidden(B, A)) {
                 Node nodeA = edge.getNode2();
                 Node nodeB = edge.getNode1();
                 if (nodeA == null || nodeB == null) throw new NullPointerException();
@@ -1720,14 +1698,14 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     // Find all adj that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
     // directed edge).
     private Set<Node> getNaYX(Node x, Node y) {
-        List<Node> adj = graph.getAdjacentNodes(y);
+        List<Node> adj = this.graph.getAdjacentNodes(y);
         Set<Node> nayx = new HashSet<>();
 
         for (Node z : adj) {
             if (z == x) continue;
-            Edge yz = graph.getEdge(y, z);
+            Edge yz = this.graph.getEdge(y, z);
             if (!Edges.isUndirectedEdge(yz)) continue;
-            if (!graph.isAdjacentTo(z, x)) continue;
+            if (!this.graph.isAdjacentTo(z, x)) continue;
             nayx.add(z);
         }
 
@@ -1756,13 +1734,13 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 if (distance > (bound == -1 ? 1000 : bound)) return false;
             }
 
-            for (Node u : graph.getAdjacentNodes(t)) {
+            for (Node u : this.graph.getAdjacentNodes(t)) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                Edge edge = graph.getEdge(t, u);
-                Node c = traverseSemiDirected(t, edge);
+                Edge edge = this.graph.getEdge(t, u);
+                Node c = TsFges2.traverseSemiDirected(t, edge);
                 if (c == null) continue;
                 if (cond.contains(c)) continue;
 
@@ -1800,7 +1778,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
     // Runs Meek rules on just the changed adj.
     private Set<Node> reorientNode(List<Node> nodes) {
-        addRequiredEdges(graph);
+        addRequiredEdges(this.graph);
         return meekOrientRestricted(nodes, getKnowledge());
     }
 
@@ -1808,7 +1786,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     private Set<Node> meekOrientRestricted(List<Node> nodes, IKnowledge knowledge) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
-        return rules.orientImplied(graph);
+        return rules.orientImplied(this.graph);
     }
 
     // Maps adj to their indices for quick lookup.
@@ -1824,11 +1802,11 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
     // Removes information associated with an edge x->y.
     private synchronized void clearArrow(Node x, Node y) {
-        final OrderedPair<Node> pair = new OrderedPair<>(x, y);
-        final Set<Arrow> lookupArrows = this.lookupArrows.get(pair);
+        OrderedPair<Node> pair = new OrderedPair<>(x, y);
+        Set<Arrow> lookupArrows = this.lookupArrows.get(pair);
 
         if (lookupArrows != null) {
-            sortedArrows.removeAll(lookupArrows);
+            this.sortedArrows.removeAll(lookupArrows);
         }
 
         this.lookupArrows.remove(pair);
@@ -1838,11 +1816,11 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     // different T or H or NaYX sets, and so different bumps.
     private void addLookupArrow(Node i, Node j, Arrow arrow) {
         OrderedPair<Node> pair = new OrderedPair<>(i, j);
-        Set<Arrow> arrows = lookupArrows.get(pair);
+        Set<Arrow> arrows = this.lookupArrows.get(pair);
 
         if (arrows == null) {
             arrows = new ConcurrentSkipListSet<>();
-            lookupArrows.put(pair, arrows);
+            this.lookupArrows.put(pair, arrows);
         }
 
         arrows.add(arrow);
@@ -1860,17 +1838,17 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
         for (Node y : dag.getNodes()) {
             Set<Node> parents = new HashSet<>(dag.getParents(y));
-            int parentIndices[] = new int[parents.size()];
+            int[] parentIndices = new int[parents.size()];
             Iterator<Node> pi = parents.iterator();
             int count = 0;
 
             while (pi.hasNext()) {
                 Node nextParent = pi.next();
-                parentIndices[count++] = hashIndices.get(nextParent);
+                parentIndices[count++] = this.hashIndices.get(nextParent);
             }
 
-            int yIndex = hashIndices.get(y);
-            _score += score.localScore(yIndex, parentIndices);
+            int yIndex = this.hashIndices.get(y);
+            _score += this.score.localScore(yIndex, parentIndices);
         }
 
         return _score;
@@ -1889,22 +1867,22 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             parentIndices[count++] = hashIndices.get(parent);
         }
 
-        return score.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
+        return this.score.localScoreDiff(hashIndices.get(x), yIndex, parentIndices);
     }
 
     private List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     // Stores the graph, if its totalScore knocks out one of the top ones.
     private void storeGraph() {
         if (getnumCPDAGsToStore() > 0) {
-            Graph graphCopy = new EdgeListGraph(graph);
-            topGraphs.addLast(new ScoredGraph(graphCopy, totalScore));
+            Graph graphCopy = new EdgeListGraph(this.graph);
+            this.topGraphs.addLast(new ScoredGraph(graphCopy, this.totalScore));
         }
 
-        if (topGraphs.size() == getnumCPDAGsToStore() + 1) {
-            topGraphs.removeFirst();
+        if (this.topGraphs.size() == getnumCPDAGsToStore() + 1) {
+            this.topGraphs.removeFirst();
         }
     }
 
@@ -1928,7 +1906,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         return logBayesFactors;
     }
 
-    private String logBayesPosteriorFactorsString(final Map<Edge, Double> factors, double modelScore) {
+    private String logBayesPosteriorFactorsString(Map<Edge, Double> factors, double modelScore) {
         NumberFormat nf = new DecimalFormat("0.00");
         StringBuilder builder = new StringBuilder();
 
@@ -1968,15 +1946,15 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             return new ArrayList<>();
         }
 //        System.out.println("Knowledge within returnSimilar : " + knowledge);
-        int ntiers = knowledge.getNumTiers();
-        int indx_tier = knowledge.isInWhichTier(x);
-        int indy_tier = knowledge.isInWhichTier(y);
+        int ntiers = this.knowledge.getNumTiers();
+        int indx_tier = this.knowledge.isInWhichTier(x);
+        int indy_tier = this.knowledge.isInWhichTier(y);
         int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        List tier_x = knowledge.getTier(indx_tier);
+        List tier_x = this.knowledge.getTier(indx_tier);
 //        Collections.sort(tier_x);
-        List tier_y = knowledge.getTier(indy_tier);
+        List tier_y = this.knowledge.getTier(indy_tier);
 //        Collections.sort(tier_y);
 
         int i;
@@ -2004,44 +1982,34 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         List<Node> simListY = new ArrayList<>();
 
         for (i = 0; i < ntiers - tier_diff; ++i) {
-            if (knowledge.getTier(i).size() == 1) continue;
+            if (this.knowledge.getTier(i).size() == 1) continue;
             String A;
             Node x1;
             String B;
             Node y1;
             if (indx_tier >= indy_tier) {
-                List tmp_tier1 = knowledge.getTier(i + tier_diff);
+                List tmp_tier1 = this.knowledge.getTier(i + tier_diff);
 //                Collections.sort(tmp_tier1);
-                List tmp_tier2 = knowledge.getTier(i);
+                List tmp_tier2 = this.knowledge.getTier(i);
 //                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
-                if (A.equals(B)) continue;
-                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
-                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
-                x1 = graph.getNode(A);
-                y1 = graph.getNode(B);
-                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
-                simListX.add(x1);
-                simListY.add(y1);
             } else {
-                //System.out.println("############## WARNING (returnSimilarPairs): did not catch x,y pair " + x + ", " + y);
-                //System.out.println();
-                List tmp_tier1 = knowledge.getTier(i);
+                List tmp_tier1 = this.knowledge.getTier(i);
 //                Collections.sort(tmp_tier1);
-                List tmp_tier2 = knowledge.getTier(i + tier_diff);
+                List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
 //                Collections.sort(tmp_tier2);
                 A = (String) tmp_tier1.get(indx_comp);
                 B = (String) tmp_tier2.get(indy_comp);
-                if (A.equals(B)) continue;
-                if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
-                if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
-                x1 = graph.getNode(A);
-                y1 = graph.getNode(B);
-                System.out.println("Adding pair to simList = " + x1 + " and " + y1);
-                simListX.add(x1);
-                simListY.add(y1);
             }
+            if (A.equals(B)) continue;
+            if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
+            if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
+            x1 = this.graph.getNode(A);
+            y1 = this.graph.getNode(B);
+            System.out.println("Adding pair to simList = " + x1 + " and " + y1);
+            simListX.add(x1);
+            simListY.add(y1);
         }
 
         List<List<Node>> pairList = new ArrayList<>();
@@ -2069,7 +2037,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             Node y1 = (Node) ity.next();
             System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
             System.out.println("adding edge between x = " + x1 + " and y = " + y1);
-            graph.addDirectedEdge(x1, y1);
+            this.graph.addDirectedEdge(x1, y1);
         }
     }
 
@@ -2085,9 +2053,9 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             Node y1 = (Node) ity.next();
             System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
             System.out.println("removing edge between x = " + x1 + " and y = " + y1);
-            Edge oldxy = graph.getEdge(x1, y1);
-            graph.removeEdge(oldxy);
-            removedEdges.add(Edges.undirectedEdge(x1, y1));
+            Edge oldxy = this.graph.getEdge(x1, y1);
+            this.graph.removeEdge(oldxy);
+            this.removedEdges.add(Edges.undirectedEdge(x1, y1));
         }
     }
 

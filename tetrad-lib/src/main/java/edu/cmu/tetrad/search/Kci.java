@@ -19,7 +19,6 @@ import org.apache.commons.math3.random.Well44497b;
 
 import java.util.*;
 
-import static com.google.common.primitives.Doubles.asList;
 import static edu.cmu.tetrad.util.StatUtils.median;
 import static java.lang.Math.*;
 
@@ -39,7 +38,7 @@ import static java.lang.Math.*;
  * @author Vineet Raghu on 7/3/2016
  * @author jdramsey refactoring 7/4/2018
  */
-public class Kci implements IndependenceTest, ScoreForFact {
+public class Kci implements IndependenceTest {
 
     // The supplied data set, standardized
     private final DataSet data;
@@ -58,7 +57,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
             new Well44497b(193924L)), 0, 1);
 
     // True if the approximation algorithms should be used instead of Theorems 3 or 4.
-    private boolean approximate = false;
+    private boolean approximate;
 
     // Convenience map from nodes to their indices in the list of variables.
     private final Map<Node, Integer> hash;
@@ -81,7 +80,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
     // Epsilon for Propositio 5.
     private double epsilon = 0.001;
 
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * Constructor.
@@ -100,10 +99,10 @@ public class Kci implements IndependenceTest, ScoreForFact {
         this.alpha = alpha;
         this.p = -1;
 
-        hash = new HashMap<>();
+        this.hash = new HashMap<>();
 
         for (int i = 0; i < getVariables().size(); i++) {
-            hash.put(getVariables().get(i), i);
+            this.hash.put(getVariables().get(i), i);
         }
     }
 
@@ -179,9 +178,9 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
         IndependenceFact fact = new IndependenceFact(x, y, z);
 
-        if (facts.get(fact) != null) {
-            independent = facts.get(fact);
-            this.p = pValues.get(fact);
+        if (this.facts.get(fact) != null) {
+            independent = this.facts.get(fact);
+            this.p = this.pValues.get(fact);
         } else {
             if (z.isEmpty()) {
                 independent = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
@@ -189,21 +188,21 @@ public class Kci implements IndependenceTest, ScoreForFact {
                 independent = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
             }
 
-            facts.put(fact, independent);
+            this.facts.put(fact, independent);
         }
 
-        if (verbose) {
+        if (this.verbose) {
             double p = getPValue();
 
             if (independent) {
-                System.out.println(fact + " INDEPENDENT p = " + p);
-                TetradLogger.getInstance().log("info", fact + " Independent");
-
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, p));
             } else {
-                System.out.println(fact + " dependent p = " + p);
-                TetradLogger.getInstance().log("info", fact.toString());
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.dependenceFactMsg(x, y, z, p));
             }
         }
+
 
         return independent;
     }
@@ -244,7 +243,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * not meaningful for tis test.
      */
     public double getPValue() {
-        return p;
+        return this.p;
     }
 
     /**
@@ -259,14 +258,14 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * Returns the variable by the given name.
      */
     public Node getVariable(String name) {
-        return data.getVariable(name);
+        return this.data.getVariable(name);
     }
 
     /**
      * Returns the list of names for the variables in getNodesInEvidence.
      */
     public List<String> getVariableNames() {
-        return data.getVariableNames();
+        return this.data.getVariableNames();
     }
 
     /**
@@ -282,7 +281,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     /**
@@ -296,7 +295,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
      * @return The data model for the independence test.
      */
     public DataModel getData() {
-        return data;
+        return this.data;
     }
 
 
@@ -306,12 +305,12 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
     public List<DataSet> getDataSets() {
         LinkedList<DataSet> L = new LinkedList<>();
-        L.add(data);
+        L.add(this.data);
         return L;
     }
 
     public int getSampleSize() {
-        return data.getNumRows();
+        return this.data.getNumRows();
     }
 
     public List<Matrix> getCovMatrices() {
@@ -322,13 +321,8 @@ public class Kci implements IndependenceTest, ScoreForFact {
         return getAlpha() - getPValue();
     }
 
-    @Override
-    public double getScoreForFact(IndependenceFact fact) {
-        return getAlpha() - pValues.get(fact);
-    }
-
     public boolean isApproximate() {
-        return approximate;
+        return this.approximate;
     }
 
     public void setApproximate(boolean approximate) {
@@ -336,7 +330,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
     }
 
     private double getWidthMultiplier() {
-        return widthMultiplier;
+        return this.widthMultiplier;
     }
 
     public void setWidthMultiplier(double widthMultiplier) {
@@ -345,7 +339,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
     }
 
     private int getNumBootstraps() {
-        return numBootstraps;
+        return this.numBootstraps;
     }
 
     public void setNumBootstraps(int numBootstraps) {
@@ -355,7 +349,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
 
     public double getThreshold() {
-        return threshold;
+        return this.threshold;
     }
 
     public void setThreshold(double threshold) {
@@ -364,7 +358,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
     }
 
     public double getEpsilon() {
-        return epsilon;
+        return this.epsilon;
     }
 
     public void setEpsilon(double epsilon) {
@@ -397,16 +391,16 @@ public class Kci implements IndependenceTest, ScoreForFact {
                 double k_appr = mean_appr * mean_appr / var_appr;
                 double theta_appr = var_appr / mean_appr;
                 double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
-                pValues.put(fact, p);
+                this.pValues.put(fact, p);
                 this.p = p;
-                return p > alpha;
+                return p > this.alpha;
             } else {
                 return theorem4(kx, ky, fact, N);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            pValues.put(fact, 0.0);
-            facts.put(fact, false);
+            this.pValues.put(fact, 0.0);
+            this.facts.put(fact, false);
             return false;
         }
     }
@@ -426,7 +420,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
             Matrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier(), hash, N, _h), H);
             Matrix KZ = center(kernelMatrix(_data, null, z, getWidthMultiplier(), hash, N, _h), H);
 
-            Matrix Rz = (KZ.plus(I.scalarMult(epsilon)).inverse().scalarMult(epsilon));
+            Matrix Rz = (KZ.plus(I.scalarMult(this.epsilon)).inverse().scalarMult(this.epsilon));
 
             kx = symmetrized(Rz.times(KXZ).times(Rz.transpose()));
             ky = symmetrized(Rz.times(Ky).times(Rz.transpose()));
@@ -434,8 +428,8 @@ public class Kci implements IndependenceTest, ScoreForFact {
             return proposition5(kx, ky, fact, N);
         } catch (Exception e) {
             e.printStackTrace();
-            pValues.put(fact, 0.0);
-            facts.put(fact, false);
+            this.pValues.put(fact, 0.0);
+            this.facts.put(fact, false);
             return false;
         }
     }
@@ -470,9 +464,9 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
         // Calculate p.
         double p = sum / (double) getNumBootstraps();
-        pValues.put(fact, p);
+        this.pValues.put(fact, p);
 
-        final boolean independent = p > alpha;
+        boolean independent = p > this.alpha;
 
         if (independent) {
             System.out.println(fact + " INDEPENDENT p = " + p);
@@ -501,7 +495,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
         Matrix vdx = vx.times(dx);
         Matrix vdy = vy.times(dy);
 
-        final int prod = vx.columns() * vy.columns();
+        int prod = vx.columns() * vy.columns();
         Matrix UU = new Matrix(N, prod);
 
         // stack
@@ -522,7 +516,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
             double k_appr = mean_appr * mean_appr / var_appr;
             double theta_appr = var_appr / mean_appr;
             double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
-            pValues.put(fact, p);
+            this.pValues.put(fact, p);
             return p > getAlpha();
         } else {
 
@@ -546,10 +540,10 @@ public class Kci implements IndependenceTest, ScoreForFact {
             }
 
             double p = sum / (double) getNumBootstraps();
-            pValues.put(fact, p);
+            this.pValues.put(fact, p);
             this.p = p;
 
-            final boolean independent = p > alpha;
+            boolean independent = p > this.alpha;
 
             if (independent) {
                 System.out.println(fact + " INDEPENDENT p = " + p);
@@ -575,7 +569,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
     }
 
     private double getChisqSample() {
-        double z = normal.sample();
+        double z = this.normal.sample();
         return z * z;
     }
 
@@ -631,13 +625,13 @@ public class Kci implements IndependenceTest, ScoreForFact {
         for (int i = 0; i < N; i++) {
             for (int j = i + 1; j < N; j++) {
                 double d = distance(_data, _z, i, j);
-                final double k = kernelGaussian(d, widthMultiplier * h);
+                double k = kernelGaussian(d, widthMultiplier * h);
                 result.set(i, j, k);
                 result.set(j, i, k);
             }
         }
 
-        final double k = kernelGaussian(0, widthMultiplier * h);
+        double k = kernelGaussian(0, widthMultiplier * h);
 
         for (int i = 0; i < N; i++) {
             result.set(i, i, k);
@@ -660,12 +654,8 @@ public class Kci implements IndependenceTest, ScoreForFact {
     }
 
     private double kernelGaussian(double z, double width) {
-//        if (width == 0) {
-//            throw new IllegalArgumentException("Width is zero.");
-//        }
-
         z /= width;
-        return Math.exp(-z * z);
+        return exp(-z * z);
     }
 
     // Euclidean distance.
@@ -685,7 +675,7 @@ public class Kci implements IndependenceTest, ScoreForFact {
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
@@ -708,74 +698,48 @@ public class Kci implements IndependenceTest, ScoreForFact {
         }
 
         public Matrix getD() {
-            return D;
+            return this.D;
         }
 
         public Matrix getV() {
-            return V;
+            return this.V;
         }
 
         public List<Double> getTopEigenvalues() {
-            return topEigenvalues;
+            return this.topEigenvalues;
         }
 
         public Eigendecomposition invoke() {
             List<Integer> topIndices;
 
-            EigenDecomposition ed = new EigenDecomposition(new BlockRealMatrix(k.toArray()));
+            EigenDecomposition ed = new EigenDecomposition(new BlockRealMatrix(this.k.toArray()));
 
-            List<Double> evxAll = asList(ed.getRealEigenvalues());
+            double[] arr = ed.getRealEigenvalues();
+
+            List<Double> evxAll = new ArrayList<>();
+            for (double v : arr) evxAll.add(v);
+
             List<Integer> indx = series(evxAll.size()); // 1 2 3...
             topIndices = getTopIndices(evxAll, indx, getThreshold());
 
-            D = new Matrix(topIndices.size(), topIndices.size());
+            this.D = new Matrix(topIndices.size(), topIndices.size());
 
             for (int i = 0; i < topIndices.size(); i++) {
-                D.set(i, i, Math.sqrt(evxAll.get(topIndices.get(i))));
+                this.D.set(i, i, sqrt(evxAll.get(topIndices.get(i))));
             }
 
-            topEigenvalues = new ArrayList<>();
+            this.topEigenvalues = new ArrayList<>();
 
             for (int t : topIndices) {
                 getTopEigenvalues().add(evxAll.get(t));
             }
 
-            V = new Matrix(ed.getEigenvector(0).getDimension(), topIndices.size());
+            this.V = new Matrix(ed.getEigenvector(0).getDimension(), topIndices.size());
 
             for (int i = 0; i < topIndices.size(); i++) {
                 RealVector t = ed.getEigenvector(topIndices.get(i));
-                V.assignColumn(i, new Vector(t.toArray()));
+                this.V.assignColumn(i, new Vector(t.toArray()));
             }
-//            } else {
-//                SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(k.toArray()));
-//
-//                List<Double> evxAll = asList(svd.getSingularValues());
-//
-//                List<Integer> indx = series(evxAll.size()); // 1 2 3...
-//                topIndices = getTopIndices(evxAll, indx, getThreshold());
-//
-//                D = new Matrix(topIndices.size(), topIndices.size());
-//
-//                for (int i = 0; i < topIndices.size(); i++) {
-//                    D.set(i, i, Math.sqrt(evxAll.get(topIndices.get(i))));
-//                }
-//
-//                RealMatrix V0 = svd.getV();
-//
-//                V = new Matrix(V0.getRowDimension(), topIndices.size());
-//
-//                for (int i = 0; i < V.columns(); i++) {
-//                    double[] t = V0.getColumn(topIndices.get(i));
-//                    V.assignColumn(i, new Vector(t));
-//                }
-//
-//                topEigenvalues = new ArrayList<>();
-//
-//                for (int t : topIndices) {
-//                    getTopEigenvalues().add(evxAll.get(t));
-//                }
-//
-//            }
 
             return this;
         }

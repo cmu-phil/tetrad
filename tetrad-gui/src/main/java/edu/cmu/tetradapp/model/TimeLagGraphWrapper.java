@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -43,7 +42,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class TimeLagGraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInput {
+public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
     static final long serialVersionUID = 23L;
 
     /**
@@ -116,12 +115,11 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
         }
         numLags = Collections.max(laglist);
         for (Node node : variables) {
@@ -129,17 +127,15 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
             knowledge1.addToTier(numLags - lag, node.getName());
         }
 
         System.out.println("Knowledge in graph = " + knowledge1);
-        IKnowledge knowledge = knowledge1;
     }
 
     public TimeLagGraphWrapper() {
@@ -162,7 +158,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
 
     private void log() {
         TetradLogger.getInstance().log("info", "Directed Acyclic Graph (DAG)");
-        TetradLogger.getInstance().log("graph", graph + "");
+        TetradLogger.getInstance().log("graph", this.graph + "");
     }
 
     /**
@@ -174,25 +170,22 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (graph == null) {
+        if (this.graph == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -221,7 +214,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
 
     public IKnowledge getKnowledge() {
         int numLags = 1; // need to fix this!
-        List<Node> variables = graph.getNodes();
+        List<Node> variables = this.graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
         IKnowledge knowledge1 = new Knowledge2();
         int lag;
@@ -230,12 +223,11 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
         }
         numLags = Collections.max(laglist);
         for (Node node : variables) {
@@ -243,12 +235,11 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
             String tmp;
             if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':') + 1, varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
             knowledge1.addToTier(numLags - lag, node.getName());
         }
 
@@ -257,7 +248,7 @@ public class TimeLagGraphWrapper implements SessionModel, GraphSource, Knowledge
     }
 
     public Parameters getParameters() {
-        return parameters;
+        return this.parameters;
     }
 }
 

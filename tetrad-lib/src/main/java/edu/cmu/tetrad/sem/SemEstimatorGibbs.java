@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -44,18 +44,18 @@ import java.util.List;
 public final class SemEstimatorGibbs {
     static final long serialVersionUID = 23L;
 
-    private int numIterations;
-    private double stretch1;
-    private double stretch2;
-    private double tolerance;
-    private double priorVariance;
+    private final int numIterations;
+    private final double stretch1;
+    private final double stretch2;
+    private final double tolerance;
+    private final double priorVariance;
 
     /**
      * The SemPm containing the graph and the freeParameters to be estimated.
      *
      * @serial Cannot be null.
      */
-    private SemPm semPm;
+    private final SemPm semPm;
 
     /**
      * The freeParameters of the SEM (i.e. edge coeffs, error cov, etc.
@@ -67,7 +67,7 @@ public final class SemEstimatorGibbs {
     /**
      * The initial semIm, obtained via params.
      */
-    private SemIm startIm;
+    private final SemIm startIm;
 
     private Matrix priorCov;
 
@@ -79,7 +79,7 @@ public final class SemEstimatorGibbs {
      */
     private SemIm estimatedSem;
 
-    private boolean flatPrior;
+    private final boolean flatPrior;
 
     private Matrix dataSet;
 
@@ -96,16 +96,7 @@ public final class SemEstimatorGibbs {
      */
 
     // using different constructor for now
-    //public SemEstimatorGibbs(SemPm semPm, SemEstimatorGibbsParams params) {
-    //	this.dataSet = dataSet;
-    //	this.semPm = semPm;
-    //	this.params = params;
-    //}
     public SemEstimatorGibbs(SemPm semPm, SemIm startIm, double[][] sampleCovars, boolean flatPrior, double stretch, int numIterations) {
-        /*
-      For now, we are moving SemEstimatorGibbsParams variables into this
-      class for easier testing
-     */
         this.semPm = semPm;
         this.startIm = startIm;
         this.flatPrior = flatPrior;
@@ -138,10 +129,10 @@ public final class SemEstimatorGibbs {
         this.parameterMeans = new double[numParameters];
         this.paramConstraints = new ParamConstraint[numParameters];
 
-        Matrix data = new Matrix(parameters.size(), numIterations / 50);
+        Matrix data = new Matrix(parameters.size(), this.numIterations / 50);
 
         //PRIORINIT
-        if (flatPrior) {
+        if (this.flatPrior) {
             // this is used to construct the prior covariance matrix, means
             for (int i = 0; i < numParameters; i++) {
                 Parameter param = parameters.get(i);
@@ -153,7 +144,7 @@ public final class SemEstimatorGibbs {
                 //Default parameter constraints.  The user should have the
                 // option to change these via the GUI
 
-                paramConstraints[i] = (param.getType() == ParamType.VAR) // ParamType.VAR = 'Error Variance'
+                this.paramConstraints[i] = (param.getType() == ParamType.VAR) // ParamType.VAR = 'Error Variance'
                         ? new ParamConstraint(this.startIm, param, ParamConstraintType.GT, 0.0)
                         : new ParamConstraint(this.startIm, param, ParamConstraintType.NONE, 0.0);
 
@@ -193,7 +184,9 @@ public final class SemEstimatorGibbs {
                             ? constraint.getNumber()
                             : this.startIm.getParamValue(constraint.getParam2());
 
-                    double ax, bx, cx;
+                    double ax;
+                    double bx;
+                    double cx;
 
                     // Mark - these constraints follow pascal code
                     if (constraint.getType() == ParamConstraintType.NONE) {
@@ -227,8 +220,8 @@ public final class SemEstimatorGibbs {
                     do {
                         gap = 2.0 * gap;
 
-                        int gapThreshold = 1;
-                        double minDenom = 0.01;
+                        final int gapThreshold = 1;
+                        final double minDenom = 0.01;
 
                         if (gap > gapThreshold) {
                             denom = minDenom;
@@ -270,7 +263,7 @@ public final class SemEstimatorGibbs {
                             rj = numer - denom1;
                             accept = Math.log(RandomUtil.getInstance().nextDouble());
 
-                            int rejectionThreshold = 5;
+                            final int rejectionThreshold = 5;
 
                             if (rj > rejectionThreshold) {
                                 //System.out.println("rj = "+rj);
@@ -293,7 +286,7 @@ public final class SemEstimatorGibbs {
 
             }
 
-            int subsampleStride = 50;
+            final int subsampleStride = 50;
 
             if (iter % subsampleStride == 0 && iter > 0) {
                 for (int i = 0; i < numParameters; i++) {
@@ -303,24 +296,36 @@ public final class SemEstimatorGibbs {
             }
         }
 
-        dataSet = data;
+        this.dataSet = data;
         this.estimatedSem = posteriorIm;
         //setMeans(posteriorIm, data);
 
     }
 
+    public SemEstimatorGibbs(int numIterations, double stretch1, double stretch2, double tolerance, double priorVariance, SemPm semPm, SemIm startIm, boolean flatPrior) {
+        this.numIterations = numIterations;
+        this.stretch1 = stretch1;
+        this.stretch2 = stretch2;
+        this.tolerance = tolerance;
+        this.priorVariance = priorVariance;
+        this.semPm = semPm;
+        this.startIm = startIm;
+        this.flatPrior = flatPrior;
+    }
+
     private double brent(int param, double ax, double bx, double cx, double tol, double[] xmin, List<Parameter> parameters) {
 
-        int ITMAX = 100, iter;
-        double CGOLD = 0.3819660;
-        double ZEPS = 1.0e-10;
+        final int ITMAX = 100;
+        int iter;
+        final double CGOLD = 0.3819660;
+        final double ZEPS = 1.0e-10;
         double a, b, d, e, etemp, p, q, r, tol1, tol2, u, v, w, x, xm, fu, fv, fw, fx;
 
         //init
         x = w = v = bx;
         e = d = 0.0;
-        a = (ax < cx) ? ax : cx;
-        b = (ax > cx) ? ax : cx;
+        a = Math.min(ax, cx);
+        b = Math.max(ax, cx);
         fw = fv = fx = neglogpost(param, x, parameters);
 
         for (iter = 1; iter <= ITMAX; iter++) {
@@ -413,7 +418,7 @@ public final class SemEstimatorGibbs {
 
 //		System.out.println(tparm);
 
-        if ((p.getType() == ParamType.VAR || p.getType() == ParamType.COEF) && paramConstraints[param].wouldBeSatisfied(x)) {
+        if ((p.getType() == ParamType.VAR || p.getType() == ParamType.COEF) && this.paramConstraints[param].wouldBeSatisfied(x)) {
             this.startIm.setParamValue(p, x);
         }
 
@@ -431,7 +436,7 @@ public final class SemEstimatorGibbs {
         // this is only called when flatprior is false, which it will never be with the getModel code
 
         double answer = 0.0;
-        int n = dataSet.columns();
+        int n = this.dataSet.columns();
         int numParameters = parameters.size();
         double[] xvec = new double[numParameters];
         double[] temp = new double[numParameters];
@@ -442,11 +447,11 @@ public final class SemEstimatorGibbs {
             if (p.isFixed()) continue;
 
             xvec[n] = (i == param)
-                    ? x - parameterMeans[i]
-                    : this.startIm.getParamValue(p) - parameterMeans[i];
+                    ? x - this.parameterMeans[i]
+                    : this.startIm.getParamValue(p) - this.parameterMeans[i];
         }
 
-        Matrix invPrior = priorCov.inverse();
+        Matrix invPrior = this.priorCov.inverse();
 
         for (int i = 0; i < n; i++) temp[i] = 0.0;
         for (int col = 0; col < n; col++) {
@@ -505,59 +510,12 @@ public final class SemEstimatorGibbs {
     }
 
 
-//    private DataSet subset(DataSet dataSet, SemPm semPm) {
-//
-//        String[] measuredVarNames = semPm.getMeasuredVarNames();
-//        int[] varIndices = new int[measuredVarNames.length];
-//
-//        for (int i = 0; i < measuredVarNames.length; i++) {
-//            Node variable = dataSet.getVariable(measuredVarNames[i]);
-//            varIndices[i] = dataSet.getVariable().indexOf(variable);
-//        }
-//
-//        return dataSet.subsetColumns(varIndices);
-//    }
-
-
-//    /**
-//     * Sets the means of variables in the SEM IM based on the given data set.
-//     *
-//     * @param semIm   SemIm
-//     * @param dataSet The data produced by iterating the sampler
-//     */
-//    private void setMeans(SemIm semIm, TetradMatrix dataSet) {
-//
-//        double[] means = new double[semIm.getSemPm().getVariableNodes().size()];
-//        int numMeans = means.length;
-//
-//        if (dataSet == null) {
-//            for (int i = 0; i < numMeans; i++) {
-//                means[i] = 0.0;
-//            }
-//        } else {
-//            double[] sum = new double[numMeans];
-//
-//            for (int j = 0; j < dataSet.columns(); j++) {
-//                for (int i = 0; i < dataSet.rows(); i++) {
-//                    sum[j] += dataSet.get(i, j);
-//                }
-//
-//                means[j] = sum[j] / dataSet.rows();
-//            }
-//        }
-//
-//        for (int i = 0; i < semIm.getVariableNodes().size(); i++) {
-//            Node node = semIm.getVariableNodes().get(i);
-//            semIm.setMean(node, means[i]);
-//        }
-//    }
-
     public SemPm getSemPm() {
-        return semPm;
+        return this.semPm;
     }
 
     public Matrix getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
 
@@ -571,20 +529,11 @@ public final class SemEstimatorGibbs {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-//        if (semPm == null) {
-//            throw new NullPointerException();
-//        }
-
-//        if (dataSet == null) {
-//            throw new NullPointerException();
-//        }
     }
 }
 

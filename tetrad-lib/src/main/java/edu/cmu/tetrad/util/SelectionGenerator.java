@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,24 +34,24 @@ package edu.cmu.tetrad.util;
  *
  * @author Joseph Ramsey
  */
-@SuppressWarnings({"WeakerAccess"})
+@SuppressWarnings("WeakerAccess")
 public final class SelectionGenerator {
 
     /**
      * The number of objects being selected from.
      */
-    private int a;
+    private final int a;
 
     /**
      * The internally stored choice.
      */
-    private int[] selectionLocal;
+    private final int[] selectionLocal;
 
     /**
      * The selection that is returned. Used, since the returned array can be
      * modified by the user.
      */
-    private int[] selectionReturned;
+    private final int[] selectionReturned;
 
     /**
      * Indicates whether the next() method has been called since the last
@@ -73,8 +73,8 @@ public final class SelectionGenerator {
         }
 
         this.a = a;
-        selectionLocal = new int[a];
-        selectionReturned = new int[a];
+        this.selectionLocal = new int[a];
+        this.selectionReturned = new int[a];
 
 
         // Initialize the choice array with successive integers [0 1 2 ...].
@@ -82,14 +82,14 @@ public final class SelectionGenerator {
         // a series, ([0 1 2 ... b - 2]) so that on the first call to next()
         // the first combination ([0 1 2 ... b - 1]) is returned correctly.
         for (int i = 1; i < a; i++) {
-            selectionLocal[i] = 0;
+            this.selectionLocal[i] = 0;
         }
 
         if (a > 0) {
-            selectionLocal[a - 1] = -1;
+            this.selectionLocal[a - 1] = -1;
         }
 
-        begun = false;
+        this.begun = false;
     }
 
     /**
@@ -110,18 +110,18 @@ public final class SelectionGenerator {
                     this.selectionLocal[i1] = 0;
                 }
 
-                begun = true;
-                System.arraycopy(selectionLocal, 0, selectionReturned, 0, a);
-                return selectionReturned;
+                this.begun = true;
+                System.arraycopy(this.selectionLocal, 0, this.selectionReturned, 0, this.a);
+                return this.selectionReturned;
             }
         }
 
         if (this.begun) {
             return null;
         } else {
-            begun = true;
-            System.arraycopy(selectionLocal, 0, selectionReturned, 0, a);
-            return selectionReturned;
+            this.begun = true;
+            System.arraycopy(this.selectionLocal, 0, this.selectionReturned, 0, this.a);
+            return this.selectionReturned;
         }
     }
 

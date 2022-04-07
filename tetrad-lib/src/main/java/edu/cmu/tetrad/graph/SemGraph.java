@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,8 +21,6 @@
 
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -38,10 +36,10 @@ import java.util.*;
  * an error node that has N as its only child, E-->N. Error nodes for exogenous
  * nodes are always implicit in the graph. So as nodes become endogenous, error
  * nodes are added for them, and as they become exogenous, error nodes are
- * removed for them. Correlated errors are represented using bidirected edges
- * among exogenous nodes. Bidirected edges may therefore be added among any
+ * removed for them. Correlated errors are represented using directed edges
+ * among exogenous nodes. Directed edges may therefore be added among any
  * exogenous nodes in the graph, though the easiest way to add (or remove)
- * exogenous nodes is determine which non-exogenous nodes N1, N2 they are
+ * exogenous nodes is to determine which non-exogenous nodes N1, N2 they are
  * representing correlated errors for and then to use this formulation:</p>
  * <pre>
  *     addBidirectedEdge(getExogenous(node1), getExogenous(node2));
@@ -52,7 +50,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class SemGraph implements Graph, TetradSerializable {
+public final class SemGraph implements Graph {
     static final long serialVersionUID = 23L;
 
     /**
@@ -78,12 +76,12 @@ public final class SemGraph implements Graph, TetradSerializable {
      *
      * @serial
      */
-    private boolean showErrorTerms = false;
+    private boolean showErrorTerms;
 
     private boolean pag;
     private boolean cpdag;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //=========================CONSTRUCTORS============================//
 
@@ -109,7 +107,7 @@ public final class SemGraph implements Graph, TetradSerializable {
                     new HashMap<>(((SemGraph) graph).errorNodes);
 
             for (Node node : graph.getNodes()) {
-                if (!errorNodes.containsKey(node)) {
+                if (!this.errorNodes.containsKey(node)) {
                     addErrorNode(node);
                 }
             }
@@ -162,6 +160,8 @@ public final class SemGraph implements Graph, TetradSerializable {
         }
 
         this.errorNodes = new HashMap<>(graph.errorNodes);
+        this.pag = graph.pag;
+        this.cpdag = graph.cpdag;
 
         if (graph.showErrorTerms) {
             for (Node node : this.graph.getNodes()) {
@@ -195,7 +195,7 @@ public final class SemGraph implements Graph, TetradSerializable {
      * node has no associated error node.
      */
     public Node getErrorNode(Node node) {
-        return errorNodes.get(node);
+        return this.errorNodes.get(node);
     }
 
     /**
@@ -232,20 +232,6 @@ public final class SemGraph implements Graph, TetradSerializable {
 
         List<Node> found = new LinkedList<>();
         Set<Node> notFound = new HashSet<>(getNodes());
-
-//        for (Node node1 : getNodes()) {
-//            notFound.add(node1);
-//        }
-
-//        List<Node> errorTerms = new LinkedList<Node>();
-//
-//        for (Node node : notFound) {
-//            if (node.getNodeType() == NodeType.ERROR) {
-//                errorTerms.add(node);
-//            }
-//        }
-//
-//        notFound.removeAll(errorTerms);
 
         while (!notFound.isEmpty()) {
             for (Iterator<Node> it = notFound.iterator(); it.hasNext(); ) {
@@ -295,15 +281,15 @@ public final class SemGraph implements Graph, TetradSerializable {
      * @return the exogenous node for that node.
      */
     public Node getExogenous(Node node) {
-        return isExogenous(node) ? node : errorNodes.get(node);
+        return isExogenous(node) ? node : this.errorNodes.get(node);
     }
 
-    public final void transferNodesAndEdges(Graph graph)
+    public void transferNodesAndEdges(Graph graph)
             throws IllegalArgumentException {
         throw new UnsupportedOperationException();
     }
 
-    public final void transferAttributes(Graph graph)
+    public void transferAttributes(Graph graph)
             throws IllegalArgumentException {
         throw new UnsupportedOperationException();
     }
@@ -518,11 +504,6 @@ public final class SemGraph implements Graph, TetradSerializable {
                 return false;
             }
 
-//            if (!isExogenous(node1) || !isExogenous(node2)) {
-//                throw new IllegalArgumentException("Nodes for a bidirected " +
-//                        "edge must be exogenous: " + edge);
-//            }
-
             getGraph().addEdge(edge);
             return true;
         } else {
@@ -609,8 +590,8 @@ public final class SemGraph implements Graph, TetradSerializable {
     public boolean removeEdges(Collection<Edge> edges) {
         boolean change = false;
 
-        for (Object edge : edges) {
-            boolean _change = removeEdge((Edge) edge);
+        for (Edge edge : edges) {
+            boolean _change = removeEdge(edge);
             change = change || _change;
         }
 
@@ -633,15 +614,14 @@ public final class SemGraph implements Graph, TetradSerializable {
 
         if (errorNode != null) {
             getGraph().removeNode(errorNode);
-            errorNodes.remove(errorNode);
-            errorNodes.remove(node);
+            this.errorNodes.remove(errorNode);
+            this.errorNodes.remove(node);
         }
 
         List<Node> children = getGraph().getChildren(node);
         getGraph().removeNode(node);
 
-        for (int i = 0; i > children.size(); i++) {
-            Node child = children.get(i);
+        for (Node child : children) {
             adjustErrorForNode(child);
         }
 
@@ -784,7 +764,7 @@ public final class SemGraph implements Graph, TetradSerializable {
 
 
     public boolean isShowErrorTerms() {
-        return showErrorTerms;
+        return this.showErrorTerms;
     }
 
     public void setShowErrorTerms(boolean showErrorTerms) {
@@ -804,7 +784,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     public boolean isTimeLagModel() {
-        return graph instanceof TimeLagGraph;
+        return this.graph instanceof TimeLagGraph;
     }
 
     public TimeLagGraph getTimeLagGraph() {
@@ -812,7 +792,7 @@ public final class SemGraph implements Graph, TetradSerializable {
             throw new IllegalArgumentException("Not a time lag model.");
         }
 
-        return new TimeLagGraph((TimeLagGraph) graph);
+        return new TimeLagGraph((TimeLagGraph) this.graph);
     }
 
     @Override
@@ -822,12 +802,12 @@ public final class SemGraph implements Graph, TetradSerializable {
 
     @Override
     public List<Node> getSepset(Node n1, Node n2) {
-        return graph.getSepset(n1, n2);
+        return this.graph.getSepset(n1, n2);
     }
 
     @Override
     public void setNodes(List<Node> nodes) {
-        graph.setNodes(nodes);
+        this.graph.setNodes(nodes);
     }
 
     //========================PRIVATE METHODS===========================//
@@ -838,7 +818,7 @@ public final class SemGraph implements Graph, TetradSerializable {
      * @param node the node which the new error node which be attached to.
      */
     private void addErrorNode(Node node) {
-        if (errorNodes.get(node) != null) {
+        if (this.errorNodes.get(node) != null) {
             throw new IllegalArgumentException("Node already in map.");
         }
 
@@ -850,7 +830,7 @@ public final class SemGraph implements Graph, TetradSerializable {
             error = new GraphNode("E" + "_" + node.getName());
             error.setCenter(node.getCenterX() + 50, node.getCenterY() + 50);
             error.setNodeType(NodeType.ERROR);
-            errorNodes.put(node, error);
+            this.errorNodes.put(node, error);
         }
 
         for (Node possibleError : nodes) {
@@ -859,23 +839,23 @@ public final class SemGraph implements Graph, TetradSerializable {
                 if (getGraph().containsNode(possibleError)) {
                     getGraph().removeNode(possibleError);
                 }
-                errorNodes.remove(node);
-                errorNodes.remove(possibleError);
+                this.errorNodes.remove(node);
+                this.errorNodes.remove(possibleError);
             }
         }
 
         getGraph().addNode(error);
-        errorNodes.put(node, error);
-        errorNodes.put(error, error);
+        this.errorNodes.put(node, error);
+        this.errorNodes.put(error, error);
         addDirectedEdge(error, node);
     }
 
     private Map<Node, Node> errorNodes() {
-        if (errorNodes == null) {
-            errorNodes = new HashMap<>();
+        if (this.errorNodes == null) {
+            this.errorNodes = new HashMap<>();
         }
 
-        return errorNodes;
+        return this.errorNodes;
     }
 
     private void moveAttachedBidirectedEdges(Node node1, Node node2) {
@@ -910,18 +890,17 @@ public final class SemGraph implements Graph, TetradSerializable {
      * node.
      */
     private void adjustErrorForNode(Node node) {
-        if (!showErrorTerms) {
+        Node errorNode = getErrorNode(node);
+        if (!this.showErrorTerms) {
 //            if (!isShowErrorTerms() || shouldBeExogenous(node)) {
-            Node errorNode = getErrorNode(node);
 
-            if (errorNode != null && graph.containsNode(errorNode)) {
+            if (errorNode != null && this.graph.containsNode(errorNode)) {
                 moveAttachedBidirectedEdges(errorNode, node);
                 getGraph().removeNode(errorNode);
-                errorNodes.remove(node);
-                errorNodes.remove(errorNode);
+                this.errorNodes.remove(node);
+                this.errorNodes.remove(errorNode);
             }
         } else {
-            Node errorNode = getErrorNode(node);
 
             if (errorNode == null) {
                 addErrorNode(node);
@@ -930,21 +909,6 @@ public final class SemGraph implements Graph, TetradSerializable {
             errorNode = getErrorNode(node);
             moveAttachedBidirectedEdges(node, errorNode);
         }
-    }
-
-    /**
-     * @return true iff the given (non-error) term ought to be exogenous.
-     */
-    private boolean shouldBeExogenous(Node node) {
-        List<Node> parents = getGraph().getParents(node);
-
-        for (Node parent : parents) {
-            if (parent.getNodeType() != NodeType.ERROR) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -957,8 +921,6 @@ public final class SemGraph implements Graph, TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -970,7 +932,7 @@ public final class SemGraph implements Graph, TetradSerializable {
     }
 
     private Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
     public void resetErrorPositions() {
@@ -995,7 +957,7 @@ public final class SemGraph implements Graph, TetradSerializable {
 
     @Override
     public boolean isPag() {
-        return pag;
+        return this.pag;
     }
 
     @Override
@@ -1005,7 +967,7 @@ public final class SemGraph implements Graph, TetradSerializable {
 
     @Override
     public boolean isCPDAG() {
-        return cpdag;
+        return this.cpdag;
     }
 
     @Override
@@ -1015,22 +977,22 @@ public final class SemGraph implements Graph, TetradSerializable {
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
     public Object getAttribute(String key) {
-        return attributes.get(key);
+        return this.attributes.get(key);
     }
 
     @Override
     public void removeAttribute(String key) {
-        attributes.remove(key);
+        this.attributes.remove(key);
     }
 
     @Override
     public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+        this.attributes.put(key, value);
     }
 
 }

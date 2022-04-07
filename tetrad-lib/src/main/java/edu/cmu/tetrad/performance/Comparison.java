@@ -37,13 +37,13 @@ public class Comparison {
         ComparisonResult result = new ComparisonResult(params);
 
         if (params.getDataFile() != null) {
-            dataSet = loadDataFile(params.getDataFile());
+            dataSet = Comparison.loadDataFile();
 
             if (params.getGraphFile() == null) {
                 throw new IllegalArgumentException("True graph file not set.");
             }
 
-            trueDag = loadGraphFile(params.getGraphFile());
+            trueDag = Comparison.loadGraphFile();
         } else {
             if (params.getNumVars() == -1) {
                 throw new IllegalArgumentException("Number of variables not set.");
@@ -118,6 +118,7 @@ public class Comparison {
                 throw new IllegalArgumentException("Alpha not set.");
             }
 
+            assert dataSet != null;
             test = new IndTestFisherZ(dataSet, params.getAlpha());
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
@@ -130,6 +131,7 @@ public class Comparison {
                 throw new IllegalArgumentException("Alpha not set.");
             }
 
+            assert dataSet != null;
             test = new IndTestChiSquare(dataSet, params.getAlpha());
 
             params.setDataType(ComparisonParameters.DataType.Discrete);
@@ -213,12 +215,12 @@ public class Comparison {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(new DagToPag2(trueDag).convert());
+            result.setCorrectResult(new DagToPag(trueDag).convert());
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             GFci search = new GFci(test, score);
             result.setResultGraph(search.search());
-            result.setCorrectResult(new DagToPag2(trueDag).convert());
+            result.setCorrectResult(new DagToPag(trueDag).convert());
         } else {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }
@@ -234,11 +236,11 @@ public class Comparison {
         return result;
     }
 
-    private static Graph loadGraphFile(String graphFile) {
+    private static Graph loadGraphFile() {
         return null;
     }
 
-    private static DataSet loadDataFile(String dataFile) {
+    private static DataSet loadDataFile() {
         return null;
     }
 
@@ -320,7 +322,7 @@ public class Comparison {
             cols[i] = i;
         }
 
-        return getTextTable(dataSet, cols, new DecimalFormat("0.00")).toString();
+        return Comparison.getTextTable(dataSet, cols, new DecimalFormat("0.00")).toString();
     }
 
 

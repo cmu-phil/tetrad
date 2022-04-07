@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,12 +40,12 @@ class Rubberband extends JComponent {
     /**
      * The dashed stoke that forms the outline of the rubberband.
      */
-    private BasicStroke stroke;
+    private final BasicStroke stroke;
 
     /**
      * The anchor point.
      */
-    private Point anchor;
+    private final Point anchor;
 
     /**
      * Constructs a new rubberband at a specified location.
@@ -63,14 +63,14 @@ class Rubberband extends JComponent {
         this.anchor = anchor;
 
         // set up stroke
-        int width = 1;
-        int cap = BasicStroke.CAP_ROUND;
-        int join = BasicStroke.JOIN_BEVEL;
-        int miterlimit = 0;
-        float[] dash = new float[]{2, 2, 4, 2};
-        float dashphase = 0.0f;
+        final int width = 1;
+        final int cap = BasicStroke.CAP_ROUND;
+        final int join = BasicStroke.JOIN_BEVEL;
+        final int miterlimit = 0;
+        float[] dash = {2, 2, 4, 2};
+        final float dashphase = 0.0f;
 
-        stroke = new BasicStroke(width, cap, join, miterlimit, dash, dashphase);
+        this.stroke = new BasicStroke(width, cap, join, miterlimit, dash, dashphase);
 
         // initial location of rubberband
         setLocation(anchor);
@@ -97,8 +97,8 @@ class Rubberband extends JComponent {
         Graphics2D g2 = (Graphics2D) g;
         resetShapeBounds();
         g2.setColor(Color.black);
-        g2.setStroke(stroke);
-        g2.draw(shape);
+        g2.setStroke(this.stroke);
+        g2.draw(this.shape);
     }
 
     /**
@@ -107,7 +107,7 @@ class Rubberband extends JComponent {
      * inside the boundaries of the component on all four sides.
      */
     private void resetShapeBounds() {
-        RoundRectangle2D.Double rrect = (RoundRectangle2D.Double) shape;
+        RoundRectangle2D.Double rrect = (RoundRectangle2D.Double) this.shape;
         rrect.setRoundRect(0, 0, getBounds().width - 1, getBounds().height - 1,
                 10, 10);
     }
@@ -117,7 +117,7 @@ class Rubberband extends JComponent {
      * components it intersects.
      */
     public Shape getShape() {
-        return shape;
+        return this.shape;
     }
 }
 

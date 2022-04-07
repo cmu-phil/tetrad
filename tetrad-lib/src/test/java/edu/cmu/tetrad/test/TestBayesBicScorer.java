@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -47,7 +47,7 @@ public final class TestBayesBicScorer {
         Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X6,X6-->X7");
 //        Graph graph2 = GraphConverter.convert("X1,X2,X3,X7-->X6,X9,X10,X11,X12");
 
-        int numCategories = 8;
+        final int numCategories = 8;
         BayesPm pm = new BayesPm(graph, numCategories, numCategories);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
@@ -63,13 +63,13 @@ public final class TestBayesBicScorer {
     public void testGregsBdeuStructurePrior() {
         for (int i = 100; i >= 1; i--) {
             double e = .0001 / i;
-            System.out.println("e = " + e + "\t" + prior(e, 1, 10));
+            System.out.println("e = " + e + "\t" + prior(e));
         }
     }
 
-    private double prior(double e, int k, int v) {
-        double choose = Math.exp(MathUtils.choose(v - 1, k));
-        return choose * Math.pow(e / (v - 1), k) * Math.pow(1.0 - e / (v - 1), (v - k - 1));
+    private double prior(double e) {
+        double choose = Math.exp(MathUtils.choose(10 - 1, 1));
+        return choose * Math.pow(e / (10 - 1), 1) * Math.pow(1.0 - e / (10 - 1), (10 - 1 - 1));
     }
 
     // Greg's structure prior

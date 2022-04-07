@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,11 +42,11 @@ public class SearchWrappers {
         }
 
         public PcStableWrapper copy() {
-            return new PcStableWrapper(searchParams);
+            return new PcStableWrapper(this.searchParams);
         }
 
         public Graph search(DataSet ds) {
-            IndTestMultinomialLogisticRegression indTest = new IndTestMultinomialLogisticRegression(ds, searchParams[0]);
+            IndTestMultinomialLogisticRegression indTest = new IndTestMultinomialLogisticRegression(ds, this.searchParams[0]);
             PcStable pcs = new PcStable(indTest);
             return pcs.search();
         }
@@ -59,13 +59,11 @@ public class SearchWrappers {
         }
 
         public MGMWrapper copy() {
-            return new MGMWrapper(searchParams);
+            return new MGMWrapper(this.searchParams);
         }
 
-        ;
-
         public Graph search(DataSet ds) {
-            MGM m = new MGM(ds, searchParams);
+            MGM m = new MGM(ds, this.searchParams);
             return m.search();
         }
     }
@@ -76,12 +74,12 @@ public class SearchWrappers {
         }
 
         public FgesWrapper copy() {
-            return new FgesWrapper(searchParams);
+            return new FgesWrapper(this.searchParams);
         }
 
         public Graph search(DataSet ds) {
             SemBicScore score = new SemBicScore(new CovarianceMatrix(MixedUtils.makeContinuousData(ds)));
-            score.setPenaltyDiscount(searchParams[0]);
+            score.setPenaltyDiscount(this.searchParams[0]);
             Fges fg = new Fges(score);
             return fg.search();
         }

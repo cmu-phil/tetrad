@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -50,8 +50,8 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 
-        outputDataSet = DataUtils.replaceMissingWithRandom(dataSet);
-        setDataModel(outputDataSet);
+        this.outputDataSet = DataUtils.replaceMissingWithRandom(dataSet);
+        setDataModel(this.outputDataSet);
         setSourceGraph(wrapper.getSourceGraph());
 
         LogDataUtils.logDataModelList("Parent data with missing values injected randomly.", getDataModelList());
@@ -69,10 +69,6 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
 
     //==========================PUBLIC METHODS============================//
 
-//    public DataSet getOutputDataset() {
-//        return outputDataSet;
-//    }
-
     /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of
@@ -82,15 +78,12 @@ public class ReplaceMissingWithRandomWrapper extends DataWrapper {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (outputDataSet == null) {
+        if (this.outputDataSet == null) {
             throw new NullPointerException();
         }
     }

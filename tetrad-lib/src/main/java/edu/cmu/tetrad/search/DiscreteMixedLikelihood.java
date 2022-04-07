@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.Discretizer.Discretization;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.BlockRealMatrix;
@@ -34,7 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static edu.cmu.tetrad.data.Discretizer.*;
+import static edu.cmu.tetrad.data.Discretizer.discretize;
+import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
 import static java.lang.Math.log;
 
 /**
@@ -47,25 +49,25 @@ import static java.lang.Math.log;
 public class DiscreteMixedLikelihood {
 
     // The data set. May contain continuous and/or discrete mixedVariables.
-    private DataSet mixedDataSet;
+    private final DataSet mixedDataSet;
 
     // The data set with all continuous mixedVariables discretized.
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // Number of categories to use to discretize continuous mixedVariables.
     private int numCategoriesToDiscretize = 3;
 
     // The mixedVariables of the mixed data set.
-    private List<Node> mixedVariables;
+    private final List<Node> mixedVariables;
 
     // Indices of mixedVariables.
-    private Map<Node, Integer> nodesHash;
+    private final Map<Node, Integer> nodesHash;
 
     // Continuous data only.
-    private double[][] continuousData;
+    private final double[][] continuousData;
 
     // The AD Tree used to count discrete cells.
-    private AdLeafTree adTree;
+    private final AdLeafTree adTree;
 
     // Multiplier on degrees of freedom for the continuous portion of those degrees.
     private double penaltyDiscount = 1;
@@ -74,33 +76,15 @@ public class DiscreteMixedLikelihood {
     private final ArrayList<Integer> all;
 
     // A constant.
-    private static double LOG2PI = log(2.0 * Math.PI);
-
-    private List<List<Integer>> partition(List<DiscreteVariable> discrete_parents) {
-        List<List<Integer>> cells = new ArrayList<>();
-        HashMap<String, Integer> keys = new HashMap<>();
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            String key = "";
-            for (int j = 0; j < discrete_parents.size(); j++) {
-                key += ((Integer) dataSet.getInt(i, dataSet.getColumn(discrete_parents.get(j)))).toString();
-            }
-            if (!keys.containsKey(key)) {
-                keys.put(key, cells.size());
-                cells.add(keys.get(key), new ArrayList<Integer>());
-            }
-            cells.get(keys.get(key)).add(i);
-        }
-
-        return cells;
-    }
+    private static final double LOG2PI = log(2.0 * Math.PI);
 
     /**
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom
      * for it.
      */
-    public class Ret {
-        private double lik;
-        private int dof;
+    public static class Ret {
+        private final double lik;
+        private final int dof;
 
         private Ret(double lik, int dof) {
             this.lik = lik;
@@ -108,15 +92,15 @@ public class DiscreteMixedLikelihood {
         }
 
         public double getLik() {
-            return lik;
+            return this.lik;
         }
 
         public int getDof() {
-            return dof;
+            return this.dof;
         }
 
         public String toString() {
-            return "lik = " + lik + " dof = " + dof;
+            return "lik = " + this.lik + " dof = " + this.dof;
         }
     }
 
@@ -131,7 +115,7 @@ public class DiscreteMixedLikelihood {
         this.mixedDataSet = dataSet;
         this.mixedVariables = dataSet.getVariables();
 
-        continuousData = new double[dataSet.getNumColumns()][];
+        this.continuousData = new double[dataSet.getNumColumns()][];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
@@ -143,30 +127,30 @@ public class DiscreteMixedLikelihood {
                     col[i] = dataSet.getDouble(i, j);
                 }
 
-                continuousData[j] = col;
+                this.continuousData[j] = col;
             }
         }
 
-        nodesHash = new HashMap<>();
+        this.nodesHash = new HashMap<>();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
-            nodesHash.put(v, j);
+            this.nodesHash.put(v, j);
         }
 
         this.dataSet = useErsatzVariables();
         this.adTree = new AdLeafTree(this.dataSet);
 
-        all = new ArrayList<>();
-        for (int i = 0; i < dataSet.getNumRows(); i++) all.add(i);
+        this.all = new ArrayList<>();
+        for (int i = 0; i < dataSet.getNumRows(); i++) this.all.add(i);
 
     }
 
     private DataSet useErsatzVariables() {
         List<Node> nodes = new ArrayList<>();
-        int numCategories = numCategoriesToDiscretize;
+        int numCategories = this.numCategoriesToDiscretize;
 
-        for (Node x : mixedVariables) {
+        for (Node x : this.mixedVariables) {
             if (x instanceof ContinuousVariable) {
                 nodes.add(new DiscreteVariable(x.getName(), numCategories));
             } else {
@@ -174,15 +158,15 @@ public class DiscreteMixedLikelihood {
             }
         }
 
-        DataSet replaced = new BoxDataSet(new VerticalIntDataBox(mixedDataSet.getNumRows(), mixedDataSet.getNumColumns()), nodes);
+        DataSet replaced = new BoxDataSet(new VerticalIntDataBox(this.mixedDataSet.getNumRows(), this.mixedDataSet.getNumColumns()), nodes);
 
-        for (int j = 0; j < mixedVariables.size(); j++) {
-            if (mixedVariables.get(j) instanceof DiscreteVariable) {
-                for (int i = 0; i < mixedDataSet.getNumRows(); i++) {
-                    replaced.setInt(i, j, mixedDataSet.getInt(i, j));
+        for (int j = 0; j < this.mixedVariables.size(); j++) {
+            if (this.mixedVariables.get(j) instanceof DiscreteVariable) {
+                for (int i = 0; i < this.mixedDataSet.getNumRows(); i++) {
+                    replaced.setInt(i, j, this.mixedDataSet.getInt(i, j));
                 }
             } else {
-                double[] column = continuousData[j];
+                double[] column = this.continuousData[j];
 
                 double[] breakpoints = getEqualFrequencyBreakPoints(column, numCategories);
 
@@ -192,9 +176,9 @@ public class DiscreteMixedLikelihood {
                     categoryNames.add("" + i);
                 }
 
-                Discretization d = discretize(column, breakpoints, mixedVariables.get(j).getName(), categoryNames);
+                Discretization d = discretize(column, breakpoints, this.mixedVariables.get(j).getName(), categoryNames);
 
-                for (int i = 0; i < mixedDataSet.getNumRows(); i++) {
+                for (int i = 0; i < this.mixedDataSet.getNumRows(); i++) {
                     replaced.setInt(i, j, d.getData()[i]);
                 }
             }
@@ -212,13 +196,13 @@ public class DiscreteMixedLikelihood {
      * @return The likelihood.
      */
     public Ret getLikelihood(int i, int[] parents) {
-        Node target = mixedVariables.get(i);
+        Node target = this.mixedVariables.get(i);
 
         List<ContinuousVariable> X = new ArrayList<>();
         List<DiscreteVariable> A = new ArrayList<>();
 
         for (int p : parents) {
-            Node parent = mixedVariables.get(p);
+            Node parent = this.mixedVariables.get(p);
 
             if (parent instanceof ContinuousVariable) {
                 X.add((ContinuousVariable) parent);
@@ -236,14 +220,14 @@ public class DiscreteMixedLikelihood {
             APlus.add((DiscreteVariable) target);
         }
 
-        Ret ret1 = likelihoodJoint(XPlus, APlus, target);
-        Ret ret2 = likelihoodJoint(X, A, target);
+        Ret ret1 = likelihoodJoint(XPlus, APlus);
+        Ret ret2 = likelihoodJoint(X, A);
 
         return new Ret(ret1.getLik() - ret2.getLik(), ret1.getDof() - ret2.getDof());
     }
 
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     public void setPenaltyDiscount(double penaltyDiscount) {
@@ -256,12 +240,12 @@ public class DiscreteMixedLikelihood {
 
     // The likelihood of the joint over all of these mixedVariables, assuming conditional Gaussian,
     // continuous and discrete.
-    private Ret likelihoodJoint(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target) {
+    private Ret likelihoodJoint(List<ContinuousVariable> X, List<DiscreteVariable> A) {
         A = new ArrayList<>(A);
         X = new ArrayList<>(X);
 
         for (ContinuousVariable x : new ArrayList<>(X)) {
-            final Node variable = dataSet.getVariable(x.getName());
+            Node variable = this.dataSet.getVariable(x.getName());
 
             if (variable != null) {
                 A.add((DiscreteVariable) variable);
@@ -272,12 +256,12 @@ public class DiscreteMixedLikelihood {
         int k = X.size();
 
         int[] continuousCols = new int[k];
-        for (int j = 0; j < k; j++) continuousCols[j] = nodesHash.get(X.get(j));
-        int N = mixedDataSet.getNumRows();
+        for (int j = 0; j < k; j++) continuousCols[j] = this.nodesHash.get(X.get(j));
+        int N = this.mixedDataSet.getNumRows();
 
         double c1 = 0, c2 = 0;
 
-        List<List<Integer>> cells = adTree.getCellLeaves(A);
+        List<List<Integer>> cells = this.adTree.getCellLeaves(A);
         //List<List<Integer>> cells = partition(A);
 
         for (List<Integer> cell : cells) {
@@ -292,21 +276,21 @@ public class DiscreteMixedLikelihood {
                 try {
 
                     // Determinant will be zero if data are linearly dependent.
+                    Matrix cov;
                     if (a > continuousCols.length + 5) {
-                        Matrix cov = cov(getSubsample(continuousCols, cell));
-                        c2 += a * gaussianLikelihood(k, cov);
+                        cov = cov(getSubsample(continuousCols, cell));
                     } else {
-                        Matrix cov = cov(getSubsample(continuousCols, all));
-                        c2 += a * gaussianLikelihood(k, cov);
+                        cov = cov(getSubsample(continuousCols, this.all));
                     }
+                    c2 += a * gaussianLikelihood(k, cov);
                 } catch (Exception e) {
                     // No contribution.
                 }
             }
         }
 
-        final double lnL = c1 + c2;
-        final int dof = f(A) * h(X) + f(A);
+        double lnL = c1 + c2;
+        int dof = f(A) * h(X) + f(A);
         return new Ret(lnL, dof);
     }
 
@@ -316,7 +300,7 @@ public class DiscreteMixedLikelihood {
 
     // One record.
     private double gaussianLikelihood(int k, Matrix sigma) {
-        return -0.5 * logdet(sigma) - 0.5 * k * (1 + LOG2PI);
+        return -0.5 * logdet(sigma) - 0.5 * k * (1 + DiscreteMixedLikelihood.LOG2PI);
     }
 
     private double logdet(Matrix m) {
@@ -343,7 +327,7 @@ public class DiscreteMixedLikelihood {
 
         for (int i = 0; i < cell.size(); i++) {
             for (int j = 0; j < continuousCols.length; j++) {
-                subset.set(i, j, continuousData[continuousCols[j]][cell.get(i)]);
+                subset.set(i, j, this.continuousData[continuousCols[j]][cell.get(i)]);
             }
         }
 

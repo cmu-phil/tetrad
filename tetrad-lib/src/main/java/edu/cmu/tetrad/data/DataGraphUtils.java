@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -54,7 +54,7 @@ public class DataGraphUtils {
 
         Graph graph = new EdgeListGraph(dag);
 
-        return randomMim(graph, numMeasurementsPerLatent,
+        return DataGraphUtils.randomMim(graph, numMeasurementsPerLatent,
                 numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents, numMeasuredMeasuredImpureAssociations,
                 true);
 
@@ -64,7 +64,7 @@ public class DataGraphUtils {
                                   int numLatentMeasuredImpureParents,
                                   int numMeasuredMeasuredImpureParents,
                                   int numMeasuredMeasuredImpureAssociations, boolean arrangeGraph) {
-        Graph graph1 = new EdgeListGraph(graph);
+        EdgeListGraph graph1 = new EdgeListGraph(graph);
 //        Graph graph1 = graph;
 
         List<Node> latents = graph1.getNodes();
@@ -77,19 +77,16 @@ public class DataGraphUtils {
             }
 
             String newName = "L." + latent.getName();
-            ((EdgeListGraph) graph1).changeName(latent.getName(), newName);
-//            latent.setName(newName);
+            graph1.changeName(latent.getName(), newName);
         }
 
         int measureIndex = 0;
 
-        for (Object latent1 : latents) {
-            Node latent = (Node) latent1;
-
+        for (Node latent1 : latents) {
             for (int j = 0; j < numMeasurementsPerLatent; j++) {
                 Node measurement = new GraphNode("X" + (++measureIndex));
                 graph1.addNode(measurement);
-                graph1.addDirectedEdge(latent, measurement);
+                graph1.addDirectedEdge(latent1, measurement);
             }
         }
 
@@ -240,7 +237,7 @@ public class DataGraphUtils {
                                             int numLatentMeasuredImpureParents,
                                             int numMeasuredMeasuredImpureParents,
                                             int numMeasuredMeasuredImpureAssociations) {
-        Graph mim = randomSingleFactorModel(numStructuralNodes, numStructuralEdges,
+        Graph mim = DataGraphUtils.randomSingleFactorModel(numStructuralNodes, numStructuralEdges,
                 numMeasurementsPerLatent, numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
                 numMeasuredMeasuredImpureAssociations);
 
@@ -269,22 +266,6 @@ public class DataGraphUtils {
                 }
             }
         }
-
-        // Connect up all the latents.
-//        List<Node> allLatents = new ArrayList<Node>(latents);
-//        allLatents.addAll(latents2);
-//
-//        for (int i = 0; i < allLatents.size(); i++) {
-//            for (int j = i + 1; j < allLatents.size(); j++) {
-//                if (mim.isAdjacentTo(allLatents.get(i), allLatents.get(j))) {
-//                    mim.removeEdge(allLatents.get(i), allLatents.get(j));
-//                }
-//
-//                if (j == i + latents.size()) continue;
-//
-//                mim.addDirectedEdge(allLatents.get(i), allLatents.get(j));
-//            }
-//        }
 
         GraphUtils.fruchtermanReingoldLayout(mim);
 

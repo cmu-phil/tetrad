@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -43,7 +42,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
+public final class UpdatedBayesIm implements BayesIm {
 
     static final long serialVersionUID = 23L;
     private static final double ALLOWABLE_DIFFERENCE = 1.0e-10;
@@ -54,14 +53,14 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      *
      * @serial Cannot be null; must be evidence.getEstIm().
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * The evidence updated on.
      *
      * @serial Cannot be null.
      */
-    private Evidence evidence;
+    private final Evidence evidence;
 
     /**
      * Stores probs that change with respect to the underlying bayesIm,
@@ -69,7 +68,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private double[][][] changedProbs;
+    private final double[][][] changedProbs;
 
     /**
      * A boolean array that is true at a position if the node at that index is
@@ -77,7 +76,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private boolean[] affectedVars;
+    private final boolean[] affectedVars;
 
     //===========================CONSTRUCTORS===========================//
 
@@ -128,7 +127,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
     }
 
     private BayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     public Graph getDag() {
@@ -193,11 +192,11 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      * evidence provided in the constuctor.
      */
     public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
-        if (!affectedVars[nodeIndex]) {
+        if (!this.affectedVars[nodeIndex]) {
             return getBayesIm().getProbability(nodeIndex, rowIndex, colIndex);
         }
 
-        if (changedProbs[nodeIndex] == null) {
+        if (this.changedProbs[nodeIndex] == null) {
             int numRows = getNumRows(nodeIndex);
             int numCols = getNumColumns(nodeIndex);
             double[][] table = new double[numRows][numCols];
@@ -206,15 +205,15 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
                 Arrays.fill(aTable, -99.0);
             }
 
-            changedProbs[nodeIndex] = table;
+            this.changedProbs[nodeIndex] = table;
         }
 
-        if (changedProbs[nodeIndex][rowIndex][colIndex] == -99.0) {
-            changedProbs[nodeIndex][rowIndex][colIndex]
+        if (this.changedProbs[nodeIndex][rowIndex][colIndex] == -99.0) {
+            this.changedProbs[nodeIndex][rowIndex][colIndex]
                     = calcUpdatedProb(nodeIndex, rowIndex, colIndex);
         }
 
-        return changedProbs[nodeIndex][rowIndex][colIndex];
+        return this.changedProbs[nodeIndex][rowIndex][colIndex];
     }
 
     public int getRowIndex(int nodeIndex, int[] values) {
@@ -337,7 +336,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
                         continue;
                     }
 
-                    if (Math.abs(prob - otherProb) > ALLOWABLE_DIFFERENCE) {
+                    if (Math.abs(prob - otherProb) > UpdatedBayesIm.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }
@@ -382,7 +381,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
     }
 
     public Evidence getEvidence() {
-        return new Evidence(evidence, this);
+        return new Evidence(this.evidence, this);
     }
 
     /**
@@ -395,7 +394,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
 
         for (Node _node : variablesInEvidence) {
             String nodeName = _node.getName();
-            nodesInEvidence.add(bayesIm.getBayesPm().getNode(nodeName));
+            nodesInEvidence.add(this.bayesIm.getBayesPm().getNode(nodeName));
         }
 
         List<Node> nodesInGraph = getBayesIm().getDag().getNodes();
@@ -416,14 +415,14 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
     }
 
     private double calcUpdatedProb(int nodeIndex, int rowIndex, int colIndex) {
-        if (!affectedVars[nodeIndex]) {
+        if (!this.affectedVars[nodeIndex]) {
             throw new IllegalStateException("Should not be calculating a "
                     + "probability for a table that's not an ancestor of "
                     + "evidence.");
         }
 
         Proposition assertion = Proposition.tautology(getBayesIm());
-        Proposition condition = new Proposition(evidence.getProposition());
+        Proposition condition = new Proposition(this.evidence.getProposition());
 
         boolean[] relevantVars = calcRelevantVars(nodeIndex);
         assertion.setCategory(nodeIndex, colIndex);
@@ -458,7 +457,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         int[] variableValues = new int[condition.getNumVariables()];
 
         for (int i = 0; i < condition.getNumVariables(); i++) {
-            variableValues[i] = nextValue(condition, i, -1);
+            variableValues[i] = UpdatedBayesIm.nextValue(condition, i, -1);
         }
 
         variableValues[variableValues.length - 1] = -1;
@@ -468,16 +467,16 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
         loop:
         while (true) {
             for (int i = condition.getNumVariables() - 1; i >= 0; i--) {
-                if (hasNextValue(condition, i, variableValues[i])) {
+                if (UpdatedBayesIm.hasNextValue(condition, i, variableValues[i])) {
                     variableValues[i]
-                            = nextValue(condition, i, variableValues[i]);
+                            = UpdatedBayesIm.nextValue(condition, i, variableValues[i]);
 
                     for (int j = i + 1; j < condition.getNumVariables(); j++) {
-                        if (!hasNextValue(condition, j, -1)) {
+                        if (!UpdatedBayesIm.hasNextValue(condition, j, -1)) {
                             break loop;
                         }
 
-                        variableValues[j] = nextValue(condition, j, -1);
+                        variableValues[j] = UpdatedBayesIm.nextValue(condition, j, -1);
                     }
 
                     double cellProb = getCellProb(variableValues);
@@ -502,7 +501,7 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
 
     private static boolean hasNextValue(Proposition proposition, int variable,
                                         int curIndex) {
-        return nextValue(proposition, variable, curIndex) != -1;
+        return UpdatedBayesIm.nextValue(proposition, variable, curIndex) != -1;
     }
 
     private static int nextValue(Proposition proposition, int variable,
@@ -549,32 +548,28 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      * to the node given its parents and all evidence variables.
      */
     private boolean[] calcRelevantVars(int nodeIndex) {
-        boolean[] relevantVars = new boolean[evidence.getNumNodes()];
+        boolean[] relevantVars = new boolean[this.evidence.getNumNodes()];
 
-        for (int i = 0; i < relevantVars.length; i++) {
-            relevantVars[i] = false;
-        }
+        Node node = this.bayesIm.getNode(nodeIndex);
 
-        Node node = bayesIm.getNode(nodeIndex);
-
-        List<Node> variablesInEvidence = evidence.getVariablesInEvidence();
+        List<Node> variablesInEvidence = this.evidence.getVariablesInEvidence();
 
         List<Node> nodesInEvidence = new LinkedList<>();
 
         for (Node _node : variablesInEvidence) {
-            nodesInEvidence.add(bayesIm.getBayesPm().getNode(_node.getName()));
+            nodesInEvidence.add(this.bayesIm.getBayesPm().getNode(_node.getName()));
         }
 
         List<Node> conditionedNodes
                 = new LinkedList<>(nodesInEvidence);
-        conditionedNodes.addAll(bayesIm.getDag().getParents(node));
+        conditionedNodes.addAll(this.bayesIm.getDag().getParents(node));
 
-        for (int i = 0; i < bayesIm.getNumNodes(); i++) {
-            Node node2 = bayesIm.getNode(i);
+        for (int i = 0; i < this.bayesIm.getNumNodes(); i++) {
+            Node node2 = this.bayesIm.getNode(i);
 
             // Added the condition node == node2 since the updater was corrected to exclude this.
             // jdramsey 12.13.2014
-            if (node == node2 || bayesIm.getDag().isDConnectedTo(node, node2, conditionedNodes)) {
+            if (node == node2 || this.bayesIm.getDag().isDConnectedTo(node, node2, conditionedNodes)) {
                 relevantVars[i] = true;
             }
         }
@@ -591,9 +586,6 @@ public final class UpdatedBayesIm implements BayesIm, TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

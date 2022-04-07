@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -30,8 +30,6 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 
 /**
@@ -45,7 +43,7 @@ class LoggingMenu extends JMenu {
     /**
      * The logger that we are display setup for.
      */
-    private TetradLoggerConfig config;
+    private final TetradLoggerConfig config;
 
 
     /**
@@ -85,11 +83,7 @@ class LoggingMenu extends JMenu {
     private void buildMenu() {
         this.removeAll();
         JMenuItem setup = new JMenuItem("Setup Log Events...");
-        setup.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                showLogSetupDialog();
-            }
-        });
+        setup.addActionListener(e -> showLogSetupDialog());
 
         JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem("Logging");
         menuItem.setSelected(TetradLogger.getInstance().isLogging());
@@ -98,11 +92,9 @@ class LoggingMenu extends JMenu {
         this.addSeparator();
         this.add(menuItem);
 
-        menuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-                TetradLogger.getInstance().setLogging(item.isSelected());
-            }
+        menuItem.addActionListener(e -> {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            TetradLogger.getInstance().setLogging(item.isSelected());
         });
     }
 
@@ -112,18 +104,16 @@ class LoggingMenu extends JMenu {
      */
     private void showLogSetupDialog() {
         JPanel panel = new JPanel();
-        List<TetradLoggerConfig.Event> events = config.getSupportedEvents();
+        List<TetradLoggerConfig.Event> events = this.config.getSupportedEvents();
         panel.setLayout(new GridLayout(3, events.size() / 3));
         for (TetradLoggerConfig.Event event : events) {
-            final String id = event.getId();
+            String id = event.getId();
             JCheckBox checkBox = new JCheckBox(event.getDescription());
-            checkBox.setHorizontalTextPosition(AbstractButton.RIGHT);
-            checkBox.setSelected(config.isEventActive(id));
-            checkBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JCheckBox box = (JCheckBox) e.getSource();
-                    config.setEventActive(id, box.isSelected());
-                }
+            checkBox.setHorizontalTextPosition(SwingConstants.RIGHT);
+            checkBox.setSelected(this.config.isEventActive(id));
+            checkBox.addActionListener(e -> {
+                JCheckBox box = (JCheckBox) e.getSource();
+                this.config.setEventActive(id, box.isSelected());
             });
 
             panel.add(checkBox);
@@ -131,7 +121,7 @@ class LoggingMenu extends JMenu {
 
         panel.setBorder(new TitledBorder("Select Events to Log"));
 
-        Component comp = parent == null ? JOptionUtils.centeringComp() : parent;
+        Component comp = this.parent == null ? JOptionUtils.centeringComp() : this.parent;
         JOptionPane.showMessageDialog(comp, panel, "Logging Setup", JOptionPane.PLAIN_MESSAGE);
     }
 

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -60,7 +60,7 @@ public class TestBooleanFunction extends TestCase {
             return;
         }
 
-        fail("Should have thrown an NullPointerException.");
+        TestCase.fail("Should have thrown an NullPointerException.");
     }
 
     /**
@@ -82,7 +82,7 @@ public class TestBooleanFunction extends TestCase {
             size *= 2;
         }
 
-        assertEquals(size, function.getNumRows());
+        TestCase.assertEquals(size, function.getNumRows());
     }
 
     /**
@@ -97,7 +97,7 @@ public class TestBooleanFunction extends TestCase {
         // Set up the function object with two parents.
         IndexedParent x = new IndexedParent(1, 2);
         IndexedParent y = new IndexedParent(2, 1);
-        IndexedParent[] twoParents = new IndexedParent[]{x, y};
+        IndexedParent[] twoParents = {x, y};
         BooleanFunction function = new BooleanFunction(twoParents);
 
         // Set the first row to true.
@@ -125,10 +125,10 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(row, false);
 
         // Now see if the values are in the right order.
-        assertEquals(true, function.getValue(0));
-        assertEquals(false, function.getValue(1));
-        assertEquals(false, function.getValue(2));
-        assertEquals(false, function.getValue(3));
+        TestCase.assertEquals(true, function.getValue(0));
+        TestCase.assertEquals(false, function.getValue(1));
+        TestCase.assertEquals(false, function.getValue(2));
+        TestCase.assertEquals(false, function.getValue(3));
     }
 
     /**
@@ -140,7 +140,7 @@ public class TestBooleanFunction extends TestCase {
         IndexedParent x = new IndexedParent(0, 2);
         IndexedParent y = new IndexedParent(1, 2);
         IndexedParent z = new IndexedParent(2, 3);
-        IndexedParent[] threeParents = new IndexedParent[]{x, y, z};
+        IndexedParent[] threeParents = {x, y, z};
         BooleanFunction function = null;
 
         // The following 3-parent function should pass.
@@ -154,7 +154,7 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(6, false);
         function.setValue(7, false);
 
-        assertTrue(function.isEffective());
+        TestCase.assertTrue(function.isEffective());
 
         // This following 3-parent function should fail.
         function = new BooleanFunction(threeParents);
@@ -167,7 +167,7 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(6, false);
         function.setValue(7, true);
 
-        assertTrue(!(function.isEffective()));
+        TestCase.assertTrue(!(function.isEffective()));
     }
 
     /**
@@ -179,8 +179,8 @@ public class TestBooleanFunction extends TestCase {
         IndexedParent x = new IndexedParent(0, 1);
         IndexedParent y = new IndexedParent(1, 2);
         IndexedParent z = new IndexedParent(2, 3);
-        IndexedParent[] twoParents = new IndexedParent[]{x, y};
-        IndexedParent[] threeParents = new IndexedParent[]{x, y, z};
+        IndexedParent[] twoParents = {x, y};
+        IndexedParent[] threeParents = {x, y, z};
         BooleanFunction function = null;
 
         // AND should pass the isCanalyzing() test.
@@ -190,7 +190,7 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(2, false);
         function.setValue(3, false);
 
-        assertTrue(function.isCanalyzing());
+        TestCase.assertTrue(function.isCanalyzing());
 
         // Inclusive OR should pass the isCanalyzing() test.
         function = new BooleanFunction(twoParents);
@@ -199,7 +199,7 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(2, true);
         function.setValue(3, false);
 
-        assertTrue(function.isCanalyzing());
+        TestCase.assertTrue(function.isCanalyzing());
 
         // Exclusive OR should fail the isCanalyzing() test.
         function = new BooleanFunction(twoParents);
@@ -208,7 +208,7 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(2, true);
         function.setValue(3, false);
 
-        assertTrue(!(function.isCanalyzing()));
+        TestCase.assertTrue(!(function.isCanalyzing()));
 
         // The following 3-parent function should fail for y and z but
         // pass for x, thereby passing.
@@ -222,7 +222,7 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(6, false);
         function.setValue(7, false);
 
-        assertTrue(function.isCanalyzing());
+        TestCase.assertTrue(function.isCanalyzing());
 
         // This slight variation of the previous function should fail
         // for all three parents, thereby failing.
@@ -236,7 +236,7 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(6, false);
         function.setValue(7, true);
 
-        assertTrue(!(function.isCanalyzing()));
+        TestCase.assertTrue(!(function.isCanalyzing()));
     }
 
     /**

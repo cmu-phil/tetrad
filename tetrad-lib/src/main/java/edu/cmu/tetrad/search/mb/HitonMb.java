@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,17 +41,17 @@ public class HitonMb implements MbSearch {
     /**
      * True if the symmetric algorithm is to be used.
      */
-    private boolean symmetric = false;
+    private final boolean symmetric;
 
     /**
      * The independence test used to perform the search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * The list of variables being searched over. Must contain the target.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * Variables sorted by decreasing association with the target.
@@ -61,12 +61,12 @@ public class HitonMb implements MbSearch {
     /**
      * The maximum number of conditioning variables.
      */
-    private int depth;
+    private final int depth;
 
     /**
      * Number of independence tests.
      */
-    private int numIndTests = 0;
+    private int numIndTests;
 
     /**
      * The function from nodes to their sets of parents and children.
@@ -98,30 +98,22 @@ public class HitonMb implements MbSearch {
 
     public List<Node> findMb(String targetName) {
         TetradLogger.getInstance().log("info", "target = " + targetName);
-        numIndTests = 0;
+        this.numIndTests = 0;
         long time = System.currentTimeMillis();
 
-        pc = new HashMap<>();
-        trimmed = new HashSet<>();
+        this.pc = new HashMap<>();
+        this.trimmed = new HashSet<>();
 
-        final Node t = getVariableForName(targetName);
+        Node t = getVariableForName(targetName);
 
         // Sort variables by decreasing association with the target.
-        sortedVariables = new LinkedList<>(variables);
+        this.sortedVariables = new LinkedList<>(this.variables);
 
-        Collections.sort(sortedVariables, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                double score1 = o1 == t ? 1.0 : association(o1, t);
-                double score2 = o2 == t ? 1.0 : association(o2, t);
+        this.sortedVariables.sort((o1, o2) -> {
+            double score1 = o1 == t ? 1.0 : association(o1, t);
+            double score2 = o2 == t ? 1.0 : association(o2, t);
 
-                if (score1 < score2) {
-                    return 1;
-                } else if (score1 > score2) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }
+            return Double.compare(score2, score1);
         });
 
         List<Node> nodes = hitonMb(t);
@@ -129,7 +121,7 @@ public class HitonMb implements MbSearch {
         long time2 = System.currentTimeMillis() - time;
         TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));
         TetradLogger.getInstance().log("info", "Number of independence tests performed: " +
-                numIndTests);
+                this.numIndTests);
 
 //        System.out.println("Number of calls to hiton_pc = " + pc.size());
 
@@ -155,7 +147,7 @@ public class HitonMb implements MbSearch {
         currentMb.remove(t);
 
         HashSet<Node> diff = new HashSet<>(currentMb);
-        diff.removeAll(getPc(t));
+        getPc(t).forEach(diff::remove);
         diff.remove(t);
 
         //for each x in PCPC \ PC
@@ -164,7 +156,7 @@ public class HitonMb implements MbSearch {
 
             // Find an S such PC such that x _||_ t | S
             DepthChoiceGenerator generator =
-                    new DepthChoiceGenerator(pcpc.size(), depth);
+                    new DepthChoiceGenerator(pcpc.size(), this.depth);
             int[] choice;
 
             while ((choice = generator.next()) != null) {
@@ -174,8 +166,8 @@ public class HitonMb implements MbSearch {
                     _s.add(pcpc.get(index));
                 }
 
-                numIndTests++;
-                if (independenceTest.isIndependent(t, x, _s)) {
+                this.numIndTests++;
+                if (this.independenceTest.isIndependent(t, x, _s)) {
                     s = _s;
                     break;
                 }
@@ -203,8 +195,8 @@ public class HitonMb implements MbSearch {
                 _s.add(y);
 
                 // If x NOT _||_ t | S U {y}
-                numIndTests++;
-                if (!independenceTest.isIndependent(t, x, _s)) {
+                this.numIndTests++;
+                if (!this.independenceTest.isIndependent(t, x, _s)) {
                     mb.add(x);
                     break;
                 }
@@ -216,7 +208,7 @@ public class HitonMb implements MbSearch {
     }
 
     private List<Node> hitonPc(Node t) {
-        LinkedList<Node> variables = new LinkedList<>(sortedVariables);
+        LinkedList<Node> variables = new LinkedList<>(this.sortedVariables);
 
         variables.remove(t);
 
@@ -230,7 +222,7 @@ public class HitonMb implements MbSearch {
             for (Node x : new LinkedList<>(cpc)) {
                 cpc.remove(x);
 
-                for (int d = 0; d <= Math.min(cpc.size(), depth); d++) {
+                for (int d = 0; d <= Math.min(cpc.size(), this.depth); d++) {
                     ChoiceGenerator generator =
                             new ChoiceGenerator(cpc.size(), d);
                     int[] choice;
@@ -249,8 +241,8 @@ public class HitonMb implements MbSearch {
 
                         // If it's independent of the target given this
                         // subset...
-                        numIndTests++;
-                        if (independenceTest.isIndependent(x, t, s)) {
+                        this.numIndTests++;
+                        if (this.independenceTest.isIndependent(x, t, s)) {
 
                             // Leave it removed.
                             continue VARS;
@@ -271,29 +263,29 @@ public class HitonMb implements MbSearch {
      * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
      */
     private List<Node> getPc(Node t) {
-        if (!pc.containsKey(t)) {
-            pc.put(t, hitonPc(t));
+        if (!this.pc.containsKey(t)) {
+            this.pc.put(t, hitonPc(t));
         }
 
-        if (symmetric && !trimmed.contains(t)) {
+        if (this.symmetric && !this.trimmed.contains(t)) {
             trimPc(t);
-            trimmed.add(t);
+            this.trimmed.add(t);
         }
 
-        return pc.get(t);
+        return this.pc.get(t);
     }
 
     /**
      * Trims away false positives from the given node. Used in the symmetric algorithm.
      */
     private void trimPc(Node t) {
-        for (Node x : new LinkedList<>(pc.get(t))) {
-            if (!pc.containsKey(x)) {
-                pc.put(x, hitonPc(x));
+        for (Node x : new LinkedList<>(this.pc.get(t))) {
+            if (!this.pc.containsKey(x)) {
+                this.pc.put(x, hitonPc(x));
             }
 
-            if (!pc.get(x).contains(t)) {
-                pc.get(t).remove(x);
+            if (!this.pc.get(x).contains(t)) {
+                this.pc.get(t).remove(x);
             }
         }
     }
@@ -302,23 +294,23 @@ public class HitonMb implements MbSearch {
      * A measure of strength of association.
      */
     private double association(Node x, Node y) {
-        numIndTests++;
-        independenceTest.isIndependent(x, y, new LinkedList<Node>());
-        return 1.0 - independenceTest.getPValue();
+        this.numIndTests++;
+        this.independenceTest.isIndependent(x, y, new LinkedList<>());
+        return 1.0 - this.independenceTest.getPValue();
     }
 
     public String getAlgorithmName() {
-        return symmetric ? "HITON-MB-SYM" : "HITON-MB";
+        return this.symmetric ? "HITON-MB-SYM" : "HITON-MB";
     }
 
     public int getNumIndependenceTests() {
-        return numIndTests;
+        return this.numIndTests;
     }
 
     private Node getVariableForName(String targetName) {
         Node target = null;
 
-        for (Node V : variables) {
+        for (Node V : this.variables) {
             if (V.getName().equals(targetName)) {
                 target = V;
                 break;

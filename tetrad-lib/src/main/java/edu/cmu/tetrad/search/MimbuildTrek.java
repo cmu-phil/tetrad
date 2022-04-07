@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -38,9 +38,8 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-
-import static java.lang.Math.sqrt;
 
 /**
  * An implemetation of Mimbuild based on the treks and ranks.
@@ -86,7 +85,6 @@ public class MimbuildTrek {
     private int numParams;
     private List<Node> latents;
     private double epsilon = 1e-4;
-    private int penaltyDiscount = 1;
     private int minClusterSize = 3;
 
     public MimbuildTrek() {
@@ -135,25 +133,12 @@ public class MimbuildTrek {
         }
 
         Matrix cov = getCov(measuresCov, latents, indicators);
-        CovarianceMatrix latentscov = new CovarianceMatrix(latents, cov, measuresCov.getSampleSize());
-        this.latentsCov = latentscov;
+        this.latentsCov = new CovarianceMatrix(latents, cov, measuresCov.getSampleSize());
         Graph graph;
 
-        Cpc search = new Cpc(new IndTestTrekSep(measuresCov, alpha, clustering, latents));
-        search.setKnowledge(knowledge);
+        Cpc search = new Cpc(new IndTestTrekSep(measuresCov, this.alpha, clustering, latents));
+        search.setKnowledge(this.knowledge);
         graph = search.search();
-
-//        try {
-//            Ges search = new Ges(latentscov);
-//            search.setCorrErrorsAlpha(penaltyDiscount);
-//            search.setKnowledge(knowledge);
-//            graph = search.search();
-//        } catch (Exception e) {
-////            e.printStackTrace();
-//            CPC search = new CPC(new IndTestFisherZ(latentscov, alpha));
-//            search.setKnowledge(knowledge);
-//            graph = search.search();
-//        }
 
         this.structureGraph = new EdgeListGraph(graph);
         GraphUtils.fruchtermanReingoldLayout(this.structureGraph);
@@ -162,11 +147,11 @@ public class MimbuildTrek {
     }
 
     public List<List<Node>> getClustering() {
-        return clustering;
+        return this.clustering;
     }
 
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     public void setAlpha(double alpha) {
@@ -174,7 +159,7 @@ public class MimbuildTrek {
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -196,18 +181,18 @@ public class MimbuildTrek {
     }
 
     public double getMinimum() {
-        return minimum;
+        return this.minimum;
     }
 
     public double getpValue() {
-        return pValue;
+        return this.pValue;
     }
 
     /**
      * @return the allowUnfaithfulness discovered graph, with latents and indicators.
      */
     public Graph getFullGraph() {
-        Graph graph = new EdgeListGraph(structureGraph);
+        Graph graph = new EdgeListGraph(this.structureGraph);
 
         for (int i = 0; i < this.latents.size(); i++) {
             Node latent = this.latents.get(i);
@@ -226,7 +211,7 @@ public class MimbuildTrek {
     }
 
     public double getEpsilon() {
-        return epsilon;
+        return this.epsilon;
     }
 
     /**
@@ -235,10 +220,6 @@ public class MimbuildTrek {
     public void setEpsilon(double epsilon) {
         if (epsilon < 0) throw new IllegalArgumentException("Epsilon mut be >= 0: " + epsilon);
         this.epsilon = epsilon;
-    }
-
-    public void setPenaltyDiscount(int penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
     }
 
     //=================================== PRIVATE METHODS =========================================//
@@ -276,7 +257,7 @@ public class MimbuildTrek {
             for (int j = i; j < latentscov.columns(); j++) {
                 if (i == j) latentscov.set(i, j, 1.0);
                 else {
-                    double v = .5;
+                    final double v = .5;
                     latentscov.set(i, j, v);
                     latentscov.set(j, i, v);
                 }
@@ -311,59 +292,24 @@ public class MimbuildTrek {
         // Variances of the measures.
         double[] delta = new double[measurescov.rows()];
 
-        for (int i = 0; i < delta.length; i++) {
-            delta[i] = 1;
-        }
-
-        int numNonMeasureVarianceParams = 0;
-
-        for (int i = 0; i < latentscov.rows(); i++) {
-            for (int j = i; j < latentscov.columns(); j++) {
-                numNonMeasureVarianceParams++;
-            }
-        }
-
-        for (int i = 0; i < indicators.length; i++) {
-            numNonMeasureVarianceParams += indicators[i].length;
-        }
+        Arrays.fill(delta, 1);
 
         double[] allParams1 = getAllParams(indicators, latentscov, loadings, delta);
 
         optimizeNonMeasureVariancesQuick(indicators, measurescov, latentscov, loadings, indicatorIndices);
 
-//        for (int i = 0; i < 10; i++) {
-//            optimizeNonMeasureVariancesConditionally(indicators, measurescov, latentscov, loadings, indicatorIndices, delta);
-//            optimizeMeasureVariancesConditionally(measurescov, latentscov, loadings, indicatorIndices, delta);
-//
-//            double[] allParams2 = getAllParams(indicators, latentscov, loadings, delta);
-//            if (distance(allParams1, allParams2) < epsilon) break;
-//            allParams1 = allParams2;
-//        }
-
         this.numParams = allParams1.length;
 
-//        // Very slow but could be done alone.
         optimizeAllParamsSimultaneously(indicators, measurescov, latentscov, loadings, indicatorIndices, delta);
 
         double N = _measurescov.getSampleSize();
         int p = _measurescov.getDimension();
 
-        int df = (p) * (p + 1) / 2 - (numParams);
-        double x = (N - 1) * minimum;
+        int df = (p) * (p + 1) / 2 - (this.numParams);
+        double x = (N - 1) * this.minimum;
         this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
 
         return latentscov;
-    }
-
-    private double distance(double[] allParams1, double[] allParams2) {
-        double sum = 0;
-
-        for (int i = 0; i < allParams1.length; i++) {
-            double diff = allParams1[i] - allParams2[i];
-            sum += diff * diff;
-        }
-
-        return sqrt(sum);
     }
 
     private void optimizeNonMeasureVariancesQuick(Node[][] indicators, Matrix measurescov, Matrix latentscov,
@@ -376,8 +322,8 @@ public class MimbuildTrek {
             }
         }
 
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = 0; j < indicators[i].length; j++) {
+        for (Node[] indicator : indicators) {
+            for (int j = 0; j < indicator.length; j++) {
                 count++;
             }
         }
@@ -397,7 +343,7 @@ public class MimbuildTrek {
             }
         }
 
-        Function1 function1 = new Function1(indicatorIndices, measurescov, loadings, latentscov, count);
+        Function1 function1 = new Function1(indicatorIndices, measurescov, loadings, latentscov);
         MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
 
         PointValuePair pair = search.optimize(
@@ -406,78 +352,11 @@ public class MimbuildTrek {
                 GoalType.MINIMIZE,
                 new MaxEval(100000));
 
-        minimum = pair.getValue();
-    }
-
-    private void optimizeNonMeasureVariancesConditionally(Node[][] indicators, Matrix measurescov,
-                                                          Matrix latentscov, double[][] loadings,
-                                                          int[][] indicatorIndices, double[] delta) {
-        int count = 0;
-
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = i; j < indicators.length; j++) {
-                count++;
-            }
-        }
-
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = 0; j < indicators[i].length; j++) {
-                count++;
-            }
-        }
-
-        double[] values3 = new double[count];
-        count = 0;
-
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = i; j < indicators.length; j++) {
-                values3[count] = latentscov.get(i, j);
-                count++;
-            }
-        }
-
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = 0; j < indicators[i].length; j++) {
-                values3[count] = loadings[i][j];
-                count++;
-            }
-        }
-
-        Function2 function2 = new Function2(indicatorIndices, measurescov, loadings, latentscov, delta, count);
-        MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
-
-        PointValuePair pair = search.optimize(
-                new InitialGuess(values3),
-                new ObjectiveFunction(function2),
-                GoalType.MINIMIZE,
-                new MaxEval(100000));
-
-        minimum = pair.getValue();
-    }
-
-    private void optimizeMeasureVariancesConditionally(Matrix measurescov, Matrix latentscov, double[][] loadings,
-                                                       int[][] indicatorIndices, double[] delta) {
-        double[] values2 = new double[delta.length];
-        int count = 0;
-
-        for (int i = 0; i < delta.length; i++) {
-            values2[count++] = delta[i];
-        }
-
-        Function2 function2 = new Function2(indicatorIndices, measurescov, loadings, latentscov, delta, count);
-        MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
-
-        PointValuePair pair = search.optimize(
-                new InitialGuess(values2),
-                new ObjectiveFunction(function2),
-                GoalType.MINIMIZE,
-                new MaxEval(100000));
-
-        minimum = pair.getValue();
+        this.minimum = pair.getValue();
     }
 
     public int getNumParams() {
-        return numParams;
+        return this.numParams;
     }
 
     private void optimizeAllParamsSimultaneously(Node[][] indicators, Matrix measurescov,
@@ -494,7 +373,7 @@ public class MimbuildTrek {
                 GoalType.MINIMIZE,
                 new MaxEval(100000));
 
-        minimum = pair.getValue();
+        this.minimum = pair.getValue();
     }
 
     private double[] getAllParams(Node[][] indicators, Matrix latentscov, double[][] loadings, double[] delta) {
@@ -506,8 +385,8 @@ public class MimbuildTrek {
             }
         }
 
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = 0; j < indicators[i].length; j++) {
+        for (Node[] indicator : indicators) {
+            for (int j = 0; j < indicator.length; j++) {
                 count++;
             }
         }
@@ -533,8 +412,8 @@ public class MimbuildTrek {
             }
         }
 
-        for (int i = 0; i < delta.length; i++) {
-            values[count] = delta[i];
+        for (double v : delta) {
+            values[count] = v;
             count++;
         }
 
@@ -546,7 +425,7 @@ public class MimbuildTrek {
      * Clusters smaller than this size will be tossed out.
      */
     public int getMinClusterSize() {
-        return minClusterSize;
+        return this.minClusterSize;
     }
 
     public void setMinClusterSize(int minClusterSize) {
@@ -560,170 +439,45 @@ public class MimbuildTrek {
         private final Matrix measurescov;
         private final double[][] loadings;
         private final Matrix latentscov;
-        private final int numParams;
 
         public Function1(int[][] indicatorIndices, Matrix measurescov, double[][] loadings,
-                         Matrix latentscov, int numParams) {
+                         Matrix latentscov) {
             this.indicatorIndices = indicatorIndices;
             this.measurescov = measurescov;
             this.loadings = loadings;
             this.latentscov = latentscov;
-            this.numParams = numParams;
         }
 
         @Override
         public double value(double[] values) {
             int count = 0;
 
-            for (int i = 0; i < loadings.length; i++) {
-                for (int j = i; j < loadings.length; j++) {
-                    latentscov.set(i, j, values[count]);
-                    latentscov.set(j, i, values[count]);
+            for (int i = 0; i < this.loadings.length; i++) {
+                for (int j = i; j < this.loadings.length; j++) {
+                    this.latentscov.set(i, j, values[count]);
+                    this.latentscov.set(j, i, values[count]);
                     count++;
                 }
             }
 
-            for (int i = 0; i < loadings.length; i++) {
-                for (int j = 0; j < loadings[i].length; j++) {
-                    loadings[i][j] = values[count];
+            for (int i = 0; i < this.loadings.length; i++) {
+                for (int j = 0; j < this.loadings[i].length; j++) {
+                    this.loadings[i][j] = values[count];
                     count++;
                 }
             }
 
-            return sumOfDifferences(indicatorIndices, measurescov, loadings, latentscov);
-        }
-
-//        public int getNumArguments() {
-//            return numParams;
-//        }
-//
-//        public double getLowerBound(int i) {
-//            return -100;
-//        }
-//
-//        public double getUpperBound(int i) {
-//            return 100;
-//        }
-    }
-
-    private class Function2 implements MultivariateFunction {
-        private final int[][] indicatorIndices;
-        private final Matrix measurescov;
-        private Matrix measuresCovInverse;
-        private final double[][] loadings;
-        private final Matrix latentscov;
-        private final int numParams;
-        private final double[] delta;
-        private final List<Integer> aboveZero = new ArrayList<>();
-
-        public Function2(int[][] indicatorIndices, Matrix measurescov, double[][] loadings, Matrix latentscov,
-                         double[] delta, int numNonMeasureVarianceParams) {
-            this.indicatorIndices = indicatorIndices;
-            this.measurescov = measurescov;
-            this.loadings = loadings;
-            this.latentscov = latentscov;
-            this.numParams = numNonMeasureVarianceParams;
-            this.delta = delta;
-            this.measuresCovInverse = measurescov.inverse();
-
-            int count = 0;
-
-            for (int i = 0; i < loadings.length; i++) {
-                for (int j = i; j < loadings.length; j++) {
-                    if (i == j) aboveZero.add(count);
-                    count++;
-                }
-            }
-
-            for (int i = 0; i < loadings.length; i++) {
-                for (int j = 0; j < loadings[i].length; j++) {
-                    count++;
-                }
-            }
-        }
-
-        @Override
-        public double value(double[] values) {
-            int count = 0;
-
-            for (int i = 0; i < loadings.length; i++) {
-                for (int j = i; j < loadings.length; j++) {
-                    latentscov.set(i, j, values[count]);
-                    latentscov.set(j, i, values[count]);
-                    count++;
-                }
-            }
-
-            for (int i = 0; i < loadings.length; i++) {
-                for (int j = 0; j < loadings[i].length; j++) {
-                    loadings[i][j] = values[count];
-                    count++;
-                }
-            }
-
-            Matrix implied = impliedCovariance(indicatorIndices, loadings, measurescov, latentscov, delta);
-
-            Matrix I = Matrix.identity(implied.rows());
-            Matrix diff = I.minus((implied.times(measuresCovInverse)));
-
-            return 0.5 * (diff.times(diff)).trace();
-        }
-    }
-
-    private class Function3 implements MultivariateFunction {
-        private final int[][] indicatorIndices;
-        private final Matrix measurescov;
-        private Matrix measuresCovInverse;
-        private final double[][] loadings;
-        private final Matrix latentscov;
-        private final int numParams;
-        private final double[] delta;
-        private final List<Integer> aboveZero = new ArrayList<>();
-
-        public Function3(int[][] indicatorIndices, Matrix measurescov, double[][] loadings, Matrix latentscov,
-                         double[] delta, int numParams) {
-            this.indicatorIndices = indicatorIndices;
-            this.measurescov = measurescov;
-            this.loadings = loadings;
-            this.latentscov = latentscov;
-            this.numParams = numParams;
-            this.delta = delta;
-            measuresCovInverse = measurescov.inverse();
-
-            int count = 0;
-
-            for (int i = 0; i < delta.length; i++) {
-                aboveZero.add(count);
-                count++;
-            }
-        }
-
-        public double value(double[] values) {
-            int count = 0;
-
-            for (int i = 0; i < delta.length; i++) {
-                delta[i] = values[count];
-                count++;
-            }
-
-            Matrix implied = impliedCovariance(indicatorIndices, loadings, measurescov, latentscov, delta);
-
-            Matrix I = Matrix.identity(implied.rows());
-            Matrix diff = I.minus((implied.times(measuresCovInverse)));
-
-            return 0.5 * (diff.times(diff)).trace();
+            return sumOfDifferences(this.indicatorIndices, this.measurescov, this.loadings, this.latentscov);
         }
     }
 
     private class Function4 implements MultivariateFunction {
         private final int[][] indicatorIndices;
         private final Matrix measurescov;
-        private Matrix measuresCovInverse;
+        private final Matrix measuresCovInverse;
         private final double[][] loadings;
         private final Matrix latentscov;
-        private final int numParams;
         private final double[] delta;
-        private final List<Integer> aboveZero = new ArrayList<>();
 
         public Function4(int[][] indicatorIndices, Matrix measurescov, double[][] loadings, Matrix latentscov,
                          double[] delta) {
@@ -733,58 +487,36 @@ public class MimbuildTrek {
             this.latentscov = latentscov;
             this.delta = delta;
             this.measuresCovInverse = measurescov.inverse();
-
-            int count = 0;
-
-            for (int i = 0; i < loadings.length; i++) {
-                for (int j = i; j < loadings.length; j++) {
-                    if (i == j) aboveZero.add(count);
-                    count++;
-                }
-            }
-
-            for (int i = 0; i < loadings.length; i++) {
-                for (int j = 0; j < loadings[i].length; j++) {
-                    count++;
-                }
-            }
-
-            for (int i = 0; i < delta.length; i++) {
-                aboveZero.add(count);
-                count++;
-            }
-
-            numParams = count;
         }
 
         @Override
         public double value(double[] values) {
             int count = 0;
 
-            for (int i = 0; i < loadings.length; i++) {
-                for (int j = i; j < loadings.length; j++) {
-                    latentscov.set(i, j, values[count]);
-                    latentscov.set(j, i, values[count]);
+            for (int i = 0; i < this.loadings.length; i++) {
+                for (int j = i; j < this.loadings.length; j++) {
+                    this.latentscov.set(i, j, values[count]);
+                    this.latentscov.set(j, i, values[count]);
                     count++;
                 }
             }
 
-            for (int i = 0; i < loadings.length; i++) {
-                for (int j = 0; j < loadings[i].length; j++) {
-                    loadings[i][j] = values[count];
+            for (int i = 0; i < this.loadings.length; i++) {
+                for (int j = 0; j < this.loadings[i].length; j++) {
+                    this.loadings[i][j] = values[count];
                     count++;
                 }
             }
 
-            for (int i = 0; i < delta.length; i++) {
-                delta[i] = values[count];
+            for (int i = 0; i < this.delta.length; i++) {
+                this.delta[i] = values[count];
                 count++;
             }
 
-            Matrix implied = impliedCovariance(indicatorIndices, loadings, measurescov, latentscov, delta);
+            Matrix implied = impliedCovariance(this.indicatorIndices, this.loadings, this.measurescov, this.latentscov, this.delta);
 
             Matrix I = Matrix.identity(implied.rows());
-            Matrix diff = I.minus((implied.times(measuresCovInverse)));  // time hog. times().
+            Matrix diff = I.minus((implied.times(this.measuresCovInverse)));  // time hog. times().
 
             return 0.5 * (diff.times(diff)).trace();
         }

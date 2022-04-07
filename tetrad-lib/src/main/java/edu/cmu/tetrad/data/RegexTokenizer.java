@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -52,22 +52,17 @@ public final class RegexTokenizer {
     /**
      * The position just after the last delimiter found.
      */
-    private int position = 0;
+    private int position;
 
     /**
      * The quote character.
      */
-    private char quoteChar = '"';
+    private final char quoteChar;
 
     /**
      * A flag indicating that the last token has been parsed.
      */
     private boolean finalTokenParsed;
-
-    /**
-     * True iff the previous token returned was quoted.
-     */
-    private boolean previousTokenQuoted = false;
 
     /**
      * True iff the parser should be aware of quotation marks and remove
@@ -81,14 +76,14 @@ public final class RegexTokenizer {
      */
     public RegexTokenizer(CharSequence line, Pattern delimiterPattern,
                           char quoteChar) {
-        chars = line;
+        this.chars = line;
         this.quoteChar = quoteChar;
-        delimiterMatcher = delimiterPattern.matcher(line);
-        quoteCharMatcher = Pattern.compile(Character.toString(quoteChar)).matcher(line);
+        this.delimiterMatcher = delimiterPattern.matcher(line);
+        this.quoteCharMatcher = Pattern.compile(Character.toString(quoteChar)).matcher(line);
 
         for (int i = 0; i < line.length(); i++) {
             if (line.charAt(i) != ' ') {
-                position = i;
+                this.position = i;
                 break;
             }
         }
@@ -97,41 +92,39 @@ public final class RegexTokenizer {
     /**
      * @return true iff more tokens exist in the line.
      */
-    public final boolean hasMoreTokens() {
-        return !finalTokenParsed;
+    public boolean hasMoreTokens() {
+        return !this.finalTokenParsed;
     }
 
     /**
      * @return the next token in the line.
      */
-    public final String nextToken() {
-        if (position != chars.length() && quoteSensitive && chars.charAt(position) == quoteChar) {
-            boolean match = quoteCharMatcher.find(position + 1);
-            int end = match ? quoteCharMatcher.end() : chars.length();
-            CharSequence token = chars.subSequence(position + 1, end - 1);
+    public String nextToken() {
+        if (this.position != this.chars.length() && this.quoteSensitive && this.chars.charAt(this.position) == this.quoteChar) {
+            boolean match = this.quoteCharMatcher.find(this.position + 1);
+            int end = match ? this.quoteCharMatcher.end() : this.chars.length();
+            CharSequence token = this.chars.subSequence(this.position + 1, end - 1);
 
-            match = delimiterMatcher.find(end);
-            end = match ? delimiterMatcher.end() : chars.length();
-            position = end;
+            match = this.delimiterMatcher.find(end);
+            end = match ? this.delimiterMatcher.end() : this.chars.length();
+            this.position = end;
 
             if (!match) {
-                finalTokenParsed = true;
+                this.finalTokenParsed = true;
             }
 
-            previousTokenQuoted = true;
             return token.toString();
         } else {
-            boolean match = delimiterMatcher.find(position);
-            int start = match ? delimiterMatcher.start() : chars.length();
-            int end = match ? delimiterMatcher.end() : chars.length();
-            CharSequence token = chars.subSequence(position, start);
-            position = end;
+            boolean match = this.delimiterMatcher.find(this.position);
+            int start = match ? this.delimiterMatcher.start() : this.chars.length();
+            int end = match ? this.delimiterMatcher.end() : this.chars.length();
+            CharSequence token = this.chars.subSequence(this.position, start);
+            this.position = end;
 
             if (!match) {
-                finalTokenParsed = true;
+                this.finalTokenParsed = true;
             }
 
-            previousTokenQuoted = false;
             return token.toString();
         }
     }
@@ -144,21 +137,6 @@ public final class RegexTokenizer {
         this.quoteSensitive = quoteSensitive;
     }
 
-    /**
-     * True iff the parser should be aware of quotation marks and remove them
-     * from returned strings.
-     */
-    public boolean isQuoteSensitive() {
-        return quoteSensitive;
-    }
-
-    /**
-     * True iff the token just returned by nextToken() is enclosed in quotes
-     * (where "quote" means the provided quote mark).
-     */
-    public boolean isPreviousTokenQuoted() {
-        return previousTokenQuoted;
-    }
 }
 
 

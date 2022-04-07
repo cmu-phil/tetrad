@@ -39,7 +39,7 @@ public final class DataColumns {
     }
 
     public static DataColumn[] update(DataColumn[] dataColumns, Metadata metadata) {
-        Map<String, ColumnMetadata> columnMetadataMap = getColumnMetadataMap(metadata);
+        Map<String, ColumnMetadata> columnMetadataMap = DataColumns.getColumnMetadataMap(metadata);
 
         // update data column's data type and metadata column's column number
         for (DataColumn dataColumn : dataColumns) {
@@ -56,7 +56,7 @@ public final class DataColumns {
         for (InterventionalColumn column : metadata.getInterventionalColumns()) {
             if (column.getStatusColumn() == null) {
                 String name = column.getValueColumn().getName() + "_s";
-                boolean discrete = true;
+                final boolean discrete = true;
                 int columnNumber = ++numOfCols;
 
                 column.setStatusColumn(new ColumnMetadata(name, columnNumber, discrete));

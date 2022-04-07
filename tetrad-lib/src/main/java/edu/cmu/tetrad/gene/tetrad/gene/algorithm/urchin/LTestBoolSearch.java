@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -35,7 +35,7 @@ public class LTestBoolSearch {
     static int ngenes = 6;
     static int ntimes = 80;
 
-    static int[][] cases = new int[ntimes][ngenes];
+    static int[][] cases = new int[LTestBoolSearch.ntimes][LTestBoolSearch.ngenes];
 
     public static void main(String[] argv) {
 
@@ -52,11 +52,11 @@ public class LTestBoolSearch {
         }
 
         BufferedReader in = new BufferedReader(new InputStreamReader(s));
-        for (int k = 0; k < ntimes; k++) {
+        for (int k = 0; k < LTestBoolSearch.ntimes; k++) {
             try {
                 st = new StringTokenizer(in.readLine());
-                for (int j = 0; j < ngenes; j++) {
-                    cases[k][j] = Integer.parseInt(st.nextToken("\t"));
+                for (int j = 0; j < LTestBoolSearch.ngenes; j++) {
+                    LTestBoolSearch.cases[k][j] = Integer.parseInt(st.nextToken("\t"));
                 }
             } catch (IOException e) {
                 System.out.println("Read error in " + fileName);
@@ -64,17 +64,17 @@ public class LTestBoolSearch {
             }
         }
 
-        for (int k = 0; k < ntimes; k++) {
-            for (int j = 0; j < ngenes; j++) {
-                if (cases[k][j] == -1) {
-                    cases[k][j] = 0;
+        for (int k = 0; k < LTestBoolSearch.ntimes; k++) {
+            for (int j = 0; j < LTestBoolSearch.ngenes; j++) {
+                if (LTestBoolSearch.cases[k][j] == -1) {
+                    LTestBoolSearch.cases[k][j] = 0;
                 }
             }
         }
 
         String[] names = {"Wnt8", "Krl", "SoxB1", "Krox", "Otx", "Eve"};
 
-        BoolSearch bs = new BoolSearch(cases, names);
+        BoolSearch bs = new BoolSearch(LTestBoolSearch.cases, names);
 
         bs.bool2(3);
     }

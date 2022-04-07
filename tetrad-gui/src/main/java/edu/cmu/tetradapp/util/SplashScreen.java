@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,54 +34,37 @@ import java.awt.*;
 public class SplashScreen {
 
     private static int MAX;
-    private static int COUNTER;
     private static SplashWindow WINDOW;
     private static JFrame frame;
 
     public static void show(Frame parent, String title, int max) {
-        hide();
-        SplashScreen.COUNTER = 0;
+        SplashScreen.hide();
         SplashScreen.MAX = max;
-        WINDOW = new SplashWindow(parent, null, title);
+        SplashScreen.WINDOW = new SplashWindow(parent, null, title);
     }
 
     public static void show(String title, int max) {
-        hide();
-        SplashScreen.COUNTER = 0;
+        SplashScreen.hide();
         SplashScreen.MAX = max;
-        frame = new JFrame();
-        WINDOW = new SplashWindow(frame, null, title);
+        SplashScreen.frame = new JFrame();
+        SplashScreen.WINDOW = new SplashWindow(SplashScreen.frame, null, title);
     }
 
     public static void hide() {
-        if (WINDOW == null) {
+        if (SplashScreen.WINDOW == null) {
             return;
         }
         // show a complete bar for a short while
-        WINDOW.bar.setValue(MAX);
-        WINDOW.bar.repaint();
+        SplashScreen.WINDOW.bar.setValue(SplashScreen.MAX);
+        SplashScreen.WINDOW.bar.repaint();
 
-        WINDOW.setVisible(false);
-        WINDOW.dispose();
-        WINDOW = null;
+        SplashScreen.WINDOW.setVisible(false);
+        SplashScreen.WINDOW.dispose();
+        SplashScreen.WINDOW = null;
 
-        if (frame != null) {
-            frame.dispose();
-            frame = null;
-        }
-    }
-
-    public static void increment() {
-        increment(1);
-    }
-
-    private static void increment(int by) {
-        COUNTER += by;
-        if (COUNTER > MAX) {
-            COUNTER = MAX;
-        }
-        if (WINDOW != null) {
-            WINDOW.bar.setValue(COUNTER);
+        if (SplashScreen.frame != null) {
+            SplashScreen.frame.dispose();
+            SplashScreen.frame = null;
         }
     }
 
@@ -107,7 +90,7 @@ public class SplashScreen {
             panel.add(b, BorderLayout.CENTER);
 
             Box b1 = Box.createHorizontalBox();
-            JLabel label = new JLabel(title, JLabel.CENTER);
+            JLabel label = new JLabel(title, SwingConstants.CENTER);
             label.setFont(label.getFont().deriveFont((float) 16));
             b1.add(Box.createHorizontalGlue());
             b1.add(label);
@@ -117,16 +100,15 @@ public class SplashScreen {
             String text = LicenseUtils.copyright();
 
             // optionally check if we are running latest version
-            String version = this.getClass().getPackage().getImplementationVersion();
 
             JTextArea textArea = new JTextArea(text);
             textArea.setBorder(new EmptyBorder(5, 5, 5, 5));
             b.add(textArea);
 
-            bar = new JProgressBar(0, MAX);
-            bar.setBackground(Color.white);
-            bar.setBorderPainted(false);
-            b.add(bar);
+            this.bar = new JProgressBar(0, SplashScreen.MAX);
+            this.bar.setBackground(Color.white);
+            this.bar.setBorderPainted(false);
+            b.add(this.bar);
 
             /* Center the WINDOW */
             pack();
@@ -144,8 +126,8 @@ public class SplashScreen {
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-            if (splashIm != null) {
-                g.drawImage(splashIm, 0, 0, this);
+            if (this.splashIm != null) {
+                g.drawImage(this.splashIm, 0, 0, this);
             }
         }
     }

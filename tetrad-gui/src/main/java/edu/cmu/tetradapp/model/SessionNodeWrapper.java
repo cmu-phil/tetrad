@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,7 +24,6 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.session.SessionNode;
-import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
@@ -39,8 +38,7 @@ import java.io.ObjectInputStream;
  * @see edu.cmu.tetrad.graph.GraphNode
  * @see SessionWrapper
  */
-public class SessionNodeWrapper extends GraphNode
-        implements TetradSerializable {
+public class SessionNodeWrapper extends GraphNode {
     static final long serialVersionUID = 23L;
 
     /**
@@ -104,7 +102,7 @@ public class SessionNodeWrapper extends GraphNode
         // session node cannot be set before the superclass calls this
         // (overriding) method. jdramsey 12/29/01
         if (this.sessionNode != null) {
-            super.setName(name);
+            this.setName(name);
             this.sessionNode.setDisplayName(name);
         }
     }
@@ -179,19 +177,16 @@ public class SessionNodeWrapper extends GraphNode
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (sessionNode == null) {
+        if (this.sessionNode == null) {
             throw new NullPointerException();
         }
 
-        if (buttonType == null) {
+        if (this.buttonType == null) {
             throw new NullPointerException();
         }
 

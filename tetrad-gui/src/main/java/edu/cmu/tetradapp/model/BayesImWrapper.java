@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,8 +46,8 @@ public class BayesImWrapper implements SessionModel, Memorable {
     static final long serialVersionUID = 23L;
 
     private int numModels = 1;
-    private int modelIndex = 0;
-    private String modelSourceName = null;
+    private int modelIndex;
+    private String modelSourceName;
 
     /**
      * @serial Can be null.
@@ -83,8 +83,8 @@ public class BayesImWrapper implements SessionModel, Memorable {
     }
 
     private void setBayesIm(BayesPm bayesPm, BayesIm oldBayesIm, int manual) {
-        bayesIms = new ArrayList<>();
-        bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, manual));
+        this.bayesIms = new ArrayList<>();
+        this.bayesIms.add(new MlBayesIm(bayesPm, oldBayesIm, manual));
     }
 
     public BayesImWrapper(Simulation simulation) {
@@ -117,36 +117,11 @@ public class BayesImWrapper implements SessionModel, Memorable {
         this.modelSourceName = simulation.getName();
     }
 
-//    public BayesImWrapper(BayesEstimatorWrapper wrapper, Parameters parameters) {
-//        if (wrapper == null) {
-//            throw new NullPointerException();
-//        }
-//        setBayesIm(wrapper.getEstimatedBayesIm());
-////        log(bayesIm);
-//    }
-
-//    public BayesImWrapper(DirichletEstimatorWrapper wrapper, Parameters parameters) {
-//        if (wrapper == null) {
-//            throw new NullPointerException();
-//        }
-//        setBayesIm(wrapper.getEstimatedBayesIm());
-////        log(bayesIm);
-//    }
-
-//    public BayesImWrapper(DirichletBayesImWrapper wrapper, Parameters parameters) {
-//        if (wrapper == null) {
-//            throw new NullPointerException();
-//        }
-//        setBayesIm(new MlBayesIm(wrapper.getDirichletBayesIm()));
-////        log(bayesIm);
-//    }
-
     public BayesImWrapper(RowSummingExactWrapper wrapper, Parameters parameters) {
         if (wrapper == null) {
             throw new NullPointerException();
         }
         setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
-//        log(bayesIm);
     }
 
     public BayesImWrapper(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
@@ -154,7 +129,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
             throw new NullPointerException();
         }
         setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
-//        log(bayesIm);
     }
 
     public BayesImWrapper(ApproximateUpdaterWrapper wrapper, Parameters parameters) {
@@ -162,7 +136,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
             throw new NullPointerException();
         }
         setBayesIm(wrapper.getBayesUpdater().getUpdatedBayesIm());
-//        log(bayesIm);
     }
 
     public BayesImWrapper(BayesPmWrapper bayesPmWrapper, Parameters params) {
@@ -186,15 +159,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
 //        log(bayesIm);
     }
 
-//    public BayesImWrapper(BayesImWrapper bayesImWrapper) {
-//        if (bayesImWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        setBayesIm(new MlBayesIm(bayesImWrapper.getBayesIm()));
-////        log(bayesIm);
-//    }
-
 
     public BayesImWrapper(BayesIm bayesIm) {
         if (bayesIm == null) {
@@ -215,7 +179,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
 
     //=============================PUBLIC METHODS=========================//
     public BayesIm getBayesIm() {
-        return bayesIms.get(getModelIndex());
+        return this.bayesIms.get(getModelIndex());
     }
 
     public Graph getGraph() {
@@ -223,7 +187,7 @@ public class BayesImWrapper implements SessionModel, Memorable {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -247,20 +211,20 @@ public class BayesImWrapper implements SessionModel, Memorable {
     }
 
     public void setBayesIm(BayesIm bayesIm) {
-        bayesIms = new ArrayList<>();
-        bayesIms.add(bayesIm);
+        this.bayesIms = new ArrayList<>();
+        this.bayesIms.add(bayesIm);
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
     public void setModelIndex(int modelIndex) {
@@ -268,10 +232,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
     }
 
     //============================== private methods ============================//
-//    private void log(BayesIm im) {
-//        TetradLogger.getInstance().log("info", "Maximum likelihood Bayes IM");
-//        TetradLogger.getInstance().log("im", im.toString());
-//    }
 
     /**
      * Adds semantic checks to the default deserialization method. This method
@@ -282,9 +242,6 @@ public class BayesImWrapper implements SessionModel, Memorable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

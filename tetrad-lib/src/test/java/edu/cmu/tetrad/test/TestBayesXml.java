@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -44,7 +44,7 @@ public final class TestBayesXml {
 
     @Test
     public void testRoundtrip() {
-        BayesIm bayesIm = sampleBayesIm1();
+        BayesIm bayesIm = TestBayesXml.sampleBayesIm1();
         Element element = BayesXmlRenderer.getElement(bayesIm);
 
         BayesXmlParser parser = new BayesXmlParser();
@@ -55,7 +55,7 @@ public final class TestBayesXml {
 
     @Test
     public void testRoundtrip2() {
-        BayesIm bayesIm = sampleBayesIm2();
+        BayesIm bayesIm = TestBayesXml.sampleBayesIm2();
         Element element = BayesXmlRenderer.getElement(bayesIm);
 
         BayesXmlParser parser = new BayesXmlParser();
@@ -66,7 +66,7 @@ public final class TestBayesXml {
 
     @Test
     public void testRoundtrip3() {
-        BayesIm bayesIm = sampleBayesIm3();
+        BayesIm bayesIm = TestBayesXml.sampleBayesIm3();
         Element element = BayesXmlRenderer.getElement(bayesIm);
 
         BayesXmlParser parser = new BayesXmlParser();
@@ -206,7 +206,7 @@ public final class TestBayesXml {
      * @param element the element to print.
      */
     private static void printElement(Element element) {
-        printDocument(new Document(element));
+        TestBayesXml.printDocument(new Document(element));
     }
 
     private static void printDocument(Document document) {

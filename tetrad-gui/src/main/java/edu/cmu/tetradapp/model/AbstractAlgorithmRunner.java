@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -43,7 +43,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public abstract class AbstractAlgorithmRunner
-        implements AlgorithmRunner, ParamsResettable, Unmarshallable, MultipleGraphSource {
+        implements AlgorithmRunner, ParamsResettable, Unmarshallable {
     static final long serialVersionUID = 23L;
     private DataWrapper dataWrapper;
 
@@ -90,7 +90,7 @@ public abstract class AbstractAlgorithmRunner
      * A series of graphs that the search algorithm might search over, if
      * it's that kind of algorithm.
      */
-    private List<Graph> graphs = null;
+    private List<Graph> graphs;
     private Map<String, String> allParamSettings;
     final Map<String, String> paramSettings = new LinkedHashMap<>();
 
@@ -100,8 +100,6 @@ public abstract class AbstractAlgorithmRunner
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
-     *
-     * @param knowledgeBoxModel
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
                                    Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -125,7 +123,7 @@ public abstract class AbstractAlgorithmRunner
         } else {
             getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
-        List names = dataSource.getVariableNames();
+        List<String> names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
     }
 
@@ -133,8 +131,6 @@ public abstract class AbstractAlgorithmRunner
      * Constructs a wrapper for the given DataWrapper. The DatWrapper must
      * contain a DataSet that is either a DataSet or a DataSet or a DataList
      * containing either a DataSet or a DataSet as its selected model.
-     *
-     * @param knowledgeBoxModel
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
                                    Parameters params, KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
@@ -160,7 +156,7 @@ public abstract class AbstractAlgorithmRunner
         }
 
         getParams().set("independenceFacts", facts.getFacts());
-        List names = dataSource.getVariableNames();
+        List<String> names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
     }
 
@@ -179,12 +175,12 @@ public abstract class AbstractAlgorithmRunner
 
         this.dataWrapper = dataWrapper;
 
-        List names = dataSource.getVariableNames();
+        List<String> names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
     }
 
     /**
-     * Constucts a wrapper for the given graph.
+     * Constructs a wrapper for the given graph.
      */
     public AbstractAlgorithmRunner(Graph sourceGraph, Parameters params) {
         if (sourceGraph == null) {
@@ -238,7 +234,7 @@ public abstract class AbstractAlgorithmRunner
             getParams().set("knowledge", knowledgeBoxModel.getKnowledge());
         }
 
-        List names = dataSource.getVariableNames();
+        List<String> names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = dataSource;
     }
@@ -289,16 +285,16 @@ public abstract class AbstractAlgorithmRunner
     }
 
     public final DataModel getDataModel() {
-        if (dataWrapper != null) {
-            DataModelList dataModelList = dataWrapper.getDataModelList();
+        if (this.dataWrapper != null) {
+            DataModelList dataModelList = this.dataWrapper.getDataModelList();
 
             if (dataModelList.size() == 1) {
                 return dataModelList.get(0);
             } else {
                 return dataModelList;
             }
-        } else if (dataModel != null) {
-            return dataModel;
+        } else if (this.dataModel != null) {
+            return this.dataModel;
         } else {
 
             // Do not throw an exception here!
@@ -307,8 +303,8 @@ public abstract class AbstractAlgorithmRunner
     }
 
     final DataModelList getDataModelList() {
-        if (dataWrapper == null) return null;
-        return dataWrapper.getDataModelList();
+        if (this.dataWrapper == null) return null;
+        return this.dataWrapper.getDataModelList();
     }
 
     public final void setResultGraph(Graph resultGraph) {
@@ -377,7 +373,7 @@ public abstract class AbstractAlgorithmRunner
         return names;
     }
 
-    private void transferVarNamesToParams(List names) {
+    private void transferVarNamesToParams(List<String> names) {
         getParams().set("varNames", names);
     }
 
@@ -390,21 +386,15 @@ public abstract class AbstractAlgorithmRunner
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-//        if (getParams() == null) {
-//            throw new NullPointerException();
-//        }
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -412,18 +402,18 @@ public abstract class AbstractAlgorithmRunner
     }
 
     public List<Graph> getGraphs() {
-        return graphs;
+        return this.graphs;
     }
 
 
     @Override
     public Map<String, String> getParamSettings() {
-        paramSettings.put("Algorithm", getAlgorithmName());
-        return paramSettings;
+        this.paramSettings.put("Algorithm", getAlgorithmName());
+        return this.paramSettings;
     }
 
     public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
+        return this.allParamSettings;
     }
 
     public void setAllParamSettings(Map<String, String> allParamSettings) {

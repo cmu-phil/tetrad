@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -47,7 +47,7 @@ public class MeekRules implements ImpliedOrientation {
 
     //True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
     //graphs).
-    private boolean aggressivelyPreventCycles = false;
+    private boolean aggressivelyPreventCycles;
 
     // If knowledge is available.
     boolean useRule4;
@@ -61,7 +61,7 @@ public class MeekRules implements ImpliedOrientation {
     private PrintStream out;
 
     // True if verbose output should be printed.
-    private boolean verbose = false;
+    private boolean verbose;
 
     // True (default) iff the graph should be reverted to its unshielded colliders before orienting.
     private boolean revertToUnshieldedColliders = true;
@@ -70,7 +70,7 @@ public class MeekRules implements ImpliedOrientation {
      * Constructs the <code>MeekRules</code> with no logging.
      */
     public MeekRules() {
-        useRule4 = !knowledge.isEmpty();
+        this.useRule4 = !this.knowledge.isEmpty();
     }
 
     //======================== Public Methods ========================//
@@ -81,7 +81,7 @@ public class MeekRules implements ImpliedOrientation {
 
         TetradLogger.getInstance().log("impliedOrientations", "Starting Orientation Step D.");
 
-        if (revertToUnshieldedColliders) {
+        if (this.revertToUnshieldedColliders) {
             revertToUnshieldedColliders(graph.getNodes(), graph, visited);
         }
 
@@ -133,7 +133,7 @@ public class MeekRules implements ImpliedOrientation {
 
 
     public boolean isAggressivelyPreventCycles() {
-        return aggressivelyPreventCycles;
+        return this.aggressivelyPreventCycles;
     }
 
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
@@ -141,7 +141,7 @@ public class MeekRules implements ImpliedOrientation {
     }
 
     public Map<Edge, Edge> getChangedEdges() {
-        return changedEdges;
+        return this.changedEdges;
     }
 
     public void setOut(PrintStream out) {
@@ -149,7 +149,7 @@ public class MeekRules implements ImpliedOrientation {
     }
 
     public PrintStream getOut() {
-        return out;
+        return this.out;
     }
 
     //============================== Private Methods ===================================//
@@ -248,7 +248,7 @@ public class MeekRules implements ImpliedOrientation {
     }
 
     private boolean meekR4(Node a, Node b, Graph graph, Set<Node> visited) {
-        if (!useRule4) {
+        if (!this.useRule4) {
             return false;
         }
 
@@ -272,18 +272,8 @@ public class MeekRules implements ImpliedOrientation {
     }
 
     private boolean direct(Node a, Node c, Graph graph, Set<Node> visited) {
-        if (!isArrowpointAllowed(a, c, knowledge)) return false;
+        if (!MeekRules.isArrowpointAllowed(a, c, this.knowledge)) return false;
         if (!Edges.isUndirectedEdge(graph.getEdge(a, c))) return false;
-
-        // True if new unshielded colliders should not be oriented by the procedure. That is, if
-        // P->A--C, ~adj(A, C), where A--C is to be oriented by any rule, R1 usurps to yield P->A->C.
-//        for (Node p : graph.getParents(c)) {
-//            if (p != a && !graph.isAdjacentTo(a, p)) {
-//                graph.removeEdge(a, c);
-//                graph.addUndirectedEdge(a, c);
-//                return true;
-//            }
-//        }
 
         Edge before = graph.getEdge(a, c);
         Edge after = Edges.directedEdge(a, c);
@@ -316,7 +306,7 @@ public class MeekRules implements ImpliedOrientation {
                 }
             }
 
-            if (knowledge.isForbidden(y.getName(), p.getName()) || knowledge.isRequired(p.getName(), y.getName()))
+            if (this.knowledge.isForbidden(y.getName(), p.getName()) || this.knowledge.isRequired(p.getName(), y.getName()))
                 continue;
 
             graph.removeEdge(p, y);
@@ -332,7 +322,7 @@ public class MeekRules implements ImpliedOrientation {
     }
 
     private void log(String message) {
-        if (verbose) {
+        if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage(message);
         }
     }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,6 +21,11 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 
+import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.BasicGraph;
+import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.MatrixF;
+
+import java.io.IOException;
+
 /**
  * Simple implementation of a directed Graph.  edges are just represented by
  * float values (a zero == no edge) stored in a matrix.
@@ -31,13 +36,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
-
-import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.BasicGraph;
-import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.MatrixF;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 public class Digraph extends BasicGraph {
 
     /**
@@ -61,7 +59,7 @@ public class Digraph extends BasicGraph {
     /**
      * Creates a OldDigraph reading it from file <code>fname</code>.
      */
-    public Digraph(String fname) throws FileNotFoundException, IOException {
+    public Digraph(String fname) throws IOException {
         super(fname);
     }
 
@@ -94,8 +92,8 @@ public class Digraph extends BasicGraph {
     }
 
     protected void initializeEdges() {
-        edges = new MatrixF("EdgeMatrix_" + this.graphName, this.nNodes);
-        nParents = new int[this.nNodes];
+        this.edges = new MatrixF("EdgeMatrix_" + this.graphName, this.nNodes);
+        this.nParents = new int[this.nNodes];
     }
 
     /**
@@ -171,7 +169,7 @@ public class Digraph extends BasicGraph {
     }
 
     public MatrixF getEdges() {
-        return edges;
+        return this.edges;
     }
 
 }

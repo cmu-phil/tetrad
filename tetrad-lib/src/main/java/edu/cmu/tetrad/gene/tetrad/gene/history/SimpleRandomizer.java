@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,7 +24,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.history;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -50,22 +49,22 @@ public class SimpleRandomizer implements GraphInitializer {
     /**
      * Indicates constant indegree.
      */
-    public final static int CONSTANT = 0;
+    public static final int CONSTANT = 0;
 
     /**
      * Indicates maximum indegree.
      */
-    public final static int MAX = 1;
+    public static final int MAX = 1;
 
     /**
      * Indicates mean indegree.
      */
-    public final static int MEAN = 2;
+    public static final int MEAN = 2;
 
     /**
      * The indegree type of this randomizer.
      */
-    private int indegreeType = CONSTANT;
+    private int indegreeType = SimpleRandomizer.CONSTANT;
 
     /**
      * The stored indegree for this randomizer (differently interpreted
@@ -98,13 +97,13 @@ public class SimpleRandomizer implements GraphInitializer {
         // Set indegree type.
         switch (indegreeType) {
 
-            case CONSTANT:
+            case SimpleRandomizer.CONSTANT:
 
                 // Falls through!
-            case MAX:
+            case SimpleRandomizer.MAX:
 
                 // Falls through!
-            case MEAN:
+            case SimpleRandomizer.MEAN:
                 this.indegreeType = indegreeType;
                 break;
 
@@ -136,8 +135,8 @@ public class SimpleRandomizer implements GraphInitializer {
         List factors = new ArrayList(lagGraph.getFactors());
 
         // Add edges one time step back.
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
+        for (Object value : factors) {
+            String factor = (String) value;
             LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
 
             lagGraph.addEdge(factor, laggedFactor);
@@ -146,8 +145,8 @@ public class SimpleRandomizer implements GraphInitializer {
         //        System.out.println("Indegree = " + indegree);
 
         // Add remaining edges for each factor.
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
+        for (Object o : factors) {
+            String factor = (String) o;
 
             // Pick an indegree for this variable
             int extraEdges = 1;
@@ -155,31 +154,28 @@ public class SimpleRandomizer implements GraphInitializer {
             // Decide whether this is a housekeeping gene and if so
             // don't add any more edges.
             boolean isHousekeeping =
-                    RandomUtil.getInstance().nextDouble() * 100 < this
-                            .percentHousekeeping;
+                    RandomUtil.getInstance().nextDouble() * 100 < this.percentHousekeeping;
 
             if (isHousekeeping) {
                 continue;
             }
 
             // This is not a housekeeping gene, so add more edges.
-            switch (indegreeType) {
+            switch (this.indegreeType) {
 
-                case CONSTANT:
-                    extraEdges = indegree - 1;
+                case SimpleRandomizer.CONSTANT:
+                    extraEdges = this.indegree - 1;
                     break;
 
-                case MAX:
+                case SimpleRandomizer.MAX:
                     extraEdges = RandomUtil.getInstance().nextInt(
-                            indegree - 1) + 1;
+                            this.indegree - 1) + 1;
                     break;
 
-                case MEAN:
+                case SimpleRandomizer.MEAN:
                     extraEdges = RandomUtil.getInstance().nextInt(
-                            2 * (indegree - 1) - 1) + 1;
+                            2 * (this.indegree - 1) - 1) + 1;
 
-                    //                    System.out.println("Mean indegree selection: " +
-                    //                            extraEdges);
                     break;
 
                 default:

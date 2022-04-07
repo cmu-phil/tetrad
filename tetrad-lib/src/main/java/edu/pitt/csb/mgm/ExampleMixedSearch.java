@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,9 +36,6 @@ public class ExampleMixedSearch {
     public static void main(String[] args) {
         try {
             String path = args[0];
-            //String path = ExampleMixedSearch.class.getResource("test_data").getPath();
-            //DoubleMatrix2D xIn = DoubleFactory2D.dense.make(MixedUtils.loadDataSelect(path, "med_test_C.txt"));
-            //DoubleMatrix2D yIn = DoubleFactory2D.dense.make(MixedUtils.loadDataSelect(path, "med_test_D.txt"));
             Graph trueGraph = GraphUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt"));
             DataSet data = MixedUtils.loadDataSet(path, "DAG_0_data.txt");
 
@@ -46,8 +43,8 @@ public class ExampleMixedSearch {
             //separate lambda entries for continuous-continuous, continuous-discrete and discrete-discrete edges
             //respectively, generally lower lambdas for edges with discrete variables
             double[] lambda = {.2, .2, .2};
-            double tolerance = 1e-7; //convergeance tolerance
-            int iterLimit = 1000; //iteration limit
+            final double tolerance = 1e-7; //convergeance tolerance
+            final int iterLimit = 1000; //iteration limit
 
             MGM model = new MGM(data, lambda);
             model.learn(tolerance, iterLimit);

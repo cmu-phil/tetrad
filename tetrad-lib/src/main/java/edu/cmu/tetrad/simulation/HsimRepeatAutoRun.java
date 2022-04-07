@@ -19,9 +19,9 @@ import java.util.Set;
  */
 public class HsimRepeatAutoRun {
 
-    private boolean verbose = false; //set this to true if you want HsimAutoRun to report information to System.out
+    private boolean verbose; //set this to true if you want HsimAutoRun to report information to System.out
     private DataSet data;
-    private boolean write = false;
+    private boolean write;
     private String filenameOut = "defaultOut";
     private char delimiter = ',';
 
@@ -30,23 +30,23 @@ public class HsimRepeatAutoRun {
         //need to turn indata into a VerticalIntDataBox still !!!!!!!!!!!!!!!!!11
         //first check if indata is already the right type
         if (((BoxDataSet) indata).getDataBox() instanceof VerticalIntDataBox) {
-            data = indata;
+            this.data = indata;
         } else {
             VerticalIntDataBox dataVertBox = HsimUtils.makeVertIntBox(indata);
-            data = new BoxDataSet(dataVertBox, indata.getVariables());
+            this.data = new BoxDataSet(dataVertBox, indata.getVariables());
         }
     }
 
     public HsimRepeatAutoRun(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<>();
         eVars.add("MULT");
         Path dataFile = Paths.get(readfilename);
 
         VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
         try {
-            data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
+            this.data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
         } catch (Exception IOException) {
             IOException.printStackTrace();
         }
@@ -56,7 +56,7 @@ public class HsimRepeatAutoRun {
     //***************PUBLIC METHODS********************//
     public double[] run(int resimSize, int repeat) {
         //parameter: set of positive integers, which are resimSize values.
-        List<Integer> schedule = new ArrayList<Integer>();
+        List<Integer> schedule = new ArrayList<>();
 
         for (int i = 0; i < repeat; i++) {
             schedule.add(resimSize);
@@ -72,8 +72,6 @@ public class HsimRepeatAutoRun {
         evalTotal[4] = 0;
 
         double[] evalIncrement;
-        //evalIncrement = new double[5];
-        //Integer count = 0;
         Integer count0 = 1;
         Integer count1 = 1;
         Integer count2 = 1;
@@ -82,15 +80,15 @@ public class HsimRepeatAutoRun {
 
         for (Integer i : schedule) {
             //count++;
-            HsimAutoRun study = new HsimAutoRun(data);
+            HsimAutoRun study = new HsimAutoRun(this.data);
             //this is done differently if write is true. in that case, HsimAutoRun will be used differently
-            if (write) {
+            if (this.write) {
                 study.setWrite(true);
-                study.setFilenameOut(filenameOut);
-                study.setDelimiter(delimiter);
+                study.setFilenameOut(this.filenameOut);
+                study.setDelimiter(this.delimiter);
             }
             //pass verbose on to the lower level as well
-            if (verbose) {
+            if (this.verbose) {
                 study.setVerbose(false);
             }
 
@@ -124,7 +122,7 @@ public class HsimRepeatAutoRun {
         evalTotal[3] = evalTotal[3] / (double) (count3 - 1);
         evalTotal[4] = evalTotal[4] / (double) (count4 - 1);
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("Average eval scores: " + evalTotal[0] + " " + evalTotal[1]
                     + " " + evalTotal[2] + " " + evalTotal[3] + " " + evalTotal[4]);
         }
@@ -133,18 +131,18 @@ public class HsimRepeatAutoRun {
 
     //*************************Methods for setting private variables***********//
     public void setVerbose(boolean verbosity) {
-        verbose = verbosity;
+        this.verbose = verbosity;
     }
 
     public void setWrite(boolean setwrite) {
-        write = setwrite;
+        this.write = setwrite;
     }
 
     public void setFilenameOut(String filename) {
-        filenameOut = filename;
+        this.filenameOut = filename;
     }
 
     public void setDelimiter(char delim) {
-        delimiter = delim;
+        this.delimiter = delim;
     }
 }

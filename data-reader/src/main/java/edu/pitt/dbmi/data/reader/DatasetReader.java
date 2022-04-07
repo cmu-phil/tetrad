@@ -25,15 +25,15 @@ package edu.pitt.dbmi.data.reader;
  */
 public interface DatasetReader extends DataReader {
 
-    public static final double CONTINUOUS_MISSING_VALUE = Double.NaN;
+    double CONTINUOUS_MISSING_VALUE = Double.NaN;
 
-    public static final int DISCRETE_MISSING_VALUE = -99;
+    int DISCRETE_MISSING_VALUE = -99;
 
     /**
      * Set the value to indicate missing data.
      *
      * @param missingDataMarker
      */
-    public void setMissingDataMarker(String missingDataMarker);
+    void setMissingDataMarker(String missingDataMarker);
 
 }

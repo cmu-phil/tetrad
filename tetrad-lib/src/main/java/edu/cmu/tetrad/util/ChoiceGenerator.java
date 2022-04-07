@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,34 +40,34 @@ import static java.lang.Math.round;
  *
  * @author Joseph Ramsey
  */
-@SuppressWarnings({"WeakerAccess"})
+@SuppressWarnings("WeakerAccess")
 public final class ChoiceGenerator {
 
     /**
      * The number of objects being selected from.
      */
-    private int a;
+    private final int a;
 
     /**
      * The number of objects in the desired selection.
      */
-    private int b;
+    private final int b;
 
     /**
      * The difference between a and b (should be nonnegative).
      */
-    private int diff;
+    private final int diff;
 
     /**
      * The internally stored choice.
      */
-    private int[] choiceLocal;
+    private final int[] choiceLocal;
 
     /**
      * The choice that is returned. Used, since the returned array can be
      * modified by the user.
      */
-    private int[] choiceReturned;
+    private final int[] choiceReturned;
 
     /**
      * Indicates whether the next() method has been called since the last
@@ -85,7 +85,7 @@ public final class ChoiceGenerator {
      * @param b the number of objects in the desired selection.
      */
     public ChoiceGenerator(int a, int b) {
-        if ((a < 0) || (b < 0) || (a < b)) {
+        if ((b < 0) || (a < b)) {
             throw new IllegalArgumentException(
                     "For 'a choose b', a and b must be " +
                             "nonnegative with a >= b: " + "a = " + a +
@@ -94,23 +94,23 @@ public final class ChoiceGenerator {
 
         this.a = a;
         this.b = b;
-        choiceLocal = new int[b];
-        choiceReturned = new int[b];
-        diff = a - b;
+        this.choiceLocal = new int[b];
+        this.choiceReturned = new int[b];
+        this.diff = a - b;
 
         // Initialize the choice array with successive integers [0 1 2 ...].
         // Set the value at the last index one less than it would be in such
         // a series, ([0 1 2 ... b - 2]) so that on the first call to next()
         // the first combination ([0 1 2 ... b - 1]) is returned correctly.
         for (int i = 0; i < b - 1; i++) {
-            choiceLocal[i] = i;
+            this.choiceLocal[i] = i;
         }
 
         if (b > 0) {
-            choiceLocal[b - 1] = b - 2;
+            this.choiceLocal[b - 1] = b - 2;
         }
 
-        begun = false;
+        this.begun = false;
     }
 
     /**
@@ -130,18 +130,18 @@ public final class ChoiceGenerator {
                 }
 
                 fill(i);
-                begun = true;
-                System.arraycopy(choiceLocal, 0, choiceReturned, 0, b);
-                return choiceReturned;
+                this.begun = true;
+                System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.b);
+                return this.choiceReturned;
             }
         }
 
         if (this.begun) {
             return null;
         } else {
-            begun = true;
-            System.arraycopy(choiceLocal, 0, choiceReturned, 0, b);
-            return choiceReturned;
+            this.begun = true;
+            System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.b);
+            return this.choiceReturned;
         }
     }
 
@@ -152,7 +152,7 @@ public final class ChoiceGenerator {
      * @param a the number of objects being selected from.
      * @param b the number of objects in the desired selection.
      */
-    @SuppressWarnings({"SameParameterValue"})
+    @SuppressWarnings("SameParameterValue")
     public static void testPrint(int a, int b) {
         ChoiceGenerator cg = new ChoiceGenerator(a, b);
         int[] choice;
@@ -180,7 +180,7 @@ public final class ChoiceGenerator {
     /**
      * @return Ibid.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public int getA() {
         return this.a;
     }
@@ -207,7 +207,7 @@ public final class ChoiceGenerator {
     }
 
     public static int getNumCombinations(int a, int b) {
-        return (int) round(exp(logCombinations(a, b)));
+        return (int) round(exp(ChoiceGenerator.logCombinations(a, b)));
     }
 
     public static double logCombinations(int a, int b) {

@@ -41,22 +41,22 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
 
     @Override
     public String toString() {
-        return "DiscreteTabularDataColumn{" + "dataColumn=" + dataColumn + ", values=" + values + ", categories=" + categories + '}';
+        return "DiscreteTabularDataColumn{" + "dataColumn=" + this.dataColumn + ", values=" + this.values + ", categories=" + this.categories + '}';
     }
 
     @Override
     public Integer getEncodeValue(String value) {
-        return values.get(value);
+        return this.values.get(value);
     }
 
     @Override
     public void recategorize() {
-        Set<String> keyset = values.keySet();
-        categories = new ArrayList<>(keyset.size());
+        Set<String> keyset = this.values.keySet();
+        this.categories = new ArrayList<>(keyset.size());
         int count = 0;
         for (String key : keyset) {
-            values.put(key, count++);
-            categories.add(key);
+            this.values.put(key, count++);
+            this.categories.add(key);
         }
     }
 
@@ -67,18 +67,18 @@ public class DiscreteTabularDataColumn implements DiscreteDataColumn {
 
     @Override
     public DataColumn getDataColumn() {
-        return dataColumn;
+        return this.dataColumn;
     }
 
     public Map<String, Integer> getValues() {
-        return values;
+        return this.values;
     }
 
     @Override
     public List<String> getCategories() {
-        return (categories == null)
+        return (this.categories == null)
                 ? Collections.EMPTY_LIST
-                : categories;
+                : this.categories;
     }
 
     public void setCategories(List<String> categories) {

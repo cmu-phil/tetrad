@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,7 +29,6 @@ import edu.cmu.tetrad.util.PointXy;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -57,8 +56,8 @@ public final class ManualLagGraph implements LagGraph {
         setMaxLagAllowable(params.getMlag());
 
         // Add edges one time step back.
-        for (Iterator it = getFactors().iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
+        for (Object o : getFactors()) {
+            String factor = (String) o;
             LaggedFactor laggedFactor = new LaggedFactor(factor, 1);
             addEdge(factor, laggedFactor);
         }
@@ -78,11 +77,11 @@ public final class ManualLagGraph implements LagGraph {
 
     public void addEdge(String factor, LaggedFactor laggedFactor)
             throws IllegalArgumentException {
-        lagGraph.addEdge(factor, laggedFactor);
+        this.lagGraph.addEdge(factor, laggedFactor);
     }
 
     public void clearEdges() {
-        lagGraph.clearEdges();
+        this.lagGraph.clearEdges();
     }
 
     public void addFactor(String factor) {
@@ -91,75 +90,75 @@ public final class ManualLagGraph implements LagGraph {
                     NamingProtocol.getProtocolDescription());
         }
 
-        lagGraph.addFactor(factor);
+        this.lagGraph.addFactor(factor);
     }
 
     public boolean existsFactor(String factor) {
-        return lagGraph.existsFactor(factor);
+        return this.lagGraph.existsFactor(factor);
     }
 
     public boolean existsEdge(String factor, LaggedFactor laggedFactor) {
-        return lagGraph.existsEdge(factor, laggedFactor);
+        return this.lagGraph.existsEdge(factor, laggedFactor);
     }
 
     public SortedSet getParents(String factor) {
-        return lagGraph.getParents(factor);
+        return this.lagGraph.getParents(factor);
     }
 
     public void removeEdge(String factor, LaggedFactor laggedFactor) {
-        lagGraph.removeEdge(factor, laggedFactor);
+        this.lagGraph.removeEdge(factor, laggedFactor);
     }
 
     public int getMaxLagAllowable() {
-        return lagGraph.getMaxLagAllowable();
+        return this.lagGraph.getMaxLagAllowable();
     }
 
     public void setMaxLagAllowable(int maxLagAllowable) {
-        lagGraph.setMaxLagAllowable(maxLagAllowable);
+        this.lagGraph.setMaxLagAllowable(maxLagAllowable);
     }
 
     public int getMaxLag() {
-        return lagGraph.getMaxLag();
+        return this.lagGraph.getMaxLag();
     }
 
     public void removeFactor(String factor) {
-        lagGraph.removeFactor(factor);
+        this.lagGraph.removeFactor(factor);
     }
 
     public SortedMap getConnectivity() {
-        return lagGraph.getConnectivity();
+        return this.lagGraph.getConnectivity();
     }
 
     public void renameFactor(String oldName, String newName) {
-        lagGraph.renameFactor(oldName, newName);
+        this.lagGraph.renameFactor(oldName, newName);
     }
 
     public int getNumFactors() {
-        return lagGraph.getNumFactors();
+        return this.lagGraph.getNumFactors();
     }
 
     public SortedSet getFactors() {
-        return lagGraph.getFactors();
+        return this.lagGraph.getFactors();
     }
 
     public String toString() {
-        return lagGraph.toString();
+        return this.lagGraph.toString();
     }
 
     public void addFactors(String base, int numFactors) {
-        lagGraph.addFactors(base, numFactors);
+        this.lagGraph.addFactors(base, numFactors);
     }
 
     public void setLocation(String factor, PointXy point) {
-        lagGraph.setLocation(factor, point);
+        this.lagGraph.setLocation(factor, point);
     }
 
     public PointXy getLocation(String factor) {
-        return lagGraph.getLocation(factor);
+        return this.lagGraph.getLocation(factor);
     }
 
     public Map getLocations() {
-        return lagGraph.getLocations();
+        return this.lagGraph.getLocations();
     }
 
     /**
@@ -171,15 +170,12 @@ public final class ManualLagGraph implements LagGraph {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (lagGraph == null) {
+        if (this.lagGraph == null) {
             throw new NullPointerException();
         }
     }

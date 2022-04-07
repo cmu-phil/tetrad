@@ -25,6 +25,6 @@ package edu.cmu.tetrad.stat;
  */
 public interface RealVariance {
 
-    public double[] compute(boolean biasCorrected);
+    double[] compute(boolean biasCorrected);
 
 }

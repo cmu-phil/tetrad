@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -49,7 +49,7 @@ public class EbicScore implements Score {
     private final int sampleSize;
 
     // True if verbose output should be sent to out.
-    private boolean verbose = false;
+    private boolean verbose;
 
     // Sample size or equivalent sample size.
     private double N;
@@ -58,9 +58,7 @@ public class EbicScore implements Score {
     private Matrix data;
 
     // True if row subsets should be calculated.
-    private boolean calculateRowSubsets = false;
-
-    private double correlationThreshold = 1.0;
+    private boolean calculateRowSubsets;
 
     // The gamma paramter for EBIC.
     private double gamma = 1;
@@ -96,22 +94,22 @@ public class EbicScore implements Score {
 
         if (!dataSet.existsMissingValue()) {
             setCovariances(new CovarianceMatrix(dataSet));
-            calculateRowSubsets = false;
+            this.calculateRowSubsets = false;
         } else {
-            calculateRowSubsets = true;
+            this.calculateRowSubsets = true;
         }
 
     }
 
     private int[] indices(List<Node> __adj) {
         int[] indices = new int[__adj.size()];
-        for (int t = 0; t < __adj.size(); t++) indices[t] = variables.indexOf(__adj.get(t));
+        for (int t = 0; t < __adj.size(); t++) indices[t] = this.variables.indexOf(__adj.get(t));
         return indices;
     }
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
+        return localScore(y, EbicScore.append(z, x)) - localScore(y, z);
     }
 
     @Override
@@ -120,13 +118,13 @@ public class EbicScore implements Score {
     }
 
     public double localScore(int i, int... parents) throws RuntimeException {
-        final int pi = parents.length + 1;
-        double varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
+        int pi = parents.length + 1;
+        double varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
 
         double gamma = this.gamma;//  1.0 - riskBound;
 
-        return -(N * log(varRy) + (pi * log(N)
-                + 2 * gamma * ChoiceGenerator.logCombinations(variables.size() - 1, pi)));
+        return -(this.N * log(varRy) + (pi * log(this.N)
+                + 2 * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
     }
 
     public static double getP(int pn, int m0, double lambda) {
@@ -148,11 +146,11 @@ public class EbicScore implements Score {
     }
 
     public ICovarianceMatrix getCovariances() {
-        return covariances;
+        return this.covariances;
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     @Override
@@ -161,7 +159,7 @@ public class EbicScore implements Score {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -170,12 +168,12 @@ public class EbicScore implements Score {
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     @Override
     public Node getVariable(String targetName) {
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -186,12 +184,12 @@ public class EbicScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) ceil(log(sampleSize));
+        return (int) ceil(log(this.sampleSize));
     }
 
     @Override
     public boolean determines(List<Node> z, Node y) {
-        int i = variables.indexOf(y);
+        int i = this.variables.indexOf(y);
 
         int[] k = indices(z);
 
@@ -200,9 +198,9 @@ public class EbicScore implements Score {
         return Double.isNaN(v);
     }
 
-//    @Override
+    //    @Override
     public DataModel getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {
@@ -211,6 +209,7 @@ public class EbicScore implements Score {
 
         boolean exists = false;
 
+        double correlationThreshold = 1.0;
         for (int i = 0; i < correlations.getSize(); i++) {
             for (int j = 0; j < correlations.getSize(); j++) {
                 if (i == j) continue;
@@ -235,10 +234,6 @@ public class EbicScore implements Score {
         int[] _z = Arrays.copyOf(z, z.length + 1);
         _z[z.length] = x;
         return _z;
-    }
-
-    public void setCorrelationThreshold(double correlationThreshold) {
-        this.correlationThreshold = correlationThreshold;
     }
 
     public void setGamma(double gamma) {

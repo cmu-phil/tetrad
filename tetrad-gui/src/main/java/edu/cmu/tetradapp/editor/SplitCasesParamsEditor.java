@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -31,8 +31,6 @@ import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -91,48 +89,34 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         }
 
         this.params.set("numSplits", numSplits);
-        splitEditorPanel.removeAll();
-        SplitCasesSpec defaultSpec = getDefaultSpec(this.dataSet.getNumRows(), numSplits);
+        this.splitEditorPanel.removeAll();
+        SplitCasesSpec defaultSpec = SplitCasesParamsEditor.getDefaultSpec(this.dataSet.getNumRows(), numSplits);
         SplitEditor splitEditor = new SplitEditor(defaultSpec);
         this.params.set("splitCasesSpec", defaultSpec);
-        splitEditorPanel.add(splitEditor, BorderLayout.CENTER);
-        splitEditorPanel.revalidate();
-        splitEditorPanel.repaint();
-        numSplitsField.setText(String.valueOf(numSplits));
+        this.splitEditorPanel.add(splitEditor, BorderLayout.CENTER);
+        this.splitEditorPanel.revalidate();
+        this.splitEditorPanel.repaint();
+        this.numSplitsField.setText(String.valueOf(numSplits));
         Preferences.userRoot().putInt("latestNumCategories", numSplits);
     }
 
     public void setup() {
-        SplitCasesSpec spec = (SplitCasesSpec) this.params.get("splitCasesSpec", null);
-        if (spec != null) {
-            spec = getDefaultSpec(this.dataSet.getNumRows(), this.params.getInt("numSplits", 3));
-        }
-        numSplitsField = new IntTextField(this.params.getInt("numSplits", 3), 2);
-        numSplitsField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                setNumSplits(value);
-                return value;
-            }
+        this.numSplitsField = new IntTextField(this.params.getInt("numSplits", 3), 2);
+        this.numSplitsField.setFilter((value, oldValue) -> {
+            SplitCasesParamsEditor.this.setNumSplits(value);
+            return value;
         });
 
         splitEditorPanel = new JPanel();
         splitEditorPanel.setLayout(new BorderLayout());
-        setNumSplits(params.getInt("numSplits", 3));
+        this.setNumSplits(params.getInt("numSplits", 3));
 
         JRadioButton shuffleButton = new JRadioButton("Shuffled order");
         JRadioButton noShuffleButton = new JRadioButton("Original order");
 
-        shuffleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                params.set("dataShuffled", true);
-            }
-        });
+        shuffleButton.addActionListener(e -> params.set("dataShuffled", true));
 
-        noShuffleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                params.set("dataShuffled", false);
-            }
-        });
+        noShuffleButton.addActionListener(e -> params.set("dataShuffled", false));
 
         ButtonGroup group = new ButtonGroup();
         group.add(shuffleButton);
@@ -170,8 +154,8 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         b1.add(splitEditorPanel);
         b1.add(Box.createVerticalGlue());
 
-        setLayout(new BorderLayout());
-        add(b1, BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
+        this.add(b1, BorderLayout.CENTER);
     }
 
 
@@ -197,7 +181,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         if (!(model instanceof DataSet)) {
             throw new IllegalArgumentException("The data must be tabular");
         }
-        this.dataSet = (DataSet) model;
+        dataSet = (DataSet) model;
     }
 
 
@@ -238,7 +222,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 
     //============================STATIC CLASSES=======================//
 
-    final static class SplitEditor extends JComponent {
+    static final class SplitEditor extends JComponent {
         private final int[] breakpoints;
         private final List<String> splitNames;
         private StringTextField[] splitNameFields;
@@ -251,14 +235,14 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
         private final int sampleSize;
 
         public SplitEditor(SplitCasesSpec spec) {
-            this.sampleSize = spec.getSampleSize();
-            this.breakpoints = spec.getBreakpoints();
-            this.splitNames = spec.getSplitNames();
+            sampleSize = spec.getSampleSize();
+            breakpoints = spec.getBreakpoints();
+            splitNames = spec.getSplitNames();
 
             Box rangeEditor = Box.createVerticalBox();
 
-            createSplitNameFields();
-            createRangeFields();
+            this.createSplitNameFields();
+            this.createRangeFields();
 
             for (int i = 0; i < splitNames.size(); i++) {
                 Box row = Box.createHorizontalBox();
@@ -275,10 +259,10 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
                 rangeEditor.add(row);
             }
 
-            setLayout(new BorderLayout());
-            add(rangeEditor, BorderLayout.CENTER);
+            this.setLayout(new BorderLayout());
+            this.add(rangeEditor, BorderLayout.CENTER);
 
-            setFocusTraversalPolicy(new FocusTraversalPolicy() {
+            this.setFocusTraversalPolicy(new FocusTraversalPolicy() {
                 public Component getComponentAfter(Container focusCycleRoot,
                                                    Component aComponent) {
                     int index = focusTraveralOrder.indexOf(aComponent);
@@ -287,7 +271,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
                     if (index != -1) {
                         return focusTraveralOrder.get((index + 1) % size);
                     } else {
-                        return getFirstComponent(focusCycleRoot);
+                        return this.getFirstComponent(focusCycleRoot);
                     }
                 }
 
@@ -299,7 +283,7 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
                     if (index != -1) {
                         return focusTraveralOrder.get((index - 1) % size);
                     } else {
-                        return getFirstComponent(focusCycleRoot);
+                        return this.getFirstComponent(focusCycleRoot);
                     }
                 }
 
@@ -312,132 +296,117 @@ public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
                 }
 
                 public Component getDefaultComponent(Container focusCycleRoot) {
-                    return getFirstComponent(focusCycleRoot);
+                    return this.getFirstComponent(focusCycleRoot);
                 }
             });
 
-            setFocusCycleRoot(true);
+            this.setFocusCycleRoot(true);
         }
 
         private void createSplitNameFields() {
-            splitNameFields = new StringTextField[getNumSplits()];
+            splitNameFields = new StringTextField[this.getNumSplits()];
 
-            for (int i = 0; i < getNumSplits(); i++) {
+            for (int i = 0; i < this.getNumSplits(); i++) {
                 String split = splitNames.get(i);
                 splitNameFields[i] = new StringTextField(split, 6);
-                final StringTextField _field = splitNameFields[i];
+                StringTextField _field = splitNameFields[i];
 
-                splitNameFields[i].setFilter(new StringTextField.Filter() {
-                    public String filter(String value, String oldValue) {
-                        if (labels.get(_field) != null) {
-                            int index = labels.get(_field);
+                splitNameFields[i].setFilter((value, oldValue) -> {
+                    if (labels.get(_field) != null) {
+                        int index = labels.get(_field);
 
-                            if (value == null) {
-                                value = splitNames.get(index);
-                            }
-
-                            for (int i = 0; i < splitNames.size(); i++) {
-                                if (i != index && splitNames.get(i).equals(value)) {
-                                    value = splitNames.get(index);
-                                }
-                            }
-
-                            splitNames.set(index, value);
+                        if (value == null) {
+                            value = splitNames.get(index);
                         }
 
-                        return value;
+                        for (int i1 = 0; i1 < splitNames.size(); i1++) {
+                            if (i1 != index && splitNames.get(i1).equals(value)) {
+                                value = splitNames.get(index);
+                                break;
+                            }
+                        }
+
+                        splitNames.set(index, value);
                     }
+
+                    return value;
                 });
 
-                labels.put(this.splitNameFields[i], i);
-                focusTraveralOrder.add(this.splitNameFields[i]);
+                labels.put(splitNameFields[i], i);
+                focusTraveralOrder.add(splitNameFields[i]);
             }
         }
 
         private void createRangeFields() {
-            leftSplitFields = new IntTextField[getNumSplits()];
-            rightSplitFields = new IntTextField[getNumSplits()];
+            leftSplitFields = new IntTextField[this.getNumSplits()];
+            rightSplitFields = new IntTextField[this.getNumSplits()];
 
-            int maxSplit = getNumSplits() - 1;
+            int maxSplit = this.getNumSplits() - 1;
 
             leftSplitFields[0] = new IntTextField(1, 6);
             leftSplitFields[0].setFilter(
-                    new IntTextField.Filter() {
-                        public int filter(int value, int oldValue) {
-                            return oldValue;
-                        }
-                    });
+                    (value, oldValue) -> oldValue);
 
             rightSplitFields[maxSplit] = new IntTextField(sampleSize, 6);
             rightSplitFields[maxSplit].setFilter(
-                    new IntTextField.Filter() {
-                        public int filter(int value, int oldValue) {
-                            return oldValue;
-                        }
-                    });
+                    (value, oldValue) -> oldValue);
 
             leftSplitFields[0].setEditable(false);
             rightSplitFields[maxSplit].setEditable(false);
 
-            for (int i = 0; i < getNumSplits() - 1; i++) {
+            for (int i = 0; i < this.getNumSplits() - 1; i++) {
                 rightSplitFields[i] = new IntTextField(breakpoints[i] - 1, 6);
                 rightSplitFields[i].setEditable(false);
                 labels.put(rightSplitFields[i], i);
 
                 leftSplitFields[i + 1] = new IntTextField(breakpoints[i], 6);
                 labels.put(leftSplitFields[i + 1], i + 1);
-                final Object label = labels.get(leftSplitFields[i + 1]);
+                Integer label = labels.get(leftSplitFields[i + 1]);
 
                 leftSplitFields[i + 1].setFilter(
-                        new IntTextField.Filter() {
-                            public int filter(int value, int oldValue) {
-                                if (label == null) {
-                                    return oldValue;
-                                }
-
-                                int index = (Integer) label;
-
-                                if (index - 1 > 0 &&
-                                        !(breakpoints[index - 2] < value)) {
-                                    value = breakpoints[index - 1];
-                                }
-
-                                if (index - 1 < breakpoints.length - 1 &&
-                                        !(value < breakpoints[index])) {
-                                    value = breakpoints[index - 1];
-                                }
-
-                                breakpoints[index - 1] = value;
-
-                                getRightSplitFields()[index - 1].setValue(
-                                        value - 1);
-                                return value;
+                        (value, oldValue) -> {
+                            if (label == null) {
+                                return oldValue;
                             }
+
+                            int index = label;
+
+                            if (index - 1 > 0 &&
+                                    !(SplitEditor.this.breakpoints[index - 2] < value)) {
+                                value = SplitEditor.this.breakpoints[index - 1];
+                            }
+
+                            if (index - 1 < SplitEditor.this.breakpoints.length - 1 &&
+                                    !(value < SplitEditor.this.breakpoints[index])) {
+                                value = SplitEditor.this.breakpoints[index - 1];
+                            }
+
+                            SplitEditor.this.breakpoints[index - 1] = value;
+
+                            getRightSplitFields()[index - 1].setValue(
+                                    value - 1);
+                            return value;
                         });
 
-                labels.put(this.leftSplitFields[i + 1], i + 1);
-                focusTraveralOrder.add(this.leftSplitFields[i + 1]);
+                this.labels.put(this.leftSplitFields[i + 1], i + 1);
+                this.focusTraveralOrder.add(this.leftSplitFields[i + 1]);
             }
         }
 
         private IntTextField[] getRightSplitFields() {
-            return rightSplitFields;
+            return this.rightSplitFields;
         }
 
         private int getNumSplits() {
-            return splitNames.size();
-        }
-
-        public int[] getBreakpoints() {
-            return breakpoints;
+            return this.splitNames.size();
         }
 
         public List<String> getSplitNames() {
-            return splitNames;
+            return this.splitNames;
         }
 
         public int getSampleSize() {
-            return sampleSize;
+            return this.sampleSize;
         }
     }
 }

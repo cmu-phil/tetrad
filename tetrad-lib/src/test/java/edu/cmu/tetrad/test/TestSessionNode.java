@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -64,12 +64,12 @@ public class TestSessionNode {
     @Test
     public void testExistsConstructor() {
         SessionNode node = new SessionNode(Type1.class);
-        Class[] testSet1 = new Class[]{Type1.class};
-        Class[] testSet2 = new Class[]{Type2.class};
-        Class[] testSet3 = new Class[]{Type3.class};
-        Class[] testSet4 = new Class[]{Type2.class, Type3.class};
-        Class[] testSet5 = new Class[]{Type3.class, Type4.class};
-        Class[] testSet6 = new Class[]{Type2.class, Type2.class};
+        Class[] testSet1 = {Type1.class};
+        Class[] testSet2 = {Type2.class};
+        Class[] testSet3 = {Type3.class};
+        Class[] testSet4 = {Type2.class, Type3.class};
+        Class[] testSet5 = {Type3.class, Type4.class};
+        Class[] testSet6 = {Type2.class, Type2.class};
 
         assertTrue(!node.existsConstructor(Type1.class, testSet1));
         assertTrue(node.existsConstructor(Type1.class, testSet2));
@@ -86,7 +86,7 @@ public class TestSessionNode {
     @Test
     public void testGetValueCombination() {
         SessionNode node = new SessionNode(Type1.class);
-        int[] numValues = new int[]{2, 3, 4};
+        int[] numValues = {2, 3, 4};
 
         assertEquals(24, node.getProduct(numValues));
         assertTrue(isTheSame(node.getValueCombination(0, numValues), 0, 0, 0));
@@ -133,7 +133,7 @@ public class TestSessionNode {
         objects.add(object2);
 
         // Try it with the correct parameter types...
-        Class[] parameterTypes1 = new Class[]{Type2.class, Type3.class};
+        Class[] parameterTypes1 = {Type2.class, Type3.class};
         Object[] arguments1 = node.assignParameters(parameterTypes1, objects);
 
         assertNotNull(arguments1);
@@ -143,7 +143,7 @@ public class TestSessionNode {
         }
 
         // Try it with the wrong set...
-        Class[] parameterTypes2 = new Class[]{Type1.class, Type3.class};
+        Class[] parameterTypes2 = {Type1.class, Type3.class};
         Object[] arguments2 = node.assignParameters(parameterTypes2, objects);
 
         assertNull(arguments2);
@@ -151,7 +151,7 @@ public class TestSessionNode {
         // Try it with the right set but with a null inserted.
         try {
             Class[] parameterTypes3 =
-                    new Class[]{Type2.class, Type3.class, null};
+                    {Type2.class, Type3.class, null};
             node.assignParameters(parameterTypes3, objects);
             fail("Should not have been able to assign parameters with a null " +
                     "parameter in the list.");
@@ -161,7 +161,7 @@ public class TestSessionNode {
 
         // Try it with too many types...
         Class[] parameterTypes4 =
-                new Class[]{Type2.class, Type3.class, Type4.class};
+                {Type2.class, Type3.class, Type4.class};
         Object[] arguments4 = node.assignParameters(parameterTypes4, objects);
 
         assertNull(arguments4);
@@ -179,8 +179,6 @@ public class TestSessionNode {
         SessionNode node3 = new SessionNode(Type3.class);
         SessionNode node4 =
                 new SessionNode(new Class[]{Type1.class, Type2.class});
-        //        SessionNode node5 = new SessionNode(new Class[]{Type1.class,
-        //                                                        Type2.class});
         SessionNode node6 = new SessionNode(
                 new Class[]{Type1.class, Type2.class, Type3.class});
         SessionNode node7 =
@@ -292,7 +290,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testGetConsistentModelClasses() throws Exception {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionNode node1 = new SessionNode(new Class[]{Type1.class});
         SessionNode node2 = new SessionNode(new Class[]{Type2.class});
@@ -324,7 +322,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testCreateModel() {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionNode node1 = new SessionNode(Type1.class);
         SessionNode node2 = new SessionNode(Type2.class);
@@ -352,7 +350,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testEvents() {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionListener listener = new SessionListener() {
 
@@ -486,7 +484,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testStructuralIdentity() {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionNode node1 = new SessionNode(Type1.class);
         SessionNode node2 = new SessionNode(Type2.class);
@@ -516,7 +514,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testSerialization() {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionNode node1 = new SessionNode(Type1.class);
         SessionNode node2 = new SessionNode(Type2.class);
@@ -550,7 +548,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testParameterization() {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionNode node1 = new SessionNode(Type1.class);
         SessionNode node2 = new SessionNode(Type2.class);
@@ -584,7 +582,7 @@ public class TestSessionNode {
      */
     @Test
     public void testSetName() {
-        String name = "Test";
+        final String name = "Test";
         SessionNode node1 = new SessionNode("???", name, Type1.class);
         assertEquals(name, node1.getDisplayName());
     }

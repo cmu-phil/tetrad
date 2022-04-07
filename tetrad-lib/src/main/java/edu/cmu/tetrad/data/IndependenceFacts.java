@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -52,6 +52,8 @@ public class IndependenceFacts implements DataModel {
     public IndependenceFacts(IndependenceFacts facts) {
         this();
         this.unsortedFacts = new HashSet<>(facts.unsortedFacts);
+        this.name = facts.name;
+        this.knowledge = facts.knowledge.copy();
     }
 
     /**
@@ -64,7 +66,7 @@ public class IndependenceFacts implements DataModel {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        for (IndependenceFact fact : unsortedFacts) {
+        for (IndependenceFact fact : this.unsortedFacts) {
             builder.append(fact).append("\n");
         }
 
@@ -111,13 +113,13 @@ public class IndependenceFacts implements DataModel {
 
     public boolean isIndependent(Node x, Node y, Node... z) {
         IndependenceFact fact = new IndependenceFact(x, y, z);
-        return unsortedFacts.contains(fact);
+        return this.unsortedFacts.contains(fact);
     }
 
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         IndependenceFact fact = new IndependenceFact(x, y, z);
-        System.out.println("Looking up " + fact + " in " + unsortedFacts);
-        return unsortedFacts.contains(fact);
+        System.out.println("Looking up " + fact + " in " + this.unsortedFacts);
+        return this.unsortedFacts.contains(fact);
     }
 
     public IKnowledge getKnowledge() {
@@ -132,13 +134,11 @@ public class IndependenceFacts implements DataModel {
     public List<Node> getVariables() {
         Set<Node> variables = new HashSet<>();
 
-        for (IndependenceFact fact : unsortedFacts) {
+        for (IndependenceFact fact : this.unsortedFacts) {
             variables.add(fact.getX());
             variables.add(fact.getY());
 
-            for (Node z : fact.getZ()) {
-                variables.add(z);
-            }
+            variables.addAll(fact.getZ());
         }
 
         return new ArrayList<>(variables);

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -33,7 +33,6 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,27 +52,13 @@ public class SemImWrapper implements SessionModel {
     private String name;
 
     private int numModels = 1;
-    private int modelIndex = 0;
-    private String modelSourceName = null;
+    private int modelIndex;
+    private String modelSourceName;
 
     //============================CONSTRUCTORS==========================//
     public SemImWrapper(SemIm semIm) {
         setSemIm(semIm);
     }
-
-//    public SemImWrapper(SemEstimatorWrapper semEstWrapper) {
-//        if (semEstWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        SemIm oldSemIm = semEstWrapper.getSemEstimator().getEstimatedSem();
-//
-//        try {
-//            setSemIm((SemIm) new MarshalledObject(oldSemIm).get());
-//        } catch (Exception e) {
-//            throw new RuntimeException("SemIm could not be deep cloned.", e);
-//        }
-//    }
 
     public SemImWrapper(Simulation simulation) {
         if (simulation == null) {
@@ -95,9 +80,9 @@ public class SemImWrapper implements SessionModel {
             throw new IllegalArgumentException("That was not a linear, Gaussian SEM simulation. Sorry.");
         }
 
-        semIms = ((SemSimulation) _simulation).getSemIms();
+        this.semIms = ((SemSimulation) _simulation).getSemIms();
 
-        if (semIms == null) {
+        if (this.semIms == null) {
             throw new NullPointerException("It looks like you have not done a simulation.");
         }
 
@@ -143,21 +128,13 @@ public class SemImWrapper implements SessionModel {
     }
 
     private void setSemIm(SemIm updatedSemIm) {
-        semIms = new ArrayList<>();
-        semIms.add(new SemIm(updatedSemIm));
+        this.semIms = new ArrayList<>();
+        this.semIms.add(new SemIm(updatedSemIm));
 
-        for (int i = 0; i < semIms.size(); i++) {
-            log(i, semIms.get(i));
+        for (int i = 0; i < this.semIms.size(); i++) {
+            log(i, this.semIms.get(i));
         }
     }
-
-//    public SemImWrapper(SemImWrapper semImWrapper) {
-//        if (semImWrapper == null) {
-//            throw new NullPointerException("SemPmWrapper must not be null.");
-//        }
-//
-//        setSemIm(semImWrapper.getSemIm());
-//    }
 
     public SemImWrapper(PValueImproverWrapper wrapper) {
         SemIm oldSemIm = wrapper.getNewSemIm();
@@ -171,9 +148,6 @@ public class SemImWrapper implements SessionModel {
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
-//        return new SemImWrapper(SemPmWrapper.serializableInstance(),
-//                new SemImWrapper(SemPmWrapper.serializableInstance(),
-//                        new Parameters()), new Parameters());
     }
 
     //===========================PUBLIC METHODS=========================//
@@ -186,7 +160,7 @@ public class SemImWrapper implements SessionModel {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -209,9 +183,6 @@ public class SemImWrapper implements SessionModel {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -235,15 +206,15 @@ public class SemImWrapper implements SessionModel {
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
     public void setModelIndex(int modelIndex) {

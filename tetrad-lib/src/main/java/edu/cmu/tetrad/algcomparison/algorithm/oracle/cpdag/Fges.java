@@ -10,10 +10,10 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -46,17 +46,26 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                DataSet dataSet = (DataSet) dataModel;
+                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
+                }
+                dataModel = timeSeries;
+                knowledge = timeSeries.getKnowledge();
+            }
 
             int parallelism = parameters.getInt(Params.PARALLELISM);
 
-            Score score = this.score.getScore(dataSet, parameters);
+            Score score = this.score.getScore(dataModel, parameters);
             Graph graph;
 
             edu.cmu.tetrad.search.Fges search
                     = new edu.cmu.tetrad.search.Fges(score, parallelism);
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
@@ -72,36 +81,18 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
             return graph;
         } else {
-            Fges fges = new Fges(score);
+            Fges fges = new Fges(this.score);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fges, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-
+            DataSet data = (DataSet) dataModel;
+            GeneralResamplingTest search = new GeneralResamplingTest(
+                    data, fges, parameters.getInt(Params.NUMBER_RESAMPLING),
+                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
+                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
-
     }
 
     @Override
@@ -111,12 +102,12 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "FGES (Fast Greedy Equivalence Search) using " + score.getDescription();
+        return "FGES (Fast Greedy Equivalence Search) using " + this.score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return score.getDataType();
+        return this.score.getDataType();
     }
 
     @Override
@@ -126,6 +117,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
         parameters.add(Params.MAX_DEGREE);
         parameters.add(Params.PARALLELISM);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
+        parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
         parameters.add(Params.MEEK_VERBOSE);
@@ -135,7 +127,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
@@ -145,7 +137,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public ScoreWrapper getScoreWrapper() {
-        return score;
+        return this.score;
     }
 
     @Override

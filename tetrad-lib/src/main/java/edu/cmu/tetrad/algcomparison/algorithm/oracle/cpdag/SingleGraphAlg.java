@@ -21,7 +21,7 @@ import java.util.List;
 public class SingleGraphAlg implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
-    private Graph graph;
+    private final Graph graph;
 
     public SingleGraphAlg(Graph graph) {
         this.graph = graph;
@@ -29,7 +29,7 @@ public class SingleGraphAlg implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        return graph;
+        return this.graph;
     }
 
     @Override

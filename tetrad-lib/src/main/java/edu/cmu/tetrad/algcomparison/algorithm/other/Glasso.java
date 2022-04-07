@@ -18,7 +18,6 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +53,7 @@ public class Glasso implements Algorithm {
                     .getCovarianceMatrix().toArray());
 
             edu.cmu.tetrad.search.Glasso glasso = new edu.cmu.tetrad.search.Glasso(cov);
-            glasso.setMaxit((int) parameters.getInt(Params.MAXIT));
+            glasso.setMaxit(parameters.getInt(Params.MAXIT));
             glasso.setIa(parameters.getBoolean(Params.IA));
             glasso.setIs(parameters.getBoolean(Params.IS));
             glasso.setItr(parameters.getBoolean(Params.ITR));
@@ -81,24 +80,7 @@ public class Glasso implements Algorithm {
             Glasso algorithm = new Glasso();
 
             DataSet data = (DataSet) ds;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));

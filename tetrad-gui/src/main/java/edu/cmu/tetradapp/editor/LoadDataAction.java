@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -45,7 +45,7 @@ final class LoadDataAction extends AbstractAction {
     /**
      * The dataEditor into which data is loaded. -
      */
-    private DataEditor dataEditor;
+    private final DataEditor dataEditor;
 
     /**
      * Creates a new load data action for the given dataEditor.
@@ -65,19 +65,7 @@ final class LoadDataAction extends AbstractAction {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-
-        // first warn user about other datasets being removed.
-//        if (!isDataEmpty()) {
-//            String message = "Loading data from a file will remove all existing data in the data editor. " +
-//                    "Do you want to continue?";
-//            int option = JOptionPane.showOptionDialog(this.dataEditor, message, "Data Removal Warning",
-//                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null);
-//            // if not yes, cancelAll action.
-//            if (option != JOptionPane.YES_OPTION) {
-//                return;
-//            }
-//        }
-        JFileChooser chooser = getJFileChooser();
+        JFileChooser chooser = LoadDataAction.getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         // Sets the file chooser to allow multiple file selections
         chooser.setMultiSelectionEnabled(true);
@@ -108,9 +96,9 @@ final class LoadDataAction extends AbstractAction {
         boolean keepData = false;
 
         if (!isDataEmpty()) {
-            String message = "Would you like to replace the model data?";
+            final String message = "Would you like to replace the model data?";
             int option = JOptionPane.showOptionDialog(this.dataEditor, message, "Data Replacement",
-                    0, JOptionPane.QUESTION_MESSAGE,
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, new String[]{"Replace", "Keep"}, "Replace");
 
             keepData = option == 1;
@@ -119,21 +107,19 @@ final class LoadDataAction extends AbstractAction {
         DataModelList _dataModelList = loadData.getDataModels();
 
         if (_dataModelList.isEmpty()) {
-//            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                    "No files were loaded.");
             return;
         }
 
         if (keepData) {
-            dataModelList = dataEditor.getDataModelList();
+            dataModelList = this.dataEditor.getDataModelList();
         } else {
             dataModelList = new DataModelList();
         }
 
         dataModelList.addAll(_dataModelList);
 
-        dataEditor.replace(dataModelList);
-        dataEditor.selectFirstTab();
+        this.dataEditor.replace(dataModelList);
+        this.dataEditor.selectFirstTab();
         firePropertyChange("modelChanged", null, null);
     }
 

@@ -11,7 +11,6 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +27,7 @@ import java.util.List;
 public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
-    private IndependenceWrapper test;
+    private final IndependenceWrapper test;
 
     public CcdMaxConcatenated(IndependenceWrapper test) {
         this.test = test;
@@ -50,38 +49,26 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             search.setDoColliderOrientations(parameters.getBoolean(Params.DO_COLLIDER_ORIENTATION));
             search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
             search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setApplyOrientAwayFromCollider(parameters.getBoolean(Params.APPLY_R1));
             search.setUseOrientTowardDConnections(parameters.getBoolean(Params.ORIENT_TOWARD_DCONNECTIONS));
             return search.search();
         } else {
-            CcdMaxConcatenated algorithm = new CcdMaxConcatenated(test);
+            CcdMaxConcatenated algorithm = new CcdMaxConcatenated(this.test);
 
             List<DataSet> dataSets = new ArrayList<>();
 
             for (DataModel dataModel : dataModels) {
                 dataSets.add((DataSet) dataModel);
             }
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(
+                    dataSets,
+                    algorithm,
+                    parameters.getInt(Params.NUMBER_RESAMPLING),
+                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
+                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -92,30 +79,17 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+            return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
-            CcdMaxConcatenated algorithm = new CcdMaxConcatenated(test);
+            CcdMaxConcatenated algorithm = new CcdMaxConcatenated(this.test);
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
+                    algorithm,
+                    parameters.getInt(Params.NUMBER_RESAMPLING),
+                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
+                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -130,7 +104,7 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "CCD-Max (Cyclic Discovery Search Max), concatenting datasets, using " + test.getDescription();
+        return "CCD-Max (Cyclic Discovery Search Max), concatenting datasets, using " + this.test.getDescription();
     }
 
     @Override
@@ -140,7 +114,7 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = test.getParameters();
+        List<String> parameters = this.test.getParameters();
         parameters.add(Params.DEPTH);
         parameters.add(Params.ORIENT_VISIBLE_FEEDBACK_LOOPS);
         parameters.add(Params.DO_COLLIDER_ORIENTATION);
@@ -159,7 +133,7 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override

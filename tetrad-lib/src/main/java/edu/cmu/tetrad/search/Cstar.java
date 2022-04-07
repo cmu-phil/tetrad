@@ -15,15 +15,19 @@ import java.util.concurrent.*;
 /**
  * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
  * <p>
- * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., & Bühlmann, P. (2012). Causal stability ranking. Bioinformatics, 28(21), 2819-2823.
+ * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., & Bühlmann, P. (2012).
+ * Causal stability ranking. Bioinformatics, 28(21), 2819-2823.
  * <p>
- * Meinshausen, N., & Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 72(4), 417-473.
+ * Meinshausen, N., & Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society:
+ * Series B (Statistical Methodology), 72(4), 417-473.
  * <p>
- * Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. The Journal of Machine Learning Research, 15(1), 3741-3782.
+ * Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning.
+ * The Journal of Machine Learning Research, 15(1), 3741-3782.
  *
  * @author jdramsey@andrew.cmu.edu
  */
 public class Cstar {
+
     public enum PatternAlgorithm {FGES, PC_STABLE}
 
     public enum SampleStyle {BOOTSTRAP, SPLIT}
@@ -32,6 +36,7 @@ public class Cstar {
     private int qFrom = 1;
     private int qTo = 1;
     private int qIncrement = 1;
+    private double selectionAlpha = 0.0;
 
     private int parallelism = Runtime.getRuntime().availableProcessors() * 10;
     private IndependenceTest test;
@@ -39,15 +44,15 @@ public class Cstar {
     private PatternAlgorithm patternAlgorithm = PatternAlgorithm.PC_STABLE;
     private SampleStyle sampleStyle = SampleStyle.BOOTSTRAP;
 
-    private boolean verbose = false;
+    private boolean verbose;
 
-    private Graph trueDag;
+    private final Graph trueDag = null;
 
-    private class Tuple {
-        private Node cause;
-        private Node effect;
-        private double pi;
-        private double minBeta;
+    private static class Tuple {
+        private final Node cause;
+        private final Node effect;
+        private final double pi;
+        private final double minBeta;
 
         private Tuple(Node cause, Node effect, double pi, double minBeta) {
             this.cause = cause;
@@ -57,19 +62,19 @@ public class Cstar {
         }
 
         public Node getCauseNode() {
-            return cause;
+            return this.cause;
         }
 
         public Node getEffectNode() {
-            return effect;
+            return this.effect;
         }
 
         public double getPi() {
-            return pi;
+            return this.pi;
         }
 
         public double getMinBeta() {
-            return minBeta;
+            return this.minBeta;
         }
     }
 
@@ -77,12 +82,12 @@ public class Cstar {
     public static class Record implements TetradSerializable {
         static final long serialVersionUID = 23L;
 
-        private Node causeNode;
-        private Node target;
-        private double pi;
-        private double effect;
-        private int q;
-        private int p;
+        private final Node causeNode;
+        private final Node target;
+        private final double pi;
+        private final double effect;
+        private final int q;
+        private final int p;
 
         Record(Node predictor, Node target, double pi, double minEffect, int q, int p) {
             this.causeNode = predictor;
@@ -94,32 +99,35 @@ public class Cstar {
         }
 
         public Node getCauseNode() {
-            return causeNode;
+            return this.causeNode;
         }
 
         public Node getEffectNode() {
-            return target;
+            return this.target;
         }
 
         public double getPi() {
-            return pi;
+            return this.pi;
         }
 
         double getMinBeta() {
-            return effect;
+            return this.effect;
         }
 
         public int getQ() {
-            return q;
+            return this.q;
         }
 
         public int getP() {
-            return p;
+            return this.p;
         }
     }
 
     public Cstar() {
     }
+
+
+
 
     /**
      * Returns records for a set of variables with expected number of false positives bounded by q.
@@ -148,6 +156,9 @@ public class Cstar {
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects,
                                                      IndependenceTest test, String path) {
+        System.out.println("path = " + path);
+        test.setVerbose(false);
+
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
 
@@ -155,7 +166,7 @@ public class Cstar {
 
         List<Integer> qs = new ArrayList<>();
 
-        for (int q = qFrom; q <= qTo; q += qIncrement) {
+        for (int q = this.qFrom; q <= this.qTo; q += this.qIncrement) {
             if (q <= p) {
                 qs.add(q);
             } else {
@@ -171,21 +182,27 @@ public class Cstar {
 
         if (path != null) {
             _dir = new File(path);
-            _dir.mkdirs();
+            System.out.println("dir = " + _dir.getAbsolutePath());
+
+            boolean b =_dir.mkdirs();
+
+            if (b) {
+                System.out.println("Creating directories for " + _dir.getAbsolutePath());
+            }
         }
 
-        final File dir = _dir;
+        File dir = _dir;
 
         if (dir != null) {
 
             if (new File(dir, "possible.causes.txt").exists() && new File(dir, "possible.causes.txt").exists()) {
                 possibleCauses = readVars(dataSet, dir, "possible.causes.txt");
                 possibleEffects = readVars(dataSet, dir, "possible.effects.txt");
-                dataSet = readData(dir, "data.txt");
+                dataSet = readData(dir);
             } else {
                 writeVars(possibleCauses, dir, "possible.causes.txt");
                 writeVars(possibleEffects, dir, "possible.effects.txt");
-                writeData(dataSet, dir, "data.txt");
+                writeData(dataSet, dir);
             }
         }
 
@@ -201,29 +218,26 @@ public class Cstar {
             throw new IllegalArgumentException("Expecting Fisher Z, Chi Square, Sem BIC, or Conditional Gaussian Score.");
         }
 
-        List<Node> augmented = new ArrayList<>(possibleEffects);
-        augmented.addAll(possibleCauses);
-
-        final List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
+        List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
 
         for (int t = 0; t < possibleEffects.size(); t++) {
             minimalEffects.add(new ConcurrentHashMap<>());
 
             for (int b = 0; b < getNumSubsamples(); b++) {
-                final Map<Node, Double> map = new ConcurrentHashMap<>();
+                Map<Node, Double> map = new ConcurrentHashMap<>();
                 for (Node node : possibleCauses) map.put(node, 0.0);
                 minimalEffects.get(t).put(b, map);
             }
         }
 
-        final int[] edgesTotal = new int[1];
-        final int[] edgesCount = new int[1];
+        int[] edgesTotal = new int[1];
+        int[] edgesCount = new int[1];
 
         class Task implements Callable<double[][]> {
             private final List<Node> possibleCauses;
             private final List<Node> possibleEffects;
             private final int k;
-            private DataSet _dataSet;
+            private final DataSet _dataSet;
 
             private Task(int k, List<Node> possibleCauses, List<Node> possibleEffects, DataSet _dataSet) {
                 this.k = k;
@@ -237,46 +251,45 @@ public class Cstar {
                     BootstrapSampler sampler = new BootstrapSampler();
                     DataSet sample;
 
-                    if (sampleStyle == SampleStyle.BOOTSTRAP) {
+                    if (Cstar.this.sampleStyle == SampleStyle.BOOTSTRAP) {
                         sampler.setWithoutReplacements(false);
-                        sample = sampler.sample(_dataSet, _dataSet.getNumRows());
-                    } else if (sampleStyle == SampleStyle.SPLIT) {
+                        sample = sampler.sample(this._dataSet, this._dataSet.getNumRows());
+                    } else if (Cstar.this.sampleStyle == SampleStyle.SPLIT) {
                         sampler.setWithoutReplacements(true);
                         sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
                     } else {
-                        throw new IllegalArgumentException("That type of sample is not configured: " + sampleStyle);
+                        throw new IllegalArgumentException("That type of sample is not configured: "
+                                + Cstar.this.sampleStyle);
                     }
 
                     Graph pattern = null;
                     double[][] effects = null;
 
-                    if (dir != null && new File(dir, "pattern." + (k + 1) + ".txt").exists()
-                            && new File(dir, "effects." + (k + 1) + ".txt").exists()) {
+                    if (dir != null && new File(dir, "pattern." + (this.k + 1) + ".txt").exists()
+                            && new File(dir, "effects." + (this.k + 1) + ".txt").exists()) {
                         try {
-                            pattern = GraphUtils.loadGraphTxt(new File(dir, "pattern." + (k + 1) + ".txt"));
-                            effects = loadMatrix(new File(dir, "effects." + (k + 1) + ".txt"));
+                            pattern = GraphUtils.loadGraphTxt(new File(dir, "pattern." + (this.k + 1) + ".txt"));
+                            effects = loadMatrix(new File(dir, "effects." + (this.k + 1) + ".txt"));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
 
                     if (pattern == null || effects == null) {
-                        if (patternAlgorithm == PatternAlgorithm.FGES) {
+                        if (Cstar.this.patternAlgorithm == PatternAlgorithm.FGES) {
                             pattern = getPatternFges(sample);
-                        } else if (patternAlgorithm == PatternAlgorithm.PC_STABLE) {
+                        } else if (Cstar.this.patternAlgorithm == PatternAlgorithm.PC_STABLE) {
                             pattern = getPatternPcStable(sample);
                         } else {
                             throw new IllegalArgumentException("That type of of pattern algorithm is not configured: "
-                                    + patternAlgorithm);
+                                    + Cstar.this.patternAlgorithm);
                         }
-
-                        TetradLogger.getInstance().forceLogMessage("# edges = " + pattern.getNumEdges());
 
                         edgesTotal[0] += pattern.getNumEdges();
                         edgesCount[0]++;
 
                         if (dir != null) {
-                            GraphUtils.saveGraph(pattern, new File(dir, "pattern." + (k + 1) + ".txt"), false);
+                            GraphUtils.saveGraph(pattern, new File(dir, "pattern." + (this.k + 1) + ".txt"), false);
                         }
 
                         Ida ida = new Ida(sample, pattern, this.possibleCauses);
@@ -292,15 +305,10 @@ public class Cstar {
                         }
 
                         if (dir != null) {
-                            saveMatrix(effects, new File(dir, "effects." + (k + 1) + ".txt"));
+                            saveMatrix(effects, new File(dir, "effects." + (this.k + 1) + ".txt"));
                         } else {
                             saveMatrix(effects, null);
                         }
-                    }
-
-
-                    if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Bootstrap " + (k + 1));
                     }
 
                     return effects;
@@ -316,7 +324,7 @@ public class Cstar {
             tasks.add(new Task(k, possibleCauses, possibleEffects, dataSet));
         }
 
-        final List<double[][]> allEffects = runCallablesDoubleArray(tasks, getParallelism());
+        List<double[][]> allEffects = runCallablesDoubleArray(tasks, getParallelism());
 
         int avgEdges = (int) (edgesTotal[0] / (double) edgesCount[0]);
 //        avgEdges /= 2.0;
@@ -349,9 +357,9 @@ public class Cstar {
         }
 
         class Task2 implements Callable<Boolean> {
-            private List<Node> possibleCauses;
-            private List<Node> possibleEffects;
-            private int q;
+            private final List<Node> possibleCauses;
+            private final List<Node> possibleEffects;
+            private final int q;
 
             private Task2(List<Node> possibleCauses, List<Node> possibleEffects, int q) {
                 this.possibleCauses = possibleCauses;
@@ -361,22 +369,22 @@ public class Cstar {
 
             public Boolean call() {
                 try {
-                    if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Examining q = " + q);
+                    if (Cstar.this.verbose) {
+                        TetradLogger.getInstance().forceLogMessage("Examining q = " + this.q);
                     }
 
                     List<Tuple> tuples = new ArrayList<>();
 
-                    for (int e = 0; e < possibleEffects.size(); e++) {
-                        for (int c = 0; c < possibleCauses.size(); c++) {
+                    for (int e = 0; e < this.possibleEffects.size(); e++) {
+                        for (int c = 0; c < this.possibleCauses.size(); c++) {
                             int count = 0;
 
                             for (int k = 0; k < getNumSubsamples(); k++) {
-                                if (q > doubles.get(k).size()) {
+                                if (this.q > doubles.get(k).size()) {
                                     continue;
                                 }
 
-                                double cutoff = doubles.get(k).get(q - 1);
+                                double cutoff = doubles.get(k).get(this.q - 1);
 
                                 if (allEffects.get(k)[c][e] >= cutoff) {
                                     count++;
@@ -384,12 +392,12 @@ public class Cstar {
                             }
 
 //                            if (count > 0) {
-                            final double pi = count / ((double) getNumSubsamples());
-                            if (pi < (q / (double) p)) continue;
-                            final Node cause = possibleCauses.get(c);
-                            final Node effect = possibleEffects.get(e);
+                            double pi = count / ((double) getNumSubsamples());
+                            if (pi < (this.q / (double) p)) continue;
+                            Node cause = this.possibleCauses.get(c);
+                            Node effect = this.possibleEffects.get(e);
                             tuples.add(new Tuple(cause, effect, pi,
-                                    avgMinEffect(possibleCauses, possibleEffects, allEffects, cause, effect)));
+                                    avgMinEffect(this.possibleCauses, this.possibleEffects, allEffects, cause, effect)));
 //                            }
                         }
                     }
@@ -403,18 +411,16 @@ public class Cstar {
                     });
 
                     LinkedList<Record> records = new LinkedList<>();
-                    double sum = 0.0;
 
-                    for (int i = 0; i < tuples.size() /*Math.min(q, tuples.size())*/; i++) {
-                        Tuple tuple = tuples.get(i);
-
-                        sum += tuple.getPi();
+                    for (Tuple tuple : tuples) {
                         double avg = tuple.getMinBeta();
 
-                        final Node causeNode = tuple.getCauseNode();
-                        final Node effectNode = tuple.getEffectNode();
+                        Node causeNode = tuple.getCauseNode();
+                        Node effectNode = tuple.getEffectNode();
 
-                        records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, q, p));
+                        if (tuple.getMinBeta() > selectionAlpha) {
+                            records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, this.q, p));
+                        }
                     }
 
                     allRecords.add(records);
@@ -440,9 +446,9 @@ public class Cstar {
         return allRecords;
     }
 
-    private DataSet readData(File dir, String s) {
+    private DataSet readData(File dir) {
         try {
-            DataSet dataSet = DataUtils.loadContinuousData(new File(dir, s),"//", '*', "*", true, Delimiter.TAB);
+            DataSet dataSet = DataUtils.loadContinuousData(new File(dir, "data.txt"), "//", '*', "*", true, Delimiter.TAB);
 
             TetradLogger.getInstance().forceLogMessage(
                     "Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
@@ -453,9 +459,9 @@ public class Cstar {
         }
     }
 
-    private void writeData(DataSet dataSet, File dir, String s) {
+    private void writeData(DataSet dataSet, File dir) {
         try {
-            PrintStream out = new PrintStream(new FileOutputStream(new File(dir, s)));
+            PrintStream out = new PrintStream(new FileOutputStream(new File(dir, "data.txt")));
             out.println(dataSet.toString());
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -493,7 +499,6 @@ public class Cstar {
             }
 
             out.flush();
-            ;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -567,7 +572,7 @@ public class Cstar {
     public String makeTable(LinkedList<Record> records, boolean printTable) {
         int numColumns = 8;
 
-        if (trueDag != null) {
+        if (this.trueDag != null) {
             numColumns++;
         }
 
@@ -587,8 +592,8 @@ public class Cstar {
         table.setToken(0, column++, "E(V)");
         table.setToken(0, column++, "PCER");
 
-        if (trueDag != null) {
-            table.setToken(0, column++, "SUM(FP)");
+        if (this.trueDag != null) {
+            table.setToken(0, column, "SUM(FP)");
         }
 
         double sumPi = 0.0;
@@ -603,8 +608,8 @@ public class Cstar {
         int ancestorCount = 0;
 
         for (int i = 0; i < records.size(); i++) {
-            final Node cause = records.get(i).getCauseNode();
-            final Node effect = records.get(i).getEffectNode();
+            Node cause = records.get(i).getCauseNode();
+            Node effect = records.get(i).getEffectNode();
 
             int R = (i + 1);
             sumPi += records.get(i).getPi();
@@ -613,21 +618,21 @@ public class Cstar {
 
             table.setToken(i + 1, column++, "" + (i + 1));
             table.setToken(i + 1, column++, cause.getName());
-            table.setToken(i + 1,    column++, effect.getName());
+            table.setToken(i + 1, column++, effect.getName());
 //            table.setToken(i + 1, column++, cause instanceof DiscreteVariable ? "D" : "C");
             table.setToken(i + 1, column++, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, column++, nf.format(records.get(i).getMinBeta()));
 //            table.setToken(i + 1, column++, nf.format(sumPi));
             table.setToken(i + 1, column++, nf.format(R - sumPi));
-            final double er = er(records.get(i).getPi(), (i + 1), p);
+            double er = Cstar.er(records.get(i).getPi(), (i + 1), p);
             table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
-            final double pcer = pcer(records.get(i).getPi(), (i + 1), p);
+            double pcer = Cstar.pcer(records.get(i).getPi(), (i + 1), p);
             table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(pcer));
 
-            if (trueDag != null) {
-                boolean ancestor = trueDag.isAncestorOf(trueDag.getNode(cause.getName()), trueDag.getNode(effect.getName()));
+            if (this.trueDag != null) {
+                boolean ancestor = this.trueDag.isAncestorOf(this.trueDag.getNode(cause.getName()), this.trueDag.getNode(effect.getName()));
                 if (ancestor) ancestorCount++;
-                table.setToken(i + 1, column++, nf.format((R - ancestorCount)));
+                table.setToken(i + 1, column, nf.format((R - ancestorCount)));
             }
         }
 
@@ -681,33 +686,36 @@ public class Cstar {
         this.verbose = verbose;
     }
 
-    public void setSampleStyle(SampleStyle sampleStyle) {
-        this.sampleStyle = sampleStyle;
+    public void setSelectionAlpha(double selectionAlpha) {
+        this.selectionAlpha = selectionAlpha;
     }
 
-    public void setTrueDag(Graph trueDag) {
-        this.trueDag = trueDag;
+    public void setSampleStyle(SampleStyle sampleStyle) {
+        this.sampleStyle = sampleStyle;
     }
 
     //=============================PRIVATE==============================//
 
     private int getNumSubsamples() {
-        return numSubsamples;
+        return this.numSubsamples;
     }
 
     private int getParallelism() {
-        return parallelism;
+        return this.parallelism;
     }
 
     private Graph getPatternPcStable(DataSet sample) {
         IndependenceTest test = getIndependenceTest(sample, this.test);
+        test.setVerbose(false);
         PcStable pc = new PcStable(test);
+        pc.setVerbose(false);
         return pc.search();
     }
 
     private Graph getPatternFges(DataSet sample) {
         Score score = new ScoredIndTest(getIndependenceTest(sample, this.test));
         Fges fges = new Fges(score, 1);
+        fges.setVerbose(false);
         return fges.search();
     }
 
@@ -735,7 +743,7 @@ public class Cstar {
 
     // Meinhausen and Buhlmann E(|V|) bound
     private static double er(double pi, double q, double p) {
-        return p * pcer(pi, q, p);
+        return p * Cstar.pcer(pi, q, p);
     }
 
     // Meinhausen and Buhlmann per comparison error rate (PCER)
@@ -751,8 +759,6 @@ public class Cstar {
             if (file != null) {
                 PrintStream out = new PrintStream(new FileOutputStream(file));
                 out.println(data);
-            } else {
-                TetradLogger.getInstance().forceLogMessage(data.toString());
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -763,7 +769,7 @@ public class Cstar {
         try {
             DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB);
 
-            TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
+//            TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
 
             return dataSet.getDoubleData().toArray();
         } catch (IOException e) {

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,10 +46,10 @@ public class CombinationIterator implements Iterator {
      *                  in order.
      */
     public CombinationIterator(int[] maxValues) {
-        numValues = maxValues.length;
-        values = new int[numValues];
+        this.numValues = maxValues.length;
+        this.values = new int[this.numValues];
         this.maxValues = maxValues;
-        hasNext = true;
+        this.hasNext = true;
     }
 
     /**
@@ -57,29 +57,29 @@ public class CombinationIterator implements Iterator {
      * by the next() method.
      */
     public boolean hasNext() {
-        return hasNext;
+        return this.hasNext;
     }
 
     /**
      * @return an int[] array with the next combination.
      */
     public int[] next() {
-        int[] clone = new int[numValues];
-        System.arraycopy(values, 0, clone, 0, numValues);
+        int[] clone = new int[this.numValues];
+        System.arraycopy(this.values, 0, clone, 0, this.numValues);
 
         int i;
-        for (i = numValues - 1; i >= 0; i--) {
-            if (values[i] + 1 < maxValues[i]) {
+        for (i = this.numValues - 1; i >= 0; i--) {
+            if (this.values[i] + 1 < this.maxValues[i]) {
                 break;
             }
         }
 
         if (i < 0) {
-            hasNext = false;
+            this.hasNext = false;
         } else {
-            values[i]++;
-            for (int j = i + 1; j < numValues; j++) {
-                values[j] = 0;
+            this.values[i]++;
+            for (int j = i + 1; j < this.numValues; j++) {
+                this.values[j] = 0;
             }
         }
 
@@ -87,7 +87,6 @@ public class CombinationIterator implements Iterator {
     }
 
     /**
-     * @throws UnsupportedOperationException
      */
     public void remove() {
         throw new UnsupportedOperationException();

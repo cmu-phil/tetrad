@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -79,8 +79,8 @@ public class MultiDimIntTable {
     public synchronized int getCellIndex(int[] coords) {
         int cellIndex = 0;
 
-        for (int i = 0; i < dims.length; i++) {
-            cellIndex *= dims[i];
+        for (int i = 0; i < this.dims.length; i++) {
+            cellIndex *= this.dims[i];
             cellIndex += coords[i];
         }
 
@@ -92,7 +92,7 @@ public class MultiDimIntTable {
      * @return the array representing the combination of parent values for this
      * row.
      */
-    @SuppressWarnings({"SameParameterValue"})
+    @SuppressWarnings("SameParameterValue")
     public synchronized int[] getCoordinates(int cellIndex) {
         int[] coords = new int[this.dims.length];
 
@@ -116,12 +116,12 @@ public class MultiDimIntTable {
     public synchronized long increment(int[] coords, int value) {
         int cellIndex = getCellIndex(coords);
 
-        if (!cells.containsKey(cellIndex)) {
-            cells.put(cellIndex, 0L);
+        if (!this.cells.containsKey(cellIndex)) {
+            this.cells.put(cellIndex, 0L);
         }
 
-        cells.put(cellIndex, cells.get(cellIndex) + value);
-        return cells.get(cellIndex);
+        this.cells.put(cellIndex, this.cells.get(cellIndex) + value);
+        return this.cells.get(cellIndex);
     }
 
     /**
@@ -133,11 +133,11 @@ public class MultiDimIntTable {
      *               should be incremented (an integer).
      * @return the new value at that table cell.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public synchronized long setValue(int[] coords, int value) {
         int cellIndex = getCellIndex(coords);
-        cells.put(cellIndex, (long) value);
-        return cells.get(cellIndex);
+        this.cells.put(cellIndex, (long) value);
+        return this.cells.get(cellIndex);
     }
 
     /**
@@ -147,10 +147,10 @@ public class MultiDimIntTable {
     public synchronized long getValue(int[] coords) {
         int cellIndex = getCellIndex(coords);
 
-        if (cells == null || !cells.containsKey(cellIndex)) {
+        if (this.cells == null || !this.cells.containsKey(cellIndex)) {
             return 0L;
         } else {
-            return cells.get(cellIndex);
+            return this.cells.get(cellIndex);
         }
     }
 
@@ -164,7 +164,7 @@ public class MultiDimIntTable {
     /**
      * @return this number.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public synchronized int[] getDimensions() {
         return this.dims;
     }
@@ -192,9 +192,9 @@ public class MultiDimIntTable {
      *
      * @param dims an <code>int[]</code> value
      */
-    public synchronized final void reset(int[] dims) {
+    public final synchronized void reset(int[] dims) {
         if (dims == null) {
-            cells = null;
+            this.cells = null;
         } else {
             if (dims.length < 1) {
                 throw new IllegalArgumentException(
@@ -216,7 +216,7 @@ public class MultiDimIntTable {
             }
 
             // Construct (or reset) cells array.
-            cells = new HashMap<>();
+            this.cells = new HashMap<>();
 
             // Store the dimensions, making a copy for security.
             this.dims = new int[dims.length];
@@ -226,7 +226,7 @@ public class MultiDimIntTable {
     }
 
     public synchronized int getDims(int varIndex) {
-        return dims[varIndex];
+        return this.dims[varIndex];
     }
 }
 

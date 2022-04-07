@@ -1,6 +1,3 @@
-/**
- *
- */
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
@@ -15,7 +12,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -38,12 +35,12 @@ import java.util.List;
 public class RfciBsc implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
-    private IndependenceWrapper test = new ProbabilisticTest();
+    private final IndependenceWrapper test = new ProbabilisticTest();
     private IKnowledge knowledge = new Knowledge2();
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
@@ -53,8 +50,8 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(test.getTest(dataSet, parameters));
-        search.setKnowledge(knowledge);
+        edu.cmu.tetrad.search.Rfci search = new edu.cmu.tetrad.search.Rfci(this.test.getTest(dataSet, parameters));
+        search.setKnowledge(this.knowledge);
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -78,12 +75,12 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag2(new EdgeListGraph(graph)).convert();
+        return new DagToPag(new EdgeListGraph(graph)).convert();
     }
 
     @Override
     public String getDescription() {
-        return "RFCI-BSC using " + test.getDescription();
+        return "RFCI-BSC using " + this.test.getDescription();
     }
 
     @Override

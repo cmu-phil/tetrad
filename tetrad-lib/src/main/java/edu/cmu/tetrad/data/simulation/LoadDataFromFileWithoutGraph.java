@@ -3,7 +3,10 @@ package edu.cmu.tetrad.data.simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.statistic.utils.SimulationPath;
 import edu.cmu.tetrad.algcomparison.utils.ParameterValues;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -21,9 +24,8 @@ import java.util.Map;
 public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath, ParameterValues {
     static final long serialVersionUID = 23L;
     private DataSet dataSet;
-    private int numDataSets = 1;
-    private String path;
-    private Map<String, Object> parameterValues = new HashMap<>();
+    private final String path;
+    private final Map<String, Object> parameterValues = new HashMap<>();
 
     public LoadDataFromFileWithoutGraph(String path) {
         this.dataSet = null;
@@ -33,9 +35,9 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         try {
-            File file = new File(path);
+            File file = new File(this.path);
             System.out.println("Loading data from " + file.getAbsolutePath());
-            this.dataSet = DataUtils.loadContinuousData(file, "//", '\"' ,
+            this.dataSet = DataUtils.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
         } catch (IOException e) {
             e.printStackTrace();
@@ -49,7 +51,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSet;
+        return this.dataSet;
     }
 
     @Override
@@ -64,7 +66,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
 
     @Override
     public int getNumDataModels() {
-        return numDataSets;
+        return 1;
     }
 
     @Override
@@ -74,11 +76,11 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
 
     @Override
     public String getPath() {
-        return path;
+        return this.path;
     }
 
     @Override
-    public Map<String, Object> paremeterValues() {
-        return parameterValues;
+    public Map<String, Object> parameterValues() {
+        return this.parameterValues;
     }
 }

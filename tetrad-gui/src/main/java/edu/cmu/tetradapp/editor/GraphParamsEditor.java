@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -25,8 +25,6 @@ import edu.cmu.tetrad.util.Parameters;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 
 /**
@@ -58,70 +56,16 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
     }
 
     public void setup() {
-        boolean cyclicAllowed = params.getBoolean("cyclicAllowed", false);
-        final RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed, params);
-        final RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor(params);
-        final RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
+        boolean cyclicAllowed = this.params.getBoolean("cyclicAllowed", false);
+        RandomGraphEditor randomDagEditor = new RandomGraphEditor(cyclicAllowed, this.params);
+        RandomMimParamsEditor randomMimEditor = new RandomMimParamsEditor(this.params);
+        RandomDagScaleFreeEditor randomScaleFreeEditor = new RandomDagScaleFreeEditor();
 
         // construct the workbench.
         setLayout(new BorderLayout());
 
-//        JRadioButton manual = new JRadioButton(
-//                "An empty graph (to be constructed manually).");
-//        JRadioButton random = new JRadioButton("A random graph.");
-//        ButtonGroup group = new ButtonGroup();
-//        group.add(manual);
-//        group.add(random);
-
-//        if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
-//            manual.setSelected(true);
-//            randomDagEditor.setEnabled(false);
-//        }
-//        else {
-//            random.setSelected(true);
-//            randomDagEditor.setEnabled(true);
-//        }
-
-//        manual.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                JRadioButton button = (JRadioButton) e.getSource();
-//
-//                if (button.isSelected()) {
-//                    params.set("newGraphInitializationMode", "manual");
-//                    randomDagEditor.setEnabled(false);
-//                }
-//            }
-//        });
-//
-//        random.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                JRadioButton button = (JRadioButton) e.getSource();
-//
-//                if (button.isSelected()) {
-//                    params.set("newGraphInitializationMode", "random");
-//                    randomDagEditor.setEnabled(true);
-//                }
-//            }
-//        });
-
         Box b1 = Box.createVerticalBox();
         Box b2 = Box.createVerticalBox();
-
-//        Box b3 = Box.createHorizontalBox();
-//        b3.add(new JLabel("Make new graph:"));
-//        b3.add(Box.createHorizontalGlue());
-//        b2.add(b3);
-//        b1.add(Box.createVerticalStrut(5));
-
-//        Box b4 = Box.createHorizontalBox();
-//        b4.add(manual);
-//        b4.add(Box.createHorizontalGlue());
-//        b2.add(b4);
-//
-//        Box b5 = Box.createHorizontalBox();
-//        b5.add(random);
-//        b5.add(Box.createHorizontalGlue());
-//        b2.add(b5);
 
         b2.setBorder(new TitledBorder(""));
         b1.add(b2);
@@ -132,30 +76,31 @@ public class GraphParamsEditor extends JPanel implements ParameterEditor {
         tabs.add("MIM", randomMimEditor);
         tabs.add("Scale Free", randomScaleFreeEditor);
 
-        final String type = params.getString("randomGraphType", "Uniform");
+        String type = this.params.getString("randomGraphType", "Uniform");
 
-        if (type.equals("Uniform")) {
-            tabs.setSelectedIndex(0);
-        } else if (type.equals("Mim")) {
-            tabs.setSelectedIndex(1);
-        } else if (type.equals("ScaleFree")) {
-            tabs.setSelectedIndex(2);
-        } else {
-            throw new IllegalStateException("Unrecognized graph type: " + type);
+        switch (type) {
+            case "Uniform":
+                tabs.setSelectedIndex(0);
+                break;
+            case "Mim":
+                tabs.setSelectedIndex(1);
+                break;
+            case "ScaleFree":
+                tabs.setSelectedIndex(2);
+                break;
+            default:
+                throw new IllegalStateException("Unrecognized graph type: " + type);
         }
 
-        tabs.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent changeEvent) {
-                JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
+        tabs.addChangeListener(changeEvent -> {
+            JTabbedPane pane = (JTabbedPane) changeEvent.getSource();
 
-                if (pane.getSelectedIndex() == 0) {
-                    params.set("randomGraphType", "Uniform");
-                } else if (pane.getSelectedIndex() == 1) {
-                    params.set("randomGraphType", "Mim");
-                } else if (pane.getSelectedIndex() == 2) {
-                    params.set("randomGraphType", "ScaleFree");
-                }
+            if (pane.getSelectedIndex() == 0) {
+                GraphParamsEditor.this.params.set("randomGraphType", "Uniform");
+            } else if (pane.getSelectedIndex() == 1) {
+                GraphParamsEditor.this.params.set("randomGraphType", "Mim");
+            } else if (pane.getSelectedIndex() == 2) {
+                GraphParamsEditor.this.params.set("randomGraphType", "ScaleFree");
             }
         });
 

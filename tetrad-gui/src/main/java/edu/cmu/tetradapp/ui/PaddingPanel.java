@@ -42,10 +42,10 @@ public class PaddingPanel extends JPanel {
     }
 
     private void initComponents() {
-        layeredPane.setLayer(innerComponent, JLayeredPane.DEFAULT_LAYER);
+        this.layeredPane.setLayer(this.innerComponent, JLayeredPane.DEFAULT_LAYER);
 
-        GroupLayout layeredPaneLayout = new GroupLayout(layeredPane);
-        layeredPane.setLayout(layeredPaneLayout);
+        GroupLayout layeredPaneLayout = new GroupLayout(this.layeredPane);
+        this.layeredPane.setLayout(layeredPaneLayout);
         layeredPaneLayout.setHorizontalGroup(layeredPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layeredPaneLayout.createSequentialGroup()
                         .addContainerGap()
@@ -60,7 +60,7 @@ public class PaddingPanel extends JPanel {
         );
 
         GroupLayout layout = new GroupLayout(this);
-        this.setLayout(layout);
+        setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(layeredPane, GroupLayout.Alignment.TRAILING)

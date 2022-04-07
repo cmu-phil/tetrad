@@ -10,5 +10,5 @@ public interface HasParameterValues {
     /**
      * @return Returns a list of additional parameter values.
      */
-    public Parameters getParameterValues();
+    Parameters getParameterValues();
 }

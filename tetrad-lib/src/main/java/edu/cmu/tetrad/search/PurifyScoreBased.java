@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,9 +37,9 @@ import java.util.*;
  * Settings | File Templates.
  */
 public class PurifyScoreBased implements IPurify {
-    private boolean outputMessage = true;
-    private TetradTest tetradTest;
-    private int numVars;
+    private final boolean outputMessage = true;
+    private final TetradTest tetradTest;
+    private final int numVars;
     private List forbiddenList;
 
 //     SCORE-BASED PURIFY </p> - using BIC score function and Structural EM for
@@ -49,27 +49,42 @@ public class PurifyScoreBased implements IPurify {
 //     each pair - this methods tends to be much slower than the "tetradBased"
 //     ones.
 
-    double Cyy[][], Cyz[][], Czz[][], bestCyy[][], bestCyz[][], bestCzz[][];
-    double covErrors[][], oldCovErrors[][], sampleCovErrors[][], betas[][], oldBetas[][];
-    double betasLat[][], varErrorLatent[];
-    double omega[][], omegaI[], parentsResidualsCovar[][][], iResidualsCovar[], selectedInverseOmega[][][], auxInverseOmega[][][];
-    int spouses[][], nSpouses[], parents[][], parentsLat[][];
-    double parentsCov[][][], parentsChildCov[][], parentsLatCov[][][], parentsChildLatCov[][];
-    double pseudoParentsCov[][][], pseudoParentsChildCov[][];
-    boolean parentsL[][];
+    double[][] Cyy, Cyz, Czz, bestCyy, bestCyz, bestCzz;
+    double[][] covErrors, oldCovErrors, sampleCovErrors, betas, oldBetas;
+    double[][] betasLat;
+    double[] varErrorLatent;
+    double[][] omega;
+    double[] omegaI;
+    double[][][] parentsResidualsCovar;
+    double[] iResidualsCovar;
+    double[][][] selectedInverseOmega;
+    double[][][] auxInverseOmega;
+    int[][] spouses;
+    int[] nSpouses;
+    int[][] parents;
+    int[][] parentsLat;
+    double[][][] parentsCov;
+    double[][] parentsChildCov;
+    double[][][] parentsLatCov;
+    double[][] parentsChildLatCov;
+    double[][][] pseudoParentsCov;
+    double[][] pseudoParentsChildCov;
+    boolean[][] parentsL;
 
-    int numObserved, numLatent, clusterId[];
+    int numObserved;
+    int numLatent;
+    int[] clusterId;
     Hashtable observableNames, latentNames;
     SemGraph purePartitionGraph;
     Graph basicGraph;
     ICovarianceMatrix covarianceMatrix;
-    boolean correlatedErrors[][], latentParent[][], observedParent[][];
+    boolean[][] correlatedErrors, latentParent, observedParent;
     List latentNodes, measuredNodes;
     SemIm currentSemIm;
     boolean modifiedGraph;
 
 
-    boolean extraDebugPrint = false;
+    boolean extraDebugPrint;
 
     public PurifyScoreBased(TetradTest tetradTest) {
         this.tetradTest = tetradTest;
@@ -88,7 +103,7 @@ public class PurifyScoreBased implements IPurify {
         Clusters clusters = MimUtils.convertToClusters(_graph);
 
         List<int[]> _partition1 = new ArrayList<>();
-        List<Node> nodes = tetradTest.getVariables();
+        List<Node> nodes = this.tetradTest.getVariables();
 
         for (int i = 0; i < clusters.getNumClusters(); i++) {
             List<String> cluster = clusters.getCluster(i);
@@ -105,11 +120,9 @@ public class PurifyScoreBased implements IPurify {
             _partition1.add(_cluster);
         }
 
-        List<int[]> _partition2 = _partition1;
+        printClustering(_partition1);
 
-        printClustering(_partition2);
-
-        return convertIntToList(_partition2);
+        return convertIntToList(_partition1);
     }
 
     public void setTrueGraph(Graph mim) {
@@ -120,8 +133,8 @@ public class PurifyScoreBased implements IPurify {
         for (int i = 0; i < partition.size(); i++) {
             int[] cluster = partition.get(i);
             System.out.print(i + ": ");
-            for (int j = 0; j < cluster.length; j++) {
-                System.out.print(cluster[j] + " ");
+            for (int k : cluster) {
+                System.out.print(k + " ");
             }
 
             System.out.println();
@@ -131,11 +144,10 @@ public class PurifyScoreBased implements IPurify {
     }
 
     private List<int[]> convertListToInt(List<List<Node>> partition) {
-        List<Node> nodes = tetradTest.getVariables();
+        List<Node> nodes = this.tetradTest.getVariables();
         List<int[]> _partition = new ArrayList<>();
 
-        for (int i = 0; i < partition.size(); i++) {
-            List<Node> cluster = partition.get(i);
+        for (List<Node> cluster : partition) {
             int[] _cluster = new int[cluster.size()];
 
             for (int j = 0; j < cluster.size(); j++) {
@@ -153,15 +165,14 @@ public class PurifyScoreBased implements IPurify {
     }
 
     private List<List<Node>> convertIntToList(List<int[]> partition) {
-        List<Node> nodes = tetradTest.getVariables();
+        List<Node> nodes = this.tetradTest.getVariables();
         List<List<Node>> _partition = new ArrayList<>();
 
-        for (int i = 0; i < partition.size(); i++) {
-            int[] cluster = partition.get(i);
+        for (int[] cluster : partition) {
             List<Node> _cluster = new ArrayList<>();
 
-            for (int j = 0; j < cluster.length; j++) {
-                _cluster.add(nodes.get(cluster[j]));
+            for (int k : cluster) {
+                _cluster.add(nodes.get(k));
             }
 
             _partition.add(_cluster);
@@ -176,10 +187,9 @@ public class PurifyScoreBased implements IPurify {
             nodes.add(new GraphNode("No_model."));
             return new EdgeListGraph(nodes);
         }
-        List inputIndicators = new ArrayList(), inputLatents = new ArrayList();
-        Iterator it = input.getNodes().iterator();
-        while (it.hasNext()) {
-            Node next = (Node) it.next();
+        List inputIndicators = new ArrayList();
+        List inputLatents = new ArrayList();
+        for (Node next : input.getNodes()) {
             if (next.getNodeType() == NodeType.MEASURED) {
                 inputIndicators.add(next);
             } else if (next.getNodeType() == NodeType.LATENT) {
@@ -191,12 +201,8 @@ public class PurifyScoreBased implements IPurify {
         allNodes.addAll(inputLatents);
         Graph output = new EdgeListGraph(allNodes);
 
-        Iterator nit1 = input.getNodes().iterator();
-        while (nit1.hasNext()) {
-            Node node1 = (Node) nit1.next();
-            Iterator nit2 = input.getNodes().iterator();
-            while (nit2.hasNext()) {
-                Node node2 = (Node) nit2.next();
+        for (Node node1 : input.getNodes()) {
+            for (Node node2 : input.getNodes()) {
                 Edge edge = input.getEdge(node1, node2);
                 if (edge != null) {
                     if (node1.getNodeType() == NodeType.ERROR &&
@@ -243,45 +249,43 @@ public class PurifyScoreBased implements IPurify {
         SemGraph bestGraph = this.purePartitionGraph;
         System.out.println(">>>> Structural EM: initial round");
         //gaussianEM(bestGraph, null);
-        for (int i = 0; i < correlatedErrors.length; i++) {
-            for (int j = 0; j < correlatedErrors.length; j++) {
-                correlatedErrors[i][j] = false;
+        for (int i = 0; i < this.correlatedErrors.length; i++) {
+            for (int j = 0; j < this.correlatedErrors.length; j++) {
+                this.correlatedErrors[i][j] = false;
             }
         }
-        for (int i = 0; i < numObserved; i++) {
-            for (int j = 0; j < numLatent; j++) {
-                Node latentNode = purePartitionGraph.getNode(
+        for (int i = 0; i < this.numObserved; i++) {
+            for (int j = 0; j < this.numLatent; j++) {
+                Node latentNode = this.purePartitionGraph.getNode(
                         this.latentNodes.get(j).toString());
-                Node measuredNode = purePartitionGraph.getNode(
+                Node measuredNode = this.purePartitionGraph.getNode(
                         this.measuredNodes.get(i).toString());
-                latentParent[i][j] =
-                        purePartitionGraph.isParentOf(latentNode, measuredNode);
+                this.latentParent[i][j] =
+                        this.purePartitionGraph.isParentOf(latentNode, measuredNode);
             }
-            for (int j = i; j < numObserved; j++) {
-                observedParent[i][j] = observedParent[j][i] = false;
+            for (int j = i; j < this.numObserved; j++) {
+                this.observedParent[i][j] = this.observedParent[j][i] = false;
             }
         }
 
         do {
             this.modifiedGraph = false;
-            double score = gaussianEM(bestGraph, null);
+            double score = gaussianEM(bestGraph);
             printlnMessage("Initial score" + score);
             impurityScoreSearch(score);
             if (this.modifiedGraph) {
                 printlnMessage(">>>> Structural EM: starting a new round");
                 bestGraph = updatedGraph();
-                //SemIm nextSemIm = getNextSemIm(bestGraph);
-                //gaussianEM(bestGraph, nextSemIm);
             }
         } while (this.modifiedGraph);
-        boolean impurities[][] = new boolean[numObserved][numObserved];
-        for (int i = 0; i < numObserved; i++) {
+        boolean[][] impurities = new boolean[this.numObserved][this.numObserved];
+        for (int i = 0; i < this.numObserved; i++) {
             List parents = bestGraph.getParents(
                     bestGraph.getNode(this.measuredNodes.get(i).toString()));
             if (parents.size() > 1) {
                 boolean latent_found = false;
-                for (Iterator it = parents.iterator(); it.hasNext(); ) {
-                    Node parent = (Node) it.next();
+                for (Object o : parents) {
+                    Node parent = (Node) o;
                     if (parent.getNodeType() == NodeType.LATENT) {
                         if (latent_found) {
                             impurities[i][i] = true;
@@ -294,9 +298,9 @@ public class PurifyScoreBased implements IPurify {
             } else {
                 impurities[i][i] = false;
             }
-            for (int j = i + 1; j < numObserved; j++) {
-                impurities[i][j] = correlatedErrors[i][j] ||
-                        observedParent[i][j] || observedParent[j][i];
+            for (int j = i + 1; j < this.numObserved; j++) {
+                impurities[i][j] = this.correlatedErrors[i][j] ||
+                        this.observedParent[i][j] || this.observedParent[j][i];
                 impurities[j][i] = impurities[i][j];
             }
         }
@@ -317,25 +321,24 @@ public class PurifyScoreBased implements IPurify {
         this.measuredNodes = new ArrayList();
         this.basicGraph = new EdgeListGraph();
         for (int p = 0; p < partition.size(); p++) {
-            int next[] = (int[]) partition.get(p);
+            int[] next = (int[]) partition.get(p);
             Node newLatent = new GraphNode("_L" + p);
             newLatent.setNodeType(NodeType.LATENT);
-            basicGraph.addNode(newLatent);
-            Iterator it = latentNodes.iterator();
-            while (it.hasNext()) {
-                Node previousLatent = (Node) it.next();
-                basicGraph.addDirectedEdge(previousLatent, newLatent);
+            this.basicGraph.addNode(newLatent);
+            for (Object latentNode : this.latentNodes) {
+                Node previousLatent = (Node) latentNode;
+                this.basicGraph.addDirectedEdge(previousLatent, newLatent);
             }
-            latentNodes.add(newLatent);
-            latentNames.put(newLatent.toString(), numLatent);
-            numLatent++;
-            for (int i = 0; i < next.length; i++) {
-                Node newNode = new GraphNode(tetradTest.getVarNames()[next[i]]);
-                basicGraph.addNode(newNode);
-                basicGraph.addDirectedEdge(newLatent, newNode);
-                observableNames.put(newNode.toString(), numObserved);
-                measuredNodes.add(newNode);
-                numObserved++;
+            this.latentNodes.add(newLatent);
+            this.latentNames.put(newLatent.toString(), this.numLatent);
+            this.numLatent++;
+            for (int j : next) {
+                Node newNode = new GraphNode(this.tetradTest.getVarNames()[j]);
+                this.basicGraph.addNode(newNode);
+                this.basicGraph.addDirectedEdge(newLatent, newNode);
+                this.observableNames.put(newNode.toString(), this.numObserved);
+                this.measuredNodes.add(newNode);
+                this.numObserved++;
             }
         }
 
@@ -344,15 +347,15 @@ public class PurifyScoreBased implements IPurify {
                     "Input clusters must contain at least one variable.");
         }
 
-        this.clusterId = new int[numObserved];
+        this.clusterId = new int[this.numObserved];
         int count = 0;
         for (int p = 0; p < partition.size(); p++) {
-            int next[] = (int[]) partition.get(p);
+            int[] next = (int[]) partition.get(p);
             for (int i = 0; i < next.length; i++) {
                 this.clusterId[count++] = p;
             }
         }
-        this.purePartitionGraph = new SemGraph(basicGraph);
+        this.purePartitionGraph = new SemGraph(this.basicGraph);
         this.purePartitionGraph.setShowErrorTerms(true);
 
         if (((ContinuousTetradTest) this.tetradTest).getTestType() ==
@@ -361,26 +364,26 @@ public class PurifyScoreBased implements IPurify {
         }
 
         //Information for graph modification
-        this.correlatedErrors = new boolean[numObserved][numObserved];
-        this.latentParent = new boolean[numObserved][numLatent];
-        this.observedParent = new boolean[numObserved][numObserved];
+        this.correlatedErrors = new boolean[this.numObserved][this.numObserved];
+        this.latentParent = new boolean[this.numObserved][this.numLatent];
+        this.observedParent = new boolean[this.numObserved][this.numObserved];
 
         //Information for MAG expectation
-        this.Cyy = new double[numObserved][numObserved];
-        this.bestCyy = new double[numObserved][numObserved];
-        this.bestCyz = new double[numObserved][numLatent];
-        this.bestCzz = new double[numLatent][numLatent];
+        this.Cyy = new double[this.numObserved][this.numObserved];
+        this.bestCyy = new double[this.numObserved][this.numObserved];
+        this.bestCyz = new double[this.numObserved][this.numLatent];
+        this.bestCzz = new double[this.numLatent][this.numLatent];
         this.covarianceMatrix =
-                ((ContinuousTetradTest) tetradTest).getCovMatrix();
-        String varNames[] =
-                covarianceMatrix.getVariableNames().toArray(new String[0]);
-        double cov[][] = covarianceMatrix.getMatrix().toArray();
+                this.tetradTest.getCovMatrix();
+        String[] varNames =
+                this.covarianceMatrix.getVariableNames().toArray(new String[0]);
+        double[][] cov = this.covarianceMatrix.getMatrix().toArray();
         for (int i = 0; i < cov.length; i++) {
             for (int j = 0; j < cov.length; j++) {
-                if (observableNames.get(varNames[i]) != null &&
-                        observableNames.get(varNames[j]) != null) {
-                    Cyy[((Integer) observableNames.get(
-                            varNames[i]))][((Integer) observableNames
+                if (this.observableNames.get(varNames[i]) != null &&
+                        this.observableNames.get(varNames[j]) != null) {
+                    this.Cyy[((Integer) this.observableNames.get(
+                            varNames[i]))][((Integer) this.observableNames
                             .get(varNames[j]))] = cov[i][j];
                 }
             }
@@ -418,35 +421,34 @@ public class PurifyScoreBased implements IPurify {
     }
 
     private void printMessage(String message) {
-        if (outputMessage) {
+        if (this.outputMessage) {
             System.out.print(message);
         }
     }
 
     private void printlnMessage(String message) {
-        if (outputMessage) {
+        if (this.outputMessage) {
             System.out.println(message);
         }
     }
 
     private void printlnMessage() {
-        if (outputMessage) {
+        if (this.outputMessage) {
             System.out.println();
         }
     }
 
     private void printClustering(List clustering) {
-        Iterator it = clustering.iterator();
-        while (it.hasNext()) {
-            int c[] = (int[]) it.next();
+        for (Object o : clustering) {
+            int[] c = (int[]) o;
             printCluster(c);
         }
     }
 
-    private void printCluster(int c[]) {
-        String sorted[] = new String[c.length];
+    private void printCluster(int[] c) {
+        String[] sorted = new String[c.length];
         for (int i = 0; i < c.length; i++) {
-            sorted[i] = tetradTest.getVarNames()[c[i]];
+            sorted[i] = this.tetradTest.getVarNames()[c[i]];
         }
         for (int i = 0; i < sorted.length - 1; i++) {
             String min = sorted[i];
@@ -461,32 +463,26 @@ public class PurifyScoreBased implements IPurify {
             sorted[i] = min;
             sorted[min_idx] = temp;
         }
-        for (int i = 0; i < sorted.length; i++) {
-            printMessage(sorted[i] + " ");
+        for (String s : sorted) {
+            printMessage(s + " ");
         }
         printlnMessage();
     }
 
-    private double gaussianEM(SemGraph semdag, SemIm initialSemIm) {
+    private double gaussianEM(SemGraph semdag) {
         double score, newScore = -Double.MAX_VALUE, bestScore =
                 -Double.MAX_VALUE;
         SemPm semPm = new SemPm(semdag);
         semdag.setShowErrorTerms(true);
-        for (int p = 0; p < numObserved; p++) {
-            for (int q = 0; q < numObserved; q++) {
-                this.bestCyy[p][q] = this.Cyy[p][q];
-            }
+        for (int p = 0; p < this.numObserved; p++) {
+            System.arraycopy(this.Cyy[p], 0, this.bestCyy[p], 0, this.numObserved);
             if (this.Cyz != null) {
-                for (int q = 0; q < numLatent; q++) {
-                    this.bestCyz[p][q] = this.Cyz[p][q];
-                }
+                if (this.numLatent >= 0) System.arraycopy(this.Cyz[p], 0, this.bestCyz[p], 0, this.numLatent);
             }
         }
         if (this.Czz != null) {
-            for (int p = 0; p < numLatent; p++) {
-                for (int q = 0; q < numLatent; q++) {
-                    this.bestCzz[p][q] = this.Czz[p][q];
-                }
+            for (int p = 0; p < this.numLatent; p++) {
+                System.arraycopy(this.Czz[p], 0, this.bestCzz[p], 0, this.numLatent);
             }
         }
 
@@ -496,8 +492,8 @@ public class PurifyScoreBased implements IPurify {
         for (int i = 0; i < 3; i++) {
             System.out.println("--Trial " + i);
             SemIm semIm;
-            if (i == 0 && initialSemIm != null) {
-                semIm = initialSemIm;
+            if (i == 0 && null != null) {
+                semIm = null;
             } else {
                 semIm = new SemIm(semPm);
                 semIm.setCovMatrix(this.covarianceMatrix);
@@ -513,33 +509,21 @@ public class PurifyScoreBased implements IPurify {
             System.out.println(newScore);
             if (newScore > bestScore && !Double.isInfinite(newScore)) {
                 bestScore = newScore;
-                for (int p = 0; p < numObserved; p++) {
-                    for (int q = 0; q < numObserved; q++) {
-                        this.bestCyy[p][q] = this.Cyy[p][q];
-                    }
-                    for (int q = 0; q < numLatent; q++) {
-                        this.bestCyz[p][q] = this.Cyz[p][q];
-                    }
+                for (int p = 0; p < this.numObserved; p++) {
+                    System.arraycopy(this.Cyy[p], 0, this.bestCyy[p], 0, this.numObserved);
+                    if (this.numLatent >= 0) System.arraycopy(this.Cyz[p], 0, this.bestCyz[p], 0, this.numLatent);
                 }
-                for (int p = 0; p < numLatent; p++) {
-                    for (int q = 0; q < numLatent; q++) {
-                        this.bestCzz[p][q] = this.Czz[p][q];
-                    }
+                for (int p = 0; p < this.numLatent; p++) {
+                    System.arraycopy(this.Czz[p], 0, this.bestCzz[p], 0, this.numLatent);
                 }
             }
         }
-        for (int p = 0; p < numObserved; p++) {
-            for (int q = 0; q < numObserved; q++) {
-                this.Cyy[p][q] = this.bestCyy[p][q];
-            }
-            for (int q = 0; q < numLatent; q++) {
-                this.Cyz[p][q] = this.bestCyz[p][q];
-            }
+        for (int p = 0; p < this.numObserved; p++) {
+            System.arraycopy(this.bestCyy[p], 0, this.Cyy[p], 0, this.numObserved);
+            if (this.numLatent >= 0) System.arraycopy(this.bestCyz[p], 0, this.Cyz[p], 0, this.numLatent);
         }
-        for (int p = 0; p < numLatent; p++) {
-            for (int q = 0; q < numLatent; q++) {
-                this.Czz[p][q] = this.bestCzz[p][q];
-            }
+        for (int p = 0; p < this.numLatent; p++) {
+            System.arraycopy(this.bestCzz[p], 0, this.Czz[p], 0, this.numLatent);
         }
         if (Double.isInfinite(bestScore)) {
             System.out.println("* * Warning: Heywood case in this step");
@@ -557,9 +541,7 @@ public class PurifyScoreBased implements IPurify {
                 this.parentsLat[i] =
                         new int[semMag.getParents(node).size() - 1];
                 int count = 0;
-                for (Iterator it =
-                     semMag.getParents(node).iterator(); it.hasNext(); ) {
-                    Node parent = (Node) it.next();
+                for (Node parent : semMag.getParents(node)) {
                     if (parent.getNodeType() == NodeType.LATENT) {
                         this.parentsLat[i][count++] =
                                 ((Integer) this.latentNames.get(
@@ -573,15 +555,14 @@ public class PurifyScoreBased implements IPurify {
             }
         }
 
-        boolean correlatedErrors[][] =
+        boolean[][] correlatedErrors =
                 new boolean[this.numObserved][this.numObserved];
         for (int i = 0; i < this.numObserved; i++) {
             for (int j = 0; j < this.numObserved; j++) {
                 correlatedErrors[i][j] = false;
             }
         }
-        for (Iterator it = semMag.getEdges().iterator(); it.hasNext(); ) {
-            Edge nextEdge = (Edge) it.next();
+        for (Edge nextEdge : semMag.getEdges()) {
             if (nextEdge.getEndpoint1() == Endpoint.ARROW &&
                     nextEdge.getEndpoint2() == Endpoint.ARROW) {
                 //By construction, getNode1() and getNode2() are error nodes. They have only one child each.
@@ -595,8 +576,7 @@ public class PurifyScoreBased implements IPurify {
                         measure1.getName()))][((Integer) this.observableNames
                         .get(measure2.getName()))] = true;
                 correlatedErrors[((Integer) this.observableNames.get(
-                        measure2.getName()))][((Integer) this
-                        .observableNames.get(measure1.getName()))] = true;
+                        measure2.getName()))][((Integer) this.observableNames.get(measure1.getName()))] = true;
             }
         }
 
@@ -605,9 +585,7 @@ public class PurifyScoreBased implements IPurify {
             this.parents[i] = new int[semMag.getParents(node).size() - 1];
             this.parentsL[i] = new boolean[semMag.getParents(node).size() - 1];
             int count = 0;
-            for (Iterator it =
-                 semMag.getParents(node).iterator(); it.hasNext(); ) {
-                Node parent = (Node) it.next();
+            for (Node parent : semMag.getParents(node)) {
                 if (parent.getNodeType() == NodeType.LATENT) {
                     this.parents[i][count] =
                             ((Integer) this.latentNames.get(parent.getName()));
@@ -667,37 +645,37 @@ public class PurifyScoreBased implements IPurify {
 
     private void gaussianExpectation(SemIm semIm) {
         //Get the parameters
-        double beta[][] =
-                new double[numLatent][numLatent];        //latent-to-latent coefficients
-        double fi[][] =
-                new double[numLatent][numLatent];          //latent error terms covariance
-        double lambdaI[][] =
-                new double[numObserved][numObserved]; //observed-to-indicatorcoefficients
-        double lambdaL[][] =
-                new double[numObserved][numLatent];   //latent-to-indicatorcoefficients
-        double tau[][] =
-                new double[numObserved][numObserved];     //measurement error variance
+        double[][] beta =
+                new double[this.numLatent][this.numLatent];        //latent-to-latent coefficients
+        double[][] fi =
+                new double[this.numLatent][this.numLatent];          //latent error terms covariance
+        double[][] lambdaI =
+                new double[this.numObserved][this.numObserved]; //observed-to-indicatorcoefficients
+        double[][] lambdaL =
+                new double[this.numObserved][this.numLatent];   //latent-to-indicatorcoefficients
+        double[][] tau =
+                new double[this.numObserved][this.numObserved];     //measurement error variance
         //Note: error covariance matrix tau is usually *not* diagonal, unlike the implementation of other
         //structural EM algorithm such as in MimBuildScoreSearch.
-        for (int i = 0; i < numLatent; i++) {
-            for (int j = 0; j < numLatent; j++) {
+        for (int i = 0; i < this.numLatent; i++) {
+            for (int j = 0; j < this.numLatent; j++) {
                 beta[i][j] = 0.;
                 fi[i][j] = 0.;
             }
         }
-        for (int i = 0; i < numObserved; i++) {
-            for (int j = 0; j < numLatent; j++) {
+        for (int i = 0; i < this.numObserved; i++) {
+            for (int j = 0; j < this.numLatent; j++) {
                 lambdaL[i][j] = 0.;
             }
         }
-        for (int i = 0; i < numObserved; i++) {
-            for (int j = 0; j < numObserved; j++) {
+        for (int i = 0; i < this.numObserved; i++) {
+            for (int j = 0; j < this.numObserved; j++) {
                 tau[i][j] = 0.;
                 lambdaI[i][j] = 0.;
             }
         }
         List parameters = semIm.getFreeParameters();
-        double paramValues[] = semIm.getFreeParamValues();
+        double[] paramValues = semIm.getFreeParamValues();
         for (int i = 0; i < parameters.size(); i++) {
             Parameter parameter = (Parameter) parameters.get(i);
             if (parameter.getType() == ParamType.COEF) {
@@ -706,20 +684,20 @@ public class PurifyScoreBased implements IPurify {
                 if (to.getNodeType() == NodeType.MEASURED &&
                         from.getNodeType() == NodeType.LATENT) {
                     //latent-to-indicator edge
-                    int position1 = (Integer) latentNames.get(from.getName());
-                    int position2 = (Integer) observableNames.get(to.getName());
+                    int position1 = (Integer) this.latentNames.get(from.getName());
+                    int position2 = (Integer) this.observableNames.get(to.getName());
                     lambdaL[position2][position1] = paramValues[i];
                 } else if (to.getNodeType() == NodeType.MEASURED &&
                         from.getNodeType() == NodeType.MEASURED) {
                     //indicator-to-indicator edge
                     int position1 =
-                            (Integer) observableNames.get(from.getName());
-                    int position2 = (Integer) observableNames.get(to.getName());
+                            (Integer) this.observableNames.get(from.getName());
+                    int position2 = (Integer) this.observableNames.get(to.getName());
                     lambdaI[position2][position1] = paramValues[i];
                 } else if (to.getNodeType() == NodeType.LATENT) {
                     //latent-to-latent edge
-                    int position1 = (Integer) latentNames.get(from.getName());
-                    int position2 = (Integer) latentNames.get(to.getName());
+                    int position1 = (Integer) this.latentNames.get(from.getName());
+                    int position2 = (Integer) this.latentNames.get(to.getName());
                     beta[position2][position1] = paramValues[i];
                 }
             } else if (parameter.getType() == ParamType.VAR) {
@@ -731,12 +709,12 @@ public class PurifyScoreBased implements IPurify {
                             (Node) ci.next(); //Assuming error nodes have only one children in SemGraphs...
                 }
                 if (exo.getNodeType() == NodeType.LATENT) {
-                    fi[((Integer) latentNames.get(
-                            exo.getName()))][((Integer) latentNames
+                    fi[((Integer) this.latentNames.get(
+                            exo.getName()))][((Integer) this.latentNames
                             .get(exo.getName()))] = paramValues[i];
                 } else {
-                    tau[((Integer) observableNames.get(
-                            exo.getName()))][((Integer) observableNames
+                    tau[((Integer) this.observableNames.get(
+                            exo.getName()))][((Integer) this.observableNames
                             .get(exo.getName()))] = paramValues[i];
                 }
             } else if (parameter.getType() == ParamType.COVAR) {
@@ -744,30 +722,23 @@ public class PurifyScoreBased implements IPurify {
                 Node exo2 = parameter.getNodeB();
                 //exo1.getNodeType and exo1.getNodeType *should* be error terms of measured variables
                 //We will change the pointers to point to their respective indicators
-//                Iterator ci = semIm.getEstIm().getGraph().getChildren(exo1)
-//                        .iterator();
-//                exo1 =
-//                        (Node) ci.next(); //Assuming error nodes have only one children in SemGraphs...
-//                ci = semIm.getEstIm().getGraph().getChildren(exo2).iterator();
-//                exo2 =
-//                        (Node) ci.next(); //Assuming error nodes have only one children in SemGraphs...
 
                 exo1 = semIm.getSemPm().getGraph().getVarNode(exo1);
                 exo2 = semIm.getSemPm().getGraph().getVarNode(exo2);
 
-                tau[((Integer) observableNames.get(
-                        exo1.getName()))][((Integer) observableNames
-                        .get(exo2.getName()))] = tau[((Integer) observableNames
-                        .get(exo2.getName()))][((Integer) observableNames
+                tau[((Integer) this.observableNames.get(
+                        exo1.getName()))][((Integer) this.observableNames
+                        .get(exo2.getName()))] = tau[((Integer) this.observableNames
+                        .get(exo2.getName()))][((Integer) this.observableNames
                         .get(exo1.getName()))] = paramValues[i];
             }
         }
 
         //Fill expected sufficiente statistics accordingly to the order of
         //the variables table
-        double identity[][] = new double[numLatent][numLatent];
-        for (int i = 0; i < numLatent; i++) {
-            for (int j = 0; j < numLatent; j++) {
+        double[][] identity = new double[this.numLatent][this.numLatent];
+        for (int i = 0; i < this.numLatent; i++) {
+            for (int j = 0; j < this.numLatent; j++) {
                 if (i == j) {
                     identity[i][j] = 1.;
                 } else {
@@ -775,9 +746,9 @@ public class PurifyScoreBased implements IPurify {
                 }
             }
         }
-        double identityI[][] = new double[numObserved][numObserved];
-        for (int i = 0; i < numObserved; i++) {
-            for (int j = 0; j < numObserved; j++) {
+        double[][] identityI = new double[this.numObserved][this.numObserved];
+        for (int i = 0; i < this.numObserved; i++) {
+            for (int j = 0; j < this.numObserved; j++) {
                 if (i == j) {
                     identityI[i][j] = 1.;
                 } else {
@@ -785,131 +756,29 @@ public class PurifyScoreBased implements IPurify {
                 }
             }
         }
-        double iMinusB[][] =
+        double[][] iMinusB =
                 MatrixUtils.inverse(MatrixUtils.subtract(identity, beta));
-        double latentImpliedCovar[][] = MatrixUtils.product(iMinusB,
+        double[][] latentImpliedCovar = MatrixUtils.product(iMinusB,
                 MatrixUtils.product(fi, MatrixUtils.transpose(iMinusB)));
-        double iMinusI[][] =
+        double[][] iMinusI =
                 MatrixUtils.inverse(MatrixUtils.subtract(identityI, lambdaI));
-        double indImpliedCovar[][] = MatrixUtils.product(MatrixUtils.product(
+        double[][] indImpliedCovar = MatrixUtils.product(MatrixUtils.product(
                         iMinusI, MatrixUtils.sum(MatrixUtils.product(
                                 MatrixUtils.product(lambdaL, latentImpliedCovar),
                                 MatrixUtils.transpose(lambdaL)), tau)),
                 MatrixUtils.transpose(iMinusI));
-        double loadingLatentCovar[][] = MatrixUtils.product(iMinusI,
+        double[][] loadingLatentCovar = MatrixUtils.product(iMinusI,
                 MatrixUtils.product(lambdaL, latentImpliedCovar));
-        double smallDelta[][] = MatrixUtils.product(
+        double[][] smallDelta = MatrixUtils.product(
                 MatrixUtils.inverse(indImpliedCovar), loadingLatentCovar);
-        double bigDelta[][] = MatrixUtils.subtract(latentImpliedCovar,
+        double[][] bigDelta = MatrixUtils.subtract(latentImpliedCovar,
                 MatrixUtils.product(MatrixUtils.transpose(loadingLatentCovar),
                         smallDelta));
         this.Cyz = MatrixUtils.product(this.Cyy, smallDelta);
         this.Czz = MatrixUtils.sum(
-                MatrixUtils.product(MatrixUtils.transpose(smallDelta), Cyz),
+                MatrixUtils.product(MatrixUtils.transpose(smallDelta), this.Cyz),
                 bigDelta);
     }
-
-    /*private SemIm getDummyExample()
-    {
-        this.numObserved = 13;
-        this.numLatent = 4;
-
-        ProtoSemGraph newGraph = new ProtoSemGraph();
-        Node v[] = new Node[17];
-        for (int i = 0; i < 17; i++) {
-            if (i < 4)
-                v[i] = new GraphNode("L" + (i + 1));
-            else
-                v[i] = new GraphNode("v" + (i - 3));
-            newGraph.addNode(v[i]);
-        }
-        for (int l = 0; l < numLatent; l++) {
-            for (int l2 = l + 1; l2 < numLatent; l2++)
-                newGraph.addDirectedEdge(v[l], v[l2]);
-            for (int i = 0; i < 3; i++)
-                newGraph.addDirectedEdge(v[l], v[l * 3 + i + 4]);
-        }
-        newGraph.addDirectedEdge(v[3], v[16]);
-        newGraph.addDirectedEdge(v[4], v[6]);
-        newGraph.addDirectedEdge(v[14], v[15]);
-        newGraph.addBidirectedEdge(v[9], v[10]);
-        newGraph.addBidirectedEdge(v[7], v[12]);
-        newGraph.addBidirectedEdge(v[12], v[16]);
-
-        SemIm realIm = SemIm.newInstance(new SemPm(newGraph));
-
-        DataSet data = new DataSet(realIm.simulateData(1000));
-        System.out.println(data.toString());
-        System.out.println(new CovarianceMatrix(data));
-        System.out.println();
-
-        this.latentNames = new Hashtable();
-        this.latentNodes = new ArrayList();
-        for (int i = 0; i < numLatent; i++) {
-            latentNames.put(v[i].getNode(), new Integer(i));
-            latentNodes.add(v[i]);
-        }
-        this.observableNames = new Hashtable();
-        this.measuredNodes = new ArrayList();
-        for (int i = numLatent; i < numLatent + numObserved; i++) {
-            observableNames.put(v[i].getNode(), new Integer(i - numLatent));
-            measuredNodes.add(v[i]);
-        }
-
-        double temp[][] = (new CovarianceMatrix(data)).getMatrix();
-        Cyy = new double[numObserved][numObserved];
-        Czz = new double[numLatent][numLatent];
-        Cyz = new double[numObserved][numLatent];
-        for (int i = 0; i < numLatent; i++)
-            for (int j = 0; j < numLatent; j++)
-                Czz[i][j] = temp[i][j];
-        for (int i = 0; i < numObserved; i++) {
-            for (int j = 0; j < numLatent; j++)
-                 Cyz[i][j] = temp[i + numLatent][j];
-             for (int j = 0; j < numObserved; j++)
-                 Cyy[i][j] = temp[i + numLatent][j + numLatent];
-        }
-
-
-        this.correlatedErrors = new boolean[numObserved][numObserved];
-        this.latentParent = new boolean[numObserved][numLatent];
-        this.observedParent = new boolean[numObserved][numObserved];
-
-        CovarianceMatrix = new CovarianceMatrix(data);
-
-        //Information for MAG maximization
-        this.parents = new int[this.numObserved][];
-        this.spouses = new int[this.numObserved][];
-        this.nSpouses = new int[this.numObserved];
-        this.parentsLat = new int[this.numLatent][];
-        this.parentsL = new boolean[this.numObserved][];
-        this.parentsCov = new double[this.numObserved][][];
-        this.parentsChildCov = new double[this.numObserved][];
-        this.parentsLatCov = new double[this.numLatent][][];
-        this.parentsChildLatCov = new double[this.numLatent][];
-        this.pseudoParentsCov = new double[this.numObserved][][];
-        this.pseudoParentsChildCov = new double[this.numObserved][];
-        this.covErrors = new double[this.numObserved][this.numObserved];
-        this.oldCovErrors = new double[this.numObserved][this.numObserved];
-        this.sampleCovErrors = new double[this.numObserved][this.numObserved];
-        this.varErrorLatent = new double[this.numLatent];
-        this.omega = new double[this.numLatent + this.numObserved - 1][this.numLatent + this.numObserved - 1];
-        this.omegaI = new double[this.numLatent + this.numObserved - 1];
-        this.selectedInverseOmega = new double[this.numObserved][][];
-        this.auxInverseOmega = new double[this.numObserved][][];
-        this.parentsResidualsCovar = new double[this.numObserved][][];
-        this.iResidualsCovar = new double[this.numObserved + this.numLatent - 1];
-        this.betas = new double[this.numObserved][this.numObserved + this.numLatent];
-        this.oldBetas = new double[this.numObserved][this.numObserved + this.numLatent];
-        this.betasLat = new double[this.numLatent][this.numLatent];
-
-        for (int i = 0; i < numLatent; i++)
-             v[i].setNodeType(NodeType.LATENT);
-        SemGraph2 semGraph = new SemGraph2(newGraph);
-        initializeGaussianEM(semGraph);
-
-        return realIm;
-    }*/
 
     private double gaussianMaximization(SemIm semIm) {
         semIm.getSemPm().getGraph().setShowErrorTerms(true);
@@ -932,8 +801,7 @@ public class PurifyScoreBased implements IPurify {
                 this.covErrors[i][j] = 0.;
             }
         }
-        for (Iterator it = semIm.getFreeParameters().iterator(); it.hasNext(); ) {
-            Parameter nextP = (Parameter) it.next();
+        for (Parameter nextP : semIm.getFreeParameters()) {
             if (nextP.getType() == ParamType.COEF) {
                 Node node1 = nextP.getNodeA();
                 Node node2 = nextP.getNodeB();
@@ -973,13 +841,6 @@ public class PurifyScoreBased implements IPurify {
                 Node exo2 = nextP.getNodeB();
                 //exo1.getNodeType and exo1.getNodeType *should* be error terms of measured variables
                 //We will change the pointers to point to their respective indicators
-//                Iterator ci = semIm.getEstIm().getGraph().getChildren(exo1)
-//                        .iterator();
-//                exo1 =
-//                        (Node) ci.next(); //Assuming error nodes have only one children in SemGraphs...
-//                ci = semIm.getEstIm().getGraph().getChildren(exo2).iterator();
-//                exo2 =
-//                        (Node) ci.next(); //Assuming error nodes have only one children in SemGraphs...
 
                 exo1 = semIm.getSemPm().getGraph().getVarNode(exo1);
                 exo2 = semIm.getSemPm().getGraph().getVarNode(exo2);
@@ -994,10 +855,6 @@ public class PurifyScoreBased implements IPurify {
                 if (exo.getNodeType() == NodeType.LATENT) {
                     continue;
                 }
-//                Iterator ci = semIm.getEstIm().getGraph().getChildren(exo)
-//                        .iterator();
-//                exo =
-//                        (Node) ci.next(); //Assuming error nodes have only one children in SemGraphs...
 
                 exo = semIm.getSemPm().getGraph().getVarNode(exo);
 
@@ -1022,7 +879,7 @@ public class PurifyScoreBased implements IPurify {
                     this.parentsLatCov[i][k][j] = this.parentsLatCov[i][j][k];
                 }
             }
-            double betaL[] = MatrixUtils.product(
+            double[] betaL = MatrixUtils.product(
                     MatrixUtils.inverse(this.parentsLatCov[i]),
                     this.parentsChildLatCov[i]);
             this.varErrorLatent[i] = this.Czz[i][i] -
@@ -1066,14 +923,12 @@ public class PurifyScoreBased implements IPurify {
         int iter = 0;
         do {
             for (int i = 0; i < this.covErrors.length; i++) {
-                for (int j = 0; j < this.covErrors.length; j++) {
-                    this.oldCovErrors[i][j] = this.covErrors[i][j];
-                }
+                if (this.covErrors.length >= 0)
+                    System.arraycopy(this.covErrors[i], 0, this.oldCovErrors[i], 0, this.covErrors.length);
             }
             for (int i = 0; i < this.numObserved; i++) {
-                for (int j = 0; j < this.betas[i].length; j++) {
-                    this.oldBetas[i][j] = this.betas[i][j];
-                }
+                if (this.betas[i].length >= 0)
+                    System.arraycopy(this.betas[i], 0, this.oldBetas[i], 0, this.betas[i].length);
             }
 
             for (int i = 0; i < this.numObserved; i++) {
@@ -1124,20 +979,6 @@ public class PurifyScoreBased implements IPurify {
                     }
                 }
 
-                /*int tspouses = 0;
-                for (int s = 0; s < numObserved; s++)
-                    tspouses += nSpouses[s];
-                if (tspouses > 0 && iter == 0) {
-                    System.out.println();
-                    System.out.println("OMEGA: Trial " + iter);
-                    for (int v = 0; v < this.numLatent + this.numObserved - 1; v++) {
-                       for (int k = 0; k < this.numLatent + this.numObserved - 1; k++)
-                           System.out.print(this.omega[v][k] + " ");
-                        System.out.println();
-                    }
-                    System.out.println();
-                }*/
-
                 //Find new residuals covariance matrix for every ii != i
                 for (int ii = 0; ii < this.numObserved; ii++) {
                     if (ii == i) {
@@ -1182,8 +1023,7 @@ public class PurifyScoreBased implements IPurify {
                                         !this.parentsL[j][p2]) {
                                     this.sampleCovErrors[ii][j] +=
                                             this.betas[ii][this.parents[ii][p1]] *
-                                                    this.betas[j][this
-                                                            .numLatent +
+                                                    this.betas[j][this.numLatent +
                                                             this.parents[j][p2]] *
                                                     this.Cyz[this.parents[j][p2]][this.parents[ii][p1]];
                                 } else if (!this.parentsL[ii][p1] &&
@@ -1197,8 +1037,7 @@ public class PurifyScoreBased implements IPurify {
                                     this.sampleCovErrors[ii][j] +=
                                             this.betas[ii][this.numLatent +
                                                     this.parents[ii][p1]] *
-                                                    this.betas[j][this
-                                                            .numLatent +
+                                                    this.betas[j][this.numLatent +
                                                             this.parents[j][p2]] *
                                                     this.Cyy[this.parents[ii][p1]][this.parents[j][p2]];
                                 }
@@ -1308,14 +1147,13 @@ public class PurifyScoreBased implements IPurify {
                                     this.betas[j][this.parents[j][p]] *
                                             this.Cyz[i][this.parents[j][p]];
                         } else {
-                            this.iResidualsCovar[index_j] -= this.betas[j][this
-                                    .numLatent + this.parents[j][p]] *
+                            this.iResidualsCovar[index_j] -= this.betas[j][this.numLatent + this.parents[j][p]] *
                                     this.Cyy[i][this.parents[j][p]];
                         }
                     }
                 }
                 //Transform it to get the covariance of parents of i and pseudo-variables Z_sp(i)
-                double inverseOmega[][] = MatrixUtils.inverse(this.omega);
+                double[][] inverseOmega = MatrixUtils.inverse(this.omega);
                 for (int ii = 0; ii < this.nSpouses[i]; ii++) {
                     int sp_index;
                     if (this.spouses[i][ii] > i) {
@@ -1323,11 +1161,8 @@ public class PurifyScoreBased implements IPurify {
                     } else {
                         sp_index = this.numLatent + this.spouses[i][ii];
                     }
-                    for (int j = 0;
-                         j < this.numLatent + this.numObserved - 1; j++) {
-                        this.selectedInverseOmega[i][ii][j] =
-                                inverseOmega[sp_index][j];
-                    }
+                    if (this.numLatent + this.numObserved - 1 >= 0)
+                        System.arraycopy(inverseOmega[sp_index], 0, this.selectedInverseOmega[i][ii], 0, this.numLatent + this.numObserved - 1);
                 }
                 for (int ii = 0; ii < this.nSpouses[i]; ii++) {
                     for (int j = 0; j < this.numLatent; j++) {
@@ -1403,60 +1238,28 @@ public class PurifyScoreBased implements IPurify {
                         if (this.pseudoParentsCov[i][this.parents[i].length +
                                 j][this.parents[i].length + ii] == 0.) {
                             System.out.println("Zero here... Iter = " + iter);
-                            /*for (int k = 0; k < this.numLatent + this.numObserved - 1; k++)
-                                System.out.println(this.auxInverseOmega[i][ii][k] + " " +  this.selectedInverseOmega[i][j][k]);
-                            System.out.println();
-                            for (int v = 0; v < this.numLatent + this.numObserved - 1; v++) {
-                               for (int k = 0; k < this.numLatent + this.numObserved - 1; k++)
-                                   System.out.print(this.omega[v][k] + " ");
-                                System.out.println();
-                            }
-                            System.out.println(semIm.getEstIm().getDag());
-                            System.out.println("PARENTS");
-                            for (int n = 0; n < this.numObserved; n++) {
-                                System.out.print(this.measuredNodes.get(n).toString() + " - ");
-                                for (int p = 0; p < this.parents[n].length; p++) {
-                                    if (parentsL[n][p])
-                                       System.out.print(this.latentNodes.get(parents[n][p]).toString() + " ");
-                                    else
-                                       System.out.print(this.measuredNodes.get(parents[n][p]).toString() + " ");
-                                }
-                                System.out.println();
-                            }
-
-                            System.out.println("SPOUSES");
-                            for (int n = 0; n < this.numObserved; n++) {
-                                System.out.print(this.measuredNodes.get(n).toString() + " - ");
-                                for (int p = 0; p < this.nSpouses[n]; p++) {
-                                    System.out.print(this.measuredNodes.get(spouses[n][p]).toString() + " ");
-                                }
-                                System.out.println();
-                            }
-                            System.exit(0);*/
                             iter = 1000;
                             break;
                         }
                     }
                 }
                 //Get the covariance of parents of i and pseudo-variables Z_sp(i) with respect to i
-                for (int ii = 0; ii < this.parents[i].length; ii++) {
-                    this.pseudoParentsChildCov[i][ii] =
-                            this.parentsChildCov[i][ii];
-                }
+                if (this.parents[i].length >= 0)
+                    System.arraycopy(this.parentsChildCov[i], 0, this.pseudoParentsChildCov[i], 0, this.parents[i].length);
                 for (int j = 0; j < this.nSpouses[i]; j++) {
                     this.pseudoParentsChildCov[i][this.parents[i].length + j] =
                             0;
                     for (int k = 0;
                          k < this.numLatent + this.numObserved - 1; k++) {
                         this.pseudoParentsChildCov[i][this.parents[i].length +
-                                j] += selectedInverseOmega[i][j][k] *
+                                j] += this.selectedInverseOmega[i][j][k] *
                                 this.iResidualsCovar[k];
                     }
                 }
 
                 //Finally, regress Y_i on {parents} union {Z_i}
                 //thisI = i;
-                double params[] = MatrixUtils.product(
+                double[] params = MatrixUtils.product(
                         MatrixUtils.inverse(this.pseudoParentsCov[i]),
                         this.pseudoParentsChildCov[i]);
                 //Update betas and omegas (entries in covErrors)
@@ -1497,7 +1300,7 @@ public class PurifyScoreBased implements IPurify {
             }
             for (int i = 0; i < this.numObserved; i++) {
                 for (int j = 0; j < this.betas[i].length; j++) {
-                    change += Math.abs(oldBetas[i][j] - this.betas[i][j]);
+                    change += Math.abs(this.oldBetas[i][j] - this.betas[i][j]);
                 }
             }
             iter++;
@@ -1508,15 +1311,6 @@ public class PurifyScoreBased implements IPurify {
             for (int i = 0; i < this.numObserved; i++) {
                 Node node = semIm.getSemPm().getGraph().getNode(
                         this.measuredNodes.get(i).toString());
-//                Node nodeErrorTerm = null;
-//                for (Node parent : semIm.getEstIm().getGraph().getParents(node)) {
-//                    if (parent.getNodeType() == NodeType.ERROR) {
-//                        semIm.setParamValue(parent, parent,
-//                                this.covErrors[i][i]);
-//                        nodeErrorTerm = parent;
-//                        break;
-//                    }
-//                }
 
                 Node nodeErrorTerm = semIm.getSemPm().getGraph().getExogenous(node);
 
@@ -1535,8 +1329,7 @@ public class PurifyScoreBased implements IPurify {
                         semIm.setParamValue(parent, node,
                                 this.betas[i][this.parents[i][j]]);
                     } else {
-                        semIm.setParamValue(parent, node, this.betas[i][this
-                                .numLatent + this.parents[i][j]]);
+                        semIm.setParamValue(parent, node, this.betas[i][this.numLatent + this.parents[i][j]]);
                     }
                 }
                 for (int j = 0; j < this.nSpouses[i]; j++) {
@@ -1544,15 +1337,6 @@ public class PurifyScoreBased implements IPurify {
                         Node spouse = semIm.getSemPm().getGraph().getNode(
                                 this.measuredNodes.get(this.spouses[i][j])
                                         .toString());
-//                        Node spouseErrorTerm = null;
-//                        for (Iterator it = semIm.getEstIm().getGraph()
-//                                .getParents(spouse).iterator(); it.hasNext();) {
-//                            Node nextParent = (Node) it.next();
-//                            if (nextParent.getNodeType() == NodeType.ERROR) {
-//                                spouseErrorTerm = nextParent;
-//                                break;
-//                            }
-//                        }
 
                         Node spouseErrorTerm = semIm.getSemPm().getGraph().getExogenous(spouse);
 
@@ -1567,10 +1351,7 @@ public class PurifyScoreBased implements IPurify {
                 if (semIm.getSemPm().getGraph().getParents(node).size() == 0) {
                     semIm.setParamValue(node, node, this.varErrorLatent[i]);
                 } else {
-                    for (Iterator it =
-                         semIm.getSemPm().getGraph().getParents(node)
-                                 .iterator(); it.hasNext(); ) {
-                        Node nextParent = (Node) it.next();
+                    for (Node nextParent : semIm.getSemPm().getGraph().getParents(node)) {
                         if (nextParent.getNodeType() == NodeType.ERROR) {
                             semIm.setParamValue(nextParent, nextParent,
                                     this.varErrorLatent[i]);
@@ -1582,17 +1363,10 @@ public class PurifyScoreBased implements IPurify {
                                 this.latentNodes.get(this.parentsLat[i][j])
                                         .toString());
                         semIm.setParamValue(parent, node,
-                                this.betasLat[i][parentsLat[i][j]]);
+                                this.betasLat[i][this.parentsLat[i][j]]);
                     }
                 }
             }
-            /*if (true)  {
-                System.out.println("******* REAL IM"); System.out.println();
-                System.out.println(realIm.toString());
-                System.out.println("******* ESTIMATED IM"); System.out.println();
-                System.out.println(semIm.toString());
-                System.exit(0);
-            }*/
 
             return -semIm.getTruncLL() - 0.5 * semIm.getNumFreeParams() *
                     Math.log(this.covarianceMatrix.getSampleSize());
@@ -1603,7 +1377,7 @@ public class PurifyScoreBased implements IPurify {
     }
 
     private SemGraph removeMarkedImpurities(SemGraph graph,
-                                            boolean impurities[][]) {
+                                            boolean[][] impurities) {
         printlnMessage();
         printlnMessage("** PURIFY: using marked impure pairs");
         List latents = new ArrayList();
@@ -1622,9 +1396,9 @@ public class PurifyScoreBased implements IPurify {
                     children.add(cnext);
                 }
             }
-            int newCluster[] = new int[children.size()];
+            int[] newCluster = new int[children.size()];
             for (int j = 0; j < children.size(); j++) {
-                newCluster[j] = ((Integer) observableNames.get(
+                newCluster[j] = ((Integer) this.observableNames.get(
                         children.get(j).toString()));
             }
             partition.add(newCluster);
@@ -1632,35 +1406,34 @@ public class PurifyScoreBased implements IPurify {
         for (int i = 0; i < impurities.length - 1; i++) {
             for (int j = i + 1; j < impurities.length; j++) {
                 if (impurities[i][j]) {
-                    System.out.println(measuredNodes.get(i).toString() + " x " +
-                            measuredNodes.get(j).toString());
+                    System.out.println(this.measuredNodes.get(i).toString() + " x " +
+                            this.measuredNodes.get(j).toString());
                 }
             }
         }
         List latentCliques = new ArrayList();
-        int firstClique[] = new int[latents.size()];
+        int[] firstClique = new int[latents.size()];
         for (int i = 0; i < firstClique.length; i++) {
             firstClique[i] = i;
         }
         latentCliques.add(firstClique);
 
         //Now, ready to purify
-        for (int i = 0; i < latentCliques.size(); i++) {
-            int nextLatentList[] = (int[]) latentCliques.get(i);
+        for (Object latentClique : latentCliques) {
+            int[] nextLatentList = (int[]) latentClique;
             List nextPartition = new ArrayList();
-            for (int p = 0; p < nextLatentList.length; p++) {
-                nextPartition.add(partition.get(nextLatentList[p]));
+            for (int j : nextLatentList) {
+                nextPartition.add(partition.get(j));
             }
             List solution = findInducedPureGraph(nextPartition, impurities);
             if (solution != null) {
 
                 System.out.println("--Solution");
-                Iterator it = solution.iterator();
-                while (it.hasNext()) {
-                    int c[] = (int[]) it.next();
-                    for (int v = 0; v < c.length; v++) {
+                for (Object o : solution) {
+                    int[] c = (int[]) o;
+                    for (int i : c) {
                         System.out.print(
-                                measuredNodes.get(c[v]).toString() + " ");
+                                this.measuredNodes.get(i).toString() + " ");
                     }
                     System.out.println();
                 }
@@ -1669,16 +1442,16 @@ public class PurifyScoreBased implements IPurify {
                 printlnMessage(">> New solution found!");
                 SemGraph graph2 = new SemGraph();
                 graph2.setShowErrorTerms(true);
-                Node latentsArray[] = new Node[solution.size()];
+                Node[] latentsArray = new Node[solution.size()];
                 for (int p = 0; p < solution.size(); p++) {
-                    int cluster[] = (int[]) solution.get(p);
+                    int[] cluster = (int[]) solution.get(p);
                     latentsArray[p] =
                             new GraphNode(ClusterUtils.LATENT_PREFIX + (p + 1));
                     latentsArray[p].setNodeType(NodeType.LATENT);
                     graph2.addNode(latentsArray[p]);
-                    for (int q = 0; q < cluster.length; q++) {
+                    for (int i : cluster) {
                         Node newIndicator = new GraphNode(
-                                this.measuredNodes.get(cluster[q]).toString());
+                                this.measuredNodes.get(i).toString());
                         graph2.addNode(newIndicator);
                         graph2.addDirectedEdge(latentsArray[p], newIndicator);
                     }
@@ -1697,16 +1470,16 @@ public class PurifyScoreBased implements IPurify {
         return null;
     }
 
-    private List findInducedPureGraph(List partition, boolean impurities[][]) {
+    private List findInducedPureGraph(List partition, boolean[][] impurities) {
         //Store the ID of all elements for fast access
-        int elements[][] = new int[sizeCluster(partition)][3];
-        int partitionCount[] = new int[partition.size()];
+        int[][] elements = new int[sizeCluster(partition)][3];
+        int[] partitionCount = new int[partition.size()];
         int countElements = 0;
         for (int p = 0; p < partition.size(); p++) {
-            int next[] = (int[]) partition.get(p);
+            int[] next = (int[]) partition.get(p);
             partitionCount[p] = 0;
-            for (int i = 0; i < next.length; i++) {
-                elements[countElements][0] = next[i]; // global ID
+            for (int j : next) {
+                elements[countElements][0] = j; // global ID
                 elements[countElements][1] = p;       // set partition ID
                 countElements++;
                 partitionCount[p]++;
@@ -1723,57 +1496,39 @@ public class PurifyScoreBased implements IPurify {
         }
 
         //Iteratively eliminate impurities till some solution (or no solution) is found
-        boolean eliminated[] = new boolean[this.numVars];
-        for (int i = 0; i < elements.length; i++) {
-            eliminated[elements[i][0]] = impurities[elements[i][0]][elements[i][0]];
+        boolean[] eliminated = new boolean[this.numVars];
+        for (int[] element : elements) {
+            eliminated[element[0]] = impurities[element[0]][element[0]];
         }
-//        while (!validSolution(elements, eliminated)) {
-//            //Sort them in the descending order of number of impurities
-//            //(heuristic to avoid exponential search)
-//            sortByImpurityPriority(elements, partitionCount, eliminated);
-//            //for (int i = 0; i < elements.length; i++)
-//            //  if (elements[i][2] > 0)
-//            printlnMessage("-- Eliminating " +
-//                    this.tetradTest.getVarNames()[elements[0][0]]);
-//            eliminated[elements[0][0]] = true;
-//            for (int i = 0; i < elements.length; i++) {
-//                if (impurities[elements[i][0]][elements[0][0]]) {
-//                    elements[i][2]--;
-//                }
-//            }
-//            partitionCount[elements[0][1]]--;
-//        }
         return buildSolution2(elements, eliminated, partition);
     }
 
     private int sizeCluster(List cluster) {
         int total = 0;
-        Iterator it = cluster.iterator();
-        while (it.hasNext()) {
-            int next[] = (int[]) it.next();
+        for (Object o : cluster) {
+            int[] next = (int[]) o;
             total += next.length;
         }
         return total;
     }
 
-    private List buildSolution2(int elements[][], boolean eliminated[],
+    private List buildSolution2(int[][] elements, boolean[] eliminated,
                                 List partition) {
         List solution = new ArrayList();
-        Iterator it = partition.iterator();
-        while (it.hasNext()) {
-            int next[] = (int[]) it.next();
-            int draftArea[] = new int[next.length];
+        for (Object o : partition) {
+            int[] next = (int[]) o;
+            int[] draftArea = new int[next.length];
             int draftCount = 0;
-            for (int i = 0; i < next.length; i++) {
-                for (int j = 0; j < elements.length; j++) {
-                    if (elements[j][0] == next[i] &&
-                            !eliminated[elements[j][0]]) {
-                        draftArea[draftCount++] = next[i];
+            for (int j : next) {
+                for (int[] element : elements) {
+                    if (element[0] == j &&
+                            !eliminated[element[0]]) {
+                        draftArea[draftCount++] = j;
                     }
                 }
             }
             if (draftCount > 0) {
-                int realCluster[] = new int[draftCount];
+                int[] realCluster = new int[draftCount];
                 System.arraycopy(draftArea, 0, realCluster, 0, draftCount);
                 solution.add(realCluster);
             }
@@ -1787,7 +1542,7 @@ public class PurifyScoreBased implements IPurify {
 
     private double impurityScoreSearch(double initialScore) {
         double score, nextScore = initialScore;
-        boolean changed[] = new boolean[1];
+        boolean[] changed = new boolean[1];
         do {
             changed[0] = false;
             score = nextScore;
@@ -1800,31 +1555,19 @@ public class PurifyScoreBased implements IPurify {
         return score;
     }
 
-    private double addImpuritySearch(double initialScore, boolean changed[]) {
+    private double addImpuritySearch(double initialScore, boolean[] changed) {
         double score, nextScore = initialScore;
         int choiceType = -1;
         do {
             score = nextScore;
             int bestChoice1 = -1, bestChoice2 = -1;
 
-            for (int i = 0; i < numObserved; i++) {
+            for (int i = 0; i < this.numObserved; i++) {
 
                 //Add latent->indicator edges
                 //NOTE: code deactivated. Seems not to be worthy trying.
-                /*for (int j = 0; j < numLatent; j++)
-                    if (!latentParent[i][j]) {
-                        latentParent[i][j] = true;
-                        double newScore = scoreCandidate();
-                        if (newScore > nextScore) {
-                            nextScore = newScore;
-                            bestChoice1 = i;
-                            bestChoice2 = j;
-                            choiceType  = 0;
-                        }
-                        latentParent[i][j] = false;
-                    }*/
 
-                for (int j = i + 1; j < numObserved; j++) {
+                for (int j = i + 1; j < this.numObserved; j++) {
 
                     //Check if one should ignore the possibility of an impurity for this pair
                     if (forbiddenImpurity(this.measuredNodes.get(i).toString(),
@@ -1835,25 +1578,11 @@ public class PurifyScoreBased implements IPurify {
                     //indicator -> indicator edges (children of the same latent parent)
                     //NOTE: code deactivated. Seems not to be worthy trying.
                     //      Here, I am not checking for cycles, and edges are considered only in one direction
-                    /*if (!correlatedErrors[i][j] && !observedParent[i][j] && !observedParent[j][i]
-                            && clusterId[i] == clusterId[j]) { //
-                        //Check if they have the same latent parent
-                        observedParent[i][j] = true;
-                        double newScore = scoreCandidate();
-                        //System.out.println("Trying impurity " + i + " --> " + j + " (Score = " + newScore + ")"); //System.exit(0);
-                        if (newScore > nextScore) {
-                            nextScore = newScore;
-                            bestChoice1 = i;
-                            bestChoice2 = j;
-                            choiceType = 1;
-                        }
-                        observedParent[i][j] = false;
-                    }*/
 
                     //indicator <-> indicator edges
-                    if (!correlatedErrors[i][j] && !observedParent[i][j] &&
-                            !observedParent[j][i]) {
-                        correlatedErrors[i][j] = correlatedErrors[j][i] = true;
+                    if (!this.correlatedErrors[i][j] && !this.observedParent[i][j] &&
+                            !this.observedParent[j][i]) {
+                        this.correlatedErrors[i][j] = this.correlatedErrors[j][i] = true;
                         double newScore = scoreCandidate();
                         System.out.println("Trying impurity " + i + " <--> " + j + " (Score = " + newScore + ")"); //System.exit(0);
                         if (newScore > nextScore) {
@@ -1862,7 +1591,7 @@ public class PurifyScoreBased implements IPurify {
                             bestChoice2 = j;
                             choiceType = 2;
                         }
-                        correlatedErrors[i][j] = correlatedErrors[j][i] = false;
+                        this.correlatedErrors[i][j] = this.correlatedErrors[j][i] = false;
                     }
 
                 }
@@ -1871,7 +1600,7 @@ public class PurifyScoreBased implements IPurify {
                 this.modifiedGraph = true;
                 switch (choiceType) {
                     case 0:
-                        latentParent[bestChoice1][bestChoice2] = true;
+                        this.latentParent[bestChoice1][bestChoice2] = true;
                         System.out.println(
                                 "****************************Added impurity: " +
                                         this.latentNodes.get(
@@ -1881,7 +1610,7 @@ public class PurifyScoreBased implements IPurify {
                                         nextScore);
                         break;
                     case 1:
-                        observedParent[bestChoice1][bestChoice2] = true;
+                        this.observedParent[bestChoice1][bestChoice2] = true;
                         System.out.println(
                                 "****************************Added impurity: " +
                                         this.measuredNodes.get(
@@ -1898,8 +1627,8 @@ public class PurifyScoreBased implements IPurify {
                                         " <--> " + this.measuredNodes.get(
                                         bestChoice2).toString() + " " +
                                         nextScore);
-                        correlatedErrors[bestChoice1][bestChoice2] =
-                                correlatedErrors[bestChoice2][bestChoice1] =
+                        this.correlatedErrors[bestChoice1][bestChoice2] =
+                                this.correlatedErrors[bestChoice2][bestChoice1] =
                                         true;
                 }
                 changed[0] = true;
@@ -1913,8 +1642,8 @@ public class PurifyScoreBased implements IPurify {
         if (this.forbiddenList == null) {
             return false;
         }
-        for (Iterator it = this.forbiddenList.iterator(); it.hasNext(); ) {
-            Set nextPair = (Set) it.next();
+        for (Object o : this.forbiddenList) {
+            Set nextPair = (Set) o;
             if (nextPair.contains(name1) && nextPair.contains(name2)) {
                 return true;
             }
@@ -1926,14 +1655,14 @@ public class PurifyScoreBased implements IPurify {
         SemGraph graph = updatedGraph();
         initializeGaussianEM(graph);
         SemPm semPm = new SemPm(graph);
-        SemIm semIm = new SemIm(semPm, covarianceMatrix);
+        SemIm semIm = new SemIm(semPm, this.covarianceMatrix);
         gaussianMaximization(semIm);
 
         try {
             System.out.println("trunk ll = " + semIm.getTruncLL());
 
             return -semIm.getTruncLL() - 0.5 * semIm.getNumFreeParams() *
-                    Math.log(covarianceMatrix.getSampleSize());
+                    Math.log(this.covarianceMatrix.getSampleSize());
         } catch (IllegalArgumentException e) {
             return -Double.MAX_VALUE;
         }
@@ -1952,11 +1681,11 @@ public class PurifyScoreBased implements IPurify {
                 if (node2.getNodeType() != NodeType.LATENT) {
                     continue;
                 }
-                int pos1 = (Integer) observableNames.get(
+                int pos1 = (Integer) this.observableNames.get(
                         output.getNodes().get(i).toString());
-                int pos2 = (Integer) latentNames.get(
+                int pos2 = (Integer) this.latentNames.get(
                         output.getNodes().get(j).toString());
-                if (latentParent[pos1][pos2] &&
+                if (this.latentParent[pos1][pos2] &&
                         output.getEdge(node1, node2) == null) {
                     output.addDirectedEdge(node2, node1);
                 }
@@ -1968,18 +1697,18 @@ public class PurifyScoreBased implements IPurify {
                 }
                 Node errnode1 = output.getErrorNode(output.getNodes().get(i));
                 Node errnode2 = output.getErrorNode(output.getNodes().get(j));
-                int pos1 = (Integer) observableNames.get(
+                int pos1 = (Integer) this.observableNames.get(
                         output.getNodes().get(i).toString());
-                int pos2 = (Integer) observableNames.get(
+                int pos2 = (Integer) this.observableNames.get(
                         output.getNodes().get(j).toString());
-                if (correlatedErrors[pos1][pos2] &&
+                if (this.correlatedErrors[pos1][pos2] &&
                         output.getEdge(errnode1, errnode2) == null) {
                     output.addBidirectedEdge(errnode1, errnode2);
                 }
-                if (observedParent[pos1][pos2] &&
+                if (this.observedParent[pos1][pos2] &&
                         output.getEdge(node1, node2) == null) {
                     output.addDirectedEdge(node2, node1);
-                } else if (observedParent[pos2][pos1] &&
+                } else if (this.observedParent[pos2][pos1] &&
                         output.getEdge(node1, node2) == null) {
                     output.addDirectedEdge(node1, node2);
                 }
@@ -1991,17 +1720,17 @@ public class PurifyScoreBased implements IPurify {
 
 
     private double deleteImpuritySearch(double initialScore,
-                                        boolean changed[]) {
+                                        boolean[] changed) {
         double score, nextScore = initialScore;
         int choiceType = -1;
         do {
             score = nextScore;
             int bestChoice1 = -1, bestChoice2 = -1;
-            for (int i = 0; i < numObserved - 1; i++) {
-                for (int j = i + 1; j < numObserved; j++) {
-                    if (observedParent[i][j] || observedParent[j][i]) {
-                        boolean directionIJ = observedParent[i][j];
-                        observedParent[i][j] = observedParent[j][i] = false;
+            for (int i = 0; i < this.numObserved - 1; i++) {
+                for (int j = i + 1; j < this.numObserved; j++) {
+                    if (this.observedParent[i][j] || this.observedParent[j][i]) {
+                        boolean directionIJ = this.observedParent[i][j];
+                        this.observedParent[i][j] = this.observedParent[j][i] = false;
                         double newScore = scoreCandidate();
                         if (newScore > nextScore) {
                             nextScore = newScore;
@@ -2010,13 +1739,13 @@ public class PurifyScoreBased implements IPurify {
                             choiceType = 0;
                         }
                         if (directionIJ) {
-                            observedParent[i][j] = true;
+                            this.observedParent[i][j] = true;
                         } else {
-                            observedParent[j][i] = true;
+                            this.observedParent[j][i] = true;
                         }
                     }
-                    if (correlatedErrors[i][j]) {
-                        correlatedErrors[i][j] = correlatedErrors[j][i] = false;
+                    if (this.correlatedErrors[i][j]) {
+                        this.correlatedErrors[i][j] = this.correlatedErrors[j][i] = false;
                         double newScore = scoreCandidate();
                         if (newScore > nextScore) {
                             nextScore = newScore;
@@ -2024,7 +1753,7 @@ public class PurifyScoreBased implements IPurify {
                             bestChoice2 = j;
                             choiceType = 1;
                         }
-                        correlatedErrors[i][j] = correlatedErrors[j][i] = true;
+                        this.correlatedErrors[i][j] = this.correlatedErrors[j][i] = true;
                     }
                 }
             }
@@ -2032,7 +1761,7 @@ public class PurifyScoreBased implements IPurify {
                 this.modifiedGraph = true;
                 switch (choiceType) {
                     case 0:
-                        if (observedParent[bestChoice1][bestChoice2]) {
+                        if (this.observedParent[bestChoice1][bestChoice2]) {
                             System.out.println(
                                     "****************************Removed impurity: " +
                                             this.measuredNodes.get(bestChoice2)
@@ -2049,8 +1778,8 @@ public class PurifyScoreBased implements IPurify {
                                                     .toString() + " " +
                                             nextScore);
                         }
-                        observedParent[bestChoice1][bestChoice2] =
-                                observedParent[bestChoice2][bestChoice1] =
+                        this.observedParent[bestChoice1][bestChoice2] =
+                                this.observedParent[bestChoice2][bestChoice1] =
                                         false;
                         break;
                     case 1:
@@ -2061,8 +1790,8 @@ public class PurifyScoreBased implements IPurify {
                                         " <--> " + this.measuredNodes.get(
                                         bestChoice2).toString() + " " +
                                         nextScore);
-                        correlatedErrors[bestChoice1][bestChoice2] =
-                                correlatedErrors[bestChoice2][bestChoice1] =
+                        this.correlatedErrors[bestChoice1][bestChoice2] =
+                                this.correlatedErrors[bestChoice2][bestChoice1] =
                                         false;
                 }
                 changed[0] = true;
@@ -2077,8 +1806,8 @@ public class PurifyScoreBased implements IPurify {
 
     private int numNotEliminated(int[] cluster, boolean[] eliminated) {
         int n1 = 0;
-        for (int i = 0; i < cluster.length; i++) {
-            if (!eliminated[cluster[i]]) {
+        for (int j : cluster) {
+            if (!eliminated[j]) {
                 n1++;
             }
         }

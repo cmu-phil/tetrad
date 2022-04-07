@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,7 +39,7 @@ class IonLegalPairs implements LegalPairs {
     /**
      * Graph with respect to which graph properties are tested.
      */
-    private Graph graph;
+    private final Graph graph;
 
     /**
      * Constructs a new legal pairs object. See class level doc.
@@ -65,11 +65,11 @@ class IonLegalPairs implements LegalPairs {
      * @throws IllegalArgumentException if x is not adjacent to y or y is not adjacent to z.
      */
     public boolean isLegalPair(Node x, Node y, Node z, List<Node> c, List<Node> d) {
-        if (!(graph.isAdjacentTo(x, y)) || !(graph.isAdjacentTo(y, z))) {
+        if (!(this.graph.isAdjacentTo(x, y)) || !(this.graph.isAdjacentTo(y, z))) {
             throw new IllegalArgumentException();
         }
         //noinspection SimplifiableIfStatement                
-        if (graph.isDefCollider(x, y, x) || graph.isAdjacentTo(x, z)) {
+        if (this.graph.isDefCollider(x, y, x) || this.graph.isAdjacentTo(x, z)) {
             return true;
         }
 

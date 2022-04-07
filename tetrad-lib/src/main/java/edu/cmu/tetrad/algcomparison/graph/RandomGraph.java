@@ -12,7 +12,7 @@ import java.util.List;
  * @author jdramsey
  */
 public interface RandomGraph extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * @param parameters Whatever parameters are need for the given graph. See

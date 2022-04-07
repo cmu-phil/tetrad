@@ -57,7 +57,7 @@ public class TestDM {
 
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
-        Graph graph = emptyGraph(4);
+        Graph graph = TestDM.emptyGraph(4);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
@@ -79,9 +79,7 @@ public class TestDM {
         Graph foundGraph = search.search();
 
         print("Test Case 1");
-//        System.out.println(search.getDmStructure());
 
-//        System.out.println(foundGraph);
         Graph trueGraph = new EdgeListGraph();
 
         trueGraph.addNode(new ContinuousVariable("X0"));
@@ -104,7 +102,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = emptyGraph(8);
+        Graph graph = TestDM.emptyGraph(8);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
@@ -176,7 +174,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = emptyGraph(12);
+        Graph graph = TestDM.emptyGraph(12);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
@@ -277,7 +275,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = emptyGraph(6);
+        Graph graph = TestDM.emptyGraph(6);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
         graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
@@ -337,7 +335,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = emptyGraph(6);
+        Graph graph = TestDM.emptyGraph(6);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X4"));
@@ -394,7 +392,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = emptyGraph(8);
+        Graph graph = TestDM.emptyGraph(8);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X4"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X5"));
@@ -478,7 +476,7 @@ public class TestDM {
         try {
             FileOutputStream out = new FileOutputStream(file);
             PrintStream outStream = new PrintStream(out);
-            outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
+            outStream.println(result.getDmStructure().latentStructToEdgeListGraph());
             outStream.println();
         } catch (java.io.FileNotFoundException e) {
             print("Can't write to file.");
@@ -486,50 +484,6 @@ public class TestDM {
         }
 
         print("DONE");
-    }
-
-    @Test
-    public void test8() {
-//
-//        int nInputs=17610;
-//        int nOutputs=12042;
-//
-//        int[] inputs = new int[nInputs];
-//        int[] outputs = new int[nOutputs];
-//
-//        for(int i=0;  i<nInputs; i++){inputs[i]=i;}
-//        for(int i=0;  i<nOutputs; i++){outputs[i]=nInputs+i-1;}
-//
-//        System.out.println("test 8");
-//
-//        DMSearch result = new DMSearch();
-//        result.setAlphaPC(.000001);
-//        result.setAlphaSober(.000001);
-//        result.setDiscount(1);
-//
-//        result =
-//                 readAndSearchData("src/edu/cmu/tetradproj/amurrayw/combined_renamed.txt",
-//                        inputs, outputs);
-//
-//
-//        System.out.println("Finished search, now writing output to file.");
-//
-//
-//        File file=new File("src/edu/cmu/tetradproj/amurrayw/output_old_inputs.txt");
-//        try {
-//            FileOutputStream out = new FileOutputStream(file);
-//            PrintStream outStream = new PrintStream(out);
-//            outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
-//            //outStream.println();
-//        }
-//        catch (java.io.FileNotFoundException e) {
-//                    System.out.println("Can't write to file.");
-//
-//        }
-//
-//
-//        //System.out.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
-//        System.out.println("DONE");
     }
 
     @Ignore
@@ -542,8 +496,8 @@ public class TestDM {
 
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        int nInputs = 17610;
-        int nOutputs = 12042;
+        final int nInputs = 17610;
+        final int nOutputs = 12042;
 
         int[] inputs = new int[nInputs];
         int[] outputs = new int[nOutputs];
@@ -564,7 +518,7 @@ public class TestDM {
         result.setAlphaPC(.000001);
         result.setAlphaSober(.000001);
 
-        result.setDiscount(initialDiscount);
+        result.setDiscount();
 
         result
                 = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/final_joined_data_no_par.txt",
@@ -576,7 +530,7 @@ public class TestDM {
         try {
             FileOutputStream out = new FileOutputStream(file);
             PrintStream outStream = new PrintStream(out);
-            outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
+            outStream.println(result.getDmStructure().latentStructToEdgeListGraph());
             //outStream.println();
         } catch (java.io.FileNotFoundException e) {
             print("Can't write to file.");
@@ -599,10 +553,6 @@ public class TestDM {
         //System.out.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
         print("DONE");
 
-//        if(initialDiscount>1){
-//            result=null;
-//            internaltest9(initialDiscount-1);
-//        }
         return (1);
     }
 
@@ -612,7 +562,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = emptyGraph(5);
+        Graph graph = TestDM.emptyGraph(5);
 
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
         graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
@@ -684,9 +634,7 @@ public class TestDM {
                     return (cycleExists(graph, adjacentNodes, path, currentNode));
                 }
             }
-            if (listHasDuplicates(path)) {
-                return (true);
-            }
+            return listHasDuplicates(path);
         }
         return (false);
     }
@@ -696,7 +644,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = emptyGraph(4);
+        Graph graph = TestDM.emptyGraph(4);
 
         Node X0 = graph.getNode("X0");
         Node X1 = graph.getNode("X1");
@@ -727,7 +675,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = emptyGraph(9);
+        Graph graph = TestDM.emptyGraph(9);
 
         Node X0 = graph.getNode("X0");
         Node X1 = graph.getNode("X1");
@@ -778,7 +726,7 @@ public class TestDM {
         print("");
         print("" + search.getDmStructure());
 
-        print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).existsDirectedCycle());
+        print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph().existsDirectedCycle());
 
         print("Graph structure: " + search);
 
@@ -791,7 +739,7 @@ public class TestDM {
         //setting seed for debug.
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        Graph graph = emptyGraph(12);
+        Graph graph = TestDM.emptyGraph(12);
 
         Node X0 = graph.getNode("X0");
         Node X1 = graph.getNode("X1");
@@ -828,20 +776,6 @@ public class TestDM {
 
         graph.addDirectedEdge(X5, X11);
 
-//
-//        graph.addDirectedEdge(X1, X8);
-//        graph.addDirectedEdge(X2, X6);
-//        graph.addDirectedEdge(X2, X7);
-//        graph.addDirectedEdge(X2, X8);
-//
-//
-//        graph.addDirectedEdge(X3, X8);
-//        graph.addDirectedEdge(X3, X7);
-//        graph.addDirectedEdge(X4, X8);
-//        graph.addDirectedEdge(X4, X7);
-//
-//
-//        graph.addDirectedEdge(X5, X8);
         RandomUtil.getInstance().setSeed(29483818483L);
 
         SemPm pm = new SemPm(graph);
@@ -861,7 +795,7 @@ public class TestDM {
         print("");
         print("" + search.getDmStructure());
 
-        print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).existsDirectedCycle());
+        print("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph().existsDirectedCycle());
 
         print("Graph structure: " + search);
 
@@ -881,14 +815,14 @@ public class TestDM {
         try {
             FileOutputStream out = new FileOutputStream(file);
             PrintStream outStream = new PrintStream(out);
-            outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
+            outStream.println(result.getDmStructure().latentStructToEdgeListGraph());
             outStream.println();
         } catch (java.io.FileNotFoundException e) {
             print("Can't write to file.");
 
         }
 
-        System.out.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
+        System.out.println(result.getDmStructure().latentStructToEdgeListGraph());
         print("DONE");
     }
 
@@ -901,13 +835,13 @@ public class TestDM {
     public int internaltest17(double initialDiscount) {
         RandomUtil.getInstance().setSeed(29483818483L);
 
-        int nInputs = 17610;
-        int nOutputs = 12042;
+        final int nInputs = 17610;
+        final int nOutputs = 12042;
 
         int[] inputs = new int[nInputs];
         int[] outputs = new int[nOutputs];
 
-        int[] trueInputs = new int[]{2761, 2762, 4450, 2247, 16137, 13108, 12530, 231, 1223, 1379, 5379, 12745,
+        int[] trueInputs = {2761, 2762, 4450, 2247, 16137, 13108, 12530, 231, 1223, 1379, 5379, 12745,
                 14913, 16066, 16197, 16199, 17353, 17392, 4397, 3009, 3143, 5478, 5479, 5480,
                 5481, 5482, 7474, 12884, 12885, 12489, 9112, 1943, 9114, 1950, 9644, 9645,
                 9647};
@@ -925,13 +859,11 @@ public class TestDM {
         //double initialDiscount = 20;
 //        while(initialDiscount>0){
         DMSearch result = new DMSearch();
-//        result.setAlphaPC(1e-30);
-//        result.setAlphaSober(1e-30);
 
         result.setAlphaPC(1e-6);
         result.setAlphaSober(1e-6);
 
-        result.setDiscount(initialDiscount);
+        result.setDiscount();
 
         result
                 = readAndSearchData("src/edu/cmu/tetradproj/amurrayw/final_joined_data_no_par_fixed.txt",
@@ -943,7 +875,7 @@ public class TestDM {
         try {
             FileOutputStream out = new FileOutputStream(file);
             PrintStream outStream = new PrintStream(out);
-            outStream.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
+            outStream.println(result.getDmStructure().latentStructToEdgeListGraph());
             //outStream.println();
         } catch (java.io.FileNotFoundException e) {
             print("Can't write to file.");
@@ -966,41 +898,12 @@ public class TestDM {
         //System.out.println(result.getDmStructure().latentStructToEdgeListGraph(result.getDmStructure()));
         print("DONE");
 
-//        if(initialDiscount>1){
-//            result=null;
-//            internaltest9(initialDiscount-1);
-//        }
         return (1);
     }
 
     @Ignore
     public void rtest14() {
         //setting seed for debug.
-//        RandomUtil.getInstance().setSeed(29483818483L);
-//
-//
-//        Graph graph = emptyGraph(5);
-//
-//        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X2"));
-//        graph.addDirectedEdge(new ContinuousVariable("X0"), new ContinuousVariable("X3"));
-//        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X3"));
-//        graph.addDirectedEdge(new ContinuousVariable("X1"), new ContinuousVariable("X4"));
-//
-//
-//        SemPm pm = new SemPm(graph);
-//        SemIm im = new SemIm(pm);
-//
-//        DataSet data = im.simulateData(100000, false);
-//
-//        DMSearch search = new DMSearch();
-//
-//        search.setInputs(new int[]{0, 1});
-//        search.setOutputs(new int[]{2, 3, 4});
-//
-//        search.search(data);
-//
-//        System.out.println("Test Case 10");
-//        System.out.println(search.getDmStructure());
 
         assertTrue(true);
 
@@ -1008,9 +911,6 @@ public class TestDM {
 
     @Ignore
     public void rtest15() {
-//        for(int i=10; i>=4; i--){
-//            finishRenaming(i);
-//        }
 
         finishRenaming(999);
     }
@@ -1047,7 +947,6 @@ public class TestDM {
                     String[] adjInfoString = currentLine.split("\\s+");
 
                     for (int i = 0; i < nVar; i++) {
-                        ;
                         if (Integer.parseInt(adjInfoString[i]) > 1) {
                             print(adjInfoString[i]);
                         } else if (Integer.parseInt(adjInfoString[i]) < 0) {
@@ -1057,22 +956,6 @@ public class TestDM {
 //                        System.out.println(adjInfoString[i]);
                         if (Integer.parseInt(adjInfoString[i]) == 1) {
 
-//                            System.out.println("i");
-//                            System.out.println(i);
-//
-//                            System.out.println("varNames[i]");
-//                            System.out.println(varNames[i]);
-//
-//
-//                            System.out.println("lineNumber");
-//                            System.out.println(lineNumber);
-//
-//                            System.out.println("varNames.length");
-//                            System.out.println(varNames.length);
-//
-//
-//                            System.out.println("varNames[lineNumber]");
-//                            System.out.println(varNames[lineNumber]);
                             graph.addDirectedEdge(graph.getNode(varNames[lineNumber - 1]), graph.getNode(varNames[i]));
 
 //                            graph.addDirectedEdge(graph.getNode(varNames[i]), graph.getNode(varNames[lineNumber]));
@@ -1092,7 +975,7 @@ public class TestDM {
                 outStream.println(graph);
                 //outStream.println();
             } catch (java.io.FileNotFoundException e) {
-                String x = "Can't write to file.";
+                final String x = "Can't write to file.";
                 print(x);
 
             }
@@ -1129,22 +1012,18 @@ public class TestDM {
         search.setInputs(inputs);
         search.setOutputs(outputs);
 
-        if (useGES == false) {
+        if (!useGES) {
 
             search.setAlphaPC(.05);
-            search.setUseFges(useGES);
-
-            search.setData(data);
-            search.setTrueInputs(trueInputs);
-            search.search();
+            search.setUseFges(false);
 
         } else {
-            search.setData(data);
-            search.setTrueInputs(trueInputs);
-            search.search();
 
 //            search.search(data, trueInputs);
         }
+        search.setData(data);
+        search.setTrueInputs(trueInputs);
+        search.search();
 
         return (search);
 
@@ -1161,7 +1040,7 @@ public class TestDM {
     }
 
     public static void main(String... args) {
-        new TestDM().test8();
+        new TestDM().test2();
     }
 
 }

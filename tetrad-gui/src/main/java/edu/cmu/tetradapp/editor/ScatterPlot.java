@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -74,9 +74,9 @@ public class ScatterPlot {
 
     private RegressionResult getRegressionResult() {
         List<Node> regressors = new ArrayList<>();
-        regressors.add(dataSet.getVariable(x));
-        Node target = dataSet.getVariable(y);
-        Regression regression = new RegressionDataset(dataSet);
+        regressors.add(this.dataSet.getVariable(this.x));
+        Node target = this.dataSet.getVariable(this.y);
+        Regression regression = new RegressionDataset(this.dataSet);
         RegressionResult result = regression.regress(target, regressors);
         System.out.println(result);
         return result;
@@ -86,8 +86,8 @@ public class ScatterPlot {
         DataSet dataSet = getDataSet();
         Matrix data = dataSet.getDoubleData();
 
-        int _x = dataSet.getColumn(dataSet.getVariable(x));
-        int _y = dataSet.getColumn(dataSet.getVariable(y));
+        int _x = dataSet.getColumn(dataSet.getVariable(this.x));
+        int _y = dataSet.getColumn(dataSet.getVariable(this.y));
 
         double[] xdata = data.getColumn(_x).toArray();
         double[] ydata = data.getColumn(_y).toArray();
@@ -176,8 +176,7 @@ public class ScatterPlot {
      * @return a vector containing the filtered values.
      */
     public Vector<Point2D.Double> getSievedValues() {
-        Vector<Point2D.Double> pairs = pairs(x, y);
-        return pairs;
+        return pairs(this.x, this.y);
     }
 
     /**
@@ -191,21 +190,21 @@ public class ScatterPlot {
      * @return the name of the predictor variable.
      */
     public String getXvar() {
-        return x;
+        return this.x;
     }
 
     /**
      * @return the name of the response variable.
      */
     public String getYvar() {
-        return y;
+        return this.y;
     }
 
     /**
      * @return whether or not to include the regression line.
      */
     public boolean isIncludeLine() {
-        return includeLine;
+        return this.includeLine;
     }
 
     /**
@@ -224,7 +223,7 @@ public class ScatterPlot {
     }
 
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
 
@@ -240,12 +239,12 @@ public class ScatterPlot {
     public void addConditioningVariable(String variable, double low, double high) {
         if (!(low < high)) throw new IllegalArgumentException("Low must be less than high: " + low + " >= " + high);
 
-        Node node = dataSet.getVariable(variable);
+        Node node = this.dataSet.getVariable(variable);
         if (!(node instanceof ContinuousVariable)) throw new IllegalArgumentException("Variable must be continuous.");
-        if (continuousIntervals.containsKey(node))
+        if (this.continuousIntervals.containsKey(node))
             throw new IllegalArgumentException("Please remove conditioning variable first.");
 
-        continuousIntervals.put(node, new double[]{low, high});
+        this.continuousIntervals.put(node, new double[]{low, high});
     }
 
     /**
@@ -254,11 +253,11 @@ public class ScatterPlot {
      * @param variable The name of the conditioning variable to remove.
      */
     public void removeConditioningVariable(String variable) {
-        Node node = dataSet.getVariable(variable);
-        if (!(continuousIntervals.containsKey(node))) {
+        Node node = this.dataSet.getVariable(variable);
+        if (!(this.continuousIntervals.containsKey(node))) {
             throw new IllegalArgumentException("Not a conditioning node: " + variable);
         }
-        continuousIntervals.remove(node);
+        this.continuousIntervals.remove(node);
     }
 
     public void removeConditioningVariables() {
@@ -281,11 +280,11 @@ public class ScatterPlot {
      * @param variable The name of the variable.
      */
     public double[] getContinuousData(String variable) {
-        int index = dataSet.getColumn(dataSet.getVariable(variable));
+        int index = this.dataSet.getColumn(this.dataSet.getVariable(variable));
         List<Double> _data = new ArrayList<>();
 
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            _data.add(dataSet.getDouble(i, index));
+        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+            _data.add(this.dataSet.getDouble(i, index));
         }
 
         return asDoubleArray(_data);
@@ -300,28 +299,28 @@ public class ScatterPlot {
     }
 
     private List<Double> getUnconditionedDataContinuous(String target) {
-        int index = dataSet.getColumn(dataSet.getVariable(target));
+        int index = this.dataSet.getColumn(this.dataSet.getVariable(target));
 
         List<Double> _data = new ArrayList<>();
 
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            _data.add(dataSet.getDouble(i, index));
+        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+            _data.add(this.dataSet.getDouble(i, index));
         }
 
         return _data;
     }
 
     private List<Double> getConditionedDataContinuous(String target) {
-        if (continuousIntervals == null) return getUnconditionedDataContinuous(target);
+        if (this.continuousIntervals == null) return getUnconditionedDataContinuous(target);
 
         List<Integer> rows = getConditionedRows();
 
-        int index = dataSet.getColumn(dataSet.getVariable(target));
+        int index = this.dataSet.getColumn(this.dataSet.getVariable(target));
 
         List<Double> _data = new ArrayList<>();
 
         for (Integer row : rows) {
-            _data.add(dataSet.getDouble(row, index));
+            _data.add(this.dataSet.getDouble(row, index));
         }
 
         return _data;
@@ -332,11 +331,11 @@ public class ScatterPlot {
         List<Integer> rows = new ArrayList<>();
 
         I:
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (Node node : continuousIntervals.keySet()) {
-                double[] range = continuousIntervals.get(node);
-                int index = dataSet.getColumn(node);
-                double value = dataSet.getDouble(i, index);
+        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+            for (Node node : this.continuousIntervals.keySet()) {
+                double[] range = this.continuousIntervals.get(node);
+                int index = this.dataSet.getColumn(node);
+                double value = this.dataSet.getDouble(i, index);
                 if (!(value > range[0] && value < range[1])) {
                     continue I;
                 }

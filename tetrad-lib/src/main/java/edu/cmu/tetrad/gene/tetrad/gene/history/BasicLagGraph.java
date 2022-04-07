@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -54,7 +54,7 @@ public final class BasicLagGraph implements LagGraph {
      *
      * @serial
      */
-    protected SortedMap<String, SortedSet<LaggedFactor>> connectivity;
+    private final SortedMap<String, SortedSet<LaggedFactor>> connectivity;
 
     /**
      * The maximum allowable lag. edges may not be added with lags greater than
@@ -91,9 +91,6 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static BasicLagGraph serializableInstance() {
         BasicLagGraph lagGraph = new BasicLagGraph();
@@ -118,13 +115,13 @@ public final class BasicLagGraph implements LagGraph {
 
         int lag = laggedFactor.getLag();
 
-        if (lag < 1 || lag > maxLagAllowable) {
+        if (lag < 1 || lag > this.maxLagAllowable) {
             throw new IllegalArgumentException(
                     "Illegal lag specified: " + laggedFactor);
         }
 
         TreeSet<LaggedFactor> list =
-                (TreeSet<LaggedFactor>) connectivity.get(factor);
+                (TreeSet<LaggedFactor>) this.connectivity.get(factor);
 
         if (list != null) {
             list.add(laggedFactor);
@@ -140,8 +137,8 @@ public final class BasicLagGraph implements LagGraph {
      * Removes all edges from the graph.
      */
     public void clearEdges() {
-        for (String s : connectivity.keySet()) {
-            SortedSet<LaggedFactor> set = connectivity.get(s);
+        for (String s : this.connectivity.keySet()) {
+            SortedSet<LaggedFactor> set = this.connectivity.get(s);
             set.clear();
         }
     }
@@ -158,9 +155,9 @@ public final class BasicLagGraph implements LagGraph {
                     NamingProtocol.getProtocolDescription());
         }
 
-        if (!connectivity.containsKey(factor)) {
+        if (!this.connectivity.containsKey(factor)) {
             SortedSet<LaggedFactor> laggedFactors = new TreeSet<>();
-            connectivity.put(factor, laggedFactors);
+            this.connectivity.put(factor, laggedFactors);
         }
     }
 
@@ -171,7 +168,7 @@ public final class BasicLagGraph implements LagGraph {
      * @return true if the given factor is in the graph, false if not.
      */
     public boolean existsFactor(String factor) {
-        return connectivity.keySet().contains(factor);
+        return this.connectivity.containsKey(factor);
     }
 
     /**
@@ -189,7 +186,7 @@ public final class BasicLagGraph implements LagGraph {
                     "Illegal lag specified: " + laggedFactor);
         }
 
-        TreeSet list = (TreeSet) connectivity.get(factor);
+        TreeSet<LaggedFactor> list = (TreeSet<LaggedFactor>) this.connectivity.get(factor);
 
         if (list != null) {
             return list.contains(laggedFactor);
@@ -204,8 +201,8 @@ public final class BasicLagGraph implements LagGraph {
      * @param factor the "into" factor.
      * @return the set of lagged factors into this factor.
      */
-    public SortedSet getParents(String factor) {
-        return connectivity.get(factor);
+    public SortedSet<LaggedFactor> getParents(String factor) {
+        return this.connectivity.get(factor);
     }
 
     /**
@@ -217,7 +214,7 @@ public final class BasicLagGraph implements LagGraph {
      */
     public void removeEdge(String factor, LaggedFactor laggedFactor) {
 
-        TreeSet list = (TreeSet) connectivity.get(factor);
+        TreeSet<LaggedFactor> list = (TreeSet<LaggedFactor>) this.connectivity.get(factor);
 
         if (list != null) {
             list.remove(laggedFactor);
@@ -255,8 +252,8 @@ public final class BasicLagGraph implements LagGraph {
     public int getMaxLag() {
         int max = 0;
 
-        for (String factor : connectivity.keySet()) {
-            for (LaggedFactor laggedFactor : connectivity.get(factor)) {
+        for (String factor : this.connectivity.keySet()) {
+            for (LaggedFactor laggedFactor : this.connectivity.get(factor)) {
                 int lag = laggedFactor.getLag();
 
                 if (lag > max) {
@@ -275,7 +272,7 @@ public final class BasicLagGraph implements LagGraph {
      */
     public void removeFactor(String factor) {
 
-        Object o = connectivity.remove(factor);
+        Object o = this.connectivity.remove(factor);
 
         if (o == null) {
             throw new IllegalArgumentException(
@@ -299,7 +296,7 @@ public final class BasicLagGraph implements LagGraph {
      * @return this sorted map.
      */
     public SortedMap<String, SortedSet<LaggedFactor>> getConnectivity() {
-        return new TreeMap<>(connectivity);
+        return new TreeMap<>(this.connectivity);
     }
 
     /**
@@ -316,11 +313,11 @@ public final class BasicLagGraph implements LagGraph {
         }
 
         // step one
-        SortedSet<LaggedFactor> transfer = connectivity.remove(oldName);
-        connectivity.put(newName, transfer);
+        SortedSet<LaggedFactor> transfer = this.connectivity.remove(oldName);
+        this.connectivity.put(newName, transfer);
 
         // step two
-        for (SortedSet<LaggedFactor> parents : connectivity.values()) {
+        for (SortedSet<LaggedFactor> parents : this.connectivity.values()) {
             for (LaggedFactor itm : parents) {
                 if (itm.getFactor().equals(oldName)) {
                     itm.setFactor(newName);
@@ -335,7 +332,7 @@ public final class BasicLagGraph implements LagGraph {
      * @return this number.
      */
     public int getNumFactors() {
-        return connectivity.size();
+        return this.connectivity.size();
     }
 
     /**
@@ -344,7 +341,7 @@ public final class BasicLagGraph implements LagGraph {
      * @return this set.
      */
     public SortedSet<String> getFactors() {
-        return new TreeSet<>(connectivity.keySet());
+        return new TreeSet<>(this.connectivity.keySet());
     }
 
     /**
@@ -359,14 +356,14 @@ public final class BasicLagGraph implements LagGraph {
 
         buf.append("\nUpdate graph:\n");
 
-        Collection<String> factors = connectivity.keySet();
+        Collection<String> factors = this.connectivity.keySet();
 
         for (String factor : factors) {
             buf.append("\n");
             buf.append(factor);
             buf.append("\t<-- ");
 
-            Collection<LaggedFactor> edges = connectivity.get(factor);
+            Collection<LaggedFactor> edges = this.connectivity.get(factor);
 
             for (LaggedFactor edge : edges) {
                 buf.append("\t");
@@ -422,7 +419,7 @@ public final class BasicLagGraph implements LagGraph {
         if (this.locations == null) {
             this.locations = new HashMap<>();
         }
-        return locations;
+        return this.locations;
     }
 
     /**
@@ -434,19 +431,16 @@ public final class BasicLagGraph implements LagGraph {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (connectivity == null) {
+        if (this.connectivity == null) {
             throw new NullPointerException();
         }
 
-        if (maxLagAllowable < 1) {
+        if (this.maxLagAllowable < 1) {
             throw new IllegalStateException();
         }
     }

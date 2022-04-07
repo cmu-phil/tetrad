@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -59,12 +59,12 @@ public class TestDeltaSextadTest {
         List<Node> variables = data.getVariables();
 
 
-        int m1 = 0;
-        int m2 = 1;
-        int m3 = 2;
-        int m4 = 3;
-        int m5 = 4;
-        int m6 = 5;
+        final int m1 = 0;
+        final int m2 = 1;
+        final int m3 = 2;
+        final int m4 = 3;
+        final int m5 = 4;
+        final int m6 = 5;
 
         IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
         IntSextad t2 = new IntSextad(m1, m2, m4, m3, m5, m6);
@@ -93,11 +93,11 @@ public class TestDeltaSextadTest {
 
         DeltaSextadTest test = new DeltaSextadTest(data);
 
-        int numSextads = 3;
-        double alpha = 0.001;
+        final int numSextads = 3;
+        final double alpha = 0.001;
 
         ChoiceGenerator gen = new ChoiceGenerator(sextads.size(), numSextads);
-        int choice[];
+        int[] choice;
 
         while ((choice = gen.next()) != null) {
             IntSextad[] _sextads = new IntSextad[numSextads];
@@ -116,19 +116,19 @@ public class TestDeltaSextadTest {
         DataSet data = null;
 
         try {
-            String name = "src/test/resources/dataLG.txt";
-            data = DataUtils.loadContinuousData(new File(name), "//", '\"' ,
+            final String name = "src/test/resources/dataLG.txt";
+            data = DataUtils.loadContinuousData(new File(name), "//", '\"',
                     "*", true, Delimiter.TAB);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        int m1 = 0;
-        int m2 = 1;
-        int m3 = 2;
-        int m4 = 3;
-        int m5 = 4;
-        int m6 = 5;
+        final int m1 = 0;
+        final int m2 = 1;
+        final int m3 = 2;
+        final int m4 = 3;
+        final int m5 = 4;
+        final int m6 = 5;
 
         IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
         IntSextad t2 = new IntSextad(m1, m2, m4, m3, m5, m6);
@@ -158,9 +158,9 @@ public class TestDeltaSextadTest {
     @Test
     public void test2() {
 
-        int c = 2;
-        int m = 2;
-        int p = 6;
+        final int c = 2;
+        final int m = 2;
+        final int p = 6;
 
         Graph g = new EdgeListGraph();
         List<List<Node>> varClusters = new ArrayList<>();
@@ -169,8 +169,8 @@ public class TestDeltaSextadTest {
         List<Node> vars = new ArrayList<>();
 
         for (int y = 0; y < c; y++) {
-            varClusters.add(new ArrayList<Node>());
-            latents.add(new ArrayList<Node>());
+            varClusters.add(new ArrayList<>());
+            latents.add(new ArrayList<>());
         }
 
         int e = 0;
@@ -226,13 +226,6 @@ public class TestDeltaSextadTest {
 
         Collections.shuffle(indices);
 
-//        Node x1 = data.getVariable(indices.get(0));
-//        Node x2 = data.getVariable(indices.get(1));
-//        Node x3 = data.getVariable(indices.get(2));
-//        Node x4 = data.getVariable(indices.get(3));
-//        Node x5 = data.getVariable(indices.get(4));
-//        Node x6 = data.getVariable(indices.get(5));
-
         int x1 = indices.get(0);
         int x2 = indices.get(1);
         int x3 = indices.get(2);
@@ -259,7 +252,7 @@ public class TestDeltaSextadTest {
         l2.setNodeType(NodeType.LATENT);
 
         List<Node> measures = new ArrayList<>();
-        int numMeasures = 8;
+        final int numMeasures = 8;
 
         for (int i = 0; i < numMeasures; i++) {
             measures.add(new GraphNode("X" + (i + 1)));

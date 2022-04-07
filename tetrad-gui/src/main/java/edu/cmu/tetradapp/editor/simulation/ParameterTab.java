@@ -43,7 +43,7 @@ public class ParameterTab extends JPanel {
 
     private static final long serialVersionUID = 7074205549192562786L;
 
-    private static final String[] GRAPH_ITEMS = new String[]{
+    private static final String[] GRAPH_ITEMS = {
             GraphTypes.RANDOM_FOWARD_DAG,
             GraphTypes.ERDOS_RENYI_DAG,
             GraphTypes.SCALE_FREE_DAG,
@@ -69,6 +69,7 @@ public class ParameterTab extends JPanel {
     private final Box parameterBox = Box.createVerticalBox();
 
     private final Simulation simulation;
+    private boolean initial = true;
 
     public ParameterTab(Simulation simulation) {
         this.simulation = simulation;
@@ -114,13 +115,13 @@ public class ParameterTab extends JPanel {
 
     @NotNull
     private RandomGraph newRandomGraph() {
-        RandomGraph randomGraph = (simulation.getSourceGraph() == null)
+        RandomGraph randomGraph = (this.simulation.getSourceGraph() == null)
                 ? new SingleGraph(new EdgeListGraph())
-                : new SingleGraph(simulation.getSourceGraph());
+                : new SingleGraph(this.simulation.getSourceGraph());
 
-        if (!simulation.isFixedGraph()) {
-            String graphItem = graphsDropdown.getItemAt(graphsDropdown.getSelectedIndex());
-            simulation.getParams().set("graphsDropdownPreference", graphItem);
+        if (!this.simulation.isFixedGraph()) {
+            String graphItem = this.graphsDropdown.getItemAt(this.graphsDropdown.getSelectedIndex());
+            this.simulation.getParams().set("graphsDropdownPreference", graphItem);
 
             switch (graphItem) {
                 case GraphTypes.RANDOM_FOWARD_DAG:
@@ -149,36 +150,33 @@ public class ParameterTab extends JPanel {
     }
 
     private void newSimulation(RandomGraph randomGraph) {
-        if (!simulation.isFixedSimulation()) {
-            String simulationItem = simulationsDropdown.getItemAt(simulationsDropdown.getSelectedIndex());
-            simulation.getParams().set("simulationsDropdownPreference", simulationItem);
-            simulation.setFixedGraph(randomGraph instanceof SingleGraph);
+        if (!this.simulation.isFixedSimulation()) {
+            String simulationItem = this.simulationsDropdown.getItemAt(this.simulationsDropdown.getSelectedIndex());
+            this.simulation.getParams().set("simulationsDropdownPreference", simulationItem);
+            this.simulation.setFixedGraph(randomGraph instanceof SingleGraph);
 
-            if (simulation.getSourceGraph() == null) {
+            if (this.simulation.getSourceGraph() == null) {
                 switch (simulationItem) {
                     case SimulationTypes.BAYS_NET:
-                        simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new BayesNetSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
-                        simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
                         break;
-//                    case SimulationTypes.LINEaAR_FISHER_MODEL:
-//                        simulation.setSimulation(new LinearFisherModel(randomGraph, simulation.getInputDataModelList()), simulation.getParams());
-//                        break;
                     case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL:
-                        simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LEE_AND_HASTIE:
-                        simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new LeeHastieSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.CONDITIONAL_GAUSSIAN:
-                        simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.TIME_SERIES:
-                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.BOOLEAN_GLASS_SIMULATION:
-                        simulation.setSimulation(new BooleanGlassSimulation(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new BooleanGlassSimulation(randomGraph), this.simulation.getParams());
                         break;
                     default:
                         throw new IllegalArgumentException("Unrecognized simulation type: " + simulationItem);
@@ -186,22 +184,22 @@ public class ParameterTab extends JPanel {
             } else {
                 switch (simulationItem) {
                     case SimulationTypes.BAYS_NET:
-                        simulation.setSimulation(new BayesNetSimulation(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new BayesNetSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
-                        simulation.setSimulation(new SemSimulation(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LINEAR_FISHER_MODEL:
-                        simulation.setSimulation(new LinearFisherModel(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LEE_AND_HASTIE:
-                        simulation.setSimulation(new LeeHastieSimulation(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new LeeHastieSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.CONDITIONAL_GAUSSIAN:
-                        simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new ConditionalGaussianSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.TIME_SERIES:
-                        simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), simulation.getParams());
+                        this.simulation.setSimulation(new TimeSeriesSemSimulation(randomGraph), this.simulation.getParams());
                         break;
                 }
             }
@@ -209,19 +207,19 @@ public class ParameterTab extends JPanel {
     }
 
     private void showParameters() {
-        boolean fixedGraph = simulation.isFixedGraph();
-        graphsDropdown.setEnabled(!fixedGraph);
-        simulationsDropdown.setEnabled(!simulation.isFixedSimulation());
+        boolean fixedGraph = this.simulation.isFixedGraph();
+        this.graphsDropdown.setEnabled(!fixedGraph);
+        this.simulationsDropdown.setEnabled(!this.simulation.isFixedSimulation());
 
-        parameterBox.removeAll();
-        if (simulation.getSimulation() != null) {
-            Set<String> params = new LinkedHashSet<>(simulation.getSimulation().getParameters());
+        this.parameterBox.removeAll();
+        if (this.simulation.getSimulation() != null) {
+            Set<String> params = new LinkedHashSet<>(this.simulation.getSimulation().getParameters());
             if (params.isEmpty()) {
-                parameterBox.add(NO_PARAM_LBL, BorderLayout.NORTH);
+                this.parameterBox.add(ParameterTab.NO_PARAM_LBL, BorderLayout.NORTH);
             } else {
                 Box parameters = Box.createVerticalBox();
                 Box[] paramBoxes = ParameterComponents.toArray(
-                        ParameterComponents.createParameterComponents(params, simulation.getParams()));
+                        ParameterComponents.createParameterComponents(params, this.simulation.getParams()));
                 int lastIndex = paramBoxes.length - 1;
                 for (int i = 0; i < lastIndex; i++) {
                     parameters.add(paramBoxes[i]);
@@ -229,11 +227,11 @@ public class ParameterTab extends JPanel {
                 }
                 parameters.add(paramBoxes[lastIndex]);
 
-                parameterBox.add(new PaddingPanel(parameters), BorderLayout.CENTER);
+                this.parameterBox.add(new PaddingPanel(parameters), BorderLayout.CENTER);
             }
         }
-        parameterBox.validate();
-        parameterBox.repaint();
+        this.parameterBox.validate();
+        this.parameterBox.repaint();
     }
 
     private Box createSimulationButtonBox() {
@@ -257,7 +255,7 @@ public class ParameterTab extends JPanel {
     private JPanel createParameterPanel() {
         JPanel paramPanel = new JPanel(new BorderLayout(0, 5));
         paramPanel.add(new JLabel("Parameters for your simulation are listed below. Please adjust the parameter values."), BorderLayout.NORTH);
-        paramPanel.add(new JScrollPane(parameterBox), BorderLayout.CENTER);
+        paramPanel.add(new JScrollPane(this.parameterBox), BorderLayout.CENTER);
 
         return paramPanel;
     }
@@ -266,38 +264,36 @@ public class ParameterTab extends JPanel {
         Box simOptBox = Box.createVerticalBox();
 
         // type of graph options
-        if (!simulation.isFixedGraph()) {
-            Arrays.stream(GRAPH_ITEMS).forEach(graphsDropdown::addItem);
-            graphsDropdown.setMaximumSize(graphsDropdown.getPreferredSize());
-            graphsDropdown.setSelectedItem(simulation.getParams().getString("graphsDropdownPreference", GRAPH_ITEMS[0]));
-            graphsDropdown.addActionListener(e -> refreshParameters());
+        if (!this.simulation.isFixedGraph()) {
+            Arrays.stream(ParameterTab.GRAPH_ITEMS).forEach(this.graphsDropdown::addItem);
+            this.graphsDropdown.setMaximumSize(this.graphsDropdown.getPreferredSize());
+            this.graphsDropdown.setSelectedItem(this.simulation.getParams().getString("graphsDropdownPreference", ParameterTab.GRAPH_ITEMS[0]));
+            this.graphsDropdown.addActionListener(e -> refreshParameters());
 
-            simOptBox.add(createLabeledComponent("Type of Graph: ", graphsDropdown));
+            simOptBox.add(createLabeledComponent("Type of Graph: ", this.graphsDropdown));
             simOptBox.add(Box.createVerticalStrut(10));
         }
 
-        String[] simulationItems = getSimulationItems(simulation);
-        Arrays.stream(simulationItems).forEach(simulationsDropdown::addItem);
-        simulationsDropdown.setMaximumSize(simulationsDropdown.getPreferredSize());
-        simulationsDropdown.setSelectedItem(
-                simulation.getParams().getString("simulationsDropdownPreference", simulationItems[0]));
-        simulationsDropdown.addActionListener(e -> refreshParameters());
+        String[] simulationItems = getSimulationItems(this.simulation);
+        Arrays.stream(simulationItems).forEach(this.simulationsDropdown::addItem);
+        this.simulationsDropdown.setMaximumSize(this.simulationsDropdown.getPreferredSize());
+        this.simulationsDropdown.setSelectedItem(
+                this.simulation.getParams().getString("simulationsDropdownPreference", simulationItems[0]));
+        this.simulationsDropdown.addActionListener(e -> refreshParameters());
 
-        simOptBox.add(createLabeledComponent("Type of Simulation: ", simulationsDropdown));
+        simOptBox.add(createLabeledComponent("Type of Simulation: ", this.simulationsDropdown));
         simOptBox.add(Box.createVerticalStrut(20));
 
         return simOptBox;
     }
 
     private void simulate() {
-        int ret = JOptionPane.showConfirmDialog(getPanel(), "Simulate new graph(s) and dataset(s)?",
+        int ret = JOptionPane.showConfirmDialog(getPanel(), "Simulate new dataset(s)?",
                 "Confirm", JOptionPane.OK_CANCEL_OPTION);
 
         if (ret == JOptionPane.CANCEL_OPTION) {
-            JOptionPane.showMessageDialog(getPanel(), "Keeping existing graph(s) and datasets(s)");
+            JOptionPane.showMessageDialog(getPanel(), "Keeping existing datasets(s)");
             return;
-        } else {
-//            JOptionPane.showMessageDialog(getPanel(), "Created new graph(s) and datasets(s)...");
         }
 
         new WatchedProcess((Window) getTopLevelAncestor()) {
@@ -306,8 +302,9 @@ public class ParameterTab extends JPanel {
                 try {
                     RandomGraph randomGraph = newRandomGraph();
                     newSimulation(randomGraph);
-                    simulation.getSimulation().createData(simulation.getParams(), false);
+                    ParameterTab.this.simulation.getSimulation().createData(ParameterTab.this.simulation.getParams(), false);
 
+                    initial = false;
                     firePropertyChange("modelChanged", null, null);
                 } catch (Exception exception) {
                     exception.printStackTrace(System.err);
@@ -324,7 +321,6 @@ public class ParameterTab extends JPanel {
                     }
                 }
             }
-
         };
     }
 
@@ -341,7 +337,7 @@ public class ParameterTab extends JPanel {
     }
 
     private String[] getSimulationItems(Simulation simulation) {
-        final String[] items;
+        String[] items;
 
         if (simulation.isFixedSimulation()) {
             if (simulation.getSimulation() instanceof BayesNetSimulation) {
@@ -373,10 +369,13 @@ public class ParameterTab extends JPanel {
                         + simulation.getSimulation().getClass());
             }
         } else {
-            items = SOURCE_GRAPH_ITEMS;
+            items = ParameterTab.SOURCE_GRAPH_ITEMS;
         }
 
         return items;
     }
 
+    public boolean isInitial() {
+        return initial;
+    }
 }

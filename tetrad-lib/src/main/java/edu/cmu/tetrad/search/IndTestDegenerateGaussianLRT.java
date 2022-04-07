@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -74,22 +75,22 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         }
 
         public double getLik() {
-            return lik;
+            return this.lik;
         }
 
         public double getDof() {
-            return dof;
+            return this.dof;
         }
 
         public String toString() {
-            return "lik = " + lik + " dof = " + dof;
+            return "lik = " + this.lik + " dof = " + this.dof;
         }
     }
 
     // A constant.
     private static final double L2PE = log(2.0 * PI * E);
 
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -110,8 +111,8 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
 
         Map<Node, Integer> nodesHash = new HashMap<>();
 
-        for (int j = 0; j < variables.size(); j++) {
-            nodesHash.put(variables.get(j), j);
+        for (int j = 0; j < this.variables.size(); j++) {
+            nodesHash.put(this.variables.get(j), j);
         }
 
         this.nodesHash = nodesHash;
@@ -151,7 +152,6 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
                 B.remove(i);
 
                 this.embedding.put(i_, new ArrayList<>(keys.values()));
-                i_++;
 
             } else {
 
@@ -166,9 +166,9 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
                 index2.add(i);
                 this.embedding.put(i_, index2);
                 i++;
-                i_++;
 
             }
+            i_++;
         }
 
         double[][] B_ = new double[n][B.size()];
@@ -180,8 +180,8 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
 
         // The continuous variables of the post-embedding dataset.
         RealMatrix D = new BlockRealMatrix(B_);
-        ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
-        _ddata = ddata.getDoubleData().toArray();
+        this.ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
+        this._ddata = this.ddata.getDoubleData().toArray();
     }
 
     /**
@@ -210,7 +210,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         double ldetA = log(getCov(rows, A_).det());
         double ldetB = log(getCov(rows, B_).det());
 
-        double lik = N * (ldetB - ldetA) + L2PE * (B_.length - A_.length);
+        double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLRT.L2PE * (B_.length - A_.length);
 
         return new Ret(lik, dof);
     }
@@ -234,12 +234,12 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         allNodes.add(y);
         allNodes.addAll(z);
 
-        List<Integer> rows = getRows(allNodes, nodesHash);
+        List<Integer> rows = getRows(allNodes, this.nodesHash);
 
         if (rows.isEmpty()) return true;
 
-        int _x = nodesHash.get(x);
-        int _y = nodesHash.get(y);
+        int _x = this.nodesHash.get(x);
+        int _y = this.nodesHash.get(y);
 
         int[] list0 = new int[z.size() + 1];
         int[] list2 = new int[z.size()];
@@ -247,7 +247,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         list0[0] = _x;
 
         for (int i = 0; i < z.size(); i++) {
-            int _z = nodesHash.get(z.get(i));
+            int _z = this.nodesHash.get(z.get(i));
             list0[i + 1] = _z;
             list2[i] = _z;
         }
@@ -259,8 +259,8 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         double dof0 = ret1.getDof() - ret2.getDof();
 
         if (dof0 <= 0) return true;
-        if (alpha == 0) return true;
-        if (alpha == 1) return false;
+        if (this.alpha == 0) return true;
+        if (this.alpha == 1) return false;
         if (lik0 == Double.POSITIVE_INFINITY) return false;
 
         if (Double.isNaN(lik0)) {
@@ -269,7 +269,16 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
             this.pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         }
 
-        return this.pValue > alpha;
+        boolean independent = this.pValue > this.alpha;
+
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+            }
+        }
+
+        return independent;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -304,7 +313,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
      * relations.
      */
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     /**
@@ -341,7 +350,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     /**
@@ -352,7 +361,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     }
 
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     @Override
@@ -390,7 +399,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
@@ -402,12 +411,12 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         List<Integer> rows = new ArrayList<>();
 
         K:
-        for (int k = 0; k < dataSet.getNumRows(); k++) {
+        for (int k = 0; k < this.dataSet.getNumRows(); k++) {
             for (Node node : allVars) {
                 List<Integer> A = new ArrayList<>(this.embedding.get(nodesHash.get(node)));
 
                 for (int i : A) {
-                    if (Double.isNaN(ddata.getDouble(k, i))) continue K;
+                    if (Double.isNaN(this.ddata.getDouble(k, i))) continue K;
                 }
             }
 
@@ -427,8 +436,8 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
                 double muj = 0.0;
 
                 for (int k : rows) {
-                    mui += _ddata[k][cols[i]];
-                    muj += _ddata[k][cols[j]];
+                    mui += this._ddata[k][cols[i]];
+                    muj += this._ddata[k][cols[j]];
                 }
 
                 mui /= rows.size() - 1;
@@ -437,7 +446,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
                 double _cov = 0.0;
 
                 for (int k : rows) {
-                    _cov += (_ddata[k][cols[i]] - mui) * (_ddata[k][cols[j]] - muj);
+                    _cov += (this._ddata[k][cols[i]] - mui) * (this._ddata[k][cols[j]] - muj);
 //                    _cov += (ddata.getDouble(k, cols[i]) - mui) * (ddata.getDouble(k, cols[j]) - muj);
                 }
 

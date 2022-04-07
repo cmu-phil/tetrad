@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -37,7 +36,7 @@ import java.util.List;
  * @see DataModel
  */
 public final class DataModelList extends AbstractList<DataModel>
-        implements DataModel, TetradSerializable {
+        implements DataModel {
 
     static final long serialVersionUID = 23L;
 
@@ -71,11 +70,9 @@ public final class DataModelList extends AbstractList<DataModel>
 
     //===========================CONSTRUCTORS============================//
     public DataModelList() {
-        super();
     }
 
     public DataModelList(DataModelList dataModelList) {
-        super();
 
         try {
             throw new NullPointerException();
@@ -102,7 +99,7 @@ public final class DataModelList extends AbstractList<DataModel>
      * @return this model, as an Object.
      */
     public DataModel get(int index) {
-        return modelList.get(index);
+        return this.modelList.get(index);
     }
 
     /**
@@ -110,7 +107,7 @@ public final class DataModelList extends AbstractList<DataModel>
      */
     @Override
     public int size() {
-        return modelList.size();
+        return this.modelList.size();
     }
 
     public List<Node> getVariables() {
@@ -151,37 +148,33 @@ public final class DataModelList extends AbstractList<DataModel>
      *                DataModel.)
      */
     public void add(int index, DataModel element) {
-        modelList.add(index, element);
+        this.modelList.add(index, element);
     }
 
     /**
      * Check if the modeList is empty Need to override this since this class is
      * extending AbstractList.
-     *
-     * @return
      */
     @Override
     public boolean isEmpty() {
-        return modelList.isEmpty();
+        return this.modelList.isEmpty();
     }
 
     /**
      * Use this to check if the dataModelList only contains the default empty
      * dataset that is being used to populat the empty spreadsheet - Added by
      * Kevin
-     *
-     * @return
      */
     public boolean containsEmptyData() {
-        if (modelList.isEmpty()) {
+        if (this.modelList.isEmpty()) {
             return true;
         } else {
-            return modelList.get(0).getVariableNames().isEmpty();
+            return this.modelList.get(0).getVariableNames().isEmpty();
         }
     }
 
     public List<DataModel> getModelList() {
-        return modelList;
+        return this.modelList;
     }
 
     /**
@@ -229,7 +222,7 @@ public final class DataModelList extends AbstractList<DataModel>
      * Gets the name of the data model list.
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -245,7 +238,7 @@ public final class DataModelList extends AbstractList<DataModel>
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append("Data Model List <");
-        for (Object aModelList : modelList) {
+        for (Object aModelList : this.modelList) {
             buf.append(aModelList).append(", ");
         }
         buf.append(">");
@@ -279,7 +272,7 @@ public final class DataModelList extends AbstractList<DataModel>
 
     public int hashCode() {
         int hashcode = 17;
-        hashcode += 17 * name.hashCode();
+        hashcode += 17 * this.name.hashCode();
         return hashcode;
     }
 
@@ -294,7 +287,7 @@ public final class DataModelList extends AbstractList<DataModel>
 
         DataModelList list = (DataModelList) o;
 
-        return name.equals(list.name) && modelList.equals(list.modelList) && knowledge.equals(list.knowledge) && selectedModel.equals(list.selectedModel);
+        return this.name.equals(list.name) && this.modelList.equals(list.modelList) && this.knowledge.equals(list.knowledge) && this.selectedModel.equals(list.selectedModel);
 
     }
 
@@ -307,19 +300,16 @@ public final class DataModelList extends AbstractList<DataModel>
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (modelList == null) {
+        if (this.modelList == null) {
             throw new NullPointerException();
         }
 
-        if (knowledge == null) {
+        if (this.knowledge == null) {
             throw new NullPointerException();
         }
     }

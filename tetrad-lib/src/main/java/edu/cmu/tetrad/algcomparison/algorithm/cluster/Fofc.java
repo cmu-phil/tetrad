@@ -1,9 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
@@ -15,7 +13,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +29,10 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm, TakesIndependenceWrapper {
+public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
-    private IndependenceWrapper test;
 
     public Fofc() {
     }
@@ -66,8 +62,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm, TakesInd
             }
 
             edu.cmu.tetrad.search.FindOneFactorClusters search
-                    = new edu.cmu.tetrad.search.FindOneFactorClusters(cov, testType, algorithm, alpha,
-                    test.getTest(dataSet, parameters));
+                    = new edu.cmu.tetrad.search.FindOneFactorClusters(cov, testType, algorithm, alpha);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             Graph graph = search.search();
@@ -78,8 +73,8 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm, TakesInd
 
                 Clusters clusters = ClusterUtils.mimClusters(graph);
 
-                Mimbuild2 mimbuild = new Mimbuild2();
-                mimbuild.setAlpha(parameters.getDouble(Params.ALPHA, 0.001));
+                Mimbuild mimbuild = new Mimbuild();
+                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
                 mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge2()));
 
                 if (parameters.getBoolean("includeThreeClusters", true)) {
@@ -113,26 +108,9 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm, TakesInd
             Fofc algorithm = new Fofc();
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -158,7 +136,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm, TakesInd
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.ALPHA);
+        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.USE_GAP);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
@@ -169,21 +147,11 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm, TakesInd
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return test;
-    }
-
-    @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
-        this.test = test;
     }
 }

@@ -34,7 +34,7 @@ public class TestOfIndependenceAnnotations extends AbstractAnnotations<TestOfInd
     }
 
     public static TestOfIndependenceAnnotations getInstance() {
-        return INSTANCE;
+        return TestOfIndependenceAnnotations.INSTANCE;
     }
 
     public List<AnnotatedClass<TestOfIndependence>> filterOutExperimental(List<AnnotatedClass<TestOfIndependence>> list) {

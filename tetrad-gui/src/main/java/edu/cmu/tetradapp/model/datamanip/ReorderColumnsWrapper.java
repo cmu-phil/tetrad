@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -56,8 +56,8 @@ public class ReorderColumnsWrapper extends DataWrapper {
 
         if (dataModelList.get(0) instanceof DataSet) {
             List<DataSet> dataSets = new ArrayList<>();
-            for (int i = 0; i < dataModelList.size(); i++) {
-                dataSets.add((DataSet) dataModelList.get(i));
+            for (DataModel dataModel : dataModelList) {
+                dataSets.add((DataSet) dataModel);
             }
             newData.addAll((DataUtils.shuffleColumns2(dataSets)));
         } else {
@@ -91,12 +91,11 @@ public class ReorderColumnsWrapper extends DataWrapper {
     }
 
     public static DataSet shuffleColumns(DataSet dataModel) {
-        DataSet dataSet = dataModel;
 
         List<Node> vars = new ArrayList<>();
 
-        for (Node node : dataSet.getVariables()) {
-            Node _node = dataSet.getVariable(node.getName());
+        for (Node node : dataModel.getVariables()) {
+            Node _node = dataModel.getVariable(node.getName());
 
             if (_node != null) {
                 vars.add(_node);
@@ -104,7 +103,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
         }
 
         Collections.shuffle(vars);
-        return dataSet.subsetColumns(vars);
+        return dataModel.subsetColumns(vars);
     }
 
     /**

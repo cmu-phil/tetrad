@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 
+import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.*;
+
 /**
  * Class that makes some very simple tests
  * on the classes LtMatrix, Graph, and Biolingua<p>
@@ -29,11 +31,8 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
  *
  * @author Raul Saavedra, rsaavedr@ai.uwf.edu
  */
-
-import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.*;
-
 public class LTester {
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         LTMatrix ltm;
         LTMatrixF ltmf;
         SymMatrix sm /*, cm*/;
@@ -60,15 +59,6 @@ public class LTester {
 
             g = new Digraph("g.txt");
             System.out.println(g);
-            /*
-                        System.out.println ("Testing Biolingua");
-                        // Parameters as in the paper
-                        BiolinguaDigraph dg = new BiolinguaDigraph ("g.txt");
-
-                        BiolinguaDigraph result = Biolingua.BiolinguaAlgorithm
-                            (cm, g, (float) 0.01, (float) 3, (float) 0.1, (float) 3);
-                        System.out.println (result);
-            */
         } catch (Exception xcp) {
             System.out.println("WATCH OUT!!!  There was an exception:");
             xcp.printStackTrace();

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -38,17 +38,12 @@ import java.util.*;
 public class DeltaTetradTest {
     private DataSet dataSet;
     private double[][] data;
-    private int N;
-    private ICovarianceMatrix cov;
+    private final int N;
+    private final ICovarianceMatrix cov;
     private int df;
     private double chisq;
-    //    private double[][][][] fourthMoment;
-//    private int numVars;
-//    private double[] means;
-    private List<Node> variables;
-    private Map<Node, Integer> variablesHash;
-//    private boolean cacheFourthMoments = false;
-
+    private final List<Node> variables;
+    private final Map<Node, Integer> variablesHash;
 
     // As input we require a data set and a list of non-redundant Tetrads.
 
@@ -85,15 +80,10 @@ public class DeltaTetradTest {
 
         this.variablesHash = new HashMap<>();
 
-        for (int i = 0; i < variables.size(); i++) {
-            variablesHash.put(variables.get(i), i);
+        for (int i = 0; i < this.variables.size(); i++) {
+            this.variablesHash.put(this.variables.get(i), i);
         }
 
-//        this.means = new double[numVars];
-//
-//        for (int i = 0; i < numVars; i++) {
-//            means[i] = mean(data[i], N);
-//        }
     }
 
     /**
@@ -111,15 +101,10 @@ public class DeltaTetradTest {
 
         this.variablesHash = new HashMap<>();
 
-        for (int i = 0; i < variables.size(); i++) {
-            variablesHash.put(variables.get(i), i);
+        for (int i = 0; i < this.variables.size(); i++) {
+            this.variablesHash.put(this.variables.get(i), i);
         }
     }
-
-//    private void initializeForthMomentMatrix(List<Node> variables) {
-//        int n = variables.size();
-//        fourthMoment = new double[n][n][n][n];
-//    }
 
     /**
      * Takes a list of tetrads for the given data set and returns the chi square value for the test. We assume that the
@@ -133,7 +118,6 @@ public class DeltaTetradTest {
 
         // Need a list of symbolic covariances--i.e. covariances that appear in tetrads.
         Set<Sigma> boldSigmaSet = new LinkedHashSet<>();
-        List<Sigma> boldSigma = new ArrayList<>();
 
         for (Tetrad tetrad : tetrads) {
             boldSigmaSet.add(new Sigma(tetrad.getI(), tetrad.getK()));
@@ -142,9 +126,7 @@ public class DeltaTetradTest {
             boldSigmaSet.add(new Sigma(tetrad.getJ(), tetrad.getL()));
         }
 
-        for (Sigma sigma : boldSigmaSet) {
-            boldSigma.add(sigma);
-        }
+        List<Sigma> boldSigma = new ArrayList<>(boldSigmaSet);
 
         // Need a matrix of variances and covariances of sample covariances.
         Matrix sigma_ss = new Matrix(boldSigma.size(), boldSigma.size());
@@ -159,7 +141,7 @@ public class DeltaTetradTest {
                 Node g = sigmagh.getA();
                 Node h = sigmagh.getB();
 
-                if (cov != null && cov instanceof CorrelationMatrix) {
+                if (this.cov != null && this.cov instanceof CorrelationMatrix) {
 
 //                Assumes multinormality. Using formula 23. (Not implementing formula 22 because that case
 //                does not come up.)
@@ -170,7 +152,7 @@ public class DeltaTetradTest {
                             - sxy(g, h) * (sxy(f, g) * sxy(e, g) + sxy(f, h) * sxy(e, h));
 
                     sigma_ss.set(i, j, rr);
-                } else if (cov != null && dataSet == null) {
+                } else if (this.cov != null && this.dataSet == null) {
 
                     // Assumes multinormality--see p. 160.
                     double _ss = sxy(e, g) * sxy(f, h) - sxy(e, h) * sxy(f, g);   // + or -? Different advise. + in the code.
@@ -229,7 +211,7 @@ public class DeltaTetradTest {
         Matrix v0 = sigma_tt.inverse();
         Matrix v1 = t.transpose().times(v0);
         Matrix v2 = v1.times(t);
-        double chisq = N * v2.get(0, 0);
+        double chisq = this.N * v2.get(0, 0);
 
         this.chisq = chisq;
 
@@ -250,47 +232,17 @@ public class DeltaTetradTest {
     }
 
     private double sxyzw(Node e, Node f, Node g, Node h) {
-        if (dataSet == null) {
+        if (this.dataSet == null) {
             throw new IllegalArgumentException("To calculate sxyzw, tabular data is needed.");
         }
 
-        int x = variablesHash.get(e);
-        int y = variablesHash.get(f);
-        int z = variablesHash.get(g);
-        int w = variablesHash.get(h);
+        int x = this.variablesHash.get(e);
+        int y = this.variablesHash.get(f);
+        int z = this.variablesHash.get(g);
+        int w = this.variablesHash.get(h);
 
         return getForthMoment(x, y, z, w);
     }
-
-//    private void setForthMoment(int x, int y, int z, int w, double sxyzw) {
-//        fourthMoment[x][y][z][w] = sxyzw;
-//        fourthMoment[x][y][w][z] = sxyzw;
-//        fourthMoment[x][w][z][y] = sxyzw;
-//        fourthMoment[x][w][y][z] = sxyzw;
-//        fourthMoment[x][z][y][w] = sxyzw;
-//        fourthMoment[x][z][w][y] = sxyzw;
-//
-//        fourthMoment[y][x][z][w] = sxyzw;
-//        fourthMoment[y][x][w][z] = sxyzw;
-//        fourthMoment[y][z][x][w] = sxyzw;
-//        fourthMoment[y][z][w][x] = sxyzw;
-//        fourthMoment[y][w][x][z] = sxyzw;
-//        fourthMoment[y][w][z][x] = sxyzw;
-//
-//        fourthMoment[z][x][y][w] = sxyzw;
-//        fourthMoment[z][x][w][y] = sxyzw;
-//        fourthMoment[z][y][x][w] = sxyzw;
-//        fourthMoment[z][y][w][x] = sxyzw;
-//        fourthMoment[z][w][x][y] = sxyzw;
-//        fourthMoment[z][w][y][x] = sxyzw;
-//
-//        fourthMoment[w][x][y][z] = sxyzw;
-//        fourthMoment[w][x][z][y] = sxyzw;
-//        fourthMoment[w][y][x][z] = sxyzw;
-//        fourthMoment[w][y][z][x] = sxyzw;
-//        fourthMoment[w][z][x][y] = sxyzw;
-//        fourthMoment[w][z][y][x] = sxyzw;
-//    }
 
     private double getForthMoment(int x, int y, int z, int w) {
 //        if (cacheFourthMoments) {
@@ -316,14 +268,14 @@ public class DeltaTetradTest {
      * covariance.
      */
     private double sxy(Node _node1, Node _node2) {
-        int i = variablesHash.get(_node1);
-        int j = variablesHash.get(_node2);
+        int i = this.variablesHash.get(_node1);
+        int j = this.variablesHash.get(_node2);
 
-        if (cov != null) {
-            return cov.getValue(i, j);
+        if (this.cov != null) {
+            return this.cov.getValue(i, j);
         } else {
-            double[] arr1 = data[i];
-            double[] arr2 = data[j];
+            double[] arr1 = this.data[i];
+            double[] arr2 = this.data[j];
             return sxy(arr1, arr2, arr1.length);
         }
     }
@@ -364,13 +316,9 @@ public class DeltaTetradTest {
         return 0.0;
     }
 
-//    public void setCacheFourthMoments(boolean cacheFourthMoments) {
-//        this.cacheFourthMoments = cacheFourthMoments;
-//    }
-
     private static class Sigma {
-        private Node a;
-        private Node b;
+        private final Node a;
+        private final Node b;
 
         public Sigma(Node a, Node b) {
             this.a = a;
@@ -378,11 +326,11 @@ public class DeltaTetradTest {
         }
 
         public Node getA() {
-            return a;
+            return this.a;
         }
 
         public Node getB() {
-            return b;
+            return this.b;
         }
 
         public boolean equals(Object o) {
@@ -395,7 +343,7 @@ public class DeltaTetradTest {
         }
 
         public int hashCode() {
-            return a.hashCode() + b.hashCode();
+            return this.a.hashCode() + this.b.hashCode();
         }
 
         public String toString() {
@@ -406,10 +354,10 @@ public class DeltaTetradTest {
     private double sxyzw(int x, int y, int z, int w) {
         double sxyzw = 0.0;
 
-        double[] _x = data[x];
-        double[] _y = data[y];
-        double[] _z = data[z];
-        double[] _w = data[w];
+        double[] _x = this.data[x];
+        double[] _y = this.data[y];
+        double[] _z = this.data[z];
+        double[] _w = this.data[w];
 
         int N = _x.length;
 
@@ -420,7 +368,7 @@ public class DeltaTetradTest {
         return (1.0 / N) * sxyzw;
     }
 
-    private double sxy(double array1[], double array2[], int N) {
+    private double sxy(double[] array1, double[] array2, int N) {
         int i;
         double sum = 0.0;
 
@@ -432,16 +380,6 @@ public class DeltaTetradTest {
         return (1.0 / N) * sum;
     }
 
-//    private double mean(double array[], int N) {
-//        int i;
-//        double sum = 0;
-//
-//        for (i = 0; i < N; i++) {
-//            sum += array[i];
-//        }
-//
-//        return sum / N;
-//    }
 }
 
 

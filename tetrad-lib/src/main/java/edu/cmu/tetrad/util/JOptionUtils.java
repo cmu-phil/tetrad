@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -30,7 +30,7 @@ import java.awt.*;
  * @author Joseph Ramsey
  */
 public class JOptionUtils {
-    private static JComponent COMPONENT = null;
+    private static JComponent COMPONENT;
 
     /**
      * Sets the centering component used throughout. May be null.
@@ -38,18 +38,18 @@ public class JOptionUtils {
      * @param component Ibid.
      */
     public static void setCenteringComp(JComponent component) {
-        COMPONENT = component;
+        JOptionUtils.COMPONENT = component;
     }
 
     /**
      * @return Ibid.
      */
     public static JComponent centeringComp() {
-        return COMPONENT;
+        return JOptionUtils.COMPONENT;
     }
 
     public static Frame getCenteringFrame() {
-        for (Container c = COMPONENT; c != null; c = c.getParent()) {
+        for (Container c = JOptionUtils.COMPONENT; c != null; c = c.getParent()) {
             if (c instanceof Frame) {
                 return (Frame) c;
             }

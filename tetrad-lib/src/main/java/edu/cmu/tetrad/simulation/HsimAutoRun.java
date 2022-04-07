@@ -22,9 +22,9 @@ import java.util.*;
  */
 public class HsimAutoRun {
 
-    private boolean verbose = false;
+    private boolean verbose;
     private DataSet data;
-    private boolean write = false;
+    private boolean write;
     private String filenameOut = "defaultOut";
     private char delimiter = ',';
 
@@ -33,23 +33,23 @@ public class HsimAutoRun {
         //need to turn indata into a VerticalIntDataBox still !!!!!!!!!!!!!!!!!11
         //first check if indata is already the right type
         if (((BoxDataSet) indata).getDataBox() instanceof VerticalIntDataBox) {
-            data = indata;
+            this.data = indata;
         } else {
             VerticalIntDataBox dataVertBox = HsimUtils.makeVertIntBox(indata);
-            data = new BoxDataSet(dataVertBox, indata.getVariables());
+            this.data = new BoxDataSet(dataVertBox, indata.getVariables());
         }
     }
 
     public HsimAutoRun(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<>();
         eVars.add("MULT");
         Path dataFile = Paths.get(readfilename);
 
         VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
         try {
-            data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
+            this.data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
         } catch (Exception IOException) {
             IOException.printStackTrace();
         }
@@ -60,7 +60,7 @@ public class HsimAutoRun {
     public double[] run(int resimSize) {
         //modify this so that verbose is a private data value, and so that data can be taken from either a dataset or a file.
         //===========read data from file=============
-        Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<>();
         eVars.add("MULT");
 
         double[] output;
@@ -75,13 +75,12 @@ public class HsimAutoRun {
             //DataWriter.writeRectangularData(dataSet, new FileWriter("dataOut2.txt"), '\t');
             //apply Hsim to data, with whatever parameters
             //========first make the Dag for Hsim==========
-            BDeuScore score = new BDeuScore(data);
+            BDeuScore score = new BDeuScore(this.data);
 
             //ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
-            double penaltyDiscount = 2.0;
+            final double penaltyDiscount = 2.0;
             Fges fges = new Fges(score);
             fges.setVerbose(false);
-            fges.setPenaltyDiscount(penaltyDiscount);
 
             Graph estGraph = fges.search();
             //if (verbose) System.out.println(estGraph);
@@ -96,13 +95,13 @@ public class HsimAutoRun {
             int size = allNodes.size();
             int randIndex = new Random().nextInt(size);
             Node centroid = allNodes.get(randIndex);
-            if (verbose) {
+            if (this.verbose) {
                 System.out.println("the centroid is " + centroid);
             }
 
             List<Node> queue = new ArrayList<>();
             queue.add(centroid);
-            List<Node> queueAdd = new ArrayList<Node>();
+            List<Node> queueAdd = new ArrayList<>();
             //while queue has size less than the resim size, grow it
             //if (verbose) System.out.println(queue);
             while (queue.size() < resimSize) {
@@ -137,34 +136,26 @@ public class HsimAutoRun {
                 //if (verbose) System.out.println(queue);
             }
 
-            Set<Node> simnodes = new HashSet<Node>(queue);
-            if (verbose) {
+            Set<Node> simnodes = new HashSet<>(queue);
+            if (this.verbose) {
                 System.out.println("the resimmed nodes are " + simnodes);
             }
 
             //===========Apply the hybrid resimulation===============
-            Hsim hsim = new Hsim(estDAG, simnodes, data); //regularDataSet
+            Hsim hsim = new Hsim(estDAG, simnodes, this.data); //regularDataSet
             DataSet newDataSet = hsim.hybridsimulate();
 
             //write output to a new file
-            if (write) {
-                FileWriter fileWriter = new FileWriter(filenameOut);
-                DataWriter.writeRectangularData(newDataSet, fileWriter, delimiter);
+            if (this.write) {
+                FileWriter fileWriter = new FileWriter(this.filenameOut);
+                DataWriter.writeRectangularData(newDataSet, fileWriter, this.delimiter);
                 fileWriter.close();
             }
             //=======Run FGES on the output data, and compare it to the original learned graph
-            //Path dataFileOut = Paths.get(filenameOut);
-            //edu.cmu.tetrad.io.DataReader dataReaderOut = new VerticalTabularDiscreteDataReader(dataFileOut, delimiter);
 
-            //DataSet dataSetOut = dataReaderOut.readInData(eVars);
             BDeuScore newscore = new BDeuScore(newDataSet);
             Fges fgesOut = new Fges(newscore);
             fgesOut.setVerbose(false);
-            fgesOut.setPenaltyDiscount(2.0);
-            //fgesOut.setOut(out);
-            //fgesOut.setFaithfulnessAssumed(true);
-            // fgesOut.setMaxIndegree(1);
-            // fgesOut.setCycleBound(5);
 
             Graph estGraphOut = fgesOut.search();
             //if (verbose) System.out.println(" bugchecking: fges estGraphOut: " + estGraphOut);
@@ -180,12 +171,9 @@ public class HsimAutoRun {
 
             //SearchGraphUtils.graphComparison(estGraph, estGraphOut, System.out);
             estEvalGraphOut = GraphUtils.replaceNodes(estEvalGraphOut, estEvalGraph.getNodes());
-            //if (verbose) System.out.println(estEvalGraph);
-            //if (verbose) System.out.println(estEvalGraphOut);
 
-            //SearchGraphUtils.graphComparison(estEvalGraphOut, estEvalGraph, System.out);
             output = HsimUtils.errorEval(estEvalGraphOut, estEvalGraph);
-            if (verbose) {
+            if (this.verbose) {
                 System.out.println(output[0] + " " + output[1] + " " + output[2] + " " + output[3] + " " + output[4]);
             }
         } catch (Exception IOException) {
@@ -196,18 +184,18 @@ public class HsimAutoRun {
 
     //******* Methods for setting values to private variables****************//
     public void setVerbose(boolean verbosity) {
-        verbose = verbosity;
+        this.verbose = verbosity;
     }
 
     public void setWrite(boolean setwrite) {
-        write = setwrite;
+        this.write = setwrite;
     }
 
     public void setFilenameOut(String filename) {
-        filenameOut = filename;
+        this.filenameOut = filename;
     }
 
     public void setDelimiter(char delim) {
-        delimiter = delim;
+        this.delimiter = delim;
     }
 }

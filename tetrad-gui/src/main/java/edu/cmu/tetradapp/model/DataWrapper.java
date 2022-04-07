@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -42,7 +41,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBoxInput,
+public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         DoNotAddOldModel, SimulationParamsSource, MultipleDataSource {
 
     static final long serialVersionUID = 23L;
@@ -70,22 +69,14 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     private Graph sourceGraph;
 
     /**
-//     * A list of known variables. Variables can be looked up in this list and
-//     * reused where appropriate.
-//     *
-//     * @serial Can be null.
-//     */
-//    private List<Node> knownVariables;
-
-    /**
      * The parameters being edited.
      */
-    private Parameters parameters = null;
+    private Parameters parameters;
     private Map<String, String> allParamSettings;
 
     //==============================CONSTRUCTORS===========================//
     protected DataWrapper() {
-        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<Node>()));
+        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<>()));
         this.parameters = new Parameters();
     }
 
@@ -93,7 +84,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * Constructs a data wrapper using a new DataSet as data model.
      */
     public DataWrapper(Parameters parameters) {
-        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<Node>()));
+        setDataModel(new BoxDataSet(new VerticalDoubleDataBox(0, 0), new LinkedList<>()));
         this.parameters = parameters;
     }
 
@@ -103,11 +94,11 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
         for (DataModel model : wrapper.getDataModels()) {
             if (model instanceof DataSet) {
-                dataModelList.add(((DataSet) model).copy());
+                this.dataModelList.add(((DataSet) model).copy());
             } else if (model instanceof CorrelationMatrix) {
-                dataModelList.add(new CorrelationMatrix((CorrelationMatrix) model));
+                this.dataModelList.add(new CorrelationMatrix((CorrelationMatrix) model));
             } else if (model instanceof CovarianceMatrix) {
-                dataModelList.add(new CovarianceMatrix((CovarianceMatrix) model));
+                this.dataModelList.add(new CovarianceMatrix((CovarianceMatrix) model));
             } else {
                 throw new IllegalArgumentException();
             }
@@ -150,10 +141,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
         if (wrapper.sourceGraph != null) {
             this.sourceGraph = new EdgeListGraph(wrapper.sourceGraph);
         }
-
-//        if (wrapper.knownVariables != null) {
-//            this.knownVariables = new ArrayList<>(wrapper.knownVariables);
-//        }
 
         this.dataModelList = dataModelList;
 
@@ -213,9 +200,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     // Computes regression predictions.
     public DataWrapper(RegressionResult result, DataSet data, Parameters parameters) {
-//        if (!data.isContinuous()) {
-//            throw new IllegalArgumentException("Must provide a continuous data set.");
-//        }
 
         DataSet data2 = data.copy();
         String predictedVariable = nextVariableName("Pred", data);
@@ -317,11 +301,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     public List<DataModel> getDataModels() {
-        List<DataModel> dataModels = new ArrayList<>();
-        for (DataModel model : this.dataModelList) {
-            dataModels.add(model);
-        }
-        return dataModels;
+        return new ArrayList<>(this.dataModelList);
     }
 
     public void setDataModelList(DataModelList dataModelList) {
@@ -394,19 +374,12 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     /**
-//     * Sets the source graph.
-//     */
-//    public void setKnownVariables(List<Node> variables) {
-//        this.knownVariables = variables;
-//    }
-
+     * //     * Sets the source graph.
+     * //
+     */
     public Map getDiscretizationSpecs() {
-        return discretizationSpecs;
+        return this.discretizationSpecs;
     }
-
-//    public List<Node> getKnownVariables() {
-//        return knownVariables;
-//    }
 
     /**
      * Adds semantic checks to the default deserialization method. This method
@@ -417,9 +390,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -427,7 +397,7 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -459,14 +429,14 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
     public Map<String, String> getParamSettings() {
         Map<String, String> paramSettings = new HashMap<>();
 
-        if (dataModelList == null) {
+        if (this.dataModelList == null) {
             System.out.println();
         }
 
-        if (dataModelList.size() > 1) {
-            paramSettings.put("# Datasets", Integer.toString(dataModelList.size()));
+        if (this.dataModelList.size() > 1) {
+            paramSettings.put("# Datasets", Integer.toString(this.dataModelList.size()));
         } else {
-            DataModel dataModel = dataModelList.get(0);
+            DataModel dataModel = this.dataModelList.get(0);
 
             if (dataModel instanceof CovarianceMatrix) {
                 if (!paramSettings.containsKey("# Nodes")) {
@@ -491,6 +461,6 @@ public class DataWrapper implements SessionModel, KnowledgeEditable, KnowledgeBo
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
+        return this.allParamSettings;
     }
 }

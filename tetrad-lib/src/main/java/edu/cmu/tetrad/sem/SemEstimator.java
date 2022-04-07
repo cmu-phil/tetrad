@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -66,7 +66,7 @@ public final class SemEstimator implements TetradSerializable {
      *
      * @serial
      */
-    private SemOptimizer semOptimizer = null;
+    private SemOptimizer semOptimizer;
 
     /**
      * The most recently estimated model, or null if no model has been estimated
@@ -179,7 +179,7 @@ public final class SemEstimator implements TetradSerializable {
      */
     public SemIm estimate() {
         if (getSemOptimizer() != null) {
-            getSemOptimizer().setNumRestarts(numRestarts);
+            getSemOptimizer().setNumRestarts(this.numRestarts);
             TetradLogger.getInstance().log("info", getSemOptimizer().toString());
             TetradLogger.getInstance().log("info", "Score = " + getScoreType());
             TetradLogger.getInstance().log("info", "Num restarts = " + getSemOptimizer().getNumRestarts());
@@ -203,15 +203,11 @@ public final class SemEstimator implements TetradSerializable {
 
         SemOptimizer defaultOptimizer = getDefaultOptimization(semIm);
 
-        if (semOptimizer == null) {
-            semOptimizer = defaultOptimizer;
+        if (this.semOptimizer == null) {
+            this.semOptimizer = defaultOptimizer;
         }
 
-//        if (!(defaultOptimizer instanceof SemOptimizerRegression)) {
-//            semOptimizer = defaultOptimizer;
-//        }
-
-        getSemOptimizer().setNumRestarts(numRestarts);
+        getSemOptimizer().setNumRestarts(this.numRestarts);
         getSemOptimizer().optimize(semIm);
 
         semIm.setParameterBoundsEnforced(true);
@@ -227,11 +223,11 @@ public final class SemEstimator implements TetradSerializable {
 //        TetradLogger.getInstance().log("stats", "Final Score = " + nf.format(semIm.getScore()));
         TetradLogger.getInstance().log("stats", "Sample Size = " + semIm.getSampleSize());
         TetradLogger.getInstance().log("stats", "Model Chi Square = " + nf.format(semIm.getChiSquare()));
-        TetradLogger.getInstance().log("stats", "Model DOF = " + nf.format(semPm.getDof()));
+        TetradLogger.getInstance().log("stats", "Model DOF = " + nf.format(this.semPm.getDof()));
         TetradLogger.getInstance().log("stats", "Model P Value = " + nf.format(semIm.getPValue()));
         TetradLogger.getInstance().log("stats", "Model BIC = " + nf.format(semIm.getBicScore()));
 
-        System.out.println(estimatedSem);
+        System.out.println(this.estimatedSem);
 
         return this.estimatedSem;
     }
@@ -249,28 +245,19 @@ public final class SemEstimator implements TetradSerializable {
     }
 
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     public SemPm getSemPm() {
-        return semPm;
+        return this.semPm;
     }
 
     public ICovarianceMatrix getCovMatrix() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
     private SemOptimizer getSemOptimizer() {
-        return semOptimizer;
-    }
-
-    public void setTrueSemIm(SemIm semIm) {
-        /*
-      The true SEM IM. If this is included. then its score will be printed
-      out.
-     */
-        SemIm trueSemIm = new SemIm(semIm);
-        trueSemIm.setCovMatrix(this.getCovMatrix());
+        return this.semOptimizer;
     }
 
     /**
@@ -316,7 +303,7 @@ public final class SemEstimator implements TetradSerializable {
         SemOptimizer optimizer;
 
         if (containsFixedParam() || getSemPm().getGraph().existsDirectedCycle() ||
-                containsCovarParam(getSemPm())) {
+                SemEstimator.containsCovarParam(getSemPm())) {
             optimizer = new SemOptimizerPowell();
         } else if (containsLatent) {
             optimizer = new SemOptimizerEm();
@@ -324,12 +311,10 @@ public final class SemEstimator implements TetradSerializable {
             optimizer = new SemOptimizerRegression();
         }
 
-        optimizer.setNumRestarts(numRestarts);
+        optimizer.setNumRestarts(this.numRestarts);
 
         return optimizer;
 
-//        optimizer.optimize(semIm);
-//        this.semOptimizer = optimizer;
     }
 
     private boolean containsFixedParam() {
@@ -359,7 +344,7 @@ public final class SemEstimator implements TetradSerializable {
     private DataSet subset(DataSet dataSet, SemPm semPm) {
         String[] measuredVarNames = semPm.getMeasuredVarNames();
         int[] varIndices = new int[measuredVarNames.length];
-        final List<Node> dataVars = dataSet.getVariables();
+        List<Node> dataVars = dataSet.getVariables();
 
         for (int i = 0; i < measuredVarNames.length; i++) {
             Node variable = dataSet.getVariable(measuredVarNames[i]);
@@ -424,7 +409,7 @@ public final class SemEstimator implements TetradSerializable {
     }
 
     private void setDataSet(DataSet dataSet) {
-        List<Node> nodes1 = semPm.getMeasuredNodes();
+        List<Node> nodes1 = this.semPm.getMeasuredNodes();
 
         List<Node> vars = new ArrayList<>();
 
@@ -450,8 +435,6 @@ public final class SemEstimator implements TetradSerializable {
      * it. (That's what the "s.defaultReadObject();" is for. See J. Bloch,
      * Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream
                                     s)
@@ -472,7 +455,7 @@ public final class SemEstimator implements TetradSerializable {
     }
 
     private ScoreType getScoreType() {
-        return scoreType;
+        return this.scoreType;
     }
 
     public void setNumRestarts(int numRestarts) {

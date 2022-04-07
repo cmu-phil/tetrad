@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -75,7 +75,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
 
-        if (numRestarts < 1) numRestarts = 1;
+        if (this.numRestarts < 1) this.numRestarts = 1;
 
         TetradLogger.getInstance().log("info", "Trying EM...");
         TetradLogger.getInstance().log("info", "Trying scattershot...");
@@ -85,7 +85,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
         // With local search on points in the width 1 iteration, multiple iterations of the whole search
         // doesn't seem necessary.
-        for (int i = 0; i < numRestarts + 1; i++) {
+        for (int i = 0; i < this.numRestarts + 1; i++) {
             TetradLogger.getInstance().log("details", "Trial " + (i + 1));
 //            System.out.println("Trial " + (i + 1));
             SemIm _sem2 = new SemIm(semIm);
@@ -126,7 +126,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
     @Override
     public int getNumRestarts() {
-        return numRestarts;
+        return this.numRestarts;
     }
 
     public String toString() {
@@ -206,7 +206,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
             if (width == 1) {
                 int t = 0;
                 while (++t < 2000) {
-                    if (!findLowerRandomLocal(fcn, pTemp, width / 5, 10)) break;
+                    if (!findLowerRandomLocal(fcn, pTemp)) break;
                 }
             }
 
@@ -220,8 +220,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
         return false;
     }
 
-    private boolean findLowerRandomLocal(FittingFunction fcn, double[] p,
-                                         double width, int numPoints) {
+    private boolean findLowerRandomLocal(FittingFunction fcn, double[] p) {
         double fP = fcn.evaluate(p);
 
         if (Double.isNaN(fP)) {
@@ -237,8 +236,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
         double[] pTemp = new double[p.length];
         System.arraycopy(p, 0, pTemp, 0, p.length);
 
-        for (int i = 0; i < numPoints; i++) {
-            randomPointAboutCenter(pTemp, fixedP, width);
+        for (int i = 0; i < 10; i++) {
+            randomPointAboutCenter(pTemp, fixedP, 0.2);
             double f = fcn.evaluate(pTemp);
 
             if (f == Double.POSITIVE_INFINITY) {
@@ -248,7 +247,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
 
             if (f < fP) {
                 System.arraycopy(pTemp, 0, p, 0, pTemp.length);
-                TetradLogger.getInstance().log("optimization", "Cube width = " + width + " FML = " + f);
+                TetradLogger.getInstance().log("optimization", "Cube width = " + 0.2 + " FML = " + f);
                 return true;
             }
         }
@@ -285,14 +284,14 @@ public class SemOptimizerScattershot implements SemOptimizer {
      *
      * @author Joseph Ramsey
      */
-    static class SemFittingFunction implements SemOptimizerScattershot.FittingFunction {
+    static class SemFittingFunction implements FittingFunction {
 
         /**
          * The wrapped Sem.
          */
         private final SemIm sem;
-        private List<Parameter> freeParameters;
-        private boolean avoidNegativeVariances = false;
+        private final List<Parameter> freeParameters;
+        private boolean avoidNegativeVariances;
 
         /**
          * Constructs a new CoefFittingFunction for the given Sem.
@@ -308,7 +307,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
          * to parameter values.
          */
         public double evaluate(double[] parameters) {
-            sem.setFreeParamValues(parameters);
+            this.sem.setFreeParamValues(parameters);
 
             for (double parameter : parameters) {
                 if (Double.isNaN(parameter) || Double.isInfinite(parameter)) {
@@ -316,15 +315,15 @@ public class SemOptimizerScattershot implements SemOptimizer {
                 }
             }
 
-            double fml = sem.getScore();
+            double fml = this.sem.getScore();
 
             if (Double.isNaN(fml) || Double.isInfinite(fml)) {
                 return Double.POSITIVE_INFINITY;
             }
 
-            if (avoidNegativeVariances) {
+            if (this.avoidNegativeVariances) {
                 for (int i = 0; i < parameters.length; i++) {
-                    if (freeParameters.get(i).getType() == ParamType.VAR && parameters[i] <= 0.0) {
+                    if (this.freeParameters.get(i).getType() == ParamType.VAR && parameters[i] <= 0.0) {
                         return Double.POSITIVE_INFINITY;
                     }
                 }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,7 +36,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
     /**
      * The events that are supported.
      */
-    private List<Event> events;
+    private List<TetradLoggerConfig.Event> events;
 
 
     /**
@@ -50,7 +50,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
      *
      * @param events The events that the logger reports.
      */
-    public DefaultTetradLoggerConfig(List<Event> events) {
+    public DefaultTetradLoggerConfig(List<TetradLoggerConfig.Event> events) {
         if (events == null) {
             throw new NullPointerException("The given list of events must not be null");
         }
@@ -66,17 +66,17 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
      */
     public DefaultTetradLoggerConfig(String... events) {
         this.events = new ArrayList<>(events.length);
-        this.active = new HashSet<>();
+        active = new HashSet<>();
         for (String event : events) {
             this.events.add(new DefaultEvent(event, "No Description"));
-            this.active.add(event);
+            active.add(event);
         }
     }
 
     public TetradLoggerConfig copy() {
         DefaultTetradLoggerConfig copy = new DefaultTetradLoggerConfig();
-        copy.events = new ArrayList<>(this.events);
-        copy.active = new HashSet<>(this.active);
+        copy.events = new ArrayList<>(events);
+        copy.active = new HashSet<>(active);
         return copy;
     }
 
@@ -90,19 +90,19 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
     //=========================== public methods ================================//
 
     public boolean isEventActive(String id) {
-        return this.active.contains(id);
+        return active.contains(id);
     }
 
     public boolean isActive() {
-        return !this.active.isEmpty();
+        return !active.isEmpty();
     }
 
-    public List<Event> getSupportedEvents() {
-        return Collections.unmodifiableList(this.events);
+    public List<TetradLoggerConfig.Event> getSupportedEvents() {
+        return Collections.unmodifiableList(events);
     }
 
     public void setEventActive(String id, boolean active) {
-        if (!contains(id)) {
+        if (!this.contains(id)) {
             throw new IllegalArgumentException("There is no event known under the given id: " + id);
         }
         if (active) {
@@ -116,7 +116,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         StringBuilder buf = new StringBuilder();
         buf.append("\nDefaultTetradLoggerConfig: events as follows:");
 
-        for (Event event : events) {
+        for (TetradLoggerConfig.Event event : events) {
             buf.append("\n").append(event).append(active.contains(event.getId()) ? " (active)" : "");
         }
 
@@ -126,7 +126,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
     //======================= Private Methods ==================================//
 
     private boolean contains(String id) {
-        for (Event event : this.events) {
+        for (TetradLoggerConfig.Event event : events) {
             if (id.equals(event.getId())) {
                 return true;
             }
@@ -139,8 +139,8 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
     public static class DefaultEvent implements TetradLoggerConfig.Event {
         static final long serialVersionUID = 23L;
 
-        private String id;
-        private String description;
+        private final String id;
+        private final String description;
 
 
         public DefaultEvent(String id, String description) {
@@ -171,7 +171,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         }
 
         public String toString() {
-            return "Event(" + id + ", " + description + ")";
+            return "Event(" + this.id + ", " + this.description + ")";
         }
     }
 

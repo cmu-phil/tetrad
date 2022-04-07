@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -41,7 +40,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public final class IndTestConditionalCorrelation implements IndependenceTest, ScoreForFact {
+public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * The instance of CCI that is wrapped.
@@ -69,14 +68,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     private final DataSet dataSet;
 
     /**
-     * True iff the fast FDR adjustment should be made.
-     */
-    private boolean fastFDR = false;
-
-    /**
      * True if verbose output should be printed.
      */
-    private boolean verbose = false;
+    private boolean verbose;
     private double score = Double.NaN;
 
     //==========================CONSTRUCTORS=============================//
@@ -117,26 +111,19 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
 
     public boolean isIndependent(Node x, Node y, List<Node> z) {
 
-        double score = cci.isIndependent(x, y, z);
+        double score = this.cci.isIndependent(x, y, z);
         this.score = score;
-        double p = cci.getPValue(score);
+        double p = this.cci.getPValue(score);
+        boolean independent = p > this.alpha;
 
-        if (verbose) {
-            IndependenceFact fact = new IndependenceFact(x, y, z);
-
-            final String s;
-
-            if (p > alpha) {
-                s = fact + " INDEPENDENT p = " + p;
-            } else {
-                s = fact + " dependent p = " + p;
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, p));
             }
-
-            System.out.println(s);
-            TetradLogger.getInstance().log("info", s);
         }
 
-        return p > alpha;
+        return independent;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -144,9 +131,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     }
 
     public boolean isDependent(Node x, Node y, List<Node> z) {
-        double score = cci.isIndependent(x, y, z);
-        double p = cci.getPValue(score);
-        return p < alpha;
+        double score = this.cci.isIndependent(x, y, z);
+        double p = this.cci.getPValue(score);
+        return p < this.alpha;
     }
 
     public boolean isDependent(Node x, Node y, Node... z) {
@@ -155,7 +142,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     }
 
     public double getPValue() {
-        return cci.getPValue();
+        return this.cci.getPValue();
     }
 
     /**
@@ -168,7 +155,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
         }
 
         this.alpha = alpha;
-        cci.setAlpha(alpha);
+        this.cci.setAlpha(alpha);
     }
 
     /**
@@ -190,7 +177,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
      * @return the variable with the given name.
      */
     public Node getVariable(String name) {
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(name)) return node;
         }
 
@@ -221,7 +208,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
      * @return the data set being analyzed.
      */
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     @Override
@@ -246,34 +233,22 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
 
     @Override
     public double getScore() {
-        return score;
-    }
-
-    @Override
-    public double getScoreForFact(IndependenceFact fact) {
-        return cci.isIndependent(fact.getX(), fact.getY(), fact.getZ());
+        return this.score;
     }
 
     /**
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Conditional Correlation, q = " + nf.format(getAlpha());
+        return "Conditional Correlation, q = " + IndTestConditionalCorrelation.nf.format(getAlpha());
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Number of functions to use in (truncated) basis.
-     */
-    public int getNumFunctions() {
-        return this.cci.getNumFunctions();
     }
 
     public void setNumFunctions(int numFunctions) {
@@ -289,19 +264,15 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Sc
     }
 
     public void setKernel(ConditionalCorrelationIndependence.Kernel kernel) {
-        cci.setKernelMultiplier(kernel);
+        this.cci.setKernelMultiplier(kernel);
     }
 
     public void setBasis(ConditionalCorrelationIndependence.Basis basis) {
-        cci.setBasis(basis);
-    }
-
-    public void setFastFDR(boolean fastFDR) {
-        this.fastFDR = fastFDR;
+        this.cci.setBasis(basis);
     }
 
     public void setKernelRegressionSampleSize(int i) {
-        cci.setKernelRegressionSampleSize(i);
+        this.cci.setKernelRegressionSampleSize(i);
     }
 }
 

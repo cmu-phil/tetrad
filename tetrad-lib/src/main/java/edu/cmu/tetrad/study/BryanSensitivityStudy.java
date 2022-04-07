@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -54,8 +54,6 @@ public class BryanSensitivityStudy {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new F1All());
-//        statistics.add(new ArrowheadPrecisionCommonEdges());
-//        statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new GraphExactlyRight());
         statistics.add(new ElapsedTime());
 
@@ -79,32 +77,32 @@ public class BryanSensitivityStudy {
 
 
         {
-            Parameters parameters = getParameters();
-            Graph graph = getGraph1();
+            Parameters parameters = BryanSensitivityStudy.getParameters();
+            Graph graph = BryanSensitivityStudy.getGraph1();
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph1.txt", algorithms, statistics, parameters);
         }
 
         {
-            Parameters parameters = getParameters();
-            Graph graph = getGraph2();
+            Parameters parameters = BryanSensitivityStudy.getParameters();
+            Graph graph = BryanSensitivityStudy.getGraph2();
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph2.txt", algorithms, statistics, parameters);
         }
 
         {
-            Parameters parameters = getParameters();
-            Graph graph = getGraph3();
+            Parameters parameters = BryanSensitivityStudy.getParameters();
+            Graph graph = BryanSensitivityStudy.getGraph3();
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph3.txt", algorithms, statistics, parameters);
         }
 
         {
-            Parameters parameters = getParameters();
-            Graph graph = getGraph4();
+            Parameters parameters = BryanSensitivityStudy.getParameters();
+            Graph graph = BryanSensitivityStudy.getGraph4();
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new SingleGraph(graph)));
             comparison.compareFromSimulations("bryan.simulation", simulations, "graph4.txt", algorithms, statistics, parameters);

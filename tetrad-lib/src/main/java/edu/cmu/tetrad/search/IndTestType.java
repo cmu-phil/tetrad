@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -50,8 +50,6 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Multinomial Logistic Regression", DataType.Mixed);
     public static final IndTestType FISHER_ZD =
             new IndTestType("Fisher's Z (Deterministic)", DataType.Continuous);
-    public static final IndTestType FISHER_Z_BOOTSTRAP =
-            new IndTestType("Fisher's Z (Bootstrap)", DataType.Continuous);
     public static final IndTestType G_SQUARE = new IndTestType("G Square", DataType.Discrete);
     public static final IndTestType CHI_SQUARE = new IndTestType("Chi Square", DataType.Discrete);
     public static final IndTestType D_SEPARATION =
@@ -64,10 +62,6 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Fisher Z Pooled Residuals", DataType.Continuous);
     public static final IndTestType FISHER = new IndTestType("Fisher (Fisher Z)", DataType.Continuous);
     public static final IndTestType TIPPETT = new IndTestType("Tippett (Fisher Z)", DataType.Continuous);
-    public static final IndTestType MIXED_REGR_LRT = new IndTestType("Mixed Regression Likelihood Ratio Test",
-            DataType.Mixed);
-    public static final IndTestType MIXED_CG_LRT
-            = new IndTestType("Mixed Conditional Gaussian Likelihood Ratio Test", DataType.Mixed);
 
     /**
      * The name of this dataType.
@@ -78,7 +72,7 @@ public final class IndTestType implements TetradSerializable {
     /**
      * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
-    protected IndTestType(String name, DataType type) {
+    private IndTestType(String name, DataType type) {
         this.name = name;
         this.dataType = type;
     }
@@ -94,29 +88,28 @@ public final class IndTestType implements TetradSerializable {
      * Prints out the name of the dataType.
      */
     public String toString() {
-        return name;
+        return this.name;
     }
 
     // Declarations required for serialization.
-    private static int nextOrdinal = 0;
-    private final int ordinal = nextOrdinal++;
-    private static final IndTestType[] TYPES = {DEFAULT, CORRELATION_T, FISHER_Z,
-            LINEAR_REGRESSION, CONDITIONAL_CORRELATION, SEM_BIC, LOGISTIC_REGRESSION,
-            MIXED_MLR, FISHER_ZD,
-            FISHER_Z_BOOTSTRAP,
-            G_SQUARE, CHI_SQUARE,
-            D_SEPARATION, TIME_SERIES,
+    private static int nextOrdinal;
+    private final int ordinal = IndTestType.nextOrdinal++;
+    private static final IndTestType[] TYPES = {IndTestType.DEFAULT, IndTestType.CORRELATION_T, IndTestType.FISHER_Z,
+            IndTestType.LINEAR_REGRESSION, IndTestType.CONDITIONAL_CORRELATION, IndTestType.SEM_BIC, IndTestType.LOGISTIC_REGRESSION,
+            IndTestType.MIXED_MLR, IndTestType.FISHER_ZD,
+            IndTestType.G_SQUARE, IndTestType.CHI_SQUARE,
+            IndTestType.D_SEPARATION, IndTestType.TIME_SERIES,
 
-            INDEPENDENCE_FACTS, POOL_RESIDUALS_FISHER_Z, FISHER, TIPPETT,
+            IndTestType.INDEPENDENCE_FACTS, IndTestType.POOL_RESIDUALS_FISHER_Z, IndTestType.FISHER, IndTestType.TIPPETT,
 
     };
 
     Object readResolve() throws ObjectStreamException {
-        return TYPES[ordinal]; // Canonicalize.
+        return IndTestType.TYPES[this.ordinal]; // Canonicalize.
     }
 
     public DataType getDataType() {
-        return dataType;
+        return this.dataType;
     }
 }
 

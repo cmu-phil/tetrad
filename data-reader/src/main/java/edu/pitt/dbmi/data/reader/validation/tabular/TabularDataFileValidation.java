@@ -19,6 +19,7 @@
 package edu.pitt.dbmi.data.reader.validation.tabular;
 
 import edu.pitt.dbmi.data.reader.DataColumn;
+import edu.pitt.dbmi.data.reader.DataFileReader;
 import edu.pitt.dbmi.data.reader.DatasetFileReader;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.validation.MessageType;
@@ -77,10 +78,10 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                 // do nothing because dataColumns is empty
             }
         } catch (IOException exception) {
-            if (results.size() <= maxNumOfMsg) {
-                String errMsg = String.format("Unable to read file %s.", dataFile.getFileName());
+            if (results.size() <= this.maxNumOfMsg) {
+                String errMsg = String.format("Unable to read file %s.", this.dataFile.getFileName());
                 ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, errMsg);
-                result.setAttribute(ValidationAttribute.FILE_NAME, dataFile.getFileName());
+                result.setAttribute(ValidationAttribute.FILE_NAME, this.dataFile.getFileName());
                 results.add(result);
             }
         }
@@ -91,16 +92,16 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
     private void validateDiscreteData(DataColumn[] dataColumns, boolean hasHeader, List<ValidationResult> results) throws IOException {
         int numOfCols = dataColumns.length;
         int numOfRows = 0;
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -111,7 +112,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
             StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 int i = 0; // buffer array index
@@ -121,9 +122,9 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                     for (; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
                         byte currChar = buffer[i];
 
-                        if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
-                            if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
-                                prevChar = currChar;
+                        if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
+                            if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
+                                prevChar = DataFileReader.LINE_FEED;
                                 continue;
                             }
 
@@ -140,12 +141,12 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                             cmntIndex = 0;
                             checkForComment = comment.length > 0;
                         } else if (!skip) {
-                            if (currChar > SPACE_CHAR) {
+                            if (currChar > DataFileReader.SPACE_CHAR) {
                                 hasSeenNonblankChar = true;
                             }
 
                             // skip blank chars at the begining of the line
-                            if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                            if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                                 continue;
                             }
 
@@ -171,9 +172,9 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                 for (; i < len && !Thread.currentThread().isInterrupted(); i++) {
                     byte currChar = buffer[i];
 
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
-                        if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
+                        if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -224,12 +225,12 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                         columnIndex = 0;
                         colNum = 0;
                     } else if (!skip) {
-                        if (currChar > SPACE_CHAR) {
+                        if (currChar > DataFileReader.SPACE_CHAR) {
                             hasSeenNonblankChar = true;
                         }
 
                         // skip blank chars at the begining of the line
-                        if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                             continue;
                         }
 
@@ -247,19 +248,17 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
                                 boolean isDelimiter;
-                                switch (delimiter) {
-                                    case WHITESPACE:
-                                        isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
-                                        break;
-                                    default:
-                                        isDelimiter = (currChar == delimChar);
+                                if (this.delimiter == Delimiter.WHITESPACE) {
+                                    isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                } else {
+                                    isDelimiter = (currChar == delimChar);
                                 }
 
                                 if (isDelimiter) {
@@ -341,16 +340,16 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
     private void validateContinuousData(DataColumn[] dataColumns, boolean hasHeader, List<ValidationResult> results) throws IOException {
         int numOfCols = dataColumns.length;
         int numOfRows = 0;
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -361,7 +360,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
             StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 int i = 0; // buffer array index
@@ -371,9 +370,9 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                     for (; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
                         byte currChar = buffer[i];
 
-                        if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
-                            if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
-                                prevChar = currChar;
+                        if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
+                            if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
+                                prevChar = DataFileReader.LINE_FEED;
                                 continue;
                             }
 
@@ -390,12 +389,12 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                             cmntIndex = 0;
                             checkForComment = comment.length > 0;
                         } else if (!skip) {
-                            if (currChar > SPACE_CHAR) {
+                            if (currChar > DataFileReader.SPACE_CHAR) {
                                 hasSeenNonblankChar = true;
                             }
 
                             // skip blank chars at the begining of the line
-                            if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                            if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                                 continue;
                             }
 
@@ -421,9 +420,9 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                 for (; i < len && !Thread.currentThread().isInterrupted(); i++) {
                     byte currChar = buffer[i];
 
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
-                        if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
+                        if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -439,7 +438,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                     results.add(result);
-                                } else if (!value.equals(missingDataMarker)) {
+                                } else if (!value.equals(this.missingDataMarker)) {
                                     try {
                                         Double.parseDouble(value);
                                     } catch (NumberFormatException exception) {
@@ -485,12 +484,12 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                         columnIndex = 0;
                         colNum = 0;
                     } else if (!skip) {
-                        if (currChar > SPACE_CHAR) {
+                        if (currChar > DataFileReader.SPACE_CHAR) {
                             hasSeenNonblankChar = true;
                         }
 
                         // skip blank chars at the begining of the line
-                        if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                             continue;
                         }
 
@@ -508,19 +507,17 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
                                 boolean isDelimiter;
-                                switch (delimiter) {
-                                    case WHITESPACE:
-                                        isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
-                                        break;
-                                    default:
-                                        isDelimiter = (currChar == delimChar);
+                                if (this.delimiter == Delimiter.WHITESPACE) {
+                                    isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                } else {
+                                    isDelimiter = (currChar == delimChar);
                                 }
 
                                 if (isDelimiter) {
@@ -535,7 +532,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                                             result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                             results.add(result);
-                                        } else if (!value.equals(missingDataMarker)) {
+                                        } else if (!value.equals(this.missingDataMarker)) {
                                             try {
                                                 Double.parseDouble(value);
                                             } catch (NumberFormatException exception) {
@@ -580,7 +577,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                         result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                         result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                         results.add(result);
-                    } else if (!value.equals(missingDataMarker)) {
+                    } else if (!value.equals(this.missingDataMarker)) {
                         try {
                             Double.parseDouble(value);
                         } catch (NumberFormatException exception) {
@@ -624,16 +621,16 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
     private void validateMixedData(DataColumn[] dataColumns, boolean hasHeader, List<ValidationResult> results) throws IOException {
         int numOfCols = dataColumns.length;
         int numOfRows = 0;
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -644,7 +641,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
 
             StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 int i = 0; // buffer array index
@@ -654,9 +651,9 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                     for (; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
                         byte currChar = buffer[i];
 
-                        if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
-                            if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
-                                prevChar = currChar;
+                        if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
+                            if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
+                                prevChar = DataFileReader.LINE_FEED;
                                 continue;
                             }
 
@@ -673,12 +670,12 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                             cmntIndex = 0;
                             checkForComment = comment.length > 0;
                         } else if (!skip) {
-                            if (currChar > SPACE_CHAR) {
+                            if (currChar > DataFileReader.SPACE_CHAR) {
                                 hasSeenNonblankChar = true;
                             }
 
                             // skip blank chars at the begining of the line
-                            if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                            if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                                 continue;
                             }
 
@@ -704,9 +701,9 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                 for (; i < len && !Thread.currentThread().isInterrupted(); i++) {
                     byte currChar = buffer[i];
 
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
-                        if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
+                        if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -722,7 +719,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                                     result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                     result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                     results.add(result);
-                                } else if (!value.equals(missingDataMarker)) {
+                                } else if (!value.equals(this.missingDataMarker)) {
                                     if (!dataColumn.isDiscrete()) {
                                         try {
                                             Double.parseDouble(value);
@@ -770,12 +767,12 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                         columnIndex = 0;
                         colNum = 0;
                     } else if (!skip) {
-                        if (currChar > SPACE_CHAR) {
+                        if (currChar > DataFileReader.SPACE_CHAR) {
                             hasSeenNonblankChar = true;
                         }
 
                         // skip blank chars at the begining of the line
-                        if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                             continue;
                         }
 
@@ -793,19 +790,17 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
                                 boolean isDelimiter;
-                                switch (delimiter) {
-                                    case WHITESPACE:
-                                        isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
-                                        break;
-                                    default:
-                                        isDelimiter = (currChar == delimChar);
+                                if (this.delimiter == Delimiter.WHITESPACE) {
+                                    isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                } else {
+                                    isDelimiter = (currChar == delimChar);
                                 }
 
                                 if (isDelimiter) {
@@ -820,7 +815,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                                             result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                                             result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                                             results.add(result);
-                                        } else if (!value.equals(missingDataMarker)) {
+                                        } else if (!value.equals(this.missingDataMarker)) {
                                             if (!dataColumn.isDiscrete()) {
                                                 try {
                                                     Double.parseDouble(value);
@@ -867,7 +862,7 @@ public class TabularDataFileValidation extends DatasetFileReader implements Tabu
                         result.setAttribute(ValidationAttribute.COLUMN_NUMBER, colNum);
                         result.setAttribute(ValidationAttribute.LINE_NUMBER, lineNum);
                         results.add(result);
-                    } else if (!value.equals(missingDataMarker)) {
+                    } else if (!value.equals(this.missingDataMarker)) {
                         if (!dataColumn.isDiscrete()) {
                             try {
                                 Double.parseDouble(value);

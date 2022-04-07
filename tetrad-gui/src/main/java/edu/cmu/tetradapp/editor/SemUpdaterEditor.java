@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -48,19 +48,16 @@ public class SemUpdaterEditor extends JPanel {
     /**
      * The SEM updater being edited.
      */
-    private SemUpdater semUpdater;
+    private final SemUpdater semUpdater;
 
     private final Map<JCheckBox, Integer> checkBoxesToVariables = new HashMap<>();
-    private final Map<Integer, JCheckBox> variablesToCheckboxes = new HashMap<>();
     private final Map<Integer, DoubleTextField> variablesToTextFields = new HashMap<>();
-    private SemImEditor semImEditor;
+    private final SemImEditor semImEditor;
     private final LinkedList<DoubleTextField> focusTraversalOrder = new LinkedList<>();
     private final Map<DoubleTextField, Integer> labels = new HashMap<>();
 
     /**
      * Constructs a new instantiated model editor from a SEM Updater.
-     *
-     * @param semUpdater
      */
     public SemUpdaterEditor(SemUpdater semUpdater) {
         if (semUpdater == null) {
@@ -74,17 +71,17 @@ public class SemUpdaterEditor extends JPanel {
 
         Box b1 = Box.createHorizontalBox();
 
-        semImEditor = new SemImEditor(new SemImWrapper(semUpdater.getSemIm()));
-        semImEditor.add(getUpdatePanel(), BorderLayout.WEST);
-        semImEditor.setEditable(false);
-        b1.add(semImEditor);
+        this.semImEditor = new SemImEditor(new SemImWrapper(semUpdater.getSemIm()));
+        this.semImEditor.add(getUpdatePanel(), BorderLayout.WEST);
+        this.semImEditor.setEditable(false);
+        b1.add(this.semImEditor);
 
         add(b1, BorderLayout.CENTER);
     }
 
     private Box getUpdatePanel() {
-        final SemEvidence evidence = semUpdater.getEvidence();
-        focusTraversalOrder.clear();
+        SemEvidence evidence = this.semUpdater.getEvidence();
+        this.focusTraversalOrder.clear();
 
         Box b = Box.createVerticalBox();
 
@@ -118,11 +115,11 @@ public class SemUpdaterEditor extends JPanel {
             c.add(label);
 
             double mean = evidence.getProposition().getValue(i);
-            final DoubleTextField field = new DoubleTextField(mean, 5, NumberFormatUtil.getInstance().getNumberFormat());
+            DoubleTextField field = new DoubleTextField(mean, 5, NumberFormatUtil.getInstance().getNumberFormat());
 
             field.setFilter((value, oldValue) -> {
                 try {
-                    final int nodeIndex = labels.get(field);
+                    int nodeIndex = this.labels.get(field);
 
                     if (Double.isNaN(value)
                             && evidence.isManipulated(nodeIndex)) {
@@ -131,19 +128,19 @@ public class SemUpdaterEditor extends JPanel {
 
                     evidence.getProposition().setValue(nodeIndex, value);
 //                    semIm.setMean(node, value);
-                    SemIm updatedSem = semUpdater.getUpdatedSemIm();
-                    semImEditor.displaySemIm(updatedSem,
-                            semImEditor.getTabSelectionIndex(),
-                            semImEditor.getMatrixSelection());
+                    SemIm updatedSem = this.semUpdater.getUpdatedSemIm();
+                    this.semImEditor.displaySemIm(updatedSem,
+                            this.semImEditor.getTabSelectionIndex(),
+                            this.semImEditor.getMatrixSelection());
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
                 }
             });
 
-            labels.put(field, i);
-            variablesToTextFields.put(i, field);
-            focusTraversalOrder.add(field);
+            this.labels.put(field, i);
+            this.variablesToTextFields.put(i, field);
+            this.focusTraversalOrder.add(field);
 
             c.add(field);
             c.add(Box.createHorizontalStrut(2));
@@ -159,30 +156,29 @@ public class SemUpdaterEditor extends JPanel {
             };
 
             checkbox.setSelected(evidence.isManipulated(i));
-            checkBoxesToVariables.put(checkbox, i);
-            variablesToCheckboxes.put(i, checkbox);
+            this.checkBoxesToVariables.put(checkbox, i);
             checkbox.addActionListener((e) -> {
                 JCheckBox chkbox = (JCheckBox) e.getSource();
                 boolean selected = chkbox.isSelected();
-                Integer o = checkBoxesToVariables.get(chkbox);
+                Integer o = this.checkBoxesToVariables.get(chkbox);
 
                 // If no value has been set for this variable, set it to
                 // the mean.
                 double value = evidence.getProposition().getValue(o);
 //
                 if (Double.isNaN(value)) {
-                    DoubleTextField dblTxtField = variablesToTextFields.get(o);
-                    SemIm semIM = semUpdater.getSemIm();
+                    DoubleTextField dblTxtField = this.variablesToTextFields.get(o);
+                    SemIm semIM = this.semUpdater.getSemIm();
                     Node varNode = semIM.getVariableNodes().get(o);
                     double semIMMean = semIM.getMean(varNode);
                     dblTxtField.setValue(semIMMean);
                 }
 
-                semUpdater.getEvidence().setManipulated(o, selected);
-                SemIm updatedSem = semUpdater.getUpdatedSemIm();
-                semImEditor.displaySemIm(updatedSem,
-                        semImEditor.getTabSelectionIndex(),
-                        semImEditor.getMatrixSelection());
+                this.semUpdater.getEvidence().setManipulated(o, selected);
+                SemIm updatedSem = this.semUpdater.getUpdatedSemIm();
+                this.semImEditor.displaySemIm(updatedSem,
+                        this.semImEditor.getTabSelectionIndex(),
+                        this.semImEditor.getMatrixSelection());
             });
             checkbox.setBackground(Color.WHITE);
             checkbox.setBorder(null);
@@ -198,10 +194,10 @@ public class SemUpdaterEditor extends JPanel {
         JButton button = new JButton("Do Update Now");
 
         button.addActionListener((e) -> {
-            SemIm updatedSem = semUpdater.getUpdatedSemIm();
-            semImEditor.displaySemIm(updatedSem,
-                    semImEditor.getTabSelectionIndex(),
-                    semImEditor.getMatrixSelection());
+            SemIm updatedSem = this.semUpdater.getUpdatedSemIm();
+            this.semImEditor.displaySemIm(updatedSem,
+                    this.semImEditor.getTabSelectionIndex(),
+                    this.semImEditor.getMatrixSelection());
 //            semUpdater.setEvidence(new SemEvidence(updatedSem));
         });
 
@@ -214,11 +210,11 @@ public class SemUpdaterEditor extends JPanel {
             @Override
             public Component getComponentAfter(Container focusCycleRoot,
                                                Component aComponent) {
-                int index = focusTraversalOrder.indexOf(aComponent);
-                int size = focusTraversalOrder.size();
+                int index = SemUpdaterEditor.this.focusTraversalOrder.indexOf(aComponent);
+                int size = SemUpdaterEditor.this.focusTraversalOrder.size();
 
                 if (index != -1) {
-                    return focusTraversalOrder.get((index + 1) % size);
+                    return SemUpdaterEditor.this.focusTraversalOrder.get((index + 1) % size);
                 } else {
                     return getFirstComponent(focusCycleRoot);
                 }
@@ -227,11 +223,11 @@ public class SemUpdaterEditor extends JPanel {
             @Override
             public Component getComponentBefore(Container focusCycleRoot,
                                                 Component aComponent) {
-                int index = focusTraversalOrder.indexOf(aComponent);
-                int size = focusTraversalOrder.size();
+                int index = SemUpdaterEditor.this.focusTraversalOrder.indexOf(aComponent);
+                int size = SemUpdaterEditor.this.focusTraversalOrder.size();
 
                 if (index != -1) {
-                    return focusTraversalOrder.get((index - 1) % size);
+                    return SemUpdaterEditor.this.focusTraversalOrder.get((index - 1) % size);
                 } else {
                     return getFirstComponent(focusCycleRoot);
                 }
@@ -239,12 +235,12 @@ public class SemUpdaterEditor extends JPanel {
 
             @Override
             public Component getFirstComponent(Container focusCycleRoot) {
-                return focusTraversalOrder.getFirst();
+                return SemUpdaterEditor.this.focusTraversalOrder.getFirst();
             }
 
             @Override
             public Component getLastComponent(Container focusCycleRoot) {
-                return focusTraversalOrder.getLast();
+                return SemUpdaterEditor.this.focusTraversalOrder.getLast();
             }
 
             @Override
@@ -260,8 +256,6 @@ public class SemUpdaterEditor extends JPanel {
 
     /**
      * Constructs a new instantiated model editor from a SEM IM wrapper.
-     *
-     * @param wrapper
      */
     public SemUpdaterEditor(SemUpdaterWrapper wrapper) {
         this(wrapper.getSemUpdater());

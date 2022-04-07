@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -67,22 +67,22 @@ public final class CombinationGenerator {
      */
     public CombinationGenerator(int[] dims) {
         this.dims = dims;
-        local = new int[dims.length];
-        returned = new int[dims.length];
+        this.local = new int[dims.length];
+        this.returned = new int[dims.length];
 
         // Initialize the combination array with successive integers [0 1 2 ...].
         // Set the value at the last index one less than it would be in such
         // a series, ([0 1 2 ... b - 2]) so that on the first call to next()
         // the first combination ([0 1 2 ... b - 1]) is returned correctly.
         for (int i = 0; i < dims.length - 1; i++) {
-            local[i] = 0;
+            this.local[i] = 0;
         }
 
-        if (local.length > 0) {
-            local[local.length - 1] = -1;
+        if (this.local.length > 0) {
+            this.local[this.local.length - 1] = -1;
         }
 
-        begun = false;
+        this.begun = false;
     }
 
     /**
@@ -96,20 +96,20 @@ public final class CombinationGenerator {
         // its expected maximum (i + diff) and perform the fill() operation
         // at that index.
         while (--i > -1) {
-            if (this.local[i] < dims[i] - 1) {
+            if (this.local[i] < this.dims[i] - 1) {
                 fill(i);
-                begun = true;
-                System.arraycopy(local, 0, returned, 0, getNumObjects());
-                return returned;
+                this.begun = true;
+                System.arraycopy(this.local, 0, this.returned, 0, getNumObjects());
+                return this.returned;
             }
         }
 
         if (this.begun) {
             return null;
         } else {
-            begun = true;
-            System.arraycopy(local, 0, returned, 0, getNumObjects());
-            return returned;
+            this.begun = true;
+            System.arraycopy(this.local, 0, this.returned, 0, getNumObjects());
+            return this.returned;
         }
     }
 
@@ -156,7 +156,7 @@ public final class CombinationGenerator {
      * @return Ibid.
      */
     private int getNumObjects() {
-        return local.length;
+        return this.local.length;
     }
 
     /**
@@ -169,7 +169,7 @@ public final class CombinationGenerator {
         this.local[index]++;
 
         for (int i = index + 1; i < getNumObjects(); i++) {
-            local[i] = 0;
+            this.local[i] = 0;
         }
     }
 }

@@ -12,7 +12,6 @@ import edu.cmu.tetrad.search.SemBicScoreMultiFas;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,10 +64,10 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
             for (DataModel d : dataSets) {
                 _dataSets.add((DataSet) d);
             }
-            final SemBicScoreMultiFas score = new SemBicScoreMultiFas(dataSets);
+            SemBicScoreMultiFas score = new SemBicScoreMultiFas(dataSets);
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             edu.cmu.tetrad.search.MultiFaskV1 search = new edu.cmu.tetrad.search.MultiFaskV1(_dataSets, score);
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             return search.search();
         } else {
             MultiFaskV1 imagesSemBic = new MultiFaskV1();
@@ -78,25 +77,13 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
             for (DataModel dataModel : dataSets) {
                 datasets.add((DataSet) dataModel);
             }
-            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(
+                    datasets,
+                    imagesSemBic,
+                    parameters.getInt(Params.NUMBER_RESAMPLING),
+                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
+                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -107,30 +94,17 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList((DataModel) DataUtils.getContinuousDataSet(dataSet)), parameters);
+            return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
         } else {
             MultiFaskV1 imagesSemBic = new MultiFaskV1();
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
+                    imagesSemBic,
+                    parameters.getInt(Params.NUMBER_RESAMPLING),
+                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
+                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -141,8 +115,6 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
-//        return SearchGraphUtils.patternForDag(graph);
-//        return new TsDagToPag(new EdgeListGraph(graph)).convert();
     }
 
     @Override
@@ -171,7 +143,7 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,14 +22,11 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.LinkedList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -51,15 +48,6 @@ class DescriptiveStatsEditorPanel extends JPanel {
      */
     private final DataSet dataSet;
 
-    private QQPlot qqPlot;
-
-
-    /**
-     * The discrete variables of the data set (may be empty).
-     */
-    private LinkedList<DiscreteVariable> variables = new LinkedList<>();
-
-
     /**
      * Constructs the editor panel given the initial histogram and the dataset.
      */
@@ -79,12 +67,10 @@ class DescriptiveStatsEditorPanel extends JPanel {
             }
 //            }
         }
-        this.variableBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    Node node = (Node) e.getItem();
-                    changeDescriptiveStats(DescriptiveStats.generateDescriptiveStats(DescriptiveStatsEditorPanel.this.dataSet, node));
-                }
+        this.variableBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                Node node = (Node) e.getItem();
+                changeDescriptiveStats(DescriptiveStats.generateDescriptiveStats(DescriptiveStatsEditorPanel.this.dataSet, node));
             }
         });
 
@@ -107,7 +93,7 @@ class DescriptiveStatsEditorPanel extends JPanel {
 
 
     private Box buildEditArea() {
-        setPreferredAsMax(this.variableBox);
+        DescriptiveStatsEditorPanel.setPreferredAsMax(this.variableBox);
 
         Box main = Box.createVerticalBox();
         Box hBox = Box.createHorizontalBox();

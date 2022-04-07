@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,10 +39,10 @@ public class GraphScore implements Score {
     private final Graph dag;
 
     // The variables of the covariance matrix.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // True if verbose output should be sent to out.
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -88,52 +88,12 @@ public class GraphScore implements Score {
     }
 
     private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
-        Node _y = variables.get(y);
-        Node _x = variables.get(x);
+        Node _y = this.variables.get(y);
+        Node _x = this.variables.get(x);
         List<Node> _z = getVariableList(z);
-        boolean dSeparatedFrom = dag.isDSeparatedFrom(_x, _y, _z);
-
-//        if (dSeparatedFrom) {
-//            System.out.println(SearchLogUtils.independenceFact(_x, _y, _z));
-//        } else {
-//            System.out.println("\t NOT " + SearchLogUtils.independenceFact(_x, _y, _z));
-//        }
+        boolean dSeparatedFrom = this.dag.isDSeparatedFrom(_x, _y, _z);
 
         return dSeparatedFrom ? -1.0 : 1.0;
-    }
-
-    private double aBetterScore(int x, int y, int[] z) {
-        Node _y = variables.get(y);
-        Node _x = variables.get(x);
-        List<Node> _z = getVariableList(z);
-        boolean dsep = dag.isDSeparatedFrom(_x, _y, _z);
-        int count = 0;
-
-        if (!dsep) count++;
-
-        for (Node z0 : _z) {
-            if (dag.isDSeparatedFrom(_x, z0, _z)) {
-                count += 1;
-            }
-        }
-
-        double score = dsep ? -1 - count : 1 + count;
-
-//        if (score == 1) score -= Math.tanh(z.length);
-        return score;
-    }
-
-    private List<Node> minus(List<Node> z, Node z0) {
-        List<Node> diff = new ArrayList<>(z);
-        diff.remove(z0);
-        return diff;
-    }
-
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
     }
 
     /**
@@ -161,7 +121,7 @@ public class GraphScore implements Score {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -170,11 +130,11 @@ public class GraphScore implements Score {
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     public Node getVariable(String name) {
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(name)) {
                 return node;
             }
@@ -201,12 +161,8 @@ public class GraphScore implements Score {
         return false;
     }
 
-    public void setAlternativePenalty(double alpha) {
-        throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
-    }
-
     public Graph getDag() {
-        return dag;
+        return this.dag;
     }
 }
 

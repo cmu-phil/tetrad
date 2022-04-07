@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,7 +39,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class FciRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource, IonInput {
+        implements IndTestProducer, IonInput {
     static final long serialVersionUID = 23L;
 
     //=========================CONSTRUCTORS================================//
@@ -147,13 +147,7 @@ public class FciRunner extends AbstractAlgorithmRunner
         Parameters params = getParams();
         IndTestType testType;
 
-        if (getParams() instanceof Parameters) {
-            Parameters _params = params;
-            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
-        } else {
-            Parameters _params = params;
-            testType = (IndTestType) _params.get("indTestType", IndTestType.FISHER_Z);
-        }
+        testType = (IndTestType) params.get("indTestType", IndTestType.FISHER_Z);
 
         return new IndTestChooser().getTest(dataModel, params, testType);
     }
@@ -167,10 +161,7 @@ public class FciRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
-//        names.add("Definite ColliderDiscovery");
-//        names.add("Definite Noncolliders");
-        return names;
+        return new ArrayList<>();
     }
 
     /**
@@ -179,8 +170,6 @@ public class FciRunner extends AbstractAlgorithmRunner
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));
         return triplesList;
     }
 

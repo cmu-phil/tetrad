@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -74,7 +74,7 @@ final class NumberFormatAction extends AbstractAction
 
         // Set up basic tab.
         final double sample = 23.5;
-        final JTextField renderFieldBasic = new JTextField(
+        JTextField renderFieldBasic = new JTextField(
                 new DecimalFormat(constructSimpleFormatString()).format(sample));
         renderFieldBasic.setMaximumSize(new Dimension(150, 50));
         renderFieldBasic.setEditable(false);
@@ -90,7 +90,7 @@ final class NumberFormatAction extends AbstractAction
                 Preferences.userRoot().putBoolean("scientificNotation",
                         checkBox.isSelected());
                 renderFieldBasic.setText(new DecimalFormat(constructSimpleFormatString()).format(sample));
-                formatField.setText(constructSimpleFormatString());
+                NumberFormatAction.this.formatField.setText(constructSimpleFormatString());
             }
         });
 
@@ -106,7 +106,7 @@ final class NumberFormatAction extends AbstractAction
 
                 Preferences.userRoot().putInt("numDecimals", value);
                 renderFieldBasic.setText(new DecimalFormat(constructSimpleFormatString()).format(sample));
-                formatField.setText(constructSimpleFormatString());
+                NumberFormatAction.this.formatField.setText(constructSimpleFormatString());
             }
         });
 
@@ -124,7 +124,7 @@ final class NumberFormatAction extends AbstractAction
             public void actionPerformed(ActionEvent e) {
                 Preferences.userRoot().putBoolean("decimalsOptional", true);
                 renderFieldBasic.setText(new DecimalFormat(constructSimpleFormatString()).format(sample));
-                formatField.setText(constructSimpleFormatString());
+                NumberFormatAction.this.formatField.setText(constructSimpleFormatString());
             }
         });
 
@@ -132,12 +132,12 @@ final class NumberFormatAction extends AbstractAction
             public void actionPerformed(ActionEvent e) {
                 Preferences.userRoot().putBoolean("decimalsOptional", false);
                 renderFieldBasic.setText(new DecimalFormat(constructSimpleFormatString()).format(sample));
-                formatField.setText(constructSimpleFormatString());
+                NumberFormatAction.this.formatField.setText(constructSimpleFormatString());
             }
         });
 
         if (!Preferences.userRoot().getBoolean("numFormatAdvanced", false)) {
-            formatField.setText(constructSimpleFormatString());
+            this.formatField.setText(constructSimpleFormatString());
         }
 
         // Set up basic panel.
@@ -178,17 +178,17 @@ final class NumberFormatAction extends AbstractAction
         Box basic = Box.createVerticalBox();
         basic.add(a);
 
-        final JPanel basicPanel = new JPanel();
+        JPanel basicPanel = new JPanel();
         basicPanel.setLayout(new BorderLayout());
         basicPanel.add(basic, BorderLayout.CENTER);
 
         // Set up advanced panel.
-        final JTextField sampleFieldAdvanced = new JTextField("" + sample);
-        final JTextField renderFieldAdvanced = new JTextField(getNumberFormat().format(sample));
+        JTextField sampleFieldAdvanced = new JTextField("" + sample);
+        JTextField renderFieldAdvanced = new JTextField(getNumberFormat().format(sample));
         renderFieldAdvanced.setEditable(false);
         renderFieldAdvanced.setBackground(Color.WHITE);
 
-        formatField.addKeyListener(new KeyAdapter() {
+        this.formatField.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent e) {
                 updateAdvancedFields(sampleFieldAdvanced, renderFieldAdvanced);
             }
@@ -220,7 +220,7 @@ final class NumberFormatAction extends AbstractAction
         f.setBorder(new TitledBorder("Format String"));
 
         Box f1 = Box.createHorizontalBox();
-        f1.add(formatField);
+        f1.add(this.formatField);
         f.add(f1);
 
         advanced.add(f);
@@ -243,7 +243,7 @@ final class NumberFormatAction extends AbstractAction
 
         advanced.add(c);
 
-        final JPanel advancedPanel = new JPanel();
+        JPanel advancedPanel = new JPanel();
         advancedPanel.setLayout(new BorderLayout());
         advancedPanel.add(advanced, BorderLayout.CENTER);
 
@@ -263,7 +263,7 @@ final class NumberFormatAction extends AbstractAction
 
                 if (panel == basicPanel) {
                     String format = constructSimpleFormatString();
-                    formatField.setText(format);
+                    NumberFormatAction.this.formatField.setText(format);
                     renderFieldBasic.setText(new DecimalFormat(format).format(sample));
                 }
             }
@@ -296,7 +296,7 @@ final class NumberFormatAction extends AbstractAction
      *                          accepted by DecimalFormat.
      */
     private String getFormatString() throws RuntimeException {
-        String format = formatField.getText();
+        String format = this.formatField.getText();
 
         try {
             new DecimalFormat(format);
@@ -331,12 +331,12 @@ final class NumberFormatAction extends AbstractAction
             return;
         }
 
-        String format = formatField.getText();
+        String format = this.formatField.getText();
 
         try {
             new DecimalFormat(format);
         } catch (Exception e2) {
-            formatField.setForeground(Color.RED);
+            this.formatField.setForeground(Color.RED);
             return;
         }
 
@@ -344,7 +344,7 @@ final class NumberFormatAction extends AbstractAction
         NumberFormat nf = new DecimalFormat(format);
         renderFieldAdvanced.setText(nf.format(sample));
         sampleFieldAdvanced.setForeground(Color.BLACK);
-        formatField.setForeground(Color.BLACK);
+        this.formatField.setForeground(Color.BLACK);
         Preferences.userRoot().put("numberFormat", format);
     }
 

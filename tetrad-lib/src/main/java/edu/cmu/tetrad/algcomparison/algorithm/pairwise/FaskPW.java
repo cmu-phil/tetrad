@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -17,7 +16,6 @@ import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +35,8 @@ import java.util.List;
 public class FaskPW implements Algorithm, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
-    private Algorithm algorithm = null;
-    private Graph externalGraph = null;
+    private Algorithm algorithm;
+    private Graph externalGraph;
 
     public FaskPW() {
     }
@@ -50,16 +48,16 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Graph graph = externalGraph;
+            Graph graph = this.externalGraph;
 
             if (graph == null) {
-                graph = algorithm.search(dataModel, parameters);
+                graph = this.algorithm.search(dataModel, parameters);
             }
 
             if (graph == null) {
                 throw new IllegalArgumentException(
                         "This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
-                        + "will orient the edges in the input graph using the data");
+                                + "will orient the edges in the input graph using the data");
             }
 
             DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
@@ -71,30 +69,13 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
 
             return fask.search();
         } else {
-            FaskPW rSkew = new FaskPW(algorithm);
-            if (externalGraph != null) {
-                rSkew.setExternalGraph(externalGraph);
+            FaskPW rSkew = new FaskPW(this.algorithm);
+            if (this.externalGraph != null) {
+                rSkew.setExternalGraph(this.externalGraph);
             }
 
             DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, rSkew, parameters.getInt(Params.NUMBER_RESAMPLING));
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, rSkew, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -109,8 +90,8 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
 
     @Override
     public String getDescription() {
-        return "RSkew" + (algorithm != null ? " with initial graph from "
-                + algorithm.getDescription() : "");
+        return "RSkew" + (this.algorithm != null ? " with initial graph from "
+                + this.algorithm.getDescription() : "");
     }
 
     @Override
@@ -122,8 +103,8 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 
-        if (algorithm != null && !algorithm.getParameters().isEmpty()) {
-            parameters.addAll(algorithm.getParameters());
+        if (this.algorithm != null && !this.algorithm.getParameters().isEmpty()) {
+            parameters.addAll(this.algorithm.getParameters());
         }
 
         parameters.add(Params.VERBOSE);
@@ -133,7 +114,7 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
 
     @Override
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     @Override

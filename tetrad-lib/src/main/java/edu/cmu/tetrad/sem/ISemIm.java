@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,7 +24,6 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.List;
 
@@ -33,7 +32,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public interface ISemIm extends Simulator, TetradSerializable {
+public interface ISemIm extends Simulator {
     long serialVersionUID = 23L;
 
     SemPm getSemPm();
@@ -100,7 +99,7 @@ public interface ISemIm extends Simulator, TetradSerializable {
 
     double getStdDev(Node node, Matrix implCovar);
 
-    List getMeasuredNodes();
+    List<Node> getMeasuredNodes();
 
     Matrix getImplCovarMeas();
 
@@ -116,7 +115,6 @@ public interface ISemIm extends Simulator, TetradSerializable {
 
     boolean isSimulatedPositiveDataOnly();
 
-    void setSimulatedPositiveDataOnly(boolean simulatedPositiveDataOnly);
 }
 
 

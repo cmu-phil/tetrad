@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,7 +46,7 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      *
      * @serial Cannot be null.
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * The manipulated Bayes IM--that is, bayesIm after the manipulations in
@@ -134,7 +134,7 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
             throw new NullPointerException();
         }
 
-        if (evidence.isIncompatibleWith(bayesIm)) {
+        if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variable list for this evidence " +
                     "must be compatible with the variable list of the stored IM.");
         }
@@ -142,23 +142,23 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
         this.evidence = evidence;
 
         // Create the manipulated Bayes Im.
-        Graph graph = bayesIm.getBayesPm().getDag();
+        Graph graph = this.bayesIm.getBayesPm().getDag();
         Dag manipulatedGraph = createManipulatedGraph(graph);
         BayesPm manipulatedBayesPm = createManipulatedBayesPm(manipulatedGraph);
         this.manipulatedBayesIm = createdManipulatedBayesIm(manipulatedBayesPm);
 
         // Create the updated BayesIm from the manipulated Bayes Im.
-        Evidence evidence2 = new Evidence(evidence, manipulatedBayesIm);
-        this.updatedBayesIm = new UpdatedBayesIm(manipulatedBayesIm, evidence2);
+        Evidence evidence2 = new Evidence(evidence, this.manipulatedBayesIm);
+        this.updatedBayesIm = new UpdatedBayesIm(this.manipulatedBayesIm, evidence2);
 
         // Create the marginal calculator from the updated Bayes Im.
         this.cptInvariantMarginalCalculator =
-                new CptInvariantMarginalCalculator(bayesIm,
+                new CptInvariantMarginalCalculator(this.bayesIm,
                         evidence2);
     }
 
     public double getMarginal(int variable, int value) {
-        return cptInvariantMarginalCalculator.getMarginal(variable, value);
+        return this.cptInvariantMarginalCalculator.getMarginal(variable, value);
     }
 
     public boolean isJointMarginalSupported() {
@@ -185,7 +185,7 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
     }
 
     public double[] calculateUpdatedMarginals(int nodeIndex) {
-        double[] marginals = new double[evidence.getNumCategories(nodeIndex)];
+        double[] marginals = new double[this.evidence.getNumCategories(nodeIndex)];
 
         for (int i = 0;
              i < getBayesIm().getNumColumns(nodeIndex); i++) {
@@ -199,48 +199,30 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      * Prints out the most recent marginal.
      */
     public String toString() {
-        return "CPT Invariant Updater, evidence = " + evidence;
+        return "CPT Invariant Updater, evidence = " + this.evidence;
     }
 
     //==============================PRIVATE METHODS=======================//
 
     private BayesIm createdManipulatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.MANUAL);
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.MANUAL);
     }
 
     private BayesPm createManipulatedBayesPm(Dag updatedGraph) {
-        return new BayesPm(updatedGraph, bayesIm.getBayesPm());
+        return new BayesPm(updatedGraph, this.bayesIm.getBayesPm());
     }
-
-//    private Dag createManipulatedGraph(Graph graph) {
-//        Dag updatedGraph = new Dag(graph);
-//
-//        for (int i = 0; i < bayesIm.getNumNodes(); ++i) {
-//            if (evidence.isManipulated(i)) {
-//                Node node = evidence.getNode(i);
-//                List<Node> parents = updatedGraph.getParents(node);
-//
-//                for (Node parent1 : parents) {
-//                    updatedGraph.removeEdge(node, parent1);
-//                }
-//            }
-//        }
-//
-//        return updatedGraph;
-//    }
 
     private Dag createManipulatedGraph(Graph graph) {
         Dag updatedGraph = new Dag(graph);
 
         // alters graph for manipulated evidenceItems
-        for (int i = 0; i < evidence.getNumNodes(); ++i) {
-            if (evidence.isManipulated(i)) {
-                Node node = updatedGraph.getNode(evidence.getNode(i).getName());
+        for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
+            if (this.evidence.isManipulated(i)) {
+                Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
                 List<Node> parents = updatedGraph.getParents(node);
 
-                for (Object parent1 : parents) {
-                    Node parent = (Node) parent1;
-                    updatedGraph.removeEdge(node, parent);
+                for (Node parent1 : parents) {
+                    updatedGraph.removeEdge(node, parent1);
                 }
             }
         }
@@ -257,19 +239,16 @@ public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (evidence == null) {
+        if (this.evidence == null) {
             throw new NullPointerException();
         }
     }

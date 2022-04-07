@@ -8,5 +8,5 @@ import java.util.Map;
  * @author jdramsey
  */
 public interface ParameterValues {
-    Map<String, Object> paremeterValues();
+    Map<String, Object> parameterValues();
 }

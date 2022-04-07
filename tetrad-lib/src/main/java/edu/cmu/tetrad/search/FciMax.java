@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -74,7 +74,7 @@ public final class FciMax implements GraphSearch {
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
      */
-    private boolean completeRuleSetUsed = false;
+    private boolean completeRuleSetUsed;
 
     /**
      * True iff the possible dsep search is done.
@@ -104,17 +104,17 @@ public final class FciMax implements GraphSearch {
     /**
      * True iff verbose output should be printed.
      */
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * FAS heuristic
      */
-    private int heuristic = 0;
+    private int heuristic;
 
     /**
      * FAS stable option.
      */
-    private boolean stable = false;
+    private boolean stable;
 
     //============================CONSTRUCTORS============================//
 
@@ -165,7 +165,7 @@ public final class FciMax implements GraphSearch {
     //========================PUBLIC METHODS==========================//
 
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     public void setDepth(int depth) {
@@ -185,15 +185,15 @@ public final class FciMax implements GraphSearch {
         long start = System.currentTimeMillis();
 
         Fas fas = new Fas(getIndependenceTest());
-        logger.log("info", "Starting FCI algorithm.");
-        logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        this.logger.log("info", "Starting FCI algorithm.");
+        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
         fas.setKnowledge(getKnowledge());
-        fas.setDepth(depth);
-        fas.setHeuristic(heuristic);
-        fas.setVerbose(verbose);
-        fas.setStable(stable);
-        fas.setHeuristic(heuristic);
+        fas.setDepth(this.depth);
+        fas.setHeuristic(this.heuristic);
+        fas.setVerbose(this.verbose);
+        fas.setStable(this.stable);
+        fas.setHeuristic(this.heuristic);
 
         //The PAG being constructed.
         Graph graph = fas.search();
@@ -201,13 +201,13 @@ public final class FciMax implements GraphSearch {
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetsPossibleDsep sp = new SepsetsPossibleDsep(graph, independenceTest, knowledge, depth, maxPathLength);
-        sp.setVerbose(verbose);
+        SepsetsPossibleDsep sp = new SepsetsPossibleDsep(graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
+        sp.setVerbose(this.verbose);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
         if (isPossibleDsepSearchDone()) {
-            new FciOrient(new SepsetsSet(this.sepsets, independenceTest)).ruleR0(graph);
+            new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest)).ruleR0(graph);
 
             for (Edge edge : new ArrayList<>(graph.getEdges())) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -221,9 +221,9 @@ public final class FciMax implements GraphSearch {
 
                 if (sepset != null) {
                     graph.removeEdge(x, y);
-                    sepsets.set(x, y, sepset);
+                    this.sepsets.set(x, y, sepset);
 
-                    if (verbose) {
+                    if (this.verbose) {
                         System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
                     }
                 }
@@ -235,12 +235,12 @@ public final class FciMax implements GraphSearch {
 
         // Step CI C (Zhang's step F3.)
 
-        final FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, independenceTest));
+        FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
 
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.fciOrientbk(knowledge, graph, graph.getNodes());
+        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setKnowledge(this.knowledge);
+        fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
         addColliders(graph);
 
 //        fciOrient.ruleR0(graph);
@@ -249,20 +249,20 @@ public final class FciMax implements GraphSearch {
 
         long stop = System.currentTimeMillis();
 
-        elapsedTime = stop - start;
+        this.elapsedTime = stop - start;
 
         return graph;
     }
 
     private void addColliders(Graph graph) {
-        final Map<Triple, Double> scores = new ConcurrentHashMap<>();
+        Map<Triple, Double> scores = new ConcurrentHashMap<>();
 
         List<Node> nodes = graph.getNodes();
 
         class Task extends RecursiveTask<Boolean> {
             final int from;
             final int to;
-            int chunk = 20;
+            final int chunk = 20;
             final List<Node> nodes;
             final Graph graph;
 
@@ -275,24 +275,23 @@ public final class FciMax implements GraphSearch {
 
             @Override
             protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int i = from; i < to; i++) {
-                        doNode(graph, scores, nodes.get(i));
+                if (this.to - this.from <= this.chunk) {
+                    for (int i = this.from; i < this.to; i++) {
+                        doNode(this.graph, scores, this.nodes.get(i));
                     }
 
-                    return true;
                 } else {
-                    int mid = (to + from) / 2;
+                    int mid = (this.to + this.from) / 2;
 
-                    Task left = new Task(nodes, graph, from, mid);
-                    Task right = new Task(nodes, graph, mid, to);
+                    Task left = new Task(this.nodes, this.graph, this.from, mid);
+                    Task right = new Task(this.nodes, this.graph, mid, this.to);
 
                     left.fork();
                     right.compute();
                     left.join();
 
-                    return true;
                 }
+                return true;
             }
         }
 
@@ -343,8 +342,8 @@ public final class FciMax implements GraphSearch {
 
             while ((comb2 = cg2.next()) != null) {
                 List<Node> s = GraphUtils.asList(comb2, adja);
-                independenceTest.isIndependent(a, c, s);
-                double _score = independenceTest.getScore();
+                this.independenceTest.isIndependent(a, c, s);
+                double _score = this.independenceTest.getScore();
 
                 if (_score < score) {
                     score = _score;
@@ -359,8 +358,8 @@ public final class FciMax implements GraphSearch {
 
             while ((comb3 = cg3.next()) != null) {
                 List<Node> s = GraphUtils.asList(comb3, adjc);
-                independenceTest.isIndependent(c, a, s);
-                double _score = independenceTest.getScore();
+                this.independenceTest.isIndependent(c, a, s);
+                double _score = this.independenceTest.getScore();
 
                 if (_score < score) {
                     score = _score;
@@ -388,7 +387,7 @@ public final class FciMax implements GraphSearch {
      * Retrieves the background knowledge that was set.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -407,7 +406,7 @@ public final class FciMax implements GraphSearch {
      * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
-        return completeRuleSetUsed;
+        return this.completeRuleSetUsed;
     }
 
     /**
@@ -422,7 +421,7 @@ public final class FciMax implements GraphSearch {
      * True iff the (time-consuming) possible dsep step should be done.
      */
     public boolean isPossibleDsepSearchDone() {
-        return possibleDsepSearchDone;
+        return this.possibleDsepSearchDone;
     }
 
     /**
@@ -436,7 +435,7 @@ public final class FciMax implements GraphSearch {
      * @return the maximum length of any discriminating path, or -1 of unlimited.
      */
     public int getMaxPathLength() {
-        return maxPathLength == Integer.MAX_VALUE ? -1 : maxPathLength;
+        return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
     }
 
     /**
@@ -454,7 +453,7 @@ public final class FciMax implements GraphSearch {
      * True iff verbose output should be printed.
      */
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     /**
@@ -468,7 +467,7 @@ public final class FciMax implements GraphSearch {
      * The independence test.
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     /**

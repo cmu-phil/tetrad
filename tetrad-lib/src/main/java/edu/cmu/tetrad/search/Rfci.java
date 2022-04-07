@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -65,9 +65,9 @@ public final class Rfci implements GraphSearch {
     /**
      * The variables to search over (optional)
      */
-    private List<Node> variables = new ArrayList<>();
+    private final List<Node> variables = new ArrayList<>();
 
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * change flag for repeat rules
@@ -77,12 +77,7 @@ public final class Rfci implements GraphSearch {
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
      */
-    private boolean completeRuleSetUsed = false;
-
-    /**
-     * True iff the possible dsep search is done.
-     */
-    private boolean possibleDsepSearchDone = true;
+    private boolean completeRuleSetUsed;
 
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
@@ -102,14 +97,12 @@ public final class Rfci implements GraphSearch {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * True iff verbose output should be printed.
      */
-    private boolean verbose = false;
-    private Graph truePag;
-
+    private boolean verbose;
 
     //============================CONSTRUCTORS============================//
 
@@ -117,7 +110,7 @@ public final class Rfci implements GraphSearch {
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
     public Rfci(IndependenceTest independenceTest) {
-        if (independenceTest == null || knowledge == null) {
+        if (independenceTest == null) {
             throw new NullPointerException();
         }
 
@@ -130,7 +123,7 @@ public final class Rfci implements GraphSearch {
      * search over.
      */
     public Rfci(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null || knowledge == null) {
+        if (independenceTest == null) {
             throw new NullPointerException();
         }
 
@@ -155,7 +148,7 @@ public final class Rfci implements GraphSearch {
     //========================PUBLIC METHODS==========================//
 
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     public void setDepth(int depth) {
@@ -182,43 +175,43 @@ public final class Rfci implements GraphSearch {
     public Graph search(IFas fas, List<Node> nodes) {
         long beginTime = System.currentTimeMillis();
 
-        logger.log("info", "Starting FCI algorithm.");
-        logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        this.logger.log("info", "Starting FCI algorithm.");
+        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        setMaxPathLength(maxPathLength);
+        setMaxPathLength(this.maxPathLength);
 
         this.graph = new EdgeListGraph(nodes);
 
         long start1 = System.currentTimeMillis();
 
         fas.setKnowledge(getKnowledge());
-        fas.setDepth(depth);
-        fas.setVerbose(verbose);
+        fas.setDepth(this.depth);
+        fas.setVerbose(this.verbose);
 //        fas.setFci(true);
-        graph = fas.search();
-        graph.reorientAllWith(Endpoint.CIRCLE);
+        this.graph = fas.search();
+        this.graph.reorientAllWith(Endpoint.CIRCLE);
         this.sepsets = fas.getSepsets();
 
         long stop1 = System.currentTimeMillis();
         long start2 = System.currentTimeMillis();
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        fciOrientbk(getKnowledge(), graph, variables);
+        fciOrientbk(getKnowledge(), this.graph, this.variables);
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
         doFinalOrientation();
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - beginTime;
 
-        logger.log("graph", "Returning graph: " + graph);
+        this.logger.log("graph", "Returning graph: " + this.graph);
         long stop2 = System.currentTimeMillis();
 
-        logger.log("info", "Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
-        logger.log("info", "Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
+        this.logger.log("info", "Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
+        this.logger.log("info", "Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
 
-        graph.setPag(true);
+        this.graph.setPag(true);
 
-        return graph;
+        return this.graph;
     }
 
     public SepsetMap getSepsets() {
@@ -226,7 +219,7 @@ public final class Rfci implements GraphSearch {
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -242,7 +235,7 @@ public final class Rfci implements GraphSearch {
      * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
-        return completeRuleSetUsed;
+        return this.completeRuleSetUsed;
     }
 
     /**
@@ -259,13 +252,6 @@ public final class Rfci implements GraphSearch {
         return this.sepsets.get(i, k);
     }
 
-
-    private void printWrongColliderMessage(Node a, Node b, Node c, String location) {
-        if (truePag != null && graph.isDefCollider(a, b, c) && !truePag.isDefCollider(a, b, c)) {
-            System.out.println(location + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
-        }
-    }
-
     ////////////////////////////////////////////
     // RFCI Algorithm 4.4 (Colombo et al, 2012)
     // Orient colliders
@@ -273,7 +259,7 @@ public final class Rfci implements GraphSearch {
     private void ruleR0_RFCI(List<Node[]> rTuples) {
         List<Node[]> lTuples = new ArrayList<>();
 
-        List<Node> nodes = graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
 
         ///////////////////////////////
         // process tuples in rTuples
@@ -284,7 +270,7 @@ public final class Rfci implements GraphSearch {
             Node j = thisTuple[1];
             Node k = thisTuple[2];
 
-            final List<Node> nodes1 = getSepset(i, k);
+            List<Node> nodes1 = getSepset(i, k);
 
             if (nodes1 == null) continue;
 
@@ -292,20 +278,20 @@ public final class Rfci implements GraphSearch {
             sepSet.remove(j);
 
             boolean independent1 = false;
-            if (knowledge.noEdgeRequired(i.getName(), j.getName()))  // if BK allows
+            if (this.knowledge.noEdgeRequired(i.getName(), j.getName()))  // if BK allows
             {
                 try {
-                    independent1 = independenceTest.isIndependent(i, j, sepSet);
+                    independent1 = this.independenceTest.isIndependent(i, j, sepSet);
                 } catch (Exception e) {
                     independent1 = true;
                 }
             }
 
             boolean independent2 = false;
-            if (knowledge.noEdgeRequired(j.getName(), k.getName()))  // if BK allows
+            if (this.knowledge.noEdgeRequired(j.getName(), k.getName()))  // if BK allows
             {
                 try {
-                    independent2 = independenceTest.isIndependent(j, k, sepSet);
+                    independent2 = this.independenceTest.isIndependent(j, k, sepSet);
                 } catch (Exception e) {
                     independent2 = true;
                 }
@@ -317,16 +303,16 @@ public final class Rfci implements GraphSearch {
                 // set sepSets to minimal separating sets
                 if (independent1) {
                     setMinSepSet(sepSet, i, j);
-                    graph.removeEdge(i, j);
+                    this.graph.removeEdge(i, j);
                 }
                 if (independent2) {
                     setMinSepSet(sepSet, j, k);
-                    graph.removeEdge(j, k);
+                    this.graph.removeEdge(j, k);
                 }
 
                 // add new unshielded tuples to rTuples
                 for (Node thisNode : nodes) {
-                    List<Node> adjacentNodes = graph.getAdjacentNodes(thisNode);
+                    List<Node> adjacentNodes = this.graph.getAdjacentNodes(thisNode);
                     if (independent1) // <i, ., j>
                     {
                         if (adjacentNodes.contains(i) && adjacentNodes.contains(j)) {
@@ -399,7 +385,7 @@ public final class Rfci implements GraphSearch {
             }
 
             if (!sepset.contains(j)
-                    && graph.isAdjacentTo(i, j) && graph.isAdjacentTo(j, k)) {
+                    && this.graph.isAdjacentTo(i, j) && this.graph.isAdjacentTo(j, k)) {
 
                 if (!isArrowpointAllowed(i, j)) {
                     continue;
@@ -409,10 +395,8 @@ public final class Rfci implements GraphSearch {
                     continue;
                 }
 
-                graph.setEndpoint(i, j, Endpoint.ARROW);
-                graph.setEndpoint(k, j, Endpoint.ARROW);
-
-                printWrongColliderMessage(i, j, k, "R0_RFCI");
+                this.graph.setEndpoint(i, j, Endpoint.ARROW);
+                this.graph.setEndpoint(k, j, Endpoint.ARROW);
             }
         }
 
@@ -423,10 +407,10 @@ public final class Rfci implements GraphSearch {
     ////////////////////////////////////////////////
     private List<Node[]> getRTuples() {
         List<Node[]> rTuples = new ArrayList<>();
-        List<Node> nodes = graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
 
         for (Node j : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(j);
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(j);
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -440,7 +424,7 @@ public final class Rfci implements GraphSearch {
                 Node k = adjacentNodes.get(combination[1]);
 
                 // Skip triples that are shielded.
-                if (!graph.isAdjacentTo(i, k)) {
+                if (!this.graph.isAdjacentTo(i, k)) {
                     Node[] newTuple = {i, j, k};
                     rTuples.add(newTuple);
                 }
@@ -456,22 +440,11 @@ public final class Rfci implements GraphSearch {
     // and remove the edge <x, y> if background knowledge allows
     /////////////////////////////////////////////////////////////////////////////
     private void setMinSepSet(List<Node> sepSet, Node x, Node y) {
-        // It is assumed that BK has been considered before calling this method
-        // (for example, setting independent1 and independent2 in ruleR0_RFCI)
-        /*
-        // background knowledge requires this edge
-		if (knowledge.noEdgeRequired(x.getNode(), y.getNode()))
-		{
-			return;
-		}
-		 */
-
-
         List<Node> empty = Collections.emptyList();
         boolean indep;
 
         try {
-            indep = independenceTest.isIndependent(x, y, empty);
+            indep = this.independenceTest.isIndependent(x, y, empty);
         } catch (Exception e) {
             indep = false;
         }
@@ -489,11 +462,7 @@ public final class Rfci implements GraphSearch {
             while ((combination = cg.next()) != null) {
                 List<Node> condSet = GraphUtils.asList(combination, sepSet);
 
-                try {
-                    indep = independenceTest.isIndependent(x, y, condSet);
-                } catch (Exception e) {
-                    indep = false;
-                }
+                indep = this.independenceTest.isIndependent(x, y, condSet);
 
                 if (indep) {
                     getSepsets().set(x, y, condSet);
@@ -509,45 +478,45 @@ public final class Rfci implements GraphSearch {
     private void doFinalOrientation() {
 
 
-        FciOrient orient = new FciOrient(new SepsetsSet(sepsets, independenceTest));
+        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
 
         // This loop handles Zhang's rules R1-R3 (same as in the original FCI)
-        changeFlag = true;
+        this.changeFlag = true;
 
-        while (changeFlag) {
-            changeFlag = false;
+        while (this.changeFlag) {
+            this.changeFlag = false;
             orient.setChangeFlag(false);
-            orient.rulesR1R2cycle(graph);
-            orient.ruleR3(graph);
-            changeFlag = orient.isChangeFlag();
-            orient.ruleR4B(graph);   // some changes to the original R4 inline
+            orient.rulesR1R2cycle(this.graph);
+            orient.ruleR3(this.graph);
+            this.changeFlag = orient.isChangeFlag();
+            orient.ruleR4B(this.graph);   // some changes to the original R4 inline
         }
 
         // For RFCI always executes R5-10
 
         // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
         // R5 once.
-        orient.ruleR5(graph);
+        orient.ruleR5(this.graph);
 
         // Now, by a further remark on page 102, we apply R6,R7 as many times
         // as possible.
-        changeFlag = true;
+        this.changeFlag = true;
 
-        while (changeFlag) {
-            changeFlag = false;
+        while (this.changeFlag) {
+            this.changeFlag = false;
             orient.setChangeFlag(false);
-            orient.ruleR6R7(graph);
-            changeFlag = orient.isChangeFlag();
+            orient.ruleR6R7(this.graph);
+            this.changeFlag = orient.isChangeFlag();
         }
 
         // Finally, we apply R8-R10 as many times as possible.
-        changeFlag = true;
+        this.changeFlag = true;
 
-        while (changeFlag) {
-            changeFlag = false;
+        while (this.changeFlag) {
+            this.changeFlag = false;
             orient.setChangeFlag(false);
-            orient.rulesR8R9R10(graph);
-            changeFlag = orient.isChangeFlag();
+            orient.rulesR8R9R10(this.graph);
+            this.changeFlag = orient.isChangeFlag();
         }
     }
 
@@ -555,7 +524,7 @@ public final class Rfci implements GraphSearch {
      * Orients according to background knowledge
      */
     private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
-        logger.log("info", "Starting BK Orientation.");
+        this.logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it =
              bk.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -577,8 +546,8 @@ public final class Rfci implements GraphSearch {
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            changeFlag = true;
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.changeFlag = true;
+            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         for (Iterator<KnowledgeEdge> it =
@@ -599,11 +568,11 @@ public final class Rfci implements GraphSearch {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            changeFlag = true;
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.changeFlag = true;
+            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        logger.log("info", "Finishing BK Orientation.");
+        this.logger.log("info", "Finishing BK Orientation.");
     }
 
 
@@ -615,30 +584,30 @@ public final class Rfci implements GraphSearch {
      * @return Whether the arrowpoint is allowed.
      */
     private boolean isArrowpointAllowed(Node x, Node y) {
-        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
+        if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }
 
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
+        if (this.graph.getEndpoint(x, y) == Endpoint.TAIL) {
             return false;
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
+        if (this.graph.getEndpoint(y, x) == Endpoint.ARROW) {
+            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
+        if (this.graph.getEndpoint(y, x) == Endpoint.TAIL) {
+            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
         }
 
-        return graph.getEndpoint(y, x) == Endpoint.CIRCLE;
+        return this.graph.getEndpoint(y, x) == Endpoint.CIRCLE;
     }
 
     /**
      * @return the maximum length of any discriminating path, or -1 of unlimited.
      */
     public int getMaxPathLength() {
-        return maxPathLength == Integer.MAX_VALUE ? -1 : maxPathLength;
+        return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
     }
 
     /**
@@ -657,7 +626,7 @@ public final class Rfci implements GraphSearch {
      * True iff verbose output should be printed.
      */
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -668,7 +637,7 @@ public final class Rfci implements GraphSearch {
      * The independence test.
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 }
 

@@ -47,12 +47,12 @@ public class BasicDataPreviewerTest {
 
         DataPreviewer dataPreviewer = new BasicDataPreviewer(dataFile);
 
-        int fromLine = 3;
-        int toLine = 5;
-        int numOfCharacters = 25;
+        final int fromLine = 3;
+        final int toLine = 5;
+        final int numOfCharacters = 25;
 
         List<String> linePreviews = dataPreviewer.getPreviews(fromLine, toLine, numOfCharacters);
-        long expected = 3;
+        final long expected = 3;
         long actual = linePreviews.size();
         Assert.assertEquals(expected, actual);
     }

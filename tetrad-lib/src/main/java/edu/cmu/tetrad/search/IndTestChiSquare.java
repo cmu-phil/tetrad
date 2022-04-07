@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -76,14 +75,9 @@ public final class IndTestChiSquare implements IndependenceTest {
      */
     private double pValue;
 
-    /**
-     * The lower bound of percentages of observation of some category in the data, given some particular combination of
-     * values of conditioning variables, that coefs as 'determining."
-     */
-    private double determinationP = 0.99;
-    private HashSet<IndependenceFact> facts;
+    private final HashSet<IndependenceFact> facts = new HashSet<>();
 
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * Constructs a new independence checker to check conditional independence facts for discrete data using a g square
@@ -108,14 +102,6 @@ public final class IndTestChiSquare implements IndependenceTest {
         this.dataSet = dataSet;
 
         this.variables = new ArrayList<>(dataSet.getVariables());
-
-        int[] numVals = new int[this.variables.size()];
-
-        for (int i = 0; i < this.variables.size(); i++) {
-            DiscreteVariable v = (DiscreteVariable) (this.variables.get(i));
-            numVals[i] = v.getNumCategories();
-        }
-
         this.chiSquareTest = new ChiSquareTest(dataSet, alpha);
     }
 
@@ -145,7 +131,7 @@ public final class IndTestChiSquare implements IndependenceTest {
             indices[++j] = i;
         }
 
-        DataSet newDataSet = dataSet.subsetColumns(indices);
+        DataSet newDataSet = this.dataSet.subsetColumns(indices);
         double alpha = this.chiSquareTest.getAlpha();
         return new IndTestChiSquare(newDataSet, alpha);
     }
@@ -154,7 +140,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @return the G Square value.
      */
     public double getXSquare() {
-        return xSquare;
+        return this.xSquare;
     }
 
     /**
@@ -162,14 +148,14 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @ return degrees of freedom
      */
     public int getDf() {
-        return df;
+        return this.df;
     }
 
     /**
      * @return the p value associated with the most recent call of isIndependent.
      */
     public double getPValue() {
-        return pValue;
+        return this.pValue;
     }
 
     /**
@@ -197,11 +183,11 @@ public final class IndTestChiSquare implements IndependenceTest {
         // n + 2 containing the indices of these variables in order.
         int[] testIndices = new int[2 + z.size()];
 
-        testIndices[0] = variables.indexOf(x);
-        testIndices[1] = variables.indexOf(y);
+        testIndices[0] = this.variables.indexOf(x);
+        testIndices[1] = this.variables.indexOf(y);
 
         for (int i = 0; i < z.size(); i++) {
-            testIndices[i + 2] = variables.indexOf(z.get(i));
+            testIndices[i + 2] = this.variables.indexOf(z.get(i));
         }
 
         // the following is lame code--need a better test
@@ -212,23 +198,19 @@ public final class IndTestChiSquare implements IndependenceTest {
             }
         }
 
-        ChiSquareTest.Result result = chiSquareTest.calcChiSquare(testIndices);
+        ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices);
         this.xSquare = result.getXSquare();
         this.df = result.getDf();
         this.pValue = result.getPValue();
 
-        if (result.isIndep()) {
-            String sb = "INDEPENDENCE ACCEPTED: " +
-                    SearchLogUtils.independenceFact(x, y, z) +
-                    "\tp = " + nf.format(result.getPValue()) +
-                    "\tx^2 = " + nf.format(result.getXSquare()) +
-                    "\tdf = " + result.getDf();
-            TetradLogger.getInstance().log("independencies", sb);
+        if (verbose) {
+            if (result.isIndep()) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, this.pValue));
+            }
         }
 
-        if (facts != null) {
-            this.facts.add(new IndependenceFact(x, y, z));
-        }
+        this.facts.add(new IndependenceFact(x, y, z));
 
         return result.isIndep();
     }
@@ -266,10 +248,10 @@ public final class IndTestChiSquare implements IndependenceTest {
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
         int[] testIndices = new int[1 + z.size()];
-        testIndices[0] = variables.indexOf(x1);
+        testIndices[0] = this.variables.indexOf(x1);
 
         for (int i = 0; i < z.size(); i++) {
-            testIndices[i + 1] = variables.indexOf(z.get(i));
+            testIndices[i + 1] = this.variables.indexOf(z.get(i));
         }
 
         // the following is lame code--need a better test
@@ -283,7 +265,7 @@ public final class IndTestChiSquare implements IndependenceTest {
         //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
 
         boolean countDetermined =
-                chiSquareTest.isDetermined(testIndices, getDeterminationP());
+                this.chiSquareTest.isDetermined(testIndices, getDeterminationP());
 
         if (countDetermined) {
             StringBuilder sb = new StringBuilder();
@@ -307,7 +289,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     public double getAlpha() {
-        return chiSquareTest.getAlpha();
+        return this.chiSquareTest.getAlpha();
     }
 
     /**
@@ -325,7 +307,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return Collections.unmodifiableList(variables);
+        return Collections.unmodifiableList(this.variables);
     }
 
     /**
@@ -357,15 +339,15 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     private double getDeterminationP() {
-        return determinationP;
-    }
-
-    public void setDeterminationP(double determinationP) {
-        this.determinationP = determinationP;
+        /*
+         * The lower bound of percentages of observation of some category in the data, given some particular combination of
+         * values of conditioning variables, that coefs as 'determining."
+         */
+        return 0.99;
     }
 
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     @Override
@@ -393,18 +375,13 @@ public final class IndTestChiSquare implements IndependenceTest {
         return -(getPValue() - getAlpha());
     }
 
-    public void startRecordingFacts() {
-        this.facts = new HashSet<>();
-
-    }
-
     public HashSet<IndependenceFact> getFacts() {
-        return facts;
+        return this.facts;
     }
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override

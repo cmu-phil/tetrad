@@ -46,7 +46,7 @@ public abstract class AbstractAnnotations<T extends Annotation> {
     }
 
     public List<AnnotatedClass<T>> getAnnotatedClasses() {
-        return Collections.unmodifiableList(annotatedClasses);
+        return Collections.unmodifiableList(this.annotatedClasses);
     }
 
     public List<AnnotatedClass<T>> filterByAnnotation(List<AnnotatedClass<T>> annoClasses, Class<? extends Annotation> type) {

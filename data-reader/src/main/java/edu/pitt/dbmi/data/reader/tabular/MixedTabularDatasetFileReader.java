@@ -51,44 +51,44 @@ public class MixedTabularDatasetFileReader extends DatasetFileReader implements 
 
     @Override
     public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteChar);
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteChar);
 
-        boolean isDiscrete = false;
-        DataColumn[] dataColumns = hasHeader
+        final boolean isDiscrete = false;
+        DataColumn[] dataColumns = this.hasHeader
                 ? columnReader.readInDataColumns(namesOfColumnsToExclude, isDiscrete)
                 : columnReader.generateColumns(new int[0], isDiscrete);
 
-        TabularDataReader dataReader = new TabularDataFileReader(dataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteChar);
-        dataReader.setMissingDataMarker(missingDataMarker);
+        TabularDataReader dataReader = new TabularDataFileReader(this.dataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteChar);
+        dataReader.setMissingDataMarker(this.missingDataMarker);
 
-        dataReader.determineDiscreteDataColumns(dataColumns, numberOfDiscreteCategories, hasHeader);
+        dataReader.determineDiscreteDataColumns(dataColumns, this.numberOfDiscreteCategories, this.hasHeader);
 
-        return toMixedData(dataReader.read(dataColumns, hasHeader));
+        return toMixedData(dataReader.read(dataColumns, this.hasHeader));
     }
 
     @Override
     public Data readInData(int[] columnsToExclude) throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteChar);
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteChar);
 
-        boolean isDiscrete = false;
-        DataColumn[] dataColumns = hasHeader
+        final boolean isDiscrete = false;
+        DataColumn[] dataColumns = this.hasHeader
                 ? columnReader.readInDataColumns(columnsToExclude, isDiscrete)
                 : columnReader.generateColumns(columnsToExclude, isDiscrete);
 
-        TabularDataReader dataReader = new TabularDataFileReader(dataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteChar);
-        dataReader.setMissingDataMarker(missingDataMarker);
+        TabularDataReader dataReader = new TabularDataFileReader(this.dataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteChar);
+        dataReader.setMissingDataMarker(this.missingDataMarker);
 
-        dataReader.determineDiscreteDataColumns(dataColumns, numberOfDiscreteCategories, hasHeader);
+        dataReader.determineDiscreteDataColumns(dataColumns, this.numberOfDiscreteCategories, this.hasHeader);
 
-        return toMixedData(dataReader.read(dataColumns, hasHeader));
+        return toMixedData(dataReader.read(dataColumns, this.hasHeader));
     }
 
     private Data toMixedData(Data data) {

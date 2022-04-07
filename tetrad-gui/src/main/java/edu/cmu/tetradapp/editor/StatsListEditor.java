@@ -34,8 +34,8 @@ public class StatsListEditor extends JPanel {
         this.comparison = comparison;
         this.params = comparison.getParams();
         this.targetGraph = comparison.getTargetGraph();
-        referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
-        dataModel = comparison.getDataModel();
+        this.referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), this.params);
+        this.dataModel = comparison.getDataModel();
         setup();
     }
 
@@ -53,18 +53,18 @@ public class StatsListEditor extends JPanel {
     }
 
     private JComponent getTableDisplay() {
-        area = new JTextArea();
-        area.setText(tableTextWithHeader());
-        area.moveCaretPosition(0);
-        area.setSelectionStart(0);
-        area.setSelectionEnd(0);
+        this.area = new JTextArea();
+        this.area.setText(tableTextWithHeader());
+        this.area.moveCaretPosition(0);
+        this.area.setSelectionStart(0);
+        this.area.setSelectionEnd(0);
 
-        area.setBorder(new EmptyBorder(5, 5, 5, 5));
+        this.area.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
-        area.setPreferredSize(new Dimension(700, 1200));
+        this.area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
+        this.area.setPreferredSize(new Dimension(700, 1200));
 
-        JScrollPane pane = new JScrollPane(area);
+        JScrollPane pane = new JScrollPane(this.area);
         pane.setPreferredSize(new Dimension(700, 700));
 
         Box b = Box.createVerticalBox();
@@ -76,17 +76,17 @@ public class StatsListEditor extends JPanel {
     @NotNull
     private String tableTextWithHeader() {
         TextTable table = tableText();
-        return "Comparing target " + comparison.getTargetName() + " to reference " + comparison.getReferenceName()
+        return "Comparing target " + this.comparison.getTargetName() + " to reference " + this.comparison.getReferenceName()
                 + "\n\n" + table;
     }
 
     @NotNull
     private TextTable tableText() {
-        if (targetGraph == referenceGraph) {
+        if (this.targetGraph == this.referenceGraph) {
             throw new IllegalArgumentException();
         }
 
-        Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, referenceGraph.getNodes());
+        Graph _targetGraph = GraphUtils.replaceNodes(this.targetGraph, this.referenceGraph.getNodes());
 
         List<Statistic> statistics = statistics();
 
@@ -99,7 +99,7 @@ public class StatsListEditor extends JPanel {
 
         for (Statistic statistic : statistics) {
             try {
-                vals.add(statistic.getValue(referenceGraph, _targetGraph, dataModel));
+                vals.add(statistic.getValue(this.referenceGraph, _targetGraph, this.dataModel));
                 abbr.add(statistic.getAbbreviation());
                 desc.add(statistic.getDescription());
             } catch (Exception ignored) {
@@ -186,7 +186,7 @@ public class StatsListEditor extends JPanel {
 
         menubar.add(menu);
 
-        switch (params.getString("graphComparisonType")) {
+        switch (this.params.getString("graphComparisonType")) {
             case "CPDAG":
                 menu.setText("Compare to CPDAG...");
                 cpdag.setSelected(true);
@@ -202,46 +202,46 @@ public class StatsListEditor extends JPanel {
         }
 
         graph.addActionListener(e -> {
-            params.set("graphComparisonType", "DAG");
+            this.params.set("graphComparisonType", "DAG");
             menu.setText("Compare to DAG...");
             menu.setBackground(Color.WHITE);
-            this.referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
+            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
 
-            area.setText(tableTextWithHeader());
-            area.moveCaretPosition(0);
-            area.setSelectionStart(0);
-            area.setSelectionEnd(0);
+            this.area.setText(tableTextWithHeader());
+            this.area.moveCaretPosition(0);
+            this.area.setSelectionStart(0);
+            this.area.setSelectionEnd(0);
 
-            area.repaint();
+            this.area.repaint();
 
         });
 
         cpdag.addActionListener(e -> {
-            params.set("graphComparisonType", "CPDAG");
+            this.params.set("graphComparisonType", "CPDAG");
             menu.setText("Compare to CPDAG...");
             menu.setBackground(Color.YELLOW);
-            referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
+            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
 
-            area.setText(tableTextWithHeader());
-            area.moveCaretPosition(0);
-            area.setSelectionStart(0);
-            area.setSelectionEnd(0);
+            this.area.setText(tableTextWithHeader());
+            this.area.moveCaretPosition(0);
+            this.area.setSelectionStart(0);
+            this.area.setSelectionEnd(0);
 
-            area.repaint();
+            this.area.repaint();
 
         });
 
         pag.addActionListener(e -> {
-            params.set("graphComparisonType", "PAG");
+            this.params.set("graphComparisonType", "PAG");
             menu.setText("Compare to PAG...");
             menu.setBackground(Color.GREEN.brighter().brighter());
-            referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), params);
+            this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
 
-            area.setText(tableTextWithHeader());
-            area.moveCaretPosition(0);
-            area.setSelectionStart(0);
-            area.setSelectionEnd(0);
-            area.repaint();
+            this.area.setText(tableTextWithHeader());
+            this.area.moveCaretPosition(0);
+            this.area.setSelectionStart(0);
+            this.area.setSelectionEnd(0);
+            this.area.repaint();
         });
 
         return menubar;

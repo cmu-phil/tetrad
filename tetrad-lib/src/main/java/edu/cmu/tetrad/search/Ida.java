@@ -25,11 +25,11 @@ import static java.lang.Math.min;
  * @author jdramsey@andrew.cmu.edu
  */
 public class Ida {
-    private DataSet dataSet;
+    private final DataSet dataSet;
     private final Graph pattern;
     private final List<Node> possibleCauses;
-    private Map<String, Integer> nodeIndices;
-    private ICovarianceMatrix allCovariances;
+    private final Map<String, Integer> nodeIndices;
+    private final ICovarianceMatrix allCovariances;
 
     public Ida(DataSet dataSet, Graph pattern, List<Node> possibleCauses) {
         this.dataSet = DataUtils.convertNumericalDiscreteToContinuous(dataSet);
@@ -37,12 +37,12 @@ public class Ida {
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
         this.possibleCauses = possibleCauses;
 
-        allCovariances = new CovarianceMatrix(this.dataSet);
+        this.allCovariances = new CovarianceMatrix(this.dataSet);
 
-        nodeIndices = new HashMap<>();
+        this.nodeIndices = new HashMap<>();
 
         for (int i = 0; i < pattern.getNodes().size(); i++) {
-            nodeIndices.put(pattern.getNodes().get(i).getName(), i);
+            this.nodeIndices.put(pattern.getNodes().get(i).getName(), i);
         }
     }
 
@@ -75,7 +75,7 @@ public class Ida {
      *
      * @author jdramsey@andrew.cmu.edu
      */
-    public class NodeEffects {
+    public static class NodeEffects {
         private List<Node> nodes;
         private LinkedList<Double> effects;
 
@@ -85,7 +85,7 @@ public class Ida {
         }
 
         public List<Node> getNodes() {
-            return nodes;
+            return this.nodes;
         }
 
         public void setNodes(List<Node> nodes) {
@@ -93,7 +93,7 @@ public class Ida {
         }
 
         public LinkedList<Double> getEffects() {
-            return effects;
+            return this.effects;
         }
 
         public void setEffects(LinkedList<Double> effects) {
@@ -103,8 +103,8 @@ public class Ida {
         public String toString() {
             StringBuilder b = new StringBuilder();
 
-            for (int i = 0; i < nodes.size(); i++) {
-                b.append(nodes.get(i)).append("=").append(effects.get(i)).append(" ");
+            for (int i = 0; i < this.nodes.size(); i++) {
+                b.append(this.nodes.get(i)).append("=").append(this.effects.get(i)).append(" ");
             }
 
             return b.toString();
@@ -116,7 +116,7 @@ public class Ida {
 
         if (!trueDag.isAncestorOf(x, y)) return 0.0;
 
-        trueDag = GraphUtils.replaceNodes(trueDag, dataSet.getVariables());
+        trueDag = GraphUtils.replaceNodes(trueDag, this.dataSet.getVariables());
 
         if (trueDag == null) {
             throw new NullPointerException("True graph is null.");
@@ -144,8 +144,8 @@ public class Ida {
             if (trueEffect >= min && trueEffect <= max) {
                 return 0.0;
             } else {
-                final double m1 = abs(trueEffect - min);
-                final double m2 = abs(trueEffect - max);
+                double m1 = abs(trueEffect - min);
+                double m2 = abs(trueEffect - max);
                 return min(m1, m2);
             }
         }
@@ -165,10 +165,10 @@ public class Ida {
      * @return a list of the possible effects of X on Y.
      */
     private LinkedList<Double> getEffects(Node x, Node y) {
-        List<Node> parents = pattern.getParents(x);
-        List<Node> children = pattern.getChildren(x);
+        List<Node> parents = this.pattern.getParents(x);
+        List<Node> children = this.pattern.getChildren(x);
 
-        List<Node> siblings = pattern.getAdjacentNodes(x);
+        List<Node> siblings = this.pattern.getAdjacentNodes(x);
         siblings.removeAll(parents);
         siblings.removeAll(children);
 
@@ -188,14 +188,14 @@ public class Ida {
 
                     while ((choice2 = gen2.next()) != null) {
                         List<Node> adj = GraphUtils.asList(choice2, sibbled);
-                        if (!pattern.isAdjacentTo(adj.get(0), adj.get(1))) continue CHOICE;
+                        if (!this.pattern.isAdjacentTo(adj.get(0), adj.get(1))) continue CHOICE;
                     }
                 }
 
                 if (!sibbled.isEmpty()) {
                     for (Node p : parents) {
                         for (Node s : sibbled) {
-                            if (!pattern.isAdjacentTo(p, s)) continue CHOICE;
+                            if (!this.pattern.isAdjacentTo(p, s)) continue CHOICE;
                         }
                     }
                 }
@@ -229,8 +229,8 @@ public class Ida {
     public Map<Node, Double> calculateMinimumEffectsOnY(Node y) {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
-        for (Node x : possibleCauses) {
-            final LinkedList<Double> effects = getEffects(x, y);
+        for (Node x : this.possibleCauses) {
+            LinkedList<Double> effects = getEffects(x, y);
             minEffects.put(x, effects.getFirst());
         }
 
@@ -240,12 +240,12 @@ public class Ida {
     // x must be the first regressor.
     private double getBeta(List<Node> regressors, Node child) {
         try {
-            int yIndex = nodeIndices.get(child.getName());
+            int yIndex = this.nodeIndices.get(child.getName());
             int[] xIndices = new int[regressors.size()];
-            for (int i = 0; i < regressors.size(); i++) xIndices[i] = nodeIndices.get(regressors.get(i).getName());
+            for (int i = 0; i < regressors.size(); i++) xIndices[i] = this.nodeIndices.get(regressors.get(i).getName());
 
-            Matrix rX = allCovariances.getSelection(xIndices, xIndices);
-            Matrix rY = allCovariances.getSelection(xIndices, new int[]{yIndex});
+            Matrix rX = this.allCovariances.getSelection(xIndices, xIndices);
+            Matrix rY = this.allCovariances.getSelection(xIndices, new int[]{yIndex});
 
             Matrix bStar = rX.inverse().times(rY);
 

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -25,14 +25,11 @@ import edu.cmu.tetrad.session.SessionNode;
 
 import javax.swing.*;
 import javax.swing.event.TreeModelListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -80,6 +77,13 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         return this.title;
     }
 
+    public void setTitle(String title) {
+        if (title == null) {
+            throw new NullPointerException("The title must not be null");
+        }
+        this.title = title;
+    }
+
     public Class getSelectedModel() {
         TreePath path = this.tree.getSelectionPath();
 
@@ -95,36 +99,27 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         return null;
     }
 
-    public void setTitle(String title) {
-        if (title == null) {
-            throw new NullPointerException("The title must not be null");
-        }
-        this.title = title;
-    }
-
     public void setModelConfigs(List<SessionNodeModelConfig> configs) {
         ChooserTreeModel model = new ChooserTreeModel(configs);
         this.tree = new JTree(model);
         this.tree.setCellRenderer(new ChooserRenderer());
         this.tree.setRootVisible(false);
         this.tree.setEditable(false);
-        this.tree.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         for (int i = 0; i < this.tree.getRowCount(); i++) {
             this.tree.expandRow(i);
         }
-        this.tree.addTreeSelectionListener(new TreeSelectionListener() {
-            public void valueChanged(TreeSelectionEvent e) {
-                TreePath path = e.getPath();
-                Object selected = path.getLastPathComponent();
-                if (selected instanceof ModelWrapper) {
-                    String name = ((ModelWrapper) selected).name;
-                    Preferences.userRoot().put(nodeId, name);
-                }
+        this.tree.addTreeSelectionListener(e -> {
+            TreePath path = e.getPath();
+            Object selected = path.getLastPathComponent();
+            if (selected instanceof ModelWrapper) {
+                String name = ((ModelWrapper) selected).name;
+                Preferences.userRoot().put(this.nodeId, name);
             }
         });
 
         // select a default value, if one exists
-        String storedModelType = getModelTypeFromSessionNode(sessionNode, model);
+        String storedModelType = getModelTypeFromSessionNode(this.sessionNode, model);
 
         if (storedModelType == null) {
             storedModelType = Preferences.userRoot().get(this.nodeId, "");
@@ -137,7 +132,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
             for (Map.Entry<String, List<ModelWrapper>> entry : model.map.entrySet()) {
                 for (ModelWrapper wrapper : entry.getValue()) {
                     if (storedModelType.equals(wrapper.name)) {
-                        Object[] path = new Object[]{ChooserTreeModel.ROOT, entry.getKey(), wrapper};
+                        Object[] path = {ChooserTreeModel.ROOT, entry.getKey(), wrapper};
                         this.tree.setSelectionPath(new TreePath(path));
                         break;
                     }
@@ -157,6 +152,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
             for (int j = 0; j < model.getChildCount(child); j++) {
                 ModelWrapper modelWrapper = (ModelWrapper) model.getChild(child, j);
+                assert modelWrapper != null;
                 if (modelWrapper.model == clazz) {
                     return modelWrapper.name;
                 }
@@ -183,16 +179,14 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
         JButton info = new JButton("Help");
 
-        info.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Class model = getSelectedModel();
-                if (model == null) {
-                    JOptionPane.showMessageDialog(CategorizingModelChooser.this, "No node selected. Select" +
-                            " a node to get help for it.");
-                } else {
-                    SessionUtils.showPermissibleParentsDialog(model,
-                            CategorizingModelChooser.this, false, false);
-                }
+        info.addActionListener(e -> {
+            Class model = getSelectedModel();
+            if (model == null) {
+                JOptionPane.showMessageDialog(this, "No node selected. Select" +
+                        " a node to get help for it.");
+            } else {
+                SessionUtils.showPermissibleParentsDialog(model,
+                        this, false, false);
             }
         });
 
@@ -289,21 +283,17 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
                     this.categories.add(category);
                 }
 
-                List<ModelWrapper> models = map.get(category);
-                if (models == null) {
-                    models = new LinkedList<>();
-                    map.put(category, models);
-                }
+                List<ModelWrapper> models = this.map.computeIfAbsent(category, k -> new LinkedList<>());
                 models.add(new ModelWrapper(config.getName(), config.getModel()));
             }
         }
 
         public Object getRoot() {
-            return ROOT;
+            return ChooserTreeModel.ROOT;
         }
 
         public Object getChild(Object parent, int index) {
-            if (ROOT.equals(parent)) {
+            if (ChooserTreeModel.ROOT.equals(parent)) {
                 return this.categories.get(index);
             } else if (parent instanceof String) {
                 List<ModelWrapper> models = this.map.get(parent);
@@ -313,7 +303,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         }
 
         public int getChildCount(Object parent) {
-            if (ROOT.equals(parent)) {
+            if (ChooserTreeModel.ROOT.equals(parent)) {
                 return this.categories.size();
             } else if (parent instanceof ModelWrapper) {
                 return 0;
@@ -331,7 +321,7 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         }
 
         public int getIndexOfChild(Object parent, Object child) {
-            if (ROOT.equals(parent)) {
+            if (ChooserTreeModel.ROOT.equals(parent)) {
                 return this.categories.indexOf(child);
             }
             List<ModelWrapper> models = this.map.get(parent);

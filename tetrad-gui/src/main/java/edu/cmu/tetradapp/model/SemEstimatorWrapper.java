@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -52,7 +52,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
      * @serial Cannot be null.
      */
     private SemEstimator semEstimator;
-    private SemPm semPm;
+    private final SemPm semPm;
 
     //==============================CONSTRUCTORS==========================//
 
@@ -140,9 +140,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
                             + "\nEstimation will be uninformative. Are you sure you want to proceed?",
                     "Please confirm", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
-            if (ret != JOptionPane.YES_OPTION) {
-                return false;
-            }
+            return ret == JOptionPane.YES_OPTION;
         }
 
         return true;
@@ -158,7 +156,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
     }
 
     public SemIm getEstimatedSemIm() {
-        return semEstimator.getEstimatedSem();
+        return this.semEstimator.getEstimatedSem();
     }
 
     public String getSemOptimizerType() {
@@ -170,11 +168,11 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
     }
 
     public Graph getGraph() {
-        return semEstimator.getEstimatedSem().getSemPm().getGraph();
+        return this.semEstimator.getEstimatedSem().getSemPm().getGraph();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -206,7 +204,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
     }
 
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 
     private SemOptimizer getOptimizer() {
@@ -232,7 +230,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
         } else if ("RICF".equals(type)) {
             optimizer = new SemOptimizerRicf();
         } else {
-            if (semPm != null) {
+            if (this.semPm != null) {
                 optimizer = getDefaultOptimization();
 
                 String _type = getType(optimizer);
@@ -271,11 +269,11 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
     }
 
     public ScoreType getScoreType() {
-        return (ScoreType) params.get("scoreType", ScoreType.SemBic);
+        return (ScoreType) this.params.get("scoreType", ScoreType.SemBic);
     }
 
     public void setScoreType(ScoreType scoreType) {
-        params.set("scoreType", scoreType);
+        this.params.set("scoreType", scoreType);
     }
 
     public int getNumRestarts() {
@@ -287,14 +285,14 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
     }
 
     private SemOptimizer getDefaultOptimization() {
-        if (semPm == null) {
+        if (this.semPm == null) {
             throw new NullPointerException(
                     "Sorry, I didn't see a SEM PM as parent to the estimator; perhaps the parents are wrong.");
         }
 
         boolean containsLatent = false;
 
-        for (Node node : semPm.getGraph().getNodes()) {
+        for (Node node : this.semPm.getGraph().getNodes()) {
             if (node.getNodeType() == NodeType.LATENT) {
                 containsLatent = true;
                 break;
@@ -303,8 +301,8 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
 
         SemOptimizer optimizer;
 
-        if (containsFixedParam(semPm) || semPm.getGraph().existsDirectedCycle()
-                || containsCovarParam(semPm)) {
+        if (containsFixedParam(this.semPm) || this.semPm.getGraph().existsDirectedCycle()
+                || SemEstimatorWrapper.containsCovarParam(this.semPm)) {
             optimizer = new SemOptimizerPowell();
         } else if (containsLatent) {
             optimizer = new SemOptimizerEm();

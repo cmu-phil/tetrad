@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -68,7 +68,7 @@ public class TestPcd {
         IKnowledge knowledge = new Knowledge2();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A-->B,C-->B,D",
+        checkWithKnowledge(
                 knowledge);
     }
 
@@ -101,11 +101,10 @@ public class TestPcd {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String inputGraph, String outputGraph,
-                                    IKnowledge knowledge) {
+    private void checkWithKnowledge(IKnowledge knowledge) {
 
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -116,7 +115,7 @@ public class TestPcd {
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert("A-->B,C-->B,D");
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 

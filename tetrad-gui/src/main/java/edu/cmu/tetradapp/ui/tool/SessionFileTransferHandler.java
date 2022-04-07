@@ -103,10 +103,8 @@ public class SessionFileTransferHandler extends TransferHandler {
                             throw e1;
                         } catch (Exception e2) {
                             e2.printStackTrace();
-                            sessionWrapper = null;
                         }
                     } else if (o instanceof SessionWrapper) {
-                        metadata = null;
                         sessionWrapper = (SessionWrapper) o;
                     }
 
@@ -140,15 +138,15 @@ public class SessionFileTransferHandler extends TransferHandler {
                     DesktopController.getInstance().closeEmptySessions();
                     DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
                 } catch (FileNotFoundException exception) {
-                    LOGGER.error("", exception);
+                    SessionFileTransferHandler.LOGGER.error("", exception);
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);
                 } catch (Exception exception) {
-                    LOGGER.error("", exception);
+                    SessionFileTransferHandler.LOGGER.error("", exception);
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
             }
         } catch (UnsupportedFlavorException | IOException exception) {
-            LOGGER.error("", exception);
+            SessionFileTransferHandler.LOGGER.error("", exception);
         }
 
         return super.importData(support);

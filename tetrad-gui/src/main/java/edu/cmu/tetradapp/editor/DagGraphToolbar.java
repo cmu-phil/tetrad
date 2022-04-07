@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,12 +22,15 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -51,7 +54,7 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
     /**
      * The mutually exclusive button group for the buttons.
      */
-    private ButtonGroup group;
+    private final ButtonGroup group;
 
     /**
      * The panel that the buttons are in.
@@ -59,12 +62,15 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
     private final Box buttonsPanel = Box.createVerticalBox();
 
     // The buttons in the toolbar.
-    private JToggleButton move, addObserved, addLatent, addDirectedEdge;
+    private final JToggleButton move;
+    private final JToggleButton addObserved;
+    private final JToggleButton addLatent;
+    private final JToggleButton addDirectedEdge;
 
     /**
      * The workbench this toolbar governs.
      */
-    private GraphWorkbench workbench;
+    private final GraphWorkbench workbench;
 
     /**
      * Constructs a new Graph toolbar governing the modes of the given
@@ -76,17 +82,17 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
         }
 
         this.workbench = workbench;
-        group = new ButtonGroup();
+        this.group = new ButtonGroup();
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        buttonsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        add(buttonsPanel);
+        this.buttonsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        add(this.buttonsPanel);
 
         // construct the bottons.
-        move = new JToggleButton();
-        addObserved = new JToggleButton();
-        addLatent = new JToggleButton();
-        addDirectedEdge = new JToggleButton();
+        this.move = new JToggleButton();
+        this.addObserved = new JToggleButton();
+        this.addLatent = new JToggleButton();
+        this.addDirectedEdge = new JToggleButton();
 
         // Adding this listener fixes a previous bug where if you
         // select a button and then move the mouse away from the
@@ -99,49 +105,41 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
             }
         };
 
-        move.addFocusListener(focusListener);
-        addObserved.addFocusListener(focusListener);
-        addLatent.addFocusListener(focusListener);
-        addDirectedEdge.addFocusListener(focusListener);
+        this.move.addFocusListener(focusListener);
+        this.addObserved.addFocusListener(focusListener);
+        this.addLatent.addFocusListener(focusListener);
+        this.addDirectedEdge.addFocusListener(focusListener);
 
         // add listeners
-        move.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                move.getModel().setSelected(true);
-                setWorkbenchMode(GraphWorkbench.SELECT_MOVE);
-            }
+        this.move.addActionListener(e -> {
+            DagGraphToolbar.this.move.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
         });
-        addObserved.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addObserved.getModel().setSelected(true);
-                setWorkbenchMode(GraphWorkbench.ADD_NODE);
-                setNodeMode(GraphWorkbench.MEASURED_NODE);
-            }
+        this.addObserved.addActionListener(e -> {
+            DagGraphToolbar.this.addObserved.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_NODE);
+            setNodeMode(GraphWorkbench.MEASURED_NODE);
         });
-        addLatent.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addLatent.getModel().setSelected(true);
-                setWorkbenchMode(GraphWorkbench.ADD_NODE);
-                setNodeMode(GraphWorkbench.LATENT_NODE);
-            }
+        this.addLatent.addActionListener(e -> {
+            DagGraphToolbar.this.addLatent.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_NODE);
+            setNodeMode(GraphWorkbench.LATENT_NODE);
         });
-        addDirectedEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addDirectedEdge.getModel().setSelected(true);
-                setWorkbenchMode(GraphWorkbench.ADD_EDGE);
-                setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
-            }
+        this.addDirectedEdge.addActionListener(e -> {
+            DagGraphToolbar.this.addDirectedEdge.getModel().setSelected(true);
+            setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
+            setEdgeMode();
         });
 
         // add buttons to the toolbar.
-        addButton(move, "move");
-        addButton(addObserved, "variable");
-        addButton(addLatent, "latent");
-        addButton(addDirectedEdge, "directed");
+        addButton(this.move, "move");
+        addButton(this.addObserved, "variable");
+        addButton(this.addLatent, "latent");
+        addButton(this.addDirectedEdge, "directed");
         workbench.addPropertyChangeListener(this);
         selectArrowTools();
 
-        buttonsPanel.add(Box.createGlue());
+        this.buttonsPanel.add(Box.createGlue());
     }
 
     /**
@@ -150,7 +148,7 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
      * classes.
      */
     private void setWorkbenchMode(int mode) {
-        workbench.setWorkbenchMode(mode);
+        this.workbench.setWorkbenchMode(mode);
     }
 
     /**
@@ -158,8 +156,8 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
      * Java will not allow access to the variable 'workbench' from inner
      * classes.
      */
-    private void setEdgeMode(int mode) {
-        workbench.setEdgeMode(mode);
+    private void setEdgeMode() {
+        this.workbench.setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
     }
 
     /**
@@ -168,7 +166,7 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
      * classes.
      */
     private void setNodeMode(int mode) {
-        workbench.setNodeType(mode);
+        this.workbench.setNodeType(mode);
     }
 
     /**
@@ -180,9 +178,9 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
                 new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
         button.setMaximumSize(new Dimension(80, 40));
         button.setPreferredSize(new Dimension(80, 40));
-        buttonsPanel.add(button);
-        buttonsPanel.add(Box.createVerticalStrut(5));
-        group.add(button);
+        this.buttonsPanel.add(button);
+        this.buttonsPanel.add(Box.createVerticalStrut(5));
+        this.group.add(button);
     }
 
     /**
@@ -199,7 +197,7 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
      * use and disables all others.
      */
     private void selectArrowTools() {
-        addDirectedEdge.setEnabled(true);
+        this.addDirectedEdge.setEnabled(true);
     }
 
 

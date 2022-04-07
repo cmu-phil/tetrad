@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -71,7 +71,7 @@ class CovMatrixTable extends AbstractTableModel {
         this.covMatrix = covMatrix;
         this.editingMatrix = covMatrix.getMatrix().copy();
         this.editingMatrixPositiveDefinite =
-                MatrixUtils.isPositiveDefinite(editingMatrix);
+                MatrixUtils.isPositiveDefinite(this.editingMatrix);
     }
 
     /**
@@ -104,8 +104,8 @@ class CovMatrixTable extends AbstractTableModel {
      * table model at the given coordinates is returned.
      */
     public Object getValueAt(int row, int col) {
-        int firstDataRow = 4;
-        int firstDataCol = 1;
+        final int firstDataRow = 4;
+        final int firstDataCol = 1;
         int matrixRow = row - firstDataRow;
         int matrixCol = col - firstDataCol;
         int lastDataRow = firstDataRow + getNumVariables();
@@ -138,8 +138,8 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     public boolean isCellEditable(int row, int col) {
-        int firstDataRow = 4;
-        int firstDataCol = 1;
+        final int firstDataRow = 4;
+        final int firstDataCol = 1;
         int matrixRow = row - firstDataRow;
         int matrixCol = col - firstDataCol;
         int lastDataRow = firstDataRow + getNumVariables();
@@ -164,15 +164,15 @@ class CovMatrixTable extends AbstractTableModel {
             return true;
         }
 
-        return !(covMatrix instanceof CorrelationMatrix) &&
+        return !(this.covMatrix instanceof CorrelationMatrix) &&
                 (row >= firstDataRow) && (row < lastDataRow) &&
                 (col >= firstDataCol) && (matrixCol == matrixRow);
 
     }
 
     public void setValueAt(Object aValue, int row, int col) {
-        int firstDataRow = 4;
-        int firstDataCol = 1;
+        final int firstDataRow = 4;
+        final int firstDataCol = 1;
         int matrixRow = row - firstDataRow;
         int matrixCol = col - firstDataCol;
         int lastDataRow = firstDataRow + getNumVariables();
@@ -180,8 +180,8 @@ class CovMatrixTable extends AbstractTableModel {
 
         if (row == 1 && col == 1) {
             String value = (String) aValue;
-            covMatrix.setSampleSize(Integer.parseInt(value));
-            pcs.firePropertyChange("modelChanged", null, null);
+            this.covMatrix.setSampleSize(Integer.parseInt(value));
+            this.pcs.firePropertyChange("modelChanged", null, null);
             fireTableDataChanged();
         }
 
@@ -202,21 +202,21 @@ class CovMatrixTable extends AbstractTableModel {
             String value = (String) aValue;
             double v = Double.parseDouble(value);
             setEditingValue(matrixRow, matrixCol, v);
-            pcs.firePropertyChange("modelChanged", null, null);
+            this.pcs.firePropertyChange("modelChanged", null, null);
             fireTableDataChanged();
         }
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
+        this.pcs.addPropertyChangeListener(listener);
     }
 
     private void setVariableName(int index, String name) {
         List variables = getCovMatrix().getVariables();
 
-        for (int i = 0; i < variables.size(); i++) {
+        for (Object o : variables) {
             ContinuousVariable _variable =
-                    (ContinuousVariable) variables.get(i);
+                    (ContinuousVariable) o;
             if (name.equals(_variable.getName())) {
                 return;
             }
@@ -231,12 +231,12 @@ class CovMatrixTable extends AbstractTableModel {
             return;
         }
 
-        editingMatrix.set(row, col, v);
-        editingMatrix.set(col, row, v);
-        editingMatrixPositiveDefinite =
-                MatrixUtils.isPositiveDefinite(editingMatrix);
-        if (editingMatrixPositiveDefinite) {
-            getCovMatrix().setMatrix(editingMatrix.copy());
+        this.editingMatrix.set(row, col, v);
+        this.editingMatrix.set(col, row, v);
+        this.editingMatrixPositiveDefinite =
+                MatrixUtils.isPositiveDefinite(this.editingMatrix);
+        if (this.editingMatrixPositiveDefinite) {
+            getCovMatrix().setMatrix(this.editingMatrix.copy());
         }
     }
 
@@ -249,7 +249,7 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     private double getValue(int matrixRow, int matrixCol) {
-        return editingMatrix.get(matrixRow, matrixCol);
+        return this.editingMatrix.get(matrixRow, matrixCol);
     }
 
     public ICovarianceMatrix getCovMatrix() {
@@ -257,18 +257,18 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     private int getNumVariables() {
-        return covMatrix.getSize();
+        return this.covMatrix.getSize();
     }
 
     public boolean isEditingMatrixPositiveDefinite() {
-        return editingMatrixPositiveDefinite;
+        return this.editingMatrixPositiveDefinite;
     }
 
     public void restore() {
-        editingMatrix = covMatrix.getMatrix();
-        editingMatrixPositiveDefinite =
+        this.editingMatrix = this.covMatrix.getMatrix();
+        this.editingMatrixPositiveDefinite =
                 MatrixUtils.isPositiveDefinite(this.editingMatrix);
-        pcs.firePropertyChange("modelChanged", null, null);
+        this.pcs.firePropertyChange("modelChanged", null, null);
         fireTableDataChanged();
     }
 }

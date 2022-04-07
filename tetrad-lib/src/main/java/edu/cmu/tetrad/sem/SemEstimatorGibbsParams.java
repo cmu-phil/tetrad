@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,22 +41,21 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
     private int numIterations;
     private double stretch;
 
-    private double tolerance;
+    private final double tolerance;
 
     //=============================CONSTRUCTORS============================//
 
     /**
      *
      */
-    private SemEstimatorGibbsParams(SemIm startIm, boolean flatPrior,
-                                    double stretch, int numIterations) {
+    private SemEstimatorGibbsParams(SemIm startIm) {
 
         // note that seed is never used... just as well to get rid of it?
 
         this.startIm = startIm;
-        this.flatPrior = flatPrior;
-        this.stretch = stretch;
-        this.numIterations = numIterations;
+        this.flatPrior = false;
+        this.stretch = 0.0;
+        this.numIterations = 1;
 
         this.tolerance = 0.0001;
     }
@@ -67,12 +66,12 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
     public static SemEstimatorGibbsParams serializableInstance() {
         SemGraph graph = new SemGraph();
         graph.addNode(new GraphNode("X"));
-        return new SemEstimatorGibbsParams(new SemIm(new SemPm(graph)), false,
-                0.0d, 1);
+        return new SemEstimatorGibbsParams(new SemIm(new SemPm(graph))
+        );
     }
 
     public SemIm getStartIm() {
-        return startIm;
+        return this.startIm;
     }
 
     public void setStartIm(SemIm startIm) {
@@ -80,7 +79,7 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
     }
 
     public double getStretch() {
-        return stretch;
+        return this.stretch;
     }
 
     public void setStretch(double stretch) {
@@ -88,11 +87,11 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
     }
 
     public double getTolerance() {
-        return tolerance;
+        return this.tolerance;
     }
 
     public int getNumIterations() {
-        return numIterations;
+        return this.numIterations;
     }
 
     public void setNumIterations(int numIterations) {
@@ -104,7 +103,7 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
     }
 
     public boolean isFlatPrior() {
-        return flatPrior;
+        return this.flatPrior;
     }
 
 
@@ -118,8 +117,6 @@ public final class SemEstimatorGibbsParams implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

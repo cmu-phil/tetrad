@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,7 +29,9 @@ import edu.cmu.tetrad.util.NamingProtocol;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
@@ -77,11 +79,6 @@ class ExpressionEditor extends JPanel {
      */
     private boolean remove;
 
-//    /**
-//     * The replace positions in the expression editor (used when tokens are added).
-//     */
-//    private List<Line> replacements = new ArrayList<Line>();
-
 
     /**
      * The active selections if there is one.
@@ -107,24 +104,11 @@ class ExpressionEditor extends JPanel {
         this.expression = new JTextField(25);
         this.expression.setText(rhs);
 
-//
-//        this.variable.addFocusListener(new FocusAdapter() {
-//            public void focusGained(FocusEvent evt) {
-//                lastFocused = variable;
-//                fireGainedFocus();
-//            }
-//        });
-//        this.expression.addFocusListener(new FocusAdapter() {
-//            public void focusGained(FocusEvent evt) {
-//                lastFocused = expression;
-//                fireGainedFocus();
-//            }
-//        });
-        this.variable.addFocusListener(new VariableFocusListener(variable));
-        this.expression.addFocusListener(new ExpressionFocusListener(expression));
+        this.variable.addFocusListener(new VariableFocusListener(this.variable));
+        this.expression.addFocusListener(new ExpressionFocusListener(this.expression));
 
-        positionsListener = new PositionsFocusListener();
-        this.expression.addFocusListener(positionsListener);
+        this.positionsListener = new PositionsFocusListener();
+        this.expression.addFocusListener(this.positionsListener);
 
         Box box = Box.createHorizontalBox();
         box.add(this.variable);
@@ -133,11 +117,9 @@ class ExpressionEditor extends JPanel {
         box.add(Box.createHorizontalStrut(5));
         box.add(this.expression);
         JCheckBox checkBox = new JCheckBox();
-        checkBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox b = (JCheckBox) e.getSource();
-                remove = b.isSelected();
-            }
+        checkBox.addActionListener(e -> {
+            JCheckBox b = (JCheckBox) e.getSource();
+            ExpressionEditor.this.remove = b.isSelected();
         });
         box.add(Box.createHorizontalStrut(2));
         box.add(checkBox);
@@ -208,15 +190,15 @@ class ExpressionEditor extends JPanel {
             return;
         }
         if (!this.selections.isEmpty()) {
-            expression.grabFocus();
+            this.expression.grabFocus();
 
-            int start = positionsListener.start;
-            int end = positionsListener.end;
+            int start = this.positionsListener.start;
+            int end = this.positionsListener.end;
 
             if (start < end) {
 //                expression.select(start, end);
-                selections.add(new Selection(start, end));
-                expression.setCaretPosition(positionsListener.caretPosition);
+                this.selections.add(new Selection(start, end));
+                this.expression.setCaretPosition(this.positionsListener.caretPosition);
             }
 
             String text = this.expression.getText();
@@ -227,33 +209,24 @@ class ExpressionEditor extends JPanel {
                 this.adjustSelections(selection, exp);
                 this.highlightNextSelection();
 
-                positionsListener.start = expression.getSelectionStart();
-                positionsListener.end = expression.getSelectionEnd();
-                positionsListener.caretPosition = expression.getCaretPosition();
+                this.positionsListener.start = this.expression.getSelectionStart();
+                this.positionsListener.end = this.expression.getSelectionEnd();
+                this.positionsListener.caretPosition = this.expression.getCaretPosition();
 
                 return;
             }
         }
 
         if (append) {
-            String text = expression.getText();
-            int caret = positionsListener.caretPosition;
-//            String newText = text.substring(0, caret) + exp
-//                    + text.substring(caret, text.length());
-
-//            this.expression.setText(newText);
             this.expression.setText(this.expression.getText() + exp);
 
-            positionsListener.start = 0;
-            positionsListener.end = 0;
-            positionsListener.caretPosition = 0;
         } else {
             this.expression.setText(exp);
 
-            positionsListener.start = 0;
-            positionsListener.end = 0;
-            positionsListener.caretPosition = 0;
         }
+        this.positionsListener.start = 0;
+        this.positionsListener.end = 0;
+        this.positionsListener.caretPosition = 0;
     }
 
 
@@ -261,15 +234,15 @@ class ExpressionEditor extends JPanel {
      * Adds the signature to the expression field.
      */
     public void addExpressionSignature(ExpressionSignature signature) {
-        expression.grabFocus();
+        this.expression.grabFocus();
 
-        int start = positionsListener.start;
-        int end = positionsListener.end;
-        int caret = positionsListener.caretPosition;
+        int start = this.positionsListener.start;
+        int end = this.positionsListener.end;
+        int caret = this.positionsListener.caretPosition;
 
         if (start < end) {
 //            expression.select(start, end);
-            selections.add(new Selection(start, end));
+            this.selections.add(new Selection(start, end));
 //            expression.setCaretPosition(positionsListener.caretPosition);
         }
 
@@ -279,7 +252,7 @@ class ExpressionEditor extends JPanel {
         // if empty add the sig with any selections.
         if (selection == null || !caretInSelection(selection)) {
             String newText = text.substring(0, caret) + signature.getSignature()
-                    + text.substring(caret, text.length());
+                    + text.substring(caret);
 
 
 //            String newText = text + signature.getSignature();
@@ -295,9 +268,9 @@ class ExpressionEditor extends JPanel {
         addSelections(signature, replacedText, true);
         this.highlightNextSelection();
 
-        positionsListener.start = 0;
-        positionsListener.end = 0;
-        positionsListener.caretPosition = 0;
+        this.positionsListener.start = 0;
+        this.positionsListener.end = 0;
+        this.positionsListener.caretPosition = 0;
     }
 
 
@@ -308,7 +281,7 @@ class ExpressionEditor extends JPanel {
      * @param append States whether it should append to the field's getModel value or not.
      */
     public void insertLastFocused(String symbol, boolean append) {
-        if (this.variable == lastFocused) {
+        if (this.variable == this.lastFocused) {
             setVariable(symbol, append);
         } else {
             setExpression(symbol, append);
@@ -388,7 +361,7 @@ class ExpressionEditor extends JPanel {
 
         if (!this.selections.isEmpty()) {
             Selection sel = this.selections.get(0);
-            this.expression.setSelectionColor(SELECTION);
+            this.expression.setSelectionColor(ExpressionEditor.SELECTION);
             this.expression.select(sel.x, sel.y);
             this.expression.grabFocus();
         }
@@ -423,18 +396,11 @@ class ExpressionEditor extends JPanel {
         }
 
         public void focusGained(FocusEvent e) {
-            lastFocused = field;
+            ExpressionEditor.this.lastFocused = this.field;
             fireGainedFocus();
         }
 
         public void focusLost(FocusEvent e) {
-//            if (field.getText() != null && field.getText().length() != 0
-//                    && !NamingProtocol.isLegalName(field.getText())) {
-//                field.setToolTipText(NamingProtocol.getProtocolDescription());
-//            } else {
-//                field.setSelectionColor(SELECTION);
-//                field.setToolTipText(null);
-//            }
         }
     }
 
@@ -445,66 +411,26 @@ class ExpressionEditor extends JPanel {
     private class ExpressionFocusListener implements FocusListener {
 
         private final JTextField field;
-//        private int startWhenFocusLost;
-//        private int endWhenFocusLost;
 
         public ExpressionFocusListener(JTextField field) {
             this.field = field;
         }
 
         public void focusGained(FocusEvent e) {
-            lastFocused = field;
+            ExpressionEditor.this.lastFocused = this.field;
             fireGainedFocus();
-
-//            this.startWhenFocusLost = -1;
-//            this.endWhenFocusLost = -1;
         }
 
+        @Override
         public void focusLost(FocusEvent e) {
-            if (field.getText() == null || field.getText().length() == 0) {
-                return;
-            }
 
-//            int start = field.getSelectionStart();
-//            int end = field.getSelectionEnd();
-//
-//            if (start != end) {
-//                startWhenFocusLost = start;
-//                endWhenFocusLost = end;
-//            }
-//
-//            System.out.println("a " + startWhenFocusLost + " " + endWhenFocusLost);
-
-//            try {
-//                parser.parseExpression(field.getText());
-//                field.setSelectionColor(SELECTION);
-//                field.setToolTipText(null);
-//            } catch (ParseException e1) {
-//                field.setToolTipText(e1.getMessage());
-//            }
         }
-
-//        public int getStartWhenFocusLost() {
-//            return startWhenFocusLost;
-//        }
-//
-//        public void setStartWhenFocusLost(int startWhenFocusLost) {
-//            this.startWhenFocusLost = startWhenFocusLost;
-//        }
-//
-//        public int getEndWhenFocusLost() {
-//            return endWhenFocusLost;
-//        }
-//
-//        public void setEndWhenFocusLost(int endWhenFocusLost) {
-//            this.endWhenFocusLost = endWhenFocusLost;
-//        }
     }
 
     private static class PositionsFocusListener extends FocusAdapter {
-        private int start = 0;
-        private int end = 0;
-        private int caretPosition = 0;
+        private int start;
+        private int end;
+        private int caretPosition;
 
         public void focusLost(FocusEvent e) {
             JTextField textField = (JTextField) e.getSource();

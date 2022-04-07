@@ -46,7 +46,7 @@ import java.io.IOException;
 public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
-    private String shortDescription = null;
+    private final String shortDescription;
 
 
     public ExternalAlgorithmTetrad(String extDir) {
@@ -64,7 +64,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
      */
     public Graph search(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);
-        File file = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        File file = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
         System.out.println(file.getAbsolutePath());
         Graph graph = GraphUtils.loadGraphTxt(file);
         GraphUtils.circleLayout(graph, 225, 200, 150);
@@ -79,10 +79,10 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
     }
 
     public String getDescription() {
-        if (shortDescription == null) {
-            return "Load data from " + path + "/" + extDir;
+        if (this.shortDescription == null) {
+            return "Load data from " + this.path + "/" + this.extDir;
         } else {
-            return shortDescription;
+            return this.shortDescription;
         }
     }
 
@@ -93,7 +93,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);
 
-        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
 
         System.out.println(file.getAbsolutePath());
 

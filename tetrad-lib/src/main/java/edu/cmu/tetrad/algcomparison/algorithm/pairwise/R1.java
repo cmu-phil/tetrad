@@ -13,7 +13,6 @@ import edu.cmu.tetrad.search.Lofs2;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -34,8 +33,8 @@ import java.util.List;
 public class R1 implements Algorithm, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
-    private Algorithm algorithm = null;
-    private Graph externalGraph = null;
+    private Algorithm algorithm;
+    private Graph externalGraph;
 
     public R1() {
     }
@@ -47,10 +46,10 @@ public class R1 implements Algorithm, TakesExternalGraph {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Graph graph = algorithm.search(dataSet, parameters);
+            Graph graph = this.algorithm.search(dataSet, parameters);
 
             if (graph != null) {
-                externalGraph = graph;
+                this.externalGraph = graph;
             } else {
                 throw new IllegalArgumentException("This R1 algorithm needs both data and a graph source as inputs; it \n"
                         + "will orient the edges in the input graph using the data");
@@ -59,35 +58,18 @@ public class R1 implements Algorithm, TakesExternalGraph {
             List<DataSet> dataSets = new ArrayList<>();
             dataSets.add(DataUtils.getContinuousDataSet(dataSet));
 
-            Lofs2 lofs = new Lofs2(externalGraph, dataSets);
+            Lofs2 lofs = new Lofs2(this.externalGraph, dataSets);
             lofs.setRule(Lofs2.Rule.R1);
 
             return lofs.orient();
         } else {
-            R1 r1 = new R1(algorithm);
-            if (externalGraph != null) {
-                r1.setExternalGraph(externalGraph);
+            R1 r1 = new R1(this.algorithm);
+            if (this.externalGraph != null) {
+                r1.setExternalGraph(this.externalGraph);
             }
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, r1, parameters.getInt(Params.NUMBER_RESAMPLING));
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, r1, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -102,8 +84,8 @@ public class R1 implements Algorithm, TakesExternalGraph {
 
     @Override
     public String getDescription() {
-        return "R1, entropy based pairwise orientation" + (algorithm != null ? " with initial graph from "
-                + algorithm.getDescription() : "");
+        return "R1, entropy based pairwise orientation" + (this.algorithm != null ? " with initial graph from "
+                + this.algorithm.getDescription() : "");
     }
 
     @Override
@@ -115,8 +97,8 @@ public class R1 implements Algorithm, TakesExternalGraph {
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
 
-        if (algorithm != null && !algorithm.getParameters().isEmpty()) {
-            parameters.addAll(algorithm.getParameters());
+        if (this.algorithm != null && !this.algorithm.getParameters().isEmpty()) {
+            parameters.addAll(this.algorithm.getParameters());
         }
 
         parameters.add(Params.VERBOSE);
@@ -126,7 +108,7 @@ public class R1 implements Algorithm, TakesExternalGraph {
 
     @Override
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     @Override

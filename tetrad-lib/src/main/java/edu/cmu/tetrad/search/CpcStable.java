@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -44,7 +44,7 @@ public final class CpcStable implements GraphSearch {
     /**
      * The independence test used for the PC search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -64,20 +64,15 @@ public final class CpcStable implements GraphSearch {
     private long elapsedTime;
 
     /**
-     * The list of all unshielded triples.
-     */
-    private Set<Triple> allTriples;
-
-    /**
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
      * graphs).
      */
-    private boolean aggressivelyPreventCycles = false;
+    private boolean aggressivelyPreventCycles;
 
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * The sepsets.
@@ -87,7 +82,7 @@ public final class CpcStable implements GraphSearch {
     /**
      * Whether verbose output about independencies is output.
      */
-    private boolean verbose = false;
+    private boolean verbose;
     private PrintStream out = System.out;
 
     //=============================CONSTRUCTORS==========================//
@@ -124,7 +119,7 @@ public final class CpcStable implements GraphSearch {
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
      * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
      */
-    public final void setDepth(int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -140,7 +135,7 @@ public final class CpcStable implements GraphSearch {
     /**
      * @return the elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
-    public final long getElapsedTime() {
+    public long getElapsedTime() {
         return this.elapsedTime;
     }
 
@@ -148,7 +143,7 @@ public final class CpcStable implements GraphSearch {
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -163,7 +158,7 @@ public final class CpcStable implements GraphSearch {
      * of duplicating the data set!
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     /**
@@ -171,29 +166,17 @@ public final class CpcStable implements GraphSearch {
      * independence test.
      */
     public int getDepth() {
-        return depth;
-    }
-
-    /**
-     * @return the set of all triples found during the most recent run of the algorithm. Non-null after a call to
-     * <code>search()</code>.
-     */
-    public Set<Triple> getAllTriples() {
-        return new HashSet<>(allTriples);
+        return this.depth;
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<>();
-        for (Edge edge : graph.getEdges()) {
-            adjacencies.add(edge);
-        }
-        return adjacencies;
+        return new HashSet<>(this.graph.getEdges());
     }
 
     public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(graph);
+        Graph complete = GraphUtils.completeGraph(this.graph);
         Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(graph);
+        Graph undirected = GraphUtils.undirectedGraph(this.graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
     }
@@ -202,31 +185,26 @@ public final class CpcStable implements GraphSearch {
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      */
-    public final Graph search() {
-        return search(independenceTest.getVariables());
+    public Graph search() {
+        return search(this.independenceTest.getVariables());
     }
 
     public Graph search(List<Node> nodes) {
-        graph = new EdgeListGraph(nodes);
+        this.graph = new EdgeListGraph(nodes);
 
 
-        final FasConcurrent fas = new FasConcurrent(getIndependenceTest());
-        fas.setOut(out);
+        FasConcurrent fas = new FasConcurrent(getIndependenceTest());
+        fas.setOut(this.out);
         return search(fas, nodes);
     }
 
     public Graph search(IFas fas, List<Node> nodes) {
         this.logger.log("info", "Starting CPC Stable algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
-        this.allTriples = new HashSet<>();
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
         long startTime = System.currentTimeMillis();
-
-        if (getIndependenceTest() == null) {
-            throw new NullPointerException();
-        }
 
         List<Node> allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
@@ -237,42 +215,32 @@ public final class CpcStable implements GraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setVerbose(verbose);
-        fas.setOut(out);
+        fas.setVerbose(this.verbose);
+        fas.setOut(this.out);
 
         // Note that we are ignoring the sepset map returned by this method
         // on purpose; it is not used in this search.
-        graph = fas.search();
-        sepsets = fas.getSepsets();
+        this.graph = fas.search();
+        this.sepsets = fas.getSepsets();
 
-//        for (int i = 0; i < nodes.size(); i++) {
-//            for (int j = i+1; j < nodes.size(); j++) {
-//                List<Edge> edges = graph.getEdges(nodes.get(i), nodes.get(j));
-//                if (edges.size() > 1) {
-//                    graph.removeEdge(edges.get(0));
-////                    out.println();
-//                }
-//            }
-//        }
-
-        if (verbose) {
-            out.println("CPC orientation...");
+        if (this.verbose) {
+            this.out.println("CPC orientation...");
         }
 
-        SearchGraphUtils.pcOrientbk(knowledge, getGraph(), nodes);
+        SearchGraphUtils.pcOrientbk(this.knowledge, getGraph(), nodes);
 
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
-        orientUnshieldedTriples(knowledge);
+        orientUnshieldedTriples(this.knowledge);
 
         MeekRules meekRules = new MeekRules();
-        meekRules.setOut(out);
+        meekRules.setOut(this.out);
 
         meekRules.orientImplied(getGraph());
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - startTime;
 
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
 
         TetradLogger.getInstance().flush();
@@ -284,10 +252,10 @@ public final class CpcStable implements GraphSearch {
     private void orientUnshieldedTriples(IKnowledge knowledge) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
-        List<Node> nodes = graph.getNodes();
+        List<Node> nodes = this.graph.getNodes();
 
         for (Node y : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(y);
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -304,21 +272,19 @@ public final class CpcStable implements GraphSearch {
                     continue;
                 }
 
-                List<List<Node>> sepsetsxz = getSepsets(x, z, graph);
+                List<List<Node>> sepsetsxz = getSepsets(x, z, this.graph);
 
                 if (isColliderSepset(y, sepsetsxz)) {
                     if (colliderAllowed(x, y, z, knowledge)) {
-                        graph.setEndpoint(x, y, Endpoint.ARROW);
-                        graph.setEndpoint(z, y, Endpoint.ARROW);
+                        this.graph.setEndpoint(x, y, Endpoint.ARROW);
+                        this.graph.setEndpoint(z, y, Endpoint.ARROW);
 
                         TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
                     }
                 } else {
                     Triple triple = new Triple(x, y, z);
-                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
-
-                getAllTriples().add(new Triple(x, y, z));
             }
         }
 
@@ -366,92 +332,6 @@ public final class CpcStable implements GraphSearch {
         return true;
     }
 
-
-//    private void orientUnshieldedTriplesConcurrent(final IKnowledge knowledge,
-//                                                   final IndependenceTest test, final int depth) {
-//        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
-//
-//        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
-//
-//        final List<Node> nodes = getGraph().getNodes();
-//
-//        final int chunk = 50;
-//
-//        class TripleTask extends RecursiveTask<Boolean> {
-//            private int chunk;
-//            private int from;
-//            private int to;
-//
-//            public TripleTask(int chunk, int from, int to) {
-//                this.chunk = chunk;
-//                this.from = from;
-//                this.to = to;
-//            }
-//
-//            @Override
-//            protected Boolean compute() {
-//                if (to - from <= chunk) {
-//                    for (int i = from; i < to; i++) {
-//                        if ((i + 1) % 1000 == 0) System.out.println((i + 1) + " triple task");
-//                        final Node y = nodes.get(i);
-//
-//                        List<Node> adjacentNodes = getGraph().getAdjacentNodes(y);
-//
-//                        if (adjacentNodes.size() < 2) {
-//                            continue;
-//                        }
-//
-//                        ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-//                        int[] combination;
-//
-//                        while ((combination = cg.next()) != null) {
-//                            final Node x = adjacentNodes.get(combination[0]);
-//                            final Node z = adjacentNodes.get(combination[1]);
-//
-//                            if (graph.isAdjacentTo(x, z)) {
-//                                continue;
-//                            }
-//
-//                            SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, getGraph(), verbose);
-//
-//                            if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
-//                                if (colliderAllowed(x, y, z, knowledge)) {
-//                                    getGraph().setEndpoint(x, y, Endpoint.ARROW);
-//                                    getGraph().setEndpoint(z, y, Endpoint.ARROW);
-//
-//                                    TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
-//                                }
-//                            } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
-//                                Triple triple = new Triple(x, y, z);
-//                                getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-//                            }
-//                        }
-//                    }
-//
-//                    return true;
-//                } else {
-//                    List<TripleTask> tasks = new ArrayList<TripleTask>();
-//
-//                    final int mid1 = (this.to - from) / 4;
-//                    final int mid2 = mid1 + mid1;
-//                    final int mid3 = mid1 + mid1 + mid1;
-//
-//                    tasks.add(new TripleTask(chunk, from, from + mid1));
-//                    tasks.add(new TripleTask(chunk, from + mid1, from + mid2));
-//                    tasks.add(new TripleTask(chunk, from + mid2, from + mid3));
-//                    tasks.add(new TripleTask(chunk, from + mid3, to));
-//
-//                    invokeAll(tasks);
-//
-//                    return true;
-//                }
-//            }
-//        }
-//
-//        pool.invoke(new TripleTask(chunk, 0, nodes.size()));
-//        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
-//    }
-
     private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
         return CpcStable.isArrowpointAllowed1(x, y, knowledge) &&
                 CpcStable.isArrowpointAllowed1(z, y, knowledge);
@@ -464,14 +344,14 @@ public final class CpcStable implements GraphSearch {
     }
 
     public SepsetMap getSepsets() {
-        return sepsets;
+        return this.sepsets;
     }
 
     /**
      * The graph that's constructed during the search.
      */
     public Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
     public void setGraph(Graph graph) {
@@ -487,7 +367,7 @@ public final class CpcStable implements GraphSearch {
     }
 
     public PrintStream getOut() {
-        return out;
+        return this.out;
     }
 }
 

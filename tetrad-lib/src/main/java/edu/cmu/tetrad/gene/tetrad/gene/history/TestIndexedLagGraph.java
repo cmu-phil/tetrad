@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -59,19 +59,19 @@ public class TestIndexedLagGraph extends TestCase {
 
         System.out.println(indexedLagGraph);
 
-        assertEquals("G1", indexedLagGraph.getFactor(0));
-        assertEquals("G2", indexedLagGraph.getFactor(1));
-        assertEquals("G3", indexedLagGraph.getFactor(2));
+        TestCase.assertEquals("G1", indexedLagGraph.getFactor(0));
+        TestCase.assertEquals("G2", indexedLagGraph.getFactor(1));
+        TestCase.assertEquals("G3", indexedLagGraph.getFactor(2));
 
-        assertEquals(2, indexedLagGraph.getParent(0, 0).getIndex());
-        assertEquals(0, indexedLagGraph.getParent(1, 0).getIndex());
-        assertEquals(1, indexedLagGraph.getParent(2, 0).getIndex());
-        assertEquals(2, indexedLagGraph.getParent(2, 1).getIndex());
+        TestCase.assertEquals(2, indexedLagGraph.getParent(0, 0).getIndex());
+        TestCase.assertEquals(0, indexedLagGraph.getParent(1, 0).getIndex());
+        TestCase.assertEquals(1, indexedLagGraph.getParent(2, 0).getIndex());
+        TestCase.assertEquals(2, indexedLagGraph.getParent(2, 1).getIndex());
 
-        assertEquals(1, indexedLagGraph.getParent(0, 0).getLag());
-        assertEquals(2, indexedLagGraph.getParent(1, 0).getLag());
-        assertEquals(3, indexedLagGraph.getParent(2, 0).getLag());
-        assertEquals(4, indexedLagGraph.getParent(2, 1).getLag());
+        TestCase.assertEquals(1, indexedLagGraph.getParent(0, 0).getLag());
+        TestCase.assertEquals(2, indexedLagGraph.getParent(1, 0).getLag());
+        TestCase.assertEquals(3, indexedLagGraph.getParent(2, 0).getLag());
+        TestCase.assertEquals(4, indexedLagGraph.getParent(2, 1).getLag());
     }
 
     /**

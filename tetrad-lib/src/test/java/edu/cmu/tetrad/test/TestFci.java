@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -171,8 +171,8 @@ public class TestFci {
 
     @Test
     public void testSearch13() {
-        int numVars = 10;
-        int numEdges = 10;
+        final int numVars = 10;
+        final int numEdges = 10;
 
         List<Node> nodes = new ArrayList<>();
 
@@ -189,7 +189,7 @@ public class TestFci {
 
         Graph graph = fci.search();
 
-        DagToPag2 dagToPag = new DagToPag2(trueGraph);
+        DagToPag dagToPag = new DagToPag(trueGraph);
         Graph truePag = dagToPag.convert();
 
         assertEquals(graph, truePag);
@@ -197,11 +197,11 @@ public class TestFci {
 
     @Test
     public void testSearch15() {
-        int numVars = 80;
-        int numEdges = 80;
-        int sampleSize = 1000;
-        boolean latentDataSaved = false;
-        int numLatents = 40;
+        final int numVars = 80;
+        final int numEdges = 80;
+        final int sampleSize = 1000;
+        final boolean latentDataSaved = false;
+        final int numLatents = 40;
 
         List<Node> nodes = new ArrayList<>();
 
@@ -246,29 +246,18 @@ public class TestFci {
 
         // Run search
         Graph resultGraph = fci.search();
-//
-//        // Build comparison graph.
-//        Graph compareGraph = new EdgeListGraph(GraphConverter.convert(outputGraph));
-//
-//        // Do test (output of FCI search equals true graph)
-//        resultGraph.setUnderLineTriples(compareGraph.getUnderLines());
-//        resultGraph.setDottedUnderLineTriples(compareGraph.getDottedUnderlines());
-//
-//        resultGraph = GraphUtils.replaceNodes(resultGraph, compareGraph.getNodes());
-//
-//        assertTrue(compareGraph.equals(resultGraph));
     }
 
     //    @Test
     public void testFciAnc() {
-        int numMeasures = 50;
-        double edgeFactor = 2.0;
+        final int numMeasures = 50;
+        final double edgeFactor = 2.0;
 
-        int numRuns = 10;
-        double alpha = 0.01;
-        double penaltyDiscount = 4.0;
-        int numVarsToMarginalize = 5;
-        int numLatents = 10;
+        final int numRuns = 10;
+        final double alpha = 0.01;
+        final double penaltyDiscount = 4.0;
+        final int numVarsToMarginalize = 5;
+        final int numLatents = 10;
 
         System.out.println("num measures = " + numMeasures);
         System.out.println("edge factor = " + edgeFactor);
@@ -281,7 +270,7 @@ public class TestFci {
         System.out.println();
 
         for (int i = 0; i < numRuns; i++) {
-            int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
+            final int numEdges = (int) (edgeFactor * (numMeasures + numLatents));
 
             List<Node> nodes = new ArrayList<>();
 
@@ -296,7 +285,7 @@ public class TestFci {
             SemIm im = new SemIm(pm);
             DataSet data = im.simulateData(1000, false);
 
-            Graph pag = getPag(alpha, penaltyDiscount, data);
+            Graph pag = getPag(data);
 
             DataSet marginalData = data.copy();
 
@@ -307,7 +296,7 @@ public class TestFci {
                 marginalData.removeColumn(marginalData.getColumn(variables.get(m)));
             }
 
-            Graph margPag = getPag(alpha, penaltyDiscount, marginalData);
+            Graph margPag = getPag(marginalData);
 
             int ancAnc = 0;
             int ancNanc = 0;
@@ -347,27 +336,6 @@ public class TestFci {
                 }
             }
 
-//            {
-//                TextTable table = new TextTable(5, 3);
-//                table.setToken(0, 1, "Ancestral");
-//                table.setToken(0, 2, "Nonancestral");
-//                table.setToken(1, 0, "Ancestral");
-//                table.setToken(2, 0, "Nonancestral");
-//                table.setToken(3, 0, "Ambiguous");
-//                table.setToken(4, 0, "Total");
-//
-//                table.setToken(1, 1, ancAnc + "");
-//                table.setToken(2, 1, nancAnc + "");
-//                table.setToken(3, 1, ambAnc + "");
-//                table.setToken(1, 2, ancNanc + "");
-//                table.setToken(2, 2, nancNanc + "");
-//                table.setToken(3, 2, ambNanc + "");
-//                table.setToken(4, 1, totalAncMarg + "");
-//                table.setToken(4, 2, totalNancMarg + "");
-//
-//                System.out.println(table);
-//            }
-
             {
                 TextTable table = new TextTable(5, 3);
                 table.setToken(0, 1, "Ancestral");
@@ -399,7 +367,7 @@ public class TestFci {
         if (pag.isAncestorOf(n, q)) {
             return true;
         } else {
-            List<Node> adj = uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>());
+            List<Node> adj = uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<>());
 
             if (adj.size() >= 2) {
                 ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
@@ -418,9 +386,7 @@ public class TestFci {
                     }
                 }
 
-                if (found) {
-                    return true;
-                }
+                return found;
             }
         }
 
@@ -440,21 +406,15 @@ public class TestFci {
             }
         }
 
-        if (uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<Node>()).isEmpty()) {
-            return true;
-        }
-
-        return false;
+        return uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<>()).isEmpty();
     }
 
-    private Graph getPag(double alpha, double penaltyDiscount, DataSet data) {
-        IndTestFisherZ test = new IndTestFisherZ(data, alpha);
+    private Graph getPag(DataSet data) {
+        IndTestFisherZ test = new IndTestFisherZ(data, 0.01);
 
         SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-        score.setPenaltyDiscount(penaltyDiscount);
+        score.setPenaltyDiscount(4.0);
 
-//        GraphSearch search = new Fci(test);
-//        GraphSearch search = new GFci(score);
         GraphSearch search = new Pc(test);
 
         return search.search();

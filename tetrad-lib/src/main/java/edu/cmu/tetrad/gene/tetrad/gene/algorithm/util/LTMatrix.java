@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
 
+import java.io.IOException;
+
 /**
  * Implements a space-efficient Lower Triangular Matrix of
  * elements of type <code>short</code>
@@ -28,10 +30,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 public class LTMatrix extends BasicLTMatrix {
     protected short[] A;
 
@@ -46,7 +44,7 @@ public class LTMatrix extends BasicLTMatrix {
      * Creates a lower triangular matrix reading it from file
      * <code>fname</code>.
      */
-    public LTMatrix(String fname) throws FileNotFoundException, IOException {
+    public LTMatrix(String fname) throws IOException {
         super(fname);
     }
 
@@ -62,7 +60,7 @@ public class LTMatrix extends BasicLTMatrix {
      * checks that x can be converted to a short without causing overflow.
      */
     public void setDoubleValue(int r, int c, double x) {
-        if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
+        if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Double " + x + " cannot be stored as a short");
         }
@@ -74,7 +72,7 @@ public class LTMatrix extends BasicLTMatrix {
      * can be converted to a short without causing overflow.
      */
     public void setValue(int r, int c, int x) {
-        if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
+        if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Double " + x + " cannot be stored as a short");
         }
@@ -98,7 +96,7 @@ public class LTMatrix extends BasicLTMatrix {
      * Returns element (r,c) as a double
      */
     public double getDoubleValue(int r, int c) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }
         return (double) (r >= c ? this.A[r * (r + 1) / 2 + c] : 0);
@@ -108,7 +106,7 @@ public class LTMatrix extends BasicLTMatrix {
      * Returns element (r,c)
      */
     public short getValue(int r, int c) {
-        if ((r >= n) || (c >= n) || (r < 0) || (c < 0)) {
+        if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }
         return (r >= c ? this.A[r * (r + 1) / 2 + c] : 0);
@@ -119,7 +117,7 @@ public class LTMatrix extends BasicLTMatrix {
      */
     public void setAllValuesToZero() {
         for (int i = 0; i < this.A.length; i++) {
-            A[i] = 0;
+            this.A[i] = 0;
         }
     }
 

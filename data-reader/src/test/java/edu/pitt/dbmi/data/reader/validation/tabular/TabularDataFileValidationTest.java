@@ -65,13 +65,13 @@ public class TabularDataFileValidationTest {
 
     @Test
     public void testValidateForMixedDataWithDateColumn() throws IOException {
-        final Path dataFile = Paths.get(getClass().getResource("/data/metadata/mixed_with_dates.csv").getFile());
-        final Path metadataFile = Paths.get(getClass().getResource("/data/metadata/mixed_with_dates_metadata.json").getFile());
+        Path dataFile = Paths.get(getClass().getResource("/data/metadata/mixed_with_dates.csv").getFile());
+        Path metadataFile = Paths.get(getClass().getResource("/data/metadata/mixed_with_dates_metadata.json").getFile());
 
         List<ValidationResult> infos = new LinkedList<>();
         List<ValidationResult> warnings = new LinkedList<>();
         List<ValidationResult> errors = new LinkedList<>();
-        for (ValidationResult result : (new TabularColumnFileValidation(dataFile, delimiter)).validate()) {
+        for (ValidationResult result : (new TabularColumnFileValidation(dataFile, this.delimiter)).validate()) {
             switch (result.getCode()) {
                 case INFO:
                     infos.add(result);
@@ -96,15 +96,15 @@ public class TabularDataFileValidationTest {
         actual = errors.size();
         Assert.assertEquals(expected, actual);
 
-        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
+        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, this.delimiter);
 
-        boolean isDiscrete = true;
+        final boolean isDiscrete = true;
         DataColumn[] dataColumns = columnReader.readInDataColumns(isDiscrete);
 
-        TabularDataReader dataReader = new TabularDataFileReader(dataFile, delimiter);
+        TabularDataReader dataReader = new TabularDataFileReader(dataFile, this.delimiter);
 
-        int numberOfCategories = 7;
-        dataReader.determineDiscreteDataColumns(dataColumns, numberOfCategories, hasHeader);
+        final int numberOfCategories = 7;
+        dataReader.determineDiscreteDataColumns(dataColumns, numberOfCategories, this.hasHeader);
 
         MetadataReader metadataReader = new MetadataFileReader(metadataFile);
         Metadata metadata = metadataReader.read();
@@ -113,7 +113,7 @@ public class TabularDataFileValidationTest {
         infos.clear();
         warnings.clear();
         errors.clear();
-        for (ValidationResult result : (new TabularDataFileValidation(dataFile, delimiter)).validate(dataColumns, hasHeader)) {
+        for (ValidationResult result : (new TabularDataFileValidation(dataFile, this.delimiter)).validate(dataColumns, this.hasHeader)) {
             switch (result.getCode()) {
                 case INFO:
                     infos.add(result);
@@ -146,28 +146,28 @@ public class TabularDataFileValidationTest {
      */
     @Test
     public void testValidateForMixedDataWithExcludedColumns() throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(mixedDataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteCharacter);
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.mixedDataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteCharacter);
 
         int[] excludedColumns = {1, 11, 9, 10, 3, 5};
-        boolean isDiscrete = true;
+        final boolean isDiscrete = true;
         DataColumn[] dataColumns = columnReader.readInDataColumns(excludedColumns, isDiscrete);
 
-        TabularDataReader dataReader = new TabularDataFileReader(mixedDataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteCharacter);
-        dataReader.setMissingDataMarker(missingValueMarker);
+        TabularDataReader dataReader = new TabularDataFileReader(this.mixedDataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteCharacter);
+        dataReader.setMissingDataMarker(this.missingValueMarker);
 
-        int numberOfCategories = 4;
-        dataReader.determineDiscreteDataColumns(dataColumns, numberOfCategories, hasHeader);
+        final int numberOfCategories = 4;
+        dataReader.determineDiscreteDataColumns(dataColumns, numberOfCategories, this.hasHeader);
 
-        TabularDataValidation validation = new TabularDataFileValidation(mixedDataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
-        validation.setMissingDataMarker(missingValueMarker);
+        TabularDataValidation validation = new TabularDataFileValidation(this.mixedDataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
+        validation.setMissingDataMarker(this.missingValueMarker);
 
-        List<ValidationResult> results = validation.validate(dataColumns, hasHeader);
+        List<ValidationResult> results = validation.validate(dataColumns, this.hasHeader);
         List<ValidationResult> infos = new LinkedList<>();
         List<ValidationResult> warnings = new LinkedList<>();
         List<ValidationResult> errors = new LinkedList<>();
@@ -204,27 +204,27 @@ public class TabularDataFileValidationTest {
      */
     @Test
     public void testValidateForMixedData() throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(mixedDataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteCharacter);
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.mixedDataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteCharacter);
 
-        boolean isDiscrete = true;
+        final boolean isDiscrete = true;
         DataColumn[] dataColumns = columnReader.readInDataColumns(isDiscrete);
 
-        TabularDataReader dataReader = new TabularDataFileReader(mixedDataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteCharacter);
-        dataReader.setMissingDataMarker(missingValueMarker);
+        TabularDataReader dataReader = new TabularDataFileReader(this.mixedDataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteCharacter);
+        dataReader.setMissingDataMarker(this.missingValueMarker);
 
-        int numberOfCategories = 4;
-        dataReader.determineDiscreteDataColumns(dataColumns, numberOfCategories, hasHeader);
+        final int numberOfCategories = 4;
+        dataReader.determineDiscreteDataColumns(dataColumns, numberOfCategories, this.hasHeader);
 
-        TabularDataValidation validation = new TabularDataFileValidation(mixedDataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
-        validation.setMissingDataMarker(missingValueMarker);
+        TabularDataValidation validation = new TabularDataFileValidation(this.mixedDataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
+        validation.setMissingDataMarker(this.missingValueMarker);
 
-        List<ValidationResult> results = validation.validate(dataColumns, hasHeader);
+        List<ValidationResult> results = validation.validate(dataColumns, this.hasHeader);
         List<ValidationResult> infos = new LinkedList<>();
         List<ValidationResult> warnings = new LinkedList<>();
         List<ValidationResult> errors = new LinkedList<>();
@@ -261,20 +261,20 @@ public class TabularDataFileValidationTest {
      */
     @Test
     public void testValidateForDiscreteDataWithExcludedColumns() throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(discreteDataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteCharacter);
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.discreteDataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteCharacter);
 
         int[] excludedColumns = {1, 11, 9, 10, 3};
-        boolean isDiscrete = true;
+        final boolean isDiscrete = true;
         DataColumn[] dataColumns = columnReader.readInDataColumns(excludedColumns, isDiscrete);
 
-        TabularDataValidation validation = new TabularDataFileValidation(discreteDataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
-        validation.setMissingDataMarker(missingValueMarker);
+        TabularDataValidation validation = new TabularDataFileValidation(this.discreteDataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
+        validation.setMissingDataMarker(this.missingValueMarker);
 
-        List<ValidationResult> results = validation.validate(dataColumns, hasHeader);
+        List<ValidationResult> results = validation.validate(dataColumns, this.hasHeader);
         List<ValidationResult> infos = new LinkedList<>();
         List<ValidationResult> warnings = new LinkedList<>();
         List<ValidationResult> errors = new LinkedList<>();
@@ -311,19 +311,19 @@ public class TabularDataFileValidationTest {
      */
     @Test
     public void testValidateForDiscreteData() throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(discreteDataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteCharacter);
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.discreteDataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteCharacter);
 
-        boolean isDiscrete = true;
+        final boolean isDiscrete = true;
         DataColumn[] dataColumns = columnReader.readInDataColumns(isDiscrete);
 
-        TabularDataValidation validation = new TabularDataFileValidation(discreteDataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
-        validation.setMissingDataMarker(missingValueMarker);
+        TabularDataValidation validation = new TabularDataFileValidation(this.discreteDataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
+        validation.setMissingDataMarker(this.missingValueMarker);
 
-        List<ValidationResult> results = validation.validate(dataColumns, hasHeader);
+        List<ValidationResult> results = validation.validate(dataColumns, this.hasHeader);
         List<ValidationResult> infos = new LinkedList<>();
         List<ValidationResult> warnings = new LinkedList<>();
         List<ValidationResult> errors = new LinkedList<>();
@@ -360,20 +360,20 @@ public class TabularDataFileValidationTest {
      */
     @Test
     public void testValidateForContinuousDataWithExcludedColumns() throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(continuousDataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteCharacter);
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.continuousDataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteCharacter);
 
         int[] excludedColumns = {6, 10, 1};
-        boolean isDiscrete = false;
+        final boolean isDiscrete = false;
         DataColumn[] dataColumns = columnReader.readInDataColumns(excludedColumns, isDiscrete);
 
-        TabularDataValidation validation = new TabularDataFileValidation(continuousDataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
-        validation.setMissingDataMarker(missingValueMarker);
+        TabularDataValidation validation = new TabularDataFileValidation(this.continuousDataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
+        validation.setMissingDataMarker(this.missingValueMarker);
 
-        List<ValidationResult> results = validation.validate(dataColumns, hasHeader);
+        List<ValidationResult> results = validation.validate(dataColumns, this.hasHeader);
         List<ValidationResult> infos = new LinkedList<>();
         List<ValidationResult> warnings = new LinkedList<>();
         List<ValidationResult> errors = new LinkedList<>();
@@ -410,19 +410,19 @@ public class TabularDataFileValidationTest {
      */
     @Test
     public void testValidateForContinuousData() throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(continuousDataFile, delimiter);
-        columnReader.setCommentMarker(commentMarker);
-        columnReader.setQuoteCharacter(quoteCharacter);
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.continuousDataFile, this.delimiter);
+        columnReader.setCommentMarker(this.commentMarker);
+        columnReader.setQuoteCharacter(this.quoteCharacter);
 
-        boolean isDiscrete = false;
+        final boolean isDiscrete = false;
         DataColumn[] dataColumns = columnReader.readInDataColumns(isDiscrete);
 
-        TabularDataValidation validation = new TabularDataFileValidation(continuousDataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
-        validation.setMissingDataMarker(missingValueMarker);
+        TabularDataValidation validation = new TabularDataFileValidation(this.continuousDataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
+        validation.setMissingDataMarker(this.missingValueMarker);
 
-        List<ValidationResult> results = validation.validate(dataColumns, hasHeader);
+        List<ValidationResult> results = validation.validate(dataColumns, this.hasHeader);
         List<ValidationResult> infos = new LinkedList<>();
         List<ValidationResult> warnings = new LinkedList<>();
         List<ValidationResult> errors = new LinkedList<>();

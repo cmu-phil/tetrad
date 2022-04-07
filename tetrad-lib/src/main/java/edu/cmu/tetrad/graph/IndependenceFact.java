@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -33,12 +33,13 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class IndependenceFact implements Comparable, TetradSerializable {
+public final class IndependenceFact implements Comparable<IndependenceFact>,
+        TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private Node x;
-    private Node y;
-    private Set<Node> _z;
+    private final Node x;
+    private final Node y;
+    private final Set<Node> _z;
 
     /**
      * Constructs a triple of nodes.
@@ -76,23 +77,23 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
         return new IndependenceFact(new GraphNode("X"), new GraphNode("Y"));
     }
 
-    public final Node getX() {
-        return x;
+    public Node getX() {
+        return this.x;
     }
 
-    public final Node getY() {
-        return y;
+    public Node getY() {
+        return this.y;
     }
 
-    public final List<Node> getZ() {
-        return new LinkedList<>(_z);
+    public List<Node> getZ() {
+        return new LinkedList<>(this._z);
     }
 
-    public final int hashCode() {
+    public int hashCode() {
         return 1;
     }
 
-    public final boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (!(obj instanceof IndependenceFact)) {
             return false;
         }
@@ -101,7 +102,7 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
 
         Set<String> zString1 = new HashSet<>();
 
-        for (Node n : _z) {
+        for (Node n : this._z) {
             zString1.add(n.getName());
         }
 
@@ -111,10 +112,10 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
             zString2.add(n.getName());
         }
 
-        String xN1 = x.getName();
+        String xN1 = this.x.getName();
         String xN2 = fact.x.getName();
 
-        String yN1 = y.getName();
+        String yN1 = this.y.getName();
         String yN2 = fact.y.getName();
 
         return zString1.equals(zString2) && ((xN1.equals(xN2) && yN1.equals(yN2)) || xN1.equals(yN2) && yN1.equals(xN2));
@@ -125,9 +126,9 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        builder.append(x).append(" _||_ ").append(y);
+        builder.append(this.x).append(" _||_ ").append(this.y);
 
-        if (!_z.isEmpty()) {
+        if (!this._z.isEmpty()) {
             builder.append(" | ");
 
             List<Node> z = new ArrayList<>(this._z);
@@ -150,9 +151,7 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
      * reflect independence fact equality. So sorted sets should not be used to check for
      * independence fact existence, for instance. -jdramsey.
      */
-    public int compareTo(Object o) {
-        IndependenceFact fact = (IndependenceFact) o;
-
+    public int compareTo(IndependenceFact fact) {
         int c = getX().getName().compareTo(fact.getX().getName());
 
         if (c != 0) return c;
@@ -194,8 +193,6 @@ public final class IndependenceFact implements Comparable, TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

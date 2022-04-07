@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,31 +41,31 @@ public class Vector implements TetradSerializable {
     }
 
     public void assign(double value) {
-        for (int i = 0; i < data.getDimension(); i++) {
-            data.setEntry(i, value);
+        for (int i = 0; i < this.data.getDimension(); i++) {
+            this.data.setEntry(i, value);
         }
     }
 
     public Vector copy() {
-        return new Vector(data.copy().toArray());
+        return new Vector(this.data.copy().toArray());
     }
 
     public Matrix diag() {
-        Matrix m = new Matrix(data.getDimension(), data.getDimension());
+        Matrix m = new Matrix(this.data.getDimension(), this.data.getDimension());
 
-        for (int i = 0; i < data.getDimension(); i++) {
-            m.set(i, i, data.getEntry(i));
+        for (int i = 0; i < this.data.getDimension(); i++) {
+            m.set(i, i, this.data.getEntry(i));
         }
 
         return m;
     }
 
     public double dotProduct(Vector v2) {
-        return data.dotProduct(v2.data);
+        return this.data.dotProduct(v2.data);
     }
 
     public double get(int i) {
-        return data.getEntry(i);
+        return this.data.getEntry(i);
     }
 
     public Vector like() {
@@ -73,11 +73,11 @@ public class Vector implements TetradSerializable {
     }
 
     public Vector minus(Vector mb) {
-        return new Vector(data.subtract(mb.data).toArray());
+        return new Vector(this.data.subtract(mb.data).toArray());
     }
 
     public Vector plus(Vector mb) {
-        return new Vector(data.add(mb.data).toArray());
+        return new Vector(this.data.add(mb.data).toArray());
     }
 
     public Vector scalarMult(double scalar) {
@@ -90,26 +90,26 @@ public class Vector implements TetradSerializable {
     }
 
     public void set(int j, double v) {
-        data.setEntry(j, v);
+        this.data.setEntry(j, v);
     }
 
     public int size() {
-        return data.getDimension();
+        return this.data.getDimension();
     }
 
     public double[] toArray() {
-        return data.toArray();
+        return this.data.toArray();
     }
 
     public String toString() {
-        return MatrixUtils.toString(data.toArray());
+        return MatrixUtils.toString(this.data.toArray());
     }
 
     public Vector viewSelection(int[] selection) {
         double[] _selection = new double[selection.length];
 
         for (int i = 0; i < selection.length; i++) {
-            _selection[i] = data.getEntry(selection[i]);
+            _selection[i] = this.data.getEntry(selection[i]);
         }
 
         return new Vector(_selection);

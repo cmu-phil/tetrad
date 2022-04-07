@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -50,8 +50,8 @@ public class BayesPmWrapper implements SessionModel {
     static final long serialVersionUID = 23L;
 
     private int numModels = 1;
-    private int modelIndex = 0;
-    private String modelSourceName = null;
+    private int modelIndex;
+    private String modelSourceName;
 
     /**
      * @serial Can be null.
@@ -71,7 +71,8 @@ public class BayesPmWrapper implements SessionModel {
             throw new NullPointerException("Graph must not be null.");
         }
 
-        int lowerBound, upperBound;
+        int lowerBound;
+        int upperBound;
 
         if (params.getString("initializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
@@ -92,7 +93,7 @@ public class BayesPmWrapper implements SessionModel {
 
     private void setBayesPm(BayesPm b) {
         this.bayesPms = new ArrayList<>();
-        bayesPms.add(b);
+        this.bayesPms.add(b);
     }
 
     public BayesPmWrapper(Simulation simulation) {
@@ -140,7 +141,8 @@ public class BayesPmWrapper implements SessionModel {
             throw new NullPointerException("BayesPm must not be null");
         }
 
-        int lowerBound, upperBound;
+        int lowerBound;
+        int upperBound;
 
         if (params.getString("initializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
@@ -176,7 +178,8 @@ public class BayesPmWrapper implements SessionModel {
                     "The parent graph cannot be converted to " + "a DAG.");
         }
 
-        int lowerBound, upperBound;
+        int lowerBound;
+        int upperBound;
 
         if (params.getString("bayesPmInitializationMode", "range").equals("trinary")) {
             lowerBound = upperBound = 3;
@@ -195,14 +198,14 @@ public class BayesPmWrapper implements SessionModel {
     }
 
     public BayesPmWrapper(BayesImWrapper wrapper) {
-        bayesPms = new ArrayList<>();
+        this.bayesPms = new ArrayList<>();
 
         for (int i = 0; i < wrapper.getNumModels(); i++) {
             wrapper.setModelIndex(i);
-            bayesPms.add(wrapper.getBayesIm().getBayesPm());
+            this.bayesPms.add(wrapper.getBayesIm().getBayesPm());
         }
 
-        numModels = wrapper.getNumModels();
+        this.numModels = wrapper.getNumModels();
     }
 
     public BayesPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
@@ -290,7 +293,8 @@ public class BayesPmWrapper implements SessionModel {
                     "The parent graph cannot be converted to " + "a DAG.");
         }
 
-        int lowerBound, upperBound;
+        int lowerBound;
+        int upperBound;
 
         if (params.getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
             lowerBound = upperBound = 3;
@@ -317,7 +321,8 @@ public class BayesPmWrapper implements SessionModel {
 
             Graph graph = dagWrapper.getDag();
 
-            int lowerBound, upperBound;
+            int lowerBound;
+            int upperBound;
 
             String string = params.getString("bayesPmInitializationMode", "trinary");
 
@@ -387,7 +392,7 @@ public class BayesPmWrapper implements SessionModel {
 
     //=============================PUBLIC METHODS========================//
     public BayesPm getBayesPm() {
-        return bayesPms.get(getModelIndex());
+        return this.bayesPms.get(getModelIndex());
     }
 
     /**
@@ -410,7 +415,7 @@ public class BayesPmWrapper implements SessionModel {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -441,15 +446,15 @@ public class BayesPmWrapper implements SessionModel {
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
     public void setModelIndex(int modelIndex) {

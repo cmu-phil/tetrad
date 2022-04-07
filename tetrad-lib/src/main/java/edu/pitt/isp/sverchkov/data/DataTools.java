@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -31,16 +31,16 @@ import java.util.Scanner;
  */
 public class DataTools {
 
-    public final static String NEWLINE = System.getProperty("line.separator");
-    public final static String DELIMITER_REGEX = " *, *";
-    public final static String DELIMITER = ", ";
+    public static final String NEWLINE = System.getProperty("line.separator");
+    public static final String DELIMITER_REGEX = " *, *";
+    public static final String DELIMITER = ", ";
 
     public static DataTable<String, String> dataTableFromFile(File file) throws FileNotFoundException {
         DataTable<String, String> data = null;
         try (Scanner in = new Scanner(file)) {
-            data = new DataTableImpl<>(Arrays.asList(in.nextLine().trim().split(DELIMITER_REGEX)));
+            data = new DataTableImpl<>(Arrays.asList(in.nextLine().trim().split(DataTools.DELIMITER_REGEX)));
             while (in.hasNextLine())
-                data.addRow(Arrays.asList(in.nextLine().trim().split(DELIMITER_REGEX)));
+                data.addRow(Arrays.asList(in.nextLine().trim().split(DataTools.DELIMITER_REGEX)));
         }
         return data;
     }
@@ -52,18 +52,18 @@ public class DataTools {
                 String delim = "";
                 for (Attribute a : data.variables()) {
                     out.append(delim).append(a.toString());
-                    delim = DELIMITER;
+                    delim = DataTools.DELIMITER;
                 }
-                out.append(NEWLINE);
+                out.append(DataTools.NEWLINE);
             }
 
             for (List<Value> row : data) {
                 String delim = "";
                 for (Value v : row) {
                     out.append(delim).append(v.toString());
-                    delim = DELIMITER;
+                    delim = DataTools.DELIMITER;
                 }
-                out.append(NEWLINE);
+                out.append(DataTools.NEWLINE);
             }
         }
     }

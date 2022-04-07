@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -92,21 +92,21 @@ public class DataUtility {
 
         try (FileChannel fc = new RandomAccessFile(file, "r").getChannel()) {
             MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-            byte prevChar = NEW_LINE;
+            byte prevChar = DataUtility.NEW_LINE;
             while (buffer.hasRemaining()) {
                 byte currentChar = buffer.get();
-                if (currentChar == CARRIAGE_RETURN) {
-                    currentChar = NEW_LINE;
+                if (currentChar == DataUtility.CARRIAGE_RETURN) {
+                    currentChar = DataUtility.NEW_LINE;
                 }
 
-                if (currentChar == NEW_LINE && prevChar != NEW_LINE) {
+                if (currentChar == DataUtility.NEW_LINE && prevChar != DataUtility.NEW_LINE) {
                     count++;
                 }
 
                 prevChar = currentChar;
             }
 
-            if (prevChar != NEW_LINE) {
+            if (prevChar != DataUtility.NEW_LINE) {
                 count++;
             }
         }

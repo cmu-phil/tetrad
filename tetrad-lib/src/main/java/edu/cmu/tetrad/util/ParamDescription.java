@@ -82,7 +82,7 @@ public class ParamDescription {
     }
 
     public String getParamName() {
-        return paramName;
+        return this.paramName;
     }
 
     public void setParamName(String paramName) {
@@ -90,7 +90,7 @@ public class ParamDescription {
     }
 
     public String getShortDescription() {
-        return shortDescription;
+        return this.shortDescription;
     }
 
     public void setShortDescription(String shortDescription) {
@@ -98,7 +98,7 @@ public class ParamDescription {
     }
 
     public String getLongDescription() {
-        return longDescription;
+        return this.longDescription;
     }
 
     public void setLongDescription(String longDescription) {
@@ -106,7 +106,7 @@ public class ParamDescription {
     }
 
     public Serializable getDefaultValue() {
-        return defaultValue;
+        return this.defaultValue;
     }
 
     public void setDefaultValue(Serializable defaultValue) {
@@ -114,7 +114,7 @@ public class ParamDescription {
     }
 
     public double getLowerBoundDouble() {
-        return lowerBoundDouble;
+        return this.lowerBoundDouble;
     }
 
     public void setLowerBoundDouble(double lowerBoundDouble) {
@@ -122,7 +122,7 @@ public class ParamDescription {
     }
 
     public double getUpperBoundDouble() {
-        return upperBoundDouble;
+        return this.upperBoundDouble;
     }
 
     public void setUpperBoundDouble(double upperBoundDouble) {
@@ -130,7 +130,7 @@ public class ParamDescription {
     }
 
     public int getLowerBoundInt() {
-        return lowerBoundInt;
+        return this.lowerBoundInt;
     }
 
     public void setLowerBoundInt(int lowerBoundInt) {
@@ -138,7 +138,7 @@ public class ParamDescription {
     }
 
     public int getUpperBoundInt() {
-        return upperBoundInt;
+        return this.upperBoundInt;
     }
 
     public void setUpperBoundInt(int upperBoundInt) {

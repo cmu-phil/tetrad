@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,12 +39,12 @@ public class DagInCPDAGIterator {
      * The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether or not
      * these edges have already been oriented left and/or right.
      */
-    private LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
+    private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
     private Graph storedGraph;
-    private boolean returnedOne = false;
-    private IKnowledge knowledge = new Knowledge2();
-    private LinkedList<Triple> colliders;
-    private boolean allowNewColliders = true;
+    private boolean returnedOne;
+    private final IKnowledge knowledge;
+    private final LinkedList<Triple> colliders;
+    private final boolean allowNewColliders;
 
     public DagInCPDAGIterator(Graph CPDAG) {
         this(CPDAG, new Knowledge2(), false, true);
@@ -54,15 +54,11 @@ public class DagInCPDAGIterator {
         this(CPDAG, knowledge, false, true);
     }
 
-    public DagInCPDAGIterator(Graph CPDAG, boolean allowArbitraryOrientations) {
-        this(CPDAG, new Knowledge2(), allowArbitraryOrientations, true);
-    }
-
     /**
      * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it
      * is not acyclic, it is rejected.
      *
-     * @param CPDAG                    The CPDAG for which DAGS are wanted.
+     * @param CPDAG                      The CPDAG for which DAGS are wanted.
      * @param allowArbitraryOrientations True if arbitrary orientations are allowable when reasonable ones cannot be
      *                                   made. May result in cyclic outputs.
      * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
@@ -83,20 +79,10 @@ public class DagInCPDAGIterator {
             throw new IllegalArgumentException("The CPDAG already violates that knowledge.");
         }
 
-//        for (Edge edge : CPDAG.getEdges()) {
-//            if (Edges.isDirectedEdge(edge) || Edges.isUndirectedEdge(edge)) {
-//                continue;
-//            }
-//
-//            if (Edges.isBidirectedEdge(edge)) {
-//                continue;
-//            }
-//        }
-
         HashMap<Graph, Set<Edge>> changedEdges = new HashMap<>();
-        changedEdges.put(CPDAG, new HashSet<Edge>());
+        changedEdges.put(CPDAG, new HashSet<>());
 
-        decoratedGraphs.add(new DecoratedGraph(CPDAG, getKnowledge(), changedEdges,
+        this.decoratedGraphs.add(new DecoratedGraph(CPDAG, getKnowledge(), changedEdges,
                 allowArbitraryOrientations));
         this.colliders = GraphUtils.listColliderTriples(CPDAG);
     }
@@ -113,69 +99,69 @@ public class DagInCPDAGIterator {
      * an exception.
      */
     public Graph next() {
-        if (storedGraph != null) {
-            Graph temp = storedGraph;
-            storedGraph = null;
+        if (this.storedGraph != null) {
+            Graph temp = this.storedGraph;
+            this.storedGraph = null;
 
             return temp;
         }
 
-        if (decoratedGraphs.size() == 1 && decoratedGraphs.getLast().getEdge() == null
-                && !returnedOne) {
-            returnedOne = true;
-            return new EdgeListGraph(decoratedGraphs.getLast().getGraph());
+        if (this.decoratedGraphs.size() == 1 && this.decoratedGraphs.getLast().getEdge() == null
+                && !this.returnedOne) {
+            this.returnedOne = true;
+            return new EdgeListGraph(this.decoratedGraphs.getLast().getGraph());
         }
 
         do {
-            while (!decoratedGraphs.isEmpty()) {
-                DecoratedGraph graph = decoratedGraphs.removeLast();
+            while (!this.decoratedGraphs.isEmpty()) {
+                DecoratedGraph graph = this.decoratedGraphs.removeLast();
 
                 if (graph.isOrientable()) {
-                    decoratedGraphs.addLast(graph);
+                    this.decoratedGraphs.addLast(graph);
                     break;
                 }
             }
 
-            if (decoratedGraphs.isEmpty()) {
+            if (this.decoratedGraphs.isEmpty()) {
                 return null;
             }
 
             DecoratedGraph graph;
 
-            while ((graph = decoratedGraphs.getLast().orient()) != null) {
-                decoratedGraphs.addLast(graph);
+            while ((graph = this.decoratedGraphs.getLast().orient()) != null) {
+                this.decoratedGraphs.addLast(graph);
             }
-        } while (decoratedGraphs.getLast().getEdge() == null && !allowNewColliders &&
-                !GraphUtils.listColliderTriples(decoratedGraphs.getLast().getGraph()).equals(colliders));
+        } while (this.decoratedGraphs.getLast().getEdge() == null && !this.allowNewColliders &&
+                !GraphUtils.listColliderTriples(this.decoratedGraphs.getLast().getGraph()).equals(this.colliders));
 
-        return new EdgeListGraph(decoratedGraphs.getLast().getGraph());
+        return new EdgeListGraph(this.decoratedGraphs.getLast().getGraph());
     }
 
     /**
      * @return true just in case there is still a DAG remaining in the enumeration of DAGs for this CPDAG.
      */
     public boolean hasNext() {
-        if (storedGraph == null) {
-            storedGraph = next();
+        if (this.storedGraph == null) {
+            this.storedGraph = next();
         }
 
-        return storedGraph != null;
+        return this.storedGraph != null;
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     //==============================CLASSES==============================//
 
     private static class DecoratedGraph {
-        private Graph graph;
-        private Edge edge;
-        private boolean triedLeft = false;
-        private boolean triedRight = false;
-        private IKnowledge knowledge;
+        private final Graph graph;
+        private final Edge edge;
+        private boolean triedLeft;
+        private boolean triedRight;
+        private final IKnowledge knowledge;
         private Map<Graph, Set<Edge>> changedEdges = new HashMap<>();
-        private boolean allowArbitraryOrientation = true;
+        private final boolean allowArbitraryOrientation;
 
         public DecoratedGraph(Graph graph, IKnowledge knowledge, Map<Graph, Set<Edge>> changedEdges, boolean allowArbitraryOrientation) {
             this.graph = graph;
@@ -198,52 +184,48 @@ public class DagInCPDAGIterator {
         }
 
         public Graph getGraph() {
-            return graph;
+            return this.graph;
         }
 
         public Edge getEdge() {
-            return edge;
+            return this.edge;
         }
 
         public String toString() {
-            return graph.toString();
+            return this.graph.toString();
         }
 
-//        public void triedDirectLeft() {
-//            triedLeft = true;
-//        }
-
         public boolean isOrientable() {
-            if (edge == null) {
+            if (this.edge == null) {
                 return false;
             }
 
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
+            Node node1 = this.edge.getNode1();
+            Node node2 = this.edge.getNode2();
 
-            return (!triedLeft && !graph.isAncestorOf(node1, node2) &&
+            return (!this.triedLeft && !this.graph.isAncestorOf(node1, node2) &&
                     !getKnowledge().isForbidden(node2.getName(), node1.getName())) ||
-                    (!triedRight && !graph.isAncestorOf(node2, node1) &&
+                    (!this.triedRight && !this.graph.isAncestorOf(node2, node1) &&
                             !getKnowledge().isForbidden(node1.getName(), node2.getName()));
 
         }
 
         public DecoratedGraph orient() {
-            if (edge == null) {
+            if (this.edge == null) {
                 return null;
             }
 
-            if (!triedLeft && !graph.isAncestorOf(edge.getNode1(), edge.getNode2()) &&
-                    !getKnowledge().isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
+            if (!this.triedLeft && !this.graph.isAncestorOf(this.edge.getNode1(), this.edge.getNode2()) &&
+                    !getKnowledge().isForbidden(this.edge.getNode2().getName(), this.edge.getNode1().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
                 Graph graph = new EdgeListGraph(this.graph);
-                graph.removeEdges(edge.getNode1(), edge.getNode2());
+                graph.removeEdges(this.edge.getNode1(), this.edge.getNode2());
 
-                graph.addDirectedEdge(edge.getNode2(), edge.getNode1());
-                graph.setHighlighted(graph.getEdge(edge.getNode2(), edge.getNode1()), true);
+                graph.addDirectedEdge(this.edge.getNode2(), this.edge.getNode1());
+                graph.setHighlighted(graph.getEdge(this.edge.getNode2(), this.edge.getNode1()), true);
 
-                edges.add(graph.getEdge(edge.getNode2(), edge.getNode1()));
+                edges.add(graph.getEdge(this.edge.getNode2(), this.edge.getNode1()));
                 edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
 
                 MeekRules meek = new MeekRules();
@@ -260,22 +242,22 @@ public class DagInCPDAGIterator {
                     graph.setHighlighted(edge, true);
                 }
 
-                triedLeft = true;
+                this.triedLeft = true;
                 fail(graph, "A");
                 return new DecoratedGraph(graph, getKnowledge(), this.getChangedEdges(),
                         isAllowArbitraryOrientation());
             }
 
-            if (!triedRight && !graph.isAncestorOf(edge.getNode2(), edge.getNode1()) &&
-                    !getKnowledge().isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
+            if (!this.triedRight && !this.graph.isAncestorOf(this.edge.getNode2(), this.edge.getNode1()) &&
+                    !getKnowledge().isForbidden(this.edge.getNode1().getName(), this.edge.getNode2().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
                 Graph graph = new EdgeListGraph(this.graph);
-                graph.removeEdges(edge.getNode1(), edge.getNode2());
-                graph.addDirectedEdge(edge.getNode1(), edge.getNode2());
-                graph.setHighlighted(graph.getEdge(edge.getNode1(), edge.getNode2()), true);
+                graph.removeEdges(this.edge.getNode1(), this.edge.getNode2());
+                graph.addDirectedEdge(this.edge.getNode1(), this.edge.getNode2());
+                graph.setHighlighted(graph.getEdge(this.edge.getNode1(), this.edge.getNode2()), true);
 
-                edges.add(graph.getEdge(edge.getNode1(), edge.getNode2()));
+                edges.add(graph.getEdge(this.edge.getNode1(), this.edge.getNode2()));
                 edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
 
                 MeekRules meek = new MeekRules();
@@ -288,7 +270,7 @@ public class DagInCPDAGIterator {
                     graph.setHighlighted(edge, true);
                 }
 
-                triedRight = true;
+                this.triedRight = true;
                 fail(graph, "B");
 
                 return new DecoratedGraph(graph, getKnowledge(), this.getChangedEdges(),
@@ -299,17 +281,17 @@ public class DagInCPDAGIterator {
         }
 
         private void fail(Graph graph, String label) {
-            if (knowledge.isViolatedBy(graph)) {
+            if (this.knowledge.isViolatedBy(graph)) {
                 throw new IllegalArgumentException("IKnowledge violated: " + label);
             }
         }
 
         private IKnowledge getKnowledge() {
-            return knowledge;
+            return this.knowledge;
         }
 
         public Map<Graph, Set<Edge>> getChangedEdges() {
-            return changedEdges;
+            return this.changedEdges;
         }
 
         public void setChangedEdges(Map<Graph, Set<Edge>> changedEdges) {
@@ -317,12 +299,9 @@ public class DagInCPDAGIterator {
         }
 
         public boolean isAllowArbitraryOrientation() {
-            return allowArbitraryOrientation;
+            return this.allowArbitraryOrientation;
         }
 
-        public void setAllowArbitraryOrientation(boolean allowArbitraryOrientation) {
-            this.allowArbitraryOrientation = allowArbitraryOrientation;
-        }
     }
 }
 

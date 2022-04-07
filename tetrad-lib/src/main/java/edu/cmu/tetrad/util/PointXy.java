@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -72,7 +72,7 @@ public class PointXy implements TetradSerializable {
      *
      * @return the examplar.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static PointXy serializableInstance() {
         return new PointXy(1, 2);
     }
@@ -83,14 +83,14 @@ public class PointXy implements TetradSerializable {
      * @return Ibid.
      */
     public int getX() {
-        return x;
+        return this.x;
     }
 
     /**
      * @return Ibid.
      */
     public int getY() {
-        return y;
+        return this.y;
     }
 
     /**
@@ -114,7 +114,7 @@ public class PointXy implements TetradSerializable {
      * @return a string representation of a point.
      */
     public String toString() {
-        return "Point<" + x + "," + y + ">";
+        return "Point<" + this.x + "," + this.y + ">";
     }
 }
 

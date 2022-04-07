@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,8 +46,8 @@ public class SemPmWrapper implements SessionModel {
 
     static final long serialVersionUID = 23L;
     private int numModels = 1;
-    private int modelIndex = 0;
-    private String modelSourceName = null;
+    private int modelIndex;
+    private String modelSourceName;
 
     /**
      * @serial Can be null.
@@ -65,8 +65,8 @@ public class SemPmWrapper implements SessionModel {
         this.semPms = new ArrayList<>();
         this.semPms.add(new SemPm(graph));
 
-        for (int i = 0; i < semPms.size(); i++) {
-            log(i, semPms.get(i));
+        for (int i = 0; i < this.semPms.size(); i++) {
+            log(i, this.semPms.get(i));
         }
     }
 
@@ -102,10 +102,10 @@ public class SemPmWrapper implements SessionModel {
             throw new NullPointerException("It looks like you have not done a simulation.");
         }
 
-        semPms = new ArrayList<>();
+        this.semPms = new ArrayList<>();
 
         for (SemIm semIm : semIms) {
-            semPms.add(semIm.getSemPm());
+            this.semPms.add(semIm.getSemPm());
         }
 
         this.numModels = simulation.getDataModelList().size();
@@ -137,9 +137,7 @@ public class SemPmWrapper implements SessionModel {
         try {
             SemPm pm = (SemPm) new MarshalledObject(oldSemPm).get();
             this.semPms = Collections.singletonList(pm);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -217,9 +215,6 @@ public class SemPmWrapper implements SessionModel {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -227,11 +222,11 @@ public class SemPmWrapper implements SessionModel {
     }
 
     public Graph getGraph() {
-        return semPms.get(modelIndex).getGraph();
+        return this.semPms.get(this.modelIndex).getGraph();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -262,15 +257,15 @@ public class SemPmWrapper implements SessionModel {
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
     /**
@@ -279,7 +274,7 @@ public class SemPmWrapper implements SessionModel {
      * @serial Cannot be null.
      */
     public List<SemPm> getSemPms() {
-        return semPms;
+        return this.semPms;
     }
 
     public void setModelIndex(int modelIndex) {

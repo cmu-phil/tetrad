@@ -6,7 +6,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
 import edu.cmu.tetrad.search.XdslXmlParser;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -29,35 +29,32 @@ public class TestRfciBsc {
     //	@Test
     public void testRandomDiscreteData() {
         // RFCI
-        int depth = 5;
+        final int depth = 5;
         // BSC
-        int numModels = 10;
-        int numBootstrapSamples = 100;
-        int sampleSize = 1000;
-        double lower = 0.3;
-        double upper = 0.7;
+        final int numModels = 10;
+        final int numBootstrapSamples = 100;
+        final int sampleSize = 1000;
+        final double lower = 0.3;
+        final double upper = 0.7;
 
-        long seed = 878376L;
+        final long seed = 878376L;
         RandomUtil.getInstance().setSeed(seed);
 
         Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X1-->X5,X2-->X3,X2-->X4,X2-->X6,X3-->X4,X4-->X5,X5-->X6");
         Dag dag = new Dag(g);
 
         // set a number of latent variables
-        //int LV = 1;
-        //GraphUtils.fixLatents4(LV, dag);
-        //System.out.println("Variables set to be latent:" + getLatents(dag));
 
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
         // simulate data from instantiated model
         DataSet fullData = bayesIm.simulateData(sampleSize, seed, true);
-        refineData(fullData);
+        TestRfciBsc.refineData(fullData);
         DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-        final DagToPag2 dagToPag = new DagToPag2(dag);
+        DagToPag dagToPag = new DagToPag(dag);
         dagToPag.setCompleteRuleSetUsed(false);
         Graph PAG_True = dagToPag.convert();
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
@@ -96,37 +93,37 @@ public class TestRfciBsc {
     //	@Test
     public void testDiscreteRealData() {
         // Dataset
-        String modelName = "Alarm.xdsl";
+        final String modelName = "Alarm.xdsl";
         // RFCI
-        int depth = 5;
+        final int depth = 5;
         // BSC
-        int numModels = 10;
-        int numBootstrapSamples = 10;
-        int sampleSize = 500;
-        double lower = 0.3;
-        double upper = 0.7;
+        final int numModels = 10;
+        final int numBootstrapSamples = 10;
+        final int sampleSize = 500;
+        final double lower = 0.3;
+        final double upper = 0.7;
 
-        long seed = 878376L;
+        final long seed = 878376L;
         RandomUtil.getInstance().setSeed(seed);
 
         // get the Bayesian network (graph and parameters) of the given model
-        BayesIm im = loadBayesIm(modelName);
+        BayesIm im = TestRfciBsc.loadBayesIm();
         BayesPm pm = im.getBayesPm();
         Graph dag = pm.getDag();
 
         // set a number of latent variables
-        int LV = 4;
+        final int LV = 4;
         GraphUtils.fixLatents4(LV, dag);
-        System.out.println("Variables set to be latent:" + getLatents(dag));
+        System.out.println("Variables set to be latent:" + TestRfciBsc.getLatents(dag));
 
         // simulate data from instantiated model
         DataSet fullData = im.simulateData(sampleSize, seed, true);
-        refineData(fullData);
+        TestRfciBsc.refineData(fullData);
 
         DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-        final DagToPag2 dagToPag = new DagToPag2(dag);
+        DagToPag dagToPag = new DagToPag(dag);
         dagToPag.setCompleteRuleSetUsed(false);
         Graph PAG_True = dagToPag.convert();
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
@@ -183,10 +180,10 @@ public class TestRfciBsc {
         return latents;
     }
 
-    private static BayesIm loadBayesIm(String filename) {
+    private static BayesIm loadBayesIm() {
         try {
             Builder builder = new Builder();
-            File file = new File("src/test/resources/" + filename);
+            File file = new File("src/test/resources/" + "Alarm.xdsl");
             System.out.println(file.getAbsolutePath());
             Document document = builder.build(file);
             XdslXmlParser parser = new XdslXmlParser();

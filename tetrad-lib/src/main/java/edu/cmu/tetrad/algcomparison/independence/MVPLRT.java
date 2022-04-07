@@ -29,8 +29,7 @@ public class MVPLRT implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        final IndTestMVPLRT test = new IndTestMVPLRT(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("alpha"), parameters.getInt("fDegree"), parameters.getInt("discretize") > 0);
-        return test;
+        return new IndTestMVPLRT(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("alpha"), parameters.getInt("fDegree"), parameters.getInt("discretize") > 0);
     }
 
     @Override

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -69,16 +69,6 @@ public final class IndTestRegression implements IndependenceTest {
     private double alpha;
 
     /**
-     * The cutoff value for 'alpha' area in the two tails of the partial correlation distribution function.
-     */
-    private double thresh = Double.NaN;
-
-    /**
-     * The last calculated partial correlation, needed to calculate relative strength.
-     */
-    private double storedR = 0.;
-
-    /**
      * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
      */
     private double fishersZ;
@@ -86,9 +76,9 @@ public final class IndTestRegression implements IndependenceTest {
     /**
      * The standard number formatter for Tetrad.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private DataSet dataSet;
-    private boolean verbose = false;
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final DataSet dataSet;
+    private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -115,37 +105,7 @@ public final class IndTestRegression implements IndependenceTest {
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
      */
-    public IndependenceTest indTestSubset(List vars) {
-//        if (vars.isEmpty()) {
-//            throw new IllegalArgumentException("Subset may not be empty.");
-//        }
-//
-//        for (int i = 0; i < vars.size(); i++) {
-//            if (!variables.contains(vars.get(i))) {
-//                throw new IllegalArgumentException(
-//                        "All vars must be original vars");
-//            }
-//        }
-//
-//        double[][] m = new double[vars.size()][vars.size()];
-//
-//        for (int i = 0; i < vars.size(); i++) {
-//            for (int j = 0; j < vars.size(); j++) {
-//                double val = data.getValue(variables.indexOf(vars.get(i)),
-//                        variables.indexOf(vars.get(j)));
-//                m[i][j] = val;
-//            }
-//        }
-//
-//        int sampleSize = covMatrix().getN();
-//        CorrelationMatrix newCorrMatrix = new CorrelationMatrix(vars, m,
-//                sampleSize);
-//
-//        double alphaNew = getAlternativePenalty();
-//        IndependenceTest newIndTest = new IndTestCramerT(newCorrMatrix,
-//                alphaNew);
-//        return newIndTest;
-//
+    public IndependenceTest indTestSubset(List<Node> vars) {
         return null;
     }
 
@@ -170,14 +130,14 @@ public final class IndTestRegression implements IndependenceTest {
         }
 
         List<Node> regressors = new ArrayList<>();
-        regressors.add(dataSet.getVariable(yVar.getName()));
+        regressors.add(this.dataSet.getVariable(yVar.getName()));
 
         for (Node zVar : zList) {
-            regressors.add(dataSet.getVariable(zVar.getName()));
+            regressors.add(this.dataSet.getVariable(zVar.getName()));
         }
 
-        Regression regression = new RegressionDataset(dataSet);
-        RegressionResult result = null;
+        Regression regression = new RegressionDataset(this.dataSet);
+        RegressionResult result;
 
         try {
             result = regression.regress(xVar, regressors);
@@ -187,9 +147,9 @@ public final class IndTestRegression implements IndependenceTest {
 
         double p = result.getP()[1];
 
-        boolean independent = p > alpha;
+        boolean independent = p > this.alpha;
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, zList, p));
             } else {
@@ -197,6 +157,12 @@ public final class IndTestRegression implements IndependenceTest {
             }
         }
 
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(xVar, yVar, zList, p));
+            }
+        }
 
         return independent;
     }
@@ -219,7 +185,7 @@ public final class IndTestRegression implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fishersZ)));
+        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(this.fishersZ)));
     }
 
     /**
@@ -279,42 +245,10 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     public String toString() {
-        return "Linear Regression Test, alpha = " + nf.format(getAlpha());
+        return "Linear Regression Test, alpha = " + IndTestRegression.nf.format(getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//
-
-//    /**
-//     * Return the p-value of the last calculated independence fact.
-//     *
-//     * @return this p-value.  When accessed through the IndependenceChecker
-//     *         interface, this p-value should only be considered to be a
-//     *         relative strength.
-//     */
-//    private double getRelativeStrength() {
-//
-//        // precondition:  pdf is the most recently used partial
-//        // correlation distribution function, and storedR is the most
-//        // recently calculated partial correlation.
-//        return 2.0 * Integrator.getArea(npdf, Math.abs(storedR), 9.0, 100);
-//    }
-
-//    /**
-//     * Computes that value x such that P(abs(N(0,1) > x) < alpha.  Note that
-//     * this is a two sided test of the null hypothesis that the Fisher's Z
-//     * value, which is distributed as N(0,1) is not equal to 0.0.
-//     */
-//    private double cutoffGaussian() {
-//        npdf = new NormalPdf();
-//        final double upperBound = 9.0;
-//        final double delta = 0.001;
-//        //        double alpha = this.alpha/2.0;    //Two sided test
-//        return CutoffFinder.getCutoff(npdf, upperBound, alpha, delta);
-//    }
-
-//    private int sampleSize() {
-//        return data.rows();
-//    }
 
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {
@@ -336,13 +270,13 @@ public final class IndTestRegression implements IndependenceTest {
             zCols[i] = getVariables().indexOf(zList.get(i));
         }
 
-        int[] zRows = new int[data.rows()];
-        for (int i = 0; i < data.rows(); i++) {
+        int[] zRows = new int[this.data.rows()];
+        for (int i = 0; i < this.data.rows(); i++) {
             zRows[i] = i;
         }
 
-        DoubleMatrix2D Z = data.viewSelection(zRows, zCols);
-        DoubleMatrix1D x = data.viewColumn(xIndex);
+        DoubleMatrix2D Z = this.data.viewSelection(zRows, zCols);
+        DoubleMatrix1D x = this.data.viewColumn(xIndex);
         DoubleMatrix2D Zt = new Algebra().transpose(Z);
         DoubleMatrix2D ZtZ = new Algebra().mult(Zt, Z);
         DoubleMatrix2D G = new DenseDoubleMatrix2D(new Matrix(ZtZ.toArray()).inverse().toArray());
@@ -384,7 +318,7 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     @Override
@@ -413,7 +347,7 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {

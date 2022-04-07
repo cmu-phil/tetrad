@@ -8,12 +8,12 @@ import java.util.List;
 public class IntSextad implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private int i;
-    private int j;
-    private int k;
-    private int l;
-    private int m;
-    private int n;
+    private final int i;
+    private final int j;
+    private final int k;
+    private final int l;
+    private final int m;
+    private final int n;
 
     public IntSextad(int i, int j, int k, int l, int m, int n) {
         testDistinctness(i, j, k, l, m, n);
@@ -56,67 +56,68 @@ public class IntSextad implements TetradSerializable {
     }
 
     public int getI() {
-        return i;
+        return this.i;
     }
 
     public int getJ() {
-        return j;
+        return this.j;
     }
 
     public int getK() {
-        return k;
+        return this.k;
     }
 
     public int getL() {
-        return l;
+        return this.l;
     }
 
     public int getM() {
-        return m;
+        return this.m;
     }
 
     public int getN() {
-        return n;
+        return this.n;
     }
 
     public int hashCode() {
-        int hash = i * j * k;
-        hash += l * m * n;
+        int hash = this.i * this.j * this.k;
+        hash += this.l * this.m * this.n;
         return hash;
     }
 
     public boolean equals(Object o) {
+        if (!(o instanceof IntSextad)) return false;
         IntSextad sextad = (IntSextad) o;
 
-        boolean leftEquals = i == sextad.i && j == sextad.j && k == sextad.k ||
-                i == sextad.i && j == sextad.k && k == sextad.j ||
-                i == sextad.j && j == sextad.i && k == sextad.k ||
-                i == sextad.j && j == sextad.k && k == sextad.i ||
-                i == sextad.k && j == sextad.i && k == sextad.j ||
-                i == sextad.k && j == sextad.j && k == sextad.i;
+        boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
+                this.i == sextad.i && this.j == sextad.k && this.k == sextad.j ||
+                this.i == sextad.j && this.j == sextad.i && this.k == sextad.k ||
+                this.i == sextad.j && this.j == sextad.k && this.k == sextad.i ||
+                this.i == sextad.k && this.j == sextad.i && this.k == sextad.j ||
+                this.i == sextad.k && this.j == sextad.j && this.k == sextad.i;
 
-        boolean rightEquals = l == sextad.l && m == sextad.m && n == sextad.n ||
-                l == sextad.l && m == sextad.n && n == sextad.m ||
-                l == sextad.m && m == sextad.l && n == sextad.n ||
-                l == sextad.m && m == sextad.n && n == sextad.l ||
-                l == sextad.n && m == sextad.l && n == sextad.m ||
-                l == sextad.n && m == sextad.m && n == sextad.l;
+        boolean rightEquals = this.l == sextad.l && this.m == sextad.m && this.n == sextad.n ||
+                this.l == sextad.l && this.m == sextad.n && this.n == sextad.m ||
+                this.l == sextad.m && this.m == sextad.l && this.n == sextad.n ||
+                this.l == sextad.m && this.m == sextad.n && this.n == sextad.l ||
+                this.l == sextad.n && this.m == sextad.l && this.n == sextad.m ||
+                this.l == sextad.n && this.m == sextad.m && this.n == sextad.l;
 
         return leftEquals && rightEquals;
     }
 
     public String toString() {
-        return "<" + i + ", " + j + ", " + k + "; " + l + ", " + m + ", " + n + ">";
+        return "<" + this.i + ", " + this.j + ", " + this.k + "; " + this.l + ", " + this.m + ", " + this.n + ">";
     }
 
     public List<Integer> getNodes() {
         List<Integer> nodes = new ArrayList<>();
-        nodes.add(i);
-        nodes.add(j);
-        nodes.add(k);
-        nodes.add(l);
-        nodes.add(m);
-        nodes.add(n);
+        nodes.add(this.i);
+        nodes.add(this.j);
+        nodes.add(this.k);
+        nodes.add(this.l);
+        nodes.add(this.m);
+        nodes.add(this.n);
         return nodes;
     }
 }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -55,7 +55,7 @@ public final class StringTextField extends JTextField {
     public StringTextField(String value, int size) {
         super(size);
 
-        setHorizontalAlignment(JTextField.LEFT);
+        setHorizontalAlignment(SwingConstants.LEFT);
         setValue(value);
         addActionListener(new ActionListener() {
 
@@ -147,11 +147,11 @@ public final class StringTextField extends JTextField {
     //=============================PRIVATE METHODS=======================//
 
     private String filter(String value, String oldValue) {
-        if (filter == null) {
+        if (this.filter == null) {
             return value;
         }
 
-        return filter.filter(value, oldValue);
+        return this.filter.filter(value, oldValue);
     }
 
     //==============================INTERFACES===========================//

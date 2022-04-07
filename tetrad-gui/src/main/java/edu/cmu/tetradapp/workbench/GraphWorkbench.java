@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,8 +24,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,8 +48,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public static final int UNDIRECTED_EDGE = 5;
 
     //====================PRIVATE FIELDS=================================//
-    private int nodeType = MEASURED_NODE;
-    private int edgeMode = DIRECTED_EDGE;
+    private int nodeType = GraphWorkbench.MEASURED_NODE;
+    private int edgeMode = GraphWorkbench.DIRECTED_EDGE;
 
     //========================CONSTRUCTORS===============================//
 
@@ -83,7 +81,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      * @see #BIDIRECTED_EDGE
      */
     public int getEdgeMode() {
-        return edgeMode;
+        return this.edgeMode;
     }
 
     /**
@@ -95,14 +93,14 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
         String name;
         Node modelNode;
 
-        switch (nodeType) {
-            case MEASURED_NODE:
+        switch (this.nodeType) {
+            case GraphWorkbench.MEASURED_NODE:
                 name = nextVariableName("X");
                 modelNode = new GraphNode(name);
                 modelNode.setNodeType(NodeType.MEASURED);
                 break;
 
-            case LATENT_NODE:
+            case GraphWorkbench.LATENT_NODE:
                 name = nextVariableName("L");
                 modelNode = new GraphNode(name);
                 modelNode.setNodeType(NodeType.LATENT);
@@ -137,13 +135,11 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             throw new IllegalStateException();
         }
 
-        displayNode.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("resetGraph".equals(evt.getPropertyName())) {
-                    setGraph(getGraph());
-                } else if ("editingValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        displayNode.addPropertyChangeListener(evt -> {
+            if ("resetGraph".equals(evt.getPropertyName())) {
+                setGraph(getGraph());
+            } else if ("editingValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -184,20 +180,20 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      * @return the new model edge.
      */
     public Edge getNewModelEdge(Node node1, Node node2) {
-        switch (edgeMode) {
-            case DIRECTED_EDGE:
+        switch (this.edgeMode) {
+            case GraphWorkbench.DIRECTED_EDGE:
                 return Edges.directedEdge(node1, node2);
 
-            case NONDIRECTED_EDGE:
+            case GraphWorkbench.NONDIRECTED_EDGE:
                 return Edges.nondirectedEdge(node1, node2);
 
-            case UNDIRECTED_EDGE:
+            case GraphWorkbench.UNDIRECTED_EDGE:
                 return Edges.undirectedEdge(node1, node2);
 
-            case PARTIALLY_ORIENTED_EDGE:
+            case GraphWorkbench.PARTIALLY_ORIENTED_EDGE:
                 return Edges.partiallyOrientedEdge(node1, node2);
 
-            case BIDIRECTED_EDGE:
+            case GraphWorkbench.BIDIRECTED_EDGE:
                 return Edges.bidirectedEdge(node1, node2);
 
             default:
@@ -217,21 +213,21 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
         Color color = null;
 
-        switch (edgeMode) {
-            case DIRECTED_EDGE:
+        switch (this.edgeMode) {
+            case GraphWorkbench.DIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.DIRECTED, color);
 
-            case NONDIRECTED_EDGE:
+            case GraphWorkbench.NONDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.NONDIRECTED, color);
 
-            case UNDIRECTED_EDGE:
+            case GraphWorkbench.UNDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.UNDIRECTED, color);
 
-            case PARTIALLY_ORIENTED_EDGE:
+            case GraphWorkbench.PARTIALLY_ORIENTED_EDGE:
                 return new DisplayEdge(node, mouseLoc,
                         DisplayEdge.PARTIALLY_ORIENTED, color);
 
-            case BIDIRECTED_EDGE:
+            case GraphWorkbench.BIDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.BIDIRECTED, color);
 
             default:
@@ -248,7 +244,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      * @see #LATENT_NODE
      */
     public int getNodeMode() {
-        return nodeType;
+        return this.nodeType;
     }
 
     /**
@@ -286,15 +282,15 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      */
     public void setEdgeMode(int edgeMode) {
         switch (edgeMode) {
-            case DIRECTED_EDGE:
+            case GraphWorkbench.DIRECTED_EDGE:
                 // Falls through!
-            case NONDIRECTED_EDGE:
+            case GraphWorkbench.NONDIRECTED_EDGE:
                 // Falls through!
-            case UNDIRECTED_EDGE:
+            case GraphWorkbench.UNDIRECTED_EDGE:
                 // Falls through!
-            case PARTIALLY_ORIENTED_EDGE:
+            case GraphWorkbench.PARTIALLY_ORIENTED_EDGE:
                 // Falls through!
-            case BIDIRECTED_EDGE:
+            case GraphWorkbench.BIDIRECTED_EDGE:
                 this.edgeMode = edgeMode;
                 break;
             default:
@@ -306,7 +302,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      * Sets the type of this node to the given type.
      */
     public void setNodeType(int nodeType) {
-        if (nodeType == MEASURED_NODE || nodeType == LATENT_NODE) {
+        if (nodeType == GraphWorkbench.MEASURED_NODE || nodeType == GraphWorkbench.LATENT_NODE) {
             this.nodeType = nodeType;
         } else {
             throw new IllegalArgumentException("The type of the node must be "
@@ -375,13 +371,13 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
             throw new NullPointerException("Base name must be non-null.");
         }
         List<Node> currentNodes = this.getWorkbench().getGraph().getNodes();
-        if (!containsName(currentNodes, base)) {
+        if (!GraphWorkbench.containsName(currentNodes, base)) {
             return base;
         }
         // otherwise fine new unique name.
         base += "_";
         int i = 1;
-        while (containsName(currentNodes, base + i)) {
+        while (GraphWorkbench.containsName(currentNodes, base + i)) {
             i++;
         }
 
@@ -403,6 +399,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
+        names.add("Ambiguous");
         names.add("Underlines");
         names.add("Dotted Underlines");
         return names;
@@ -415,6 +412,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
+        triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, graph));
         triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, graph));
         return triplesList;

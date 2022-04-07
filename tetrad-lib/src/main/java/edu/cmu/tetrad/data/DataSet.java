@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,7 +23,6 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -36,7 +35,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public interface DataSet extends KnowledgeTransferable, DataModel, TetradSerializable {
+public interface DataSet extends DataModel {
     long serialVersionUID = 23L;
 
     /**
@@ -85,11 +84,6 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      * Used for pasting data into the dataset.
      */
     void ensureRows(int rows);
-
-//    /**
-//     * @return the case multiplier for the given case.
-//     */
-//    int getMultiplier(int caseNumber);
 
     /**
      * @return the column index of the given variable.
@@ -182,11 +176,6 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      */
     List<Node> getVariables();
 
-//    /**
-//     * @return true if case multipliers are being used in this data set.
-//     */
-//    boolean isMulipliersCollapsed();
-
     /**
      * @return true if this is a continuous data set--that is, if it contains at
      * least one column and all of the columns are continuous.
@@ -230,24 +219,6 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      */
     void removeRows(int[] selectedRows);
 
-//    /**
-//     * Sets the case multiplier for the given case to the given number (must be
-//     * >= 1).
-//     */
-//    void setMultiplier(int caseNumber, int multiplier);
-
-    /**
-     * Sets the case ID fo the given case numnber to the given value.
-     *
-     * @throws IllegalArgumentException if the given case ID is already used.
-     */
-    void setCaseId(int caseNumber, String id);
-
-    /**
-     * @return the case ID for the given case number.
-     */
-    String getCaseId(int caseNumber);
-
     /**
      * Sets the value at the given (row, column) to the given double value,
      * assuming the variable for the column is continuous.
@@ -283,11 +254,6 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
     DataSet subsetRowsColumns(int[] rows, int[] columns);
 
     /**
-     * Shifts the given column down one.
-     */
-    void shiftColumnDown(int row, int col, int numRowsShifted);
-
-    /**
      * Creates and returns a dataset consisting of those variables in the list
      * vars.  Vars must be a subset of the variables of this DataSet. The
      * ordering of the elements of vars will be the same as in the list of
@@ -299,13 +265,13 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      * @return a new data set in which the the column at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (View instead?)
      */
-    DataSet subsetColumns(int columns[]);
+    DataSet subsetColumns(int[] columns);
 
     /**
      * @return a new data set in which the the row at indices[i] is placed at
      * index i, for i = 0 to indices.length - 1. (View instead?)
      */
-    DataSet subsetRows(int rows[]);
+    DataSet subsetRows(int[] rows);
 
     /**
      * @return a string representation of this dataset.
@@ -332,14 +298,8 @@ public interface DataSet extends KnowledgeTransferable, DataModel, TetradSeriali
      */
     void permuteRows();
 
-    void setColumnToTooltip(Map<String, String> columnToTooltip);
-
     Map<String, String> getColumnToTooltip();
 
-
-    /**
-     * Equals
-     */
     boolean equals(Object o);
 
     DataSet copy();

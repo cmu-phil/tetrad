@@ -44,30 +44,30 @@ public abstract class AbstractTabularColumnFileReader extends DataFileReader {
     protected int[] toColumnNumbers(Set<String> columnNames) throws IOException {
         List<Integer> colNums = new LinkedList<>();
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
             boolean finished = false;
 
-            byte delimChar = delimiter.getByteValue();
+            byte delimChar = this.delimiter.getByteValue();
             byte prevChar = -1;
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
             int colNum = 0;
             StringBuilder dataBuilder = new StringBuilder();
 
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
                     byte currChar = buffer[i];
 
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         finished = hasSeenNonblankChar && !skip;
                         if (finished) {
                             String value = dataBuilder.toString().trim();
@@ -87,12 +87,12 @@ public abstract class AbstractTabularColumnFileReader extends DataFileReader {
                         cmntIndex = 0;
                         checkForComment = comment.length > 0;
                     } else if (!skip) {
-                        if (currChar > SPACE_CHAR) {
+                        if (currChar > DataFileReader.SPACE_CHAR) {
                             hasSeenNonblankChar = true;
                         }
 
                         // skip blank chars at the begining of the line
-                        if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                             continue;
                         }
 
@@ -110,19 +110,17 @@ public abstract class AbstractTabularColumnFileReader extends DataFileReader {
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
                                 boolean isDelimiter;
-                                switch (delimiter) {
-                                    case WHITESPACE:
-                                        isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
-                                        break;
-                                    default:
-                                        isDelimiter = (currChar == delimChar);
+                                if (this.delimiter == Delimiter.WHITESPACE) {
+                                    isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                } else {
+                                    isDelimiter = (currChar == delimChar);
                                 }
 
                                 if (isDelimiter) {

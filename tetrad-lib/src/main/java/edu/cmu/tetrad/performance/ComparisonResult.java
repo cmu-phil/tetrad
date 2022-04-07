@@ -37,26 +37,26 @@ public class ComparisonResult {
     }
 
     public Graph getResultGraph() {
-        return resultGraph;
+        return this.resultGraph;
     }
 
     public long getElapsed() {
-        return elapsed;
+        return this.elapsed;
     }
 
     public Graph getTrueDag() {
-        return trueDag;
+        return this.trueDag;
     }
 
     public Graph getCorrectResult() {
-        return correctResult;
+        return this.correctResult;
     }
 
     public String toString() {
-        return params.toString();
+        return this.params.toString();
     }
 
     public ComparisonParameters getParams() {
-        return params;
+        return this.params;
     }
 }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -66,8 +66,8 @@ public class Washdown {
 
     private ICovarianceMatrix cov;
     private DataSet dataSet;
-    private List<Node> variables;
-    private double alpha;
+    private final List<Node> variables;
+    private final double alpha;
 
     public Washdown(ICovarianceMatrix cov, double alpha) {
         this.cov = cov;
@@ -83,46 +83,22 @@ public class Washdown {
 
     public Graph search() {
         List<List<Node>> clusters = new ArrayList<>();
-        clusters.add(new ArrayList<>(variables));
+        clusters.add(new ArrayList<>(this.variables));
 
         double pValue;
 
         do {
             clusters = purify(clusters);
 
-//            System.out.println("Discards = " + disgards);
-//
-//            if (disgards == null) {
-//                break;
-//            }
 
-            List<Node> disgards = getDiscards(clusters, variables);
+            List<Node> disgards = getDiscards(clusters, this.variables);
 
             clusters.add(disgards);
-
-//            for (Node node : disgards) {
-//                for (int i = 0; i < clusters.size(); i++) {
-//                    List<Node> cluster = clusters.get(i);
-//                    if (cluster.contains(node)) {
-//                        if (clusters.size() < i + 2) {
-//                            clusters.add(new ArrayList<Node>());
-//                        }
-//
-//                        System.out.println("Bumping " + node);
-//
-//                        cluster.remove(node);
-//                        clusters.get(i + 1).add(node);
-//                        break;
-//                    }
-//                }
-//            }
-//
-//            clusters = removeEmpty(clusters);
 
             pValue = pValue(clusters);
 
             System.out.println("\nSearch PValue = " + pValue + " clusters = " + clusters + "\n");
-        } while (pValue < alpha);
+        } while (pValue < this.alpha);
 
         return pureMeasurementModel(clusters);
     }
@@ -136,6 +112,7 @@ public class Washdown {
             for (List<Node> cluster : clusters) {
                 if (cluster.contains(node)) {
                     found = true;
+                    break;
                 }
             }
 
@@ -149,27 +126,26 @@ public class Washdown {
 
     private List<List<Node>> purify(List<List<Node>> clusters) {
         List<Node> keep = new ArrayList<>(this.variables);
-        List<Node> disgards = new ArrayList<>();
         double bestGof = gof(clusters);
         System.out.println("Purify Best GOF = " + bestGof + " clusters = " + clusters);
 
         while (true) {
 
-            if (pValue(clusters) > alpha) {
+            if (pValue(clusters) > this.alpha) {
                 return clusters;
             }
 
 //            double bestGof = Double.POSITIVE_INFINITY;
             Node bestNode = null;
 
-            for (int i = 0; i < keep.size(); i++) {
-                List<List<Node>> _clusters = removeVar(keep.get(i), clusters);
+            for (Node node : keep) {
+                List<List<Node>> _clusters = removeVar(node, clusters);
                 double _gof = gof(_clusters);
                 System.out.println("     GOF = " + gof(_clusters) + "P value = " + pValue(_clusters) + " clusters = " + _clusters);
 
                 if (_gof < bestGof) {
                     bestGof = _gof;
-                    bestNode = keep.get(i);
+                    bestNode = node;
                 }
             }
 
@@ -179,7 +155,6 @@ public class Washdown {
 
             clusters = removeVar(bestNode, clusters);
             keep.remove(bestNode);
-            disgards.add(bestNode);
         }
     }
 
@@ -209,10 +184,10 @@ public class Washdown {
 
         SemEstimator estimator;
 
-        if (cov != null) {
-            estimator = new SemEstimator(cov, pm);
+        if (this.cov != null) {
+            estimator = new SemEstimator(this.cov, pm);
         } else {
-            estimator = new SemEstimator(dataSet, pm);
+            estimator = new SemEstimator(this.dataSet, pm);
         }
 
         SemIm est = estimator.estimate();
@@ -228,17 +203,15 @@ public class Washdown {
 
         SemEstimator estimator;
 
-        if (cov != null) {
-            estimator = new SemEstimator(cov, pm);
+        if (this.cov != null) {
+            estimator = new SemEstimator(this.cov, pm);
         } else {
-            estimator = new SemEstimator(dataSet, pm);
+            estimator = new SemEstimator(this.dataSet, pm);
         }
 
         SemIm est = estimator.estimate();
 
-        double pValue = est.getPValue();
-
-        return pValue;
+        return est.getPValue();
     }
 
     private List<List<Node>> removeEmpty(List<List<Node>> clusters) {

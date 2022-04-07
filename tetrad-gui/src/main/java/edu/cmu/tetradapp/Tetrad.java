@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -69,8 +69,7 @@ public final class Tetrad implements PropertyChangeListener {
      * The main application title.
      */
     private final String mainTitle
-            = "Tetrad " + Version.currentViewableVersion()
-            .toString();
+            = "Tetrad " + Version.currentViewableVersion();
 
     public static boolean enableExperimental;
 
@@ -87,7 +86,7 @@ public final class Tetrad implements PropertyChangeListener {
      * @param e the property change event
      */
     @Override
-    public void propertyChange(final PropertyChangeEvent e) {
+    public void propertyChange(PropertyChangeEvent e) {
         if ("exitProgram".equals(e.getPropertyName())) {
             exitApplication();
         }
@@ -106,24 +105,22 @@ public final class Tetrad implements PropertyChangeListener {
      *
      * @param argv --skip-latest argument will skip checking for latest version.
      */
-    public static void main(final String[] argv) {
+    public static void main(String[] argv) {
         if (argv != null && argv.length > 0) {
-            enableExperimental = EXP_OPT.equals(argv[0]);
+            Tetrad.enableExperimental = Tetrad.EXP_OPT.equals(argv[0]);
         }
 
         // Avoid updates to swing code that causes comparison-method-violates-its-general-contract warnings
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
-        setLookAndFeel();
+        Tetrad.setLookAndFeel();
 
         // This is needed to get numbers to be parsed and rendered uniformly, especially in the interface.
         Locale.setDefault(Locale.US);
 
         // Check if we should skip checking for latest version
         SplashScreen.show("Loading Tetrad...", 1000);
-        EventQueue.invokeLater(() -> {
-            new Tetrad().launchFrame();
-        });
+        EventQueue.invokeLater(() -> new Tetrad().launchFrame());
     }
 
     //===============================PRIVATE METHODS=======================//
@@ -177,28 +174,15 @@ public final class Tetrad implements PropertyChangeListener {
                 double width = height * (4.0 / 3);
 
                 return new Dimension((int) width, (int) height);
-//                return Toolkit.getDefaultToolkit().getScreenSize();
 
-//                Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-//                return new Dimension(size.width - 100, size.height - 100);
             }
 
-//            public Dimension getMinimumSize() {
-//                return Toolkit.getDefaultToolkit().getScreenSize();
-////                return new Dimension(400, 400);
-//            }
-//////
-//            public Dimension getMaximumSize() {
-//                return Toolkit.getDefaultToolkit().getScreenSize();
-//            }
         };
 
         // Fixing a bug caused by switch to Oracle Java (at least for Mac), although I must say the following
         // code is what should have worked to begin with. Bug was that sessions would appear only in the lower
         // left hand corner of the screen.
         this.frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
-//        this.frame.setMinimumSize(Toolkit.getDefaultToolkit().getScreenSize());
-//        this.frame.setMaximumSize(Toolkit.getDefaultToolkit().getScreenSize());
 
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
@@ -218,18 +202,13 @@ public final class Tetrad implements PropertyChangeListener {
 
         getFrame().addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(final WindowEvent e) {
+            public void windowClosing(WindowEvent e) {
                 exitApplication();
             }
         });
 
         SplashScreen.hide();
 
-//        try {
-//            Preferences.userRoot().clear();
-//        } catch (BackingStoreException e) {
-//            e.printStackTrace();
-//        }
     }
 
     /**
@@ -254,11 +233,11 @@ public final class Tetrad implements PropertyChangeListener {
     }
 
     private JFrame getFrame() {
-        return frame;
+        return this.frame;
     }
 
     private TetradDesktop getDesktop() {
-        return desktop;
+        return this.desktop;
     }
 
 }

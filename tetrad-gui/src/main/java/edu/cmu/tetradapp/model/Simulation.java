@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,8 +29,6 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -48,8 +46,8 @@ import java.util.Map;
  *
  * @author jdramsey
  */
-public class Simulation extends DataWrapper implements SessionModel,
-        SimulationParamsSource, GraphSource, MultipleGraphSource, MultipleDataSource {
+public class Simulation extends DataWrapper implements
+        GraphSource, MultipleGraphSource {
 
     static final long serialVersionUID = 23L;
 
@@ -65,7 +63,7 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public Simulation(Parameters parameters) {
-        if (simulation == null) {
+        if (this.simulation == null) {
             // By default there shouldn't be a simulation until the users create one - Zhou
             //this.simulation = new BayesNetSimulation(new RandomForward());
             this.parameters = parameters;
@@ -102,79 +100,79 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public Simulation(BayesImWrapper wrapper, Parameters parameters) {
-        simulation = new BayesNetSimulation(wrapper.getBayesIm());
+        this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(BayesImWrapperObs wrapper, Parameters parameters) {
-        simulation = new BayesNetSimulation(wrapper.getBayesIm());
+        this.simulation = new BayesNetSimulation(wrapper.getBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(BayesPmWrapper wrapper, Parameters parameters) {
-        simulation = new BayesNetSimulation(wrapper.getBayesPm());
+        this.simulation = new BayesNetSimulation(wrapper.getBayesPm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(BayesEstimatorWrapper wrapper, Parameters parameters) {
-        simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
+        this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(DirichletBayesImWrapper wrapper, Parameters parameters) {
-        simulation = new BayesNetSimulation(wrapper.getDirichletBayesIm());
+        this.simulation = new BayesNetSimulation(wrapper.getDirichletBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(DirichletEstimatorWrapper wrapper, Parameters parameters) {
-        simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
+        this.simulation = new BayesNetSimulation(wrapper.getEstimatedBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(CptInvariantUpdaterWrapper wrapper, Parameters parameters) {
-        simulation = new BayesNetSimulation(wrapper.getBayesUpdater().getManipulatedBayesIm());
+        this.simulation = new BayesNetSimulation(wrapper.getBayesUpdater().getManipulatedBayesIm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(SemPmWrapper wrapper, Parameters parameters) {
-        simulation = new SemSimulation(wrapper.getSemPm());
+        this.simulation = new SemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(SemImWrapper wrapper, Parameters parameters) {
-        simulation = new SemSimulation(wrapper.getSemIm());
+        this.simulation = new SemSimulation(wrapper.getSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(StandardizedSemImWrapper wrapper, Parameters parameters) {
-        simulation = new StandardizedSemSimulation(wrapper.getStandardizedSemIm());
+        this.simulation = new StandardizedSemSimulation(wrapper.getStandardizedSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(SemEstimatorWrapper wrapper, Parameters parameters) {
-        simulation = new SemSimulation(wrapper.getEstimatedSemIm());
+        this.simulation = new SemSimulation(wrapper.getEstimatedSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(SemUpdaterWrapper wrapper, Parameters parameters) {
-        simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
+        this.simulation = new SemSimulation(wrapper.getSemUpdater().getManipulatedSemIm());
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(GeneralizedSemPmWrapper wrapper, Parameters parameters) {
-        simulation = new GeneralSemSimulation(wrapper.getSemPm());
+        this.simulation = new GeneralSemSimulation(wrapper.getSemPm());
         this.parameters = parameters;
         createSimulation();
     }
@@ -184,13 +182,13 @@ public class Simulation extends DataWrapper implements SessionModel,
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
         }
 
-        simulation = new GeneralSemSimulation(wrapper.getSemIms().get(0));
+        this.simulation = new GeneralSemSimulation(wrapper.getSemIms().get(0));
         this.parameters = parameters;
         createSimulation();
     }
 
     public Simulation(DataWrapper dataWrapper, Parameters parameters) {
-        if (simulation == null) {
+        if (this.simulation == null) {
             this.simulation = new LinearFisherModel(new RandomForward(), dataWrapper.getDataModelList());
             this.inputDataModelList = dataWrapper.getDataModelList();
             this.parameters = parameters;
@@ -218,7 +216,7 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -226,7 +224,7 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public Parameters getParams() {
-        return parameters;
+        return this.parameters;
     }
 
     /**
@@ -241,8 +239,8 @@ public class Simulation extends DataWrapper implements SessionModel,
     public DataModelList getDataModelList() {
         DataModelList list = new DataModelList();
 
-        for (int i = 0; i < simulation.getNumDataModels(); i++) {
-            list.add(simulation.getDataModel(i));
+        for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
+            list.add(this.simulation.getDataModel(i));
         }
 
         return list;
@@ -254,8 +252,8 @@ public class Simulation extends DataWrapper implements SessionModel,
     public List<DataModel> getDataModels() {
         List<DataModel> list = new ArrayList<>();
 
-        for (int i = 0; i < simulation.getNumDataModels(); i++) {
-            list.add(simulation.getDataModel(i));
+        for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
+            list.add(this.simulation.getDataModel(i));
         }
 
         return list;
@@ -278,26 +276,25 @@ public class Simulation extends DataWrapper implements SessionModel,
         // Every time the users click the Simulate button, new data needs to be created
         // regardless of already created data - Zhou
         //if (simulation.getNumDataModels() == 0) {
-        simulation.createData(parameters, false);
+        this.simulation.createData(this.parameters, false);
         //}
     }
 
-    @Override
     /**
      * Returns all of the graphs in the simulation, in order.
      */
     public List<Graph> getGraphs() {
         List<Graph> graphs = new ArrayList<>();
 
-        for (int i = 0; i < simulation.getNumDataModels(); i++) {
-            graphs.add(simulation.getTrueGraph(i));
+        for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
+            graphs.add(this.simulation.getTrueGraph(i));
         }
 
         return graphs;
     }
 
     public boolean isFixedSimulation() {
-        return fixedSimulation;
+        return this.fixedSimulation;
     }
 
     public void setFixedSimulation(boolean fixedSimulation) {
@@ -305,7 +302,7 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public boolean isFixedGraph() {
-        return fixedGraph;
+        return this.fixedGraph;
     }
 
     public void setFixedGraph(boolean fixedGraph) {
@@ -313,8 +310,8 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public IKnowledge getKnowledge() {
-        if (simulation instanceof HasKnowledge) {
-            return ((HasKnowledge) simulation).getKnowledge();
+        if (this.simulation instanceof HasKnowledge) {
+            return ((HasKnowledge) this.simulation).getKnowledge();
         } else {
             return new Knowledge2();
         }
@@ -325,7 +322,7 @@ public class Simulation extends DataWrapper implements SessionModel,
     }
 
     public List<DataModel> getInputDataModelList() {
-        return inputDataModelList;
+        return this.inputDataModelList;
     }
 
     @Override

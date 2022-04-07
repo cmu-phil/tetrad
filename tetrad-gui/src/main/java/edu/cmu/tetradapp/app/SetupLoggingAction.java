@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,10 +26,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.prefs.Preferences;
 
@@ -51,7 +48,7 @@ public class SetupLoggingAction extends AbstractAction {
 
 
     public void actionPerformed(ActionEvent e) {
-        JComponent comp = buildSetupLoggingComponent();
+        JComponent comp = SetupLoggingAction.buildSetupLoggingComponent();
         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), comp,
                 "File Logging Setup", JOptionPane.PLAIN_MESSAGE);
     }
@@ -67,64 +64,56 @@ public class SetupLoggingAction extends AbstractAction {
         JComboBox activateCombo = new JComboBox(new String[]{"No", "Yes"});
         activateCombo.setMaximumSize(activateCombo.getPreferredSize());
         activateCombo.setSelectedItem(TetradLogger.getInstance().isLogging() ? "Yes" : "No");
-        activateCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                TetradLogger.getInstance().setLogging("Yes".equals(combo.getSelectedItem()));
-            }
+        activateCombo.addActionListener(e -> {
+            JComboBox combo = (JComboBox) e.getSource();
+            TetradLogger.getInstance().setLogging("Yes".equals(combo.getSelectedItem()));
         });
 
         String saveLocation = TetradLogger.getInstance().getLoggingDirectory();
-        final JTextField saveField = new JTextField(saveLocation);
-        saveField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JTextField field = (JTextField) e.getSource();
-                try {
-                    TetradLogger.getInstance().setLoggingDirectory(field.getText());
-                } catch (IllegalArgumentException ex) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), ex.getMessage());
-                }
+        JTextField saveField = new JTextField(saveLocation);
+        saveField.addActionListener(e -> {
+            JTextField field = (JTextField) e.getSource();
+            try {
+                TetradLogger.getInstance().setLoggingDirectory(field.getText());
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), ex.getMessage());
             }
         });
 
         JButton chooseButton = new JButton(" ... ");
-        chooseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String saveLocation = TetradLogger.getInstance().getLoggingDirectory();
+        chooseButton.addActionListener(e -> {
+            String saveLocation1 = TetradLogger.getInstance().getLoggingDirectory();
 
-                JFileChooser chooser = new JFileChooser();
-                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                chooser.setCurrentDirectory(new File(saveLocation));
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            chooser.setCurrentDirectory(new File(saveLocation1));
 
-                int ret = chooser.showOpenDialog(JOptionUtils.centeringComp());
+            int ret = chooser.showOpenDialog(JOptionUtils.centeringComp());
 
-                if (ret == JFileChooser.APPROVE_OPTION) {
-                    File selectedFile = chooser.getSelectedFile();
-                    Preferences.userRoot().put("loggingDirectory", selectedFile.getAbsolutePath());
-                    saveField.setText(selectedFile.getAbsolutePath());
-                }
+            if (ret == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = chooser.getSelectedFile();
+                Preferences.userRoot().put("loggingDirectory", selectedFile.getAbsolutePath());
+                saveField.setText(selectedFile.getAbsolutePath());
             }
         });
 
         chooseButton.setBorder(new EtchedBorder());
         JTextField prefixField = new JTextField(TetradLogger.getInstance().getLoggingFilePrefix());
 
-        prefixField.addCaretListener(new CaretListener() {
-            public void caretUpdate(CaretEvent e) {
-                JTextField field = (JTextField) e.getSource();
-                String text = field.getText();
+        prefixField.addCaretListener(e -> {
+            JTextField field = (JTextField) e.getSource();
+            String text = field.getText();
 
-                if (!text.matches("[a-zA-Z_]*")) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "Spaces, numbers, and special characters (" +
-                                    "except underlines) in filenames will be " +
-                                    "ignored. You might want to delete them.",
-                            "Friendly Detail Message",
-                            JOptionPane.WARNING_MESSAGE);
-                }
-
-                TetradLogger.getInstance().setLoggingFilePrefix(text);
+            if (!text.matches("[a-zA-Z_]*")) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Spaces, numbers, and special characters (" +
+                                "except underlines) in filenames will be " +
+                                "ignored. You might want to delete them.",
+                        "Friendly Detail Message",
+                        JOptionPane.WARNING_MESSAGE);
             }
+
+            TetradLogger.getInstance().setLoggingFilePrefix(text);
         });
 
 //        JCheckBox automatic = new JCheckBox("Automatically display log output.");
@@ -144,19 +133,8 @@ public class SetupLoggingAction extends AbstractAction {
         // Do Layout.
         Box b1 = Box.createVerticalBox();
 
-//        Box b2 = Box.createHorizontalBox();
-//        b2.add(new JLabel("Activate Logging: "));
-//        b2.add(Box.createHorizontalStrut(5));
-//        b2.add(activateCombo);
-//        b2.add(Box.createHorizontalGlue());
-//
-//        b1.add(b2);
-//        b1.add(Box.createVerticalStrut(5));
-
-        b1.add(createLogToBox());
+        b1.add(SetupLoggingAction.createLogToBox());
         b1.add(Box.createVerticalStrut(5));
-//        b1.add(automaticBox);
-//        b1.add(Box.createVerticalStrut(10));
 
         Box b4 = Box.createHorizontalBox();
         b4.add(new JLabel("Output Directory:"));
@@ -202,22 +180,18 @@ public class SetupLoggingAction extends AbstractAction {
 
         JCheckBox fileCheckBox = new JCheckBox(" File ");
         fileCheckBox.setSelected(TetradLogger.getInstance().isFileLoggingEnabled());
-        fileCheckBox.setHorizontalTextPosition(AbstractButton.LEFT);
-        fileCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox box = (JCheckBox) e.getSource();
-                TetradLogger.getInstance().setFileLoggingEnabled(box.isSelected());
-            }
+        fileCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
+        fileCheckBox.addActionListener(e -> {
+            JCheckBox box1 = (JCheckBox) e.getSource();
+            TetradLogger.getInstance().setFileLoggingEnabled(box1.isSelected());
         });
 
         JCheckBox textareaCheckBox = new JCheckBox(" Log Display ");
         textareaCheckBox.setSelected(TetradLogger.getInstance().isDisplayLogEnabled());
-        textareaCheckBox.setHorizontalTextPosition(AbstractButton.LEFT);
-        textareaCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox box = (JCheckBox) e.getSource();
-                TetradLogger.getInstance().setDisplayLogEnabled(box.isSelected());
-            }
+        textareaCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
+        textareaCheckBox.addActionListener(e -> {
+            JCheckBox box12 = (JCheckBox) e.getSource();
+            TetradLogger.getInstance().setDisplayLogEnabled(box12.isSelected());
         });
 
         box.add(fileCheckBox);

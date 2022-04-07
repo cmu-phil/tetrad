@@ -22,11 +22,11 @@ public class HsimUtils {
     //this method will trim an input graph down to the nodes and edges that are used for evaluation
     public static Graph evalEdges(Graph inputgraph, Set<Node> simnodes, Set<Node> realnodes) {
         //first, restrict down to subgraph containing only simnods and realnodes
-        Set<Node> aNodes = new HashSet<Node>();
+        Set<Node> aNodes = new HashSet<>();
         aNodes.addAll(simnodes);
         aNodes.addAll(realnodes);
         //need a List as input for subgraph method, but mbAll is a Set
-        List<Node> relevantNodes = new ArrayList<Node>(aNodes);
+        List<Node> relevantNodes = new ArrayList<>(aNodes);
         Graph subgraph = inputgraph.subgraph(relevantNodes);
 
         //then remove edges connecting realnodes to other realnodes:
@@ -47,8 +47,8 @@ public class HsimUtils {
 
     //this method returns the set of all parents of a provided set of parents, given a provided graph
     public static Set<Node> getAllParents(Graph inputgraph, Set<Node> inputnodes) {
-        List<Node> parents = new ArrayList<Node>();
-        List<Node> pAdd = new ArrayList<Node>();
+        List<Node> parents = new ArrayList<>();
+        List<Node> pAdd = new ArrayList<>();
 
         //loop through inputnodes
         for (Node node : inputnodes) {
@@ -61,8 +61,7 @@ public class HsimUtils {
         //remove any of the input nodes from the output set
         parents.removeAll(inputnodes);
         //turn list into set
-        Set<Node> output = new HashSet<Node>(parents);
-        return output;
+        return new HashSet<>(parents);
     }
 
     //this method returns an array of doubles, which are standard error metrics for graph learning
@@ -121,7 +120,7 @@ public class HsimUtils {
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 6; j++) {
-                if (i == 7 && j == 5) table2.setToken(i + 1, j + 1, "*");
+                if (i == 7 && j == 5) table2.setToken(7 + 1, 5 + 1, "*");
                 else
                     table2.setToken(i + 1, j + 1, "" + counts[i][j]);
             }
@@ -141,10 +140,6 @@ public class HsimUtils {
                 estimatedEdges += counts[i][j];
             }
         }
-
-        //NumberFormat nf = new DecimalFormat("0.00");
-
-        //builder.append("\nRatio correct edges to estimated edges = ").append(nf.format((correctEdges / (double) estimatedEdges)));
 
         return (correctEdges / (double) estimatedEdges);
     }
@@ -175,9 +170,9 @@ public class HsimUtils {
         }
         output = output + "}" + nl + "\\hline" + nl;
         //fills in values of the table
-        for (int i = 0; i < dim1; i++) {
+        for (String[] tablevalue : tablevalues) {
             for (int j = 0; j < dim2; j++) {
-                output = output + tablevalues[i][j];
+                output = output + tablevalue[j];
                 if (dim2 > 1 && j != dim2 - 1) {
                     output = output + " & ";
                 }

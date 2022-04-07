@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -33,9 +33,9 @@ import static org.junit.Assert.assertEquals;
 
 public final class TestCellTable {
     private CellTable table;
-    private final int[] dims = new int[]{2, 2, 2, 2};
+    private final int[] dims = {2, 2, 2, 2};
 
-    private final int[][] data = new int[][]{{1, 1, 1, 0}, {0, 0, 1, 0},
+    private final int[][] data = {{1, 1, 1, 0}, {0, 0, 1, 0},
             {1, 1, 1, 0}, {0, 0, 1, 0}, {0, 0, 0, 0}, {1, 1, 1, 0},
             {1, 1, 1, 0}, {0, 1, 0, 1}, {0, 1, 1, 0}, {0, 0, 0, 1},
             {0, 0, 0, 0}, {0, 1, 0, 1}, {1, 1, 1, 0}, {1, 1, 1, 0},
@@ -287,9 +287,9 @@ public final class TestCellTable {
             {0, 0, 1, 0}, {0, 1, 0, 1}, {1, 1, 1, 0}, {0, 1, 0, 1},
             {0, 1, 0, 1}, {0, 0, 0, 1}};
 
-    public final void setUp() {
+    public void setUp() {
 
-        this.table = new CellTable(dims);
+        this.table = new CellTable(this.dims);
 
 //        // Add data to table.
         List<Node> variables = new LinkedList<>();
@@ -298,21 +298,21 @@ public final class TestCellTable {
         variables.add(new DiscreteVariable("X3", 2));
         variables.add(new DiscreteVariable("X4", 2));
 
-        DataSet dataSet = new BoxDataSet(new DoubleDataBox(data.length, variables.size()), variables);
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(this.data.length, variables.size()), variables);
 
-        for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < data[0].length; j++) {
-                dataSet.setInt(i, j, data[i][j]);
+        for (int i = 0; i < this.data.length; i++) {
+            for (int j = 0; j < this.data[0].length; j++) {
+                dataSet.setInt(i, j, this.data[i][j]);
             }
         }
 
-        int[] indices = new int[]{0, 1, 2, 3};
+        int[] indices = {0, 1, 2, 3};
 
         this.table.addToTable(dataSet, indices);
     }
 
     @Test
-    public final void testCount() {
+    public void testCount() {
         setUp();
 
         // Pick 8 random cells, count those cells, test the counts in
@@ -320,16 +320,17 @@ public final class TestCellTable {
         int[] testCell;
 
         for (int c = 0; c < 8; c++) {
-            testCell = pickRandomCell(4);
+            testCell = TestCellTable.pickRandomCell();
 
             int myCount = 0;
 
-            for (int[] aData : data) {
+            for (int[] aData : this.data) {
                 boolean inCell = true;
 
-                for (int j = 0; j < data[0].length; j++) {
+                for (int j = 0; j < this.data[0].length; j++) {
                     if (aData[j] != testCell[j]) {
                         inCell = false;
+                        break;
                     }
                 }
 
@@ -343,7 +344,7 @@ public final class TestCellTable {
     }
 
     @Test
-    public final void testMargins() {
+    public void testMargins() {
         setUp();
 
         // Test 15 margin calculations.
@@ -353,7 +354,7 @@ public final class TestCellTable {
             // array of variable indices to marginalize and (b) a
             // "wildcard" version of this cell with those indices
             // replaced by -1.
-            int[] cell = pickRandomCell(4);
+            int[] cell = TestCellTable.pickRandomCell();
 
             // The indices to marginalize. (No repeats.)
             int numMargin = RandomUtil.getInstance().nextInt(4);
@@ -381,10 +382,10 @@ public final class TestCellTable {
             // Count the data, using the -1 as a wildcard.
             int myCount = 0;
 
-            for (int[] aData : data) {
+            for (int[] aData : this.data) {
                 boolean inMargin = true;
 
-                for (int j = 0; j < data[0].length; j++) {
+                for (int j = 0; j < this.data[0].length; j++) {
                     if (testCell[j] == -1) {
                         // Do nothing.
                     } else if (aData[j] != testCell[j]) {
@@ -404,11 +405,11 @@ public final class TestCellTable {
         }
     }
 
-    private static int[] pickRandomCell(int size) {
+    private static int[] pickRandomCell() {
 
-        int[] cell = new int[size];
+        int[] cell = new int[4];
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < 4; i++) {
             cell[i] = RandomUtil.getInstance().nextInt(2);
         }
 

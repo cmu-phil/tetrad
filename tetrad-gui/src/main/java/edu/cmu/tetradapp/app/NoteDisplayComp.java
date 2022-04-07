@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,14 +36,14 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     /**
      * States whether the component is selected or not.
      */
-    private boolean selected = false;
+    private boolean selected;
 
 
     /**
      * The colors
      */
-    private final static Color BORDER_COLOR = new Color(148, 152, 177);
-    private final static Color BACKGROUND_COLOR = new Color(255, 255, 219);
+    private static final Color BORDER_COLOR = new Color(148, 152, 177);
+    private static final Color BACKGROUND_COLOR = new Color(255, 255, 219);
 
 
     /**
@@ -68,18 +68,18 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     public void paint(Graphics g) {
         int width = getSize().width;
         int height = getSize().height;
-        g.setColor(BACKGROUND_COLOR);
+        g.setColor(NoteDisplayComp.BACKGROUND_COLOR);
         g.fillRect(0, 0, width, height);
 
         int y = this.name.getSize().height;
         y += 2;
-        g.setColor(BORDER_COLOR);
+        g.setColor(NoteDisplayComp.BORDER_COLOR);
         while (y < height) {
             g.drawLine(0, y, width, y);
             y += 5;
         }
         // draw the border.
-        g.setColor(BORDER_COLOR);
+        g.setColor(NoteDisplayComp.BORDER_COLOR);
         g.drawRect(0, 0, width - 1, height - 1);
 
         super.paint(g);
@@ -99,7 +99,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
      * @return true iff the display is selected.
      */
     public boolean isSelected() {
-        return selected;
+        return this.selected;
     }
 
     /**
@@ -129,7 +129,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     private void buildComponents() {
         removeAll();
         setLayout(new BorderLayout());
-        setBackground(BACKGROUND_COLOR);
+        setBackground(NoteDisplayComp.BACKGROUND_COLOR);
         setFont(DisplayNodeUtils.getFont());
 
         Box b = Box.createVerticalBox();
@@ -137,7 +137,7 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
         Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalStrut(5));
-        b2.add(name);
+        b2.add(this.name);
         b2.add(Box.createHorizontalStrut(5));
         b2.add(Box.createHorizontalGlue());
         b.add(b2);

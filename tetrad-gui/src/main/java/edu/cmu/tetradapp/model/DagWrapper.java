@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -41,13 +40,13 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IndTestProducer,
+public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProducer,
         SimulationParamsSource, MultipleGraphSource {
 
     static final long serialVersionUID = 23L;
     private int numModels = 1;
-    private int modelIndex = 0;
-    private String modelSourceName = null;
+    private int modelIndex;
+    private String modelSourceName;
 
     /**
      * @serial Can be null.
@@ -95,7 +94,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
                 this.dags.add(new Dag(graph));
             }
 
-            this.numModels = dags.size();
+            this.numModels = this.dags.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
@@ -106,34 +105,6 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     public DagWrapper(AbstractAlgorithmRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(PcRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(CcdRunner2 wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(MimBuildRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(PurifyRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(BuildPureClustersRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(MbfsRunner wrapper) {
-        this(new Dag(wrapper.getResultGraph()));
-    }
-
-    public DagWrapper(CeFanSearchRunner wrapper) {
         this(new Dag(wrapper.getResultGraph()));
     }
 
@@ -149,7 +120,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
                 this.dags.add(new Dag(graph));
             }
 
-            this.numModels = dags.size();
+            this.numModels = this.dags.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
@@ -203,12 +174,12 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 
     //================================PUBLIC METHODS=======================//
     public Graph getDag() {
-        return dags.get(getModelIndex());
+        return this.dags.get(getModelIndex());
     }
 
     public void setDag(Dag graph) {
         this.dags = new ArrayList<>();
-        dags.add(graph);
+        this.dags.add(graph);
         log();
     }
 
@@ -227,9 +198,6 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -246,7 +214,7 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -284,23 +252,23 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
+        return this.allParamSettings;
     }
 
     public Parameters getParameters() {
-        return parameters;
+        return this.parameters;
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
     public void setModelIndex(int modelIndex) {
@@ -313,8 +281,6 @@ public class DagWrapper implements SessionModel, GraphSource, KnowledgeBoxInput,
     }
 
     public List<Graph> getGraphs() {
-        List<Graph> graphs = new ArrayList<>();
-        graphs.addAll(dags);
-        return graphs;
+        return new ArrayList<>(this.dags);
     }
 }

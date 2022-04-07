@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -148,7 +148,7 @@ public class FastIca {
     /**
      * The algorithm type where all components are extracted simultaneously.
      */
-    public static int PARALLEL = 0;
+    public static int PARALLEL;
 
     /**
      * The algorithm type where the components are extracted one at a time.
@@ -171,7 +171,7 @@ public class FastIca {
      * A data matrix with n rows representing observations and p columns
      * representing variables.
      */
-    private Matrix X;
+    private final Matrix X;
 
     /**
      * The number of independent components to be extracted.
@@ -183,12 +183,12 @@ public class FastIca {
      * (the default). if algorithmType == DEFLATION the components are extracted
      * one at a time.
      */
-    private int algorithmType = PARALLEL;
+    private int algorithmType = FastIca.PARALLEL;
 
     /**
      * The function type to be used, either LOGCOSH or EXP.
      */
-    private int function = LOGCOSH;
+    private int function = FastIca.LOGCOSH;
 
     /**
      * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
@@ -200,7 +200,7 @@ public class FastIca {
      * A logical value indicating whether rows of the data matrix 'X' should be
      * standardized beforehand. Default = false.
      */
-    private boolean rowNorm = false;
+    private boolean rowNorm;
 
     /**
      * Maximum number of iterations to perform. Default = 200.
@@ -217,13 +217,13 @@ public class FastIca {
      * A logical value indicating the level of output as the algorithm runs.
      * Default = false.
      */
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default)
      * then a matrix of normal r.v.'s is used.
      */
-    private Matrix wInit = null;
+    private Matrix wInit;
 
     //============================CONSTRUCTOR===========================//
 
@@ -248,17 +248,8 @@ public class FastIca {
      * (the default). if algorithmType == DEFLATION the components are extracted
      * one at a time.
      */
-    public int getAlgorithmType() {
-        return algorithmType;
-    }
-
-    /**
-     * If algorithmType == PARALLEL the components are extracted simultaneously
-     * (the default). if algorithmType == DEFLATION the components are extracted
-     * one at a time.
-     */
     public void setAlgorithmType(int algorithmType) {
-        if (!(algorithmType == DEFLATION || algorithmType == PARALLEL)) {
+        if (!(algorithmType == FastIca.DEFLATION || algorithmType == FastIca.PARALLEL)) {
             throw new IllegalArgumentException("Value should be DEFLATION or PARALLEL.");
         }
 
@@ -269,14 +260,14 @@ public class FastIca {
      * The function type to be used, either LOGCOSH or EXP.
      */
     public int getFunction() {
-        return function;
+        return this.function;
     }
 
     /**
      * The function type to be used, either LOGCOSH or EXP.
      */
     public void setFunction(int function) {
-        if (!(function == LOGCOSH || function == EXP)) {
+        if (!(function == FastIca.LOGCOSH || function == FastIca.EXP)) {
             throw new IllegalArgumentException("Value should be LOGCOSH or EXP.");
         }
 
@@ -288,7 +279,7 @@ public class FastIca {
      * == "logcosh"'
      */
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     /**
@@ -307,14 +298,6 @@ public class FastIca {
      * A logical value indicating whether rows of the data matrix 'X' should be
      * standardized beforehand.
      */
-    public boolean isRowNorm() {
-        return rowNorm;
-    }
-
-    /**
-     * A logical value indicating whether rows of the data matrix 'X' should be
-     * standardized beforehand.
-     */
     public void setRowNorm(boolean colNorm) {
         this.rowNorm = colNorm;
     }
@@ -323,7 +306,7 @@ public class FastIca {
      * Maximum number of iterations to perform.
      */
     public int getMaxIterations() {
-        return maxIterations;
+        return this.maxIterations;
     }
 
     /**
@@ -342,7 +325,7 @@ public class FastIca {
      * considered to have converged.
      */
     public double getTolerance() {
-        return tolerance;
+        return this.tolerance;
     }
 
     /**
@@ -361,7 +344,7 @@ public class FastIca {
      * A logical value indicating the level of output as the algorithm runs.
      */
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     /**
@@ -376,7 +359,7 @@ public class FastIca {
      * then a matrix of normal r.v.'s is used.
      */
     public Matrix getWInit() {
-        return wInit;
+        return this.wInit;
     }
 
     /**
@@ -394,42 +377,42 @@ public class FastIca {
      * @return this list, as an FastIca.IcaResult object.
      */
     public IcaResult findComponents() {
-        int n = X.columns();
-        int p = X.rows();
+        int n = this.X.columns();
+        int p = this.X.rows();
 
-        if (numComponents > Math.min(n, p)) {
+        if (this.numComponents > Math.min(n, p)) {
             TetradLogger.getInstance().log("info", "Requested number of components is too large.");
             TetradLogger.getInstance().log("info", "Reset to " + Math.min(n, p));
-            numComponents = Math.min(n, p);
+            this.numComponents = Math.min(n, p);
         }
 
-        if (wInit == null) {
-            wInit = new Matrix(numComponents, numComponents);
-            for (int i = 0; i < wInit.rows(); i++) {
-                for (int j = 0; j < wInit.columns(); j++) {
-                    wInit.set(i, j, RandomUtil.getInstance().nextNormal(0, 1));
+        if (this.wInit == null) {
+            this.wInit = new Matrix(this.numComponents, this.numComponents);
+            for (int i = 0; i < this.wInit.rows(); i++) {
+                for (int j = 0; j < this.wInit.columns(); j++) {
+                    this.wInit.set(i, j, RandomUtil.getInstance().nextNormal(0, 1));
                 }
             }
-        } else if (wInit.rows() != wInit.columns()) {
+        } else if (this.wInit.rows() != this.wInit.columns()) {
             throw new IllegalArgumentException("wInit is the wrong size.");
         }
 
-        if (verbose) {
+        if (this.verbose) {
             TetradLogger.getInstance().log("info", "Centering");
         }
 
-        X = center(X);
+        center(this.X);
 
-        if (rowNorm) {
-            X = scale(X);
+        if (this.rowNorm) {
+            scale(this.X);
         }
 
-        if (verbose) {
+        if (this.verbose) {
             TetradLogger.getInstance().log("info", "Whitening");
         }
 
         // Whiten.
-        Matrix cov = X.times(X.transpose()).scalarMult(1.0 / n);
+        Matrix cov = this.X.times(this.X.transpose()).scalarMult(1.0 / n);
 
         SingularValueDecomposition s = new SingularValueDecomposition(new BlockRealMatrix(cov.toArray()));
         Matrix D = new Matrix(s.getS().getData());
@@ -441,24 +424,24 @@ public class FastIca {
 
         Matrix K = D.times(U.transpose());
 //        K = K.scalarMult(-1); // This SVD gives -U from R's SVD.
-        K = K.getPart(0, numComponents - 1, 0, p - 1);
+        K = K.getPart(0, this.numComponents - 1, 0, p - 1);
 
-        Matrix X1 = K.times(X);
+        Matrix X1 = K.times(this.X);
         Matrix b;
 
-        if (algorithmType == DEFLATION) {
-            b = icaDeflation(X1, tolerance, function, alpha,
-                    maxIterations, verbose, wInit);
-        } else if (algorithmType == PARALLEL) {
-            b = icaParallel(X1, numComponents, tolerance, function, alpha,
-                    maxIterations, verbose, wInit);
+        if (this.algorithmType == FastIca.DEFLATION) {
+            b = icaDeflation(X1, this.tolerance, this.function, this.alpha,
+                    this.maxIterations, this.verbose, this.wInit);
+        } else if (this.algorithmType == FastIca.PARALLEL) {
+            b = icaParallel(X1, this.numComponents, this.tolerance, this.alpha,
+                    this.maxIterations, this.verbose, this.wInit);
         } else {
             throw new IllegalStateException();
         }
 
         Matrix w = b.times(K);
-        Matrix S = w.times(X);
-        return new IcaResult(X, K, w, S);
+        Matrix S = w.times(this.X);
+        return new IcaResult(this.X, K, w, S);
 
     }
 
@@ -467,11 +450,11 @@ public class FastIca {
     private Matrix icaDeflation(Matrix X,
                                 double tolerance, int function, double alpha,
                                 int maxIterations, boolean verbose, Matrix wInit) {
-        if (verbose && function == LOGCOSH) {
+        if (verbose && function == FastIca.LOGCOSH) {
             TetradLogger.getInstance().log("info", "Deflation FastIca using lgcosh approx. to neg-entropy function");
         }
 
-        if (verbose && function == EXP) {
+        if (verbose && function == FastIca.EXP) {
             TetradLogger.getInstance().log("info", "Deflation FastIca using exponential approx. to neg-entropy function");
         }
 
@@ -583,9 +566,9 @@ public class FastIca {
     }
 
     private double g(double alpha, double y) {
-        if (function == LOGCOSH) {
+        if (this.function == FastIca.LOGCOSH) {
             return tanh(alpha * y);
-        } else if (function == EXP) {
+        } else if (this.function == FastIca.EXP) {
             return y * exp(-(y * y) / 2.);
         } else {
             throw new IllegalArgumentException("That function is not configured.");
@@ -618,7 +601,7 @@ public class FastIca {
     }
 
     private Matrix icaParallel(Matrix X, int numComponents,
-                               double tolerance, int function, final double alpha,
+                               double tolerance, double alpha,
                                int maxIterations, boolean verbose, Matrix wInit) {
         int p = X.columns();
         Matrix W = wInit;
@@ -703,16 +686,15 @@ public class FastIca {
         return W;
     }
 
-    private Matrix scale(Matrix x) {
+    private void scale(Matrix x) {
         for (int i = 0; i < x.rows(); i++) {
             Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
             x.assignRow(i, u);
         }
 
-        return x;
     }
 
-    private Matrix center(Matrix x) {
+    private void center(Matrix x) {
         for (int i = 0; i < x.rows(); i++) {
             Vector u = x.getRow(i);
             double mean = mean(u);
@@ -722,7 +704,6 @@ public class FastIca {
             }
         }
 
-        return x;
     }
 
 
@@ -757,37 +738,30 @@ public class FastIca {
         }
 
         public Matrix getX() {
-            return X;
+            return this.X;
         }
 
         public Matrix getK() {
-            return K;
+            return this.K;
         }
 
         public Matrix getW() {
-            return W;
+            return this.W;
         }
 
         public Matrix getS() {
-            return S;
+            return this.S;
         }
 
         public String toString() {
-            StringBuilder buf = new StringBuilder();
-
-            buf.append("\n\nX:\n");
-            buf.append(X);
-
-            buf.append("\n\nK:\n");
-            buf.append(K);
-
-            buf.append("\n\nW:\n");
-            buf.append(W);
-
-            buf.append("\n\nS:\n");
-            buf.append(S);
-
-            return buf.toString();
+            return "\n\nX:\n" +
+                    this.X +
+                    "\n\nK:\n" +
+                    this.K +
+                    "\n\nW:\n" +
+                    this.W +
+                    "\n\nS:\n" +
+                    this.S;
         }
     }
 }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,7 +22,10 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphConverter;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.*;
 import org.junit.Test;
 
@@ -77,13 +80,13 @@ public class TestPcStableMax {
 
         System.out.println(knowledge);
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D", /*"A---B,B-->C,A-->D,C-->D", */
+        checkWithKnowledge(  /*"A---B,B-->C,A-->D,C-->D", */
                 knowledge);
     }
 
     //    @Test
     public void testCites() {
-        String citesString = "164\n" +
+        final String citesString = "164\n" +
                 "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
                 "1.0\n" +
                 ".62\t1.0\n" +
@@ -160,10 +163,9 @@ public class TestPcStableMax {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String inputGraph, String outputGraph,
-                                    IKnowledge knowledge) {
+    private void checkWithKnowledge(IKnowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -176,7 +178,7 @@ public class TestPcStableMax {
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
 
         // Do test.
         assertEquals(trueGraph, resultGraph);

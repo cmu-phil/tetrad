@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -35,37 +35,37 @@ import java.util.List;
  */
 
 public interface TetradTest {
-    public DataSet getDataSet();
+    DataSet getDataSet();
 
-    public int tetradScore(int i, int j, int k, int q);
+    int tetradScore(int i, int j, int k, int q);
 
-    public boolean tetradScore3(int i, int j, int k, int q);
+    boolean tetradScore3(int i, int j, int k, int q);
 
-    public boolean tetradScore1(int i, int j, int k, int q);
+    boolean tetradScore1(int i, int j, int k, int q);
 
-    public boolean tetradHolds(int i, int j, int k, int q);
+    boolean tetradHolds(int i, int j, int k, int q);
 
-    public double tetradPValue(int i, int j, int k, int q);
+    double tetradPValue(int i, int j, int k, int q);
 
-    public double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2);
+    double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2);
 
-    public boolean oneFactorTest(int a, int b, int c, int d);
+    boolean oneFactorTest(int a, int b, int c, int d);
 
-    public boolean oneFactorTest(int a, int b, int c, int d, int e);
+    boolean oneFactorTest(int a, int b, int c, int d, int e);
 
-    public boolean oneFactorTest(int a, int b, int c, int d, int e, int f);
+    boolean oneFactorTest(int a, int b, int c, int d, int e, int f);
 
-    public boolean twoFactorTest(int a, int b, int c, int d);
+    boolean twoFactorTest(int a, int b, int c, int d);
 
-    public boolean twoFactorTest(int a, int b, int c, int d, int e);
+    boolean twoFactorTest(int a, int b, int c, int d, int e);
 
-    public boolean twoFactorTest(int a, int b, int c, int d, int e, int f);
+    boolean twoFactorTest(int a, int b, int c, int d, int e, int f);
 
-    public double getSignificance();
+    double getSignificance();
 
-    public void setSignificance(double sig);
+    void setSignificance(double sig);
 
-    public String[] getVarNames();
+    String[] getVarNames();
 
     List<Node> getVariables();
 

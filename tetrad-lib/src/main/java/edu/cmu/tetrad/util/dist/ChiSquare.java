@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -54,14 +54,14 @@ public class ChiSquare implements Distribution {
      *
      * @return the exemplar.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static ChiSquare serializableInstance() {
         return new ChiSquare();
     }
 
     public void setParameter(int index, double value) {
         if (index == 0 && value >= 0.0) {
-            df = value;
+            this.df = value;
         } else {
             throw new IllegalArgumentException("Illegal value: " + index + " = " + value);
         }
@@ -69,7 +69,7 @@ public class ChiSquare implements Distribution {
 
     public double getParameter(int index) {
         if (index == 0) {
-            return df;
+            return this.df;
         } else {
             throw new IllegalArgumentException("Illegal index: " + index);
         }
@@ -92,11 +92,11 @@ public class ChiSquare implements Distribution {
     }
 
     public double nextRandom() {
-        return RandomUtil.getInstance().nextChiSquare(df);
+        return RandomUtil.getInstance().nextChiSquare(this.df);
     }
 
     public String toString() {
-        return "ChiSquare(" + df + ")";
+        return "ChiSquare(" + this.df + ")";
     }
 
     /**

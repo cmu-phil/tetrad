@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
 
 import java.util.Collections;
 
@@ -41,11 +40,11 @@ public final class FasLofs implements GraphSearch {
 
     private final Lofs2.Rule rule;
     // Elapsed time of the search, in milliseconds.
-    private long elapsed = 0;
+    private long elapsed;
 
     // The data sets being analyzed. They must all have the same variables and the same
     // number of records.
-    private DataSet dataSet = null;
+    private final DataSet dataSet;
 
     // For the Fast Adjacency Search.
     private int depth = -1;
@@ -78,9 +77,9 @@ public final class FasLofs implements GraphSearch {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
-        score.setPenaltyDiscount(penaltyDiscount);
-        IndependenceTest test = new IndTestScore(score, dataSet);
+        SemBicScore score = new SemBicScore(new CovarianceMatrix(this.dataSet));
+        score.setPenaltyDiscount(this.penaltyDiscount);
+        IndependenceTest test = new IndTestScore(score, this.dataSet);
 
         System.out.println("FAS");
 
@@ -88,14 +87,14 @@ public final class FasLofs implements GraphSearch {
         fas.setStable(true);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
-        fas.setKnowledge(knowledge);
+        fas.setKnowledge(this.knowledge);
         Graph G0 = fas.search();
 
-        System.out.println("LOFS orientation, rule " + rule);
+        System.out.println("LOFS orientation, rule " + this.rule);
 
-        Lofs2 lofs2 = new Lofs2(G0, Collections.singletonList(dataSet));
-        lofs2.setRule(rule);
-        lofs2.setKnowledge(knowledge);
+        Lofs2 lofs2 = new Lofs2(G0, Collections.singletonList(this.dataSet));
+        lofs2.setRule(this.rule);
+        lofs2.setKnowledge(this.knowledge);
         Graph graph = lofs2.orient();
 
         System.out.println("Done");
@@ -110,7 +109,7 @@ public final class FasLofs implements GraphSearch {
      * @return The depth of search for the Fast Adjacency Search (FAS).
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
@@ -125,7 +124,7 @@ public final class FasLofs implements GraphSearch {
      * @return The elapsed time in milliseconds.
      */
     public long getElapsedTime() {
-        return elapsed;
+        return this.elapsed;
     }
 
     /**
@@ -133,7 +132,7 @@ public final class FasLofs implements GraphSearch {
      * though a higher value is recommended, say, 2, 3, or 4.
      */
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     /**
@@ -149,7 +148,7 @@ public final class FasLofs implements GraphSearch {
      * @return the current knowledge.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -158,13 +157,6 @@ public final class FasLofs implements GraphSearch {
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
-
-    //======================================== PRIVATE METHODS ====================================//
-
-    private boolean knowledgeOrients(Node left, Node right) {
-        return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
-    }
-
 }
 
 

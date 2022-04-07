@@ -9,7 +9,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -105,24 +104,7 @@ public class FactorAnalysis implements Algorithm {
             FactorAnalysis algorithm = new FactorAnalysis();
 
             DataSet data = (DataSet) ds;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -136,10 +118,10 @@ public class FactorAnalysis implements Algorithm {
         for (int i = 0; i < matrix.rows() + 1; i++) {
             for (int j = 0; j < matrix.columns() + 1; j++) {
                 if (i > 0 && j == 0) {
-                    table.setToken(i, j, "X" + i);
+                    table.setToken(i, 0, "X" + i);
                 } else if (i == 0 && j > 0) {
-                    table.setToken(i, j, "Factor " + j);
-                } else if (i > 0 && j > 0) {
+                    table.setToken(0, j, "Factor " + j);
+                } else if (i > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
                     token += Math.abs(coefficient) > threshold ? "*" : " ";
@@ -148,7 +130,7 @@ public class FactorAnalysis implements Algorithm {
             }
         }
 
-        return "\n" + table.toString();
+        return "\n" + table;
 
     }
 

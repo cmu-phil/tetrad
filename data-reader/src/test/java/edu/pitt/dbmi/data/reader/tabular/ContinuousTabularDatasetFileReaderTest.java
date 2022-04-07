@@ -63,10 +63,10 @@ public class ContinuousTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataWithNoHeaderExcludingVariableByColumnNumbers() throws IOException {
         Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/no_header_sim_test_data.csv").getFile());
-        ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteCharacter);
-        dataReader.setMissingDataMarker(missingValueMarker);
+        ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteCharacter);
+        dataReader.setMissingDataMarker(this.missingValueMarker);
         dataReader.setHasHeader(false);
 
         int[] columnsToExclude = {5, 3, 1, 8, 10, 11};
@@ -98,10 +98,10 @@ public class ContinuousTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataWithNoHeader() throws IOException {
         Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/no_header_sim_test_data.csv").getFile());
-        ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteCharacter);
-        dataReader.setMissingDataMarker(missingValueMarker);
+        ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteCharacter);
+        dataReader.setMissingDataMarker(this.missingValueMarker);
         dataReader.setHasHeader(false);
 
         Data data = dataReader.readInData();
@@ -132,12 +132,12 @@ public class ContinuousTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataExcludingVariableByColumnNumbers() throws IOException {
         int[] columnsToExclude = {5, 3, 1, 8, 10, 11};
-        for (Path dataFile : dataFiles) {
-            ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
-            dataReader.setCommentMarker(commentMarker);
-            dataReader.setQuoteCharacter(quoteCharacter);
-            dataReader.setMissingDataMarker(missingValueMarker);
-            dataReader.setHasHeader(hasHeader);
+        for (Path dataFile : this.dataFiles) {
+            ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
+            dataReader.setCommentMarker(this.commentMarker);
+            dataReader.setQuoteCharacter(this.quoteCharacter);
+            dataReader.setMissingDataMarker(this.missingValueMarker);
+            dataReader.setHasHeader(this.hasHeader);
 
             Data data = dataReader.readInData(columnsToExclude);
             Assert.assertTrue(data instanceof ContinuousData);
@@ -168,12 +168,12 @@ public class ContinuousTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataExcludingVariableByNames() throws IOException {
         Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X1", "X3", "X4", "X6", "X8", "X10"));
-        for (Path dataFile : dataFiles) {
-            ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
-            dataReader.setCommentMarker(commentMarker);
-            dataReader.setQuoteCharacter(quoteCharacter);
-            dataReader.setMissingDataMarker(missingValueMarker);
-            dataReader.setHasHeader(hasHeader);
+        for (Path dataFile : this.dataFiles) {
+            ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
+            dataReader.setCommentMarker(this.commentMarker);
+            dataReader.setQuoteCharacter(this.quoteCharacter);
+            dataReader.setMissingDataMarker(this.missingValueMarker);
+            dataReader.setHasHeader(this.hasHeader);
 
             Data data = dataReader.readInData(namesOfColumnsToExclude);
             Assert.assertTrue(data instanceof ContinuousData);
@@ -203,12 +203,12 @@ public class ContinuousTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInData() throws IOException {
-        for (Path dataFile : dataFiles) {
-            ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, delimiter);
-            dataReader.setCommentMarker(commentMarker);
-            dataReader.setQuoteCharacter(quoteCharacter);
-            dataReader.setMissingDataMarker(missingValueMarker);
-            dataReader.setHasHeader(hasHeader);
+        for (Path dataFile : this.dataFiles) {
+            ContinuousTabularDatasetReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, this.delimiter);
+            dataReader.setCommentMarker(this.commentMarker);
+            dataReader.setQuoteCharacter(this.quoteCharacter);
+            dataReader.setMissingDataMarker(this.missingValueMarker);
+            dataReader.setHasHeader(this.hasHeader);
 
             Data data = dataReader.readInData();
             Assert.assertTrue(data instanceof ContinuousData);

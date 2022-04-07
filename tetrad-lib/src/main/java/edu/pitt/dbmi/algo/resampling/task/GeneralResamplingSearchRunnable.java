@@ -21,24 +21,24 @@ import java.util.List;
  */
 public class GeneralResamplingSearchRunnable implements Runnable {
 
-    private DataSet dataSet = null;
+    private DataSet dataSet;
 
-    private List<DataModel> dataSets = null;
+    private List<DataModel> dataSets;
 
-    private Algorithm algorithm = null;
+    private Algorithm algorithm;
 
-    private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
+    private MultiDataSetAlgorithm multiDataSetAlgorithm;
 
-    private Parameters parameters;
+    private final Parameters parameters;
 
     private final GeneralResamplingSearch resamplingAlgorithmSearch;
 
-    private boolean verbose;
+    private final boolean verbose;
 
     /**
      * An initial graph to start from.
      */
-    private Graph externalGraph = null;
+    private Graph externalGraph;
 
     /**
      * Specification of forbidden and required edges.
@@ -70,7 +70,7 @@ public class GeneralResamplingSearchRunnable implements Runnable {
      */
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -85,7 +85,7 @@ public class GeneralResamplingSearchRunnable implements Runnable {
     }
 
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     public void setExternalGraph(Graph externalGraph) {
@@ -105,47 +105,48 @@ public class GeneralResamplingSearchRunnable implements Runnable {
      * sent to.
      */
     public PrintStream getOut() {
-        return out;
+        return this.out;
     }
 
     @Override
     public void run() {
         //System.out.println("#dataSet rows: " + dataSet.getNumRows());
 
-        long start, stop;
+        long start;
+        long stop;
         start = System.currentTimeMillis();
-        if (verbose) {
-            out.println("thread started ... ");
+        if (this.verbose) {
+            this.out.println("thread started ... ");
         }
 
         Graph graph = null;
 
-        if (dataSet != null) {
-            if (algorithm instanceof HasKnowledge) {
-                ((HasKnowledge) algorithm).setKnowledge(knowledge);
-                if (verbose) {
-                    out.println("knowledge being set ... ");
+        if (this.dataSet != null) {
+            if (this.algorithm instanceof HasKnowledge) {
+                ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge);
+                if (this.verbose) {
+                    this.out.println("knowledge being set ... ");
                 }
             }
-            graph = algorithm.search(dataSet, parameters);
+            graph = this.algorithm.search(this.dataSet, this.parameters);
         } else {
-            if (multiDataSetAlgorithm instanceof HasKnowledge) {
-                ((HasKnowledge) multiDataSetAlgorithm).setKnowledge(knowledge);
-                if (verbose) {
-                    out.println("knowledge being set ... ");
+            if (this.multiDataSetAlgorithm instanceof HasKnowledge) {
+                ((HasKnowledge) this.multiDataSetAlgorithm).setKnowledge(this.knowledge);
+                if (this.verbose) {
+                    this.out.println("knowledge being set ... ");
                 }
             }
-            graph = multiDataSetAlgorithm.search(dataSets, parameters);
+            graph = this.multiDataSetAlgorithm.search(this.dataSets, this.parameters);
         }
 
         graph.getEdges();
 
         stop = System.currentTimeMillis();
-        if (verbose) {
-            out.println("processing time of resampling for a thread was: "
+        if (this.verbose) {
+            this.out.println("processing time of resampling for a thread was: "
                     + (stop - start) / 1000.0 + " sec");
         }
-        resamplingAlgorithmSearch.addPAG(graph);
+        this.resamplingAlgorithmSearch.addPAG(graph);
     }
 
 }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -35,31 +35,30 @@ public class LagGraph implements Graph {
     static final long serialVersionUID = 23L;
 
     private Dag graph = new Dag();
-    private List<String> variables = new ArrayList<>();
-    private int numLags = 0;
-    private Map<String, List<Node>> laggedVariables = new HashMap<>();
+    private final List<String> variables = new ArrayList<>();
+    private final Map<String, List<Node>> laggedVariables = new HashMap<>();
     private boolean pag;
     private boolean CPDAG;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     // New methods.
     public boolean addVariable(String variable) {
-        if (variables.contains(variable)) {
+        if (this.variables.contains(variable)) {
             return false;
         }
 
-        for (String _variable : variables) {
+        for (String _variable : this.variables) {
             if (variable.equals(_variable)) {
                 return false;
             }
         }
 
-        variables.add(variable);
-        laggedVariables.put(variable, new ArrayList<Node>());
+        this.variables.add(variable);
+        this.laggedVariables.put(variable, new ArrayList<>());
 
-        for (String node : variables) {
-            List<Node> _lags = laggedVariables.get(node);
+        for (String node : this.variables) {
+            List<Node> _lags = this.laggedVariables.get(node);
             GraphNode _newNode = new GraphNode(node + "." + _lags.size());
             _lags.add(_newNode);
             _newNode.setCenter(5, 5);
@@ -465,11 +464,11 @@ public class LagGraph implements Graph {
 
     @Override
     public void setNodes(List<Node> nodes) {
-        graph.setNodes(nodes);
+        this.graph.setNodes(nodes);
     }
 
     private Dag getGraph() {
-        return graph;
+        return this.graph;
     }
 
     public void setGraph(Dag graph) {
@@ -488,7 +487,7 @@ public class LagGraph implements Graph {
 
     @Override
     public boolean isPag() {
-        return pag;
+        return this.pag;
     }
 
     @Override
@@ -498,7 +497,7 @@ public class LagGraph implements Graph {
 
     @Override
     public boolean isCPDAG() {
-        return CPDAG;
+        return this.CPDAG;
     }
 
     @Override
@@ -508,22 +507,22 @@ public class LagGraph implements Graph {
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
     public Object getAttribute(String key) {
-        return attributes.get(key);
+        return this.attributes.get(key);
     }
 
     @Override
     public void removeAttribute(String key) {
-        attributes.remove(key);
+        this.attributes.remove(key);
     }
 
     @Override
     public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+        this.attributes.put(key, value);
     }
 
 }

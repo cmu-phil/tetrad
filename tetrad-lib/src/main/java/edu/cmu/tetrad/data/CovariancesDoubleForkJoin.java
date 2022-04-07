@@ -39,11 +39,11 @@ public class CovariancesDoubleForkJoin {
     }
 
     public double covariance(int i, int j) {
-        return covariances[i][j];
+        return this.covariances[i][j];
     }
 
     public int size() {
-        return numOfCols;
+        return this.numOfCols;
     }
 
     public double[][] getMatrix() {
@@ -57,7 +57,7 @@ public class CovariancesDoubleForkJoin {
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
-                submatrix[i][j] = covariances[rows[i]][cols[j]];
+                submatrix[i][j] = this.covariances[rows[i]][cols[j]];
             }
         }
 

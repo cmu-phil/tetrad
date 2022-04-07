@@ -63,10 +63,10 @@ public class MixedTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataWithNoHeader() throws IOException {
         Path dataFile = Paths.get(getClass().getResource("/data/tabular/mixed/no_header_sim_test_data.csv").getFile());
-        MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, delimiter, numberOfDiscreteCategories);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteCharacter);
-        dataReader.setMissingDataMarker(missingValueMarker);
+        MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteCharacter);
+        dataReader.setMissingDataMarker(this.missingValueMarker);
         dataReader.setHasHeader(false);
 
         Data data = dataReader.readInData();
@@ -112,10 +112,10 @@ public class MixedTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataWithNoHeaderExcludingVariableByColumnNumbers() throws IOException {
         Path dataFile = Paths.get(getClass().getResource("/data/tabular/mixed/no_header_sim_test_data.csv").getFile());
-        MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, delimiter, numberOfDiscreteCategories);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteCharacter);
-        dataReader.setMissingDataMarker(missingValueMarker);
+        MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteCharacter);
+        dataReader.setMissingDataMarker(this.missingValueMarker);
         dataReader.setHasHeader(false);
 
         int[] excludedColumns = {5, 3, 8, 10, 11, 9};
@@ -170,12 +170,12 @@ public class MixedTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataExcludingVariableByColumnNumbers() throws IOException {
         int[] columnsToExclude = {5, 3, 1, 8, 10, 11};
-        for (Path dataFile : dataFiles) {
-            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, delimiter, numberOfDiscreteCategories);
-            dataReader.setCommentMarker(commentMarker);
-            dataReader.setQuoteCharacter(quoteCharacter);
-            dataReader.setMissingDataMarker(missingValueMarker);
-            dataReader.setHasHeader(hasHeader);
+        for (Path dataFile : this.dataFiles) {
+            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+            dataReader.setCommentMarker(this.commentMarker);
+            dataReader.setQuoteCharacter(this.quoteCharacter);
+            dataReader.setMissingDataMarker(this.missingValueMarker);
+            dataReader.setHasHeader(this.hasHeader);
 
             Data data = dataReader.readInData(columnsToExclude);
             Assert.assertTrue(data instanceof MixedTabularData);
@@ -213,12 +213,12 @@ public class MixedTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataExcludingDiscreteVariableByNames() throws IOException {
         Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X2", "X4", "X5", "X7", "X10"));
-        for (Path dataFile : dataFiles) {
-            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, delimiter, numberOfDiscreteCategories);
-            dataReader.setCommentMarker(commentMarker);
-            dataReader.setQuoteCharacter(quoteCharacter);
-            dataReader.setMissingDataMarker(missingValueMarker);
-            dataReader.setHasHeader(hasHeader);
+        for (Path dataFile : this.dataFiles) {
+            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+            dataReader.setCommentMarker(this.commentMarker);
+            dataReader.setQuoteCharacter(this.quoteCharacter);
+            dataReader.setMissingDataMarker(this.missingValueMarker);
+            dataReader.setHasHeader(this.hasHeader);
 
             Data data = dataReader.readInData(namesOfColumnsToExclude);
             Assert.assertTrue(data instanceof MixedTabularData);
@@ -264,12 +264,12 @@ public class MixedTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataExcludingContinuousVariableByNames() throws IOException {
         Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X1", "X3", "X6", "X8", "X9"));
-        for (Path dataFile : dataFiles) {
-            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, delimiter, numberOfDiscreteCategories);
-            dataReader.setCommentMarker(commentMarker);
-            dataReader.setQuoteCharacter(quoteCharacter);
-            dataReader.setMissingDataMarker(missingValueMarker);
-            dataReader.setHasHeader(hasHeader);
+        for (Path dataFile : this.dataFiles) {
+            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+            dataReader.setCommentMarker(this.commentMarker);
+            dataReader.setQuoteCharacter(this.quoteCharacter);
+            dataReader.setMissingDataMarker(this.missingValueMarker);
+            dataReader.setHasHeader(this.hasHeader);
 
             Data data = dataReader.readInData(namesOfColumnsToExclude);
             Assert.assertTrue(data instanceof MixedTabularData);
@@ -315,12 +315,12 @@ public class MixedTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataExcludingVariableByNames() throws IOException {
         Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X1", "X3", "X4", "X6", "X8", "X10"));
-        for (Path dataFile : dataFiles) {
-            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, delimiter, numberOfDiscreteCategories);
-            dataReader.setCommentMarker(commentMarker);
-            dataReader.setQuoteCharacter(quoteCharacter);
-            dataReader.setMissingDataMarker(missingValueMarker);
-            dataReader.setHasHeader(hasHeader);
+        for (Path dataFile : this.dataFiles) {
+            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+            dataReader.setCommentMarker(this.commentMarker);
+            dataReader.setQuoteCharacter(this.quoteCharacter);
+            dataReader.setMissingDataMarker(this.missingValueMarker);
+            dataReader.setHasHeader(this.hasHeader);
 
             Data data = dataReader.readInData(namesOfColumnsToExclude);
             Assert.assertTrue(data instanceof MixedTabularData);
@@ -357,12 +357,12 @@ public class MixedTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInData() throws IOException {
-        for (Path dataFile : dataFiles) {
-            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, delimiter, numberOfDiscreteCategories);
-            dataReader.setCommentMarker(commentMarker);
-            dataReader.setQuoteCharacter(quoteCharacter);
-            dataReader.setMissingDataMarker(missingValueMarker);
-            dataReader.setHasHeader(hasHeader);
+        for (Path dataFile : this.dataFiles) {
+            MixedTabularDatasetReader dataReader = new MixedTabularDatasetFileReader(dataFile, this.delimiter, this.numberOfDiscreteCategories);
+            dataReader.setCommentMarker(this.commentMarker);
+            dataReader.setQuoteCharacter(this.quoteCharacter);
+            dataReader.setMissingDataMarker(this.missingValueMarker);
+            dataReader.setHasHeader(this.hasHeader);
 
             Data data = dataReader.readInData();
             Assert.assertTrue(data instanceof MixedTabularData);

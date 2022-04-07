@@ -31,7 +31,7 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(DataUtils.getMixedDataSet(dataSet));
+        DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(DataUtils.getMixedDataSet(dataSet));
         degenerateGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         degenerateGaussianScore.setStructurePrior(parameters.getDouble("structurePrior"));
         return degenerateGaussianScore;
@@ -57,6 +57,6 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
 
     @Override
     public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+        return this.dataSet.getVariable(name);
     }
 }

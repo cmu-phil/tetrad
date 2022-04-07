@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,8 +27,6 @@ import edu.cmu.tetradapp.util.IntTextField;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Edits the parameters for simulating new datasets from a Bayes net.
@@ -52,7 +50,6 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
      * Sets the parameter-storing object. This is a separate method because
      * a blank constructor is needed.
      *
-     * @param params
      */
     public void setParams(Parameters params) {
         this.params = params;
@@ -71,41 +68,33 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
     public void setup() {
         // set up text and ties them to the parameters object being edited.
         IntTextField sampleSizeField = new IntTextField(getParams().getInt("sampleSize", 1000), 8);
-        sampleSizeField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    getParams().set("sampleSize", value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+        sampleSizeField.setFilter((value, oldValue) -> {
+            try {
+                BayesDataParamsEditor.this.getParams().set("sampleSize", value);
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 
-        IntTextField numDataSetsField = new IntTextField(getParams().getInt("numDataSets", 1), 8);
+        IntTextField numDataSetsField = new IntTextField(this.getParams().getInt("numDataSets", 1), 8);
 
-        numDataSetsField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    getParams().set("numDataSets", value);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+        numDataSetsField.setFilter((value, oldValue) -> {
+            try {
+                getParams().set("numDataSets", value);
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 
 
-//        JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
-//                Preferences.userRoot().getBoolean("latentDataSaved", getParameters().isIncludeLatents()));
         JCheckBox latentDataSaved = new JCheckBox("Include Latent Variables",
                 getParams().getBoolean("latentDataSaved", false));
 
-        latentDataSaved.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JCheckBox checkBox = (JCheckBox) e.getSource();
-                params.set("latentDataSaved", checkBox.isSelected());
-            }
+        latentDataSaved.addActionListener(e -> {
+            JCheckBox checkBox = (JCheckBox) e.getSource();
+            BayesDataParamsEditor.this.params.set("latentDataSaved", checkBox.isSelected());
         });
 
 
@@ -145,11 +134,6 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
      * public, but it is needed so that the textfields can edit the model.)
      */
     private synchronized Parameters getParams() {
-
-        // Unused.
-        //        String ret = (this.getMappings == null)
-        //                ? "null"
-        //                : this.getMappings.toString();
 
         return this.params;
     }

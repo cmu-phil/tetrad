@@ -43,25 +43,25 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
 
     @Override
     public String toString() {
-        return "MixedTabularDataColumn{" + "dataColumn=" + dataColumn + ", values=" + values + ", categories=" + categories + '}';
+        return "MixedTabularDataColumn{" + "dataColumn=" + this.dataColumn + ", values=" + this.values + ", categories=" + this.categories + '}';
     }
 
     @Override
     public Integer getEncodeValue(String value) {
-        return (values == null)
+        return (this.values == null)
                 ? DISCRETE_MISSING_VALUE
-                : values.get(value);
+                : this.values.get(value);
     }
 
     @Override
     public void recategorize() {
-        if (values != null) {
-            Set<String> keyset = values.keySet();
-            categories = new ArrayList<>(keyset.size());
+        if (this.values != null) {
+            Set<String> keyset = this.values.keySet();
+            this.categories = new ArrayList<>(keyset.size());
             int count = 0;
             for (String key : keyset) {
-                values.put(key, count++);
-                categories.add(key);
+                this.values.put(key, count++);
+                this.categories.add(key);
             }
         }
     }
@@ -75,16 +75,16 @@ public class MixedTabularDataColumn implements DiscreteDataColumn {
 
     @Override
     public DataColumn getDataColumn() {
-        return dataColumn;
+        return this.dataColumn;
     }
 
     public Map<String, Integer> getValues() {
-        return values;
+        return this.values;
     }
 
     @Override
     public List<String> getCategories() {
-        return (categories == null) ? Collections.EMPTY_LIST : categories;
+        return (this.categories == null) ? Collections.EMPTY_LIST : this.categories;
     }
 
 }

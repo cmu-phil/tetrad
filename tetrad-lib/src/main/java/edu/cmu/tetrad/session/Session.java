@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -90,7 +90,7 @@ public final class Session implements TetradSerializable {
      *
      * @serial Can't be null.
      */
-    private List<SessionNode> nodes = new LinkedList<>();
+    private final List<SessionNode> nodes = new LinkedList<>();
 
     /**
      * Notes when the model has changed. Should be false at time of
@@ -135,7 +135,7 @@ public final class Session implements TetradSerializable {
     /**
      * Sets the name.
      */
-    public final void setName(String name) {
+    public void setName(String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -176,11 +176,6 @@ public final class Session implements TetradSerializable {
         }
 
         // Causing templates not to work sometimes. Unnecessary. jdramsey 6/5/2015
-//        if (existsNodeByName(node.getDisplayName())) {
-//            throw new IllegalArgumentException(
-//                    "Attempt to add node to the session with duplicate name: " +
-//                            node.getDisplayName());
-//        }
 
         this.nodes.add(node);
         node.addSessionListener(getSessionHandler());
@@ -243,9 +238,9 @@ public final class Session implements TetradSerializable {
      * @see edu.cmu.tetrad.session.SessionNode#resetToFreshlyCreated
      */
     public void removeNode(SessionNode node) {
-        if (nodes.contains(node)) {
+        if (this.nodes.contains(node)) {
             node.resetToFreshlyCreated();
-            nodes.remove(node);
+            this.nodes.remove(node);
             node.removeSessionListener(getSessionHandler());
             getSessionSupport().fireNodeRemoved(node);
         } else {
@@ -258,7 +253,7 @@ public final class Session implements TetradSerializable {
      * @return the getModel set of session nodes.
      */
     public Set<SessionNode> getNodes() {
-        return new HashSet<>(nodes);
+        return new HashSet<>(this.nodes);
     }
 
     /**
@@ -342,7 +337,7 @@ public final class Session implements TetradSerializable {
     }
 
     public boolean isSessionChanged() {
-        return sessionChanged;
+        return this.sessionChanged;
     }
 
     public void setSessionChanged(boolean sessionChanged) {
@@ -350,7 +345,7 @@ public final class Session implements TetradSerializable {
     }
 
     public boolean isNewSession() {
-        return newSession;
+        return this.newSession;
     }
 
     public void setNewSession(boolean newSession) {
@@ -423,7 +418,7 @@ public final class Session implements TetradSerializable {
     }
 
     public boolean isEmpty() {
-        return nodes.isEmpty();
+        return this.nodes.isEmpty();
     }
 
     /**
@@ -435,24 +430,21 @@ public final class Session implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (name == null) {
+        if (this.name == null) {
             throw new NullPointerException();
         }
 
-        if (nodes == null) {
+        if (this.nodes == null) {
             throw new NullPointerException();
         }
 
-        sessionChanged = false;
-        newSession = false;
+        this.sessionChanged = false;
+        this.newSession = false;
     }
 }
 

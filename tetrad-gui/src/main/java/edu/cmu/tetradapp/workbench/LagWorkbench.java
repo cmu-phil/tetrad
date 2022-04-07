@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -48,8 +48,8 @@ public class LagWorkbench extends AbstractWorkbench {
     private static final int BIDIRECTED_EDGE = 4;
 
     //====================PRIVATE FIELDS=================================//
-    private int nodeType = MEASURED_NODE;
-    private int edgeMode = DIRECTED_EDGE;
+    private int nodeType = LagWorkbench.MEASURED_NODE;
+    private int edgeMode = LagWorkbench.DIRECTED_EDGE;
 
     //========================CONSTRUCTORS===============================//
 
@@ -81,7 +81,7 @@ public class LagWorkbench extends AbstractWorkbench {
      * @see #BIDIRECTED_EDGE
      */
     public int getEdgeMode() {
-        return edgeMode;
+        return this.edgeMode;
     }
 
     /**
@@ -93,14 +93,14 @@ public class LagWorkbench extends AbstractWorkbench {
         String name;
         Node modelNode;
 
-        switch (nodeType) {
-            case MEASURED_NODE:
+        switch (this.nodeType) {
+            case LagWorkbench.MEASURED_NODE:
                 name = nextVariableName("X");
                 modelNode = new GraphNode(name);
                 modelNode.setNodeType(NodeType.MEASURED);
                 break;
 
-            case LATENT_NODE:
+            case LagWorkbench.LATENT_NODE:
                 name = nextVariableName("L");
                 modelNode = new GraphNode(name);
                 modelNode.setNodeType(NodeType.LATENT);
@@ -182,17 +182,17 @@ public class LagWorkbench extends AbstractWorkbench {
      * @return the new model edge.
      */
     public Edge getNewModelEdge(Node node1, Node node2) {
-        switch (edgeMode) {
-            case DIRECTED_EDGE:
+        switch (this.edgeMode) {
+            case LagWorkbench.DIRECTED_EDGE:
                 return Edges.directedEdge(node1, node2);
 
-            case NONDIRECTED_EDGE:
+            case LagWorkbench.NONDIRECTED_EDGE:
                 return Edges.nondirectedEdge(node1, node2);
 
-            case PARTIALLY_ORIENTED_EDGE:
+            case LagWorkbench.PARTIALLY_ORIENTED_EDGE:
                 return Edges.partiallyOrientedEdge(node1, node2);
 
-            case BIDIRECTED_EDGE:
+            case LagWorkbench.BIDIRECTED_EDGE:
                 return Edges.bidirectedEdge(node1, node2);
 
             default:
@@ -210,18 +210,18 @@ public class LagWorkbench extends AbstractWorkbench {
      * @return the new tracking edge (a display edge).
      */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
-        switch (edgeMode) {
-            case DIRECTED_EDGE:
+        switch (this.edgeMode) {
+            case LagWorkbench.DIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.DIRECTED);
 
-            case NONDIRECTED_EDGE:
+            case LagWorkbench.NONDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.NONDIRECTED);
 
-            case PARTIALLY_ORIENTED_EDGE:
+            case LagWorkbench.PARTIALLY_ORIENTED_EDGE:
                 return new DisplayEdge(node, mouseLoc,
                         DisplayEdge.PARTIALLY_ORIENTED);
 
-            case BIDIRECTED_EDGE:
+            case LagWorkbench.BIDIRECTED_EDGE:
                 return new DisplayEdge(node, mouseLoc, DisplayEdge.BIDIRECTED);
 
             default:
@@ -238,7 +238,7 @@ public class LagWorkbench extends AbstractWorkbench {
      * @see #LATENT_NODE
      */
     public int getNodeMode() {
-        return nodeType;
+        return this.nodeType;
     }
 
     /**
@@ -276,13 +276,13 @@ public class LagWorkbench extends AbstractWorkbench {
      */
     public void setEdgeMode(int edgeMode) {
         switch (edgeMode) {
-            case DIRECTED_EDGE:
+            case LagWorkbench.DIRECTED_EDGE:
                 // Falls through!
-            case NONDIRECTED_EDGE:
+            case LagWorkbench.NONDIRECTED_EDGE:
                 // Falls through!
-            case PARTIALLY_ORIENTED_EDGE:
+            case LagWorkbench.PARTIALLY_ORIENTED_EDGE:
                 // Falls through!
-            case BIDIRECTED_EDGE:
+            case LagWorkbench.BIDIRECTED_EDGE:
                 this.edgeMode = edgeMode;
                 break;
             default:
@@ -294,7 +294,7 @@ public class LagWorkbench extends AbstractWorkbench {
      * Sets the type of this node to the given type.
      */
     public void setNodeType(int nodeType) {
-        if (nodeType == MEASURED_NODE || nodeType == LATENT_NODE) {
+        if (nodeType == LagWorkbench.MEASURED_NODE || nodeType == LagWorkbench.LATENT_NODE) {
             this.nodeType = nodeType;
         } else {
             throw new IllegalArgumentException("The type of the node must be " +
@@ -364,13 +364,13 @@ public class LagWorkbench extends AbstractWorkbench {
             throw new NullPointerException("Base name must be non-null.");
         }
         List<Node> currentNodes = this.getWorkbench().getGraph().getNodes();
-        if (!containsName(currentNodes, base)) {
+        if (!LagWorkbench.containsName(currentNodes, base)) {
             return base;
         }
         // otherwise fine new unique name.
         base += "_";
         int i = 1;
-        while (containsName(currentNodes, base + i)) {
+        while (LagWorkbench.containsName(currentNodes, base + i)) {
             i++;
         }
 

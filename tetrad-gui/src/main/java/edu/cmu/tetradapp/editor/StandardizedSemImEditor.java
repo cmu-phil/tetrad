@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -30,14 +30,7 @@ import edu.cmu.tetradapp.workbench.LayoutMenu;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -55,7 +48,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
     /**
      * The SemIm being edited.
      */
-    private StandardizedSemIm semIm;
+    private final StandardizedSemIm semIm;
 
     /**
      * The graphical editor for the SemIm.
@@ -65,7 +58,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
     /**
      * The menu item that lets the user either show or hide error terms.
      */
-    private JMenuItem errorTerms;
+    private final JMenuItem errorTerms;
     private StandardizedSemImImpliedMatricesPanel impliedMatricesPanel;
 
     //========================CONSTRUCTORS===========================//
@@ -73,7 +66,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
      */
-    public StandardizedSemImEditor(final StandardizedSemImWrapper wrapper) {
+    public StandardizedSemImEditor(StandardizedSemImWrapper wrapper) {
         StandardizedSemIm semIm = wrapper.getStandardizedSemIm();
 
         if (semIm == null) {
@@ -93,10 +86,10 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         menuBar.add(file);
-        file.add(new SaveComponentImage(standardizedSemImGraphicalEditor.getWorkbench(),
+        file.add(new SaveComponentImage(this.standardizedSemImGraphicalEditor.getWorkbench(),
                 "Save Graph Image..."));
 
-        errorTerms = new JMenuItem();
+        this.errorTerms = new JMenuItem();
 
         // By default, hide the error terms.
 //        getSemGraph().setShowErrorTerms(false);
@@ -104,59 +97,24 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
         boolean shown = wrapper.isShowErrors();
         graph.setShowErrorTerms(shown);
 
-//        errorTerms = new JMenuItem();
-//
-//        if (shown) {
-//            errorTerms.setText("Hide Error Terms");
-//        }
-//        else {
-//            errorTerms.setText("Show Error Terms");
-//        }
-        errorTerms.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JMenuItem menuItem = (JMenuItem) e.getSource();
+        this.errorTerms.addActionListener(e -> {
+            JMenuItem menuItem = (JMenuItem) e.getSource();
 
-                if ("Hide Error Terms".equals(menuItem.getText())) {
-                    menuItem.setText("Show Error Terms");
-                    SemGraph graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
-                    graph.setShowErrorTerms(false);
-                    wrapper.setShowErrors(false);
-                    graphicalEditor().resetLabels();
-                } else if ("Show Error Terms".equals(menuItem.getText())) {
-                    menuItem.setText("Hide Error Terms");
-                    SemGraph graph = (SemGraph) graphicalEditor().getWorkbench().getGraph();
-                    graph.setShowErrorTerms(true);
-                    wrapper.setShowErrors(true);
-                    graphicalEditor().resetLabels();
-                }
+            if ("Hide Error Terms".equals(menuItem.getText())) {
+                menuItem.setText("Show Error Terms");
+                SemGraph graph1 = (SemGraph) graphicalEditor().getWorkbench().getGraph();
+                graph1.setShowErrorTerms(false);
+                wrapper.setShowErrors(false);
+                graphicalEditor().resetLabels();
+            } else if ("Show Error Terms".equals(menuItem.getText())) {
+                menuItem.setText("Hide Error Terms");
+                SemGraph graph1 = (SemGraph) graphicalEditor().getWorkbench().getGraph();
+                graph1.setShowErrorTerms(true);
+                wrapper.setShowErrors(true);
+                graphicalEditor().resetLabels();
             }
         });
 
-//        if (getSemGraph().isShowErrorTerms()) {
-//            errorTerms.setText("Hide Error Terms");
-//        } else {
-//            errorTerms.setText("Show Error Terms");
-//        }
-//        errorTerms.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                JMenuItem menuItem = (JMenuItem) e.getSource();
-//
-//                if ("Hide Error Terms".equals(menuItem.getText())) {
-//                    menuItem.setText("Show Error Terms");
-//                    getSemGraph().setShowErrorTerms(false);
-//                    graphicalEditor().resetLabels();
-//                } else if ("Show Error Terms".equals(menuItem.getText())) {
-//                    menuItem.setText("Hide Error Terms");
-//                    getSemGraph().setShowErrorTerms(true);
-//                    graphicalEditor().resetLabels();
-//                }
-//            }
-//        });
-//        JMenu params = new JMenu("Parameters");
-//        params.add(errorTerms);
-//        params.addSeparator();
-//        params.addSeparator();
-//        menuBar.add(params);
         menuBar.add(new LayoutMenu(this));
 
         add(menuBar, BorderLayout.NORTH);
@@ -167,16 +125,16 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      * @return the graph currently in the workbench.
      */
     public Graph getGraph() {
-        return standardizedSemImGraphicalEditor.getWorkbench().getGraph();
+        return this.standardizedSemImGraphicalEditor.getWorkbench().getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return standardizedSemImGraphicalEditor.getWorkbench().getModelEdgesToDisplay();
+        return this.standardizedSemImGraphicalEditor.getWorkbench().getModelEdgesToDisplay();
     }
 
     public Map getModelNodesToDisplay() {
-        return standardizedSemImGraphicalEditor.getWorkbench().getModelNodesToDisplay();
+        return this.standardizedSemImGraphicalEditor.getWorkbench().getModelNodesToDisplay();
     }
 
     /**
@@ -184,7 +142,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      * interface.
      */
     public IKnowledge getKnowledge() {
-        return standardizedSemImGraphicalEditor.getWorkbench().getKnowledge();
+        return this.standardizedSemImGraphicalEditor.getWorkbench().getKnowledge();
     }
 
     /**
@@ -192,7 +150,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      * an interface.
      */
     public Graph getSourceGraph() {
-        return standardizedSemImGraphicalEditor.getWorkbench().getSourceGraph();
+        return this.standardizedSemImGraphicalEditor.getWorkbench().getSourceGraph();
     }
 
     /**
@@ -201,45 +159,36 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      * @param graph The graph whose layout is to be mimicked.
      */
     public void layoutByGraph(Graph graph) {
-        SemGraph _graph = (SemGraph) standardizedSemImGraphicalEditor.getWorkbench().getGraph();
+        SemGraph _graph = (SemGraph) this.standardizedSemImGraphicalEditor.getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);
-        standardizedSemImGraphicalEditor.getWorkbench().layoutByGraph(graph);
+        this.standardizedSemImGraphicalEditor.getWorkbench().layoutByGraph(graph);
         _graph.resetErrorPositions();
 //        standardizedSemImGraphicalEditor.getWorkbench().setGraph(_graph);
-        errorTerms.setText("Show Error Terms");
+        this.errorTerms.setText("Show Error Terms");
     }
 
     /**
      * Lays the workbench graph out using knowledge tiers.
      */
     public void layoutByKnowledge() {
-        SemGraph _graph = (SemGraph) standardizedSemImGraphicalEditor.getWorkbench().getGraph();
+        SemGraph _graph = (SemGraph) this.standardizedSemImGraphicalEditor.getWorkbench().getGraph();
         _graph.setShowErrorTerms(false);
-        standardizedSemImGraphicalEditor.getWorkbench().layoutByKnowledge();
+        this.standardizedSemImGraphicalEditor.getWorkbench().layoutByKnowledge();
         _graph.resetErrorPositions();
-        standardizedSemImGraphicalEditor.getWorkbench().setGraph(_graph);
-        errorTerms.setText("Show Error Terms");
-    }
-
-    //========================PRIVATE METHODS===========================//
-    private SemGraph getSemGraph() {
-        return semIm.getSemPm().getGraph();
+        this.standardizedSemImGraphicalEditor.getWorkbench().setGraph(_graph);
+        this.errorTerms.setText("Show Error Terms");
     }
 
     private StandardizedSemIm getSemIm() {
-        return semIm;
+        return this.semIm;
     }
 
     private StandardizedSemImGraphicalEditor graphicalEditor() {
         if (this.standardizedSemImGraphicalEditor == null) {
-            this.standardizedSemImGraphicalEditor = new StandardizedSemImGraphicalEditor(getSemIm(), this);
+            this.standardizedSemImGraphicalEditor = new StandardizedSemImGraphicalEditor(getSemIm());
             this.standardizedSemImGraphicalEditor.addPropertyChangeListener(
-                    new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            firePropertyChange(evt.getPropertyName(), null,
-                                    null);
-                        }
-                    });
+                    evt -> firePropertyChange(evt.getPropertyName(), null,
+                            null));
             this.standardizedSemImGraphicalEditor.enableEditing(false);
         }
 
@@ -248,7 +197,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
 
     private StandardizedSemImImpliedMatricesPanel impliedMatricesPanel() {
         if (this.impliedMatricesPanel == null) {
-            int matrixSelection = 0;
+            final int matrixSelection = 0;
             this.impliedMatricesPanel
                     = new StandardizedSemImImpliedMatricesPanel(getSemIm(), matrixSelection);
         }
@@ -263,7 +212,6 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
 
     private final StandardizedSemIm semIm;
     private JTable impliedJTable;
-    private int matrixSelection = 0;
     private JComboBox selector;
 
     public StandardizedSemImImpliedMatricesPanel(StandardizedSemIm semIm, int matrixSelection) {
@@ -279,25 +227,6 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
         setMatrixSelection(matrixSelection);
     }
 
-    /**
-     * @return the matrix in tab delimited form.
-     */
-    public String getMatrixInTabDelimitedForm() {
-        StringBuilder builder = new StringBuilder();
-        TableModel model = impliedJTable().getModel();
-        for (int row = 0; row < model.getRowCount(); row++) {
-            for (int col = 0; col < model.getColumnCount(); col++) {
-                Object o = model.getValueAt(row, col);
-                if (o != null) {
-                    builder.append(o);
-                }
-                builder.append('\t');
-            }
-            builder.append('\n');
-        }
-        return builder.toString();
-    }
-
     private JTable impliedJTable() {
         if (this.impliedJTable == null) {
             this.impliedJTable = new JTable();
@@ -307,22 +236,20 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
     }
 
     private JComboBox selector() {
-        if (selector == null) {
-            selector = new JComboBox();
-            java.util.List<String> selections = getImpliedSelections();
+        if (this.selector == null) {
+            this.selector = new JComboBox();
+            java.util.List<String> selections = StandardizedSemImImpliedMatricesPanel.getImpliedSelections();
 
             for (Object selection : selections) {
-                selector.addItem(selection);
+                this.selector.addItem(selection);
             }
 
-            selector.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    String item = (String) e.getItem();
-                    setMatrixSelection(getImpliedSelections().indexOf(item));
-                }
+            this.selector.addItemListener(e -> {
+                String item = (String) e.getItem();
+                setMatrixSelection(StandardizedSemImImpliedMatricesPanel.getImpliedSelections().indexOf(item));
             });
         }
-        return selector;
+        return this.selector;
     }
 
     private void setMatrixSelection(int index) {
@@ -335,8 +262,6 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
             throw new IllegalArgumentException(
                     "Matrix selection must be 0, 1, 2, or 3.");
         }
-
-        this.matrixSelection = index;
 
         switch (index) {
             case 0:
@@ -362,8 +287,7 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
             impliedJTable().setRowSelectionAllowed(false);
             impliedJTable().setCellSelectionEnabled(false);
             impliedJTable().doLayout();
-        } catch (IllegalArgumentException e) {
-            return;
+        } catch (IllegalArgumentException ignored) {
         }
     }
 
@@ -380,7 +304,4 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
         return this.semIm;
     }
 
-    public int getMatrixSelection() {
-        return this.matrixSelection;
-    }
 }

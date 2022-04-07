@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -53,15 +53,15 @@ public class TestGFci {
     public void test1() {
         RandomUtil.getInstance().setSeed(1450189593459L);
 
-        int numNodes = 10;
-        int numLatents = 5;
-        int numEdges = 10;
-        int sampleSize = 1000;
+        final int numNodes = 10;
+        final int numLatents = 5;
+        final int numEdges = 10;
+        final int sampleSize = 1000;
 
-        double alpha = 0.01;
-        double penaltyDiscount = 2;
-        int depth = -1;
-        int maxPathLength = -1;
+        final double alpha = 0.01;
+        final double penaltyDiscount = 2;
+        final int depth = -1;
+        final int maxPathLength = -1;
 
         List<Node> vars = new ArrayList<>();
 
@@ -70,8 +70,6 @@ public class TestGFci {
         }
 
         Graph dag = GraphUtils.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false);
-//        Graph dag = GraphUtils.randomGraphRandomForwardEdges1(vars, numLatents, numEdges);
-//        Graph dag = DataGraphUtils.scaleFreeGraph(vars, numLatents, .05, .05, .05, 3);
 
         DataSet data;
 
@@ -97,7 +95,7 @@ public class TestGFci {
         gFci.setFaithfulnessAssumed(true);
         Graph outGraph = gFci.search();
 
-        final DagToPag2 dagToPag = new DagToPag2(dag);
+        DagToPag dagToPag = new DagToPag(dag);
         dagToPag.setCompleteRuleSetUsed(false);
         dagToPag.setMaxPathLength(maxPathLength);
         Graph truePag = dagToPag.convert();
@@ -120,8 +118,6 @@ public class TestGFci {
             assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
         }
 
-//        System.out.println(MatrixUtils.toString(counts));
-//        System.out.println(MatrixUtils.toString(expectedCounts));
     }
 
     @Test
@@ -168,9 +164,9 @@ public class TestGFci {
 //        RandomUtil.getInstance().setSeed(new Date().getTime());
         RandomUtil.getInstance().setSeed(19444322L);
 
-        int numNodes = 15;
-        int numLatents = 5;
-        int numIterations = 1;
+        final int numNodes = 15;
+        final int numLatents = 5;
+        final int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
             Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,
@@ -181,7 +177,7 @@ public class TestGFci {
             gfci.setFaithfulnessAssumed(true);
             Graph pag1 = gfci.search();
 
-            DagToPag2 dagToPag = new DagToPag2(dag);
+            DagToPag dagToPag = new DagToPag(dag);
             dagToPag.setCompleteRuleSetUsed(false);
             Graph pag2 = dagToPag.convert();
 
@@ -191,10 +187,10 @@ public class TestGFci {
 
     @Test
     public void testFromData() {
-        int numNodes = 20;
-        int numLatents = 5;
-        int numEdges = 20;
-        int sampleSize = 100;
+        final int numNodes = 20;
+        final int numLatents = 5;
+        final int numEdges = 20;
+        final int sampleSize = 100;
 
         List<Node> variables = new ArrayList<>();
 
@@ -228,13 +224,13 @@ public class TestGFci {
 
         System.out.println("Elapsed " + (stop - start) + " ms");
 
-        DagToPag2 dagToPag = new DagToPag2(g);
+        DagToPag dagToPag = new DagToPag(g);
         dagToPag.setVerbose(false);
     }
 
     @Test
     public void testRandomDiscreteData() {
-        int sampleSize = 1000;
+        final int sampleSize = 1000;
 
         Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(g);
@@ -259,14 +255,14 @@ public class TestGFci {
 
         System.out.println("Elapsed " + (stop - start) + " ms");
 
-        DagToPag2 dagToPag = new DagToPag2(g);
+        DagToPag dagToPag = new DagToPag(g);
         dagToPag.setVerbose(false);
     }
 
     @Test
     public void testDiscreteData() throws IOException {
-        double alpha = 0.05;
-        char delimiter = '\t';
+        final double alpha = 0.05;
+        final char delimiter = '\t';
         Path dataFile = Paths.get("./src/test/resources/sim_discrete_data_20vars_100cases.txt");
 
         VerticalDiscreteTabularDatasetFileReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delimiter));

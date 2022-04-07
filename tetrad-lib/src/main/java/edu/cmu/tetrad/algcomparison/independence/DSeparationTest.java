@@ -40,7 +40,7 @@ public class DSeparationTest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         if (dataSet == null) {
-            return new IndTestDSep(graph);
+            return new IndTestDSep(this.graph);
         } else {
             throw new IllegalArgumentException("Expecting no data for a d-separation test.");
         }

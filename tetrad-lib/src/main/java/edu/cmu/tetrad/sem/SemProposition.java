@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -47,12 +47,12 @@ public final class SemProposition implements TetradSerializable {
     /**
      * @serial Cannot be null.
      */
-    private SemIm semIm;
+    private final SemIm semIm;
 
     /**
      * @serial Cannot be null.
      */
-    private double[] values;
+    private final double[] values;
 
     //===========================CONSTRUCTORS===========================//
 
@@ -67,9 +67,7 @@ public final class SemProposition implements TetradSerializable {
         this.semIm = semIm;
         this.values = new double[semIm.getVariableNodes().size()];
 
-        for (int i = 0; i < values.length; i++) {
-            values[i] = Double.NaN;
-        }
+        Arrays.fill(this.values, Double.NaN);
     }
 
     public SemProposition(SemProposition proposition) {
@@ -80,28 +78,6 @@ public final class SemProposition implements TetradSerializable {
     public static SemProposition tautology(SemIm semIm) {
         return new SemProposition(semIm);
     }
-
-//    /**
-//     * Copies the info out of the old proposition into a new proposition for the
-//     * new BayesIm.
-//     */
-//    public SemProposition(SemIm semIm, SemProposition proposition) {
-//        this(semIm);
-//
-//        if (proposition == null) {
-//            throw new NullPointerException();
-//        }
-//    }
-
-//    /**
-//     * Copies the info out of the old proposition into a new proposition for the
-//     * new BayesIm.
-//     */
-//    public SemProposition(SemProposition proposition) {
-//        this.semIm = proposition.semIm;
-//        this.values = new double[proposition.values.length];
-//        System.arraycopy(proposition.values, 0, this.values, 0, values.length);
-//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -123,7 +99,7 @@ public final class SemProposition implements TetradSerializable {
      * @return the number of variables for the proposition.
      */
     public int getNumVariables() {
-        return values.length;
+        return this.values.length;
     }
 
     /**
@@ -146,13 +122,13 @@ public final class SemProposition implements TetradSerializable {
 
         SemProposition proposition = (SemProposition) o;
 
-        if (!(semIm == proposition.semIm)) {
+        if (!(this.semIm == proposition.semIm)) {
             return false;
         }
 
-        for (int i = 0; i < values.length; i++) {
-            if (!(Double.isNaN(values[i]) && Double.isNaN(proposition.values[i]))) {
-                if (values[i] != proposition.values[i]) {
+        for (int i = 0; i < this.values.length; i++) {
+            if (!(Double.isNaN(this.values[i]) && Double.isNaN(proposition.values[i]))) {
+                if (this.values[i] != proposition.values[i]) {
                     return false;
                 }
             }
@@ -163,19 +139,19 @@ public final class SemProposition implements TetradSerializable {
 
     public int hashCode() {
         int hashCode = 37;
-        hashCode = 19 * hashCode + semIm.hashCode();
-        hashCode = 19 * hashCode + Arrays.hashCode(values);
+        hashCode = 19 * hashCode + this.semIm.hashCode();
+        hashCode = 19 * hashCode + Arrays.hashCode(this.values);
         return hashCode;
     }
 
     public String toString() {
-        List nodes = semIm.getVariableNodes();
+        List<Node> nodes = this.semIm.getVariableNodes();
         StringBuilder buf = new StringBuilder();
         buf.append("\nProposition: ");
 
         for (int i = 0; i < nodes.size(); i++) {
-            Node node = (Node) nodes.get(i);
-            buf.append("\n").append(node).append(" = ").append(values[i]);
+            Node node = nodes.get(i);
+            buf.append("\n").append(node).append(" = ").append(this.values[i]);
         }
 
         return buf.toString();
@@ -191,8 +167,6 @@ public final class SemProposition implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -200,21 +174,21 @@ public final class SemProposition implements TetradSerializable {
     }
 
     public double getValue(int i) {
-        return values[i];
+        return this.values[i];
     }
 
     public void setValue(int i, double value) {
-        values[i] = value;
+        this.values[i] = value;
     }
 
     public double getValue(Node node) {
-        List nodes = semIm.getVariableNodes();
-        return values[nodes.indexOf(node)];
+        List<Node> nodes = this.semIm.getVariableNodes();
+        return this.values[nodes.indexOf(node)];
     }
 
     public void setValue(Node node, double value) {
-        List nodes = semIm.getVariableNodes();
-        values[nodes.indexOf(node)] = value;
+        List<Node> nodes = this.semIm.getVariableNodes();
+        this.values[nodes.indexOf(node)] = value;
     }
 }
 

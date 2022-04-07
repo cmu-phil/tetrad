@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -161,29 +161,11 @@ public class NetBuilderModel {
         int ngenes = genes.length;
         double[][] geneData = new double[ngenes][nhours];
 
-        /*
-        for(int i = 0; i < components.length; i++) {
-          data[i][0] = components[i].getParamValue();
-          System.out.print(components[i].getName() + "\t");
-        }
-        System.out.println();
-        */
-
         for (int i = 0; i < ngenes; i++) {
             geneData[i][0] = genes[i].getValue();
         }
 
         for (int hour = 1; hour < nhours; hour++) {
-            /*
-            TCF.update();
-            Krox.update();
-            Otx.update();
-            Wnt8.update();
-            Krl.update();
-            SoxB1.update();
-            GSK3.update();
-            Eve.update();
-            */
 
             chi.update();
             //ChiSwitch.update();
@@ -195,8 +177,6 @@ public class NetBuilderModel {
             soxB1.update();
             krox.update();
             matOtxMod.update();
-            //OtxSum.update();
-            //Krox.update();
             otx.update();
             otxSum.update();
             eve.update();
@@ -205,13 +185,6 @@ public class NetBuilderModel {
             soxB1Mod.update();
             preChi.update();
 
-            //for(int i = 0; i < components.length; i++)
-            //  System.out.print(components[i].getParamValue() + "\t");
-            //System.out.println();
-
-            //for(int i = 0; i < components.length; i++)
-            //  data[i][hour] = components[i].getParamValue();
-
             for (int i = 0; i < ngenes; i++) {
                 geneData[i][hour] = genes[i].getValue();
             }
@@ -219,28 +192,7 @@ public class NetBuilderModel {
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        /*
-        for(int i = 0; i < components.length; i++) {
-          System.out.print(components[i].getName() + "\t");
-          for(int hour = 0; hour < 10; hour++) {
-            String dat = nf.format(data[i][hour]);
-            System.out.print(dat + "\t");
-          }
-          System.out.println();
-        }
-        */
-
-        /*
-        for(int hour = 1; hour < nhours; hour++) {
-          for(int i = 0; i < ngenes; i++) {
-            String dat = nf.format(geneData[i][hour]);
-            System.out.print(dat + "\t");
-          }
-        System.out.println();
-        }
-        */
-
-        double means[] = new double[ngenes];
+        double[] means = new double[ngenes];
         for (int i = 0; i < ngenes; i++) {
             double sum = 0.0;
             for (int hour = 1; hour < nhours; hour++) {

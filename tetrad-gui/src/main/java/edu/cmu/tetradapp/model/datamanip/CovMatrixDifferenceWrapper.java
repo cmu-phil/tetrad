@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -70,61 +70,6 @@ public class CovMatrixDifferenceWrapper extends DataWrapper {
         LogDataUtils.logDataModelList("Difference of matrices.", getDataModelList());
 
     }
-
-//    public CovMatrixDifferenceWrapper(SemEstimatorWrapper wrapper1, DataWrapper wrapper2, Parameters params) {
-//        if (wrapper1 == null || wrapper2 == null) {
-//            throw new NullPointerException("The data must not be null");
-//        }
-//
-//        DataModel model2 = wrapper2.getSelectedDataModel();
-//
-//        if (!(model2 instanceof ICovarianceMatrix)) {
-//            throw new IllegalArgumentException("Expecting corrariance matrices.");
-//        }
-//
-//        TetradMatrix corr1 = wrapper1.getEstimatedSemIm().getImplCovarMeas();
-//        TetradMatrix corr2 = ((ICovarianceMatrix) model2).getMatrix();
-//
-//        TetradMatrix corr3 = calcDifference(corr1, corr2);
-//
-//        ICovarianceMatrix corrWrapper = new CovarianceMatrix(model2.getVariable(), corr3,
-//                ((ICovarianceMatrix) model2).getSampleSize());
-//
-//        setDataModel(corrWrapper);
-//        setSourceGraph(wrapper2.getSourceGraph());
-//        LogDataUtils.logDataModelList("Difference of matrices.", getDataModelList());
-//
-//    }
-
-//    public CovMatrixDifferenceWrapper(SemImWrapper wrapper1, DataWrapper wrapper2, Parameters params) {
-//        try {
-//            if (wrapper1 == null || wrapper2 == null) {
-//                throw new NullPointerException("The data must not be null");
-//            }
-//
-//            DataModel model2 = wrapper2.getSelectedDataModel();
-//
-//            if (!(model2 instanceof ICovarianceMatrix)) {
-//                throw new IllegalArgumentException("Expecting corrariance matrices.");
-//            }
-//
-//            TetradMatrix corr1 = wrapper1.getSemIm().getImplCovarMeas();
-//            TetradMatrix corr2 = ((ICovarianceMatrix) model2).getMatrix();
-//
-//            TetradMatrix corr3 = calcDifference(corr1, corr2);
-//
-//            ICovarianceMatrix corrWrapper = new CovarianceMatrix(model2.getVariable(), corr3,
-//                    ((ICovarianceMatrix) model2).getSampleSize());
-//
-//            setDataModel(corrWrapper);
-//            setSourceGraph(wrapper2.getSourceGraph());
-//            LogDataUtils.logDataModelList("Difference of matrices.", getDataModelList());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw new RuntimeException(e);
-//        }
-//
-//    }
 
     private Matrix calcDifference(Matrix corr1, Matrix corr2) {
         if (corr1.rows() != corr2.rows()) {

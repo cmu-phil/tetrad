@@ -14,7 +14,7 @@ import edu.cmu.tetrad.graph.Graph;
  * </p>
  * if the true contains X*->Y and estimated graph either does not contain an edge from
  * X to Y or else does not contain an arrowhead at X for an edge from X to Y, one false
- * positive is counted. Similarly for false negatives
+ * positive is counted. Similarly, for false negatives
  *
  * @author jdramsey
  */

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -101,9 +101,7 @@ public final class TestGraphUtils {
                 List<List<Node>> treks = GraphUtils.treks(graph, node1, node2, -1);
 
                 TREKS:
-                for (int k = 0; k < treks.size(); k++) {
-                    List<Node> trek = treks.get(k);
-
+                for (List<Node> trek : treks) {
                     Node m0 = trek.get(0);
                     Node m1 = trek.get(trek.size() - 1);
 
@@ -123,7 +121,7 @@ public final class TestGraphUtils {
 
     @Test
     public void testGraphToDot() {
-        long seed = 28583848283L;
+        final long seed = 28583848283L;
         RandomUtil.getInstance().setSeed(seed);
 
         List<Node> nodes = new ArrayList<>();
@@ -216,8 +214,8 @@ public final class TestGraphUtils {
         assertTrue(!graph.isAncestorOf(y, a));
         assertTrue(!graph.isAncestorOf(x, b));
 
-        assertTrue(graph.isDConnectedTo(a, y, new ArrayList<Node>()));
-        assertTrue(graph.isDConnectedTo(b, x, new ArrayList<Node>()));
+        assertTrue(graph.isDConnectedTo(a, y, new ArrayList<>()));
+        assertTrue(graph.isDConnectedTo(b, x, new ArrayList<>()));
 
         assertTrue(graph.isDConnectedTo(a, y, Collections.singletonList(x)));
         assertTrue(graph.isDConnectedTo(b, x, Collections.singletonList(y)));
@@ -257,7 +255,7 @@ public final class TestGraphUtils {
 
 
     public void test8() {
-        int numNodes = 5;
+        final int numNodes = 5;
 
         for (int i = 0; i < 100000; i++) {
             Graph graph = GraphUtils.randomGraphRandomForwardEdges(numNodes, 0, numNodes, 10, 10, 10, true);
@@ -283,7 +281,7 @@ public final class TestGraphUtils {
     @Test
     public void testPagColoring() {
         Graph dag = GraphUtils.randomGraph(30, 5, 50, 10, 10, 10, false);
-        Graph pag = new DagToPag2(dag).convert();
+        Graph pag = new DagToPag(dag).convert();
 
         GraphUtils.addPagColoring(pag);
 
@@ -298,7 +296,7 @@ public final class TestGraphUtils {
                     if (L == x1 || L == x2) continue;
 
                     if (L.getNodeType() == NodeType.LATENT) {
-                        if (existsLatentPath(dag, L, x1) && existsLatentPath(dag, L, x2)) {
+                        if (TestGraphUtils.existsLatentPath(dag, L, x1) && TestGraphUtils.existsLatentPath(dag, L, x2)) {
                             System.out.println("Edge " + edge + " falsely colored green.");
                         }
                     }
@@ -308,7 +306,7 @@ public final class TestGraphUtils {
             if (edge.isBold()) {
                 System.out.println("Bold");
 
-                if (!existsLatentPath(dag, x1, x2)) {
+                if (!TestGraphUtils.existsLatentPath(dag, x1, x2)) {
                     System.out.println("Edge " + edge + " is falsely bold.");
                 }
             }
@@ -317,7 +315,7 @@ public final class TestGraphUtils {
 
     public static boolean existsLatentPath(Graph graph, Node b, Node y) {
         if (b == y) return false;
-        return existsLatentPath(graph, b, y, new LinkedList<Node>());
+        return TestGraphUtils.existsLatentPath(graph, b, y, new LinkedList<>());
     }
 
     public static boolean existsLatentPath(Graph graph, Node b, Node y, LinkedList<Node> path) {
@@ -334,7 +332,7 @@ public final class TestGraphUtils {
                 continue;
             }
 
-            if (!existsLatentPath(graph, c, y, path)) {
+            if (!TestGraphUtils.existsLatentPath(graph, c, y, path)) {
                 return false;
             }
         }

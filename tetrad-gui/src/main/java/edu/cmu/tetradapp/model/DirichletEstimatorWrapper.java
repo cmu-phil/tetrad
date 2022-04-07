@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -50,7 +50,7 @@ public class DirichletEstimatorWrapper implements SessionModel {
     /**
      * @serial Cannot be null.
      */
-    private DirichletBayesIm dirichletBayesIm;
+    private final DirichletBayesIm dirichletBayesIm;
 
     //============================CONSTRUCTORS============================//
     public DirichletEstimatorWrapper(DataWrapper dataWrapper,
@@ -83,36 +83,6 @@ public class DirichletEstimatorWrapper implements SessionModel {
         log(dirichletBayesIm);
     }
 
-    //    public DirichletEstimatorWrapper(DataWrapper dataWrapper,
-//            DirichletEstimatorWrapper dirichletPriorWrapper) {
-//        if (dataWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (dirichletPriorWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        DataSet dataSet =
-//                (DataSet) dataWrapper.getSelectedDataModel();
-//
-//        if (DataUtils.containsMissingValue(dataSet)) {
-//            throw new IllegalArgumentException("Please remove or impute missing values.");
-//        }
-//
-//        DirichletBayesIm dirichletBayesIm =
-//                dirichletPriorWrapper.getEstimatedBayesIm();
-//
-//        try {
-//            this.dirichletBayesIm =
-//                    DirichletEstimator.estimate(dirichletBayesIm, dataSet);
-//        }
-//        catch (IllegalArgumentException e) {
-//            throw new RuntimeException(
-//                    "Please fully specify the Dirichlet prior first.");
-//        }
-//        log(dirichletBayesIm);
-//    }
     public DirichletEstimatorWrapper(DataWrapper dataWrapper,
                                      BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -178,25 +148,22 @@ public class DirichletEstimatorWrapper implements SessionModel {
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      * <p>
      * LogUtils.getInstance().finer("Estimated Bayes IM:");
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (dirichletBayesIm == null) {
+        if (this.dirichletBayesIm == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return dirichletBayesIm.getBayesPm().getDag();
+        return this.dirichletBayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {

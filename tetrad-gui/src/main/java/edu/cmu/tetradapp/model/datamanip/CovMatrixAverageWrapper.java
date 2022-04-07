@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -32,6 +32,7 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,11 +44,8 @@ public class CovMatrixAverageWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
     public CovMatrixAverageWrapper(DataWrapper[] covs, Parameters params) {
-        List<DataWrapper> matrices = new ArrayList<>();
 
-        for (DataWrapper cov : covs) {
-            matrices.add(cov);
-        }
+        List<DataWrapper> matrices = new ArrayList<>(Arrays.asList(covs));
 
         calcAverage(matrices);
     }
@@ -55,8 +53,8 @@ public class CovMatrixAverageWrapper extends DataWrapper {
     private void calcAverage(List<DataWrapper> wrappers) {
         List<Matrix> cov = new ArrayList<>();
 
-        for (int i = 0; i < wrappers.size(); i++) {
-            DataModel selectedDataModel = wrappers.get(i).getSelectedDataModel();
+        for (DataWrapper wrapper : wrappers) {
+            DataModel selectedDataModel = wrapper.getSelectedDataModel();
 
             if (!(selectedDataModel instanceof ICovarianceMatrix)) {
                 throw new IllegalArgumentException("Sorry, this is an average only over covariance matrices.");
@@ -71,8 +69,8 @@ public class CovMatrixAverageWrapper extends DataWrapper {
             for (int j = 0; j < cov.get(0).rows(); j++) {
                 double c = 0.0;
 
-                for (int k = 0; k < cov.size(); k++) {
-                    c += cov.get(k).get(i, j);
+                for (Matrix matrix : cov) {
+                    c += matrix.get(i, j);
                 }
 
                 c /= cov.size();

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,10 +39,10 @@ import java.util.Set;
  * @author Joseph Ramsey
  */
 public class VcpcFastRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
     private Graph dag;
-    private IndependenceFactsModel independenceFactsModel = null;
+    private IndependenceFactsModel independenceFactsModel;
     private Graph trueGraph;
 //    private Vcpc vcpc = null;
 
@@ -50,7 +50,6 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
     private Set<Edge> fvcpcAdjacent;
     private Set<Edge> fvcpcApparent;
     private Set<Edge> fvcpcDefinite;
-    private List<Node> fvcpcNodes;
 
     //============================CONSTRUCTORS============================//
 
@@ -171,18 +170,14 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        Parameters searchParams = getParams();
-
-        Parameters params =
-                searchParams;
 
 
         VcpcFast fvcpc = new VcpcFast(getIndependenceTest());
         fvcpc.setKnowledge(knowledge);
         fvcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        fvcpc.setDepth(params.getInt("depth", -1));
-        if (independenceFactsModel != null) {
-            fvcpc.setFacts(independenceFactsModel.getFacts());
+        fvcpc.setDepth(getParams().getInt("depth", -1));
+        if (this.independenceFactsModel != null) {
+            fvcpc.setFacts(this.independenceFactsModel.getFacts());
         }
         Graph graph = fvcpc.search();
 
@@ -199,7 +194,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
     }
 
     public IndependenceTest getIndependenceTest() {
-        if (dag != null) {
+        if (this.dag != null) {
             return new IndTestDSep(getGraph());
         }
 
@@ -218,7 +213,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
     }
 
     public IndependenceFactsModel getIndependenceFactsModel() {
-        return independenceFactsModel;
+        return this.independenceFactsModel;
     }
 
     /**
@@ -226,8 +221,6 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
-//        names.add("ColliderDiscovery");
-//        names.add("Noncolliders");
         names.add("Ambiguous Triples");
         return names;
     }
@@ -238,22 +231,20 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         return triplesList;
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<>(fvcpcAdjacent);
+        return new HashSet<>(this.fvcpcAdjacent);
     }
 
     public Set<Edge> getAppNon() {
-        return new HashSet<>(fvcpcApparent);
+        return new HashSet<>(this.fvcpcApparent);
     }
 
     public Set<Edge> getDefNon() {
-        return new HashSet<>(fvcpcDefinite);
+        return new HashSet<>(this.fvcpcDefinite);
     }
 
     public boolean supportsKnowledge() {
@@ -280,15 +271,12 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
     }
 
     private void setVcpcFastFields(VcpcFast fvcpc) {
-        fvcpcAdjacent = fvcpc.getAdjacencies();
-        fvcpcApparent = fvcpc.getApparentNonadjacencies();
-        fvcpcDefinite = fvcpc.getDefiniteNonadjacencies();
-        fvcpcNodes = getGraph().getNodes();
+        this.fvcpcAdjacent = fvcpc.getAdjacencies();
+        this.fvcpcApparent = fvcpc.getApparentNonadjacencies();
+        this.fvcpcDefinite = fvcpc.getDefiniteNonadjacencies();
+        List<Node> fvcpcNodes = getGraph().getNodes();
     }
 
-//    public Vcpc getVcpc() {
-//        return vcpc;
-//    }
 }
 
 

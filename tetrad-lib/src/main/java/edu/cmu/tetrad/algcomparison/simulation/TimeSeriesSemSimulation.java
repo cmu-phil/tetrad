@@ -17,7 +17,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -43,27 +42,27 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     @Override
     public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
         graph = TimeSeriesUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS));
-        topToBottomLayout((TimeLagGraph) graph);
+        TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
         this.knowledge = TimeSeriesUtils.getKnowledge(graph);
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
                 graph = TimeSeriesUtils.graphToLagGraph(graph, 2);
-                topToBottomLayout((TimeLagGraph) graph);
+                TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm, parameters);
 
-            final int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
+            int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
             boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
             DataSet dataSet = im.simulateData(sampleSize, saveLatentVars);
@@ -73,58 +72,20 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
             dataSet = TimeSeriesUtils.createLagData(dataSet, numLags);
 
             dataSet.setName("" + (i + 1));
-            dataSet.setKnowledge(knowledge.copy());
-            dataSets.add(dataSet);
+            dataSet.setKnowledge(this.knowledge.copy());
+            this.dataSets.add(dataSet);
 
-//            LargeScaleSimulation sim = new LargeScaleSimulation(graph);
-//            if (parameters.getDouble("coefHigh") > 0.80) {
-//                System.out.println("Coefficients have been set (perhaps by default) too " +
-//                        "high for stationary time series.");
-//                System.out.println("Setting coefficient range to [0.20,0.60].");
-//                sim.setCoefRange(0.20, 0.60);
-//            } else sim.setCoefRange(parameters.getDouble("coefLow"), parameters.getDouble("coefHigh"));
-//            boolean isStableTetradMatrix;
-//            int attempt = 1;
-//            int tierSize = parameters.getInt("numMeasures") + parameters.getInt("numLatents"); //params.getNumVars();
-//            int[] sub = new int[tierSize];
-//            int[] sub2 = new int[tierSize];
-//            for (int j = 0; j < tierSize; j++) {
-//                sub[j] = j;
-//                sub2[j] = tierSize + j;
-//            }
-//            DataSet dataSet;
-//            do {
-//                dataSet = sim.simulateDataFisher(parameters.getInt("sampleSize")); //params.getSampleSize());
-//
-//                TetradMatrix coefMat = new TetradMatrix(sim.getCoefficientMatrix());
-//                TetradMatrix B = coefMat.getSelection(sub, sub);
-//                TetradMatrix Gamma1 = coefMat.getSelection(sub2, sub);
-//                TetradMatrix Gamma0 = TetradMatrix.identity(tierSize).minus(B);
-//                TetradMatrix A1 = Gamma0.inverse().times(Gamma1);
-//
-//                isStableTetradMatrix = TimeSeriesUtils.allEigenvaluesAreSmallerThanOneInModulus(A1);
-//                attempt++;
-//            } while ((!isStableTetradMatrix) && attempt <= 5);
-//            if (!isStableTetradMatrix) {
-//                System.out.println("%%%%%%%%%% WARNING %%%%%%%% not a stable coefficient matrix, forcing coefs to [0.15,0.3]");
-//                System.out.println("Made " + (attempt - 1) + " attempts to get stable matrix.");
-//                sim.setCoefRange(0.15, 0.3);
-//                dataSet = sim.simulateDataFisher(parameters.getInt("sampleSize"));//params.getSampleSize());
-//            } //else System.out.println("Coefficient matrix is stable.");
-//            dataSet.setName("" + (i + 1));
-//            dataSet.setKnowledge(knowledge.copy());
-//            dataSets.add(dataSet);
         }
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+        return this.graphs.get(index);
     }
 
     @Override
@@ -138,8 +99,8 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
         parameters.add(Params.NUM_LAGS);
 
-        if (!(randomGraph instanceof SingleGraph)) {
-            parameters.addAll(randomGraph.getParameters());
+        if (!(this.randomGraph instanceof SingleGraph)) {
+            parameters.addAll(this.randomGraph.getParameters());
         }
 
         parameters.addAll(SemIm.getParameterNames());
@@ -157,7 +118,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
@@ -167,7 +128,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
@@ -177,17 +138,13 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     public static void topToBottomLayout(TimeLagGraph graph) {
 
-        int xStart = 65;
-        int yStart = 50;
-        int xSpace = 100;
-        int ySpace = 100;
+        final int xStart = 65;
+        final int yStart = 50;
+        final int xSpace = 100;
+        final int ySpace = 100;
         List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int x = xStart - xSpace;
 

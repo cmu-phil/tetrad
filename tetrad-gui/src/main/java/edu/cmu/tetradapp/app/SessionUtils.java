@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -49,16 +49,16 @@ final class SessionUtils {
      * @param onlyModel If true, displays a message indicating that this is the
      *                  only model consistent with the parents.
      */
-    public static void showPermissibleParentsDialog(final Class modelClass,
-                                                    final JComponent centeringComp,
+    public static void showPermissibleParentsDialog(Class modelClass,
+                                                    JComponent centeringComp,
                                                     boolean warning,
                                                     boolean onlyModel) {
         TetradApplicationConfig config = TetradApplicationConfig.getInstance();
-        final SessionNodeConfig nodeConfig = config.getSessionNodeConfig(modelClass);
+        SessionNodeConfig nodeConfig = config.getSessionNodeConfig(modelClass);
         if (nodeConfig == null) {
             throw new NullPointerException("No configuration for model: " + modelClass);
         }
-        final SessionNodeModelConfig modelConfig = nodeConfig.getModelConfig(modelClass);
+        SessionNodeModelConfig modelConfig = nodeConfig.getModelConfig(modelClass);
         String[][] parentCombinations =
                 SessionUtils.possibleParentCombinations(modelClass);
 
@@ -69,7 +69,7 @@ final class SessionUtils {
         for (int i = 0; i < parentCombinations.length; i++) {
             String[] parentCombination = parentCombinations[i];
 
-            b.append("\n  " + (i + 1) + ". ");
+            b.append("\n  ").append(i + 1).append(". ");
 
             if (parentCombination.length == 0) {
                 b.append("No inputs");
@@ -84,8 +84,7 @@ final class SessionUtils {
             }
         }
 
-        int messageType = warning ? JOptionPane.INFORMATION_MESSAGE :
-                JOptionPane.INFORMATION_MESSAGE;
+        final int messageType = JOptionPane.INFORMATION_MESSAGE;
 
         JOptionPane.showMessageDialog(centeringComp, b.toString(),
                 "Information on \"" + modelConfig.getName() + "\"", messageType);
@@ -115,7 +114,7 @@ final class SessionUtils {
                     continue PARENT_SET;
                 }
 
-                String descrip = getModelName(parameterType);
+                String descrip = SessionUtils.getModelName(parameterType);
 
                 if (descrip == null) {
                     j.remove();
@@ -131,7 +130,7 @@ final class SessionUtils {
 
             for (Object parameterType1 : parameterTypes) {
                 Class parameterType = (Class) parameterType1;
-                String descrip = getModelName(parameterType);
+                String descrip = SessionUtils.getModelName(parameterType);
                 combination.add(descrip);
             }
 
@@ -139,7 +138,7 @@ final class SessionUtils {
         }
 
         if (foundNull) {
-            parentCombinations.add(0, new LinkedList<String>());
+            parentCombinations.add(0, new LinkedList<>());
         }
 
         String[][] _parentCombinations =
@@ -176,37 +175,6 @@ final class SessionUtils {
         SessionNodeModelConfig modelConfig = config.getModelConfig(model);
         return modelConfig.getName();
     }
-
-//    private static void launchHelpForName(String helpName, String descrip) {
-//        JHelp jhelp = new JHelp(TetradHelpBroker.getInstance().getHelpSet());
-//        JComponent centeringComp = JOptionUtils.centeringComp();
-//
-//        try {
-//            jhelp.setCurrentID(helpName);
-//        }
-//        catch (BadIDException e1) {
-//            System.out.println("Expected ID = " + helpName);
-//        }
-//
-//        jhelp.setPreferredSize(new Dimension(600, 500));
-//        Object owner = centeringComp.getTopLevelAncestor();
-//        JDialog dialog;
-//
-//        if (owner instanceof Dialog) {
-//            dialog = new JDialog((Dialog) owner, "Help for \"" + descrip + "\"",
-//                    true);
-//        } else {
-//            dialog = new JDialog((Frame) owner, "Help for \"" + descrip + "\"",
-//                    true);
-//        }
-//
-//        dialog.setResizable(true);
-//        dialog.getContentPane().add(jhelp, BorderLayout.CENTER);
-//        dialog.pack();
-//        dialog.setSize(new Dimension(900, 600));
-//        dialog.setLocationRelativeTo(centeringComp);
-//        dialog.setVisible(true);
-//    }
 
 
 }

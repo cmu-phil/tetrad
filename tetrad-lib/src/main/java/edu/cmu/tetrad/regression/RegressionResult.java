@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -43,80 +43,75 @@ public class RegressionResult implements TetradSerializable {
      *
      * @see #RegressionResult
      */
-    private boolean zeroInterceptAssumed;
+    private final boolean zeroInterceptAssumed;
 
     /**
      * Regressor names.
      *
      * @see #RegressionResult
      */
-    private String[] regressorNames;
+    private final String[] regressorNames;
 
     /**
      * The number of data points.
      *
      * @see #RegressionResult
      */
-    private int n;
+    private final int n;
 
     /**
      * The array of regression coefficients.
      *
      * @see #RegressionResult
      */
-    private double[] b;
+    private final double[] b;
 
     /**
      * The array of t-statistics for the regression coefficients.
      *
      * @see #RegressionResult
      */
-    private double[] t;
+    private final double[] t;
 
     /**
      * The array of p-values for the regression coefficients.
      *
      * @see #RegressionResult
      */
-    private double[] p;
+    private final double[] p;
 
     /**
      * Standard errors of the coefficients
      *
      * @see #RegressionResult
      */
-    private double[] se;
+    private final double[] se;
 
     /**
      * R square value.
      *
      * @see #RegressionResult
      */
-    private double r2;
+    private final double r2;
 
     /**
      * Residual sums of squares.
      *
      * @see #RegressionResult
      */
-    private double rss;
+    private final double rss;
 
     /**
      * Alpha value to determine significance.
      *
      * @see #RegressionResult
      */
-    private double alpha;
-
-    /**
-     * Teh predicted values.
-     */
-    private Vector yHat;
+    private final double alpha;
 
     /**
      * The residuals.
      */
-    private Vector res;
+    private final Vector res;
 
     /**
      * A result for a variety of regression algorithm.
@@ -148,14 +143,8 @@ public class RegressionResult implements TetradSerializable {
      * @param alpha                The alpha value for the regression,
      *                             determining which regressors are taken to be
      */
-    public RegressionResult(boolean zeroInterceptAssumed, String[] regressorNames,
-                            int n, double[] b, double[] t,
-                            double[] p, double[] se, double r2,
-                            double rss, double alpha, Vector yHat, Vector res) {
-//        if (regressorNames == null) {
-//            throw new NullPointerException();
-//        }
-
+    public RegressionResult(boolean zeroInterceptAssumed, String[] regressorNames, int n, double[] b, double[] t,
+                            double[] p, double[] se, double r2, double rss, double alpha, Vector res) {
         if (b == null) {
             throw new NullPointerException();
         }
@@ -186,7 +175,6 @@ public class RegressionResult implements TetradSerializable {
         this.alpha = alpha;
         this.rss = rss;
 
-        this.yHat = yHat;
         this.res = res;
     }
 
@@ -196,72 +184,64 @@ public class RegressionResult implements TetradSerializable {
     public static RegressionResult serializableInstance() {
         return new RegressionResult(true, new String[0],
                 10, new double[0], new double[0], new double[0],
-                new double[0], 0, 0, 0, null, null);
-    }
-
-    public boolean isZeroInterceptAssumed() {
-        return zeroInterceptAssumed;
-    }
-
-    public double getRSquared() {
-        return r2;
+                new double[0], 0, 0, 0, null);
     }
 
     /**
      * @return the number of data points.
      */
     public int getN() {
-        return n;
+        return this.n;
     }
 
     /**
      * @return the number of regressors.
      */
     public int getNumRegressors() {
-        return regressorNames.length;
+        return this.regressorNames.length;
     }
 
     /**
      * @return the array of regression coeffients.
      */
     public double[] getCoef() {
-        return b;
+        return this.b;
     }
 
     /**
      * @return the array of t-statistics for the regression coefficients.
      */
     public double[] getT() {
-        return t;
+        return this.t;
     }
 
     /**
      * @return the array of p-values for the regression coefficients.
      */
     public double[] getP() {
-        return p;
+        return this.p;
     }
 
     public double[] getSe() {
-        return se;
+        return this.se;
     }
 
 
     public String[] getRegressorNames() {
-        return regressorNames;
+        return this.regressorNames;
     }
 
     public double getPredictedValue(double[] x) {
         double yHat = 0.0;
 
-        int offset = zeroInterceptAssumed ? 0 : 1;
+        int offset = this.zeroInterceptAssumed ? 0 : 1;
 
         for (int i = 0; i < getNumRegressors(); i++) {
-            yHat += b[i + offset] * x[i];
+            yHat += this.b[i + offset] * x[i];
         }
 
-        if (!zeroInterceptAssumed) {
-            yHat += b[0]; // error term.
+        if (!this.zeroInterceptAssumed) {
+            yHat += this.b[0]; // error term.
         }
 
         return yHat;
@@ -289,31 +269,31 @@ public class RegressionResult implements TetradSerializable {
         for (int i = 0; i < getNumRegressors() + 1; i++) {
 
             // Note: the first column contains the regression constants.
-            String variableName = (i > 0) ? regressorNames[i - 1] : "const";
+            String variableName = (i > 0) ? this.regressorNames[i - 1] : "const";
 
             table.setToken(i + 2, 0, variableName);
-            table.setToken(i + 2, 1, nf.format(b[i]));
+            table.setToken(i + 2, 1, nf.format(this.b[i]));
 
-            if (se.length != 0) {
-                table.setToken(i + 2, 2, nf.format(se[i]));
+            if (this.se.length != 0) {
+                table.setToken(i + 2, 2, nf.format(this.se[i]));
             } else {
                 table.setToken(i + 2, 2, "-1");
             }
 
-            if (t.length != 0) {
-                table.setToken(i + 2, 3, nf.format(t[i]));
+            if (this.t.length != 0) {
+                table.setToken(i + 2, 3, nf.format(this.t[i]));
             } else {
                 table.setToken(i + 2, 3, "-1");
             }
 
-            if (p.length != 0) {
-                table.setToken(i + 2, 4, nf.format(p[i]));
+            if (this.p.length != 0) {
+                table.setToken(i + 2, 4, nf.format(this.p[i]));
             } else {
                 table.setToken(i + 2, 4, "-1");
             }
 
-            if (p.length != 0) {
-                table.setToken(i + 2, 5, (p[i] < alpha) ? "significant " : "");
+            if (this.p.length != 0) {
+                table.setToken(i + 2, 5, (this.p[i] < this.alpha) ? "significant " : "");
             } else {
                 table.setToken(i + 2, 5, "(p not defined)");
             }
@@ -325,23 +305,18 @@ public class RegressionResult implements TetradSerializable {
     public String getPreamble() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
-        String rssString = nf.format(rss);
-        String r2String = nf.format(r2);
-        String preamble = "\n REGRESSION RESULT" +
-                "\n n = " + n + ", k = " +
-                (getNumRegressors() + 1) + ", alpha = " + alpha +
+        String rssString = nf.format(this.rss);
+        String r2String = nf.format(this.r2);
+        return "\n REGRESSION RESULT" +
+                "\n n = " + this.n + ", k = " +
+                (getNumRegressors() + 1) + ", alpha = " + this.alpha +
                 "\n" + " SSE = " + rssString +
                 "\n" + " R^2 = " + r2String +
                 "\n";
-        return preamble;
-    }
-
-    public Vector getYHat() {
-        return yHat;
     }
 
     public Vector getResiduals() {
-        return res;
+        return this.res;
     }
 }
 

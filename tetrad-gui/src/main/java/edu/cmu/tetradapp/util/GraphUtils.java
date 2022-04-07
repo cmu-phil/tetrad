@@ -1,11 +1,16 @@
 package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.data.DataGraphUtils;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.PointXy;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by jdramsey on 12/8/15.
@@ -38,28 +43,29 @@ public class GraphUtils {
         double deltaOut = parameters.getDouble("scaleFreeDeltaOut", 0.2);
         int numFactors = parameters.getInt("randomMimNumFactors", 1);
 
-        final String type = parameters.getString("randomGraphType", "ScaleFree");
+        String type = parameters.getString("randomGraphType", "ScaleFree");
 
-        if (type.equals("Uniform")) {
-            return makeRandomDag(graph,
-                    newGraphNumMeasuredNodes,
-                    newGraphNumLatents,
-                    newGraphNumEdges,
-                    randomGraphMaxDegree,
-                    randomGraphMaxIndegree,
-                    randomGraphMaxOutdegree,
-                    graphRandomFoward,
-                    graphUniformlySelected,
-                    randomGraphConnected,
-                    graphChooseFixed,
-                    addCycles, parameters);
-        } else if (type.equals("Mim")) {
-            return makeRandomMim(numFactors, numStructuralNodes, maxStructuralEdges, measurementModelDegree,
-                    numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
-                    numMeasuredMeasuredImpureAssociations);
-        } else if (type.equals("ScaleFree")) {
-            return makeRandomScaleFree(newGraphNumMeasuredNodes,
-                    newGraphNumLatents, alpha, beta, deltaIn, deltaOut);
+        switch (type) {
+            case "Uniform":
+                return GraphUtils.makeRandomDag(graph,
+                        newGraphNumMeasuredNodes,
+                        newGraphNumLatents,
+                        newGraphNumEdges,
+                        randomGraphMaxDegree,
+                        randomGraphMaxIndegree,
+                        randomGraphMaxOutdegree,
+                        graphRandomFoward,
+                        graphUniformlySelected,
+                        randomGraphConnected,
+                        graphChooseFixed,
+                        addCycles, parameters);
+            case "Mim":
+                return GraphUtils.makeRandomMim(numFactors, numStructuralNodes, maxStructuralEdges, measurementModelDegree,
+                        numLatentMeasuredImpureParents, numMeasuredMeasuredImpureParents,
+                        numMeasuredMeasuredImpureAssociations);
+            case "ScaleFree":
+                return GraphUtils.makeRandomScaleFree(newGraphNumMeasuredNodes,
+                        newGraphNumLatents, alpha, beta, deltaIn, deltaOut);
         }
 
         throw new IllegalStateException("Unrecognized graph type: " + type);
@@ -79,10 +85,8 @@ public class GraphUtils {
 
 
         int numNodes = newGraphNumMeasuredNodes + newGraphNumLatents;
-        int numTrials = 0;
 
-        while (graph == null && ++numTrials < 100) {
-
+        while (graph == null) {
 
             List<Node> nodes = new ArrayList<>();
 
@@ -93,7 +97,7 @@ public class GraphUtils {
             if (graphRandomFoward) {
                 graph = edu.cmu.tetrad.graph.GraphUtils.randomGraphRandomForwardEdges(nodes, newGraphNumLatents,
                         newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
-                        false, true);
+                        randomGraphConnected, true);
                 edu.cmu.tetrad.graph.GraphUtils.arrangeBySourceGraph(graph, _graph);
                 HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphUtils.grabLayout(nodes);
                 edu.cmu.tetrad.graph.GraphUtils.arrangeByLayout(graph, layout);
@@ -138,10 +142,6 @@ public class GraphUtils {
             edu.cmu.tetrad.graph.GraphUtils.addTwoCycles(graph, randomGraphMinNumCycles);
         }
 
-        if (graph == null) {
-            throw new NullPointerException("Could not find a graph that meets those constraints.");
-        }
-
         return graph;
     }
 
@@ -173,71 +173,8 @@ public class GraphUtils {
 
     private static Graph makeRandomScaleFree(int numNodes, int numLatents, double alpha,
                                              double beta, double deltaIn, double deltaOut) {
-        Graph graph = edu.cmu.tetrad.graph.GraphUtils.scaleFreeGraph(numNodes, numLatents,
+        return edu.cmu.tetrad.graph.GraphUtils.scaleFreeGraph(numNodes, numLatents,
                 alpha, beta, deltaIn, deltaOut);
-        return graph;
     }
 
-    // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
-    // length at most 'bound' except for an edge from->to itself. Cycle checker in other words.
-    public static boolean existsSemiDirectedPathExcept(Node from, Node to, int bound, Graph graph) {
-        Queue<Node> Q = new LinkedList<>();
-        Set<Node> V = new HashSet<>();
-        Q.offer(from);
-        V.add(from);
-        Node e = null;
-        int distance = 0;
-
-        while (!Q.isEmpty()) {
-            Node t = Q.remove();
-//            if (t == to) {
-//                return true;
-//            }
-
-            if (e == t) {
-                e = null;
-                distance++;
-                if (distance > (bound == -1 ? 1000 : bound)) return false;
-            }
-
-            for (Node u : graph.getAdjacentNodes(t)) {
-                Edge edge = graph.getEdge(t, u);
-                Node c = edu.cmu.tetrad.graph.GraphUtils.traverseSemiDirected(t, edge);
-                if (c == null) continue;
-
-                if (t == from && c == to) {
-                    continue;
-                }
-
-                if (c == to) {
-                    return true;
-                }
-
-                if (!V.contains(c)) {
-                    V.add(c);
-                    Q.offer(c);
-
-                    if (e == null) {
-                        e = u;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    // Used to find semidirected paths for cycle checking.
-    public static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL || edge.getEndpoint2() == Endpoint.CIRCLE) {
-                return edge.getNode1();
-            }
-        }
-        return null;
-    }
 }

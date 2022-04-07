@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.history;
 
-import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Normal;
 
@@ -38,7 +37,7 @@ import java.io.ObjectInputStream;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class BasalInitializer implements Initializer, TetradSerializable {
+public class BasalInitializer implements Initializer {
     static final long serialVersionUID = 23L;
 
     /**
@@ -46,7 +45,7 @@ public class BasalInitializer implements Initializer, TetradSerializable {
      *
      * @serial
      */
-    private UpdateFunction updateFunction;
+    private final UpdateFunction updateFunction;
 
     /**
      * The average expression level that all unregulated genes are initialized
@@ -54,7 +53,7 @@ public class BasalInitializer implements Initializer, TetradSerializable {
      *
      * @serial
      */
-    private double basalExpression;
+    private final double basalExpression;
 
     /**
      * The standard deviation of a normal distribution N(basalExpression,
@@ -62,7 +61,7 @@ public class BasalInitializer implements Initializer, TetradSerializable {
      *
      * @serial
      */
-    private double initStDev;
+    private final double initStDev;
 
     //============================CONSTRUCTORS===========================//
 
@@ -146,19 +145,16 @@ public class BasalInitializer implements Initializer, TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (updateFunction == null) {
+        if (this.updateFunction == null) {
             throw new NullPointerException();
         }
 
-        if (initStDev <= 0.0) {
+        if (this.initStDev <= 0.0) {
             throw new IllegalStateException();
         }
     }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -58,9 +58,9 @@ public class SemOptimizerRicf implements SemOptimizer {
      * from Numerical Recipes by adjusting the freeParameters of the Sem.
      */
     public void optimize(SemIm semIm) {
-        if (numRestarts < 1) numRestarts = 1;
+        if (this.numRestarts < 1) this.numRestarts = 1;
 
-        if (numRestarts != 1) {
+        if (this.numRestarts != 1) {
             throw new IllegalArgumentException("Number of restarts must be 1 for this method.");
         }
 
@@ -86,52 +86,6 @@ public class SemOptimizerRicf implements SemOptimizer {
 
         SemGraph graph = semIm.getSemPm().getGraph();
         Ricf.RicfResult result = new Ricf().ricf(graph, cov, 0.001);
-
-
-//        Ricf.RicfResult result = null;
-//
-//        for (int t = 0; t < 10; t++) {
-//            Graph graph = semIm.getSemPm().getGraph();
-//            result = new Ricf().ricf(graph, cov, 0.001);
-//
-//            TetradMatrix bHat = result.getBhat();
-//            TetradMatrix lHat = result.getLhat();
-//            TetradMatrix oHat = result.getOhat();
-//            TetradMatrix sHat = result.getShat();
-//
-//            for (Parameter param : semIm.getFreeParameters()) {
-//                if (param.getType() == ParamType.COEF) {
-//                    int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
-//                    int j = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeB());
-//                    semIm.setEdgeCoef(param.getNodeA(), param.getNodeB(), -bHat.get(j, i));
-//                }
-//
-//                if (param.getType() == ParamType.VAR) {
-//                    int i = semIm.getSemPm().getVariableNodes().indexOf(param.getNodeA());
-//                    if (lHat.get(i, i) != 0) {
-//                        semIm.setErrVar(param.getNodeA(), lHat.get(i, i));
-//                    } else if (oHat.get(i, i) != 0) {
-//                        semIm.setErrVar(param.getNodeA(), oHat.get(i, i));
-//                    }
-//                }
-//            }
-//
-//            if (t < 9) {
-//                for (Parameter param : semIm.getFreeParameters()) {
-//                    double value = semIm.getParamValue(param);
-//                    double max = Double.NEGATIVE_INFINITY;
-//                    double d;
-//
-//                    for (d = value - .5; d <= value + 0.5; d += 0.001) {
-//                        semIm.setParamValue(param, d);
-//                        double fml = semIm.getFml();
-//                        if (fml > max) max = fml;
-//                    }
-//
-//                    semIm.setParamValue(param, d);
-//                }
-//            }
-//        }
 
         Matrix bHat = new Matrix(result.getBhat().toArray());
         Matrix lHat = new Matrix(result.getLhat().toArray());
@@ -175,7 +129,7 @@ public class SemOptimizerRicf implements SemOptimizer {
 
     @Override
     public int getNumRestarts() {
-        return numRestarts;
+        return this.numRestarts;
     }
 
     public String toString() {

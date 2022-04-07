@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -71,8 +71,7 @@ public final class KernelGaussian implements Kernel {
      * @param j second point
      */
     public double eval(double i, double j) {
-        double evalKernel = Math.exp(-.5 * (Math.pow((i - j), 2) / Math.pow(sigma, 2)));
-        return evalKernel;
+        return Math.exp(-.5 * (Math.pow((i - j), 2) / Math.pow(this.sigma, 2)));
     }
 
     /**
@@ -102,13 +101,13 @@ public final class KernelGaussian implements Kernel {
             }
         }
 
-        this.sigma = find(diff, 0, (m - 1));
+        this.sigma = find(diff, (m - 1));
     }
 
     // private method for finding median distance
 
-    private double find(double[] a, int from, int to) {
-        int low = from;
+    private double find(double[] a, int to) {
+        int low = 0;
         int high = to;
         int median = (low + high) / 2;
         do {

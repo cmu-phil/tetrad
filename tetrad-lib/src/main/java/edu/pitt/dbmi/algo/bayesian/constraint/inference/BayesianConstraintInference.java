@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,16 +46,16 @@ public class BayesianConstraintInference {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        if (args == null || args.length != NUM_REQ_ARGS) {
-            System.err.println(USAGE);
+        if (args == null || args.length != BayesianConstraintInference.NUM_REQ_ARGS) {
+            System.err.println(BayesianConstraintInference.USAGE);
             System.exit(127);
         }
 
         for (int i = 0; i < args.length; i++) {
             String flag = args[i];
-            if (flag.equals(CAS_FLAG)) {
-                casFile = new File(args[++i]);
-                checkFile(casFile, false);
+            if (flag.equals(BayesianConstraintInference.CAS_FLAG)) {
+                BayesianConstraintInference.casFile = new File(args[++i]);
+                BayesianConstraintInference.checkFile(BayesianConstraintInference.casFile);
             } else {
                 System.out.printf("Unknown switch %s.\n", flag);
                 System.exit(-1);
@@ -63,8 +63,8 @@ public class BayesianConstraintInference {
         }
 
         try {
-            int[][] dataset = readInDataset(casFile);
-            int[] nodeDimension = readInNodeDimension(casFile);
+            int[][] dataset = BayesianConstraintInference.readInDataset(BayesianConstraintInference.casFile);
+            int[] nodeDimension = BayesianConstraintInference.readInNodeDimension(BayesianConstraintInference.casFile);
             BCInference bci = new BCInference(dataset, nodeDimension);
 
             BCInference.OP constraint = BCInference.OP.dependent;
@@ -93,29 +93,6 @@ public class BayesianConstraintInference {
             pc = bci.probConstraint(constraint, x, y, z);  // returns P(node1 independent node5 given {node3} | data)
             System.out.printf("Probability constraint: %7.5f\n", pc);  // if fn = 1 then 0.93535; if fn = 2 then 0.70853
 
-//            BCInference.OP constraint = BCInference.OP.independent;
-//            int x = 1;
-//            int y = 5;
-//            int[] z = new int[2];
-//            z[0] = 1;
-//            z[1] = 3;
-//            double pc = bci.probConstraint(constraint, x, y, z);  // returns P(node1 independent node5 given {node3} | data)
-//            System.out.printf("Probability constraint: %7.5f\n", pc);
-//
-//            constraint = BCInference.OP.dependent;
-//            x = 3;
-//            y = 5;
-//            z = new int[1];
-//            z[0] = 0;  // empty set
-//            pc = bci.probConstraint(constraint, x, y, z);  // returns P(node3 dependent node5 given {} | data)
-//            System.out.printf("Probability constraint: %7.5f\n", pc);
-//
-//            constraint = BCInference.OP.independent;
-//            x = 1;
-//            y = 4;
-//            z = new int[]{2, 2, 3};
-//            pc = bci.probConstraint(constraint, x, y, z);  // returns P(node1 independent node4 given {node2, node3} | data)
-//            System.out.printf("Probability constraint: %7.5f\n", pc);
         } catch (Exception exception) {
             exception.printStackTrace(System.err);
         }
@@ -182,9 +159,9 @@ public class BayesianConstraintInference {
         return dataset;
     }
 
-    private static void checkFile(File file, boolean checkDirectory) {
+    private static void checkFile(File file) {
         if (file.exists()) {
-            if (checkDirectory) {
+            if (false) {
                 if (file.isFile()) {
                     System.err.printf("%s is not a directory.", file.getName());
                     System.exit(-1);

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,7 +40,7 @@ public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
     /**
      * The LayoutEditable containing the target session editor.
      */
-    private LayoutEditable layoutEditable;
+    private final LayoutEditable layoutEditable;
 
     /**
      * Creates a new copy subsession action for the given LayoutEditable and
@@ -61,7 +61,7 @@ public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
      * session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
-        Graph layoutGraph = layoutEditable.getGraph();
+        Graph layoutGraph = this.layoutEditable.getGraph();
         LayoutSelection selection = new LayoutSelection(layoutGraph);
         InternalClipboard.getInstance().setContents(selection, this);
     }

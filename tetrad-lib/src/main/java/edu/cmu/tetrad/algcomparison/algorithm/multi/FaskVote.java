@@ -5,17 +5,17 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,21 +32,27 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "MultiFask",
-        command = "multi-fask",
+        name = "FASK-Vote",
+        command = "fask-vote",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
-//@Bootstrapping
+@Bootstrapping
 public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
-    private Graph externalGraph = null;
+    private Graph externalGraph;
     private ScoreWrapper score;
     private IndependenceWrapper test;
 
     public FaskVote() {
+
+    }
+
+    public FaskVote(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
+        this.score = score;
     }
 
     @Override
@@ -63,37 +69,24 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
                 _dataSets.add((DataSet) d);
             }
 
-            edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, score, test);
+            edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, this.score, this.test);
 
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             return search.search(parameters);
         } else {
-            FaskVote imagesSemBic = new FaskVote();
+            FaskVote imagesSemBic = new FaskVote(this.test, this.score);
 
             List<DataSet> datasets = new ArrayList<>();
 
             for (DataModel dataModel : dataSets) {
                 datasets.add((DataSet) dataModel);
             }
-            GeneralResamplingTest search = new GeneralResamplingTest(datasets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(
+                    datasets, imagesSemBic,
+                    parameters.getInt(Params.NUMBER_RESAMPLING),
+                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
+                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -109,26 +102,14 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
             FaskVote imagesSemBic = new FaskVote();
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
-            GeneralResamplingTest search = new GeneralResamplingTest(dataSets, imagesSemBic, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            GeneralResamplingTest search = new GeneralResamplingTest(
+                    dataSets,
+                    imagesSemBic,
+                    parameters.getInt(Params.NUMBER_RESAMPLING),
+                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
+                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -143,7 +124,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
 
     @Override
     public String getDescription() {
-        return "MultiFask";
+        return "FASK-Vote";
     }
 
     @Override
@@ -154,14 +135,14 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ImagesSemBic().getParameters();
-        parameters.addAll(new Fask().getParameters());
+        parameters.addAll(new FASK().getParameters());
 
         return parameters;
     }
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
@@ -171,7 +152,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
 
     @Override
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     @Override
@@ -190,7 +171,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
 
     @Override
     public ScoreWrapper getScoreWrapper() {
-        return score;
+        return this.score;
     }
 
     @Override
@@ -200,6 +181,6 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 }

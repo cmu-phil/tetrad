@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,7 +27,6 @@ import edu.cmu.tetrad.data.VariableSource;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.PM;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -46,7 +45,7 @@ import java.util.*;
  * @see edu.cmu.tetrad.graph.Dag
  * @see BayesIm
  */
-public final class BayesPm implements PM, VariableSource, TetradSerializable {
+public final class BayesPm implements PM, VariableSource {
     static final long serialVersionUID = 23L;
 
     /**
@@ -54,14 +53,14 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Graph dag;
+    private final Graph dag;
 
     /**
      * The map from nodes to variables.
      *
      * @serial Cannot be null.
      */
-    private Map<Node, DiscreteVariable> nodesToVariables;
+    private final Map<Node, DiscreteVariable> nodesToVariables;
 
     //=========================CONSTRUCTORS=============================//
 
@@ -88,8 +87,8 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
         if (!allDiscreteVars) {
             initializeValues(2, 2);
         } else {
-            for (Node node : dag.getNodes()) {
-                nodesToVariables.put(node, (DiscreteVariable) node);
+            for (Node node : this.dag.getNodes()) {
+                this.nodesToVariables.put(node, (DiscreteVariable) node);
             }
         }
     }
@@ -112,11 +111,6 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
         if (graph == null) {
             throw new NullPointerException("The graph must not be null.");
         }
-
-//        if (graph.getNumNodes() == 0) {
-//            throw new IllegalArgumentException(
-//                    "The graph must have at least " + "one node in it.");
-//        }
 
         this.dag = new EdgeListGraph(graph);
         this.nodesToVariables = new HashMap<>();
@@ -200,7 +194,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      * @return the number of values for the given node.
      */
     public int getNumCategories(Node node) {
-        DiscreteVariable variable = nodesToVariables.get(node);
+        DiscreteVariable variable = this.nodesToVariables.get(node);
 
         if (variable == null) {
             return 0;
@@ -213,13 +207,13 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      * @return the index'th value for the given node.
      */
     public String getCategory(Node node, int index) {
-        DiscreteVariable variable = nodesToVariables.get(node);
+        DiscreteVariable variable = this.nodesToVariables.get(node);
 
         if (variable != null) {
             return variable.getCategory(index);
         }
 
-        for (DiscreteVariable _node : nodesToVariables.values()) {
+        for (DiscreteVariable _node : this.nodesToVariables.values()) {
             if (_node == null) {
                 continue;
             }
@@ -236,7 +230,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      * @return the index of the given category for the given node.
      */
     public int getCategoryIndex(Node node, String category) {
-        DiscreteVariable variable = nodesToVariables.get(node);
+        DiscreteVariable variable = this.nodesToVariables.get(node);
         return variable.getIndex(category);
     }
 
@@ -244,7 +238,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      * Sets the number of values for the given node to the given number.
      */
     public void setNumCategories(Node node, int numCategories) {
-        if (!nodesToVariables.containsKey(node)) {
+        if (!this.nodesToVariables.containsKey(node)) {
             throw new IllegalArgumentException("Node not in BayesPm: " + node);
         }
 
@@ -253,7 +247,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
                     "Number of categories must be >= 1: " + numCategories);
         }
 
-        DiscreteVariable variable = nodesToVariables.get(node);
+        DiscreteVariable variable = this.nodesToVariables.get(node);
 
         List<String> oldCategories = variable.getCategories();
         List<String> newCategories = new LinkedList<>();
@@ -303,8 +297,8 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
     public List<Node> getVariables() {
         List<Node> variables = new LinkedList<>();
 
-        for (Node node : nodesToVariables.keySet()) {
-            variables.add(nodesToVariables.get(node));
+        for (Node node : this.nodesToVariables.keySet()) {
+            variables.add(this.nodesToVariables.get(node));
         }
 
         return variables;
@@ -348,12 +342,12 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
     public String toString() {
         StringBuilder buf = new StringBuilder();
 
-        for (Node node1 : nodesToVariables.keySet()) {
+        for (Node node1 : this.nodesToVariables.keySet()) {
             buf.append("\n");
             buf.append((node1));
             buf.append(": ");
 
-            DiscreteVariable variable = nodesToVariables.get((node1));
+            DiscreteVariable variable = this.nodesToVariables.get((node1));
 
             for (int j = 0; j < variable.getNumCategories(); j++) {
                 buf.append(variable.getCategory(j));
@@ -367,7 +361,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
     }
 
     public Node getNode(String nodeName) {
-        return dag.getNode(nodeName);
+        return this.dag.getNode(nodeName);
     }
 
     public Node getNode(int index) {
@@ -379,7 +373,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
     }
 
     public int getNumNodes() {
-        return dag.getNumNodes();
+        return this.dag.getNumNodes();
     }
 
     //=========================PRIVATE METHODS=============================//
@@ -399,7 +393,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
 
         for (Node node2 : newGraph.getNodes()) {
             if (oldGraph.containsNode(node2)) {
-                Node _node2 = dag.getNode(node2.getName());
+                Node _node2 = this.dag.getNode(node2.getName());
                 DiscreteVariable oldNode2 = oldbayesPm.nodesToVariables.get(_node2);
                 oldNode2.setNodeType(node2.getNodeType());
                 this.nodesToVariables.put(_node2, oldNode2);
@@ -426,7 +420,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
             Node oldNode2 = oldBayesPm.getDag().getNode(node.getName());
             numVals = oldBayesPm.getNumCategories(oldNode2);
         } else {
-            numVals = pickNumVals(lowerBound, upperBound);
+            numVals = BayesPm.pickNumVals(lowerBound, upperBound);
         }
 
         int min = Math.min(oldBayesPm.getNumCategories(oldNode), numVals);
@@ -456,7 +450,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
 
         List<String> valueList = new ArrayList<>();
 
-        for (int i = 0; i < pickNumVals(lowerBound, upperBound); i++) {
+        for (int i = 0; i < BayesPm.pickNumVals(lowerBound, upperBound); i++) {
             valueList.add(DataUtils.defaultCategory(i));
         }
 
@@ -477,7 +471,7 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
     }
 
     private void initializeValues(int lowerBound, int upperBound) {
-        for (Node node : dag.getNodes()) {
+        for (Node node : this.dag.getNodes()) {
             setNewValues(node, lowerBound, upperBound);
         }
     }
@@ -507,19 +501,16 @@ public final class BayesPm implements PM, VariableSource, TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (dag == null) {
+        if (this.dag == null) {
             throw new NullPointerException();
         }
 
-        if (nodesToVariables == null) {
+        if (this.nodesToVariables == null) {
             throw new NullPointerException();
         }
     }

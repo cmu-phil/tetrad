@@ -31,12 +31,12 @@ import java.util.Set;
  */
 public interface TabularColumnReader extends DataReader {
 
-    public DataColumn[] readInDataColumns(boolean isDiscrete) throws IOException;
+    DataColumn[] readInDataColumns(boolean isDiscrete) throws IOException;
 
-    public DataColumn[] readInDataColumns(Set<String> namesOfColumnsToExclude, boolean isDiscrete) throws IOException;
+    DataColumn[] readInDataColumns(Set<String> namesOfColumnsToExclude, boolean isDiscrete) throws IOException;
 
-    public DataColumn[] readInDataColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException;
+    DataColumn[] readInDataColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException;
 
-    public DataColumn[] generateColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException;
+    DataColumn[] generateColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException;
 
 }

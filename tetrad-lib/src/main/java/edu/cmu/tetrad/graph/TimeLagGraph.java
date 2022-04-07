@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,10 +21,6 @@
 
 package edu.cmu.tetrad.graph;
 
-//import edu.cmu.tetrad.data.IKnowledge;
-//import edu.cmu.tetrad.data.Knowledge2;
-
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.*;
@@ -50,9 +46,9 @@ public class TimeLagGraph implements Graph {
     private List<Node> lag0Nodes = new ArrayList<>();
 
     private boolean pag;
-    private boolean CPDAG;
+    private boolean cpdag;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     public TimeLagGraph() {
     }
@@ -62,12 +58,10 @@ public class TimeLagGraph implements Graph {
         this.maxLag = graph.getMaxLag();
         this.numInitialLags = graph.getNumInitialLags();
         this.lag0Nodes = graph.getLag0Nodes();
+        this.pag = graph.pag;
+        this.cpdag = graph.cpdag;
 
-        this.graph.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                getPcs().firePropertyChange(evt);
-            }
-        });
+        this.graph.addPropertyChangeListener(evt -> getPcs().firePropertyChange(evt));
     }
 
     /**
@@ -90,8 +84,8 @@ public class TimeLagGraph implements Graph {
 
         boolean added = getGraph().addNode(node);
 
-        if (!lag0Nodes.contains(node) && !node.getName().startsWith("E_")) {
-            lag0Nodes.add(node);
+        if (!this.lag0Nodes.contains(node) && !node.getName().startsWith("E_")) {
+            this.lag0Nodes.add(node);
         }
 
         if (node.getNodeType() == NodeType.ERROR) {
@@ -104,7 +98,7 @@ public class TimeLagGraph implements Graph {
             }
         } else {
             for (int i = 1; i <= getMaxLag(); i++) {
-                final String name = id.getName() + ":" + i;
+                String name = id.getName() + ":" + i;
                 Node node1 = node.like(name);
 
                 if (getGraph().getNode(name) == null) {
@@ -125,13 +119,13 @@ public class TimeLagGraph implements Graph {
 
         NodeId id = getNodeId(node);
 
-        for (int lag = 0; lag < maxLag; lag++) {
+        for (int lag = 0; lag < this.maxLag; lag++) {
             Node _node = getNode(id.getName(), lag);
             if (_node != null) {
                 getGraph().removeNode(_node);
             }
             if (_node != null && lag == 0) {
-                lag0Nodes.remove(_node);
+                this.lag0Nodes.remove(_node);
             }
         }
 
@@ -145,7 +139,7 @@ public class TimeLagGraph implements Graph {
             throw new IllegalArgumentException("Only directed edges supported: " + edge);
         }
 
-        if (!lag0Nodes.contains(edge.getNode2())) {
+        if (!this.lag0Nodes.contains(edge.getNode2())) {
             throw new IllegalArgumentException("Edges into the current time lag only: " + edge);
         }
 
@@ -360,19 +354,19 @@ public class TimeLagGraph implements Graph {
     }
 
     public List<Node> getLag0Nodes() {
-        return new ArrayList<>(lag0Nodes);
+        return new ArrayList<>(this.lag0Nodes);
     }
 
     private EdgeListGraph getGraph() {
-        return graph;
+        return this.graph;
     }
 
     public int getMaxLag() {
-        return maxLag;
+        return this.maxLag;
     }
 
     public int getNumInitialLags() {
-        return numInitialLags;
+        return this.numInitialLags;
     }
 
     @Override
@@ -387,7 +381,7 @@ public class TimeLagGraph implements Graph {
 
     @Override
     public boolean isPag() {
-        return pag;
+        return this.pag;
     }
 
     @Override
@@ -397,17 +391,17 @@ public class TimeLagGraph implements Graph {
 
     @Override
     public boolean isCPDAG() {
-        return CPDAG;
+        return this.cpdag;
     }
 
     @Override
     public void setCPDAG(boolean CPDAG) {
-        this.CPDAG = CPDAG;
+        this.cpdag = CPDAG;
     }
 
     public static class NodeId {
-        private String name;
-        private int lag;
+        private final String name;
+        private final int lag;
 
         public NodeId(String name, int lag) {
             this.name = name;
@@ -415,20 +409,20 @@ public class TimeLagGraph implements Graph {
         }
 
         public String getName() {
-            return name;
+            return this.name;
         }
 
         public int getLag() {
-            return lag;
+            return this.lag;
         }
     }
 
     public String toString() {
-        return getGraph().toString() + "\n" + lag0Nodes;
+        return getGraph().toString() + "\n" + this.lag0Nodes;
     }
 
     public boolean addDirectedEdge(Node node1, Node node2) {
-        return graph.addDirectedEdge(node1, node2);
+        return this.graph.addDirectedEdge(node1, node2);
     }
 
     public boolean addUndirectedEdge(Node node1, Node node2) {
@@ -684,7 +678,7 @@ public class TimeLagGraph implements Graph {
 
     @Override
     public List<Node> getSepset(Node n1, Node n2) {
-        return graph.getSepset(n1, n2);
+        return this.graph.getSepset(n1, n2);
     }
 
     @Override
@@ -826,30 +820,30 @@ public class TimeLagGraph implements Graph {
      * @return this object.
      */
     private PropertyChangeSupport getPcs() {
-        if (pcs == null) {
-            pcs = new PropertyChangeSupport(this);
+        if (this.pcs == null) {
+            this.pcs = new PropertyChangeSupport(this);
         }
-        return pcs;
+        return this.pcs;
     }
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
     public Object getAttribute(String key) {
-        return attributes.get(key);
+        return this.attributes.get(key);
     }
 
     @Override
     public void removeAttribute(String key) {
-        attributes.remove(key);
+        this.attributes.remove(key);
     }
 
     @Override
     public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+        this.attributes.put(key, value);
     }
 
 }

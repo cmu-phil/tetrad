@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FASK;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FaskConcatenated;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -84,8 +84,8 @@ public class TestSimulatedFmr3 {
         Simulations simulations = new Simulations();
 
 //        String dir =  "/Users/user/Downloads/Cycles_Data_fMRI_Training/";
-        String dir = "/Users/user/Downloads/CyclesTestingData/";
-        String subdir = "data_fslfilter_concat";
+        final String dir = "/Users/user/Downloads/CyclesTestingData/";
+        final String subdir = "data_fslfilter_concat";
 //        String subdir = "data_fslfilter";
 
         simulations.add(new LoadContinuousDataAndSingleGraph(
@@ -126,12 +126,10 @@ public class TestSimulatedFmr3 {
                 dir + "Network9_cont_amp", subdir));
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 dir + "Diamond", subdir));
-//        simulations.add(new LoadContinuousDataAndSingleGraph(
-//                dir + "Markov_Complex_1", subdir));
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fask());
+        algorithms.add(new FASK());
 
         Comparison comparison = new Comparison();
 
@@ -189,11 +187,11 @@ public class TestSimulatedFmr3 {
         statistics.setWeight("2CFP", 1.0);
 
 
-        String dir = "/Users/user/Downloads/SimulatedData_2/";
+        final String dir = "/Users/user/Downloads/SimulatedData_2/";
 
-        String[] dirs = new String[]{"AllNegative", "AllPositive", "TwoCycleNegative", "XYNegative", "XYPositive",
+        String[] dirs = {"AllNegative", "AllPositive", "TwoCycleNegative", "XYNegative", "XYPositive",
                 "XZNegative", "XZPositive", "YZNegative", "YZPositive"};
-        String[] suffixes = new String[]{"allneg", "allpos", "twocycleneg", "XYneg", "XYpos", "XZneg", "XZpos",
+        String[] suffixes = {"allneg", "allpos", "twocycleneg", "XYneg", "XYpos", "XZneg", "XZpos",
                 "YZneg", "YZpos"};
 
         for (int i = 0; i < dirs.length; i++) {

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -52,7 +52,7 @@ class StructEmBayesSearchEditor extends JPanel {
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
-    private StructEMBayesSearchEditorWizard wizard;
+    private final StructEMBayesSearchEditorWizard wizard;
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.
@@ -79,9 +79,9 @@ class StructEmBayesSearchEditor extends JPanel {
         Graph graph = bayesIm.getBayesPm().getDag();
 
         GraphWorkbench workbench = new GraphWorkbench(graph);
-        wizard = new StructEMBayesSearchEditorWizard(bayesIm, workbench);
+        this.wizard = new StructEMBayesSearchEditorWizard(bayesIm, workbench);
 
-        wizard.addPropertyChangeListener(new PropertyChangeListener() {
+        this.wizard.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("modelChanged", null, null);
@@ -140,8 +140,6 @@ class StructEmBayesSearchEditor extends JPanel {
      */
     public StructEmBayesSearchEditor(
             StructEmBayesSearchRunner semBayesEstWrapper) {
-        //this(seMbayesEstWrapper.getEstimateBayesIm(),
-        //eMbayesEstWrapper.getSelectedDataModel());
         this(semBayesEstWrapper.getEstimatedBayesIm(),
                 semBayesEstWrapper.getDataSet());
     }
@@ -159,7 +157,7 @@ class StructEmBayesSearchEditor extends JPanel {
      * @return a reference to this editor.
      */
     private StructEMBayesSearchEditorWizard getWizard() {
-        return wizard;
+        return this.wizard;
     }
 }
 

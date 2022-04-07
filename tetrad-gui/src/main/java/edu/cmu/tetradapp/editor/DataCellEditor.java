@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -44,29 +44,29 @@ class DataCellEditor extends DefaultCellEditor {
     public DataCellEditor() {
         super(new JTextField());
 
-        textField = (JTextField) editorComponent;
-        textField.setHorizontalAlignment(JTextField.LEFT);
-        textField.setBorder(new LineBorder(Color.BLACK));
+        this.textField = (JTextField) this.editorComponent;
+        this.textField.setHorizontalAlignment(SwingConstants.LEFT);
+        this.textField.setBorder(new LineBorder(Color.BLACK));
 
-        delegate = new EditorDelegate() {
+        this.delegate = new EditorDelegate() {
             public void setValue(Object value) {
                 if (value == null) {
-                    textField.setText("");
+                    DataCellEditor.this.textField.setText("");
                 } else if (value instanceof String) {
-                    textField.setText((String) value);
+                    DataCellEditor.this.textField.setText((String) value);
                 } else if (value instanceof Integer) {
-                    textField.setText(value.toString());
+                    DataCellEditor.this.textField.setText(value.toString());
                 } else if (value instanceof Double) {
                     double doubleValue = (Double) value;
 
                     if (Double.isNaN(doubleValue)) {
-                        textField.setText("");
+                        DataCellEditor.this.textField.setText("");
                     } else {
-                        textField.setText(nf.format(doubleValue));
+                        DataCellEditor.this.textField.setText(DataCellEditor.this.nf.format(doubleValue));
                     }
                 }
 
-                textField.selectAll();
+                DataCellEditor.this.textField.selectAll();
             }
 
             /**
@@ -76,11 +76,11 @@ class DataCellEditor extends DefaultCellEditor {
              * @return this text getValue.
              */
             public Object getCellEditorValue() {
-                return textField.getText();
+                return DataCellEditor.this.textField.getText();
             }
         };
 
-        textField.addActionListener(delegate);
+        this.textField.addActionListener(this.delegate);
     }
 
     /**

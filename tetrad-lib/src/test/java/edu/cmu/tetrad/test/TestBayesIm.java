@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -99,7 +99,7 @@ public final class TestBayesIm {
 //        assertTrue(rowsEqual(bayesIm3, bayesIm3.getNodeIndex(b), 2, 3));
 
         // Make sure the 'c' node got ?'s.
-        assertTrue(rowUnspecified(bayesIm3, bayesIm3.getNodeIndex(c), 0));
+        assertTrue(TestBayesIm.rowUnspecified(bayesIm3, bayesIm3.getNodeIndex(c), 0));
 
         dag.removeNode(c);
         BayesPm bayesPm4 = new BayesPm(dag, bayesPm3);
@@ -107,8 +107,8 @@ public final class TestBayesIm {
 
         // Make sure the 'b' node has 2 rows of '?'s'.
         assertTrue(bayesIm4.getNumRows(bayesIm4.getNodeIndex(b)) == 2);
-        assertTrue(rowUnspecified(bayesIm4, bayesIm4.getNodeIndex(b), 0));
-        assertTrue(rowUnspecified(bayesIm4, bayesIm4.getNodeIndex(b), 1));
+        assertTrue(TestBayesIm.rowUnspecified(bayesIm4, bayesIm4.getNodeIndex(b), 0));
+        assertTrue(TestBayesIm.rowUnspecified(bayesIm4, bayesIm4.getNodeIndex(b), 1));
     }
 
     /**

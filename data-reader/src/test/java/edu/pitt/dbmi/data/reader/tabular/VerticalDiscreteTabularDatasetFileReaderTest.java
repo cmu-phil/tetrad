@@ -63,10 +63,10 @@ public class VerticalDiscreteTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataWithNoHeaderExcludingVariableByColumnNumbers() throws IOException {
         Path dataFile = Paths.get(getClass().getResource("/data/tabular/discrete/no_header_sim_test_data.csv").getFile());
-        VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteCharacter);
-        dataReader.setMissingDataMarker(missingValueMarker);
+        VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteCharacter);
+        dataReader.setMissingDataMarker(this.missingValueMarker);
         dataReader.setHasHeader(false);
 
         int[] columnsToExclude = {5, 3, 8, 10, 11};
@@ -98,10 +98,10 @@ public class VerticalDiscreteTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataWithNoHeader() throws IOException {
         Path dataFile = Paths.get(getClass().getResource("/data/tabular/discrete/no_header_sim_test_data.csv").getFile());
-        VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteCharacter);
-        dataReader.setMissingDataMarker(missingValueMarker);
+        VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, this.delimiter);
+        dataReader.setCommentMarker(this.commentMarker);
+        dataReader.setQuoteCharacter(this.quoteCharacter);
+        dataReader.setMissingDataMarker(this.missingValueMarker);
         dataReader.setHasHeader(false);
 
         Data data = dataReader.readInData();
@@ -132,12 +132,12 @@ public class VerticalDiscreteTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataExcludingVariableByColumnNumbers() throws IOException {
         int[] columnsToExclude = {5, 3, 1, 8, 10, 11};
-        for (Path dataFile : dataFiles) {
-            VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, delimiter);
-            dataReader.setCommentMarker(commentMarker);
-            dataReader.setQuoteCharacter(quoteCharacter);
-            dataReader.setMissingDataMarker(missingValueMarker);
-            dataReader.setHasHeader(hasHeader);
+        for (Path dataFile : this.dataFiles) {
+            VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, this.delimiter);
+            dataReader.setCommentMarker(this.commentMarker);
+            dataReader.setQuoteCharacter(this.quoteCharacter);
+            dataReader.setMissingDataMarker(this.missingValueMarker);
+            dataReader.setHasHeader(this.hasHeader);
 
             Data data = dataReader.readInData(columnsToExclude);
             Assert.assertTrue(data instanceof DiscreteData);
@@ -168,12 +168,12 @@ public class VerticalDiscreteTabularDatasetFileReaderTest {
     @Test
     public void testReadInDataExcludingVariableByNames() throws IOException {
         Set<String> namesOfColumnsToExclude = new HashSet<>(Arrays.asList("X1", "X3", "X4", "X6", "X8", "X10"));
-        for (Path dataFile : dataFiles) {
-            VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, delimiter);
-            dataReader.setCommentMarker(commentMarker);
-            dataReader.setQuoteCharacter(quoteCharacter);
-            dataReader.setMissingDataMarker(missingValueMarker);
-            dataReader.setHasHeader(hasHeader);
+        for (Path dataFile : this.dataFiles) {
+            VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, this.delimiter);
+            dataReader.setCommentMarker(this.commentMarker);
+            dataReader.setQuoteCharacter(this.quoteCharacter);
+            dataReader.setMissingDataMarker(this.missingValueMarker);
+            dataReader.setHasHeader(this.hasHeader);
 
             Data data = dataReader.readInData(namesOfColumnsToExclude);
             Assert.assertTrue(data instanceof DiscreteData);
@@ -203,12 +203,12 @@ public class VerticalDiscreteTabularDatasetFileReaderTest {
      */
     @Test
     public void testReadInData() throws IOException {
-        for (Path dataFile : dataFiles) {
-            VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, delimiter);
-            dataReader.setCommentMarker(commentMarker);
-            dataReader.setQuoteCharacter(quoteCharacter);
-            dataReader.setMissingDataMarker(missingValueMarker);
-            dataReader.setHasHeader(hasHeader);
+        for (Path dataFile : this.dataFiles) {
+            VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(dataFile, this.delimiter);
+            dataReader.setCommentMarker(this.commentMarker);
+            dataReader.setQuoteCharacter(this.quoteCharacter);
+            dataReader.setMissingDataMarker(this.missingValueMarker);
+            dataReader.setHasHeader(this.hasHeader);
 
             Data data = dataReader.readInData();
             Assert.assertTrue(data instanceof DiscreteData);

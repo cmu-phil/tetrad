@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreImages implements ISemBicScore, Score {
+public class SemBicScoreImages implements ISemBicScore {
 
     // The covariance matrix.
     private final List<SemBicScore> semBicScores;
@@ -48,7 +48,7 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     private double penaltyDiscount = 2.0;
 
     // True if verbose output should be sent to out.
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -69,11 +69,11 @@ public class SemBicScoreImages implements ISemBicScore, Score {
                 }
 
                 SemBicScore semBicScore = new SemBicScore(dataSet);
-                semBicScore.setPenaltyDiscount(penaltyDiscount);
+                semBicScore.setPenaltyDiscount(this.penaltyDiscount);
                 semBicScores.add(semBicScore);
             } else if (model instanceof ICovarianceMatrix) {
                 SemBicScore semBicScore = new SemBicScore((ICovarianceMatrix) model);
-                semBicScore.setPenaltyDiscount(penaltyDiscount);
+                semBicScore.setPenaltyDiscount(this.penaltyDiscount);
                 semBicScores.add(semBicScore);
             } else {
                 throw new IllegalArgumentException("Only continuous data sets and covariance matrices may be used as input.");
@@ -96,11 +96,11 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     public double localScoreDiff(int x, int y, int[] z) {
         double sum = 0.0;
 
-        for (SemBicScore score : semBicScores) {
+        for (SemBicScore score : this.semBicScores) {
             sum += score.localScoreDiff(x, y, z);
         }
 
-        return sum / semBicScores.size();
+        return sum / this.semBicScores.size();
     }
 
     @Override
@@ -115,7 +115,7 @@ public class SemBicScoreImages implements ISemBicScore, Score {
         double sum = 0.0;
         int count = 0;
 
-        for (SemBicScore score : semBicScores) {
+        for (SemBicScore score : this.semBicScores) {
             double _score = score.localScore(i, parents);
 
             if (!Double.isNaN(_score)) {
@@ -132,7 +132,7 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     }
 
     private double localScoreOneDataSet(int i, int[] parents, int index) {
-        return semBicScores.get(index).localScore(i, parents);
+        return this.semBicScores.get(index).localScore(i, parents);
     }
 
     /**
@@ -142,7 +142,7 @@ public class SemBicScoreImages implements ISemBicScore, Score {
         double sum = 0.0;
         int count = 0;
 
-        for (SemBicScore score : semBicScores) {
+        for (SemBicScore score : this.semBicScores) {
             double _score = score.localScore(i, parent);
 
             if (!Double.isNaN(_score)) {
@@ -161,7 +161,7 @@ public class SemBicScoreImages implements ISemBicScore, Score {
         double sum = 0.0;
         int count = 0;
 
-        for (SemBicScore score : semBicScores) {
+        for (SemBicScore score : this.semBicScores) {
             double _score = score.localScore(i);
 
             if (!Double.isNaN(_score)) {
@@ -174,12 +174,12 @@ public class SemBicScoreImages implements ISemBicScore, Score {
     }
 
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > -0.25 * getPenaltyDiscount() * Math.log(sampleSize);
+        return bump > -0.25 * getPenaltyDiscount() * Math.log(this.sampleSize);
     }
 
     public DataSet getDataSet() {
@@ -188,13 +188,13 @@ public class SemBicScoreImages implements ISemBicScore, Score {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
-        for (SemBicScore score : semBicScores) {
+        for (SemBicScore score : this.semBicScores) {
             score.setPenaltyDiscount(penaltyDiscount);
         }
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -203,43 +203,19 @@ public class SemBicScoreImages implements ISemBicScore, Score {
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     @Override
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
-//    private void printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
-//        List<Node> _parents = new ArrayList<>();
-//        for (int p : parents) _parents.add(variables.get(p));
-//
-//        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
-//        int[] choice;
-//
-//        while ((choice = gen.next()) != null) {
-//            int[] sel = new int[choice.length];
-//            List<Node> _sel = new ArrayList<>();
-//            for (int m = 0; m < choice.length; m++) {
-//                sel[m] = parents[m];
-//                _sel.add(variables.get(sel[m]));
-//            }
-//
-//            Matrix m = cov.getSelection(sel, sel);
-//
-//            try {
-//                m.inverse();
-//            } catch (Exception e2) {
-//                out.println("### Linear dependence among variables: " + _sel);
-//            }
-//        }
-//    }
 
     @Override
     public Node getVariable(String targetName) {
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }

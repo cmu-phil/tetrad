@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,7 +46,7 @@ public final class DepthChoiceGenerator {
     /**
      * The number of objects being selected from.
      */
-    private int a;
+    private final int a;
 
     /**
      * The number of objects in the desired selection.
@@ -78,7 +78,7 @@ public final class DepthChoiceGenerator {
     /**
      * Maximum a.
      */
-    private int depth;
+    private final int depth;
 
     /**
      * Effective maximum a.
@@ -103,9 +103,9 @@ public final class DepthChoiceGenerator {
         this.b = 0;
         this.depth = depth;
 
-        effectiveDepth = depth;
-        if (depth == -1) effectiveDepth = a;
-        if (depth > a) effectiveDepth = a;
+        this.effectiveDepth = depth;
+        if (depth == -1) this.effectiveDepth = a;
+        if (depth > a) this.effectiveDepth = a;
 
         initialize();
     }
@@ -121,23 +121,23 @@ public final class DepthChoiceGenerator {
     }
 
     private void initialize() {
-        choiceLocal = new int[b];
-        choiceReturned = new int[b];
-        diff = a - b;
+        this.choiceLocal = new int[this.b];
+        this.choiceReturned = new int[this.b];
+        this.diff = this.a - this.b;
 
         // Initialize the choice array with successive integers [0 1 2 ...].
         // Set the value at the last index one less than it would be in such
         // a series, ([0 1 2 ... b - 2]) so that on the first call to next()
         // the first combination ([0 1 2 ... b - 1]) is returned correctly.
-        for (int i = 0; i < b - 1; i++) {
-            choiceLocal[i] = i;
+        for (int i = 0; i < this.b - 1; i++) {
+            this.choiceLocal[i] = i;
         }
 
-        if (b > 0) {
-            choiceLocal[b - 1] = b - 2;
+        if (this.b > 0) {
+            this.choiceLocal[this.b - 1] = this.b - 2;
         }
 
-        begun = false;
+        this.begun = false;
     }
 
     /**
@@ -155,25 +155,25 @@ public final class DepthChoiceGenerator {
         while (--i > -1) {
             if (this.choiceLocal[i] < i + this.diff) {
                 fill(i);
-                begun = true;
-                System.arraycopy(choiceLocal, 0, choiceReturned, 0, b);
-                return choiceReturned;
+                this.begun = true;
+                System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.b);
+                return this.choiceReturned;
             }
         }
 
         if (this.begun) {
-            b++;
+            this.b++;
 
-            if (b > effectiveDepth) {
+            if (this.b > this.effectiveDepth) {
                 return null;
             }
 
             initialize();
             return next();
         } else {
-            begun = true;
-            System.arraycopy(choiceLocal, 0, choiceReturned, 0, b);
-            return choiceReturned;
+            this.begun = true;
+            System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.b);
+            return this.choiceReturned;
         }
     }
 
@@ -184,7 +184,7 @@ public final class DepthChoiceGenerator {
      * @param a     the number of objects being selected from.
      * @param depth the number of objects in the desired selection.
      */
-    @SuppressWarnings({"SameParameterValue"})
+    @SuppressWarnings("SameParameterValue")
     public static void testPrint(int a, int depth) {
         DepthChoiceGenerator cg = new DepthChoiceGenerator(a, depth);
         int[] choice;
@@ -210,13 +210,13 @@ public final class DepthChoiceGenerator {
     }
 
     public String toString() {
-        return "Depth choice generator: a = " + a + " depth = " + depth;
+        return "Depth choice generator: a = " + this.a + " depth = " + this.depth;
     }
 
     /**
      * @return Ibid.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public int getA() {
         return this.a;
     }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,14 +37,14 @@ import java.util.Arrays;
 public final class Manipulation implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private VariableSource variableSource;
+    private final VariableSource variableSource;
 
     /**
      * An array indicating whether each variable in turn is manipulated.
      *
      * @serial Cannot be null.
      */
-    private boolean[] manipulated;
+    private final boolean[] manipulated;
 
     //===========================CONSTRUCTORS============================//
 
@@ -77,7 +77,7 @@ public final class Manipulation implements TetradSerializable {
 
         this.manipulated = new boolean[getNumNodes()];
 
-        for (int i = 0; i < manipulated.length; i++) {
+        for (int i = 0; i < this.manipulated.length; i++) {
             this.manipulated[i] = manipulation.isManipulated(i);
         }
     }
@@ -124,8 +124,8 @@ public final class Manipulation implements TetradSerializable {
             return false;
         }
 
-        for (int i = 0; i < manipulated.length; i++) {
-            if (manipulated[i] != evidence.manipulated[i]) {
+        for (int i = 0; i < this.manipulated.length; i++) {
+            if (this.manipulated[i] != evidence.manipulated[i]) {
                 return false;
             }
         }
@@ -136,7 +136,7 @@ public final class Manipulation implements TetradSerializable {
     public int hashCode() {
         int hashCode = 37;
         hashCode = 19 * hashCode + getVariableSource().hashCode();
-        hashCode = 19 * hashCode + Arrays.hashCode(manipulated);
+        hashCode = 19 * hashCode + Arrays.hashCode(this.manipulated);
         return hashCode;
     }
 
@@ -147,7 +147,7 @@ public final class Manipulation implements TetradSerializable {
     }
 
     public boolean isManipulated(int nodeIndex) {
-        return manipulated[nodeIndex];
+        return this.manipulated[nodeIndex];
     }
 
     /**
@@ -159,21 +159,15 @@ public final class Manipulation implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-//        if (variableSource == null) {
-//            throw new NullPointerException("Variable source must not be null.");
-//        }
     }
 
     private VariableSource getVariableSource() {
-        return variableSource;
+        return this.variableSource;
     }
 }
 

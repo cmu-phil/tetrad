@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -63,16 +63,6 @@ public class MisclassificationUtils {
                 }
             }
 
-            if (node1 == null) {
-                throw new IllegalArgumentException("Couldn't find a node by the name " + edge.getNode1().getName()
-                        + " among the new variables for the converted graph (" + newVariables + ").");
-            }
-
-            if (node2 == null) {
-                throw new IllegalArgumentException("Couldn't find a node by the name " + edge.getNode2().getName()
-                        + " among the new variables for the converted graph (" + newVariables + ").");
-            }
-
             Endpoint endpoint1 = edge.getEndpoint1();
             Endpoint endpoint2 = edge.getEndpoint2();
             Edge newEdge = new Edge(node1, node2, endpoint1, endpoint2);
@@ -98,8 +88,8 @@ public class MisclassificationUtils {
                 Endpoint endpoint1 = refGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
                 Endpoint endpoint2 = estGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
 
-                int index1 = getIndex(endpoint1);
-                int index2 = getIndex(endpoint2);
+                int index1 = MisclassificationUtils.getIndex(endpoint1);
+                int index2 = MisclassificationUtils.getIndex(endpoint2);
 
                 counts[index1][index2]++;
             }
@@ -118,7 +108,7 @@ public class MisclassificationUtils {
 
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                if (i == 3 && j == 3) table2.setToken(i + 1, j + 1, "*");
+                if (i == 3 && j == 3) table2.setToken(3 + 1, 3 + 1, "*");
                 else table2.setToken(i + 1, j + 1, "" + counts[i][j]);
             }
         }
@@ -160,8 +150,8 @@ public class MisclassificationUtils {
 
             Edge trueConvert = new Edge(x, y, true1.getProximalEndpoint(x), true1.getProximalEndpoint(y));
 
-            int m = getTypeLeft(trueConvert, est1);
-            int n = getTypeTop(est1);
+            int m = MisclassificationUtils.getTypeLeft(trueConvert, est1);
+            int n = MisclassificationUtils.getTypeTop(est1);
 
             counts[m][n]++;
         }
@@ -178,38 +168,22 @@ public class MisclassificationUtils {
 
             Edge estConvert = new Edge(x, y, est1.getProximalEndpoint(x), est1.getProximalEndpoint(y));
 
-            int m = getTypeLeft(true1, estConvert);
-            int n = getTypeTop(estConvert);
+            int m = MisclassificationUtils.getTypeLeft(true1, estConvert);
+            int n = MisclassificationUtils.getTypeTop(estConvert);
 
             if (n == 5) {
-                counts[m][n]++;
+                counts[m][5]++;
             }
         }
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 6; j++) {
-                if (i == 7 && j == 5) table2.setToken(i + 1, j + 1, "*");
+                if (i == 7 && j == 5) table2.setToken(7 + 1, 5 + 1, "*");
                 else table2.setToken(i + 1, j + 1, "" + counts[i][j]);
             }
         }
 
-        builder.append("\n").append(table2.toString());
-//
-//        TextTable table3 = new TextTable(3, 3);
-//
-//        table3.setToken(1, 0, "Non-Null");
-//        table3.setToken(2, 0, "Null");
-//        table3.setToken(0, 1, "Non-Null");
-//        table3.setToken(0, 2, "Null");
-//
-//        for (int i = 0; i < 7; i++) {
-//            for (int j = 0; j < 5; j++) {
-//                if (i == 6 && j == 4) table2.setToken(i + 1, j + 1, "*");
-//                else table2.setToken(i + 1, j + 1, "" + counts[i][j]);
-//            }
-//        }
-//
-//        builder.append("\n").append(table3.toString());
+        builder.append("\n").append(table2);
 
         return builder.toString();
     }
@@ -249,10 +223,6 @@ public class MisclassificationUtils {
 
         if (e1 == Endpoint.ARROW && e2 == Endpoint.ARROW) {
             return 4;
-        }
-
-        if (e1 == Endpoint.NULL && e2 == Endpoint.NULL) {
-            return 5;
         }
 
         return 5;

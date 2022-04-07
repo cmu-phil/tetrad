@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,7 +34,7 @@ import java.util.logging.*;
  *
  * @author Joseph Ramsey
  */
-@SuppressWarnings({"UnusedDeclaration"})
+@SuppressWarnings("UnusedDeclaration")
 public class LogUtils {
 
     /**
@@ -59,16 +59,16 @@ public class LogUtils {
      * Private constructor.
      */
     private LogUtils() {
-        logger.setUseParentHandlers(false);
-        logger.setLevel(Level.FINEST);
+        this.logger.setUseParentHandlers(false);
+        this.logger.setLevel(Level.FINEST);
     }
 
     /**
      * @return Ibid.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static LogUtils getInstance() {
-        return INSTANCE;
+        return LogUtils.INSTANCE;
     }
 
     //===========================PUBLIC METHODS=========================//
@@ -97,7 +97,7 @@ public class LogUtils {
 
         StreamHandler handler = new StreamHandler(stream, formatter);
         handler.setLevel(level);
-        streams.put(stream, handler);
+        this.streams.put(stream, handler);
 
         getLogger().addHandler(handler);
     }
@@ -109,7 +109,7 @@ public class LogUtils {
      * @param level  The new level.
      */
     public void setLevel(OutputStream stream, Level level) {
-        Handler handler = streams.get(stream);
+        Handler handler = this.streams.get(stream);
 
         if (handler != null) {
             handler.setLevel(level);
@@ -126,7 +126,7 @@ public class LogUtils {
             return;
         }
 
-        Handler handler = streams.get(stream);
+        Handler handler = this.streams.get(stream);
 
         if (handler == null) {
             return;
@@ -145,7 +145,7 @@ public class LogUtils {
      * Removes all streams from logging.
      */
     public void clear() {
-        for (OutputStream stream : streams.keySet()) {
+        for (OutputStream stream : this.streams.keySet()) {
             remove(stream);
         }
     }
@@ -185,12 +185,12 @@ public class LogUtils {
     }
 
     private Logger getLogger() {
-        return logger;
+        return this.logger;
     }
 
     private void flushAll() {
-        for (OutputStream stream : streams.keySet()) {
-            Handler handler = streams.get(stream);
+        for (OutputStream stream : this.streams.keySet()) {
+            Handler handler = this.streams.get(stream);
             handler.flush();
         }
     }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,15 +21,15 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
 
+
+import java.io.*;
+
 /**
  * Basic functionality that all graph-derived classes should provide.
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
-
-import java.io.*;
-
 public abstract class BasicGraph {
 
     /**
@@ -95,7 +95,7 @@ public abstract class BasicGraph {
      * Support of int, long, floating point, or doubles as edge values will
      * depend on how a subclass of Graph implement the set of edges.
      */
-    public BasicGraph(String fname) throws FileNotFoundException, IOException {
+    public BasicGraph(String fname) throws IOException {
         // Create and prepare stream tokenizer
         File f = new File(fname);
         BufferedReader in = new BufferedReader(new FileReader(f));
@@ -108,7 +108,7 @@ public abstract class BasicGraph {
         // Read graph name
         int nt = strmTok.nextToken();
         if ((strmTok.sval == null) ||
-                (strmTok.sval.toUpperCase().indexOf("GRAPH") < 0)) {
+                (!strmTok.sval.toUpperCase().contains("GRAPH"))) {
             throw new IllegalArgumentException(
                     "First token does not contain 'GRAPH': " + strmTok.sval);
         }
@@ -118,7 +118,7 @@ public abstract class BasicGraph {
 
         // Read # of nodes in graph
         nt = strmTok.nextToken();
-        if (nt != strmTok.TT_NUMBER) {
+        if (nt != StreamTokenizer.TT_NUMBER) {
             throw new IllegalArgumentException(
                     "Expecting # of nodes in graph instead of: " + strmTok
                             .sval);
@@ -140,7 +140,7 @@ public abstract class BasicGraph {
         this.initializeEdges();
         while (true) {
             nt = strmTok.nextToken();
-            if (nt == strmTok.TT_EOF) {
+            if (nt == StreamTokenizer.TT_EOF) {
                 break;
             }
             int node_i = (int) strmTok.nval;
@@ -171,7 +171,7 @@ public abstract class BasicGraph {
      * Returns the # nodes in this graph
      */
     public int getSize() {
-        return nNodes;
+        return this.nNodes;
     }
 
     /**
@@ -207,14 +207,14 @@ public abstract class BasicGraph {
      * graph from a file.
      */
     public String toString() {
-        String s = this.getClass().getName() + " " + this.graphName + "\n" +
-                this.nNodes + " // <-- Total # nodes\n";
-        s = s + "\n// Node names:\n";
+        StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.graphName + "\n" +
+                this.nNodes + " // <-- Total # nodes\n");
+        s.append("\n// Node names:\n");
         for (int i = 0; i < this.nNodes; i++) {
-            s = s + this.getNodeName(i) + "\t// # " + i + "\n";
+            s.append(this.getNodeName(i)).append("\t// # ").append(i).append("\n");
         }
-        s = s + "\n// edges:\n" + this.EdgesToString();
-        return s;
+        s.append("\n// edges:\n").append(this.EdgesToString());
+        return s.toString();
     }
 
     protected void badNodeIndex(int i) {

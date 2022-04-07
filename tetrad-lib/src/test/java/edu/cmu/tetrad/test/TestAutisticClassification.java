@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -47,27 +47,22 @@ import java.util.*;
 public class TestAutisticClassification {
     enum Type {LEAVE_ONE_OUT, TRAIN_TEST}
 
-    // Parameters.
-    private double penaltyDiscount = 2;
-    private int depth = 3;
-    private int cutoffPresent = 10;
-    private int cutoffAbsent = 10;
-
-    private int trainIndex = 2;
-    private int testIndex = 0;
-
-    private Type type = Type.LEAVE_ONE_OUT;
+    private final Type type = Type.LEAVE_ONE_OUT;
 
     public void testAutistic() {
         Parameters parameters = new Parameters();
 
+        // Parameters.
+        double penaltyDiscount = 2;
         parameters.set("penaltyDiscount", penaltyDiscount);
+        int depth = 3;
         parameters.set("depth", depth);
         parameters.set("twoCycleAlpha", 1e-5);
 
         FaskGraphs train;
         FaskGraphs test = null;
 
+        int trainIndex = 2;
         if (trainIndex == 1) {
             train = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable",
                     parameters, "ROI_data");
@@ -83,7 +78,8 @@ public class TestAutisticClassification {
             throw new IllegalArgumentException("Type must be an index 1-4");
         }
 
-        if (type == Type.TRAIN_TEST) {
+        if (this.type == Type.TRAIN_TEST) {
+            int testIndex = 0;
             if (testIndex == 1) {
                 test = new FaskGraphs("/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/Joe_108_Variable",
                         parameters, "ROI_data");
@@ -103,9 +99,9 @@ public class TestAutisticClassification {
             test.reconcileNames(train);
         }
 
-        if (type == Type.LEAVE_ONE_OUT) {
+        if (this.type == Type.LEAVE_ONE_OUT) {
             leaveOneOut(train);
-        } else if (type == Type.TRAIN_TEST) {
+        } else if (this.type == Type.TRAIN_TEST) {
             trainTest(train, test);
         }
     }
@@ -179,10 +175,12 @@ public class TestAutisticClassification {
         for (Edge edge : allEdges) {
             double[] est = getEst(trainingGraphs, edge);
 
+            int cutoffPresent = 10;
             if (cond(est, truth, 1, 1, cutoffPresent)) {
                 forAutismIfPresent.add(edge);
             }
 
+            int cutoffAbsent = 10;
             if (cond(est, truth, 0, 1, cutoffAbsent)) {
                 forAutismIfAbsent.add(edge);
             }
@@ -415,10 +413,6 @@ public class TestAutisticClassification {
 
         double prob = isTheCase / (double) occurs;
 
-//        if (occurs >= 4 && isTheCase >= .75 * occurs) {
-//            System.out.println();
-//        }
-
         return occurs >= min && prob >= 0.75;
     }
 
@@ -474,8 +468,8 @@ public class TestAutisticClassification {
             StringBuilder b = new StringBuilder();
 
             for (int j = 0; j < nodes.size(); j++) {
-                for (int k = 0; k < nodes.size(); k++) {
-                    if (graph.isAdjacentTo(nodes.get(j), nodes.get(k))) {
+                for (Node node : nodes) {
+                    if (graph.isAdjacentTo(nodes.get(j), node)) {
                         b.append("1 ");
                     } else {
                         b.append("0 ");

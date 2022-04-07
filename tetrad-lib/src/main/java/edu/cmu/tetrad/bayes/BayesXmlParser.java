@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -53,7 +53,7 @@ public final class BayesXmlParser {
         List<Node> variables = getVariables(element0);
         BayesPm bayesPm = makeBayesPm(variables, element1);
 
-        return makeBayesIm(bayesPm, element2);
+        return BayesXmlParser.makeBayesIm(bayesPm, element2);
     }
 
     private List<Node> getVariables(Element element0) {
@@ -80,9 +80,9 @@ public final class BayesXmlParser {
 
             String isLatentVal = e1.getAttributeValue("latent");
             boolean isLatent =
-                    (isLatentVal != null) && ((isLatentVal.equals("yes")));
-            Integer x = new Integer(e1.getAttributeValue("x"));
-            Integer y = new Integer(e1.getAttributeValue("y"));
+                    "yes".equals(isLatentVal);
+            int x = Integer.parseInt(e1.getAttributeValue("x"));
+            int y = Integer.parseInt(e1.getAttributeValue("y"));
 
             int numCategories = e2Elements.size();
             List<String> categories = new LinkedList<>();
@@ -109,11 +109,11 @@ public final class BayesXmlParser {
             variables.add(var);
         }
 
-        namesToVars = new HashMap<>();
+        this.namesToVars = new HashMap<>();
 
         for (Node v : variables) {
             String name = v.getName();
-            namesToVars.put(name, v);
+            this.namesToVars.put(name, v);
         }
 
         return variables;
@@ -141,7 +141,7 @@ public final class BayesXmlParser {
             }
 
             String varName = e1.getAttributeValue("name");
-            Node var = namesToVars.get(varName);
+            Node var = this.namesToVars.get(varName);
 
             Elements elements1 = e1.getChildElements();
 
@@ -154,7 +154,7 @@ public final class BayesXmlParser {
                 }
 
                 String parentName = e2.getAttributeValue("name");
-                Node parent = namesToVars.get(parentName);
+                Node parent = this.namesToVars.get(parentName);
 
                 graph.addDirectedEdge(parent, var);
             }
@@ -197,7 +197,7 @@ public final class BayesXmlParser {
 
             if (e1Elements.size() != numRows) {
                 throw new IllegalArgumentException("Element cpt claimed " +
-                        +numRows + " rows, but there are only " +
+                        numRows + " rows, but there are only " +
                         e1Elements.size() + " rows in the file.");
             }
 

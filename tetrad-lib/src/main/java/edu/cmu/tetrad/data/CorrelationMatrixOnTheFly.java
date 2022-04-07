@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -48,16 +48,9 @@ import static java.lang.Math.sqrt;
  */
 public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     static final long serialVersionUID = 23L;
-    private boolean verbose = false;
+    private boolean verbose;
 
-    private ICovarianceMatrix cov;
-
-    /**
-     * The name of the covariance matrix.
-     *
-     * @serial May be null.
-     */
-    private String name;
+    private final ICovarianceMatrix cov;
 
     /**
      * The variables (in order) for this covariance matrix.
@@ -65,21 +58,6 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      * @serial Cannot be null.
      */
     private List<Node> variables;
-
-    /**
-     * The size of the sample from which this covariance matrix was calculated.
-     *
-     * @serial Range > 0.
-     */
-    private int sampleSize;
-
-    /**
-     * Stored matrix data. Should be square. This may be set by derived classes,
-     * but it must always be set to a legitimate covariance matrix.
-     *
-     * @serial Cannot be null. Must be symmetric and positive definite.
-     */
-    private Matrix matrix;
 
     /**
      * @serial Do not remove this field; it is needed for serialization.
@@ -92,18 +70,6 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      * @serial Cannot be null.
      */
     private Set<Node> selectedVariables = new HashSet<>();
-
-    /**
-     * The knowledge for this data.
-     *
-     * @serial Cannot be null.
-     */
-    private IKnowledge knowledge = new Knowledge2();
-
-    private double[][] vectors = null;
-
-    private double[] variances;
-
 
     //=============================CONSTRUCTORS=========================//
 
@@ -136,28 +102,28 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      * @return the list of variables (unmodifiable).
      */
     public final List<Node> getVariables() {
-        return cov.getVariables();
+        return this.cov.getVariables();
     }
 
     /**
      * @return the variable names, in order.
      */
     public final List<String> getVariableNames() {
-        return cov.getVariableNames();
+        return this.cov.getVariableNames();
     }
 
     /**
      * @return the variable name at the given index.
      */
     public final String getVariableName(int index) {
-        return cov.getVariableName(index);
+        return this.cov.getVariableName(index);
     }
 
     /**
      * @return the dimension of the covariance matrix.
      */
     public final int getDimension() {
-        return cov.getDimension();
+        return this.cov.getDimension();
     }
 
     /**
@@ -166,35 +132,35 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      * @return The sample size (> 0).
      */
     public final int getSampleSize() {
-        return cov.getSampleSize();
+        return this.cov.getSampleSize();
     }
 
     /**
      * Gets the name of the covariance matrix.
      */
     public final String getName() {
-        return cov.getName() + ".corr";
+        return this.cov.getName() + ".corr";
     }
 
     /**
      * Sets the name of the covariance matrix.
      */
     public final void setName(String name) {
-        cov.setName(name);
+        this.cov.setName(name);
     }
 
     /**
      * @return the knowledge associated with this data.
      */
     public final IKnowledge getKnowledge() {
-        return cov.getKnowledge();
+        return this.cov.getKnowledge();
     }
 
     /**
      * Associates knowledge with this data.
      */
     public final void setKnowledge(IKnowledge knowledge) {
-        cov.setKnowledge(knowledge);
+        this.cov.setKnowledge(knowledge);
     }
 
     /**
@@ -205,27 +171,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         List<Node> submatrixVars = new LinkedList<>();
 
         for (int indice : indices) {
-            submatrixVars.add(cov.getVariables().get(indice));
-        }
-
-        Matrix cov = new Matrix(indices.length, indices.length);
-
-        for (int i = 0; i < indices.length; i++) {
-            for (int j = i; j < indices.length; j++) {
-                double d = getValue(indices[i], indices[j]);
-                cov.set(i, j, d);
-                cov.set(j, i, d);
-            }
-        }
-
-        return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
-    }
-
-    public final ICovarianceMatrix getSubmatrix(int[] indices, int[] dataRows) {
-        List<Node> submatrixVars = new LinkedList<>();
-
-        for (int indice : indices) {
-            submatrixVars.add(variables.get(indice));
+            submatrixVars.add(this.cov.getVariables().get(indice));
         }
 
         Matrix cov = new Matrix(indices.length, indices.length);
@@ -257,24 +203,24 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      * @return the value of element (i,j) in the matrix
      */
     public final double getValue(int i, int j) {
-        double v = cov.getValue(i, j);
-        v /= sqrt(cov.getValue(i, i) * cov.getValue(j, j));
+        double v = this.cov.getValue(i, j);
+        v /= sqrt(this.cov.getValue(i, i) * this.cov.getValue(j, j));
         return v;
     }
 
     public void setMatrix(Matrix matrix) {
-        cov.setMatrix(matrix);
+        this.cov.setMatrix(matrix);
     }
 
     public final void setSampleSize(int sampleSize) {
-        cov.setSampleSize(sampleSize);
+        this.cov.setSampleSize(sampleSize);
     }
 
     /**
      * @return the size of the square matrix.
      */
     public final int getSize() {
-        return cov.getSize();
+        return this.cov.getSize();
     }
 
     /**
@@ -292,32 +238,20 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return matrix;
     }
 
-    public final Matrix getMatrix(int[] rows) {
-        Matrix matrix = new Matrix(getDimension(), getDimension());
-
-        for (int i = 0; i < getDimension(); i++) {
-            for (int j = 0; j < getDimension(); j++) {
-                matrix.set(i, j, getValue(i, j));
-            }
-        }
-
-        return matrix;
-    }
-
     public final void select(Node variable) {
-        cov.select(variable);
+        this.cov.select(variable);
     }
 
     public final void clearSelection() {
-        cov.clearSelection();
+        this.cov.clearSelection();
     }
 
     public final boolean isSelected(Node variable) {
-        return cov.isSelected(variable);
+        return this.cov.isSelected(variable);
     }
 
     public final List<String> getSelectedVariableNames() {
-        return cov.getSelectedVariableNames();
+        return this.cov.getSelectedVariableNames();
     }
 
     /**
@@ -345,17 +279,6 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
             buf.append("\n");
         }
 
-
-//        buf.append("\nCovariance matrix:");
-//        buf.append("\n\tVariables = ").append(getVariable());
-//        buf.append("\n\tSample size = ").append(getSampleSize());
-//        buf.append("\n");
-//        buf.append(MatrixUtils.toString(matrixC.toArray()));
-//
-//        if (getKnowledge() != null && !getKnowledge().isEmpty()) {
-//            buf.append(getKnowledge());
-//        }
-
         return buf.toString();
     }
 
@@ -376,19 +299,11 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
 
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-
-//        for (int i = 0; i < variables.size(); i++) {
-//            if (!variables.get(i).getNode().equals(variables.get(i).getNode())) {
-//                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
-//                        "as the variable being substituted for it.");
-//            }
-//        }
-
         this.variables = variables;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -419,31 +334,8 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return m;
     }
 
-    public Matrix getSelection(int[] rows, int[] cols, int[] dataRows) {
-        Matrix m = new Matrix(rows.length, cols.length);
-
-        if (Arrays.equals(rows, cols)) {
-            for (int i = 0; i < rows.length; i++) {
-                for (int j = i; j < cols.length; j++) {
-                    double value = getValue(rows[i], cols[j]);
-                    m.set(i, j, value);
-                    m.set(j, i, value);
-                }
-            }
-        } else {
-            for (int i = 0; i < rows.length; i++) {
-                for (int j = 0; j < cols.length; j++) {
-                    double value = getValue(rows[i], cols[j]);
-                    m.set(i, j, value);
-                }
-            }
-        }
-
-        return m;
-    }
-
     public Node getVariable(String name) {
-        return cov.getVariable(name);
+        return this.cov.getVariable(name);
     }
 
     @Override
@@ -454,17 +346,11 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     @Override
     public void setValue(int i, int j, double v) {
         throw new IllegalArgumentException();
-//        if (i == j) {
-//            matrix.set(i, j, v);
-//        } else {
-//            matrix.set(i, j, v);
-//            matrix.set(j, i, v);
-//        }
     }
 
     @Override
     public void removeVariables(List<String> remaining) {
-        cov.removeVariables(remaining);
+        this.cov.removeVariables(remaining);
     }
 
     /**
@@ -476,9 +362,6 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -488,21 +371,18 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
             throw new NullPointerException();
         }
 
-        if (matrixC != null) {
-            matrix = new Matrix(matrixC.toArray());
-            matrixC = null;
+        if (this.matrixC != null) {
+            /*
+             * Stored matrix data. Should be square. This may be set by derived classes,
+             * but it must always be set to a legitimate covariance matrix.
+             *
+             * @serial Cannot be null. Must be symmetric and positive definite.
+             */
+            this.matrixC = null;
         }
 
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        if (sampleSize < -1) {
-            throw new IllegalStateException();
-        }
-
-        if (selectedVariables == null) {
-            selectedVariables = new HashSet<>();
+        if (this.selectedVariables == null) {
+            this.selectedVariables = new HashSet<>();
         }
     }
 }

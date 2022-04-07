@@ -21,7 +21,7 @@ public class LoadGraphJson extends AbstractAction {
     /**
      * The component whose image is to be saved.
      */
-    private GraphEditable graphEditable;
+    private final GraphEditable graphEditable;
 
     public LoadGraphJson(GraphEditable graphEditable, String title) {
         super(title);
@@ -35,11 +35,11 @@ public class LoadGraphJson extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        JFileChooser chooser = getJFileChooser();
+        JFileChooser chooser = LoadGraphJson.getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.showOpenDialog((Component) this.graphEditable);
 
-        final File file = chooser.getSelectedFile();
+        File file = chooser.getSelectedFile();
 
         if (file == null) {
             System.out.println("File was null.");
@@ -50,7 +50,7 @@ public class LoadGraphJson extends AbstractAction {
 
         Graph graph = GraphUtils.loadGraphJson(file);
         GraphUtils.circleLayout(graph, 200, 200, 150);
-        graphEditable.setGraph(graph);
+        this.graphEditable.setGraph(graph);
     }
 
     private static JFileChooser getJFileChooser() {

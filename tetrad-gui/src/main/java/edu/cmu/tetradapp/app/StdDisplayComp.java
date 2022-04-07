@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -51,7 +51,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      * The color this node when unselected; depends on whether there is a model
      * or not.
      */
-    private Color unselectedColor = NO_MODEL_COLOR;
+    private Color unselectedColor = StdDisplayComp.NO_MODEL_COLOR;
 
     /**
      * Font used to render text.
@@ -80,9 +80,9 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
 
     public StdDisplayComp(String imagePath) {
-        nameLabel = new JLabel(" ");
-        acronymLabel = new JLabel("No model");
-        image = ImageUtils.getImage(this, imagePath);
+        this.nameLabel = new JLabel(" ");
+        this.acronymLabel = new JLabel("No model");
+        this.image = ImageUtils.getImage(this, imagePath);
         layoutComponents();
     }
 
@@ -98,16 +98,16 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     private boolean isSelected() {
-        return selected;
+        return this.selected;
     }
 
     public void setName(String name) {
         super.setName(name);
-        nameLabel.setText(name);
+        this.nameLabel.setText(name);
     }
 
     public void setAcronym(String acronym) {
-        acronymLabel.setText(acronym);
+        this.acronymLabel.setText(acronym);
         layoutComponents();
     }
 
@@ -122,9 +122,9 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
     public void setHasModel(boolean hasModel) {
         if (hasModel) {
-            this.unselectedColor = HAS_MODEL_COLOR;
+            this.unselectedColor = StdDisplayComp.HAS_MODEL_COLOR;
         } else {
-            this.unselectedColor = NO_MODEL_COLOR;
+            this.unselectedColor = StdDisplayComp.NO_MODEL_COLOR;
         }
     }
 
@@ -135,7 +135,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      */
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : unselectedColor);
+        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : this.unselectedColor);
         g2.fill(getShape());
         g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedEdgeColor() : DisplayNodeUtils.getNodeEdgeColor());
         g2.draw(getShape());
@@ -154,7 +154,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         // Add icon to name label.
         Box b1 = Box.createHorizontalBox();
         b1.add(Box.createHorizontalGlue());
-        b1.add(new JLabel(new ImageIcon(image)));
+        b1.add(new JLabel(new ImageIcon(this.image)));
         b1.add(Box.createHorizontalGlue());
         b.add(b1);
 
@@ -162,7 +162,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         Box b2 = Box.createHorizontalBox();
         b2.add(Box.createHorizontalGlue());
         b2.add(Box.createHorizontalStrut(5));
-        b2.add(nameLabel);
+        b2.add(this.nameLabel);
         b2.add(Box.createHorizontalStrut(5));
         b2.add(Box.createHorizontalGlue());
         b.add(b2);
@@ -171,8 +171,8 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         Box b3 = Box.createHorizontalBox();
         b3.add(Box.createHorizontalGlue());
         b3.add(Box.createHorizontalStrut(5));
-        acronymLabel.setFont(SMALL_FONT);
-        b3.add(acronymLabel);
+        this.acronymLabel.setFont(StdDisplayComp.SMALL_FONT);
+        b3.add(this.acronymLabel);
         b3.add(Box.createHorizontalStrut(5));
         b3.add(Box.createHorizontalGlue());
         b.add(b3);

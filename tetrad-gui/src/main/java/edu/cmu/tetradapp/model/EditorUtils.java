@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -105,7 +105,7 @@ public class EditorUtils {
 
     public static File getSaveFileWithPath(String prefix, String suffix,
                                            Component parent, boolean overwrite, String dialogName, String saveLocation) {
-        JFileChooser chooser = createJFileChooser(dialogName, saveLocation);
+        JFileChooser chooser = EditorUtils.createJFileChooser(dialogName, saveLocation);
 
         String fileSaveLocation;
         if (saveLocation == null) {
@@ -118,7 +118,7 @@ public class EditorUtils {
         chooser.setCurrentDirectory(dir);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-        File selectedFile = nextFile(fileSaveLocation, prefix, suffix, overwrite);
+        File selectedFile = EditorUtils.nextFile(fileSaveLocation, prefix, suffix, overwrite);
 
         chooser.setSelectedFile(selectedFile);
         File outfile;
@@ -147,14 +147,14 @@ public class EditorUtils {
             }
 
             int ret3 = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                    "Save session to directory " + outfile.getParent() + "?",
+                    "Save to directory " + outfile.getParent() + "?",
                     "Confirm", JOptionPane.OK_CANCEL_OPTION);
             if (ret3 == JOptionPane.OK_OPTION) {
                 break;
             }
         }
 
-        outfile = ensureSuffix(outfile, suffix);
+        outfile = EditorUtils.ensureSuffix(outfile, suffix);
         if (saveLocation == null) {
             Preferences.userRoot().put("fileSaveLocation", outfile.getParent());
         } else {
@@ -179,7 +179,7 @@ public class EditorUtils {
      */
     public static File getSaveFile(String prefix, String suffix,
                                    Component parent, boolean overwrite, String dialogName) {
-        return getSaveFileWithPath(prefix, suffix, parent, overwrite, dialogName, null);
+        return EditorUtils.getSaveFileWithPath(prefix, suffix, parent, overwrite, dialogName, null);
     }
 
     /**

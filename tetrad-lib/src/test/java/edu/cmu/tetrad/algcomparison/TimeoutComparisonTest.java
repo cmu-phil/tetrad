@@ -63,26 +63,26 @@ public class TimeoutComparisonTest {
     @Ignore
     @Test
     public void testTimeoutComparison() throws IOException {
-        Parameters parameters = getParameters();
-        Statistics statistics = getStatistics();
-        Algorithms algorithms = getAlgorithms();
-        Simulations simulations = getSimulations();
+        Parameters parameters = TimeoutComparisonTest.getParameters();
+        Statistics statistics = TimeoutComparisonTest.getStatistics();
+        Algorithms algorithms = TimeoutComparisonTest.getAlgorithms();
+        Simulations simulations = TimeoutComparisonTest.getSimulations();
 
-        String resultsPath = tmpDir.newFolder("comparison").toString();
+        String resultsPath = TimeoutComparisonTest.tmpDir.newFolder("comparison").toString();
 
-        TimeoutComparison comparisonEngine = getTetradComparisonEngine();
+        TimeoutComparison comparisonEngine = TimeoutComparisonTest.getTetradComparisonEngine();
         comparisonEngine.compareFromSimulations(resultsPath, simulations, algorithms, statistics, parameters, 60, TimeUnit.SECONDS);
 
-        System.out.println("================================================================================");
-        System.out.println("Output File:");
-        System.out.println("================================================================================");
+        out.println("================================================================================");
+        out.println("Output File:");
+        out.println("================================================================================");
         Path outputFile = Paths.get(resultsPath, "Comparison.txt");
         if (Files.exists(outputFile)) {
             try (Stream<String> stream = Files.lines(outputFile)) {
                 stream.forEach(out::println);
             }
         }
-        System.out.println("================================================================================");
+        out.println("================================================================================");
     }
 
     private static TimeoutComparison getTetradComparisonEngine() {

@@ -25,7 +25,7 @@ import java.util.*;
  */
 public class GeneralSemSimulationSpecial1 implements Simulation {
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
 
@@ -37,23 +37,23 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
@@ -65,17 +65,17 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+        return this.graphs.get(index);
     }
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     @Override
@@ -84,12 +84,12 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     }
 
     public String getDescription() {
-        return "Nonlinear, non-Gaussian SEM simulation using " + randomGraph.getDescription();
+        return "Nonlinear, non-Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
+        List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
@@ -145,7 +145,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
                 }
             }
         } catch (ParseException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
         return pm;

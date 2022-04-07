@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.kernel.KernelGaussian;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
 
@@ -46,7 +46,7 @@ public class TestKernelGaussian {
     @Test
     public void testMedianBandwidth() {
         Node X = new ContinuousVariable("X");
-        DataSet dataset = new BoxDataSet(new VerticalDoubleDataBox(5, 1), Arrays.asList(X));
+        DataSet dataset = new BoxDataSet(new VerticalDoubleDataBox(5, 1), Collections.singletonList(X));
         dataset.setDouble(0, 0, 1);
         dataset.setDouble(1, 0, 2);
         dataset.setDouble(2, 0, 3);

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -45,10 +45,10 @@ public class TestPolynomialTerm extends TestCase {
     public void testConstruction() {
         PolynomialTerm term = new PolynomialTerm(0.5, new int[]{1, 2, 0});
 
-        assertEquals(0.5, term.getCoefficient(), 0.00001);
-        assertEquals(1, term.getVariable(0));
-        assertEquals(2, term.getVariable(1));
-        assertEquals(0, term.getVariable(2));
+        TestCase.assertEquals(0.5, term.getCoefficient(), 0.00001);
+        TestCase.assertEquals(1, term.getVariable(0));
+        TestCase.assertEquals(2, term.getVariable(1));
+        TestCase.assertEquals(0, term.getVariable(2));
         System.out.println(term);
     }
 
@@ -57,8 +57,8 @@ public class TestPolynomialTerm extends TestCase {
      */
     public void testEvaluation() {
         PolynomialTerm term = new PolynomialTerm(0.5, new int[]{0, 1, 1, 2});
-        double[] values = new double[]{1.0, 2.0, 3.0};
-        assertEquals(6.0, term.evaluate(values), 0.00001);
+        double[] values = {1.0, 2.0, 3.0};
+        TestCase.assertEquals(6.0, term.evaluate(values), 0.00001);
     }
 
     /**

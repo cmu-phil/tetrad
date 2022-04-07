@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,9 +24,9 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.reveal;
 import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.OutputGraph;
 
 public class RevealOutputGraph implements OutputGraph {
-    private int ngenes;
-    private int[][] parents;
-    private int[][] lags;
+    private final int ngenes;
+    private final int[][] parents;
+    private final int[][] lags;
     String[] names;
     String graphName;
 
@@ -40,23 +40,23 @@ public class RevealOutputGraph implements OutputGraph {
     }
 
     public int getSize() {
-        return ngenes;
+        return this.ngenes;
     }
 
     public int[] getParents(int index) {
-        return parents[index];
+        return this.parents[index];
     }
 
     public int[] getLags(int index) {
-        return lags[index];
+        return this.lags[index];
     }
 
     public String getNodeName(int index) {
-        return names[index];
+        return this.names[index];
     }
 
     public String getGraphName() {
-        return graphName;
+        return this.graphName;
     }
 }
 

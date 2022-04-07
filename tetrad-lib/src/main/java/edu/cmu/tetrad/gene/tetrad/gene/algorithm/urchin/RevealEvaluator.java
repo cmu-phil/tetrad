@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,7 +36,7 @@ public class RevealEvaluator {
     private int ngenes;   //The number of genes
     private int ntimes;   //The number of time steps
 
-    private int[][] cases = new int[ntimes][ngenes];
+    private int[][] cases = new int[this.ntimes][this.ngenes];
 
     public RevealEvaluator(int[][] cases) {
 
@@ -61,9 +61,9 @@ public class RevealEvaluator {
         ns[1][1] = 0;
 
         int j;
-        for (int i = lag; i < ntimes; i++) {
+        for (int i = lag; i < this.ntimes; i++) {
             j = i - lag;
-            ns[cases[i][child]][cases[j][parent]]++;
+            ns[this.cases[i][child]][this.cases[j][parent]]++;
         }
 
         return ns;
@@ -82,27 +82,27 @@ public class RevealEvaluator {
         double M;
 
         //H(child)
-        int[] c = new int[ntimes - lag];
-        for (int i = lag; i < ntimes; i++) {
-            c[i - lag] = cases[i][child];
+        int[] c = new int[this.ntimes - lag];
+        for (int i = lag; i < this.ntimes; i++) {
+            c[i - lag] = this.cases[i][child];
         }
         double hchild = entropy(c);
 
-        int[] p1 = new int[ntimes - lag];  //1 parent
-        int[][] pm = new int[parents.length][ntimes - lag];  //multiple parents
+        int[] p1 = new int[this.ntimes - lag];  //1 parent
+        int[][] pm = new int[parents.length][this.ntimes - lag];  //multiple parents
 
         //H(parents)
         double hparents;
 
-        for (int i = 0; i < ntimes - lag; i++) {
-            p1[i] = cases[i][parents[0]];
+        for (int i = 0; i < this.ntimes - lag; i++) {
+            p1[i] = this.cases[i][parents[0]];
         }
         hparents = entropy(p1);
 
         if (parents.length > 1) {
-            for (int i = 0; i < ntimes - lag; i++) {
+            for (int i = 0; i < this.ntimes - lag; i++) {
                 for (int j = 1; j < parents.length; j++) {
-                    pm[j - 1][i] = cases[i][parents[j]];
+                    pm[j - 1][i] = this.cases[i][parents[j]];
                 }
             }
             hparents = jointEntropy(p1, pm);
@@ -113,8 +113,8 @@ public class RevealEvaluator {
         if (parents.length == 1) {
             hjoint = jointEntropy(c, p1);
         } else {
-            int[][] p1pm = new int[parents.length][ntimes - lag];
-            for (int i = 0; i < ntimes - lag; i++) {
+            int[][] p1pm = new int[parents.length][this.ntimes - lag];
+            for (int i = 0; i < this.ntimes - lag; i++) {
                 p1pm[0][i] = p1[i];
                 for (int j = 0; j < parents.length - 1; j++) {
                     p1pm[j + 1][i] = pm[j][i];
@@ -147,15 +147,15 @@ public class RevealEvaluator {
         }
 
         //H(child)
-        int[] c = new int[ntimes - maxlag];
-        for (int i = maxlag; i < ntimes; i++) {
-            c[i - maxlag] = cases[i][child];
+        int[] c = new int[this.ntimes - maxlag];
+        for (int i = maxlag; i < this.ntimes; i++) {
+            c[i - maxlag] = this.cases[i][child];
         }
         double hchild = entropy(c);
 
-        int[] p1 = new int[ntimes - maxlag];  //1 parent
+        int[] p1 = new int[this.ntimes - maxlag];  //1 parent
         int[][] pm =
-                new int[parents.length][ntimes - maxlag];  //multiple parents
+                new int[parents.length][this.ntimes - maxlag];  //multiple parents
 
         //for(int i = 0; i < parents.length; i++) {
         //  start[i] = lags[i] - maxlag;
@@ -165,15 +165,15 @@ public class RevealEvaluator {
         //H(parents)
         double hparents;
 
-        for (int i = 0; i < ntimes - maxlag; i++) {
-            p1[i] = cases[maxlag - lags[0] + i][parents[0]];
+        for (int i = 0; i < this.ntimes - maxlag; i++) {
+            p1[i] = this.cases[maxlag - lags[0] + i][parents[0]];
         }
         hparents = entropy(p1);
 
         if (parents.length > 1) {
-            for (int i = 0; i < ntimes - maxlag; i++) {
+            for (int i = 0; i < this.ntimes - maxlag; i++) {
                 for (int j = 1; j < parents.length; j++) {
-                    pm[j - 1][i] = cases[maxlag - lags[j] + i][parents[j]];
+                    pm[j - 1][i] = this.cases[maxlag - lags[j] + i][parents[j]];
                 }
             }
             hparents = jointEntropy(p1, pm);
@@ -184,8 +184,8 @@ public class RevealEvaluator {
         if (parents.length == 1) {
             hjoint = jointEntropy(c, p1);
         } else {
-            int[][] p1pm = new int[parents.length][ntimes - maxlag];
-            for (int i = 0; i < ntimes - maxlag; i++) {
+            int[][] p1pm = new int[parents.length][this.ntimes - maxlag];
+            for (int i = 0; i < this.ntimes - maxlag; i++) {
                 p1pm[0][i] = p1[i];
                 for (int j = 0; j < parents.length - 1; j++) {
                     p1pm[j + 1][i] = pm[j][i];
@@ -210,8 +210,8 @@ public class RevealEvaluator {
         double ln2 = Math.log(2.0);
 
         int n0 = 0;
-        for (int i = 0; i < n; i++) {
-            if (x[i] == 0) {
+        for (int j : x) {
+            if (j == 0) {
                 n0++;
             }
         }
@@ -235,13 +235,13 @@ public class RevealEvaluator {
      */
     public double entropy(int g, int lag) {
         double h = 0.0;
-        int n = cases.length - lag;
+        int n = this.cases.length - lag;
 
         double ln2 = Math.log(2.0);  //TODO:  move outside
 
         int n0 = 0;
         for (int i = 0; i < n; i++) {
-            if (cases[i + lag][g] == 0) {
+            if (this.cases[i + lag][g] == 0) {
                 n0++;
             }
         }
@@ -278,7 +278,10 @@ public class RevealEvaluator {
         //int ntot = ns[0][0] + ns[0][1] + ns[1][0] + ns[1][1];
 
         double[][] p = new double[2][2];
-        double lp00, lp01, lp10, lp11;
+        double lp00;
+        double lp01;
+        double lp10;
+        double lp11;
 
         p[0][0] = (double) ns[0][0] / (double) n;
         p[0][1] = (double) ns[0][1] / (double) n;
@@ -342,9 +345,9 @@ public class RevealEvaluator {
         for (int i = 0; i < n; i++) {
             power = 1;
             config = x[i] * power;
-            for (int j = 0; j < m; j++) {
+            for (int[] ints : y) {
                 power *= 2;
-                config += y[j][i] * power;
+                config += ints[i] * power;
             }
             counts[config]++;
             ntot++;

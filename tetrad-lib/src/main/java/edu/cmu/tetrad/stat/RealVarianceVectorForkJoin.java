@@ -19,6 +19,7 @@
 package edu.cmu.tetrad.stat;
 
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 /**
@@ -45,11 +46,11 @@ public class RealVarianceVectorForkJoin implements RealVariance {
 
     @Override
     public double[] compute(boolean biasCorrected) {
-        double[] means = new double[numOfCols];
+        double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = new ForkJoinPool(numOfThreads);
-        pool.invoke(new MeanAction(data, means, 0, numOfCols - 1));
-        pool.invoke(new VarianceAction(data, means, biasCorrected, 0, numOfCols - 1));
+        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));
+        pool.invoke(new VarianceAction(this.data, means, biasCorrected, 0, this.numOfCols - 1));
         pool.shutdown();
 
         return means;
@@ -74,32 +75,32 @@ public class RealVarianceVectorForkJoin implements RealVariance {
         }
 
         private void computeVariance() {
-            for (int col = start; col <= end; col++) {
-                double mean = means[col];
+            for (int col = this.start; col <= this.end; col++) {
+                double mean = this.means[col];
                 double value = 0;
                 double squareValue = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    double val = data[row][col] - mean;
+                for (int row = 0; row < RealVarianceVectorForkJoin.this.numOfRows; row++) {
+                    double val = this.data[row][col] - mean;
                     squareValue += val * val;
                     value += val;
                 }
-                means[col] = (biasCorrected)
-                        ? (squareValue - (value * value / numOfRows)) / (numOfRows - 1.0f)
-                        : (squareValue - (value * value / numOfRows)) / numOfRows;
+                this.means[col] = (this.biasCorrected)
+                        ? (squareValue - (value * value / RealVarianceVectorForkJoin.this.numOfRows)) / (RealVarianceVectorForkJoin.this.numOfRows - 1.0f)
+                        : (squareValue - (value * value / RealVarianceVectorForkJoin.this.numOfRows)) / RealVarianceVectorForkJoin.this.numOfRows;
             }
         }
 
         @Override
         protected void compute() {
-            int length = end - start;
-            int limit = numOfCols / numOfThreads;
-            int delta = numOfCols % numOfThreads;
+            int length = this.end - this.start;
+            int limit = RealVarianceVectorForkJoin.this.numOfCols / RealVarianceVectorForkJoin.this.numOfThreads;
+            int delta = RealVarianceVectorForkJoin.this.numOfCols % RealVarianceVectorForkJoin.this.numOfThreads;
             int size = limit + delta;
             if (length <= size) {
                 computeVariance();
             } else {
-                int middle = (end + start) / 2;
-                invokeAll(new VarianceAction(data, means, biasCorrected, start, middle), new VarianceAction(data, means, biasCorrected, middle + 1, end));
+                int middle = (this.end + this.start) / 2;
+                ForkJoinTask.invokeAll(new VarianceAction(this.data, this.means, this.biasCorrected, this.start, middle), new VarianceAction(this.data, this.means, this.biasCorrected, middle + 1, this.end));
             }
         }
 
@@ -122,26 +123,26 @@ public class RealVarianceVectorForkJoin implements RealVariance {
         }
 
         private void computeMean() {
-            for (int col = start; col <= end; col++) {
+            for (int col = this.start; col <= this.end; col++) {
                 double sum = 0;
-                for (int row = 0; row < numOfRows; row++) {
-                    sum += data[row][col];
+                for (int row = 0; row < RealVarianceVectorForkJoin.this.numOfRows; row++) {
+                    sum += this.data[row][col];
                 }
-                means[col] = sum / numOfRows;
+                this.means[col] = sum / RealVarianceVectorForkJoin.this.numOfRows;
             }
         }
 
         @Override
         protected void compute() {
-            int length = end - start;
-            int limit = numOfCols / numOfThreads;
-            int delta = numOfCols % numOfThreads;
+            int length = this.end - this.start;
+            int limit = RealVarianceVectorForkJoin.this.numOfCols / RealVarianceVectorForkJoin.this.numOfThreads;
+            int delta = RealVarianceVectorForkJoin.this.numOfCols % RealVarianceVectorForkJoin.this.numOfThreads;
             int size = limit + delta;
             if (length <= size) {
                 computeMean();
             } else {
-                int middle = (end + start) / 2;
-                invokeAll(new MeanAction(data, means, start, middle), new MeanAction(data, means, middle + 1, end));
+                int middle = (this.end + this.start) / 2;
+                ForkJoinTask.invokeAll(new MeanAction(this.data, this.means, this.start, middle), new MeanAction(this.data, this.means, middle + 1, this.end));
             }
         }
     }

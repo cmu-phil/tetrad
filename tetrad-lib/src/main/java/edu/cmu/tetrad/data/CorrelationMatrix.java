@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,7 +24,6 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -36,8 +35,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public final class CorrelationMatrix extends CovarianceMatrix
-        implements TetradSerializable {
+public final class CorrelationMatrix extends CovarianceMatrix {
     static final long serialVersionUID = 23L;
 
     //=============================CONSTRUCTORS=========================//
@@ -58,13 +56,7 @@ public final class CorrelationMatrix extends CovarianceMatrix
                 dataSet.getCorrelationMatrix(), dataSet.getNumRows());
 
         // These checks break testwise deletion
-//        if (!dataSet.isContinuous()) {
-//            throw new IllegalArgumentException("Data set not continuous.");
-//        }
 
-//        if (DataUtils.containsMissingValue(dataSet)) {
-//            throw new IllegalArgumentException("Please remove or impute missing values.");
-//        }
     }
 
     /**
@@ -80,13 +72,13 @@ public final class CorrelationMatrix extends CovarianceMatrix
      * Generates a simple exemplar of this class to test serialization.
      */
     public static CorrelationMatrix serializableInstance() {
-        return new CorrelationMatrix(new LinkedList<Node>(),
+        return new CorrelationMatrix(new LinkedList<>(),
                 new Matrix(0, 0), 1);
     }
 
     //=================================PUBLIC METHODS======================//
 
-    public final void setMatrix(Matrix matrix) {
+    public void setMatrix(Matrix matrix) {
         if (!matrix.isSquare()) {
             throw new IllegalArgumentException("Matrix must be square.");
         }
@@ -116,14 +108,6 @@ public final class CorrelationMatrix extends CovarianceMatrix
         return new CorrelationMatrix(covarianceMatrix);
     }
 
-    /**
-     * @return a submatrix, returning as a correlation matrix, with variables
-     * in the given order.
-     */
-    public CorrelationMatrix getSubCorrMatrix(int[] indices) {
-        ICovarianceMatrix covarianceMatrix = getSubmatrix(indices);
-        return new CorrelationMatrix(covarianceMatrix);
-    }
 }
 
 

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,8 +23,6 @@ package edu.cmu.tetradapp.util;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.text.NumberFormat;
@@ -105,10 +103,10 @@ public class DoubleTextField extends JTextField {
         double newValue = filter(value, this.value);
 
         if (newValue == this.value) {
-            smartSetText(format, this.value);
+            smartSetText(this.format, this.value);
         } else {
             this.value = newValue;
-            smartSetText(format, this.value);
+            smartSetText(this.format, this.value);
             firePropertyChange("newValue", null, this.value);
         }
     }
@@ -119,7 +117,7 @@ public class DoubleTextField extends JTextField {
      * @return the getModel value.
      */
     public double getValue() {
-        return value;
+        return this.value;
     }
 
     /**
@@ -152,11 +150,11 @@ public class DoubleTextField extends JTextField {
     //==============================PRIVATE METHODS=======================//
 
     private double filter(double value, double oldValue) {
-        if (filter == null) {
+        if (this.filter == null) {
             return value;
         }
 
-        return filter.filter(value, oldValue);
+        return this.filter.filter(value, oldValue);
     }
 
     private void setup(double value, NumberFormat nf, NumberFormat smallNumberFormat, double smallNumberCutoff) {
@@ -170,20 +168,12 @@ public class DoubleTextField extends JTextField {
         this.smallNumberCutoff = smallNumberCutoff;
         smartSetText(nf, this.value);
 
-        addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    double value = Double.parseDouble(e.getActionCommand());
-                    setValue(value);
-                } catch (NumberFormatException e1) {
-                    setText(format.format(getValue()));
-//                    if ("".equals(getText().trim())) {
-//                        setValue(Double.NaN);
-//                    }
-//                    else {
-//                        setValue(getValue());
-//                    }
-                }
+        addActionListener(e -> {
+            try {
+                double value1 = Double.parseDouble(e.getActionCommand());
+                setValue(value1);
+            } catch (NumberFormatException e1) {
+                setText(DoubleTextField.this.format.format(getValue()));
             }
         });
 
@@ -213,13 +203,13 @@ public class DoubleTextField extends JTextField {
 
     private void smartSetText(NumberFormat nf, double value) {
         if (Double.isNaN(value)) {
-            setHorizontalAlignment(JTextField.RIGHT);
+            setHorizontalAlignment(SwingConstants.RIGHT);
             setText("");
         } else {
-            setHorizontalAlignment(JTextField.RIGHT);
+            setHorizontalAlignment(SwingConstants.RIGHT);
 
-            if (Math.abs(value) < smallNumberCutoff && value != 0.0) {
-                setText(smallNumberFormat.format(value));
+            if (Math.abs(value) < this.smallNumberCutoff && value != 0.0) {
+                setText(this.smallNumberFormat.format(value));
             } else {
                 setText(nf.format(value));
             }

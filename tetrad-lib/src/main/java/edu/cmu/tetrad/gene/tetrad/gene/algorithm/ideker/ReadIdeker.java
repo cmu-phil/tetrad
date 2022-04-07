@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -28,18 +28,18 @@ import java.text.NumberFormat;
 import java.util.StringTokenizer;
 
 public class ReadIdeker {
-    public static void main(String argv[]) {
+    public static void main(String[] argv) {
 
         String fileName = argv[0];
 
         InputStream s;
         StringTokenizer st;
 
-        int ngenes = 9;
-        int nperturbations = 20;
-        int readingsPerPerturbation = 4;
+        final int ngenes = 9;
+        final int nperturbations = 20;
+        final int readingsPerPerturbation = 4;
 
-        int nrecords = 7;
+        final int nrecords = 7;
 
         int[][] rawData = new int[ngenes][80];
         int[] nvaluesRecord = {10, 13, 12, 13, 13, 14, 5};
@@ -55,8 +55,6 @@ public class ReadIdeker {
         double[] meanExpression = {32514.058, 26663.615, 7421.692, 176.9,
                 10602.458, 5491.0, 28358.983, 13640.675, 3877.975};
         //Raffinose
-        //double[] meanExpression = {40800.233, 33582.275, 7749.183, 170.467,
-        //                     9468.083, 6251.825, 38261.592, 16039.475, 4151.067};
 
         try {
             s = new FileInputStream(fileName);
@@ -71,8 +69,6 @@ public class ReadIdeker {
                 try {
                     st = new StringTokenizer(in.readLine());
                     if (j == 0) {
-                        //                        String lbl = st.nextToken(" ");
-                        //System.out.println("label = " + lbl);
                         continue;
                     }
                     if (k == 0) {
@@ -109,8 +105,6 @@ public class ReadIdeker {
                 for (int k = 0; k < readingsPerPerturbation; k++) {
                     if (rawData[j][i * readingsPerPerturbation + k] > -900) {
                         n++;
-                        //if(i ==0 && j ==0)
-                        //System.out.println(k + " " + rawData[j][i*readingsPerPerturbation+k]);
                         sum += rawData[j][i * readingsPerPerturbation + k];
                     }
                 }
@@ -153,14 +147,13 @@ public class ReadIdeker {
         for (int g = 0; g < ngenes; g++) {
             for (int p = 0; p < 10; p++) {   //Galactose
                 //for(int p = 10; p < 20; p++) {  //Raffinose
-                int pp = p;  //Galactose
                 //int pp = p - 10;  //Raffinose
-                if (pp - 1 == g) {
-                    binaryExpression[pp][g] = -1;
+                if (p - 1 == g) {
+                    binaryExpression[p][g] = -1;
                 } else if (expressions[p][g] > meanExpression[g]) {
-                    binaryExpression[pp][g] = 1;
+                    binaryExpression[p][g] = 1;
                 } else {
-                    binaryExpression[pp][g] = 0;
+                    binaryExpression[p][g] = 0;
                 }
             }
         }

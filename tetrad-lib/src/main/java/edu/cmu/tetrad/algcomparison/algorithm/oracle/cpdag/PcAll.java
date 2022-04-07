@@ -14,7 +14,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,10 +78,10 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
                     throw new IllegalArgumentException("Not a choice.");
             }
 
-            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(this.test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
 
             if (parameters.getBoolean(Params.STABLE_FAS)) {
                 search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
@@ -104,28 +103,11 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
             return search.search();
         } else {
-            PcAll pcAll = new PcAll(test);
+            PcAll pcAll = new PcAll(this.test);
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -140,12 +122,12 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
     @Override
     public String getDescription() {
-        return "PC using " + test.getDescription();
+        return "PC using " + this.test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
@@ -166,7 +148,7 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
@@ -176,7 +158,7 @@ public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
     @Override

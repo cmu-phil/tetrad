@@ -23,8 +23,8 @@ import edu.cmu.tetrad.graph.*;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Apr 30, 2019 2:30:18 PM
@@ -35,13 +35,13 @@ public class EdgeTypeTable extends JPanel {
 
     private static final long serialVersionUID = -9104061917163909746L;
 
-    private static final String[] EDGES = new String[]{
+    private static final String[] EDGES = {
             "Node 1",
             "Interaction",
             "Node 2"
     };
 
-    private static final String[] EDGES_AND_EDGE_TYPES = new String[]{
+    private static final String[] EDGES_AND_EDGE_TYPES = {
             "Node 1",
             "Interaction",
             "Node 2",
@@ -68,27 +68,27 @@ public class EdgeTypeTable extends JPanel {
     }
 
     private void initComponents() {
-        title.setHorizontalAlignment(SwingConstants.CENTER);
-        title.setVerticalAlignment(SwingConstants.CENTER);
+        this.title.setHorizontalAlignment(SwingConstants.CENTER);
+        this.title.setVerticalAlignment(SwingConstants.CENTER);
 
         setLayout(new BorderLayout(0, 10));
-        add(title, BorderLayout.NORTH);
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        add(this.title, BorderLayout.NORTH);
+        add(new JScrollPane(this.table), BorderLayout.CENTER);
     }
 
     public void update(Graph graph) {
-        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+        DefaultTableModel tableModel = (DefaultTableModel) this.table.getModel();
 
         tableModel.setRowCount(0);
 
         if (hasEdgeProbabilities(graph)) {
-            title.setText("Edges and Edge Type Probabilities");
+            this.title.setText("Edges and Edge Type Frequencies");
 
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            this.table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-            final JTableHeader header = table.getTableHeader();
-            final Font boldFont = new Font(header.getFont().getFontName(), Font.BOLD, 18);
-            final TableCellRenderer headerRenderer = header.getDefaultRenderer();
+            JTableHeader header = this.table.getTableHeader();
+            Font boldFont = new Font(header.getFont().getFontName(), Font.BOLD, 18);
+            TableCellRenderer headerRenderer = header.getDefaultRenderer();
             header.setDefaultRenderer((tbl, value, isSelected, hasFocus, row, column) -> {
                 Component comp = headerRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
                 if (column > 6 && column < 11) {
@@ -101,28 +101,28 @@ public class EdgeTypeTable extends JPanel {
                 return comp;
             });
 
-            tableModel.setColumnIdentifiers(EDGES_AND_EDGE_TYPES);
+            tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES_AND_EDGE_TYPES);
 
-            List<Edge> edges = graph.getEdges().stream().collect(Collectors.toList());
+            List<Edge> edges = new ArrayList<>(graph.getEdges());
             Edges.sortEdges(edges);
             edges.forEach(edge -> {
-                String[] rowData = new String[EDGES_AND_EDGE_TYPES.length];
+                String[] rowData = new String[EdgeTypeTable.EDGES_AND_EDGE_TYPES.length];
                 addEdgeData(edge, rowData);
                 addEdgeProbabilityData(edge, rowData);
 
                 tableModel.addRow(rowData);
             });
         } else {
-            title.setText("Edges");
+            this.title.setText("Edges");
 
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            this.table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-            tableModel.setColumnIdentifiers(EDGES);
+            tableModel.setColumnIdentifiers(EdgeTypeTable.EDGES);
 
-            List<Edge> edges = graph.getEdges().stream().collect(Collectors.toList());
+            List<Edge> edges = new ArrayList<>(graph.getEdges());
             Edges.sortEdges(edges);
             edges.forEach(edge -> {
-                String[] rowData = new String[EDGES.length];
+                String[] rowData = new String[EdgeTypeTable.EDGES.length];
                 addEdgeData(edge, rowData);
 
                 tableModel.addRow(rowData);
@@ -220,17 +220,6 @@ public class EdgeTypeTable extends JPanel {
         Endpoint endpoint2 = edge.getEndpoint2();
 
         // These should not be flipped.
-//        if (node1Name.compareTo(node2Name) > 0) {
-//            // swap endpoints
-//            Endpoint tmpEndpoint = endpoint1;
-//            endpoint1 = endpoint2;
-//            endpoint2 = tmpEndpoint;
-//
-//            // swap node names
-//            String tmpStr = node1Name;
-//            node1Name = node2Name;
-//            node2Name = tmpStr;
-//        }
 
         String endpoint1Str = "";
         if (endpoint1 == Endpoint.TAIL) {
@@ -265,7 +254,7 @@ public class EdgeTypeTable extends JPanel {
         return false;
     }
 
-    private class EdgeInfoTable extends JTable {
+    private static class EdgeInfoTable extends JTable {
 
         private static final long serialVersionUID = -4052775309418269033L;
 
@@ -300,7 +289,7 @@ public class EdgeTypeTable extends JPanel {
 
     }
 
-    private class StripedRowTableCellRenderer extends DefaultTableCellRenderer {
+    private static class StripedRowTableCellRenderer extends DefaultTableCellRenderer {
 
         private static final long serialVersionUID = 4603884548966502824L;
 
@@ -320,7 +309,7 @@ public class EdgeTypeTable extends JPanel {
             JComponent component = (JComponent) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
             if (!isSelected) {
-                component.setBackground((row % 2 == 0) ? NON_STRIPE : STRIPE);
+                component.setBackground((row % 2 == 0) ? this.NON_STRIPE : this.STRIPE);
             }
 
             return component;

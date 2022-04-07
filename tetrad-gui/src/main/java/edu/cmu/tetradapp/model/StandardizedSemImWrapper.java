@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -39,7 +38,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput {
+public class StandardizedSemImWrapper implements KnowledgeBoxInput {
 
     static final long serialVersionUID = 23L;
 
@@ -65,7 +64,7 @@ public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput
         }
 
         this.standardizedSemIm = new StandardizedSemIm(semImWrapper.getSemIm(), parameters);
-        log(standardizedSemIm);
+        log(this.standardizedSemIm);
     }
 
     public StandardizedSemImWrapper(SemPmWrapper semPmWrapper, Parameters parameters) {
@@ -75,7 +74,7 @@ public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput
 
         SemIm semIm = new SemIm(semPmWrapper.getSemPm());
         this.standardizedSemIm = new StandardizedSemIm(semIm, parameters);
-        log(standardizedSemIm);
+        log(this.standardizedSemIm);
     }
 
     /**
@@ -94,11 +93,11 @@ public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput
     }
 
     public Graph getGraph() {
-        return standardizedSemIm.getSemPm().getGraph();
+        return this.standardizedSemIm.getSemPm().getGraph();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -106,7 +105,7 @@ public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput
     }
 
     public boolean isShowErrors() {
-        return showErrors;
+        return this.showErrors;
     }
 
     public void setShowErrors(boolean showErrors) {
@@ -124,15 +123,12 @@ public class StandardizedSemImWrapper implements SessionModel, KnowledgeBoxInput
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (standardizedSemIm == null) {
+        if (this.standardizedSemIm == null) {
             throw new NullPointerException();
         }
     }

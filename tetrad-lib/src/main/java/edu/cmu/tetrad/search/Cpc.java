@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,7 +46,7 @@ public final class Cpc implements GraphSearch {
     /**
      * The independence test used for the PC search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -64,11 +64,6 @@ public final class Cpc implements GraphSearch {
      * Elapsed time of last search.
      */
     private long elapsedTime;
-
-    /**
-     * The list of all unshielded triples.
-     */
-    private Set<Triple> allTriples;
 
     /**
      * Set of unshielded colliders from the triple orientation step.
@@ -91,12 +86,12 @@ public final class Cpc implements GraphSearch {
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
      * graphs).
      */
-    private boolean aggressivelyPreventCycles = false;
+    private boolean aggressivelyPreventCycles;
 
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * The sepsets.
@@ -106,7 +101,7 @@ public final class Cpc implements GraphSearch {
     /**
      * Whether verbose output about independencies is output.
      */
-    private boolean verbose = false;
+    private boolean verbose;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -142,7 +137,7 @@ public final class Cpc implements GraphSearch {
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
      * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
      */
-    public final void setDepth(int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
         }
@@ -158,7 +153,7 @@ public final class Cpc implements GraphSearch {
     /**
      * @return the elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
-    public final long getElapsedTime() {
+    public long getElapsedTime() {
         return this.elapsedTime;
     }
 
@@ -166,7 +161,7 @@ public final class Cpc implements GraphSearch {
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -181,7 +176,7 @@ public final class Cpc implements GraphSearch {
      * of duplicating the data set!
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     /**
@@ -189,7 +184,7 @@ public final class Cpc implements GraphSearch {
      * independence test.
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
@@ -197,7 +192,7 @@ public final class Cpc implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<>(ambiguousTriples);
+        return new HashSet<>(this.ambiguousTriples);
     }
 
     /**
@@ -205,7 +200,7 @@ public final class Cpc implements GraphSearch {
      * <code>search()</code>.
      */
     public Set<Triple> getColliderTriples() {
-        return new HashSet<>(colliderTriples);
+        return new HashSet<>(this.colliderTriples);
     }
 
     /**
@@ -213,29 +208,17 @@ public final class Cpc implements GraphSearch {
      * to <code>search()</code>.
      */
     public Set<Triple> getNoncolliderTriples() {
-        return new HashSet<>(noncolliderTriples);
-    }
-
-    /**
-     * @return the set of all triples found during the most recent run of the algorithm. Non-null after a call to
-     * <code>search()</code>.
-     */
-    public Set<Triple> getAllTriples() {
-        return new HashSet<>(allTriples);
+        return new HashSet<>(this.noncolliderTriples);
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<>();
-        for (Edge edge : graph.getEdges()) {
-            adjacencies.add(edge);
-        }
-        return adjacencies;
+        return new HashSet<>(this.graph.getEdges());
     }
 
     public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(graph);
+        Graph complete = GraphUtils.completeGraph(this.graph);
         Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(graph);
+        Graph undirected = GraphUtils.undirectedGraph(this.graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
     }
@@ -244,8 +227,8 @@ public final class Cpc implements GraphSearch {
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      */
-    public final Graph search() {
-        return search(independenceTest.getVariables());
+    public Graph search() {
+        return search(this.independenceTest.getVariables());
     }
 
     public Graph search(List<Node> nodes) {
@@ -255,7 +238,6 @@ public final class Cpc implements GraphSearch {
     public Graph search(IFas fas, List<Node> nodes) {
         this.logger.log("info", "Starting CPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
-        this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -264,82 +246,64 @@ public final class Cpc implements GraphSearch {
 
         long startTime = System.currentTimeMillis();
 
-        if (getIndependenceTest() == null) {
-            throw new NullPointerException();
-        }
-
         List<Node> allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
 
-//        Fas fas = new Fas(graph, getIndependenceTest());
-//        FasStableConcurrent fas = new FasStableConcurrent(graph, getIndependenceTest());
-//        Fas6 fas = new Fas6(graph, getIndependenceTest());
-//        fas = new FasICov(graph, (IndTestFisherZ) getIndependenceTest());
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setVerbose(verbose);
+        fas.setVerbose(this.verbose);
 
         // Note that we are ignoring the sepset map returned by this method
         // on purpose; it is not used in this search.
-        graph = fas.search();
-        sepsets = fas.getSepsets();
+        this.graph = fas.search();
+        this.sepsets = fas.getSepsets();
 
-//        for (int i = 0; i < nodes.size(); i++) {
-//            for (int j = i+1; j < nodes.size(); j++) {
-//                List<Edge> edges = graph.getEdges(nodes.get(i), nodes.get(j));
-//                if (edges.size() > 1) {
-//                    graph.removeEdge(edges.get(0));
-////                    System.out.println();
-//                }
-//            }
-//        }
-
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("CPC orientation...");
         }
-        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        orientUnshieldedTriples(knowledge);
+        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        orientUnshieldedTriples(this.knowledge);
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
         MeekRules meekRules = new MeekRules();
 
         meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        meekRules.setKnowledge(knowledge);
+        meekRules.setKnowledge(this.knowledge);
 
-        meekRules.orientImplied(graph);
+        meekRules.orientImplied(this.graph);
 
         // Remove ambiguities whose status have been determined.
-        Set<Triple> ambiguities = graph.getAmbiguousTriples();
+        Set<Triple> ambiguities = this.graph.getAmbiguousTriples();
 
         for (Triple triple : new HashSet<>(ambiguities)) {
-            final Node x = triple.getX();
-            final Node y = triple.getY();
-            final Node z = triple.getZ();
+            Node x = triple.getX();
+            Node y = triple.getY();
+            Node z = triple.getZ();
 
-            if (graph.isDefCollider(x, y, z)) {
-                graph.removeAmbiguousTriple(x, y, z);
+            if (this.graph.isDefCollider(x, y, z)) {
+                this.graph.removeAmbiguousTriple(x, y, z);
             }
 
-            if (graph.getEdge(x, y).pointsTowards(x) || graph.getEdge(y, z).pointsTowards(z)) {
-                graph.removeAmbiguousTriple(x, y, z);
+            if (this.graph.getEdge(x, y).pointsTowards(x) || this.graph.getEdge(y, z).pointsTowards(z)) {
+                this.graph.removeAmbiguousTriple(x, y, z);
             }
         }
 
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
+        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - startTime;
 
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
 
         logTriples();
 
         TetradLogger.getInstance().flush();
 //        SearchGraphUtils.verifySepsetIntegrity(sepsetMap, graph);
-        return graph;
+        return this.graph;
     }
 
 //    /**
@@ -374,13 +338,13 @@ public final class Cpc implements GraphSearch {
     private void logTriples() {
         TetradLogger.getInstance().log("info", "\nCollider triples:");
 
-        for (Triple triple : colliderTriples) {
+        for (Triple triple : this.colliderTriples) {
             TetradLogger.getInstance().log("info", "Collider: " + triple);
         }
 
         TetradLogger.getInstance().log("info", "\nNoncollider triples:");
 
-        for (Triple triple : noncolliderTriples) {
+        for (Triple triple : this.noncolliderTriples) {
             TetradLogger.getInstance().log("info", "Noncollider: " + triple);
         }
 
@@ -395,13 +359,13 @@ public final class Cpc implements GraphSearch {
     private void orientUnshieldedTriples(IKnowledge knowledge) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
-        colliderTriples = new HashSet<>();
-        noncolliderTriples = new HashSet<>();
-        ambiguousTriples = new HashSet<>();
-        List<Node> nodes = graph.getNodes();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
+        List<Node> nodes = this.graph.getNodes();
 
         for (Node y : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(y);
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -418,98 +382,31 @@ public final class Cpc implements GraphSearch {
                     continue;
                 }
 
-                List<List<Node>> sepsetsxz = getSepsets(x, z, graph);
+                List<List<Node>> sepsetsxz = getSepsets(x, z, this.graph);
 
                 if (isColliderSepset(y, sepsetsxz)) {
                     if (colliderAllowed(x, y, z, knowledge)) {
-                        graph.removeEdge(x, y);
-                        graph.removeEdge(z, y);
-                        graph.addDirectedEdge(x, y);
-                        graph.addDirectedEdge(z, y);
-
-
-//                        graph.setEndpoint(x, y, Endpoint.ARROW);
-//                        graph.setEndpoint(z, y, Endpoint.ARROW);
+                        this.graph.removeEdge(x, y);
+                        this.graph.removeEdge(z, y);
+                        this.graph.addDirectedEdge(x, y);
+                        this.graph.addDirectedEdge(z, y);
 
                         TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
                     }
 
-                    colliderTriples.add(new Triple(x, y, z));
+                    this.colliderTriples.add(new Triple(x, y, z));
                 } else if (isNoncolliderSepset(y, sepsetsxz)) {
-                    noncolliderTriples.add(new Triple(x, y, z));
+                    this.noncolliderTriples.add(new Triple(x, y, z));
                 } else {
                     Triple triple = new Triple(x, y, z);
-                    ambiguousTriples.add(triple);
-                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.ambiguousTriples.add(triple);
+                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
-
-                getAllTriples().add(new Triple(x, y, z));
             }
         }
 
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
     }
-
-//    private void orientUnshieldedTriples(IKnowledge knowledge,
-//                                         IndependenceTest test, int depth) {
-//        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
-//
-////        System.out.println("orientUnshieldedTriples 1");
-//
-//        double alpha = test.getAlternativePenalty();
-//
-//        test.setAlternativePenalty(0.1);
-//
-//        colliderTriples = new HashSet<Triple>();
-//        noncolliderTriples = new HashSet<Triple>();
-//        ambiguousTriples = new HashSet<Triple>();
-//        List<Node> nodes = graph.getNodes();
-//
-//        for (Node y : nodes) {
-//            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
-//
-//            if (adjacentNodes.size() < 2) {
-//                continue;
-//            }
-//
-//            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-//            int[] combination;
-//
-//            while ((combination = cg.next()) != null) {
-//                Node x = adjacentNodes.get(combination[0]);
-//                Node z = adjacentNodes.get(combination[1]);
-//
-//                if (this.graph.isAdjacentTo(x, z)) {
-//                    continue;
-//                }
-//
-//                getAllTriples().add(new Triple(x, y, z));
-//                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, graph, verbose);
-////                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, graph);
-//
-//                if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
-//                    if (colliderAllowed(x, y, z, knowledge)) {
-//                        graph.setEndpoint(x, y, Endpoint.ARROW);
-//                        graph.setEndpoint(z, y, Endpoint.ARROW);
-//
-//                        TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
-//                    }
-//
-//                    colliderTriples.add(new Triple(x, y, z));
-//                } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
-//                    Triple triple = new Triple(x, y, z);
-//                    ambiguousTriples.add(triple);
-//                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-//                } else {
-//                    noncolliderTriples.add(new Triple(x, y, z));
-//                }
-//            }
-//        }
-//
-//        test.setAlternativePenalty(alpha);
-//
-//        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
-//    }
 
     private List<List<Node>> getSepsets(Node i, Node k, Graph g) {
         List<Node> adji = g.getAdjacentNodes(i);
@@ -561,87 +458,6 @@ public final class Cpc implements GraphSearch {
         return true;
     }
 
-//    private void orientUnshieldedTriplesConcurrent(final IKnowledge knowledge,
-//                                                   final IndependenceTest test, final int depth) {
-//        ExecutorService executor = Executors.newFixedThreadPool(NTHREDS);
-//
-//        TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
-//
-//        Graph graph = new EdgeListGraph(getGraph());
-//
-////        System.out.println("orientUnshieldedTriples 1");
-//
-//        colliderTriples = new HashSet<Triple>();
-//        noncolliderTriples = new HashSet<Triple>();
-//        ambiguousTriples = new HashSet<Triple>();
-//        List<Node> nodes = graph.getNodes();
-//
-//        for (Node _y : nodes) {
-//            final Node y = _y;
-//
-//            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
-//
-//            if (adjacentNodes.size() < 2) {
-//                continue;
-//            }
-//
-//            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-//            int[] combination;
-//
-//            while ((combination = cg.next()) != null) {
-//                final Node x = adjacentNodes.get(combination[0]);
-//                final Node z = adjacentNodes.get(combination[1]);
-//
-//                if (graph.isAdjacentTo(x, z)) {
-//                    continue;
-//                }
-//
-//                Runnable worker = new Runnable() {
-//                    @Override
-//                    public void run() {
-//
-//                        getAllTriples().add(new Triple(x, y, z));
-//                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, getGraph(), verbose);
-////                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType2(x, y, z, test, depth, getGraph());
-////                        SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType4(x, y, z, test, depth, getGraph());
-////
-//                        if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
-//                            if (colliderAllowed(x, y, z, knowledge)) {
-//                                getGraph().setEndpoint(x, y, Endpoint.ARROW);
-//                                getGraph().setEndpoint(z, y, Endpoint.ARROW);
-//
-//                                TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
-//                            }
-//
-//                            colliderTriples.add(new Triple(x, y, z));
-//                        } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
-//                            Triple triple = new Triple(x, y, z);
-//                            ambiguousTriples.add(triple);
-//                            getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-//                        } else {
-//                            noncolliderTriples.add(new Triple(x, y, z));
-//                        }
-//                    }
-//                };
-//
-//                executor.execute(worker);
-//            }
-//        }
-//
-//        // This will make the executor accept no new threads
-//        // and finish all existing threads in the queue
-//        executor.shutdown();
-//        try {
-//            // Wait until all threads are finish
-//            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-//            System.out.println("Finished all threads");
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//
-//        TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
-//    }
-
     private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
         return Cpc.isArrowpointAllowed1(x, y, knowledge) &&
                 Cpc.isArrowpointAllowed1(z, y, knowledge);
@@ -654,14 +470,14 @@ public final class Cpc implements GraphSearch {
     }
 
     public SepsetMap getSepsets() {
-        return sepsets;
+        return this.sepsets;
     }
 
     /**
      * The graph that's constructed during the search.
      */
     public Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
     public void setGraph(Graph graph) {
@@ -673,7 +489,7 @@ public final class Cpc implements GraphSearch {
     }
 
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     public void setExternalGraph(Graph externalGraph) {

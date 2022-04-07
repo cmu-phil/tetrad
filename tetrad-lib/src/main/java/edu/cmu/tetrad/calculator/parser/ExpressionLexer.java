@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,13 +40,13 @@ public class ExpressionLexer {
     /**
      * The previous offset--before the getModel token was read.
      */
-    private int currentOffset = 0;
+    private int currentOffset;
 
 
     /**
      * The getModel position of the lexer.
      */
-    private int nextOffset = 0;
+    private int nextOffset;
 
 
     /**
@@ -64,13 +64,13 @@ public class ExpressionLexer {
     /**
      * The car sequenced being lexed.
      */
-    private CharSequence charSequence;
+    private final CharSequence charSequence;
 
 
     /**
      * The tokens.
      */
-    private Token[] tokens = new Token[]{Token.WHITESPACE, Token.COMMA, Token.LPAREN,
+    private final Token[] tokens = {Token.WHITESPACE, Token.COMMA, Token.LPAREN,
             Token.NUMBER, Token.OPERATOR, Token.RPAREN, Token.PARAMETER,
             Token.EQUATION, Token.STRING
     };
@@ -86,11 +86,11 @@ public class ExpressionLexer {
         if (seq == null) {
             throw new NullPointerException("CharSequence must not be null.");
         }
-        if (PATTERNS == null) {
-            PATTERNS = createPatterns();
+        if (ExpressionLexer.PATTERNS == null) {
+            ExpressionLexer.PATTERNS = ExpressionLexer.createPatterns();
         }
         this.charSequence = seq;
-        this.matchers = createMatchers(PATTERNS, seq);
+        this.matchers = ExpressionLexer.createMatchers(ExpressionLexer.PATTERNS, seq);
     }
 
     //=================================== Public Methods =====================================//
@@ -102,12 +102,12 @@ public class ExpressionLexer {
      */
     public final Token nextToken() {
         readToken(Token.WHITESPACE);
-        for (Token token : tokens) {
+        for (Token token : this.tokens) {
             if (readToken(token)) {
                 return token;
             }
         }
-        if (this.charSequence.length() <= nextOffset) {
+        if (this.charSequence.length() <= this.nextOffset) {
             return Token.EOF;
         }
 
@@ -115,12 +115,12 @@ public class ExpressionLexer {
     }
 
     public final Token nextTokenIncludingWhitespace() {
-        for (Token token : tokens) {
+        for (Token token : this.tokens) {
             if (readToken(token)) {
                 return token;
             }
         }
-        if (this.charSequence.length() <= nextOffset) {
+        if (this.charSequence.length() <= this.nextOffset) {
             return Token.EOF;
         }
 
@@ -206,7 +206,7 @@ public class ExpressionLexer {
         regex.put(Token.RPAREN, "\\)");
         regex.put(Token.COMMA, ",");
         regex.put(Token.NUMBER, "-?[\\d\\.]+(e-?\\d+)?");
-        regex.put(Token.OPERATOR, getExpressionRegex());
+        regex.put(Token.OPERATOR, ExpressionLexer.getExpressionRegex());
         regex.put(Token.PARAMETER, "\\$|(([a-zA-Z]{1})([a-zA-Z0-9-_/:\\.]*))");
         regex.put(Token.EQUATION, "\\=");
         regex.put(Token.STRING, "\\\".*\\\"");

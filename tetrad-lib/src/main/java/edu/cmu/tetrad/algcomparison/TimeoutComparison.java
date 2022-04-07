@@ -39,7 +39,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import org.reflections.Reflections;
@@ -68,19 +68,19 @@ public class TimeoutComparison {
 
     private boolean[] graphTypeUsed;
     private PrintStream out;
-    private boolean tabDelimitedTables = false;
-    private boolean saveGraphs = false;
-    private boolean copyData = false;
-    private boolean showSimulationIndices = false;
-    private boolean showAlgorithmIndices = false;
-    private boolean showUtilities = false;
-    private boolean sortByUtility = false;
-    private String dataPath = null;
-    private String resultsPath = null;
+    private boolean tabDelimitedTables;
+    private boolean saveGraphs;
+    private boolean copyData;
+    private boolean showSimulationIndices;
+    private boolean showAlgorithmIndices;
+    private boolean showUtilities;
+    private boolean sortByUtility;
+    private String dataPath;
+    private String resultsPath;
     private boolean parallelized = true;
-    private boolean saveCPDAGs = false;
-    private boolean savePags = false;
-    private ArrayList<String> dirs = null;
+    private boolean saveCPDAGs;
+    private boolean savePags;
+    private ArrayList<String> dirs;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
     public void compareFromFiles(String filePath, Algorithms algorithms,
@@ -119,7 +119,7 @@ public class TimeoutComparison {
             throw new NullPointerException("No files in " + file.getAbsolutePath());
         }
 
-        this.dirs = new ArrayList<String>();
+        this.dirs = new ArrayList<>();
 
         int count = 0;
 
@@ -168,7 +168,7 @@ public class TimeoutComparison {
             throw new NullPointerException("No files in " + file.getAbsolutePath());
         }
 
-        this.dirs = new ArrayList<String>();
+        this.dirs = new ArrayList<>();
 
         int count = 0;
 
@@ -217,7 +217,7 @@ public class TimeoutComparison {
             throw new RuntimeException(e);
         }
 
-        out.println(new Date());
+        this.out.println(new Date());
 
         // Set up simulations--create data and graphs, read in parameters. The parameters
         // are set in the parameters object.
@@ -241,7 +241,7 @@ public class TimeoutComparison {
             List<Integer> _dims = new ArrayList<>();
             List<String> varyingParameters = new ArrayList<>();
 
-            final List<String> parameters1 = algorithm.getParameters();
+            List<String> parameters1 = algorithm.getParameters();
 
             for (String name : parameters1) {
                 if (parameters.getNumValues(name) > 1) {
@@ -292,9 +292,6 @@ public class TimeoutComparison {
 
                 if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
                     ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
-//                    external.setSimulation(simulationWrapper.getSimulation());
-//                    external.setPath(dirs.get(simulationWrappers.indexOf(simulationWrapper)));
-//                    external.setPath(resultsPath);
                     external.setSimIndex(simulationWrappers.indexOf(external.getSimulation()));
                 }
 
@@ -309,23 +306,17 @@ public class TimeoutComparison {
 
         // Print out the preliminary information for statistics types, etc.
         if (allStats != null) {
-            out.println();
-            out.println("Statistics:");
-            out.println();
+            this.out.println();
+            this.out.println("Statistics:");
+            this.out.println();
 
             for (Statistic stat : statistics.getStatistics()) {
-                out.println(stat.getAbbreviation() + " = " + stat.getDescription());
+                this.out.println(stat.getAbbreviation() + " = " + stat.getDescription());
             }
         }
 
-        out.println();
-//        out.println("Parameters:");
-////        out.println(parameters);
-//        out.println();
+        this.out.println();
 
-//        printParameters(new ArrayList<>(parameters.getParametersNames()), parameters, out);
-//
-//        out.println();
         if (allStats != null) {
             int numTables = allStats.length;
             int numStats = allStats[0][0].length - 1;
@@ -352,8 +343,8 @@ public class TimeoutComparison {
                 }
             }
 
-            out.println("Simulations:");
-            out.println();
+            this.out.println("Simulations:");
+            this.out.println();
 
 //            if (simulationWrappers.size() == 1) {
 //                out.println(simulationWrappers.get(0).getDescription());
@@ -361,61 +352,58 @@ public class TimeoutComparison {
             int i = 0;
 
             for (SimulationWrapper simulation : simulationWrappers) {
-                out.print("Simulation " + (++i) + ": ");
-                out.println(simulation.getDescription());
-                out.println();
+                this.out.print("Simulation " + (++i) + ": ");
+                this.out.println(simulation.getDescription());
+                this.out.println();
 
-                printParameters(simulation.getParameters(), simulation.getSimulationSpecificParameters(), out);
+                printParameters(simulation.getParameters(), simulation.getSimulationSpecificParameters(), this.out);
 
-//                    for (String param : simulation.getParameters()) {
-//                        out.println(param + " = " + simulation.getValue(param));
-//                    }
-                out.println();
+                this.out.println();
             }
 //            }
 
-            out.println("Algorithms:");
-            out.println();
+            this.out.println("Algorithms:");
+            this.out.println();
 
             for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
                 AlgorithmSimulationWrapper wrapper = algorithmSimulationWrappers.get(t);
 
                 if (wrapper.getSimulationWrapper() == simulationWrappers.get(0)) {
-                    out.println((t + 1) + ". " + wrapper.getAlgorithmWrapper().getDescription());
+                    this.out.println((t + 1) + ". " + wrapper.getAlgorithmWrapper().getDescription());
                 }
             }
 
             if (isSortByUtility()) {
-                out.println();
-                out.println("Sorting by utility, high to low.");
+                this.out.println();
+                this.out.println("Sorting by utility, high to low.");
             }
 
             if (isShowUtilities()) {
-                out.println();
-                out.println("Weighting of statistics:");
-                out.println();
-                out.println("U = ");
+                this.out.println();
+                this.out.println("Weighting of statistics:");
+                this.out.println();
+                this.out.println("U = ");
 
                 for (Statistic stat : statistics.getStatistics()) {
                     String statName = stat.getAbbreviation();
                     double weight = statistics.getWeight(stat);
                     if (weight != 0.0) {
-                        out.println("    " + weight + " * f(" + statName + ")");
+                        this.out.println("    " + weight + " * f(" + statName + ")");
                     }
                 }
 
-                out.println();
-                out.println("...normed to range between 0 and 1.");
+                this.out.println();
+                this.out.println("...normed to range between 0 and 1.");
 
-                out.println();
-                out.println("Note that f for each statistic is a function that maps the statistic to the ");
-                out.println("interval [0, 1], with higher being better.");
+                this.out.println();
+                this.out.println("Note that f for each statistic is a function that maps the statistic to the ");
+                this.out.println("interval [0, 1], with higher being better.");
             }
 
-            out.println();
-            out.println("Graphs are being compared to the " + comparisonGraph.toString().replace("_", " ") + ".");
+            this.out.println();
+            this.out.println("Graphs are being compared to the " + this.comparisonGraph.toString().replace("_", " ") + ".");
 
-            out.println();
+            this.out.println();
 
             // Add utilities to table as the last column.
             for (int u = 0; u < numTables; u++) {
@@ -448,7 +436,7 @@ public class TimeoutComparison {
                     simulationWrappers, utilities, parameters);
         }
 
-        out.close();
+        this.out.close();
     }
 
     /**
@@ -464,19 +452,10 @@ public class TimeoutComparison {
 
         File dir0 = new File(dataPath);
         File dir;
-        int i = 0;
+        final int i = 0;
 
         dir = new File(dir0, "save");
-//
-//        do {
-//            dir = new File(dir0, "Simulation" + (++i));
-//        } while (dir.exists());
 
-//        if (dir.exists()) {
-//            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                    "A file already exists named 'Simulation' in directory '" + dir0.getPath() + "'; \n" +
-//                            "please remove it first or move it out of the way.");
-//        }
         deleteFilesThenDirectory(dir);
 
         try {
@@ -521,7 +500,7 @@ public class TimeoutComparison {
 
                     File file = new File(dir2, "data." + (j + 1) + ".txt");
                     Writer out = new FileWriter(file);
-                    DataModel dataModel = (DataModel) simulationWrapper.getDataModel(j);
+                    DataModel dataModel = simulationWrapper.getDataModel(j);
                     DataWriter.writeRectangularData((DataSet) dataModel, out, '\t');
                     out.close();
 
@@ -532,7 +511,7 @@ public class TimeoutComparison {
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(new DagToPag2(graph).convert(), file4, false);
+                        GraphUtils.saveGraph(new DagToPag(graph).convert(), file4, false);
                     }
                 }
 
@@ -558,21 +537,15 @@ public class TimeoutComparison {
 
             Parameters allParams = new Parameters();
 
-            List<Class> algorithms = new ArrayList<>();
-            List<Class> statistics = new ArrayList<>();
-            List<Class> independenceWrappers = new ArrayList<>();
-            List<Class> scoreWrappers = new ArrayList<>();
-            List<Class> simulations = new ArrayList<>();
+            List<Class> algorithms = new ArrayList<>(getClasses(Algorithm.class));
 
-            algorithms.addAll(getClasses(Algorithm.class));
+            List<Class> statistics = new ArrayList<>(getClasses(Statistic.class));
 
-            statistics.addAll(getClasses(Statistic.class));
+            List<Class> independenceWrappers = new ArrayList<>(getClasses(IndependenceWrapper.class));
 
-            independenceWrappers.addAll(getClasses(IndependenceWrapper.class));
+            List<Class> scoreWrappers = new ArrayList<>(getClasses(ScoreWrapper.class));
 
-            scoreWrappers.addAll(getClasses(ScoreWrapper.class));
-
-            simulations.addAll(getClasses(Simulation.class));
+            List<Class> simulations = new ArrayList<>(getClasses(Simulation.class));
 
             out.println("Available Algorithms:");
             out.println();
@@ -742,39 +715,6 @@ public class TimeoutComparison {
         }
     }
 
-    //    private void printParameters(HasParameters hasParameters, PrintStream out, Parameters allParams) {
-//        List<String> paramDescriptions = new ArrayList<>(hasParameters.getParameters());
-//        if (paramDescriptions.isEmpty()) return;
-//        out.print("\tParameters: ");
-//
-//        for (int i = 0; i < paramDescriptions.size(); i++) {
-//            out.print(paramDescriptions.get(i));
-//            out.print(" = ");
-//            Object[] values = allParams.getValues(paramDescriptions.get(i));
-//            if (values == null || values.length == 0) {
-//                out.print("no default");
-//
-//                if (i < paramDescriptions.size() - 1) {
-//                    out.print("; ");
-//                    if ((i + 1) % 4 == 0) out.print("\n\t\t");
-//                }
-//
-//                continue;
-//            }
-//
-//            for (int j = 0; j < values.length; j++) {
-//                out.print(values[j]);
-//                if (j < values.length - 1) out.print(",");
-//            }
-//
-//            if (i < paramDescriptions.size() - 1) {
-//                out.print("; ");
-//                if ((i + 1) % 4 == 0) out.print("\n\t\t");
-//            }
-//        }
-//
-//        out.println();
-//    }
     private List<Class> getClasses(Class type) {
         Reflections reflections = new Reflections();
         Set<Class> allClasses = reflections.getSubTypesOf(type);
@@ -787,9 +727,9 @@ public class TimeoutComparison {
         List<Integer> _dims = new ArrayList<>();
         List<String> varyingParams = new ArrayList<>();
 
-        final List<String> parameters1 = simulation.getParameters();
+        List<String> parameters1 = simulation.getParameters();
         for (String param : parameters1) {
-            final int numValues = parameters.getNumValues(param);
+            int numValues = parameters.getNumValues(param);
             if (numValues > 1) {
                 _dims.add(numValues);
                 varyingParams.add(param);
@@ -825,12 +765,12 @@ public class TimeoutComparison {
         return simulationWrappers;
     }
 
-    private double[][][][] calcStats(final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+    private double[][][][] calcStats(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
                                      List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
                                      Statistics statistics, int numRuns, long timeout, TimeUnit unit) {
-        int numGraphTypes = 4;
+        final int numGraphTypes = 4;
 
-        graphTypeUsed = new boolean[4];
+        this.graphTypeUsed = new boolean[4];
 
         double[][][][] allStats = new double[4][algorithmSimulationWrappers.size()][statistics.size() + 1][numRuns];
 
@@ -874,7 +814,7 @@ public class TimeoutComparison {
     }
 
     private String dateTimeNow() {
-        return DF.format(new Date(System.currentTimeMillis()));
+        return TimeoutComparison.DF.format(new Date(System.currentTimeMillis()));
     }
 
     private void shutdownAndAwaitTermination(ExecutorService pool) {
@@ -897,7 +837,7 @@ public class TimeoutComparison {
     }
 
     public boolean isShowSimulationIndices() {
-        return showSimulationIndices;
+        return this.showSimulationIndices;
     }
 
     public void setShowSimulationIndices(boolean showSimulationIndices) {
@@ -905,7 +845,7 @@ public class TimeoutComparison {
     }
 
     public boolean isShowAlgorithmIndices() {
-        return showAlgorithmIndices;
+        return this.showAlgorithmIndices;
     }
 
     public void setShowAlgorithmIndices(boolean showAlgorithmIndices) {
@@ -917,7 +857,7 @@ public class TimeoutComparison {
      * output.
      */
     public boolean isShowUtilities() {
-        return showUtilities;
+        return this.showUtilities;
     }
 
     /**
@@ -932,7 +872,7 @@ public class TimeoutComparison {
      * @return True iff the output should be sorted by utility.
      */
     public boolean isSortByUtility() {
-        return sortByUtility;
+        return this.sortByUtility;
     }
 
     /**
@@ -943,7 +883,7 @@ public class TimeoutComparison {
     }
 
     public boolean isParallelized() {
-        return parallelized;
+        return this.parallelized;
     }
 
     public void setParallelized(boolean parallelized) {
@@ -954,7 +894,7 @@ public class TimeoutComparison {
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveCPDAGs() {
-        return saveCPDAGs;
+        return this.saveCPDAGs;
     }
 
     /**
@@ -968,7 +908,7 @@ public class TimeoutComparison {
      * @return True if patterns should be saved out.
      */
     public boolean isSavePags() {
-        return savePags;
+        return this.savePags;
     }
 
     /**
@@ -983,7 +923,7 @@ public class TimeoutComparison {
      * into Excel).
      */
     public boolean isTabDelimitedTables() {
-        return tabDelimitedTables;
+        return this.tabDelimitedTables;
     }
 
     /**
@@ -1005,14 +945,14 @@ public class TimeoutComparison {
      * @return True if all graphs should be saved to files.
      */
     public boolean isSaveGraphs() {
-        return saveGraphs;
+        return this.saveGraphs;
     }
 
     /**
      * @return True if data should be copied before analyzing it.
      */
     public boolean isCopyData() {
-        return copyData;
+        return this.copyData;
     }
 
     /**
@@ -1026,7 +966,7 @@ public class TimeoutComparison {
      * The type of graph the results are compared to.
      */
     public ComparisonGraph getComparisonGraph() {
-        return comparisonGraph;
+        return this.comparisonGraph;
     }
 
     /**
@@ -1063,8 +1003,8 @@ public class TimeoutComparison {
 
         @Override
         public Void call() throws Exception {
-            doRun(algorithmSimulationWrappers, algorithmWrappers,
-                    simulationWrappers, statistics, numGraphTypes, allStats, run);
+            doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,
+                    this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run);
             return null;
         }
 
@@ -1078,9 +1018,9 @@ public class TimeoutComparison {
             Object value = parameters.get(name);
 
             if (value instanceof Double) {
-                out.println(description.getShortDescription() + " = " + value.toString());
+                out.println(description.getShortDescription() + " = " + value);
             } else if (value instanceof Integer) {
-                out.println(description.getShortDescription() + " = " + value.toString());
+                out.println(description.getShortDescription() + " = " + value);
             } else if (value instanceof Boolean) {
                 boolean b = (Boolean) value;
                 out.println(description.getShortDescription() + " = " + (b ? "Yes" : "No"));
@@ -1145,7 +1085,7 @@ public class TimeoutComparison {
             if (algorithmWrapper.getAlgorithm() instanceof ExternalAlgorithm) {
                 ExternalAlgorithm external = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
                 external.setSimulation(simulationWrapper.getSimulation());
-                external.setPath(resultsPath);
+                external.setPath(this.resultsPath);
                 external.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
             }
 
@@ -1167,7 +1107,7 @@ public class TimeoutComparison {
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
                 out = ((MultiDataSetAlgorithm) algorithm).search(dataModels, _params);
             } else {
-                DataModel dataModel = copyData ? data.copy() : data;
+                DataModel dataModel = this.copyData ? data.copy() : data;
                 Parameters _params = algorithmWrapper.getAlgorithmSpecificParameters();
                 out = algorithm.search(dataModel, _params);
             }
@@ -1184,7 +1124,7 @@ public class TimeoutComparison {
 
         long elapsed = stop - start;
 
-        saveGraph(resultsPath, out, run.getRunIndex(), simIndex, algIndex, algorithmWrapper, elapsed);
+        saveGraph(this.resultsPath, out, run.getRunIndex(), simIndex, algIndex, algorithmWrapper, elapsed);
 
         if (trueGraph != null) {
             out = GraphUtils.replaceNodes(out, trueGraph.getNodes());
@@ -1194,7 +1134,7 @@ public class TimeoutComparison {
             ExternalAlgorithm extAlg = (ExternalAlgorithm) algorithmWrapper.getAlgorithm();
             extAlg.setSimIndex(simulationWrappers.indexOf(simulationWrapper));
             extAlg.setSimulation(simulationWrapper.getSimulation());
-            extAlg.setPath(resultsPath);
+            extAlg.setPath(this.resultsPath);
             elapsed = extAlg.getElapsedTime(data, simulationWrapper.getSimulationSpecificParameters());
         }
 
@@ -1207,23 +1147,23 @@ public class TimeoutComparison {
         } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
             comparisonGraph = SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueGraph));
         } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
-            comparisonGraph = new DagToPag2(new EdgeListGraph(trueGraph)).convert();
+            comparisonGraph = new DagToPag(new EdgeListGraph(trueGraph)).convert();
         } else {
             throw new IllegalArgumentException("Unrecognized graph type.");
         }
 
 //        Graph comparisonGraph = trueGraph == null ? null : algorithmSimulationWrapper.getComparisonGraph(trueGraph);
         est[0] = out;
-        graphTypeUsed[0] = true;
+        this.graphTypeUsed[0] = true;
 
         if (data.isMixed()) {
             est[1] = getSubgraph(out, true, true, data);
             est[2] = getSubgraph(out, true, false, data);
             est[3] = getSubgraph(out, false, false, data);
 
-            graphTypeUsed[1] = true;
-            graphTypeUsed[2] = true;
-            graphTypeUsed[3] = true;
+            this.graphTypeUsed[1] = true;
+            this.graphTypeUsed[2] = true;
+            this.graphTypeUsed[3] = true;
         }
 
         Graph[] truth = new Graph[numGraphTypes];
@@ -1238,7 +1178,7 @@ public class TimeoutComparison {
 
         if (comparisonGraph != null) {
             for (int u = 0; u < numGraphTypes; u++) {
-                if (!graphTypeUsed[u]) {
+                if (!this.graphTypeUsed[u]) {
                     continue;
                 }
 
@@ -1267,7 +1207,7 @@ public class TimeoutComparison {
 
     private void saveGraph(String resultsPath, Graph graph, int i, int simIndex, int algIndex,
                            AlgorithmWrapper algorithmWrapper, long elapsed) {
-        if (!saveGraphs) {
+        if (!this.saveGraphs) {
             return;
         }
 
@@ -1401,11 +1341,11 @@ public class TimeoutComparison {
                             Parameters parameters) {
 
         if (mode == Mode.Average) {
-            out.println("AVERAGE STATISTICS");
+            this.out.println("AVERAGE STATISTICS");
         } else if (mode == Mode.StandardDeviation) {
-            out.println("STANDARD DEVIATIONS");
+            this.out.println("STANDARD DEVIATIONS");
         } else if (mode == Mode.WorstCase) {
-            out.println("WORST CASE");
+            this.out.println("WORST CASE");
         } else {
             throw new IllegalStateException();
         }
@@ -1416,10 +1356,10 @@ public class TimeoutComparison {
         NumberFormat nf = new DecimalFormat("0.00");
         NumberFormat smallNf = new DecimalFormat("0.00E0");
 
-        out.println();
+        this.out.println();
 
         for (int u = 0; u < numTables; u++) {
-            if (!graphTypeUsed[u]) {
+            if (!this.graphTypeUsed[u]) {
                 continue;
             }
 
@@ -1467,8 +1407,8 @@ public class TimeoutComparison {
             for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
                 for (int statIndex = 0; statIndex < numStats; statIndex++) {
                     Statistic statistic = statistics.getStatistics().get(statIndex);
-                    final AlgorithmWrapper algorithmWrapper = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper();
-                    final SimulationWrapper simulationWrapper = algorithmSimulationWrappers.get(newOrder[t]).getSimulationWrapper();
+                    AlgorithmWrapper algorithmWrapper = algorithmSimulationWrappers.get(newOrder[t]).getAlgorithmWrapper();
+                    SimulationWrapper simulationWrapper = algorithmSimulationWrappers.get(newOrder[t]).getSimulationWrapper();
 
                     Algorithm algorithm = algorithmWrapper.getAlgorithm();
                     Simulation simulation = simulationWrapper.getSimulation();
@@ -1481,7 +1421,7 @@ public class TimeoutComparison {
                         parameters.putAll(((HasParameterValues) simulation).getParameterValues());
                     }
 
-                    final String abbreviation = statistic.getAbbreviation();
+                    String abbreviation = statistic.getAbbreviation();
 
                     Object[] o = parameters.getValues(abbreviation);
 
@@ -1511,9 +1451,9 @@ public class TimeoutComparison {
                 }
             }
 
-            out.println(getHeader(u));
-            out.println();
-            out.println(table);
+            this.out.println(getHeader(u));
+            this.out.println();
+            this.out.println(table);
         }
     }
 
@@ -1549,14 +1489,14 @@ public class TimeoutComparison {
         return utilities;
     }
 
-    private int[] sort(final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
-                       final double[] utilities) {
+    private int[] sort(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+                       double[] utilities) {
         List<Integer> order = new ArrayList<>();
         for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
             order.add(t);
         }
 
-        final double[] _utilities = Arrays.copyOf(utilities, utilities.length);
+        double[] _utilities = Arrays.copyOf(utilities, utilities.length);
         double low = StatUtils.min(utilities);
         for (int t = 0; t < _utilities.length; t++) {
             low--;
@@ -1631,12 +1571,12 @@ public class TimeoutComparison {
         }
     }
 
-    private class AlgorithmWrapper implements Algorithm {
+    private static class AlgorithmWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
-        private Algorithm algorithm;
-        private Parameters parameters;
-        private List<String> overriddenParameters = new ArrayList<>();
+        private final Algorithm algorithm;
+        private final Parameters parameters;
+        private final List<String> overriddenParameters = new ArrayList<>();
 
         public AlgorithmWrapper(Algorithm algorithm, Parameters parameters) {
             this.algorithm = algorithm;
@@ -1645,22 +1585,22 @@ public class TimeoutComparison {
 
         @Override
         public Graph search(DataModel DataModel, Parameters parameters) {
-            return algorithm.search(DataModel, this.parameters);
+            return this.algorithm.search(DataModel, this.parameters);
         }
 
         @Override
         public Graph getComparisonGraph(Graph graph) {
-            return algorithm.getComparisonGraph(graph);
+            return this.algorithm.getComparisonGraph(graph);
         }
 
         @Override
         public String getDescription() {
             StringBuilder description = new StringBuilder();
-            description.append(algorithm.getDescription());
+            description.append(this.algorithm.getDescription());
 
-            if (overriddenParameters.size() > 0) {
-                for (String name : new ArrayList<>(overriddenParameters)) {
-                    description.append(", ").append(name).append(" = ").append(parameters.get(name));
+            if (this.overriddenParameters.size() > 0) {
+                for (String name : new ArrayList<>(this.overriddenParameters)) {
+                    description.append(", ").append(name).append(" = ").append(this.parameters.get(name));
                 }
             }
 
@@ -1669,12 +1609,12 @@ public class TimeoutComparison {
 
         @Override
         public DataType getDataType() {
-            return algorithm.getDataType();
+            return this.algorithm.getDataType();
         }
 
         @Override
         public List<String> getParameters() {
-            return algorithm.getParameters();
+            return this.algorithm.getParameters();
         }
 
         public void setValue(String name, Object value) {
@@ -1682,12 +1622,12 @@ public class TimeoutComparison {
                 throw new IllegalArgumentException();
             }
 
-            parameters.set(name, value);
+            this.parameters.set(name, value);
             this.overriddenParameters.add(name);
         }
 
         public Algorithm getAlgorithm() {
-            return algorithm;
+            return this.algorithm;
         }
 
         public Parameters getAlgorithmSpecificParameters() {
@@ -1695,28 +1635,28 @@ public class TimeoutComparison {
         }
     }
 
-    private class AlgorithmSimulationWrapper implements Algorithm {
+    private static class AlgorithmSimulationWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
-        private SimulationWrapper simulationWrapper;
-        private AlgorithmWrapper algorithmWrapper;
+        private final SimulationWrapper simulationWrapper;
+        private final AlgorithmWrapper algorithmWrapper;
         List<String> parameters = new ArrayList<>();
 
         public AlgorithmSimulationWrapper(AlgorithmWrapper algorithm, SimulationWrapper simulation) {
             this.algorithmWrapper = algorithm;
             this.simulationWrapper = simulation;
-            parameters.addAll(algorithmWrapper.getParameters());
-            parameters.addAll(simulationWrapper.getParameters());
+            this.parameters.addAll(this.algorithmWrapper.getParameters());
+            this.parameters.addAll(this.simulationWrapper.getParameters());
         }
 
         @Override
         public Graph search(DataModel DataModel, Parameters parameters) {
-            return algorithmWrapper.getAlgorithm().search(DataModel, parameters);
+            return this.algorithmWrapper.getAlgorithm().search(DataModel, parameters);
         }
 
         @Override
         public Graph getComparisonGraph(Graph graph) {
-            return algorithmWrapper.getComparisonGraph(graph);
+            return this.algorithmWrapper.getComparisonGraph(graph);
         }
 
         @Override
@@ -1726,29 +1666,29 @@ public class TimeoutComparison {
 
         @Override
         public DataType getDataType() {
-            return algorithmWrapper.getDataType();
+            return this.algorithmWrapper.getDataType();
         }
 
         @Override
         public List<String> getParameters() {
-            List<String> params = new ArrayList<>(simulationWrapper.getParameters());
-            params.addAll(algorithmWrapper.getParameters());
+            List<String> params = new ArrayList<>(this.simulationWrapper.getParameters());
+            params.addAll(this.algorithmWrapper.getParameters());
             return params;
         }
 
         public SimulationWrapper getSimulationWrapper() {
-            return simulationWrapper;
+            return this.simulationWrapper;
         }
 
         public AlgorithmWrapper getAlgorithmWrapper() {
-            return algorithmWrapper;
+            return this.algorithmWrapper;
         }
     }
 
-    private class SimulationWrapper implements Simulation {
+    private static class SimulationWrapper implements Simulation {
 
         static final long serialVersionUID = 23L;
-        private Simulation simulation;
+        private final Simulation simulation;
         private List<Graph> graphs;
         private List<DataModel> dataModels;
         private Parameters parameters;
@@ -1763,47 +1703,47 @@ public class TimeoutComparison {
 
         @Override
         public void createData(Parameters parameters, boolean newModel) {
-            simulation.createData(parameters, false);
+            this.simulation.createData(parameters, false);
             this.graphs = new ArrayList<>();
             this.dataModels = new ArrayList<>();
-            for (int i = 0; i < simulation.getNumDataModels(); i++) {
-                this.graphs.add(simulation.getTrueGraph(i));
-                this.dataModels.add(simulation.getDataModel(i));
+            for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
+                this.graphs.add(this.simulation.getTrueGraph(i));
+                this.dataModels.add(this.simulation.getDataModel(i));
             }
         }
 
         @Override
         public int getNumDataModels() {
-            return dataModels.size();
+            return this.dataModels.size();
         }
 
         @Override
         public Graph getTrueGraph(int index) {
-            if (graphs.get(index) == null) {
+            if (this.graphs.get(index) == null) {
                 return null;
             } else {
-                return new EdgeListGraph(graphs.get(index));
+                return new EdgeListGraph(this.graphs.get(index));
             }
         }
 
         @Override
         public DataModel getDataModel(int index) {
-            return dataModels.get(index);
+            return this.dataModels.get(index);
         }
 
         @Override
         public DataType getDataType() {
-            return simulation.getDataType();
+            return this.simulation.getDataType();
         }
 
         @Override
         public String getDescription() {
-            return simulation.getDescription();
+            return this.simulation.getDescription();
         }
 
         @Override
         public List<String> getParameters() {
-            return simulation.getParameters();
+            return this.simulation.getParameters();
         }
 
         public void setValue(String name, Object value) {
@@ -1811,11 +1751,11 @@ public class TimeoutComparison {
                 throw new IllegalArgumentException();
             }
 
-            parameters.set(name, value);
+            this.parameters.set(name, value);
         }
 
         public Object getValue(String name) {
-            Object[] values = parameters.getValues(name);
+            Object[] values = this.parameters.getValues(name);
 
             if (values == null || values.length == 0) {
                 throw new NullPointerException("Expecting parameter to be defined: " + name);
@@ -1825,7 +1765,7 @@ public class TimeoutComparison {
         }
 
         public Simulation getSimulation() {
-            return simulation;
+            return this.simulation;
         }
 
         public void setParameters(Parameters parameters) {
@@ -1833,7 +1773,7 @@ public class TimeoutComparison {
         }
 
         public Parameters getSimulationSpecificParameters() {
-            return parameters;
+            return this.parameters;
         }
     }
 
@@ -1852,19 +1792,19 @@ public class TimeoutComparison {
         }
 
         public int getAlgSimIndex() {
-            return algSimIndex;
+            return this.algSimIndex;
         }
 
         public int getRunIndex() {
-            return runIndex;
+            return this.runIndex;
         }
 
         public int getIndex() {
-            return index;
+            return this.index;
         }
 
         public AlgorithmSimulationWrapper getWrapper() {
-            return wrapper;
+            return this.wrapper;
         }
     }
 

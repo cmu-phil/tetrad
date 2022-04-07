@@ -23,19 +23,19 @@ public class TabularComparisonEditor extends JPanel {
     }
 
     private void setup() {
-        JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
+        JTabbedPane pane = new JTabbedPane(SwingConstants.TOP);
 
         pane.addTab("Comparison", getTableDisplay());
 
-        JTabbedPane pane2 = new JTabbedPane(JTabbedPane.LEFT);
+        JTabbedPane pane2 = new JTabbedPane(SwingConstants.LEFT);
 
-        JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
+        JTabbedPane pane3 = new JTabbedPane(SwingConstants.TOP);
 
-        GraphEditor graphEditor = new GraphEditor(new GraphWrapper(comparison.getTargetGraph()));
+        GraphEditor graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getTargetGraph()));
         graphEditor.enableEditing(false);
         pane3.add("Target Graph", graphEditor.getWorkbench());
 
-        graphEditor = new GraphEditor(new GraphWrapper(comparison.getReferenceGraph()));
+        graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getReferenceGraph()));
         graphEditor.enableEditing(false);
         pane3.add("True Graph", graphEditor.getWorkbench());
 
@@ -48,17 +48,17 @@ public class TabularComparisonEditor extends JPanel {
 
     private Box getTableDisplay() {
 
-        DataSet dataSet = comparison.getDataSet();
+        DataSet dataSet = this.comparison.getDataSet();
 
         TextTable table = getTextTable(dataSet, new DecimalFormat("0.00"));
 
         StringBuilder b0 = new StringBuilder();
-        String trueGraphAndTarget = "Target graphs from " + comparison.getTargetName()
-                + "\nTrue graphs from " + comparison.getReferenceName();
+        String trueGraphAndTarget = "Target graphs from " + this.comparison.getTargetName()
+                + "\nTrue graphs from " + this.comparison.getReferenceName();
         b0.append(trueGraphAndTarget).append("\n\n");
         b0.append(table);
 
-        Map<String, String> allParamsSettings = comparison.getAllParamSettings();
+        Map<String, String> allParamsSettings = this.comparison.getAllParamSettings();
 
         if (allParamsSettings != null) {
             for (String key : allParamsSettings.keySet()) {

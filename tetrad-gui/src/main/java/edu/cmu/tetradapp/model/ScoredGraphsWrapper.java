@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -68,13 +68,13 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     //=============================CONSTRUCTORS==========================//
 
     private ScoredGraphsWrapper() {
-        graphsToScores = null;
-        graphScorer = null;
+        this.graphsToScores = null;
+        this.graphScorer = null;
     }
 
     public ScoredGraphsWrapper(Graph graph, GraphScorer scorer) {
-        final List<Graph> dags = SearchGraphUtils.generateCpdagDags(graph, true);
-        graphsToScores = new HashMap<>();
+        List<Graph> dags = SearchGraphUtils.generateCpdagDags(graph, true);
+        this.graphsToScores = new HashMap<>();
         this.graphScorer = scorer;
 
         for (Graph _graph : dags) {
@@ -84,15 +84,15 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
                 score = scorer.scoreDag(_graph);
             }
 
-            graphsToScores.put(_graph, score);
+            this.graphsToScores.put(_graph, score);
         }
 
-        if (!graphsToScores.keySet().isEmpty()) {
+        if (!this.graphsToScores.keySet().isEmpty()) {
             /*
       The index of the selected graph.
      */
-            int index = 0;
-            selectedGraph = graphsToScores.keySet().iterator().next();
+            final int index = 0;
+            this.selectedGraph = this.graphsToScores.keySet().iterator().next();
         }
 
         log();
@@ -118,10 +118,6 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         this(wrapper.getGraph(), null);
     }
 
-    public ScoredGraphsWrapper(CpcRunner wrapper, Parameters parameters) {
-        this(wrapper.getGraph(), null);
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -136,8 +132,8 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     public Map<Graph, Double> getGraphsToScores() {
         Map<Graph, Double> _graphsToScores = new LinkedHashMap<>();
 
-        for (Graph graph : graphsToScores.keySet()) {
-            _graphsToScores.put(new EdgeListGraph(graph), graphsToScores.get(graph));
+        for (Graph graph : this.graphsToScores.keySet()) {
+            _graphsToScores.put(new EdgeListGraph(graph), this.graphsToScores.get(graph));
         }
 
         return _graphsToScores;
@@ -145,7 +141,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
 
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -162,7 +158,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         TetradLogger.getInstance().log("all_graphs", "\nAll Graphs:\n");
         int index = 0;
 
-        for (Graph graph : graphsToScores.keySet()) {
+        for (Graph graph : this.graphsToScores.keySet()) {
             TetradLogger.getInstance().log("all_graphs", "\nGraph #" + (++index));
             TetradLogger.getInstance().log("all_graphs", graph + "");
         }
@@ -178,9 +174,6 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -191,21 +184,21 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
      * May be null; a selected graph must be set.
      */
     public Graph getGraph() {
-        return selectedGraph;
+        return this.selectedGraph;
     }
 
     /**
      * May be null; a selected graph must be set.
      */
     public Graph getSelectedGraph() {
-        return selectedGraph;
+        return this.selectedGraph;
     }
 
     /**
      * Sets a selected graph. Must be one of the graphs in <code>getGraphToScore().keySet</code>.
      */
     public void setSelectedGraph(Graph graph) {
-        if (!graphsToScores.keySet().contains(graph)) {
+        if (!this.graphsToScores.containsKey(graph)) {
             throw new IllegalArgumentException("Not a graph in this set.");
         }
 
@@ -213,7 +206,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     }
 
     public GraphScorer getGraphScorer() {
-        return graphScorer;
+        return this.graphScorer;
     }
 }
 

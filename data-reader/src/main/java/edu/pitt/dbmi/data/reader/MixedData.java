@@ -25,12 +25,12 @@ package edu.pitt.dbmi.data.reader;
  */
 public interface MixedData extends Data {
 
-    public int getNumOfRows();
+    int getNumOfRows();
 
-    public DiscreteDataColumn[] getDataColumns();
+    DiscreteDataColumn[] getDataColumns();
 
-    public double[][] getContinuousData();
+    double[][] getContinuousData();
 
-    public int[][] getDiscreteData();
+    int[][] getDiscreteData();
 
 }

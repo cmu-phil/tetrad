@@ -18,6 +18,7 @@
  */
 package edu.pitt.dbmi.data.reader.validation.tabular;
 
+import edu.pitt.dbmi.data.reader.DataFileReader;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.AbstractTabularColumnFileReader;
 import edu.pitt.dbmi.data.reader.util.Columns;
@@ -63,10 +64,10 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
 
             validateColumns(validCols, results);
         } catch (IOException exception) {
-            if (results.size() <= maxNumOfMsg) {
-                String errMsg = String.format("Unable to read file %s.", dataFile.getFileName());
+            if (results.size() <= this.maxNumOfMsg) {
+                String errMsg = String.format("Unable to read file %s.", this.dataFile.getFileName());
                 ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, errMsg);
-                result.setAttribute(ValidationAttribute.FILE_NAME, dataFile.getFileName());
+                result.setAttribute(ValidationAttribute.FILE_NAME, this.dataFile.getFileName());
                 results.add(result);
             }
         }
@@ -83,11 +84,11 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
                 validateColumns(new int[0], results);
             } else {
                 Set<String> modifiedExcludedCols = new HashSet<>();
-                if (Character.isDefined(quoteCharacter)) {
+                if (Character.isDefined(this.quoteCharacter)) {
                     excludedColumns.stream()
                             .map(e -> e.trim())
                             .filter(e -> !e.isEmpty())
-                            .forEach(e -> modifiedExcludedCols.add(stripCharacter(e, quoteCharacter)));
+                            .forEach(e -> modifiedExcludedCols.add(stripCharacter(e, this.quoteCharacter)));
                 } else {
                     excludedColumns.stream()
                             .map(e -> e.trim())
@@ -100,10 +101,10 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
                 validateColumns(excludedCols, results);
             }
         } catch (IOException exception) {
-            if (results.size() <= maxNumOfMsg) {
-                String errMsg = String.format("Unable to read file %s.", dataFile.getFileName());
+            if (results.size() <= this.maxNumOfMsg) {
+                String errMsg = String.format("Unable to read file %s.", this.dataFile.getFileName());
                 ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_IO_ERROR, errMsg);
-                result.setAttribute(ValidationAttribute.FILE_NAME, dataFile.getFileName());
+                result.setAttribute(ValidationAttribute.FILE_NAME, this.dataFile.getFileName());
                 results.add(result);
             }
         }
@@ -114,17 +115,17 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
     private void validateColumns(int[] excludedColumns, List<ValidationResult> results) throws IOException {
         int numOfVars = 0;
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
             boolean finished = false;
 
-            byte delimChar = delimiter.getByteValue();
+            byte delimChar = this.delimiter.getByteValue();
             byte prevChar = -1;
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -136,13 +137,13 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
             int lineNum = 1;
             StringBuilder dataBuilder = new StringBuilder();
 
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
                     byte currChar = buffer[i];
 
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
                         finished = hasSeenNonblankChar && !skip;
                         if (finished) {
                             String value = dataBuilder.toString().trim();
@@ -171,12 +172,12 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
                         cmntIndex = 0;
                         checkForComment = comment.length > 0;
                     } else if (!skip) {
-                        if (currChar > SPACE_CHAR) {
+                        if (currChar > DataFileReader.SPACE_CHAR) {
                             hasSeenNonblankChar = true;
                         }
 
                         // skip blank chars at the begining of the line
-                        if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                             continue;
                         }
 
@@ -194,19 +195,17 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
                             }
                         }
 
-                        if (currChar == quoteCharacter) {
+                        if (currChar == this.quoteCharacter) {
                             hasQuoteChar = !hasQuoteChar;
                         } else {
                             if (hasQuoteChar) {
                                 dataBuilder.append((char) currChar);
                             } else {
                                 boolean isDelimiter;
-                                switch (delimiter) {
-                                    case WHITESPACE:
-                                        isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
-                                        break;
-                                    default:
-                                        isDelimiter = (currChar == delimChar);
+                                if (this.delimiter == Delimiter.WHITESPACE) {
+                                    isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                } else {
+                                    isDelimiter = (currChar == delimChar);
                                 }
 
                                 if (isDelimiter) {
@@ -258,7 +257,7 @@ public class TabularColumnFileValidation extends AbstractTabularColumnFileReader
         }
 
         if (numOfVars <= 0) {
-            String errMsg = "No variable was read in.";
+            final String errMsg = "No variable was read in.";
             ValidationResult result = new ValidationResult(ValidationCode.ERROR, MessageType.FILE_MISSING_VALUE, errMsg);
             results.add(result);
         }

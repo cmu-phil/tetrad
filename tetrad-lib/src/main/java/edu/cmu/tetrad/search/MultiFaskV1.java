@@ -25,14 +25,13 @@ public class MultiFaskV1 {
     private final SemBicScoreMultiFas score;
 
     // An initial graph to orient, skipping the adjacency step.
-    private Graph externalGraph = null;
+    private Graph externalGraph;
 
     // Elapsed time of the search, in milliseconds.
-    private long elapsed = 0;
 
 
     // For the Fast Adjacency Search.
-    private int depth = -1;
+    private final int depth = -1;
 
     // For the SEM BIC score, for the Fast Adjacency Search.
     private double penaltyDiscount = 1;
@@ -46,19 +45,10 @@ public class MultiFaskV1 {
     // Cutoff for T tests for 2-cycle tests.
     private double cutoff;
 
-    // A threshold for including extra adjacencies due to skewness.
-    private double extraEdgeThreshold = 0.3;
-
-    // True if FAS adjacencies should be included in the output.
-    private boolean useFasAdjacencies = true;
-
-    // True if skew adjacencies should be included in the output.
-    private boolean useSkewAdjacencies = true;
-
     // Threshold for reversing casual judgments for negative coefficients.
     private double delta = -0.2;
 
-    private List<DataSet> dataSets = null;
+    private List<DataSet> dataSets;
 
     private final double[][][] data;
 
@@ -67,10 +57,10 @@ public class MultiFaskV1 {
         this.dataSets = dataSets;
         this.score = score;
 
-        data = new double[dataSets.size()][][];
+        this.data = new double[dataSets.size()][][];
 
         for (int i = 0; i < dataSets.size(); i++) {
-            data[i] = dataSets.get(i).getDoubleData().transpose().toArray();
+            this.data[i] = dataSets.get(i).getDoubleData().transpose().toArray();
         }
 
     }
@@ -78,39 +68,31 @@ public class MultiFaskV1 {
     //======================================== PUBLIC METHODS ====================================//
 
     public Graph search() {
-
-        setCutoff(alpha);
-
+        setCutoff(this.alpha);
         DataSet dataSet;
-
-        // System.out.println(dataSets.size());
-
         ArrayList<DataSet> standardSets = new ArrayList<>();
 
-        for (int i = 0; i < dataSets.size(); i++) {
-            dataSet = DataUtils.standardizeData(dataSets.get(i));
-            //System.out.println("Standardized " + Integer.toString(i));
+        for (DataSet set : this.dataSets) {
+            dataSet = DataUtils.standardizeData(set);
             standardSets.add(dataSet);
         }
 
-        dataSets = standardSets;
-
-        List<Node> variables = dataSets.get(0).getVariables();
-
+        this.dataSets = standardSets;
+        List<Node> variables = this.dataSets.get(0).getVariables();
         Graph G0;
 
-        IndependenceTest test = new IndTestScore(score);
+        IndependenceTest test = new IndTestScore(this.score);
         System.out.println("FAS");
 
         Fas fas = new Fas(test);
         fas.setStable(true);
         fas.setDepth(getDepth());
         fas.setVerbose(false);
-        fas.setKnowledge(knowledge);
+        fas.setKnowledge(this.knowledge);
         G0 = fas.search();
 
-        SearchGraphUtils.pcOrientbk(knowledge, G0, G0.getNodes());
-        G0 = GraphUtils.replaceNodes(G0, dataSets.get(0).getVariables());
+        SearchGraphUtils.pcOrientbk(this.knowledge, G0, G0.getNodes());
+        G0 = GraphUtils.replaceNodes(G0, this.dataSets.get(0).getVariables());
 
         System.out.println("Orientation");
 
@@ -125,15 +107,15 @@ public class MultiFaskV1 {
                 double[] x;
                 double[] y;
 
-                double[][] _x = new double[dataSets.size()][];
-                double[][] _y = new double[dataSets.size()][];
+                double[][] _x = new double[this.dataSets.size()][];
+                double[][] _y = new double[this.dataSets.size()][];
 
                 double c1 = 0;
                 double c2 = 0;
 
-                for (int k = 0; k < dataSets.size(); k++) {
-                    x = data[k][i];
-                    y = data[k][j];
+                for (int k = 0; k < this.dataSets.size(); k++) {
+                    x = this.data[k][i];
+                    y = this.data[k][j];
 
                     _x[k] = x;
                     _y[k] = y;
@@ -142,9 +124,8 @@ public class MultiFaskV1 {
                     c2 += StatUtils.cov(x, y, y, 0, +1)[1];
                 }
 
-                if ((isUseFasAdjacencies() && G0.isAdjacentTo(X, Y)) || (isUseSkewAdjacencies() && (Math.abs(c1 - c2) / dataSets.size()) > getExtraEdgeThreshold())) {
-                    // if ((isUseFasAdjacencies() && G0.isAdjacentTo(X, Y)) || (isUseSkewAdjacencies() && (Math.abs(c1 - c2) > getSkewEdgeAlpha()))) {
-
+                // A threshold for including extra adjacencies due to skewness.
+                if ((G0.isAdjacentTo(X, Y)) || ((abs(c1 - c2) / this.dataSets.size()) > 0.3)) {
                     if (knowledgeOrients(X, Y)) {
                         graph.addDirectedEdge(X, Y);
                     } else if (knowledgeOrients(Y, X)) {
@@ -168,9 +149,6 @@ public class MultiFaskV1 {
         System.out.println();
         System.out.println("Done");
 
-        // long stop = System.currentTimeMillis();
-        // this.elapsed = stop - start;
-
         return graph;
     }
 
@@ -179,7 +157,7 @@ public class MultiFaskV1 {
      * though a higher value is recommended, say, 2, 3, or 4.
      */
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     /**
@@ -202,7 +180,7 @@ public class MultiFaskV1 {
      * @return the current knowledge.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -213,58 +191,49 @@ public class MultiFaskV1 {
     }
 
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     //======================================== PRIVATE METHODS ===================================//
 
     private boolean bidirected(double[][] x, double[][] y, Graph G0, Node X, Node Y) {
-        Set<Node> adjSet = new HashSet<Node>(G0.getAdjacentNodes(X));
+        Set<Node> adjSet = new HashSet<>(G0.getAdjacentNodes(X));
         adjSet.addAll(G0.getAdjacentNodes(Y));
         List<Node> adj = new ArrayList<>(adjSet);
-        // System.out.println(adj.size());
         adj.remove(X);
         adj.remove(Y);
-
-        // System.out.println(adj.size());
 
         int trueCounter = 0;
         int falseCounter = 0;
 
-        for (int i = 0; i < dataSets.size(); i++) {
+        for (int i = 0; i < this.dataSets.size(); i++) {
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), Math.min(depth, adj.size()));
+            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), this.depth);
             int[] choice;
-            DataSet dataSet;
 
             boolean possibleTwoCycle = false;
 
             while ((choice = gen.next()) != null) {
 
                 List<Node> _adj = GraphUtils.asList(choice, adj);
-                double[][][] _Z = new double[dataSets.size()][_adj.size()][];
-
-
-                // System.out.println(_adj.size());
+                double[][][] _Z = new double[this.dataSets.size()][_adj.size()][];
 
                 if (_adj.size() > 0) {
-
-
                     for (int f = 0; f < _adj.size(); f++) {
 
                         Node _z = _adj.get(f);
 
-                        for (int g = 0; g < dataSets.size(); g++) {
+                        for (int g = 0; g < this.dataSets.size(); g++) {
 
-                            int column = dataSets.get(0).getColumn(_z);
-                            _Z[g][f] = data[g][column];
+                            int column = this.dataSets.get(0).getColumn(_z);
+                            _Z[g][f] = this.data[g][column];
                         }
                     }
 
 
-                    double pc = partialCorrelation(x[i], y[i], _Z[i], x[i], Double.NEGATIVE_INFINITY, +1);
-                    double pc1 = partialCorrelation(x[i], y[i], _Z[i], x[i], 0, +1);
-                    double pc2 = partialCorrelation(x[i], y[i], _Z[i], y[i], 0, +1);
+                    double pc = partialCorrelation(x[i], y[i], _Z[i], x[i], Double.NEGATIVE_INFINITY);
+                    double pc1 = partialCorrelation(x[i], y[i], _Z[i], x[i], 0);
+                    double pc2 = partialCorrelation(x[i], y[i], _Z[i], y[i], 0);
 
                     int nc = StatUtils.getRows(x[i], Double.NEGATIVE_INFINITY, +1).size();
                     int nc1 = StatUtils.getRows(x[i], 0, +1).size();
@@ -277,8 +246,8 @@ public class MultiFaskV1 {
                     double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
                     double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-                    boolean rejected1 = abs(zv1) > cutoff;
-                    boolean rejected2 = abs(zv2) > cutoff;
+                    boolean rejected1 = abs(zv1) > this.cutoff;
+                    boolean rejected2 = abs(zv2) > this.cutoff;
 
                     if (zv1 < 0 && zv2 > 0 && rejected1) {
                         possibleTwoCycle = true;
@@ -286,17 +255,13 @@ public class MultiFaskV1 {
                         possibleTwoCycle = true;
                     } else if (rejected1 && rejected2) {
                         possibleTwoCycle = true;
-                    }
-
-                    if (!possibleTwoCycle) {
-                        break;
                     }
 
                 } else {
                     double[][] _emptyZ = new double[0][0];
-                    double pc = partialCorrelation(x[i], y[i], _emptyZ, x[i], Double.NEGATIVE_INFINITY, +1);
-                    double pc1 = partialCorrelation(x[i], y[i], _emptyZ, x[i], 0, +1);
-                    double pc2 = partialCorrelation(x[i], y[i], _emptyZ, y[i], 0, +1);
+                    double pc = partialCorrelation(x[i], y[i], _emptyZ, x[i], Double.NEGATIVE_INFINITY);
+                    double pc1 = partialCorrelation(x[i], y[i], _emptyZ, x[i], 0);
+                    double pc2 = partialCorrelation(x[i], y[i], _emptyZ, y[i], 0);
 
                     int nc = StatUtils.getRows(x[i], Double.NEGATIVE_INFINITY, +1).size();
                     int nc1 = StatUtils.getRows(x[i], 0, +1).size();
@@ -309,8 +274,8 @@ public class MultiFaskV1 {
                     double zv1 = (z - z1) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc1 - 3)));
                     double zv2 = (z - z2) / sqrt((1.0 / ((double) nc - 3) + 1.0 / ((double) nc2 - 3)));
 
-                    boolean rejected1 = abs(zv1) > cutoff;
-                    boolean rejected2 = abs(zv2) > cutoff;
+                    boolean rejected1 = abs(zv1) > this.cutoff;
+                    boolean rejected2 = abs(zv2) > this.cutoff;
 
                     if (zv1 < 0 && zv2 > 0 && rejected1) {
                         possibleTwoCycle = true;
@@ -320,12 +285,10 @@ public class MultiFaskV1 {
                         possibleTwoCycle = true;
                     }
 
-                    if (!possibleTwoCycle) {
-                        break;
-                    }
-
                 }
-
+                if (!possibleTwoCycle) {
+                    break;
+                }
             }
 
             if (possibleTwoCycle) {
@@ -342,9 +305,9 @@ public class MultiFaskV1 {
 
         double lrSum = 0;
 
-        for (int i = 0; i < dataSets.size(); i++) {
-            double left = cu(x[i], y[i], x[i]) / (sqrt(cu(x[i], x[i], x[i]) * cu(y[i], y[i], x[i])));
-            double right = cu(x[i], y[i], y[i]) / (sqrt(cu(x[i], x[i], y[i]) * cu(y[i], y[i], y[i])));
+        for (int i = 0; i < this.dataSets.size(); i++) {
+            double left = MultiFaskV1.cu(x[i], y[i], x[i]) / (sqrt(MultiFaskV1.cu(x[i], x[i], x[i]) * MultiFaskV1.cu(y[i], y[i], x[i])));
+            double right = MultiFaskV1.cu(x[i], y[i], y[i]) / (sqrt(MultiFaskV1.cu(x[i], x[i], y[i]) * MultiFaskV1.cu(y[i], y[i], y[i])));
             double lr = left - right;
 
             double r = StatUtils.correlation(x[i], y[i]);
@@ -376,8 +339,8 @@ public class MultiFaskV1 {
         return exy / n;
     }
 
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) throws SingularMatrixException {
-        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
+    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold) throws SingularMatrixException {
+        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, 1);
         Matrix m = new Matrix(cv).transpose();
         return StatUtils.partialCorrelation(m);
     }
@@ -395,43 +358,19 @@ public class MultiFaskV1 {
     }
 
     private boolean knowledgeOrients(Node left, Node right) {
-        return knowledge.isForbidden(right.getName(), left.getName()) || knowledge.isRequired(left.getName(), right.getName());
+        return this.knowledge.isForbidden(right.getName(), left.getName()) || this.knowledge.isRequired(left.getName(), right.getName());
     }
 
     public Graph getExternalGraph() {
-        return externalGraph;
+        return this.externalGraph;
     }
 
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
-    public double getExtraEdgeThreshold() {
-        return extraEdgeThreshold;
-    }
-
-    public void setExtraEdgeThreshold(double extraEdgeThreshold) {
-        this.extraEdgeThreshold = extraEdgeThreshold;
-    }
-
-    public boolean isUseFasAdjacencies() {
-        return useFasAdjacencies;
-    }
-
-    public void setUseFasAdjacencies(boolean useFasAdjacencies) {
-        this.useFasAdjacencies = useFasAdjacencies;
-    }
-
-    public boolean isUseSkewAdjacencies() {
-        return useSkewAdjacencies;
-    }
-
-    public void setUseSkewAdjacencies(boolean useSkewAdjacencies) {
-        this.useSkewAdjacencies = useSkewAdjacencies;
-    }
-
     public double getDelta() {
-        return delta;
+        return this.delta;
     }
 
     public void setDelta(double delta) {

@@ -20,8 +20,8 @@ package edu.cmu.tetrad.algcomparison.algorithm;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.graph.Graph;
@@ -66,7 +66,7 @@ public class AlgorithmFactory {
 
     public static Algorithm create(Class<? extends Algorithm> algoClass, IndependenceWrapper test, ScoreWrapper score, Graph externalGraph)
             throws IllegalAccessException, InstantiationException {
-        Algorithm algorithm = create(algoClass, test, score);
+        Algorithm algorithm = AlgorithmFactory.create(algoClass, test, score);
         if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
             ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }
@@ -83,12 +83,12 @@ public class AlgorithmFactory {
         IndependenceWrapper test = (indTestClass == null) ? null : indTestClass.newInstance();
         ScoreWrapper score = (scoreClass == null) ? null : scoreClass.newInstance();
 
-        return create(algoClass, test, score);
+        return AlgorithmFactory.create(algoClass, test, score);
     }
 
     public static Algorithm create(Class<? extends Algorithm> algoClass, Class<? extends IndependenceWrapper> indTestClass, Class<? extends ScoreWrapper> scoreClass, Graph externalGraph)
             throws IllegalAccessException, InstantiationException {
-        Algorithm algorithm = create(algoClass, indTestClass, scoreClass);
+        Algorithm algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
             ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }

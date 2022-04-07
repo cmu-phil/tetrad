@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -33,11 +33,8 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +48,8 @@ import java.util.List;
 public class CPDAGDisplay extends JPanel implements GraphEditable {
     private GraphWorkbench workbench;
 
-    public CPDAGDisplay(final Graph graph) {
-        final List dags = SearchGraphUtils.generateCpdagDags(graph, false);
+    public CPDAGDisplay(Graph graph) {
+        List<Graph> dags = SearchGraphUtils.generateCpdagDags(graph, false);
 
         if (dags.size() == 0) {
             JOptionPane.showMessageDialog(
@@ -61,68 +58,60 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
             return;
         }
 
-        Graph dag = (Graph) dags.get(0);
-        workbench = new GraphWorkbench(dag);
+        Graph dag = dags.get(0);
+        this.workbench = new GraphWorkbench(dag);
 
-        final SpinnerNumberModel model =
+        SpinnerNumberModel model =
                 new SpinnerNumberModel(1, 1, dags.size(), 1);
-        model.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                int index = model.getNumber().intValue();
-                workbench.setGraph(
-                        (Graph) dags.get(index - 1));
-            }
+        model.addChangeListener(e -> {
+            int index = model.getNumber().intValue();
+            CPDAGDisplay.this.workbench.setGraph(
+                    dags.get(index - 1));
         });
 
-        final JSpinner spinner = new JSpinner();
-        JComboBox orient = new JComboBox(
+        JSpinner spinner = new JSpinner();
+        JComboBox<String> orient = new JComboBox<>(
                 new String[]{"Orient --- only", "Orient ---, <->"});
         spinner.setModel(model);
-        final JLabel totalLabel = new JLabel(" of " + dags.size());
+        JLabel totalLabel = new JLabel(" of " + dags.size());
 
         orient.setMaximumSize(orient.getPreferredSize());
-        orient.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox box = (JComboBox) e.getSource();
-                String option = (String) box.getSelectedItem();
+        orient.addActionListener(e -> {
+            JComboBox box = (JComboBox) e.getSource();
+            String option = (String) box.getSelectedItem();
 
-                if ("Orient --- only".equals(option)) {
-                    List _dags = SearchGraphUtils.generateCpdagDags(graph, false);
-                    dags.clear();
-                    dags.addAll(_dags);
-                    final SpinnerNumberModel model =
-                            new SpinnerNumberModel(1, 1,
-                                    dags.size(), 1);
-                    model.addChangeListener(new ChangeListener() {
-                        public void stateChanged(ChangeEvent e) {
-                            int index =
-                                    model.getNumber().intValue();
-                            workbench.setGraph(
-                                    (Graph) dags.get(index - 1));
-                        }
-                    });
-                    spinner.setModel(model);
-                    totalLabel.setText(" of " + dags.size());
-                    workbench.setGraph((Graph) dags.get(0));
-                } else if ("Orient ---, <->".equals(option)) {
-                    List _dags = SearchGraphUtils.generateCpdagDags(graph, true);
-                    dags.clear();
-                    dags.addAll(_dags);
-                    final SpinnerNumberModel model =
-                            new SpinnerNumberModel(1, 1,
-                                    dags.size(), 1);
-                    model.addChangeListener(new ChangeListener() {
-                        public void stateChanged(ChangeEvent e) {
-                            int index =
-                                    model.getNumber().intValue();
-                            workbench.setGraph(
-                                    (Graph) dags.get(index - 1));
-                        }
-                    });
-                    spinner.setModel(model);
-                    totalLabel.setText(" of " + dags.size());
-                    workbench.setGraph((Graph) dags.get(0));
-                }
+            if ("Orient --- only".equals(option)) {
+                List _dags = SearchGraphUtils.generateCpdagDags(graph, false);
+                dags.clear();
+                dags.addAll(_dags);
+                SpinnerNumberModel model1 =
+                        new SpinnerNumberModel(1, 1,
+                                dags.size(), 1);
+                model1.addChangeListener(e1 -> {
+                    int index =
+                            model1.getNumber().intValue();
+                    CPDAGDisplay.this.workbench.setGraph(
+                            dags.get(index - 1));
+                });
+                spinner.setModel(model1);
+                totalLabel.setText(" of " + dags.size());
+                CPDAGDisplay.this.workbench.setGraph(dags.get(0));
+            } else if ("Orient ---, <->".equals(option)) {
+                List _dags = SearchGraphUtils.generateCpdagDags(graph, true);
+                dags.clear();
+                dags.addAll(_dags);
+                SpinnerNumberModel model1 =
+                        new SpinnerNumberModel(1, 1,
+                                dags.size(), 1);
+                model1.addChangeListener(e12 -> {
+                    int index =
+                            model1.getNumber().intValue();
+                    CPDAGDisplay.this.workbench.setGraph(
+                            dags.get(index - 1));
+                });
+                spinner.setModel(model1);
+                totalLabel.setText(" of " + dags.size());
+                CPDAGDisplay.this.workbench.setGraph(dags.get(0));
             }
         });
 
@@ -137,16 +126,13 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
         b1.add(new JLabel("DAG "));
         b1.add(spinner);
         b1.add(totalLabel);
-//        b1.add(Box.createHorizontalStrut(10));
-//        b1.add(Box.createHorizontalGlue());
-//        b1.add(new JButton(new CopySubgraphAction(this)));
 
         b.add(b1);
 
         Box b2 = Box.createHorizontalBox();
         JPanel graphPanel = new JPanel();
         graphPanel.setLayout(new BorderLayout());
-        JScrollPane jScrollPane = new JScrollPane(workbench);
+        JScrollPane jScrollPane = new JScrollPane(this.workbench);
         jScrollPane.setPreferredSize(new Dimension(400, 400));
         graphPanel.add(jScrollPane);
         graphPanel.setBorder(new TitledBorder("DAG in forbid_latent_common_causes"));
@@ -176,13 +162,11 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
         return selectedModelComponents;
     }
 
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
+    public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
-        for (int i = 0; i < sessionElements.size(); i++) {
-
-            Object o = sessionElements.get(i);
+        for (Object o : sessionElements) {
 
             if (o instanceof GraphNode) {
                 Node modelNode = (Node) o;
@@ -194,15 +178,15 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
     }
 
     public GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     public Graph getGraph() {
-        return workbench.getGraph();
+        return this.workbench.getGraph();
     }
 
     public void setGraph(Graph graph) {
-        workbench.setGraph(graph);
+        this.workbench.setGraph(graph);
     }
 
     /**
@@ -215,7 +199,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
         JMenu edit = new JMenu("Edit");
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
         copy.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         edit.add(copy);
 
         JMenuBar menuBar = new JMenuBar();

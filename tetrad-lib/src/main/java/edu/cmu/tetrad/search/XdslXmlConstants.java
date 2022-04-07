@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,26 +29,14 @@ package edu.cmu.tetrad.search;
  */
 class XdslXmlConstants {
 
-    final public static String BAYES_NET = "bayesNet";
-    final public static String BN_VARIABLES = "bnVariables";
-    final public static String PARENTS = "parents";
-    final public static String CPTS = "cpts";
-    final public static String DISCRETE_VARIABLE = "discreteVariable";
-    final public static String CATEGORY = "category";
-    final public static String PARENTS_FOR = "parentsFor";
-    final public static String PARENT = "parent";
-    final public static String CPT = "cpt";
-    final public static String ROW = "row";
-    final public static String NAME = "name";
-    final public static String INDEX = "index";
-    final public static String LATENT = "latent";
-    final public static String X = "x";
-    final public static String Y = "y";
-    final public static String ROW_SUM_TOLERANCE = "rowSumTolerance";
-    final public static String VARIABLE = "variable";
-    final public static String NUM_ROWS = "numRows";
-    final public static String NUM_COLS = "numCols";
-    final public static String YES = "yes";
+    public static final String PARENTS = "parents";
+    public static final String CPT = "cpt";
+    public static final String ROW = "row";
+    public static final String NAME = "name";
+    public static final String LATENT = "latent";
+    public static final String X = "x";
+    public static final String Y = "y";
+    public static final String VARIABLE = "variable";
 }
 
 

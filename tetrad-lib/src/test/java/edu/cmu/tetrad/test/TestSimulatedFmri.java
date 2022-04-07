@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -50,10 +50,10 @@ import java.text.ParseException;
 public class TestSimulatedFmri {
 
     public static void main(String... args) {
-        new TestSimulatedFmri().task(false);
+        new TestSimulatedFmri().task();
     }
 
-    private void task(boolean testing) {
+    private void task() {
         Parameters parameters = new Parameters();
         parameters.set(Params.PENALTY_DISCOUNT, 4);
         parameters.set(Params.DEPTH, -1);
@@ -87,9 +87,10 @@ public class TestSimulatedFmri {
 
         Simulations simulations = new Simulations();
 
-        if (!testing) {
-            String dir = "/Users/user/Downloads/Cycles_Data_fMRI/";
-            String subdir = "data_fslfilter";
+        String dir;
+        final String subdir = "data_fslfilter";
+        if (!false) {
+            dir = "/Users/user/Downloads/Cycles_Data_fMRI/";
 
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Network1_amp", subdir));
@@ -127,14 +128,9 @@ public class TestSimulatedFmri {
                     dir + "Network9_amp_contr", subdir));
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Network9_contr_amp", subdir));
-            simulations.add(new LoadContinuousDataAndSingleGraph(
-                    dir + "Diamond", subdir));
-            simulations.add(new LoadContinuousDataAndSingleGraph(
-                    dir + "Markov_Complex_1", subdir));
         } else {
 
-            String dir = "/Users/user/Downloads/CyclesTestingData/";
-            String subdir = "data_fslfilter";
+            dir = "/Users/user/Downloads/CyclesTestingData/";
 
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Network1_amp", subdir));
@@ -172,18 +168,15 @@ public class TestSimulatedFmri {
                     dir + "Network9_amp_cont", subdir));
             simulations.add(new LoadContinuousDataAndSingleGraph(
                     dir + "Network9_cont_amp", subdir));
-            simulations.add(new LoadContinuousDataAndSingleGraph(
-                    dir + "Diamond", subdir));
-            simulations.add(new LoadContinuousDataAndSingleGraph(
-                    dir + "Markov_Complex_1", subdir));
         }
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Diamond", subdir));
+        simulations.add(new LoadContinuousDataAndSingleGraph(
+                dir + "Markov_Complex_1", subdir));
 
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new FaskConcatenated(new SemBicScore(), new FisherZ()));
-//        algorithms.add(new FaskGfciConcatenated(new SemBicTest()));
-
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
 
         Comparison comparison = new Comparison();
 
@@ -197,7 +190,7 @@ public class TestSimulatedFmri {
 
         String directory;
 
-        if (!testing) {
+        if (!false) {
             directory = "comparison_training";
         } else {
             directory = "comparison_testing";
@@ -244,30 +237,12 @@ public class TestSimulatedFmri {
         for (int i = 1; i <= 28; i++) {
 //            if (i == 21) continue;
             simulations.add(new LoadContinuousDataSmithSim("/Users/user/Downloads/smithsim/", i));
-//            simulations.add(new LoadContinuousDataPwdd7("/Users/user/Downloads/pwdd7/", i, "50_BOLDdemefilt1"));
-//            simulations.add(new LoadContinuousDataPwdd7("/Users/user/Downloads/pwdd7/", i, "50_BOLDnoise"));
         }
-
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.FASKLR));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.R1));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.R3));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.RSkew));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.RSkewE));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.Skew));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.SkewE));
-//        algorithms.add(new LofsConcatenated(Lofs2.Rule.Patel));
 
         algorithms.add(new FaskConcatenated(
                 new SemBicScore(),
                 new FisherZ() {
                 }));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
-//        algorithms.add(new FasLofsConfcatenated(Lofs2.Rule.RSkewE));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.SkewE));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
 
         Comparison comparison = new Comparison();
 
@@ -279,7 +254,7 @@ public class TestSimulatedFmri {
         comparison.setTabDelimitedTables(false);
         comparison.setSaveGraphs(true);
 
-        String directory = "smithsim";
+        final String directory = "smithsim";
 
         comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
     }
@@ -322,32 +297,17 @@ public class TestSimulatedFmri {
 
         Simulations simulations = new Simulations();
 
-        String dir = "/Users/jdramsey/Downloads/";
-        String subdir = "data_fslfilter";
+        final String dir = "/Users/jdramsey/Downloads/";
+        final String subdir = "data_fslfilter";
 
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 dir + "Markov_dist_thresh36", subdir));
 
         Algorithms algorithms = new Algorithms();
 
-//        algorithms.add(new FasLofs(Lofs2.Rule.R1));
-//        algorithms.add(new FasLofs(Lofs2.Rule.R2));
-//        algorithms.add(new FasLofs(Lofs2.Rule.R3));
-//        algorithms.add(new FasLofs(Lofs2.Rule.Patel));
-//        algorithms.add(new FasLofs(Lofs2.Rule.Skew));
-//        algorithms.add(new FasLofs(Lofs2.Rule.RSkew));
-//
-//        algorithms.add(new FgesConcatenated(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), true));
-//        algorithms.add(new PcStableMaxConcatenated(new SemBicTest(), true));
         algorithms.add(new FaskConcatenated(
                 new SemBicScore(),
                 new FisherZ()));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R1));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R2));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.R3));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Patel));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.Skew));
-//        algorithms.add(new FasLofsConcatenated(Lofs2.Rule.RSkew));
 
         Comparison comparison = new Comparison();
 
@@ -364,10 +324,10 @@ public class TestSimulatedFmri {
     //    @Test
     public void testClark() {
 
-        double f = .1;
-        int N = 512;
-        double alpha = 1.0;
-        double penaltyDiscount = 1.0;
+        final double f = .1;
+        final int N = 512;
+        final double alpha = 1.0;
+        final double penaltyDiscount = 1.0;
 
         for (int i = 0; i < 100; i++) {
             {
@@ -391,12 +351,12 @@ public class TestSimulatedFmri {
                     pm.setNodeExpression(g.getNode("Y"), "0.5 * X + 0.5 * Z + E_Y");
                     pm.setNodeExpression(g.getNode("Z"), "E_Z");
 
-                    String error = "pow(Uniform(0, 1), " + f + ")";
+                    final String error = "pow(Uniform(0, 1), " + f + ")";
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
                 } catch (ParseException e) {
-                    System.out.println(e);
+                    e.printStackTrace();
                 }
 
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
@@ -405,7 +365,7 @@ public class TestSimulatedFmri {
 
                 Fask fask = new Fask(data,
                         new edu.cmu.tetrad.search.SemBicScore(data),
-                new IndTestFisherZ(data, 0.001));
+                        new IndTestFisherZ(data, 0.001));
                 Graph out = fask.search();
 
                 System.out.println(out);
@@ -432,12 +392,12 @@ public class TestSimulatedFmri {
                     pm.setNodeExpression(g.getNode("Y"), "0.4 * X + E_Y");
                     pm.setNodeExpression(g.getNode("Z"), "0.4 * X + 0.4 * Y + E_Z");
 
-                    String error = "pow(Uniform(0, 1), " + f + ")";
+                    final String error = "pow(Uniform(0, 1), " + f + ")";
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
                     pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
                 } catch (ParseException e) {
-                    System.out.println(e);
+                    e.printStackTrace();
                 }
 
                 GeneralizedSemIm im = new GeneralizedSemIm(pm);
@@ -477,12 +437,12 @@ public class TestSimulatedFmri {
             pm.setNodeExpression(g.getNode("Y"), "0.4 * X + E_Y");
             pm.setNodeExpression(g.getNode("Z"), "0.4 * X + 0.4 * Y + E_Z");
 
-            String error = "pow(Uniform(0, 1), 1.5)";
+            final String error = "pow(Uniform(0, 1), 1.5)";
             pm.setNodeExpression(pm.getErrorNode(g.getNode("X")), error);
             pm.setNodeExpression(pm.getErrorNode(g.getNode("Y")), error);
             pm.setNodeExpression(pm.getErrorNode(g.getNode("Z")), error);
         } catch (ParseException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
 

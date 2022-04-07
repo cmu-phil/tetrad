@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -92,14 +92,14 @@ public final class MlBayesIm implements BayesIm {
      *
      * @serial
      */
-    private BayesPm bayesPm;
+    private final BayesPm bayesPm;
 
     /**
      * The array of nodes from the graph. Order is important.
      *
      * @serial
      */
-    private Node[] nodes;
+    private final Node[] nodes;
 
     /**
      * The list of parents for each node from the graph. Order or nodes
@@ -148,7 +148,7 @@ public final class MlBayesIm implements BayesIm {
      *                                  provided.
      */
     public MlBayesIm(BayesPm bayesPm) throws IllegalArgumentException {
-        this(bayesPm, null, MANUAL);
+        this(bayesPm, null, MlBayesIm.MANUAL);
     }
 
     /**
@@ -198,7 +198,7 @@ public final class MlBayesIm implements BayesIm {
         // in the BayesIm, independently of any change to the BayesPm.
         // (This order must be maintained.)
         Graph graph = bayesPm.getDag();
-        this.nodes = graph.getNodes().toArray(new Node[graph.getNodes().size()]);
+        this.nodes = graph.getNodes().toArray(new Node[0]);
 
         // Initialize.
         initialize(oldBayesIm, initializationMethod);
@@ -244,28 +244,28 @@ public final class MlBayesIm implements BayesIm {
      * @return this PM.
      */
     public BayesPm getBayesPm() {
-        return bayesPm;
+        return this.bayesPm;
     }
 
     /**
      * @return the DAG.
      */
     public Graph getDag() {
-        return bayesPm.getDag();
+        return this.bayesPm.getDag();
     }
 
     /**
      * @return the number of nodes in the model.
      */
     public int getNumNodes() {
-        return nodes.length;
+        return this.nodes.length;
     }
 
     /**
      * @return this node.
      */
     public Node getNode(int nodeIndex) {
-        return nodes[nodeIndex];
+        return this.nodes[nodeIndex];
     }
 
     /**
@@ -281,8 +281,8 @@ public final class MlBayesIm implements BayesIm {
      * @return the index for that node, or -1 if the node is not in the BayesIm.
      */
     public int getNodeIndex(Node node) {
-        for (int i = 0; i < nodes.length; i++) {
-            if (node == nodes[i]) {
+        for (int i = 0; i < this.nodes.length; i++) {
+            if (node == this.nodes[i]) {
                 return i;
             }
         }
@@ -295,7 +295,7 @@ public final class MlBayesIm implements BayesIm {
 
         for (int i = 0; i < getNumNodes(); i++) {
             Node node = getNode(i);
-            variables.add(bayesPm.getVariable(node));
+            variables.add(this.bayesPm.getVariable(node));
         }
 
         return variables;
@@ -305,7 +305,7 @@ public final class MlBayesIm implements BayesIm {
      * @return the list of measured variableNodes.
      */
     public List<Node> getMeasuredNodes() {
-        return bayesPm.getMeasuredNodes();
+        return this.bayesPm.getMeasuredNodes();
     }
 
     public List<String> getVariableNames() {
@@ -313,7 +313,7 @@ public final class MlBayesIm implements BayesIm {
 
         for (int i = 0; i < getNumNodes(); i++) {
             Node node = getNode(i);
-            variableNames.add(bayesPm.getVariable(node).getName());
+            variableNames.add(this.bayesPm.getVariable(node).getName());
         }
 
         return variableNames;
@@ -324,7 +324,7 @@ public final class MlBayesIm implements BayesIm {
      * @see #getNumRows
      */
     public int getNumColumns(int nodeIndex) {
-        return probs[nodeIndex][0].length;
+        return this.probs[nodeIndex][0].length;
     }
 
     /**
@@ -333,7 +333,7 @@ public final class MlBayesIm implements BayesIm {
      * @see #getNumColumns
      */
     public int getNumRows(int nodeIndex) {
-        return probs[nodeIndex].length;
+        return this.probs[nodeIndex].length;
     }
 
     /**
@@ -341,21 +341,21 @@ public final class MlBayesIm implements BayesIm {
      * @return the number of parents for this node.
      */
     public int getNumParents(int nodeIndex) {
-        return parents[nodeIndex].length;
+        return this.parents[nodeIndex].length;
     }
 
     /**
      * @return the given parent of the given node.
      */
     public int getParent(int nodeIndex, int parentIndex) {
-        return parents[nodeIndex][parentIndex];
+        return this.parents[nodeIndex][parentIndex];
     }
 
     /**
      * @return the dimension of the given parent for the given node.
      */
     public int getParentDim(int nodeIndex, int parentIndex) {
-        return parentDims[nodeIndex][parentIndex];
+        return this.parentDims[nodeIndex][parentIndex];
     }
 
     /**
@@ -363,7 +363,7 @@ public final class MlBayesIm implements BayesIm {
      * @see #getParents
      */
     public int[] getParentDims(int nodeIndex) {
-        int[] dims = parentDims[nodeIndex];
+        int[] dims = this.parentDims[nodeIndex];
         int[] copy = new int[dims.length];
         System.arraycopy(dims, 0, copy, 0, dims.length);
         return copy;
@@ -375,7 +375,7 @@ public final class MlBayesIm implements BayesIm {
      * @see #getParentDims
      */
     public int[] getParents(int nodeIndex) {
-        int[] nodeParents = parents[nodeIndex];
+        int[] nodeParents = this.parents[nodeIndex];
         int[] copy = new int[nodeParents.length];
         System.arraycopy(nodeParents, 0, copy, 0, nodeParents.length);
         return copy;
@@ -420,7 +420,7 @@ public final class MlBayesIm implements BayesIm {
      * @see #getRowIndex
      */
     public double getProbability(int nodeIndex, int rowIndex, int colIndex) {
-        return probs[nodeIndex][rowIndex][colIndex];
+        return this.probs[nodeIndex][rowIndex][colIndex];
     }
 
     /**
@@ -444,7 +444,7 @@ public final class MlBayesIm implements BayesIm {
      * Normalizes all rows in the tables associated with each of node in turn.
      */
     public void normalizeAll() {
-        for (int nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
+        for (int nodeIndex = 0; nodeIndex < this.nodes.length; nodeIndex++) {
             normalizeNode(nodeIndex);
         }
     }
@@ -461,8 +461,8 @@ public final class MlBayesIm implements BayesIm {
     /**
      * Normalizes the given row.
      */
-    public void normalizeRow(int nodeIndex, final int rowIndex) {
-        final int numColumns = getNumColumns(nodeIndex);
+    public void normalizeRow(int nodeIndex, int rowIndex) {
+        int numColumns = getNumColumns(nodeIndex);
         double total = 0.0;
 
         for (int colIndex = 0; colIndex < numColumns; colIndex++) {
@@ -499,7 +499,7 @@ public final class MlBayesIm implements BayesIm {
     @Override
     public void setProbability(int nodeIndex, double[][] probMatrix) {
         for (int i = 0; i < probMatrix.length; i++) {
-            System.arraycopy(probMatrix[i], 0, probs[nodeIndex][i], 0, probMatrix[i].length);
+            System.arraycopy(probMatrix[i], 0, this.probs[nodeIndex][i], 0, probMatrix[i].length);
         }
     }
 
@@ -533,7 +533,7 @@ public final class MlBayesIm implements BayesIm {
                     + "between 0.0 and 1.0 or Double.NaN.");
         }
 
-        probs[nodeIndex][rowIndex][colIndex] = value;
+        this.probs[nodeIndex][rowIndex][colIndex] = value;
     }
 
     /**
@@ -567,13 +567,13 @@ public final class MlBayesIm implements BayesIm {
      * @param rowIndex  the index of the row.
      */
     public void randomizeRow(int nodeIndex, int rowIndex) {
-        final int size = getNumColumns(nodeIndex);
-        probs[nodeIndex][rowIndex] = getRandomWeights3(size);
+        int size = getNumColumns(nodeIndex);
+        this.probs[nodeIndex][rowIndex] = MlBayesIm.getRandomWeights3(size);
     }
 
     private void randomizeRow2(int nodeIndex, int rowIndex, double[] biases) {
-        final int size = getNumColumns(nodeIndex);
-        probs[nodeIndex][rowIndex] = getRandomWeights2(size, biases);
+        int size = getNumColumns(nodeIndex);
+        this.probs[nodeIndex][rowIndex] = MlBayesIm.getRandomWeights2(size, biases);
     }
 
     private static double[] getRandomWeights2(int size, double[] biases) {
@@ -642,99 +642,6 @@ public final class MlBayesIm implements BayesIm {
 //        randomizeTable4(nodeIndex);
     }
 
-    //    private void randomizeTable2(int nodeIndex) {
-//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-//            if (isIncomplete(nodeIndex, rowIndex)) {
-//                break;
-//            }
-//        }
-//
-//        // Trying for some more power ..jdramsey 5/7/10
-//        List<Integer> rowIndices = new ArrayList<>();
-//
-//        for (int i = 0; i < getNumRows(nodeIndex); i++) {
-//            rowIndices.add(i);
-//        }
-//
-//        Collections.shuffle(rowIndices);
-//
-//        randomizeRow(nodeIndex, rowIndices.get(0));
-//        double[][] values = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
-//
-//        for (int row = 0; row < getNumRows(nodeIndex); row++) {
-//            double bestNorm = 0.0;
-//
-//            for (int trial = 0; trial < 100; trial++) {
-//                randomizeRow(nodeIndex, rowIndices.get(row));
-//                double totalNorm = 0.0;
-//
-//                for (int _row = row - 1; _row < row; _row++) {
-//                    double norm = norm(nodeIndex, rowIndices.get(row),
-//                            rowIndices.get(_row));
-//                    totalNorm += norm;
-//                }
-//
-//                if (totalNorm > bestNorm) {
-//                    bestNorm = totalNorm;
-//
-//                    for (int _row = 0; _row < getNumRows(nodeIndex); _row++) {
-//                        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-//                            values[_row][col] = getProbability(nodeIndex, _row, col);
-//                        }
-//                    }
-//                }
-//            }
-//
-//            for (int _row = 0; _row < getNumRows(nodeIndex); _row++) {
-//                for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-//                    setProbability(nodeIndex, _row, col, values[_row][col]);
-//                }
-//            }
-//        }
-//    }
-//    private void randomizeTable3(int nodeIndex) {
-//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-//            randomizeRow(nodeIndex, rowIndex);
-//        }
-//
-//        double[][] saved = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
-//
-//        double[][] stored = probs[nodeIndex];
-//
-//        copy(stored, saved);
-//
-//        double maxSumSpread = 0.0;
-//
-//        for (int i = 0; i < 100; i++) {
-//            for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-//                randomizeRow(nodeIndex, rowIndex);
-//            }
-//
-//            double sumSpread = 0.0;
-//
-//            for (int c = 0; c < getNumColumns(nodeIndex); c++) {
-//                double min = 1.0, max = 0.0;
-//
-//                for (int r = 0; r < getNumRows(nodeIndex); r++) {
-//                    double p = getProbability(nodeIndex, r, c);
-//
-//                    if (p <= min) min = p;
-//                    if (p >= max) max = p;
-//                }
-//
-//                sumSpread += abs(max - min);
-//            }
-//
-//            if (sumSpread > maxSumSpread) {
-//                copy(stored, saved);
-//                maxSumSpread = sumSpread;
-//            }
-//        }
-//
-//        for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-//            copy(saved, stored);
-//        }
-//    }
     private void randomizeTable4(int nodeIndex) {
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
             randomizeRow(nodeIndex, rowIndex);
@@ -747,14 +654,14 @@ public final class MlBayesIm implements BayesIm {
         for (int i = 0; i < 10; i++) {
             for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
 //                randomizeRow(nodeIndex, rowIndex);
-                randomizeRow2(nodeIndex, rowIndex, probs[nodeIndex][rowIndex]);
+                randomizeRow2(nodeIndex, rowIndex, this.probs[nodeIndex][rowIndex]);
             }
 
             int score = score(nodeIndex);
 
             if (score > max) {
                 max = score;
-                copy(probs[nodeIndex], saved);
+                copy(this.probs[nodeIndex], saved);
             }
 
             if (score == getNumParents(nodeIndex)) {
@@ -763,13 +670,13 @@ public final class MlBayesIm implements BayesIm {
         }
 
         for (int rowIndex = 0; rowIndex < getNumRows(nodeIndex); rowIndex++) {
-            copy(saved, probs[nodeIndex]);
+            copy(saved, this.probs[nodeIndex]);
         }
     }
 
     private int score(int nodeIndex) {
         double[][] p = new double[getNumRows(nodeIndex)][getNumColumns(nodeIndex)];
-        copy(probs[nodeIndex], p);
+        copy(this.probs[nodeIndex], p);
         int num = 0;
 
         int numRows = getNumRows(nodeIndex);
@@ -798,7 +705,7 @@ public final class MlBayesIm implements BayesIm {
                 }
             }
 
-            double N = 1000.0;
+            final double N = 1000.0;
 
             for (int r = 0; r < table.length; r++) {
                 for (int c = 0; c < table[0].length; c++) {
@@ -855,52 +762,6 @@ public final class MlBayesIm implements BayesIm {
             System.arraycopy(a[r], 0, b[r], 0, a[r].length);
         }
     }
-
-//    private double totalNorm(int nodeIndex, int parent, int cat1, int cat2) {
-//        double[] sumProbs1 = new double[getNumColumns(nodeIndex)];
-//        double[] sumProbs2 = new double[getNumColumns(nodeIndex)];
-//
-//        for (int row = 0; row < getNumRows(nodeIndex); row++) {
-//            for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-//                if (getParentValues(nodeIndex, row)[parent] == cat1) {
-//                    sumProbs1[col] += getProbability(nodeIndex, row, col);
-//                }
-//            }
-//        }
-//
-//        for (int row = 0; row < getNumRows(nodeIndex); row++) {
-//            for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-//                if (getParentValues(nodeIndex, row)[parent] == cat2) {
-//                    sumProbs2[col] += getProbability(nodeIndex, row, col);
-//                }
-//            }
-//        }
-//
-//        double norm = 0.0;
-//
-//        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-//            double value1 = sumProbs1[col];
-//            double value2 = sumProbs2[col];
-//            double diff = value1 - value2;
-//            double absNorm = abs(diff);
-//            norm += absNorm;
-//        }
-//
-//        return norm;
-//    }
-//    private double norm(int nodeIndex, int row1, int row2) {
-//        double norm = 0.0;
-//
-//        for (int col = 0; col < getNumColumns(nodeIndex); col++) {
-//            double value1 = getProbability(nodeIndex, row1, col);
-//            double value2 = getProbability(nodeIndex, row2, col);
-//            double diff = value1 - value2;
-//            double absNorm = abs(diff);
-////            norm += diff * diff;
-//            norm += absNorm;
-//        }
-//        return norm;
-//    }
 
     /**
      * Randomizes every row in the table for the given node index.
@@ -1000,7 +861,7 @@ public final class MlBayesIm implements BayesIm {
         List<Node> variables = new ArrayList<>();
 
         for (Node node : timeSeriesGraph.getLag0Nodes()) {
-            final DiscreteVariable e = new DiscreteVariable(timeSeriesGraph.getNodeId(node).getName());
+            DiscreteVariable e = new DiscreteVariable(timeSeriesGraph.getNodeId(node).getName());
             e.setNodeType(node.getNodeType());
             variables.add(e);
         }
@@ -1022,7 +883,7 @@ public final class MlBayesIm implements BayesIm {
         int[] combination = new int[tierOrdering.size()];
 
         for (int i = 0; i < sampleSize; i++) {
-            int[] point = new int[nodes.length];
+            int[] point = new int[this.nodes.length];
 
             for (int nodeIndex : tiers) {
                 double cutoff = RandomUtil.getInstance().nextDouble();
@@ -1097,24 +958,21 @@ public final class MlBayesIm implements BayesIm {
      */
     private DataSet simulateDataHelper(int sampleSize, boolean latentDataSaved, int[] tiers) {
         int numMeasured = 0;
-        int[] map = new int[nodes.length];
+        int[] map = new int[this.nodes.length];
         List<Node> variables = new LinkedList<>();
 
-        for (int j = 0; j < nodes.length; j++) {
-//            if (!latentDataSaved && nodes[j].getNodeType() != NodeType.MEASURED) {
-//                continue;
-//            }
+        for (int j = 0; j < this.nodes.length; j++) {
 
-            int numCategories = bayesPm.getNumCategories(nodes[j]);
+            int numCategories = this.bayesPm.getNumCategories(this.nodes[j]);
             List<String> categories = new LinkedList<>();
 
             for (int k = 0; k < numCategories; k++) {
-                categories.add(bayesPm.getCategory(nodes[j], k));
+                categories.add(this.bayesPm.getCategory(this.nodes[j], k));
             }
 
             DiscreteVariable var
-                    = new DiscreteVariable(nodes[j].getName(), categories);
-            var.setNodeType(nodes[j].getNodeType());
+                    = new DiscreteVariable(this.nodes[j].getName(), categories);
+            var.setNodeType(this.nodes[j].getNodeType());
             variables.add(var);
             int index = ++numMeasured - 1;
             map[index] = j;
@@ -1135,7 +993,7 @@ public final class MlBayesIm implements BayesIm {
      * avoid allocating more memory.
      */
     private DataSet simulateDataHelper(DataSet dataSet, boolean latentDataSaved, int[] tiers) {
-        if (dataSet.getNumColumns() != nodes.length) {
+        if (dataSet.getNumColumns() != this.nodes.length) {
             throw new IllegalArgumentException("When rewriting the old data set, "
                     + "number of variables in data set must equal number of variables "
                     + "in Bayes net.");
@@ -1144,24 +1002,21 @@ public final class MlBayesIm implements BayesIm {
         int sampleSize = dataSet.getNumRows();
 
         int numVars = 0;
-        int[] map = new int[nodes.length];
+        int[] map = new int[this.nodes.length];
         List<Node> variables = new LinkedList<>();
 
-        for (int j = 0; j < nodes.length; j++) {
-//            if (!latentDataSaved && nodes[j].getNodeType() != NodeType.MEASURED) {
-//                continue;
-//            }
+        for (int j = 0; j < this.nodes.length; j++) {
 
-            int numCategories = bayesPm.getNumCategories(nodes[j]);
+            int numCategories = this.bayesPm.getNumCategories(this.nodes[j]);
             List<String> categories = new LinkedList<>();
 
             for (int k = 0; k < numCategories; k++) {
-                categories.add(bayesPm.getCategory(nodes[j], k));
+                categories.add(this.bayesPm.getCategory(this.nodes[j], k));
             }
 
             DiscreteVariable var
-                    = new DiscreteVariable(nodes[j].getName(), categories);
-            var.setNodeType(nodes[j].getNodeType());
+                    = new DiscreteVariable(this.nodes[j].getName(), categories);
+            var.setNodeType(this.nodes[j].getNodeType());
             variables.add(var);
             int index = ++numVars - 1;
             map[index] = j;
@@ -1182,7 +1037,7 @@ public final class MlBayesIm implements BayesIm {
         }
     }
 
-    final long[] seed = new long[]{new Date().getTime()};
+    final long[] seed = {new Date().getTime()};
 
     private void constructSample(int sampleSize, DataSet dataSet, int[] map, int[] tiers) {
 
@@ -1258,10 +1113,10 @@ public final class MlBayesIm implements BayesIm {
         // Construct the sample.
         for (int i = 0; i < sampleSize; i++) {
             for (int t : tiers) {
-                int[] parentValues = new int[parents[t].length];
+                int[] parentValues = new int[this.parents[t].length];
 
                 for (int k = 0; k < parentValues.length; k++) {
-                    parentValues[k] = dataSet.getInt(i, parents[t][k]);
+                    parentValues[k] = dataSet.getInt(i, this.parents[t][k]);
                 }
 
                 int rowIndex = getRowIndex(t, parentValues);
@@ -1323,7 +1178,7 @@ public final class MlBayesIm implements BayesIm {
                         continue;
                     }
 
-                    if (abs(prob - otherProb) > ALLOWABLE_DIFFERENCE) {
+                    if (abs(prob - otherProb) > MlBayesIm.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }
@@ -1387,9 +1242,9 @@ public final class MlBayesIm implements BayesIm {
      * @see #randomizeRow
      */
     private void initialize(BayesIm oldBayesIm, int initializationMethod) {
-        parents = new int[this.nodes.length][];
-        parentDims = new int[this.nodes.length][];
-        probs = new double[this.nodes.length][][];
+        this.parents = new int[this.nodes.length][];
+        this.parentDims = new int[this.nodes.length][];
+        this.probs = new double[this.nodes.length][][];
 
         for (int nodeIndex = 0; nodeIndex < this.nodes.length; nodeIndex++) {
             initializeNode(nodeIndex, oldBayesIm, initializationMethod);
@@ -1401,7 +1256,7 @@ public final class MlBayesIm implements BayesIm {
      */
     private void initializeNode(int nodeIndex, BayesIm oldBayesIm,
                                 int initializationMethod) {
-        Node node = nodes[nodeIndex];
+        Node node = this.nodes[nodeIndex];
 
         // Set up parents array.  Should store the parents of
         // each node as ints in a particular order.
@@ -1416,13 +1271,13 @@ public final class MlBayesIm implements BayesIm {
         // Sort parent array.
         Arrays.sort(parentArray);
 
-        parents[nodeIndex] = parentArray;
+        this.parents[nodeIndex] = parentArray;
 
         // Setup dimensions array for parents.
         int[] dims = new int[parentArray.length];
 
         for (int i = 0; i < dims.length; i++) {
-            Node parNode = nodes[parentArray[i]];
+            Node parNode = this.nodes[parentArray[i]];
             dims[i] = getBayesPm().getNumCategories(parNode);
         }
 
@@ -1434,7 +1289,7 @@ public final class MlBayesIm implements BayesIm {
                 throw new IllegalArgumentException(
                         "The number of rows in the "
                                 + "conditional probability table for "
-                                + nodes[nodeIndex]
+                                + this.nodes[nodeIndex]
                                 + " is greater than 1,000,000 and cannot be "
                                 + "represented.");
             }
@@ -1444,11 +1299,11 @@ public final class MlBayesIm implements BayesIm {
 
         int numCols = getBayesPm().getNumCategories(node);
 
-        parentDims[nodeIndex] = dims;
-        probs[nodeIndex] = new double[numRows][numCols];
+        this.parentDims[nodeIndex] = dims;
+        this.probs[nodeIndex] = new double[numRows][numCols];
 
         // Initialize each row.
-        if (initializationMethod == RANDOM) {
+        if (initializationMethod == MlBayesIm.RANDOM) {
             randomizeTable(nodeIndex);
         } else {
             for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
@@ -1464,9 +1319,9 @@ public final class MlBayesIm implements BayesIm {
 
     private void overwriteRow(int nodeIndex, int rowIndex,
                               int initializationMethod) {
-        if (initializationMethod == RANDOM) {
+        if (initializationMethod == MlBayesIm.RANDOM) {
             randomizeRow(nodeIndex, rowIndex);
-        } else if (initializationMethod == MANUAL) {
+        } else if (initializationMethod == MlBayesIm.MANUAL) {
             initializeRowAsUnknowns(nodeIndex, rowIndex);
         } else {
             throw new IllegalArgumentException("Unrecognized state.");
@@ -1489,7 +1344,7 @@ public final class MlBayesIm implements BayesIm {
         double sum = 0.0;
 
         // Renders rows more deterministic.
-        double bias = 0;
+        final double bias = 0;
 
         for (int i = 0; i < size; i++) {
             row[i] = RandomUtil.getInstance().nextDouble();
@@ -1508,68 +1363,11 @@ public final class MlBayesIm implements BayesIm {
         return row;
     }
 
-    //    private static double[] getRandomWeights2(int size) {
-//        assert size >= 0;
-//
-//        double[] row = new double[size];
-//        double sum = 0.0;
-//
-//        // Renders rows more deterministic.
-//        double bias = 2;
-//        int index = -1;
-//        double max = 0.0;
-//
-//        for (int i = 0; i < size; i++) {
-//            row[i] = RandomUtil.getInstance().nextDouble();
-//
-//            if (row[i] > max) {
-//                max = row[i];
-//                index = i;
-//            }
-//        }
-//
-//        row[index] += bias;
-//
-//        for (int i = 0; i < size; i++) {
-//            sum += row[i];
-//        }
-//
-//        for (int i = 0; i < size; i++) {
-//            row[i] /= sum;
-//        }
-//
-//        return row;
-//    }
-//    private static double[] getRandomWeights3(int size) {
-//        assert size >= 0;
-//
-//        double[] row = new double[size];
-//        double sum = 0.0;
-//
-//        // Renders rows more deterministic.
-//        double bias = 0;
-//
-//        for (int i = 0; i < size; i++) {
-//            row[i] = RandomUtil.getInstance().nextBeta(2, 5);
-//
-//            if (row[i] > 0.5) {
-//                row[i] += bias;
-//            }
-//
-//            sum += row[i];
-//        }
-//
-//        for (int i = 0; i < size; i++) {
-//            row[i] /= sum;
-//        }
-//
-//        return row;
-//    }
     private void initializeRowAsUnknowns(int nodeIndex, int rowIndex) {
-        final int size = getNumColumns(nodeIndex);
+        int size = getNumColumns(nodeIndex);
         double[] row = new double[size];
         Arrays.fill(row, Double.NaN);
-        probs[nodeIndex][rowIndex] = row;
+        this.probs[nodeIndex][rowIndex] = row;
     }
 
     /**
@@ -1577,9 +1375,6 @@ public final class MlBayesIm implements BayesIm {
      */
     private void retainOldRowIfPossible(int nodeIndex, int rowIndex,
                                         BayesIm oldBayesIm, int initializationMethod) {
-//        Set<Node> newParents = new HashSet<Node>(getBayesPm().getDag().getParents(node));
-//        Set<Node> oldParents = new HashSet<Node>(oldBayesIm.getBayesPm().getDag().getParents(node));
-//        int method = newParents == oldParents ? initializationMethod : MlBayesIm.MANUAL;
 
         int oldNodeIndex = getCorrespondingNodeIndex(nodeIndex, oldBayesIm);
 
@@ -1600,23 +1395,6 @@ public final class MlBayesIm implements BayesIm {
             }
         }
     }
-
-//    private boolean parentsChanged(int nodeIndex, BayesIm bayesIm, BayesIm oldBayesIm) {
-//        int[] dims = bayesIm.getParents(nodeIndex);
-//        int[] oldDims = oldBayesIm.getParents(nodeIndex);
-//
-//        if (dims.length != oldDims.length) {
-//            return false;
-//        }
-//
-//        for (int i = 0; i < dims.length; i++) {
-//            if (dims[i] != oldDims[i]) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
 
     /**
      * @return the unique rowIndex in the old BayesIm for the given node that is
@@ -1748,31 +1526,28 @@ public final class MlBayesIm implements BayesIm {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesPm == null) {
+        if (this.bayesPm == null) {
             throw new NullPointerException();
         }
 
-        if (nodes == null) {
+        if (this.nodes == null) {
             throw new NullPointerException();
         }
 
-        if (parents == null) {
+        if (this.parents == null) {
             throw new NullPointerException();
         }
 
-        if (parentDims == null) {
+        if (this.parentDims == null) {
             throw new NullPointerException();
         }
 
-        if (probs == null) {
+        if (this.probs == null) {
             throw new NullPointerException();
         }
     }

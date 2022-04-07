@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -47,16 +47,16 @@ import java.util.Set;
  */
 final class PossibleDsepCfci {
 
-    private Graph graph;
-    private IndependenceTest test;
-    private List<Node> nodes;
+    private final Graph graph;
+    private final IndependenceTest test;
+    private final List<Node> nodes;
 
     /**
      * This sepset collects up only the sepsets discovered by this search.
      */
-    private SepsetMap sepset;
+    private final SepsetMap sepset;
     private int depth = -1;
-    private LegalPairs legalPairs;
+    private final LegalPairs legalPairs;
 
     /**
      * The background knowledge.
@@ -89,7 +89,7 @@ final class PossibleDsepCfci {
         this.sepset = new SepsetMap();
         this.legalPairs = new FciDsepLegalPairsCfci(this.graph, unfaithfulTriples);
 
-        setMaxReachablePathLength(maxReachablePathLength);
+        setMaxReachablePathLength(this.maxReachablePathLength);
     }
 
     /**
@@ -99,15 +99,15 @@ final class PossibleDsepCfci {
      * constructor (if any), possibly augmented by some edge removals in this step. The GaSearchGraph passed in the
      * constructor is directly changed.
      */
-    public final SepsetMap search() {
-        for (int i = 0; i < nodes.size(); i++) {
-            Node node1 = nodes.get(i);
+    public SepsetMap search() {
+        for (int i = 0; i < this.nodes.size(); i++) {
+            Node node1 = this.nodes.get(i);
 
-            List<Node> adj = graph.getAdjacentNodes(node1);
+            List<Node> adj = this.graph.getAdjacentNodes(node1);
 
             // Remove the variables that we've already looked at.
             for (int j = 0; j < i; j++) {
-                adj.remove(nodes.get(j));
+                adj.remove(this.nodes.get(j));
             }
 
             // now we need to iterate through adj
@@ -122,7 +122,7 @@ final class PossibleDsepCfci {
             }
         }
 
-        return sepset;
+        return this.sepset;
     }
 
     private boolean tryRemovingUsingDsep(Node node1, Node node2, int maxPathLength) {
@@ -152,13 +152,13 @@ final class PossibleDsepCfci {
                 List<Node> condSet = GraphUtils.asList(indSet, possibleParents);
 
                 boolean independent =
-                        test.isIndependent(node1, node2, condSet);
+                        this.test.isIndependent(node1, node2, condSet);
 
                 if (independent && noEdgeRequired) {
-                    System.out.println("*** DSEP removed " + graph.getEdge(node1, node2));
-                    graph.removeEdge(node1, node2);
+                    System.out.println("*** DSEP removed " + this.graph.getEdge(node1, node2));
+                    this.graph.removeEdge(node1, node2);
                     List<Node> z = new LinkedList<>(condSet);
-                    sepset.set(node1, node2, z);
+                    this.sepset.set(node1, node2, z);
                     return true;
                 }
             }
@@ -201,11 +201,9 @@ final class PossibleDsepCfci {
      */
     private Set<Node> getPossibleDsep(Node node1, Node node2, int maxPathLength) {
         List<Node> initialNodes = Collections.singletonList(node1);
-        List<Node> c = null;
-        List<Node> d = null;
 
         Set<Node> reachable = SearchGraphUtils.getReachableNodes(initialNodes,
-                legalPairs, c, d, graph, maxPathLength);
+                this.legalPairs, null, null, this.graph, maxPathLength);
 
         reachable.remove(node1);
         reachable.remove(node2);
@@ -216,10 +214,10 @@ final class PossibleDsepCfci {
     }
 
     private int getDepth() {
-        return depth;
+        return this.depth;
     }
 
-    public final void setDepth(int depth) {
+    public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
                     "Depth must be -1 (unlimited) or >= 0: " + depth);
@@ -229,15 +227,15 @@ final class PossibleDsepCfci {
     }
 
     private IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
-    public final void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     public int getMaxReachablePathLength() {
-        return maxReachablePathLength == Integer.MAX_VALUE ? -1 : maxReachablePathLength;
+        return this.maxReachablePathLength == Integer.MAX_VALUE ? -1 : this.maxReachablePathLength;
     }
 
     public void setMaxReachablePathLength(int maxReachablePathLength) {

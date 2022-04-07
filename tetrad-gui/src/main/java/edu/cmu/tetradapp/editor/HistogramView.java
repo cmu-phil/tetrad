@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -30,12 +30,9 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntSpinner;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
@@ -48,7 +45,7 @@ import java.util.*;
  */
 public class HistogramView extends JPanel {
     private final HistogramPanel histogramPanel;
-    private static final String[] tiles = new String[]{"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
+    private static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
 
     /**
@@ -56,15 +53,11 @@ public class HistogramView extends JPanel {
      */
     public HistogramView(Histogram histogram) {
         this.histogramPanel = new HistogramPanel(histogram);
-        HistogramController controller = new HistogramController(histogramPanel);
-        controller.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                histogramPanel.updateView();
-            }
-        });
+        HistogramController controller = new HistogramController(this.histogramPanel);
+        controller.addPropertyChangeListener(evt -> HistogramView.this.histogramPanel.updateView());
 
         Box box = Box.createHorizontalBox();
-        box.add(histogramPanel);
+        box.add(this.histogramPanel);
         box.add(Box.createHorizontalStrut(3));
         box.add(controller);
         box.add(Box.createHorizontalStrut(5));
@@ -80,7 +73,7 @@ public class HistogramView extends JPanel {
 
         JMenuBar bar = new JMenuBar();
         JMenu menu = new JMenu("File");
-        menu.add(new JMenuItem(new SaveComponentImage(histogramPanel, "Save Histogram")));
+        menu.add(new JMenuItem(new SaveComponentImage(this.histogramPanel, "Save Histogram")));
         bar.add(menu);
 
         add(bar, BorderLayout.NORTH);
@@ -114,33 +107,28 @@ public class HistogramView extends JPanel {
         /**
          * Variables that control the size of the drawing area.
          */
-        private final static int PADDINGX = 40;
-        private final static int PADDINGY = 15;
-        private final static int HEIGHT = 250 + PADDINGY;
-        private final static int DISPLAYED_HEIGHT = (int) ((HEIGHT - PADDINGY) - HEIGHT * .10);
-        private final static int WIDTH = 290 + PADDINGX;
-        private final static int SPACE = 2;
-        private final static int DASH = 10;
+        private static final int PADDINGX = 40;
+        private static final int PADDINGY = 15;
+        private static final int HEIGHT = 250 + HistogramPanel.PADDINGY;
+        private static final int DISPLAYED_HEIGHT = (int) ((HistogramPanel.HEIGHT - HistogramPanel.PADDINGY) - HistogramPanel.HEIGHT * .10);
+        private static final int WIDTH = 290 + HistogramPanel.PADDINGX;
+        private static final int SPACE = 2;
+        private static final int DASH = 10;
 
         /**
          * The histogram to display.
          */
-        private Histogram histogram;
+        private final Histogram histogram;
 
         /**
          * The default size of the component.
          */
-        private final Dimension size = new Dimension(WIDTH + 2 * SPACE, HEIGHT);
+        private final Dimension size = new Dimension(HistogramPanel.WIDTH + 2 * HistogramPanel.SPACE, HistogramPanel.HEIGHT);
 
         /**
          * Format for continuous data.
          */
         private final NumberFormat format = new DecimalFormat("0.#");// NumberFormatUtil.getInstance().getNumberFormat();
-
-//        /**
-//         * A cached string displaying what is being viewed in the histogram.
-//         */
-//        private String displayString;
 
         /**
          * A map from the rectangles that define the bars, to the number of units in the bar.
@@ -177,9 +165,9 @@ public class HistogramView extends JPanel {
 
         public String getToolTipText(MouseEvent evt) {
             Point point = evt.getPoint();
-            for (Rectangle rect : rectMap.keySet()) {
+            for (Rectangle rect : this.rectMap.keySet()) {
                 if (rect.contains(point)) {
-                    Integer i = rectMap.get(rect);
+                    Integer i = this.rectMap.get(rect);
                     if (i != null) {
                         return i.toString();
                     }
@@ -202,73 +190,70 @@ public class HistogramView extends JPanel {
             int[] freqs = histogram.getFrequencies();
             int categories = freqs.length;
 //            int barWidth = Math.max((WIDTH - PADDINGX) / categories, 12) - SPACE;
-            int barWidth = Math.max((WIDTH - PADDINGX) / categories, 2) - SPACE;
-            int height = HEIGHT - PADDINGY;
-            int topFreq = getMax(freqs);
-            double scale = DISPLAYED_HEIGHT / (double) topFreq;
+            int barWidth = Math.max((HistogramPanel.WIDTH - HistogramPanel.PADDINGX) / categories, 2) - HistogramPanel.SPACE;
+            final int height = HistogramPanel.HEIGHT - HistogramPanel.PADDINGY;
+            int topFreq = HistogramPanel.getMax(freqs);
+            double scale = HistogramPanel.DISPLAYED_HEIGHT / (double) topFreq;
             FontMetrics fontMetrics = g2d.getFontMetrics();
             // draw background/surrounding box.
             g2d.setColor(this.getBackground());
-            g2d.fillRect(0, 0, WIDTH + 2 * SPACE, HEIGHT);
+            g2d.fillRect(0, 0, HistogramPanel.WIDTH + 2 * HistogramPanel.SPACE, HistogramPanel.HEIGHT);
             g2d.setColor(Color.WHITE);
-            g2d.fillRect(PADDINGX, 0, (WIDTH + SPACE) - PADDINGX, height);
+            g2d.fillRect(HistogramPanel.PADDINGX, 0, (HistogramPanel.WIDTH + HistogramPanel.SPACE) - HistogramPanel.PADDINGX, height);
             // draw the histogram
             for (int i = 0; i < categories; i++) {
                 int freq = freqs[i];
                 int y = (int) Math.ceil(scale * freq);
-                int x = SPACE * (i + 1) + barWidth * i + PADDINGX;
-                g2d.setColor(getBarColor(i));
+                int x = HistogramPanel.SPACE * (i + 1) + barWidth * i + HistogramPanel.PADDINGX;
+                g2d.setColor(HistogramPanel.getBarColor(i));
                 Rectangle rect = new Rectangle(x, (height - y), barWidth, y);
                 g2d.fill(rect);
-                rectMap.put(rect, freq);
+                this.rectMap.put(rect, freq);
             }
             //border
-            g2d.setColor(LINE_COLOR);
-            g2d.drawRect(PADDINGX, 0, (WIDTH + SPACE) - PADDINGX, height);
+            g2d.setColor(HistogramPanel.LINE_COLOR);
+            g2d.drawRect(HistogramPanel.PADDINGX, 0, (HistogramPanel.WIDTH + HistogramPanel.SPACE) - HistogramPanel.PADDINGX, height);
             // draw the buttom line
-            g2d.setColor(LINE_COLOR);
+            g2d.setColor(HistogramPanel.LINE_COLOR);
 
             Node target = histogram.getTargetNode();
 
             if (target instanceof ContinuousVariable) {
-                Map<Integer, Double> pointsAndValues = pickGoodPointsAndValues(PADDINGX, WIDTH + SPACE, histogram.getMin(),
+                Map<Integer, Double> pointsAndValues = pickGoodPointsAndValues(histogram.getMin(),
                         histogram.getMax());
 
                 for (int point : pointsAndValues.keySet()) {
                     double value = pointsAndValues.get(point);
-                    if (point < WIDTH + SPACE - 10) {
-                        g2d.drawString(format.format(value), point + 2, height + 15);
+                    if (point < HistogramPanel.WIDTH + HistogramPanel.SPACE - 10) {
+                        g2d.drawString(this.format.format(value), point + 2, height + 15);
                     }
-                    g2d.drawLine(point, height + DASH, point, height);
+                    g2d.drawLine(point, height + HistogramPanel.DASH, point, height);
                 }
             } else if (target instanceof DiscreteVariable) {
                 DiscreteVariable var = (DiscreteVariable) target;
                 java.util.List<String> _categories = var.getCategories();
                 int i = -1;
 
-                for (Rectangle rect : rectMap.keySet()) {
+                for (Rectangle rect : this.rectMap.keySet()) {
                     int x = (int) rect.getX();
                     g2d.drawString(_categories.get(++i), x, height + 15);
                 }
             }
 
             // draw the side line
-            g2d.setColor(LINE_COLOR);
+            g2d.setColor(HistogramPanel.LINE_COLOR);
             int topY = height - (int) Math.ceil(scale * topFreq);
             String top = String.valueOf(topFreq);
-            g2d.drawString(top, PADDINGX - fontMetrics.stringWidth(top), topY - 2);
-            g2d.drawLine(PADDINGX - DASH, topY, PADDINGX, topY);
-            g2d.drawString("0", PADDINGX - fontMetrics.stringWidth("0"), height - 2);
-            g2d.drawLine(PADDINGX - DASH, height, PADDINGX, height);
+            g2d.drawString(top, HistogramPanel.PADDINGX - fontMetrics.stringWidth(top), topY - 2);
+            g2d.drawLine(HistogramPanel.PADDINGX - HistogramPanel.DASH, topY, HistogramPanel.PADDINGX, topY);
+            g2d.drawString("0", HistogramPanel.PADDINGX - fontMetrics.stringWidth("0"), height - 2);
+            g2d.drawLine(HistogramPanel.PADDINGX - HistogramPanel.DASH, height, HistogramPanel.PADDINGX, height);
             int hSize = (height - topY) / 4;
             for (int i = 1; i < 4; i++) {
                 int topHeight = height - hSize * i;
-                g2d.drawLine(PADDINGX - DASH, topHeight, PADDINGX, topHeight);
+                g2d.drawLine(HistogramPanel.PADDINGX - HistogramPanel.DASH, topHeight, HistogramPanel.PADDINGX, topHeight);
             }
 
-////            draw the display string.
-//            g2d.setColor(LINE_COLOR);
-//            g2d.drawString(getDisplayString(), PADDINGX, HEIGHT - 5);
         }
 
 
@@ -288,7 +273,7 @@ public class HistogramView extends JPanel {
 
         //========================== private methods ==========================//
 
-        private Map<Integer, Double> pickGoodPointsAndValues(int min, int max, double minValue, double maxValue) {
+        private Map<Integer, Double> pickGoodPointsAndValues(double minValue, double maxValue) {
             double range = maxValue - minValue;
             int powerOfTen = (int) Math.floor(Math.log(range) / Math.log(10));
             Map<Integer, Double> points = new HashMap<>();
@@ -298,7 +283,7 @@ public class HistogramView extends JPanel {
 
             for (int i = low; i < high; i++) {
                 double realValue = i * Math.pow(10, powerOfTen);
-                Integer intValue = translateToInt(min, max, minValue, maxValue, realValue);
+                Integer intValue = translateToInt(minValue, maxValue, realValue);
 
                 if (intValue == null) {
                     continue;
@@ -310,19 +295,19 @@ public class HistogramView extends JPanel {
             return points;
         }
 
-        private Integer translateToInt(int min, int max, double minValue, double maxValue, double value) {
+        private Integer translateToInt(double minValue, double maxValue, double value) {
             if (minValue >= maxValue) {
                 throw new IllegalArgumentException();
             }
-            if (min >= max) {
+            if (HistogramPanel.PADDINGX >= 332) {
                 throw new IllegalArgumentException();
             }
 
             double ratio = (value - minValue) / (maxValue - minValue);
 
-            int intValue = (int) (Math.round(min + ratio * (double) (max - min)));
+            int intValue = (int) (Math.round(HistogramPanel.PADDINGX + ratio * (double) (332 - HistogramPanel.PADDINGX)));
 
-            if (intValue < min || intValue > max) {
+            if (intValue < HistogramPanel.PADDINGX || intValue > 332) {
                 return null;
             }
 
@@ -330,19 +315,8 @@ public class HistogramView extends JPanel {
         }
 
         private static Color getBarColor(int i) {
-            return BAR_COLORS[i % BAR_COLORS.length];
+            return HistogramPanel.BAR_COLORS[i % HistogramPanel.BAR_COLORS.length];
         }
-
-//        private String getDisplayString() {
-//            if (this.displayString == null) {
-//                StringBuilder builder = new StringBuilder();
-//                builder.append("Showing: ");
-//                builder.append(getHistogram().getTarget());
-//                this.displayString = builder.toString();
-//            }
-//
-//            return this.displayString;
-//        }
 
         private static int getMax(int[] freqs) {
             int max = freqs[0];
@@ -359,7 +333,7 @@ public class HistogramView extends JPanel {
          * The histogram we are displaying.
          */
         public Histogram getHistogram() {
-            return histogram;
+            return this.histogram;
         }
     }
 
@@ -394,12 +368,12 @@ public class HistogramView extends JPanel {
         public HistogramController(HistogramPanel histogramPanel) {
             this.setLayout(new BorderLayout());
             this.histogram = histogramPanel.getHistogram();
-            Node target = histogram.getTargetNode();
+            Node target = this.histogram.getTargetNode();
             this.targetSelector = new JComboBox();
             ListCellRenderer renderer = new VariableBoxRenderer();
             this.targetSelector.setRenderer(renderer);
 
-            List<Node> variables = histogram.getDataSet().getVariables();
+            List<Node> variables = this.histogram.getDataSet().getVariables();
             Collections.sort(variables);
 
             for (Node node : variables) {
@@ -410,56 +384,50 @@ public class HistogramView extends JPanel {
                 }
             }
 
-            this.targetSelector.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    if (e.getStateChange() == ItemEvent.SELECTED) {
-                        Node node = (Node) e.getItem();
-                        getHistogram().setTarget(node.getName());
-                        int maxBins = getMaxCategoryValue(getHistogram());
-                        int numBins = getHistogram().getNumBins();
+            this.targetSelector.addItemListener(e -> {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    Node node = (Node) e.getItem();
+                    getHistogram().setTarget(node.getName());
+                    int maxBins = HistogramController.getMaxCategoryValue(getHistogram());
+                    int numBins = getHistogram().getNumBins();
 
-                        // Don't try to set the max on the existing num bars selector; there is (at least currently)
-                        // a bug in the IntSpinner that prevents the max from being increased once it's decreased, so
-                        // you can go from continuous to discrete but not discrete to continuous and have the number
-                        // of bins be reasonable. jdramsey 7/17/13
-                        numBarsSelector = new IntSpinner(numBins, 1, 3);
-                        numBarsSelector.setMin(2);
-                        numBarsSelector.setMax(maxBins);
+                    // Don't try to set the max on the existing num bars selector; there is (at least currently)
+                    // a bug in the IntSpinner that prevents the max from being increased once it's decreased, so
+                    // you can go from continuous to discrete but not discrete to continuous and have the number
+                    // of bins be reasonable. jdramsey 7/17/13
+                    HistogramController.this.numBarsSelector = new IntSpinner(numBins, 1, 3);
+                    HistogramController.this.numBarsSelector.setMin(2);
+                    HistogramController.this.numBarsSelector.setMax(maxBins);
 
-                        numBarsSelector.addChangeListener(new ChangeListener() {
-                            public void stateChanged(ChangeEvent e) {
-                                JSpinner s = (JSpinner) e.getSource();
-                                if ((getHistogram().getTargetNode() instanceof ContinuousVariable)) {
-                                    int value = (Integer) s.getValue();
-                                    getHistogram().setNumBins(value);
-                                    changeHistogram();
-                                }
-                            }
-                        });
-
-                        for (ConditioningPanel panel : new ArrayList<>(conditioningPanels)) {
-                            conditioningPanels.remove(panel);
+                    HistogramController.this.numBarsSelector.addChangeListener(e1 -> {
+                        JSpinner s = (JSpinner) e1.getSource();
+                        if ((getHistogram().getTargetNode() instanceof ContinuousVariable)) {
+                            int value = (Integer) s.getValue();
+                            getHistogram().setNumBins(value);
+                            changeHistogram();
                         }
+                    });
 
-                        buildEditArea();
-                        resetConditioning();
-                        changeHistogram();
+                    for (ConditioningPanel panel : new ArrayList<>(HistogramController.this.conditioningPanels)) {
+                        HistogramController.this.conditioningPanels.remove(panel);
                     }
+
+                    buildEditArea();
+                    resetConditioning();
+                    changeHistogram();
                 }
             });
 
-            this.numBarsSelector = new IntSpinner(histogram.getNumBins(), 1, 3);
+            this.numBarsSelector = new IntSpinner(this.histogram.getNumBins(), 1, 3);
             this.numBarsSelector.setMin(2);
-            this.numBarsSelector.setMax(getMaxCategoryValue(histogram));
+            this.numBarsSelector.setMax(HistogramController.getMaxCategoryValue(this.histogram));
 
-            this.numBarsSelector.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    JSpinner s = (JSpinner) e.getSource();
-                    if ((getHistogram().getTargetNode() instanceof ContinuousVariable)) {
-                        int value = (Integer) s.getValue();
-                        getHistogram().setNumBins(value);
-                        changeHistogram();
-                    }
+            this.numBarsSelector.addChangeListener(e -> {
+                JSpinner s = (JSpinner) e.getSource();
+                if ((getHistogram().getTargetNode() instanceof ContinuousVariable)) {
+                    int value = (Integer) s.getValue();
+                    getHistogram().setNumBins(value);
+                    changeHistogram();
                 }
             });
 
@@ -469,113 +437,107 @@ public class HistogramView extends JPanel {
                 this.newConditioningVariableSelector.addItem(node);
             }
 
-            this.newConditioningVariableSelector.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    if (e.getStateChange() == ItemEvent.SELECTED) {
-                        System.out.println("New conditioning varible " + e.getItem());
-                    }
+            this.newConditioningVariableSelector.addItemListener(e -> {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    System.out.println("New conditioning varible " + e.getItem());
                 }
             });
 
             this.newConditioningVariableButton = new JButton("Add");
 
-            this.newConditioningVariableButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    Node selected = (Node) newConditioningVariableSelector.getSelectedItem();
+            this.newConditioningVariableButton.addActionListener(e -> {
+                Node selected = (Node) HistogramController.this.newConditioningVariableSelector.getSelectedItem();
 
-                    if (selected == targetSelector.getSelectedItem()) {
+                if (selected == HistogramController.this.targetSelector.getSelectedItem()) {
+                    JOptionPane.showMessageDialog(HistogramController.this,
+                            "The target variable cannot be conditioned on.");
+                    return;
+                }
+
+                for (ConditioningPanel panel : HistogramController.this.conditioningPanels) {
+                    if (selected == panel.getVariable()) {
                         JOptionPane.showMessageDialog(HistogramController.this,
-                                "The target variable cannot be conditioned on.");
+                                "There is already a conditioning variable called " + selected + ".");
                         return;
                     }
-
-                    for (ConditioningPanel panel : conditioningPanels) {
-                        if (selected == panel.getVariable()) {
-                            JOptionPane.showMessageDialog(HistogramController.this,
-                                    "There is already a conditioning variable called " + selected + ".");
-                            return;
-                        }
-                    }
-
-                    if (selected instanceof ContinuousVariable) {
-                        final ContinuousVariable _var = (ContinuousVariable) selected;
-
-                        ContinuousConditioningPanel panel1 = (ContinuousConditioningPanel) conditioningPanelMap.get(_var);
-
-                        if (panel1 == null) {
-                            panel1 = ContinuousConditioningPanel.getDefault(_var, histogram);
-                        }
-
-                        ContinuousInquiryPanel panel2 = new ContinuousInquiryPanel(_var, histogram, panel1);
-
-                        JOptionPane.showOptionDialog(HistogramController.this, panel2,
-                                null, JOptionPane.DEFAULT_OPTION,
-                                JOptionPane.PLAIN_MESSAGE, null, null, null);
-
-                        ContinuousConditioningPanel.Type type = panel2.getType();
-                        double low = panel2.getLow();
-                        double high = panel2.getHigh();
-                        int ntile = panel2.getNtile();
-                        int ntileIndex = panel2.getNtileIndex();
-
-                        ContinuousConditioningPanel panel3 = new ContinuousConditioningPanel(_var, low, high, ntile, ntileIndex, type);
-
-                        conditioningPanels.add(panel3);
-                        conditioningPanelMap.put(_var, panel3);
-                    } else if (selected instanceof DiscreteVariable) {
-                        DiscreteVariable _var = (DiscreteVariable) selected;
-                        DiscreteConditioningPanel panel1 = (DiscreteConditioningPanel) conditioningPanelMap.get(_var);
-
-                        if (panel1 == null) {
-                            panel1 = DiscreteConditioningPanel.getDefault(_var);
-                            conditioningPanelMap.put(_var, panel1);
-                        }
-
-                        DiscreteInquiryPanel panel2 = new DiscreteInquiryPanel(_var, panel1);
-
-                        JOptionPane.showOptionDialog(HistogramController.this, panel2,
-                                null, JOptionPane.DEFAULT_OPTION,
-                                JOptionPane.PLAIN_MESSAGE, null, null, null);
-
-                        String category = (String) panel2.getValuesDropdown().getSelectedItem();
-                        int index = _var.getIndex(category);
-
-                        DiscreteConditioningPanel panel3 = new DiscreteConditioningPanel(_var, index);
-                        conditioningPanels.add(panel3);
-                        conditioningPanelMap.put(_var, panel3);
-                    } else {
-                        throw new IllegalStateException();
-                    }
-
-                    buildEditArea();
-                    resetConditioning();
-                    changeHistogram();
                 }
+
+                if (selected instanceof ContinuousVariable) {
+                    ContinuousVariable _var = (ContinuousVariable) selected;
+
+                    ContinuousConditioningPanel panel1 = (ContinuousConditioningPanel) HistogramController.this.conditioningPanelMap.get(_var);
+
+                    if (panel1 == null) {
+                        panel1 = ContinuousConditioningPanel.getDefault(_var, HistogramController.this.histogram);
+                    }
+
+                    ContinuousInquiryPanel panel2 = new ContinuousInquiryPanel(_var, HistogramController.this.histogram, panel1);
+
+                    JOptionPane.showOptionDialog(HistogramController.this, panel2,
+                            null, JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.PLAIN_MESSAGE, null, null, null);
+
+                    ContinuousConditioningPanel.Type type = panel2.getType();
+                    double low = panel2.getLow();
+                    double high = panel2.getHigh();
+                    int ntile = panel2.getNtile();
+                    int ntileIndex = panel2.getNtileIndex();
+
+                    ContinuousConditioningPanel panel3 = new ContinuousConditioningPanel(_var, low, high, ntile, ntileIndex, type);
+
+                    HistogramController.this.conditioningPanels.add(panel3);
+                    HistogramController.this.conditioningPanelMap.put(_var, panel3);
+                } else if (selected instanceof DiscreteVariable) {
+                    DiscreteVariable _var = (DiscreteVariable) selected;
+                    DiscreteConditioningPanel panel1 = (DiscreteConditioningPanel) HistogramController.this.conditioningPanelMap.get(_var);
+
+                    if (panel1 == null) {
+                        panel1 = DiscreteConditioningPanel.getDefault(_var);
+                        HistogramController.this.conditioningPanelMap.put(_var, panel1);
+                    }
+
+                    DiscreteInquiryPanel panel2 = new DiscreteInquiryPanel(_var, panel1);
+
+                    JOptionPane.showOptionDialog(HistogramController.this, panel2,
+                            null, JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.PLAIN_MESSAGE, null, null, null);
+
+                    String category = (String) panel2.getValuesDropdown().getSelectedItem();
+                    int index = _var.getIndex(category);
+
+                    DiscreteConditioningPanel panel3 = new DiscreteConditioningPanel(_var, index);
+                    HistogramController.this.conditioningPanels.add(panel3);
+                    HistogramController.this.conditioningPanelMap.put(_var, panel3);
+                } else {
+                    throw new IllegalStateException();
+                }
+
+                buildEditArea();
+                resetConditioning();
+                changeHistogram();
             });
 
             this.removeConditioningVariableButton = new JButton("Remove Checked");
 
-            this.removeConditioningVariableButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    for (ConditioningPanel panel : new ArrayList<>(conditioningPanels)) {
-                        if (panel.isSelected()) {
-                            panel.setSelected(false);
-                            conditioningPanels.remove(panel);
-                        }
+            this.removeConditioningVariableButton.addActionListener(e -> {
+                for (ConditioningPanel panel : new ArrayList<>(HistogramController.this.conditioningPanels)) {
+                    if (panel.isSelected()) {
+                        panel.setSelected(false);
+                        HistogramController.this.conditioningPanels.remove(panel);
                     }
-
-                    buildEditArea();
-                    resetConditioning();
-                    changeHistogram();
                 }
+
+                buildEditArea();
+                resetConditioning();
+                changeHistogram();
             });
 
             // build the gui.
-            restrictSize(this.targetSelector);
-            restrictSize(this.numBarsSelector);
-            restrictSize(this.newConditioningVariableSelector);
-            restrictSize(this.newConditioningVariableButton);
-            restrictSize(this.removeConditioningVariableButton);
+            HistogramController.restrictSize(this.targetSelector);
+            HistogramController.restrictSize(this.numBarsSelector);
+            HistogramController.restrictSize(this.newConditioningVariableSelector);
+            HistogramController.restrictSize(this.newConditioningVariableButton);
+            HistogramController.restrictSize(this.removeConditioningVariableButton);
 
             buildEditArea();
         }
@@ -583,19 +545,19 @@ public class HistogramView extends JPanel {
         private void resetConditioning() {
 
             // Need to set the conditions on the histogram and also update the list of conditions in the view.
-            histogram.removeConditioningVariables();
+            this.histogram.removeConditioningVariables();
 
-            for (ConditioningPanel panel : conditioningPanels) {
-                if (panel instanceof ContinuousConditioningPanel) {
+            for (ConditioningPanel panel : this.conditioningPanels) {
+                if (panel instanceof HistogramView.HistogramController.ContinuousConditioningPanel) {
                     Node node = panel.getVariable();
-                    double low = ((ContinuousConditioningPanel) panel).getLow();
-                    double high = ((ContinuousConditioningPanel) panel).getHigh();
-                    histogram.addConditioningVariable(node.getName(), low, high);
+                    double low = ((HistogramView.HistogramController.ContinuousConditioningPanel) panel).getLow();
+                    double high = ((HistogramView.HistogramController.ContinuousConditioningPanel) panel).getHigh();
+                    this.histogram.addConditioningVariable(node.getName(), low, high);
 
-                } else if (panel instanceof DiscreteConditioningPanel) {
+                } else if (panel instanceof HistogramView.HistogramController.DiscreteConditioningPanel) {
                     Node node = panel.getVariable();
-                    int index = ((DiscreteConditioningPanel) panel).getIndex();
-                    histogram.addConditioningVariable(node.getName(), index);
+                    int index = ((HistogramView.HistogramController.DiscreteConditioningPanel) panel).getIndex();
+                    this.histogram.addConditioningVariable(node.getName(), index);
                 }
             }
         }
@@ -621,7 +583,7 @@ public class HistogramView extends JPanel {
 
             main.add(Box.createVerticalStrut(20));
 
-            for (ConditioningPanel panel : conditioningPanels) {
+            for (ConditioningPanel panel : this.conditioningPanels) {
                 main.add(panel.getBox());
                 main.add(Box.createVerticalStrut(10));
             }
@@ -630,18 +592,18 @@ public class HistogramView extends JPanel {
 
             main.add(Box.createVerticalGlue());
 
-            for (int i = newConditioningVariableSelector.getItemCount() - 1; i >= 0; i--) {
-                newConditioningVariableSelector.removeItemAt(i);
+            for (int i = this.newConditioningVariableSelector.getItemCount() - 1; i >= 0; i--) {
+                this.newConditioningVariableSelector.removeItemAt(i);
             }
 
-            List<Node> variables = histogram.getDataSet().getVariables();
+            List<Node> variables = this.histogram.getDataSet().getVariables();
             Collections.sort(variables);
 
             NODE:
             for (Node node : variables) {
-                if (node == targetSelector.getSelectedItem()) continue;
+                if (node == this.targetSelector.getSelectedItem()) continue;
 
-                for (ConditioningPanel panel : conditioningPanels) {
+                for (ConditioningPanel panel : this.conditioningPanels) {
                     if (node == panel.getVariable()) continue NODE;
                 }
 
@@ -649,13 +611,13 @@ public class HistogramView extends JPanel {
             }
 
             Box b6 = Box.createHorizontalBox();
-            b6.add(newConditioningVariableSelector);
-            b6.add(newConditioningVariableButton);
+            b6.add(this.newConditioningVariableSelector);
+            b6.add(this.newConditioningVariableButton);
             b6.add(Box.createHorizontalGlue());
             main.add(b6);
 
             Box b7 = Box.createHorizontalBox();
-            b7.add(removeConditioningVariableButton);
+            b7.add(this.removeConditioningVariableButton);
             b7.add(Box.createHorizontalGlue());
             main.add(b7);
 
@@ -730,14 +692,14 @@ public class HistogramView extends JPanel {
             void setSelected(boolean b);
         }
 
-        private static class DiscreteConditioningPanel implements ConditioningPanel {
-            private DiscreteVariable variable;
-            private String value;
-            private Box box;
+        public static class DiscreteConditioningPanel implements ConditioningPanel {
+            private final DiscreteVariable variable;
+            private final String value;
+            private final Box box;
 
             // Set selected if this checkbox should be removed.
-            private JCheckBox checkBox;
-            private int index;
+            private final JCheckBox checkBox;
+            private final int index;
 
             public DiscreteConditioningPanel(DiscreteVariable variable, int valueIndex) {
                 if (variable == null) throw new NullPointerException();
@@ -754,66 +716,66 @@ public class HistogramView extends JPanel {
                 b4.add(new JLabel(variable + " = " + variable.getCategory(valueIndex)));
                 b4.add(Box.createHorizontalGlue());
                 this.checkBox = new JCheckBox();
-                restrictSize(checkBox);
-                b4.add(checkBox);
+                HistogramController.restrictSize(this.checkBox);
+                b4.add(this.checkBox);
                 this.box = b4;
             }
 
-            public static DiscreteConditioningPanel getDefault(DiscreteVariable var) {
-                return new DiscreteConditioningPanel(var, 0);
+            public static HistogramView.HistogramController.DiscreteConditioningPanel getDefault(DiscreteVariable var) {
+                return new HistogramView.HistogramController.DiscreteConditioningPanel(var, 0);
             }
 
             public DiscreteVariable getVariable() {
-                return variable;
+                return this.variable;
             }
 
             public String getValue() {
-                return value;
+                return this.value;
             }
 
             public int getIndex() {
-                return index;
+                return this.index;
             }
 
             public Box getBox() {
-                return box;
+                return this.box;
             }
 
             public boolean isSelected() {
-                return checkBox.isSelected();
+                return this.checkBox.isSelected();
             }
 
             public void setSelected(boolean b) {
-                checkBox.setSelected(false);
+                this.checkBox.setSelected(false);
             }
 
         }
 
-        private static class ContinuousConditioningPanel implements ConditioningPanel {
+        public static class ContinuousConditioningPanel implements ConditioningPanel {
 
             public int getNtile() {
-                return ntile;
+                return this.ntile;
             }
 
             public int getNtileIndex() {
-                return ntileIndex;
+                return this.ntileIndex;
             }
 
             public enum Type {Range, Ntile, AboveAverage, BelowAverage}
 
-            private ContinuousVariable variable;
-            private Box box;
+            private final ContinuousVariable variable;
+            private final Box box;
 
-            private Type type;
-            private double low;
-            private double high;
-            private int ntile;
-            private int ntileIndex;
+            private final HistogramView.HistogramController.ContinuousConditioningPanel.Type type;
+            private final double low;
+            private final double high;
+            private final int ntile;
+            private final int ntileIndex;
 
             // Mark selected if this panel is to be removed.
-            private JCheckBox checkBox;
+            private final JCheckBox checkBox;
 
-            public ContinuousConditioningPanel(ContinuousVariable variable, double low, double high, int ntile, int ntileIndex, Type type) {
+            public ContinuousConditioningPanel(ContinuousVariable variable, double low, double high, int ntile, int ntileIndex, HistogramView.HistogramController.ContinuousConditioningPanel.Type type) {
                 if (variable == null) throw new NullPointerException();
                 if (low >= high) {
                     throw new IllegalArgumentException("Low >= high.");
@@ -834,67 +796,67 @@ public class HistogramView extends JPanel {
                 Box b4 = Box.createHorizontalBox();
                 b4.add(Box.createRigidArea(new Dimension(10, 0)));
 
-                if (type == Type.Range) {
+                if (type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.Range) {
                     b4.add(new JLabel(variable + " = (" + nf.format(low) + ", " + nf.format(high) + ")"));
-                } else if (type == Type.AboveAverage) {
+                } else if (type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.AboveAverage) {
                     b4.add(new JLabel(variable + " = Above Average"));
-                } else if (type == Type.BelowAverage) {
+                } else if (type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.BelowAverage) {
                     b4.add(new JLabel(variable + " = Below Average"));
-                } else if (type == Type.Ntile) {
-                    b4.add(new JLabel(variable + " = " + tiles[ntile - 1] + " " + ntileIndex));
+                } else if (type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.Ntile) {
+                    b4.add(new JLabel(variable + " = " + HistogramView.tiles[ntile - 1] + " " + ntileIndex));
                 }
 
                 b4.add(Box.createHorizontalGlue());
                 this.checkBox = new JCheckBox();
-                restrictSize(checkBox);
-                b4.add(checkBox);
+                HistogramController.restrictSize(this.checkBox);
+                b4.add(this.checkBox);
                 this.box = b4;
 
             }
 
-            public static ContinuousConditioningPanel getDefault(ContinuousVariable variable, Histogram histogram) {
+            public static HistogramView.HistogramController.ContinuousConditioningPanel getDefault(ContinuousVariable variable, Histogram histogram) {
                 double[] data = histogram.getContinuousData(variable.getName());
                 double max = StatUtils.max(data);
                 double avg = StatUtils.mean(data);
-                return new ContinuousConditioningPanel(variable, avg, max, 2, 1, Type.AboveAverage);
+                return new HistogramView.HistogramController.ContinuousConditioningPanel(variable, avg, max, 2, 1, HistogramView.HistogramController.ContinuousConditioningPanel.Type.AboveAverage);
             }
 
             public ContinuousVariable getVariable() {
-                return variable;
+                return this.variable;
             }
 
-            public Type getType() {
-                return type;
+            public HistogramView.HistogramController.ContinuousConditioningPanel.Type getType() {
+                return this.type;
             }
 
             public Box getBox() {
-                return box;
+                return this.box;
             }
 
             public boolean isSelected() {
-                return checkBox.isSelected();
+                return this.checkBox.isSelected();
             }
 
             public void setSelected(boolean b) {
-                checkBox.setSelected(false);
+                this.checkBox.setSelected(false);
             }
 
             public double getLow() {
-                return low;
+                return this.low;
             }
 
             public double getHigh() {
-                return high;
+                return this.high;
             }
         }
     }
 
     private static class ContinuousInquiryPanel extends JPanel {
-        private JComboBox ntileCombo;
-        private JComboBox ntileIndexCombo;
-        private DoubleTextField field1;
-        private DoubleTextField field2;
-        private HistogramController.ContinuousConditioningPanel.Type type;
+        private final JComboBox ntileCombo;
+        private final JComboBox ntileIndexCombo;
+        private final DoubleTextField field1;
+        private final DoubleTextField field2;
+        private HistogramView.HistogramController.ContinuousConditioningPanel.Type type;
         private final Map<String, Integer> ntileMap = new HashMap<>();
         private final double[] data;
 
@@ -905,9 +867,9 @@ public class HistogramView extends JPanel {
          * @param conditioningPanel We will try to get some initialization information out of the conditioning
          *                          panel. This must be for the same variable as variable.
          */
-        public ContinuousInquiryPanel(final ContinuousVariable variable, Histogram histogram,
-                                      HistogramController.ContinuousConditioningPanel conditioningPanel) {
-            data = histogram.getContinuousData(variable.getName());
+        public ContinuousInquiryPanel(ContinuousVariable variable, Histogram histogram,
+                                      HistogramView.HistogramController.ContinuousConditioningPanel conditioningPanel) {
+            this.data = histogram.getContinuousData(variable.getName());
 
             if (conditioningPanel == null)
                 throw new NullPointerException();
@@ -917,46 +879,36 @@ public class HistogramView extends JPanel {
             // There is some order dependence in the below; careful rearranging things.
             NumberFormat nf = new DecimalFormat("0.00");
 
-            field1 = new DoubleTextField(conditioningPanel.getLow(), 4, nf);
-            field2 = new DoubleTextField(conditioningPanel.getHigh(), 4, nf);
+            this.field1 = new DoubleTextField(conditioningPanel.getLow(), 4, nf);
+            this.field2 = new DoubleTextField(conditioningPanel.getHigh(), 4, nf);
 
             JRadioButton radio1 = new JRadioButton();
             JRadioButton radio2 = new JRadioButton();
             JRadioButton radio3 = new JRadioButton();
             JRadioButton radio4 = new JRadioButton();
 
-            radio1.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    type = HistogramController.ContinuousConditioningPanel.Type.AboveAverage;
-                    field1.setValue(StatUtils.mean(data));
-                    field2.setValue(StatUtils.max(data));
-                }
+            radio1.addActionListener(e -> {
+                ContinuousInquiryPanel.this.type = HistogramController.ContinuousConditioningPanel.Type.AboveAverage;
+                ContinuousInquiryPanel.this.field1.setValue(StatUtils.mean(ContinuousInquiryPanel.this.data));
+                ContinuousInquiryPanel.this.field2.setValue(StatUtils.max(ContinuousInquiryPanel.this.data));
             });
 
-            radio2.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    type = HistogramController.ContinuousConditioningPanel.Type.BelowAverage;
-                    field1.setValue(StatUtils.min(data));
-                    field2.setValue(StatUtils.mean(data));
-                }
+            radio2.addActionListener(e -> {
+                ContinuousInquiryPanel.this.type = HistogramController.ContinuousConditioningPanel.Type.BelowAverage;
+                ContinuousInquiryPanel.this.field1.setValue(StatUtils.min(ContinuousInquiryPanel.this.data));
+                ContinuousInquiryPanel.this.field2.setValue(StatUtils.mean(ContinuousInquiryPanel.this.data));
             });
 
-            radio3.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    type = HistogramController.ContinuousConditioningPanel.Type.Ntile;
-                    double[] breakpoints = getNtileBreakpoints(data, getNtile());
-                    double breakpoint1 = breakpoints[getNtileIndex() - 1];
-                    double breakpoint2 = breakpoints[getNtileIndex()];
-                    field1.setValue(breakpoint1);
-                    field2.setValue(breakpoint2);
-                }
+            radio3.addActionListener(e -> {
+                ContinuousInquiryPanel.this.type = HistogramController.ContinuousConditioningPanel.Type.Ntile;
+                double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(ContinuousInquiryPanel.this.data, getNtile());
+                double breakpoint1 = breakpoints[getNtileIndex() - 1];
+                double breakpoint2 = breakpoints[getNtileIndex()];
+                ContinuousInquiryPanel.this.field1.setValue(breakpoint1);
+                ContinuousInquiryPanel.this.field2.setValue(breakpoint2);
             });
 
-            radio4.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    type = HistogramController.ContinuousConditioningPanel.Type.Range;
-                }
-            });
+            radio4.addActionListener(e -> ContinuousInquiryPanel.this.type = HistogramController.ContinuousConditioningPanel.Type.Range);
 
             ButtonGroup group = new ButtonGroup();
             group.add(radio1);
@@ -964,76 +916,72 @@ public class HistogramView extends JPanel {
             group.add(radio3);
             group.add(radio4);
 
-            type = conditioningPanel.getType();
+            this.type = conditioningPanel.getType();
 
-            ntileCombo = new JComboBox();
-            ntileIndexCombo = new JComboBox();
+            this.ntileCombo = new JComboBox();
+            this.ntileIndexCombo = new JComboBox();
 
             int ntile = conditioningPanel.getNtile();
             int ntileIndex = conditioningPanel.getNtileIndex();
 
             for (int n = 2; n <= 10; n++) {
-                ntileCombo.addItem(tiles[n - 1]);
-                ntileMap.put(tiles[n - 1], n);
+                this.ntileCombo.addItem(HistogramView.tiles[n - 1]);
+                this.ntileMap.put(HistogramView.tiles[n - 1], n);
             }
 
             for (int n = 1; n <= ntile; n++) {
-                ntileIndexCombo.addItem(n);
+                this.ntileIndexCombo.addItem(n);
             }
 
-            ntileCombo.setSelectedItem(tiles[ntile - 1]);
-            ntileIndexCombo.setSelectedItem(ntileIndex);
+            this.ntileCombo.setSelectedItem(HistogramView.tiles[ntile - 1]);
+            this.ntileIndexCombo.setSelectedItem(ntileIndex);
 
-            ntileCombo.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    String item = (String) e.getItem();
-                    int ntileIndex = ntileMap.get(item);
+            this.ntileCombo.addItemListener(e -> {
+                String item = (String) e.getItem();
+                int ntileIndex1 = ContinuousInquiryPanel.this.ntileMap.get(item);
 
-                    for (int i = ntileIndexCombo.getItemCount() - 1; i >= 0; i--) {
-                        ntileIndexCombo.removeItemAt(i);
-                    }
-
-                    for (int n = 1; n <= ntileIndex; n++) {
-                        ntileIndexCombo.addItem(n);
-                    }
-
-                    double[] breakpoints = getNtileBreakpoints(data, getNtile());
-                    double breakpoint1 = breakpoints[getNtileIndex() - 1];
-                    double breakpoint2 = breakpoints[getNtileIndex()];
-                    field1.setValue(breakpoint1);
-                    field2.setValue(breakpoint2);
+                for (int i = ContinuousInquiryPanel.this.ntileIndexCombo.getItemCount() - 1; i >= 0; i--) {
+                    ContinuousInquiryPanel.this.ntileIndexCombo.removeItemAt(i);
                 }
-            });
 
-            ntileIndexCombo.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    int ntile = getNtile();
-                    int ntileIndex = getNtileIndex();
-                    double[] breakpoints = getNtileBreakpoints(data, ntile);
-                    double breakpoint1 = breakpoints[ntileIndex - 1];
-                    double breakpoint2 = breakpoints[ntileIndex];
-                    field1.setValue(breakpoint1);
-                    field2.setValue(breakpoint2);
+                for (int n = 1; n <= ntileIndex1; n++) {
+                    ContinuousInquiryPanel.this.ntileIndexCombo.addItem(n);
                 }
-            });
 
-
-            if (type == HistogramController.ContinuousConditioningPanel.Type.AboveAverage) {
-                radio1.setSelected(true);
-                field1.setValue(StatUtils.mean(data));
-                field2.setValue(StatUtils.max(data));
-            } else if (type == HistogramController.ContinuousConditioningPanel.Type.BelowAverage) {
-                radio2.setSelected(true);
-                field1.setValue(StatUtils.min(data));
-                field2.setValue(StatUtils.mean(data));
-            } else if (type == HistogramController.ContinuousConditioningPanel.Type.Ntile) {
-                radio3.setSelected(true);
-                double[] breakpoints = getNtileBreakpoints(data, getNtile());
+                double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(ContinuousInquiryPanel.this.data, getNtile());
                 double breakpoint1 = breakpoints[getNtileIndex() - 1];
                 double breakpoint2 = breakpoints[getNtileIndex()];
-                field1.setValue(breakpoint1);
-                field2.setValue(breakpoint2);
-            } else if (type == HistogramController.ContinuousConditioningPanel.Type.Range) {
+                ContinuousInquiryPanel.this.field1.setValue(breakpoint1);
+                ContinuousInquiryPanel.this.field2.setValue(breakpoint2);
+            });
+
+            this.ntileIndexCombo.addItemListener(e -> {
+                int ntile1 = getNtile();
+                int ntileIndex12 = getNtileIndex();
+                double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(ContinuousInquiryPanel.this.data, ntile1);
+                double breakpoint1 = breakpoints[ntileIndex12 - 1];
+                double breakpoint2 = breakpoints[ntileIndex12];
+                ContinuousInquiryPanel.this.field1.setValue(breakpoint1);
+                ContinuousInquiryPanel.this.field2.setValue(breakpoint2);
+            });
+
+
+            if (this.type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.AboveAverage) {
+                radio1.setSelected(true);
+                this.field1.setValue(StatUtils.mean(this.data));
+                this.field2.setValue(StatUtils.max(this.data));
+            } else if (this.type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.BelowAverage) {
+                radio2.setSelected(true);
+                this.field1.setValue(StatUtils.min(this.data));
+                this.field2.setValue(StatUtils.mean(this.data));
+            } else if (this.type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.Ntile) {
+                radio3.setSelected(true);
+                double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(this.data, getNtile());
+                double breakpoint1 = breakpoints[getNtileIndex() - 1];
+                double breakpoint2 = breakpoints[getNtileIndex()];
+                this.field1.setValue(breakpoint1);
+                this.field2.setValue(breakpoint2);
+            } else if (this.type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.Range) {
                 radio4.setSelected(true);
             }
 
@@ -1060,17 +1008,17 @@ public class HistogramView extends JPanel {
             Box b3 = Box.createHorizontalBox();
             b3.add(radio3);
             b3.add(new JLabel("In "));
-            b3.add(ntileCombo);
-            b3.add(ntileIndexCombo);
+            b3.add(this.ntileCombo);
+            b3.add(this.ntileIndexCombo);
             b3.add(Box.createHorizontalGlue());
             main.add(b3);
 
             Box b4 = Box.createHorizontalBox();
             b4.add(radio4);
             b4.add(new JLabel("In ("));
-            b4.add(field1);
+            b4.add(this.field1);
             b4.add(new JLabel(", "));
-            b4.add(field2);
+            b4.add(this.field2);
             b4.add(new JLabel(")"));
             b4.add(Box.createHorizontalGlue());
             main.add(b4);
@@ -1078,25 +1026,25 @@ public class HistogramView extends JPanel {
             add(main, BorderLayout.CENTER);
         }
 
-        public HistogramController.ContinuousConditioningPanel.Type getType() {
-            return type;
+        public HistogramView.HistogramController.ContinuousConditioningPanel.Type getType() {
+            return this.type;
         }
 
         public double getLow() {
-            return field1.getValue();
+            return this.field1.getValue();
         }
 
         public double getHigh() {
-            return field2.getValue();
+            return this.field2.getValue();
         }
 
         public int getNtile() {
-            String selectedItem = (String) ntileCombo.getSelectedItem();
-            return ntileMap.get(selectedItem);
+            String selectedItem = (String) this.ntileCombo.getSelectedItem();
+            return this.ntileMap.get(selectedItem);
         }
 
         public int getNtileIndex() {
-            Object selectedItem = ntileIndexCombo.getSelectedItem();
+            Object selectedItem = this.ntileIndexCombo.getSelectedItem();
             return selectedItem == null ? 1 : (Integer) selectedItem;
         }
 
@@ -1126,7 +1074,7 @@ public class HistogramView extends JPanel {
             chunks.add(new Chunk(startChunkCount, _data.length, _data[_data.length - 1]));
 
             // now find the breakpoints.
-            double interval = _data.length / ntiles;
+            double interval = _data.length / (double) ntiles;
             double[] breakpoints = new double[ntiles + 1];
             breakpoints[0] = StatUtils.min(_data);
 
@@ -1184,14 +1132,14 @@ public class HistogramView extends JPanel {
     private static class DiscreteInquiryPanel extends JPanel {
         private final JComboBox valuesDropdown;
 
-        public DiscreteInquiryPanel(DiscreteVariable var, HistogramController.DiscreteConditioningPanel panel) {
-            valuesDropdown = new JComboBox();
+        public DiscreteInquiryPanel(DiscreteVariable var, HistogramView.HistogramController.DiscreteConditioningPanel panel) {
+            this.valuesDropdown = new JComboBox();
 
             for (String category : var.getCategories()) {
                 getValuesDropdown().addItem(category);
             }
 
-            valuesDropdown.setSelectedItem(panel.getValue());
+            this.valuesDropdown.setSelectedItem(panel.getValue());
 
             Box main = Box.createVerticalBox();
             Box b1 = Box.createHorizontalBox();
@@ -1210,7 +1158,7 @@ public class HistogramView extends JPanel {
         }
 
         public JComboBox getValuesDropdown() {
-            return valuesDropdown;
+            return this.valuesDropdown;
         }
     }
 

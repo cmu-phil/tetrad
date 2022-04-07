@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -45,7 +45,6 @@ public class FactorAnalysis {
     private final CovarianceMatrix covariance;
 
     // method-specific fields that get used
-    private LinkedList<Double> dValues;
     private LinkedList<Matrix> factorLoadingVectors;
     private double threshold = 0.001;
     private int numFactors = 2;
@@ -100,9 +99,8 @@ public class FactorAnalysis {
      */
     public Matrix successiveResidual() {
         this.factorLoadingVectors = new LinkedList<>();
-        this.dValues = new LinkedList<>();
 
-        Matrix residual = covariance.getMatrix().copy();
+        Matrix residual = this.covariance.getMatrix().copy();
         Matrix unitVector = new Matrix(residual.rows(), 1);
 
         for (int i = 0; i < unitVector.rows(); i++) {
@@ -114,17 +112,17 @@ public class FactorAnalysis {
 
             if (!found) break;
 
-            Matrix f = factorLoadingVectors.getLast();
+            Matrix f = this.factorLoadingVectors.getLast();
             residual = residual.minus(f.times(f.transpose()));
         }
 
-        factorLoadingVectors.removeFirst();
+        this.factorLoadingVectors.removeFirst();
 
-        Matrix result = new Matrix(residual.rows(), factorLoadingVectors.size());
+        Matrix result = new Matrix(residual.rows(), this.factorLoadingVectors.size());
 
         for (int i = 0; i < result.rows(); i++) {
             for (int j = 0; j < result.columns(); j++) {
-                result.set(i, j, factorLoadingVectors.get(j).get(i, 0));
+                result.set(i, j, this.factorLoadingVectors.get(j).get(i, 0));
             }
         }
 
@@ -140,7 +138,7 @@ public class FactorAnalysis {
         LinkedList<Matrix> residuals = new LinkedList<>();
         LinkedList<Matrix> rotatedFactorVectors = new LinkedList<>();
 
-        Matrix normalizedFactorLoadings = normalizeRows(factorLoadingMatrix);
+        Matrix normalizedFactorLoadings = FactorAnalysis.normalizeRows(factorLoadingMatrix);
         residuals.add(normalizedFactorLoadings);
 
         Matrix unitColumn = new Matrix(factorLoadingMatrix.rows(), 1);
@@ -183,10 +181,10 @@ public class FactorAnalysis {
 
             for (int i = 0; i < 200; i++) {
                 Matrix bVector = r.times(hVectors.get(i));
-                double averageSumSquaresBVector = unitColumn.transpose().times(matrixExp(bVector, 2))
+                double averageSumSquaresBVector = unitColumn.transpose().times(FactorAnalysis.matrixExp(bVector, 2))
                         .scalarMult(1.0 / (double) bVector.rows()).get(0, 0);
 
-                Matrix betaVector = matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
+                Matrix betaVector = FactorAnalysis.matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
                 Matrix uVector = r.transpose().times(betaVector);
 
                 double alpha2 = (Math.sqrt(uVector.transpose().times(uVector).get(0, 0)));
@@ -284,7 +282,6 @@ public class FactorAnalysis {
             f = ui.scalarMult(1.0 / d);
         }
 
-        this.dValues.add(d);
         this.factorLoadingVectors.add(f);
         return true;
     }
@@ -300,7 +297,7 @@ public class FactorAnalysis {
             for (int j = 0; j < matrix.columns(); j++)
                 colVector.set(j, 0, vector.get(j));
 
-            normalizedRows.add(normalizeVector(colVector));
+            normalizedRows.add(FactorAnalysis.normalizeVector(colVector));
         }
 
         Matrix result = new Matrix(matrix.rows(), matrix.columns());
@@ -330,11 +327,11 @@ public class FactorAnalysis {
     }
 
     public double getThreshold() {
-        return threshold;
+        return this.threshold;
     }
 
     public int getNumFactors() {
-        return numFactors;
+        return this.numFactors;
     }
 
     public void setNumFactors(int numFactors) {
@@ -342,7 +339,7 @@ public class FactorAnalysis {
     }
 
     public Matrix getResidual() {
-        return residual;
+        return this.residual;
     }
 
     // factanal in R:

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,22 +39,22 @@ import static java.lang.Math.sqrt;
  */
 public class RecursivePartialCorrelation {
 
-    private ICovarianceMatrix corr;
+    private final ICovarianceMatrix corr;
     private final Map<Node, Integer> nodesMap = new HashMap<>();
 
     public RecursivePartialCorrelation(List<Node> nodes, Matrix cov, int sampleSize) {
         this.corr = new CorrelationMatrixOnTheFly(new CovarianceMatrix(nodes, cov, sampleSize));
-        for (int i = 0; i < nodes.size(); i++) nodesMap.put(nodes.get(i), i);
+        for (int i = 0; i < nodes.size(); i++) this.nodesMap.put(nodes.get(i), i);
     }
 
     public RecursivePartialCorrelation(ICovarianceMatrix cov) {
         this.corr = new CorrelationMatrixOnTheFly(cov);
-        List<Node> nodes = corr.getVariables();
-        for (int i = 0; i < nodes.size(); i++) nodesMap.put(nodes.get(i), i);
+        List<Node> nodes = this.corr.getVariables();
+        for (int i = 0; i < nodes.size(); i++) this.nodesMap.put(nodes.get(i), i);
     }
 
     public double corr(Node x, Node y, List<Node> z) {
-        if (z.isEmpty()) return this.corr.getValue(nodesMap.get(x), nodesMap.get(y));
+        if (z.isEmpty()) return this.corr.getValue(this.nodesMap.get(x), this.nodesMap.get(y));
         Node z0 = z.get(0);
         List<Node> _z = new ArrayList<>(z);
         _z.remove(z0);

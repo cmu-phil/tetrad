@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -31,7 +31,6 @@ import edu.cmu.tetradapp.util.LayoutEditable;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -51,19 +50,12 @@ public class LayoutUtils {
     static Layout layout = Layout.topToBottom;
 
     public static void setLayout(Layout _layout) {
-        layout = _layout;
+        LayoutUtils.layout = _layout;
     }
 
     public static Layout getLayout() {
-        return layout;
+        return LayoutUtils.layout;
     }
-
-    public static void setPreferredAsSize(Component comp) {
-        Dimension pref = comp.getPreferredSize();
-        comp.setMaximumSize(pref);
-        comp.setMinimumSize(pref);
-    }
-
 
     public static void setAllSizes(Component comp, Dimension dim) {
         comp.setPreferredSize(dim);
@@ -86,11 +78,7 @@ public class LayoutUtils {
 
         java.util.List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int minLag0Y = Integer.MAX_VALUE;
         int maxLag0Y = Integer.MIN_VALUE;
@@ -101,7 +89,7 @@ public class LayoutUtils {
         }
 
         int lag0YDiff = maxLag0Y - minLag0Y;
-        int ySpace = lag0YDiff + 25 < 100 ? 100 : lag0YDiff + 25;
+        int ySpace = Math.max(lag0YDiff + 25, 100);
 
         int minY = Integer.MAX_VALUE;
 
@@ -115,7 +103,7 @@ public class LayoutUtils {
                 Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
-                    System.out.println("Couldn't find " + _node);
+                    System.out.println("Couldn't find node.");
                     continue;
                 }
 
@@ -147,11 +135,7 @@ public class LayoutUtils {
 
         java.util.List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int minLag0Y = Integer.MAX_VALUE;
         int maxLag0Y = Integer.MIN_VALUE;
@@ -162,7 +146,7 @@ public class LayoutUtils {
         }
 
         int lag0YDiff = maxLag0Y - minLag0Y;
-        int ySpace = lag0YDiff + 25 < 100 ? 100 : lag0YDiff + 25;
+        int ySpace = Math.max(lag0YDiff + 25, 100);
 
         int minY = Integer.MAX_VALUE;
 
@@ -176,7 +160,7 @@ public class LayoutUtils {
                 Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
-                    System.out.println("Couldn't find " + _node);
+                    System.out.println("Couldn't find node.");
                     continue;
                 }
 
@@ -208,11 +192,7 @@ public class LayoutUtils {
 
         java.util.List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int minLag0X = Integer.MAX_VALUE;
         int maxLag0X = Integer.MIN_VALUE;
@@ -223,7 +203,7 @@ public class LayoutUtils {
         }
 
         int lag0XDiff = maxLag0X - minLag0X;
-        int xSpace = lag0XDiff + 25 < 90 ? 90 : lag0XDiff + 25;
+        int xSpace = Math.max(lag0XDiff + 25, 90);
 
         int minX = Integer.MAX_VALUE;
 
@@ -237,7 +217,7 @@ public class LayoutUtils {
                 Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
-                    System.out.println("Couldn't find " + _node);
+                    System.out.println("Couldn't find node.");
                     continue;
                 }
 
@@ -269,11 +249,7 @@ public class LayoutUtils {
 
         java.util.List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int minLag0X = Integer.MAX_VALUE;
         int maxLag0X = Integer.MIN_VALUE;
@@ -284,7 +260,7 @@ public class LayoutUtils {
         }
 
         int lag0XDiff = maxLag0X - minLag0X;
-        int xSpace = lag0XDiff + 25 < 90 ? 90 : lag0XDiff + 25;
+        int xSpace = Math.max(lag0XDiff + 25, 90);
 
         int minX = Integer.MAX_VALUE;
 
@@ -298,7 +274,7 @@ public class LayoutUtils {
                 Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
-                    System.out.println("Couldn't find " + _node);
+                    System.out.println("Couldn't find node.");
                     continue;
                 }
 
@@ -328,17 +304,13 @@ public class LayoutUtils {
     public static void topToBottomLayout(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
-        int xStart = 65;
-        int yStart = 50;
-        int xSpace = 100;
-        int ySpace = 100;
+        final int xStart = 65;
+        final int yStart = 50;
+        final int xSpace = 100;
+        final int ySpace = 100;
         List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int x = xStart - xSpace;
 
@@ -352,7 +324,7 @@ public class LayoutUtils {
                 Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
-                    System.out.println("Couldn't find " + _node);
+                    System.out.println("Couldn't find node.");
                     continue;
                 }
 
@@ -368,17 +340,13 @@ public class LayoutUtils {
     public static void leftToRightLayout(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
-        int xStart = 65;
-        int yStart = 50;
-        int xSpace = 100;
-        int ySpace = 100;
+        final int xStart = 65;
+        final int yStart = 50;
+        final int xSpace = 100;
+        final int ySpace = 100;
         List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int y = yStart - ySpace;
 
@@ -392,7 +360,7 @@ public class LayoutUtils {
                 Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
-                    System.out.println("Couldn't find " + _node);
+                    System.out.println("Couldn't find node.");
                     continue;
                 }
 
@@ -408,17 +376,13 @@ public class LayoutUtils {
     public static void bottomToTopLayout(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
-        int xStart = 65;
-        int yStart = 50;
-        int xSpace = 100;
-        int ySpace = 100;
+        final int xStart = 65;
+        final int yStart = 50;
+        final int xSpace = 100;
+        final int ySpace = 100;
         List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int x = xStart - xSpace;
 
@@ -432,7 +396,7 @@ public class LayoutUtils {
                 Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
-                    System.out.println("Couldn't find " + _node);
+                    System.out.println("Couldn't find node.");
                     continue;
                 }
 
@@ -448,17 +412,13 @@ public class LayoutUtils {
     public static void rightToLeftLayout(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
 
-        int xStart = 65;
-        int yStart = 50;
-        int xSpace = 100;
-        int ySpace = 100;
+        final int xStart = 65;
+        final int yStart = 50;
+        final int xSpace = 100;
+        final int ySpace = 100;
         List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int y = yStart - ySpace;
 
@@ -472,7 +432,7 @@ public class LayoutUtils {
                 Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
-                    System.out.println("Couldn't find " + _node);
+                    System.out.println("Couldn't find node.");
                     continue;
                 }
 
@@ -482,7 +442,7 @@ public class LayoutUtils {
         }
 
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.rightToLeft;
+        LayoutUtils.layout = Layout.rightToLeft;
     }
 
     public static void layeredDrawingLayout(LayoutEditable layoutEditable) {
@@ -494,9 +454,9 @@ public class LayoutUtils {
             }
         }
 
-        GraphUtils.hierarchicalLayout(graph);
+        GraphUtils.circleLayout(graph, 225, 200, 150);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.layered;
+        LayoutUtils.layout = Layout.layered;
     }
 
     private static void sourceGraphLayout(LayoutEditable layoutEditable) {
@@ -511,7 +471,7 @@ public class LayoutUtils {
         Graph sourceGraph = layoutEditable.getSourceGraph();
         GraphUtils.arrangeBySourceGraph(graph, sourceGraph);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.source;
+        LayoutUtils.layout = Layout.source;
     }
 
     public static void knowledgeLayout(LayoutEditable layoutEditable) {
@@ -532,7 +492,7 @@ public class LayoutUtils {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     e1.getMessage());
         }
-        layout = Layout.knowledge;
+        LayoutUtils.layout = Layout.knowledge;
     }
 
     public static void circleLayout(LayoutEditable layoutEditable) {
@@ -555,42 +515,40 @@ public class LayoutUtils {
 //        DataGraphUtils.circleLayout(graph, 200, 200, 150);
         GraphUtils.circleLayout(graph, centerx, centery, radius);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.circle;
+        LayoutUtils.layout = Layout.circle;
     }
 
-    public static void kamadaKawaiLayout(final LayoutEditable layoutEditable) {
-        final Graph graph = layoutEditable.getGraph();
+    public static void kamadaKawaiLayout(LayoutEditable layoutEditable) {
+        Graph graph = layoutEditable.getGraph();
 
-        Runnable runnable = new Runnable() {
-            public void run() {
+        Runnable runnable = () -> {
 
-                for (Node node : new ArrayList<>(graph.getNodes())) {
-                    if (node.getNodeType() == NodeType.ERROR) {
-                        ((SemGraph) graph).setShowErrorTerms(false);
+            for (Node node : new ArrayList<>(graph.getNodes())) {
+                if (node.getNodeType() == NodeType.ERROR) {
+                    ((SemGraph) graph).setShowErrorTerms(false);
 //                        graph.removeNode(node);
-                    }
                 }
-
-                GraphEditorUtils.editkamadaKawaiLayoutParams();
-
-                boolean initializeRandomly = Preferences.userRoot()
-                        .getBoolean(
-                                "kamadaKawaiLayoutInitializeRandomly",
-                                false);
-                double naturalEdgeLength = Preferences.userRoot()
-                        .getDouble("kamadaKawaiLayoutNaturalEdgeLength",
-                                80.0);
-                double springConstant = Preferences.userRoot()
-                        .getDouble("kamadaKawaiLayoutSpringConstant",
-                                0.2);
-                double stopEnergy = Preferences.userRoot().getDouble(
-                        "kamadaKawaiLayoutStopEnergy", 1.0);
-
-                GraphUtils.kamadaKawaiLayout(graph, initializeRandomly,
-                        naturalEdgeLength, springConstant, stopEnergy);
-                layoutEditable.layoutByGraph(graph);
-                layout = Layout.kamadaKawai;
             }
+
+            GraphEditorUtils.editkamadaKawaiLayoutParams();
+
+            boolean initializeRandomly = Preferences.userRoot()
+                    .getBoolean(
+                            "kamadaKawaiLayoutInitializeRandomly",
+                            false);
+            double naturalEdgeLength = Preferences.userRoot()
+                    .getDouble("kamadaKawaiLayoutNaturalEdgeLength",
+                            80.0);
+            double springConstant = Preferences.userRoot()
+                    .getDouble("kamadaKawaiLayoutSpringConstant",
+                            0.2);
+            double stopEnergy = Preferences.userRoot().getDouble(
+                    "kamadaKawaiLayoutStopEnergy", 1.0);
+
+            GraphUtils.kamadaKawaiLayout(graph, initializeRandomly,
+                    naturalEdgeLength, springConstant, stopEnergy);
+            layoutEditable.layoutByGraph(graph);
+            LayoutUtils.layout = Layout.kamadaKawai;
         };
 
         Thread thread = new Thread(runnable);
@@ -608,7 +566,7 @@ public class LayoutUtils {
 
         GraphUtils.fruchtermanReingoldLayout(graph);
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.fruchtermReingold;
+        LayoutUtils.layout = Layout.fruchtermReingold;
     }
 
     public static void distanceFromSelectedLayout(LayoutEditable layoutEditable) {
@@ -623,52 +581,52 @@ public class LayoutUtils {
         DistanceFromSelected layout1 = new DistanceFromSelected(layoutEditable);
         layout1.doLayout();
         layoutEditable.layoutByGraph(graph);
-        layout = Layout.distanceFromSelected;
+        LayoutUtils.layout = Layout.distanceFromSelected;
     }
 
     public static void lastLayout(LayoutEditable layoutEditable) {
-        switch (layout) {
+        switch (LayoutUtils.layout) {
             case lag0TopToBottom:
-                copyLag0LayoutTopToBottom(layoutEditable);
+                LayoutUtils.copyLag0LayoutTopToBottom(layoutEditable);
                 break;
             case lag0BottomToTop:
-                copyLag0LayoutBottomToTop(layoutEditable);
+                LayoutUtils.copyLag0LayoutBottomToTop(layoutEditable);
                 break;
             case lag0LeftToRight:
-                copyLag0LayoutLeftToRight(layoutEditable);
+                LayoutUtils.copyLag0LayoutLeftToRight(layoutEditable);
                 break;
             case lag0RightToLeft:
-                copyLag0LayoutRightToLeft(layoutEditable);
+                LayoutUtils.copyLag0LayoutRightToLeft(layoutEditable);
                 break;
             case topToBottom:
-                topToBottomLayout(layoutEditable);
+                LayoutUtils.topToBottomLayout(layoutEditable);
                 break;
             case bottomToTop:
-                bottomToTopLayout(layoutEditable);
+                LayoutUtils.bottomToTopLayout(layoutEditable);
                 break;
             case leftToRight:
-                leftToRightLayout(layoutEditable);
+                LayoutUtils.leftToRightLayout(layoutEditable);
                 break;
             case rightToLeft:
-                rightToLeftLayout(layoutEditable);
+                LayoutUtils.rightToLeftLayout(layoutEditable);
                 break;
             case layered:
-                layeredDrawingLayout(layoutEditable);
+                LayoutUtils.layeredDrawingLayout(layoutEditable);
                 break;
             case source:
-                sourceGraphLayout(layoutEditable);
+                LayoutUtils.sourceGraphLayout(layoutEditable);
                 break;
             case knowledge:
-                knowledgeLayout(layoutEditable);
+                LayoutUtils.knowledgeLayout(layoutEditable);
                 break;
             case circle:
-                circleLayout(layoutEditable);
+                LayoutUtils.circleLayout(layoutEditable);
                 break;
             case kamadaKawai:
-                kamadaKawaiLayout(layoutEditable);
+                LayoutUtils.kamadaKawaiLayout(layoutEditable);
                 break;
             case fruchtermReingold:
-                fruchtermanReingoldLayout(layoutEditable);
+                LayoutUtils.fruchtermanReingoldLayout(layoutEditable);
                 break;
             default:
         }

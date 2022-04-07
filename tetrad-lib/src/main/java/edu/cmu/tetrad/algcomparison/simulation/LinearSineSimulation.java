@@ -21,13 +21,13 @@ import java.util.*;
 @Experimental
 public class LinearSineSimulation implements Simulation {
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private DataType dataType;
     private List<Node> shuffledOrder;
 
-    private double interceptLow = 0;
+    private double interceptLow;
     private double interceptHigh = 1;
     private double linearLow = 0.5;
     private double linearHigh = 1;
@@ -61,42 +61,43 @@ public class LinearSineSimulation implements Simulation {
 
         this.shuffledOrder = null;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
-            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) graph = randomGraph.createGraph(parameters);
+            if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0)
+                graph = this.randomGraph.createGraph(parameters);
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+        return this.graphs.get(index);
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Linear-sine simulation using " + randomGraph.getDescription();
+        return "Linear-sine simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
+        List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
@@ -115,12 +116,12 @@ public class LinearSineSimulation implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
     public DataType getDataType() {
-        return dataType;
+        return this.dataType;
     }
 
     private DataSet simulate(Graph G, Parameters parameters) {
@@ -137,10 +138,10 @@ public class LinearSineSimulation implements Simulation {
         }
 
         for (int i = 0; i < nodes.size(); i++) {
-            nd.put(shuffledOrder.get(i).getName(), 0);
+            nd.put(this.shuffledOrder.get(i).getName(), 0);
         }
 
-        G = makeMixedGraph(G, nd);
+        G = LinearSineSimulation.makeMixedGraph(G, nd);
         nodes = G.getNodes();
 
         DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
@@ -189,28 +190,28 @@ public class LinearSineSimulation implements Simulation {
 
                 double[] parents = new double[continuousParents.size()];
                 double value = 0;
-                String key = "";
+                final String key = "";
 
                 for (int j = 1; j <= continuousParents.size(); j++)
                     parents[j - 1] = mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1)));
 
                 if (!intercept.containsKey(key)) {
                     double[] interceptCoefficients = new double[1];
-                    interceptCoefficients[0] = randSign() * RandomUtil.getInstance().nextUniform(interceptLow, interceptHigh);
+                    interceptCoefficients[0] = randSign() * RandomUtil.getInstance().nextUniform(this.interceptLow, this.interceptHigh);
                     intercept.put(key, interceptCoefficients);
                 }
 
                 if (!linear.containsKey(key) && !continuousParents.isEmpty()) {
                     double[] linearCoefficients = new double[parents.length];
                     for (int j = 0; j < parents.length; j++)
-                        linearCoefficients[j] = randSign() * RandomUtil.getInstance().nextUniform(linearLow, linearHigh);
+                        linearCoefficients[j] = randSign() * RandomUtil.getInstance().nextUniform(this.linearLow, this.linearHigh);
                     linear.put(key, linearCoefficients);
                 }
 
                 if (!beta.containsKey(key) && !continuousParents.isEmpty()) {
                     double[] betaCoefficients = new double[parents.length];
                     for (int j = 0; j < parents.length; j++)
-                        betaCoefficients[j] = randSign() * RandomUtil.getInstance().nextUniform(betaLow, betaHigh);
+                        betaCoefficients[j] = randSign() * RandomUtil.getInstance().nextUniform(this.betaLow, this.betaHigh);
                     beta.put(key, betaCoefficients);
                 }
 
@@ -218,7 +219,7 @@ public class LinearSineSimulation implements Simulation {
                     double[] gammaCoefficients = new double[parents.length];
                     for (int j = 0; j < parents.length; j++) {
                         String key2 = continuousParents.get(j).toString();
-                        gammaCoefficients[j] = (bounds.get(key2)[1] - bounds.get(key2)[0]) / (2 * Math.PI * RandomUtil.getInstance().nextUniform(gammaLow, gammaHigh));
+                        gammaCoefficients[j] = (bounds.get(key2)[1] - bounds.get(key2)[0]) / (2 * Math.PI * RandomUtil.getInstance().nextUniform(this.gammaLow, this.gammaHigh));
                     }
                     gamma.put(key, gammaCoefficients);
                 }
@@ -226,7 +227,6 @@ public class LinearSineSimulation implements Simulation {
                 value += intercept.get(key)[0];
                 if (!continuousParents.isEmpty()) {
                     for (int x = 0; x < parents.length; x++) {
-                        String key2 = continuousParents.get(x).toString();
                         value += linear.get(key)[x] * parents[x] + beta.get(key)[x] * Math.sin(parents[x] / (gamma.get(key)[x]));
                     }
                 }
@@ -245,7 +245,7 @@ public class LinearSineSimulation implements Simulation {
                 var = Math.sqrt(var);
             }
 
-            double noiseVar = RandomUtil.getInstance().nextUniform(varLow, varHigh);
+            double noiseVar = RandomUtil.getInstance().nextUniform(this.varLow, this.varHigh);
             for (int i = 0; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
                 mixedData.setDouble(i, mixedIndex, mixedData.getDouble(i, mixedIndex) + var * RandomUtil.getInstance().nextNormal(0, noiseVar));
             }

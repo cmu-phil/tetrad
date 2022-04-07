@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -62,7 +62,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     /**
      * The matrix being displayed. (This varies.)
      */
-    private double[][] matrix;
+    private final double[][] matrix;
 
     /**
      * Constructs a new table for the given covariance matrix, the nodes for
@@ -77,15 +77,15 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
         this.nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         if (measured() && covariances()) {
-            matrix = getSemIm().getImplCovarMeas().toArray();
-        } else if (measured() && !covariances()) {
-            matrix = corr(getSemIm().getImplCovarMeas().toArray());
-        } else if (!measured() && covariances()) {
+            this.matrix = getSemIm().getImplCovarMeas().toArray();
+        } else if (measured()) {
+            this.matrix = StandardizedSemImImpliedCovTable.corr(getSemIm().getImplCovarMeas().toArray());
+        } else if (covariances()) {
             Matrix implCovarC = getSemIm().getImplCovar();
-            matrix = implCovarC.toArray();
-        } else if (!measured() && !covariances()) {
+            this.matrix = implCovarC.toArray();
+        } else {
             Matrix implCovarC = getSemIm().getImplCovar();
-            matrix = corr(implCovarC.toArray());
+            this.matrix = StandardizedSemImImpliedCovTable.corr(implCovarC.toArray());
         }
     }
 
@@ -148,7 +148,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
         } else if (rowIndex < columnIndex) {
             return null;
         } else {
-            return nf.format(matrix[rowIndex - 1][columnIndex - 1]);
+            return this.nf.format(this.matrix[rowIndex - 1][columnIndex - 1]);
         }
     }
 
@@ -190,18 +190,18 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
      * @return true iff only observed variables are displayed.
      */
     private boolean measured() {
-        return measured;
+        return this.measured;
     }
 
     /**
      * @return true iff correlations (rather than covariances) are displayed.
      */
     private boolean correlations() {
-        return correlations;
+        return this.correlations;
     }
 
     private StandardizedSemIm getSemIm() {
-        return semIm;
+        return this.semIm;
     }
 }
 

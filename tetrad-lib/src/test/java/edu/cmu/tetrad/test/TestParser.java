@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -47,10 +47,10 @@ public final class TestParser {
     public void testInvalidExpressions() {
         ExpressionParser parser = new ExpressionParser();
 
-        parseInvalid(parser, "(1 + 3))");
-        parseInvalid(parser, "(1 + (4 * 5) + sqrt(5)");
-        parseInvalid(parser, "1+");
-        parseInvalid(parser, "113#");
+        TestParser.parseInvalid(parser, "(1 + 3))");
+        TestParser.parseInvalid(parser, "(1 + (4 * 5) + sqrt(5)");
+        TestParser.parseInvalid(parser, "1+");
+        TestParser.parseInvalid(parser, "113#");
     }
 
     @Test
@@ -147,7 +147,7 @@ public final class TestParser {
     @Test
     public void testVariableRestriction() {
         ExpressionParser parser = new ExpressionParser(Arrays.asList("x", "y", "z"), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
-        parseInvalid(parser, "x + x1");
+        TestParser.parseInvalid(parser, "x + x1");
     }
 
     /**
@@ -157,13 +157,13 @@ public final class TestParser {
     public void testCommutativeOperators() {
         ExpressionParser parser = new ExpressionParser();
 
-        Expression expression = parse(parser, "1 + 2 + 3");
+        Expression expression = TestParser.parse(parser, "1 + 2 + 3");
         assertTrue(expression.evaluate(new TestingContext()) == 6.0);
 
-        expression = parse(parser, "1 + 1 + 1 + (3 * 4)");
+        expression = TestParser.parse(parser, "1 + 1 + 1 + (3 * 4)");
         assertTrue(expression.evaluate(new TestingContext()) == 15.0);
 
-        expression = parse(parser, "1 * 1 * 2 * 3 * (1 + 1)");
+        expression = TestParser.parse(parser, "1 * 1 * 2 * 3 * (1 + 1)");
         assertTrue(expression.evaluate(new TestingContext()) == 12.0);
     }
 
@@ -201,20 +201,20 @@ public final class TestParser {
 
     private static class TestingContext implements Context {
 
-        private Map<String, Double> doubleVars = new HashMap<>();
-        private Map<String, Object> vars = new HashMap<>();
+        private final Map<String, Double> doubleVars = new HashMap<>();
+        private final Map<String, Object> vars = new HashMap<>();
 
         public void assign(String v, double d) {
-            doubleVars.put(v, d);
+            this.doubleVars.put(v, d);
         }
 
         public void clear() {
             this.doubleVars.clear();
-            vars.clear();
+            this.vars.clear();
         }
 
         public Double getValue(String var) {
-            return doubleVars.get(var);
+            return this.doubleVars.get(var);
         }
     }
 }

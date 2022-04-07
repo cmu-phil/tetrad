@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,13 +39,13 @@ public class LayoutSelection implements Transferable {
     /**
      * The list of session nodes that constitutes the selection.
      */
-    private Graph layoutGraph;
+    private final Graph layoutGraph;
 
     /**
      * Supported dataflavors--only one.
      */
     private final DataFlavor[] dataFlavors =
-            new DataFlavor[]{new DataFlavor(LayoutSelection.class, "Layout")};
+            {new DataFlavor(LayoutSelection.class, "Layout")};
 
     /**
      * Constructs a new selection with the given list of session nodes.
@@ -82,7 +82,7 @@ public class LayoutSelection implements Transferable {
             throw new UnsupportedFlavorException(flavor);
         }
 
-        return layoutGraph;
+        return this.layoutGraph;
     }
 
     /**

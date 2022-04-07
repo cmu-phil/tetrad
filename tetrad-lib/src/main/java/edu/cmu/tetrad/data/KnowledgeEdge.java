@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,12 +37,12 @@ public final class KnowledgeEdge implements TetradSerializable {
     /**
      * @serial
      */
-    private String from;
+    private final String from;
 
     /**
      * @serial
      */
-    private String to;
+    private final String to;
 
     //===============================CONSTRUCTORS=======================//
 
@@ -70,21 +70,21 @@ public final class KnowledgeEdge implements TetradSerializable {
     /**
      * @return the tail node of the edge.
      */
-    public final String getFrom() {
-        return from;
+    public String getFrom() {
+        return this.from;
     }
 
     /**
      * @return the head node of the edge.
      */
-    public final String getTo() {
-        return to;
+    public String getTo() {
+        return this.to;
     }
 
     /**
      * Reteurns true if (from1, to1) == (from2, to2).
      */
-    public final boolean equals(Object object) {
+    public boolean equals(Object object) {
         if (object == null) {
             return false;
         }
@@ -94,19 +94,19 @@ public final class KnowledgeEdge implements TetradSerializable {
         }
 
         KnowledgeEdge pair = (KnowledgeEdge) object;
-        return from.equals(pair.from) && to.equals(pair.to);
+        return this.from.equals(pair.from) && this.to.equals(pair.to);
     }
 
     /**
      * @return a good hashcode.
      */
-    public final int hashCode() {
-        int hashCode = 31 + from.hashCode();
-        return 37 * hashCode + to.hashCode();
+    public int hashCode() {
+        int hashCode = 31 + this.from.hashCode();
+        return 37 * hashCode + this.to.hashCode();
     }
 
     public String toString() {
-        return from + "-->" + to;
+        return this.from + "-->" + this.to;
     }
 
     /**
@@ -118,21 +118,10 @@ public final class KnowledgeEdge implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (from == null) {
-            throw new NullPointerException();
-        }
-
-        if (to == null) {
-            throw new NullPointerException();
-        }
     }
 }
 

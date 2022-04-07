@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -32,7 +32,7 @@ import java.util.List;
  * Calculates the BDe score.
  */
 public class BDeScore implements LocalDiscreteScore {
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     public BDeScore(DataSet dataSet) {
         if (dataSet == null) {
@@ -46,13 +46,13 @@ public class BDeScore implements LocalDiscreteScore {
         this.dataSet = dataSet;
     }
 
-    public double localScore(int i, int parents[]) {
+    public double localScore(int i, int[] parents) {
 
         // Number of categories for i.
         int r = numCategories(i);
 
         // Numbers of categories of parents.
-        int dims[] = new int[parents.length];
+        int[] dims = new int[parents.length];
 
         for (int p = 0; p < parents.length; p++) {
             dims[p] = numCategories(parents[p]);
@@ -65,10 +65,10 @@ public class BDeScore implements LocalDiscreteScore {
         }
 
         // Conditional cell coefs of data for i given parents(i).
-        int n_ijk[][] = new int[q][r];
-        int n_ij[] = new int[q];
+        int[][] n_ijk = new int[q][r];
+        int[] n_ij = new int[q];
 
-        int values[] = new int[parents.length];
+        int[] values = new int[parents.length];
 
         for (int n = 0; n < sampleSize(); n++) {
             for (int p = 0; p < parents.length; p++) {
@@ -151,7 +151,7 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     private int getRowIndex(int[] dim, int[] values) {
@@ -172,7 +172,7 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     private DataSet dataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     public void setStructurePrior(double structurePrior) {
@@ -183,11 +183,11 @@ public class BDeScore implements LocalDiscreteScore {
 
     @Override
     public List<Node> getVariables() {
-        return dataSet.getVariables();
+        return this.dataSet.getVariables();
     }
 
     public int getSampleSize() {
-        return dataSet.getNumRows();
+        return this.dataSet.getNumRows();
     }
 
     @Override
@@ -197,7 +197,7 @@ public class BDeScore implements LocalDiscreteScore {
 
     @Override
     public Node getVariable(String targetName) {
-        for (Node node : dataSet.getVariables()) {
+        for (Node node : this.dataSet.getVariables()) {
             if (node.getName().equals(targetName)) {
                 return node;
             }

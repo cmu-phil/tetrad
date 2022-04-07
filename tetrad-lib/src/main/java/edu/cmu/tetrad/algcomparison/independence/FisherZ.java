@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.annotation.Gaussian;
 import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;

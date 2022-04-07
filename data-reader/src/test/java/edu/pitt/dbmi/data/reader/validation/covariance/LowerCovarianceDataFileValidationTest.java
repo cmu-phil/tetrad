@@ -36,8 +36,6 @@ import java.util.List;
 public class LowerCovarianceDataFileValidationTest {
 
     private final Delimiter delimiter = Delimiter.SPACE;
-    private final char quoteCharacter = '"';
-    private final String commentMarker = "//";
 
     private final Path dataFile = Paths.get(getClass().getResource("/data/covariance/bad_spartina.txt").getFile());
 
@@ -49,8 +47,10 @@ public class LowerCovarianceDataFileValidationTest {
      */
     @Test
     public void testValidate() {
-        CovarianceValidation validation = new LowerCovarianceDataFileValidation(dataFile, delimiter);
+        CovarianceValidation validation = new LowerCovarianceDataFileValidation(this.dataFile, this.delimiter);
+        String commentMarker = "//";
         validation.setCommentMarker(commentMarker);
+        char quoteCharacter = '"';
         validation.setQuoteCharacter(quoteCharacter);
 
         List<ValidationResult> results = validation.validate();

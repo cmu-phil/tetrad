@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -52,12 +52,10 @@ public class KernelUtils {
             for (int i = 0; i < m; i++) {
                 for (int j = i; j < m; j++) {
                     double keval = kernel.eval(dataset.getDouble(i, col), dataset.getDouble(j, col));
-                    if (k == 0) {
-                        gram.set(i, j, keval);
-                    } else {
+                    if (k != 0) {
                         keval *= gram.get(i, j);
-                        gram.set(i, j, keval);
                     }
+                    gram.set(i, j, keval);
                 }
             }
         }
@@ -74,11 +72,10 @@ public class KernelUtils {
      */
     public static Matrix constructCentralizedGramMatrix(List<Kernel> kernels, DataSet dataset, List<Node> nodes) {
         int m = dataset.getNumRows();
-        Matrix gram = constructGramMatrix(kernels, dataset, nodes);
-        Matrix H = constructH(m);
+        Matrix gram = KernelUtils.constructGramMatrix(kernels, dataset, nodes);
+        Matrix H = KernelUtils.constructH(m);
         Matrix KH = gram.times(H);
-        Matrix HKH = H.times(KH);
-        return HKH;
+        return H.times(KH);
     }
 
     /**
@@ -121,7 +118,7 @@ public class KernelUtils {
         double[] Dadv = new double[m];
         int[] p = new int[m];
         for (int i = 0; i < m; i++) {
-            Dadv[i] = evaluate(kernels, dataset, nodes, i, i);
+            Dadv[i] = KernelUtils.evaluate(kernels, dataset, nodes, i, i);
             p[i] = i;
         }
 
@@ -166,7 +163,7 @@ public class KernelUtils {
                 for (int i = 0; i < k; i++) {
                     s += G.get(j, i) * G.get(k, i);
                 }
-                G.set(j, k, (evaluate(kernels, dataset, nodes, p[j], p[k]) - s) / diag);
+                G.set(j, k, (KernelUtils.evaluate(kernels, dataset, nodes, p[j], p[k]) - s) / diag);
             }
 
             // update diagonal
@@ -197,18 +194,6 @@ public class KernelUtils {
         }
         return keval;
     }
-
-////     computes the trace
-//
-//    private static double trace(TetradMatrix A, int m) {
-//        double trace = 0.0;
-//        for (int i = 0; i < m; i++) {
-//            trace += A.get(i, i);
-//        }
-//        return trace;
-//    }
-
-
 }
 
 

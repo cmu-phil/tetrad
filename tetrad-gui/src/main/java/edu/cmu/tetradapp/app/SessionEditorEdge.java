@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,8 +42,8 @@ final class SessionEditorEdge extends DisplayEdge {
     private static final int RANDOMIZED = 1;
 
     /* States */
-    private final Color curr_color = DIE_BACKGROUND;
-    private int sessionEdgeMode = 0;
+    private final Color curr_color = SessionEditorEdge.DIE_BACKGROUND;
+    private int sessionEdgeMode;
 
     /**
      * Constructs a new SessionEditorEdge connecting two components, 'node1' and
@@ -126,27 +126,22 @@ final class SessionEditorEdge extends DisplayEdge {
         return new Polygon(xpoint, ypoint, 4);
     }
 
-    private void drawDice(Graphics g, boolean erase, Color c) {
+    private void drawDice(Graphics g, Color c) {
 
         Polygon dice = getDiceSleeve();
 
-        if (erase) {
-            g.setColor(Color.white);
-            g.fillPolygon(dice);
-        } else {
-            Circle[] dicedot = getDiceDot();
+        Circle[] dicedot = getDiceDot();
 
-            g.setColor(c);
-            g.fillPolygon(dice);
-            g.setColor(DIE_DOT);
-            g.drawPolygon(dice);
+        g.setColor(c);
+        g.fillPolygon(dice);
+        g.setColor(SessionEditorEdge.DIE_DOT);
+        g.drawPolygon(dice);
 
-            int height = dicedot[0].radius * 2;
+        int height = dicedot[0].radius * 2;
 
-            for (Circle aDicedot : dicedot) {
-                g.fillOval(aDicedot.center.x, aDicedot.center.y, height,
-                        height);
-            }
+        for (Circle aDicedot : dicedot) {
+            g.fillOval(aDicedot.center.x, aDicedot.center.y, height,
+                    height);
         }
     }
 
@@ -162,7 +157,7 @@ final class SessionEditorEdge extends DisplayEdge {
         PointPair pp = getConnectedPoints();
         Point midPoint = new Point((pp.getFrom().x + pp.getTo().x) / 2,
                 (pp.getFrom().y + pp.getTo().y) / 2);
-        double d = distance(pp.getFrom(), pp.getTo());
+        double d = DisplayEdge.distance(pp.getFrom(), pp.getTo());
 
         if (d < 1) {
             d = 1;
@@ -211,32 +206,7 @@ final class SessionEditorEdge extends DisplayEdge {
     }
 
     private Polygon getDiceSleeve() {
-        return calcDiceSleeve(getDiceArea());
-    }
-
-    /**
-     * @return the mode of this edge, RANDOMIZED or UNRANDOMIZED.
-     */
-    public int getSessionEdgeMode() {
-        return sessionEdgeMode;
-    }
-
-    /**
-     * Determines whether this display edge represents a randomized edge or an
-     * unrandomized edge.  (Randomized edges are displayed with a little die on
-     * them.)
-     *
-     * @return true if this edge represents a randomized edge, false if not.
-     */
-    public boolean isRandomized() {
-
-        if (sessionEdgeMode == RANDOMIZED) {
-            return true;
-        } else if (sessionEdgeMode == UNRANDOMIZED) {
-            return false;
-        } else {
-            throw new IllegalStateException();
-        }
+        return SessionEditorEdge.calcDiceSleeve(getDiceArea());
     }
 
     /**
@@ -251,7 +221,7 @@ final class SessionEditorEdge extends DisplayEdge {
         PointPair pp;
 
         switch (getMode()) {
-            case HALF_ANCHORED:
+            case DisplayEdge.HALF_ANCHORED:
                 g.setColor(getLineColor());
                 pp = calculateEdge(getNode1(), getRelativeMouseTrackPoint());
 
@@ -268,7 +238,7 @@ final class SessionEditorEdge extends DisplayEdge {
                 }
                 break;
 
-            case ANCHORED_UNSELECTED:
+            case DisplayEdge.ANCHORED_UNSELECTED:
                 g.setColor(getLineColor());
 
                 pp = calculateEdge(getNode1(), getNode2());
@@ -286,7 +256,7 @@ final class SessionEditorEdge extends DisplayEdge {
                 }
                 break;
 
-            case ANCHORED_SELECTED:
+            case DisplayEdge.ANCHORED_SELECTED:
                 g.setColor(getSelectedColor());
 
                 pp = calculateEdge(getNode1(), getNode2());
@@ -310,8 +280,8 @@ final class SessionEditorEdge extends DisplayEdge {
 
         setConnectedPoints(pp);
 
-        if (sessionEdgeMode == RANDOMIZED) {
-            drawDice(g, false, curr_color);
+        if (this.sessionEdgeMode == SessionEditorEdge.RANDOMIZED) {
+            drawDice(g, this.curr_color);
         }
     }
 
@@ -329,8 +299,8 @@ final class SessionEditorEdge extends DisplayEdge {
          * @param r the radius of the circle.
          */
         public Circle(Point c, int r) {
-            radius = r;
-            center = c;
+            this.radius = r;
+            this.center = c;
         }
     }
 }

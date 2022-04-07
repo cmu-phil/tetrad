@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -67,7 +67,7 @@ public class TetradSerializableUtils {
      * cannot be automatically checked. Class, for instance, </p> <p>We will
      * move to JDK 1.5 as soon as it becomes available for Macs.</p>
      */
-    private static final Class[] safelySerializableTypes = new Class[]{
+    private static final Class[] safelySerializableTypes = {
             String.class, Class.class, Date.class, Collection.class, Map.class,
             Matrix.class, Document.class, Normal.class, Uniform.class,
             BreitWigner.class, Beta.class, Vector.class, Number.class,
@@ -174,22 +174,13 @@ public class TetradSerializableUtils {
                     continue;
                 }
 
-                //                // Printing out Collections fields temporarily.
-                //                if (Collection.class.isAssignableFrom(type)) {
-                //                    System.out.println("COLLECTION FIELD: " + field);
-                //                }
-                //
-                //                if (Map.class.isAssignableFrom(type)) {
-                //                    System.out.println("MAP FIELD: " + field);
-                //                }
-
                 if (TetradSerializable.class.isAssignableFrom(type) &&
                         !TetradSerializableExcluded.class.isAssignableFrom(
                                 clazz)) {
                     continue;
                 }
 
-                for (Class safelySerializableClass : safelySerializableTypes) {
+                for (Class safelySerializableClass : TetradSerializableUtils.safelySerializableTypes) {
                     if (safelySerializableClass.isAssignableFrom(type)) {
                         continue FIELDS;
                     }
@@ -267,11 +258,6 @@ public class TetradSerializableUtils {
 
             int numFields = getNumNonSerialVersionUIDFields(clazz);
 
-//            if (numFields > 0 && serializableInstanceMethod(clazz) == null) {
-//                throw new RuntimeException("Class " + clazz + " does not " +
-//                        "\nhave a public static serializableInstance constructor.");
-//            }
-
             if (++index % 50 == 0) {
                 System.out.println(index);
             }
@@ -297,15 +283,8 @@ public class TetradSerializableUtils {
     private int getNumNonSerialVersionUIDFields(Class clazz) {
         Field[] declaredFields = clazz.getDeclaredFields();
         int numFields = declaredFields.length;
-        List<Field> fieldList = Arrays.asList(declaredFields);
 
-//        System.out.println(clazz);
-//
-//        for (Field field : fieldList) {
-//            System.out.println(field.getNode());
-//        }
-
-        for (Field field : fieldList) {
+        for (Field field : declaredFields) {
             if (field.getName().equals("serialVersionUID")) {
                 numFields--;
             }
@@ -373,8 +352,8 @@ public class TetradSerializableUtils {
      *                          originally thrown exception as root cause.
      * @see #getCurrentDirectory()
      */
-    private void serializeClass(Class clazz,
-                                Map<String, List<String>> classFields) throws RuntimeException {
+    private void serializeClass(Class clazz, Map<String, List<String>> classFields)
+            throws RuntimeException {
         File current = new File(getCurrentDirectory());
 
         if (!current.exists() || !current.isDirectory()) {
@@ -401,9 +380,22 @@ public class TetradSerializableUtils {
             int numFields = getNumNonSerialVersionUIDFields(clazz);
 
             if (numFields > 0) {
-                Method method =
-                        clazz.getMethod("serializableInstance");
-                Object object = method.invoke(null);
+                Method method = null;
+                try {
+                    method = clazz.getMethod("serializableInstance");
+                } catch (NoSuchMethodException e) {
+                    System.out.println("\nThis class does not have the expected 'serializableInstance' method: " + clazz);
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                }
+                Object object = null;
+                try {
+                    if (method != null) {
+                        object = method.invoke(null);
+                    }
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
 
                 File file = new File(current, clazz.getName() + ".ser");
                 boolean created = file.createNewFile();
@@ -431,16 +423,9 @@ public class TetradSerializableUtils {
             throw new RuntimeException(("There is no static final long field " +
                     "'serialVersionUID' in " + clazz +
                     ". Please make one and set it " + "to 23L."));
-        } catch (NoSuchMethodException e) {
-//            throw new RuntimeException("Class " + clazz + "does not " +
-//                    "have a public static serializableInstance constructor.",
-//                    e);
         } catch (IllegalAccessException e) {
             throw new RuntimeException("The method serializableInstance() of " +
                     "class " + clazz + " is not public.", e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException("Unable to statically call the " +
-                    "serializableInstance() method of class " + clazz + ".", e);
         } catch (IOException e) {
             throw new RuntimeException(
                     "Could not create a new, writeable file " + "in " +
@@ -759,7 +744,7 @@ public class TetradSerializableUtils {
                 packagePath = packagePath.replace('\\', '.');
                 packagePath = packagePath.replace('/', '.');
                 packagePath = packagePath.substring(
-                        packagePath.indexOf("edu.cmu"), packagePath.length());
+                        packagePath.indexOf("edu.cmu"));
                 int index = packagePath.indexOf(".class");
 
                 if (index == -1) {
@@ -785,15 +770,15 @@ public class TetradSerializableUtils {
     }
 
     private String getSerializableScope() {
-        return serializableScope;
+        return this.serializableScope;
     }
 
     private String getCurrentDirectory() {
-        return currentDirectory;
+        return this.currentDirectory;
     }
 
     private String getArchiveDirectory() {
-        return archiveDirectory;
+        return this.archiveDirectory;
     }
 }
 

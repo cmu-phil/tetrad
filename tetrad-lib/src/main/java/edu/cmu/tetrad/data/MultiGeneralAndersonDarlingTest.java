@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,7 +40,7 @@ public class MultiGeneralAndersonDarlingTest {
     /**
      * The column of data being analyzed.
      */
-    private List<List<Double>> data;
+    private final List<List<Double>> data;
 
     /**
      * The A^2 statistic for <code>data</code>
@@ -60,7 +60,7 @@ public class MultiGeneralAndersonDarlingTest {
     /**
      * The reference CDF.
      */
-    private List<RealDistribution> distributions;
+    private final List<RealDistribution> distributions;
 
     //============================CONSTRUCTOR===========================//
 
@@ -89,7 +89,7 @@ public class MultiGeneralAndersonDarlingTest {
      * @return the A^2 statistic.
      */
     public double getASquared() {
-        return aSquared;
+        return this.aSquared;
     }
 
     /**
@@ -97,7 +97,7 @@ public class MultiGeneralAndersonDarlingTest {
      * heuristically for sample size.
      */
     public double getASquaredStar() {
-        return aSquaredStar;
+        return this.aSquaredStar;
     }
 
     /**
@@ -105,26 +105,26 @@ public class MultiGeneralAndersonDarlingTest {
      * exponential functions.
      */
     public double getP() {
-        return p;
+        return this.p;
     }
 
     //============================PRIVATE METHODS========================//
 
     private void runTest() {
-        int n = data.get(0).size();
+        int n = this.data.get(0).size();
         double h = 0.0;
 
         int numSummed = 0;
 
-        for (int g = 0; g < data.size(); g++) {
-            List<Double> _data = data.get(g);
+        for (int g = 0; g < this.data.size(); g++) {
+            List<Double> _data = this.data.get(g);
 
             for (int i = 1; i <= n; i++) {
                 double x1 = _data.get(i - 1);
-                double a1 = Math.log(distributions.get(g).cumulativeProbability(x1));
+                double a1 = Math.log(this.distributions.get(g).cumulativeProbability(x1));
 
                 double x2 = _data.get(n + 1 - i - 1);
-                double a2 = Math.log(1.0 - distributions.get(g).cumulativeProbability(x2));
+                double a2 = Math.log(1.0 - this.distributions.get(g).cumulativeProbability(x2));
 
                 double k = (2 * i - 1) * (a1 + a2);
 
@@ -153,34 +153,6 @@ public class MultiGeneralAndersonDarlingTest {
         this.aSquaredStar = aa;
         this.p = p;
     }
-
-//    private double[] leaveOutNaN(double[] data) {
-//        int numPresent = 0;
-//
-//        for (double aData1 : data) {
-//            if (!Double.isNaN(aData1)) {
-//                numPresent++;
-//            }
-//        }
-//
-//        if (numPresent == data.length) {
-//            double[] _data = new double[data.length];
-//            System.arraycopy(data, 0, _data, 0, data.length);
-//            return _data;
-//        } else {
-//            List<Double> _leaveOutMissing = new ArrayList<>();
-//
-//            for (double aData : data) {
-//                if (!Double.isNaN(aData)) {
-//                    _leaveOutMissing.add(aData);
-//                }
-//            }
-//
-//            double[] _data = new double[_leaveOutMissing.size()];
-//            for (int i = 0; i < _leaveOutMissing.size(); i++) _data[i] = _leaveOutMissing.get(i);
-//            return _data;
-//        }
-//    }
 }
 
 

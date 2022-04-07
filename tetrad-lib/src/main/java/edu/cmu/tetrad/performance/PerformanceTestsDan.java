@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.Pc;
@@ -48,14 +48,14 @@ import java.util.List;
  */
 public class PerformanceTestsDan {
     private void testIdaOutputForDan() {
-        int numRuns = 100;
+        final int numRuns = 100;
 
         for (int run = 0; run < numRuns; run++) {
-            double alphaGFci = 0.01;
-            double alphaPc = 0.01;
-            int penaltyDiscount = 1;
-            int depth = 3;
-            int maxPathLength = 3;
+            final double alphaGFci = 0.01;
+            final double alphaPc = 0.01;
+            final int penaltyDiscount = 1;
+            final int depth = 3;
+            final int maxPathLength = 3;
 
             final int numVars = 15;
             final double edgesPerNode = 1.0;
@@ -118,9 +118,6 @@ public class PerformanceTestsDan {
             Graph dag = GraphUtils.randomGraph(vars, 0, (int) (vars.size() * edgesPerNode), 5, 5, 5, false);
 
             GraphUtils.fixLatents1(numLatents, dag);
-//        List<Node> varsWithLatents = new ArrayList<Node>();
-//
-//        Graph dag = getLatentGraph(_vars, varsWithLatents, edgesPerNode, numLatents);
 
 
             out3.println(dag);
@@ -172,8 +169,8 @@ public class PerformanceTestsDan {
 
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 
-            final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
-            final edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
+            IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
+            edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
 
             out6.println("GFCI.PAG_of_the_true_DAG");
 
@@ -191,7 +188,7 @@ public class PerformanceTestsDan {
 
             out8.println("CPDAG_of_the_true_DAG OVER MEASURED VARIABLES");
 
-            final IndTestFisherZ independencePc = new IndTestFisherZ(cov, alphaPc);
+            IndTestFisherZ independencePc = new IndTestFisherZ(cov, alphaPc);
 
             Pc pc = new Pc(independencePc);
             pc.setVerbose(false);
@@ -206,7 +203,7 @@ public class PerformanceTestsDan {
             out10.println(data);
 
             out11.println("True PAG_of_the_true_DAG");
-            final Graph truePag = new DagToPag2(dag).convert();
+            Graph truePag = new DagToPag(dag).convert();
             out11.println(truePag);
             printDanMatrix(_vars, truePag, out12);
 

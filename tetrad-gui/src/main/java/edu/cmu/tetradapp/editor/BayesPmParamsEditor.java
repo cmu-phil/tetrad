@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,7 +37,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     /**
      * Lets the user edit the number of nodes.
@@ -69,8 +69,8 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     }
 
     public void setup() {
-        lowerBoundField = new IntTextField(getParams().getInt("lowerBoundNumVals", 2), 4);
-        lowerBoundField.setFilter((value, oldValue) -> {
+        this.lowerBoundField = new IntTextField(getParams().getInt("lowerBoundNumVals", 2), 4);
+        this.lowerBoundField.setFilter((value, oldValue) -> {
             try {
                 getParams().set("lowerBoundNumVals", value);
                 return value;
@@ -79,8 +79,8 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
             }
         });
 
-        upperBoundField = new IntTextField(getParams().getInt("upperBoundNumVals", 4), 4);
-        upperBoundField.setFilter((value, oldValue) -> {
+        this.upperBoundField = new IntTextField(getParams().getInt("upperBoundNumVals", 4), 4);
+        this.upperBoundField.setFilter((value, oldValue) -> {
             try {
                 getParams().set("upperBoundNumVals", value);
                 return value;
@@ -143,7 +143,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b7.add(Box.createHorizontalStrut(25));
         b7.add(new JLabel("Least number of categories for each variable:  "));
         b7.add(Box.createHorizontalGlue());
-        b7.add(lowerBoundField);
+        b7.add(this.lowerBoundField);
         b1.add(b7);
 
         Box b8 = Box.createHorizontalBox();
@@ -151,7 +151,7 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
         b8.add(new JLabel(
                 "Greatest number of categories for each variable:  "));
         b8.add(Box.createHorizontalGlue());
-        b8.add(upperBoundField);
+        b8.add(this.upperBoundField);
         b1.add(b8);
 
         b1.add(Box.createHorizontalGlue());
@@ -159,24 +159,24 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
 
         if (getParams().getString("bayesPmInitializationMode", "trinary").equals("trinary")) {
             trinary.setSelected(true);
-            lowerBoundField.setEnabled(false);
-            upperBoundField.setEnabled(false);
+            this.lowerBoundField.setEnabled(false);
+            this.upperBoundField.setEnabled(false);
         } else {
             range.setSelected(true);
-            lowerBoundField.setEnabled(true);
-            upperBoundField.setEnabled(true);
+            this.lowerBoundField.setEnabled(true);
+            this.upperBoundField.setEnabled(true);
         }
 
         trinary.addActionListener(e -> {
             getParams().set("bayesPmInitializationMode", "trinary");
-            lowerBoundField.setEnabled(false);
-            upperBoundField.setEnabled(false);
+            this.lowerBoundField.setEnabled(false);
+            this.upperBoundField.setEnabled(false);
         });
 
         range.addActionListener(e -> {
             getParams().set("bayesPmInitializationMode", "range");
-            lowerBoundField.setEnabled(true);
-            upperBoundField.setEnabled(true);
+            this.lowerBoundField.setEnabled(true);
+            this.upperBoundField.setEnabled(true);
         });
     }
 

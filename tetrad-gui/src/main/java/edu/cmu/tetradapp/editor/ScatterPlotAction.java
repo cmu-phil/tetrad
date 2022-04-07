@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -59,17 +59,14 @@ class ScatterPlotAction extends AbstractAction {
 
 
     public void actionPerformed(ActionEvent e) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot display a scatter plot for an empty data set.");
             return;
         }
 
         JPanel panel = new ScatterPlotView(dataSet);
-        EditorWindow editorWindow = new EditorWindow(panel, "Scatter Plots", "Save", true, dataEditor);
-
-//        JPanel dialog = createScatterPlotDialog(null, null);
-//        EditorWindow editorWindow = new EditorWindow(dialog, "Scatter Plots", "Save", true, dataEditor);
+        EditorWindow editorWindow = new EditorWindow(panel, "Scatter Plots", "Save", true, this.dataEditor);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
@@ -105,15 +102,15 @@ class ScatterPlotAction extends AbstractAction {
      * one is selected for you)
      */
     private JPanel createScatterPlotDialog(ContinuousVariable yVariable, ContinuousVariable xVariable) {
-        String dialogTitle = "Scatter Plots";
+        final String dialogTitle = "Scatter Plots";
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
         ScatterPlotOld scatterPlot = new ScatterPlotOld(dataSet, yVariable, xVariable);
         ScatterPlotEditorPanel editorPanel = new ScatterPlotEditorPanel(scatterPlot, dataSet);
-        ScatterPlotDisplayPanelOld display = new ScatterPlotDisplayPanelOld(scatterPlot);
+        ScatterPlotDisplayPanel display = new ScatterPlotDisplayPanel(scatterPlot);
         editorPanel.addPropertyChangeListener(new ScatterPlotListener(display));
 
         JMenuBar bar = new JMenuBar();
@@ -137,16 +134,13 @@ class ScatterPlotAction extends AbstractAction {
         panel.add(bar, BorderLayout.NORTH);
         panel.add(vBox, BorderLayout.CENTER);
 
-//        dialog.getContentPane().add(bar, BorderLayout.NORTH);
-//        dialog.getContentPane().add(vBox, BorderLayout.CENTER);
-//        return dialog;
         return panel;
     }
 
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, dataEditor);
+                JFrame.class, this.dataEditor);
     }
 
     //================================= Inner Class ======================================//
@@ -157,10 +151,10 @@ class ScatterPlotAction extends AbstractAction {
      */
     private static class ScatterPlotListener implements PropertyChangeListener {
 
-        private final ScatterPlotDisplayPanelOld display;
+        private final ScatterPlotDisplayPanel display;
 
 
-        public ScatterPlotListener(ScatterPlotDisplayPanelOld display) {
+        public ScatterPlotListener(ScatterPlotDisplayPanel display) {
             this.display = display;
         }
 

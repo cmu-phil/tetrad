@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,9 +42,6 @@ public class MixedDataBox implements DataBox {
     /**
      * The variables here are used only to determine which columns are discrete
      * and which are continuous; bounds checking is not done.
-     *
-     * @param variables
-     * @param numRows
      */
     public MixedDataBox(List<Node> variables, int numRows) {
         this.variables = variables;
@@ -55,11 +52,11 @@ public class MixedDataBox implements DataBox {
 
         for (int j = 0; j < variables.size(); j++) {
             if (variables.get(j) instanceof ContinuousVariable) {
-                continuousData[j] = new double[numRows];
-                Arrays.fill(continuousData[j], Double.NaN);
+                this.continuousData[j] = new double[numRows];
+                Arrays.fill(this.continuousData[j], Double.NaN);
             } else if (variables.get(j) instanceof DiscreteVariable) {
-                discreteData[j] = new int[numRows];
-                Arrays.fill(discreteData[j], -99);
+                this.discreteData[j] = new int[numRows];
+                Arrays.fill(this.discreteData[j], -99);
             }
         }
 
@@ -105,7 +102,7 @@ public class MixedDataBox implements DataBox {
 
         for (int i = 0; i < numOfVars; i++) {
             // ensure there is data for either dataset, not both
-            if (!(continuousData[i] == null ^ discreteData[i] == null)) {
+            if ((continuousData[i] == null) == (discreteData[i] == null)) {
                 String errMsg = String.format("Variable at index %d either has data for both discrete and continuous or has no data for both.", i);
                 throw new IllegalArgumentException(errMsg);
             }
@@ -124,8 +121,6 @@ public class MixedDataBox implements DataBox {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @return
      */
     public static BoxDataSet serializableInstance() {
         List<Node> vars = new ArrayList<>();
@@ -138,7 +133,7 @@ public class MixedDataBox implements DataBox {
      */
     @Override
     public int numRows() {
-        return numRows;
+        return this.numRows;
     }
 
     /**
@@ -146,32 +141,28 @@ public class MixedDataBox implements DataBox {
      */
     @Override
     public int numCols() {
-        return variables.size();
+        return this.variables.size();
     }
 
     /**
      * Sets the value at the given row/column to the given Number value. The
      * value used is number.doubleValue().
-     *
-     * @param row
-     * @param col
-     * @param value
      */
     @Override
     public void set(int row, int col, Number value) {
         if (value == null) {
-            if (continuousData[col] != null) {
-                continuousData[col][row] = Double.NaN;
-            } else if (discreteData[col] != null) {
-                discreteData[col][row] = -99;
+            if (this.continuousData[col] != null) {
+                this.continuousData[col][row] = Double.NaN;
+            } else if (this.discreteData[col] != null) {
+                this.discreteData[col][row] = -99;
             } else {
                 throw new IllegalArgumentException("Indices out of bounds or null value.");
             }
         } else {
-            if (continuousData[col] != null) {
-                continuousData[col][row] = value.doubleValue();
-            } else if (discreteData[col] != null) {
-                discreteData[col][row] = value.intValue();
+            if (this.continuousData[col] != null) {
+                this.continuousData[col][row] = value.doubleValue();
+            } else if (this.discreteData[col] != null) {
+                this.discreteData[col][row] = value.intValue();
             } else {
                 throw new IllegalArgumentException("Indices out of bounds or null value.");
             }
@@ -179,22 +170,20 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     * @param row
-     * @param col
      * @return the Number value at the given row and column. If the value is
      * missing (-99), null, is returned.
      */
     @Override
     public Number get(int row, int col) {
-        if (col >= continuousData.length || row >= numRows()) {
+        if (col >= this.continuousData.length || row >= numRows()) {
             return null;
         }
 
-        if (continuousData[col] != null) {
-            double v = continuousData[col][row];
-            return v == Double.NaN ? null : v;
-        } else if (discreteData[col] != null) {
-            double v = discreteData[col][row];
+        if (this.continuousData[col] != null) {
+            double v = this.continuousData[col][row];
+            return Double.isNaN(v) ? null : v;
+        } else if (this.discreteData[col] != null) {
+            double v = this.discreteData[col][row];
             return v == -99 ? null : v;
         }
 
@@ -206,7 +195,7 @@ public class MixedDataBox implements DataBox {
      */
     @Override
     public DataBox copy() {
-        MixedDataBox box = new MixedDataBox(variables, numRows());
+        MixedDataBox box = new MixedDataBox(this.variables, numRows());
 
         for (int i = 0; i < numRows(); i++) {
             for (int j = 0; j < numCols(); j++) {
@@ -236,15 +225,15 @@ public class MixedDataBox implements DataBox {
     }
 
     public void addVariable(Node variable) {
-        variables.add(variable);
+        this.variables.add(variable);
 
-        continuousData = Arrays.copyOf(continuousData, continuousData.length + 1);
-        discreteData = Arrays.copyOf(discreteData, discreteData.length + 1);
+        this.continuousData = Arrays.copyOf(this.continuousData, this.continuousData.length + 1);
+        this.discreteData = Arrays.copyOf(this.discreteData, this.discreteData.length + 1);
 
         if (variable instanceof ContinuousVariable) {
-            continuousData[continuousData.length - 1] = new double[numRows];
+            this.continuousData[this.continuousData.length - 1] = new double[this.numRows];
         } else if (variable instanceof DiscreteVariable) {
-            discreteData[discreteData.length - 1] = new int[numRows];
+            this.discreteData[this.discreteData.length - 1] = new int[this.numRows];
         } else {
             throw new IllegalStateException();
         }
@@ -255,7 +244,7 @@ public class MixedDataBox implements DataBox {
         List<Node> newVars = new ArrayList<>();
 
         for (int c : cols) {
-            newVars.add(variables.get(c));
+            newVars.add(this.variables.get(c));
         }
 
         int row_num = rows.length;
@@ -273,11 +262,11 @@ public class MixedDataBox implements DataBox {
     }
 
     public double[][] getContinuousData() {
-        return continuousData;
+        return this.continuousData;
     }
 
     public int[][] getDiscreteData() {
-        return discreteData;
+        return this.discreteData;
     }
 
 }

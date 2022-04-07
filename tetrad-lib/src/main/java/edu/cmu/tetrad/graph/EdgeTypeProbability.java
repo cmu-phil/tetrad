@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.ArrayList;
@@ -41,29 +40,29 @@ public class EdgeTypeProbability implements TetradSerializable {
     }
 
     public EdgeType getEdgeType() {
-        return edgeType;
+        return this.edgeType;
     }
 
     public void setEdgeType(EdgeType edgeType) {
         this.edgeType = edgeType;
     }
 
-    public void addProperty(Property property) {
+    public void addProperty(Edge.Property property) {
         if (!properties.contains(property)) {
-            this.properties.add(property);
+            properties.add(property);
         }
     }
 
-    public void removeProperty(Property property) {
-        this.properties.remove(property);
+    public void removeProperty(Edge.Property property) {
+        properties.remove(property);
     }
 
-    public ArrayList<Property> getProperties() {
+    public ArrayList<Edge.Property> getProperties() {
         return new ArrayList<>(this.properties);
     }
 
     public double getProbability() {
-        return probability;
+        return this.probability;
     }
 
     public void setProbability(double probability) {

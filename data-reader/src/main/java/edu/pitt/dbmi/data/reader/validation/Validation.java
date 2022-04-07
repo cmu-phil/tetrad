@@ -25,6 +25,6 @@ package edu.pitt.dbmi.data.reader.validation;
  */
 public interface Validation {
 
-    public void setMaximumNumberOfMessages(int maxNumOfMsg);
+    void setMaximumNumberOfMessages(int maxNumOfMsg);
 
 }

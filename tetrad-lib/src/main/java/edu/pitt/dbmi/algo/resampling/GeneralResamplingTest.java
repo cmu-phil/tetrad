@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -30,27 +29,80 @@ public class GeneralResamplingTest {
 
     private boolean runParallel = true;
 
-    private Algorithm algorithm = null;
+    private Algorithm algorithm;
 
-    private MultiDataSetAlgorithm multiDataSetAlgorithm = null;
+    private MultiDataSetAlgorithm multiDataSetAlgorithm;
 
     private List<Graph> PAGs;
 
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * Specification of forbidden and required edges.
      */
     private IKnowledge knowledge = new Knowledge2();
 
-    private ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-
-    private boolean addOriginalDataset = false;
+    private final ResamplingEdgeEnsemble edgeEnsemble;
 
     /**
      * An initial graph to start from.
      */
-    private Graph externalGraph = null;
+    private Graph externalGraph;
+
+
+    public GeneralResamplingTest(
+            DataSet data,
+            Algorithm algorithm,
+            int numberResampling,
+            double percentResamplingSize,
+            boolean resamplingWithReplacement, int edgeEnsemble, boolean addOriginalDataset) {
+        this.algorithm = algorithm;
+        this.resamplingSearch = new GeneralResamplingSearch(data, numberResampling);
+        this.resamplingSearch.setPercentResampleSize(percentResamplingSize);
+        this.resamplingSearch.setResamplingWithReplacement(resamplingWithReplacement);
+        this.resamplingSearch.setAddOriginalDataset(addOriginalDataset);
+
+        switch (edgeEnsemble) {
+            case 0:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+                break;
+            case 1:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+                break;
+            case 2:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
+                break;
+            default:
+                throw new IllegalArgumentException("Expecting 0, 2, or 3.");
+        }
+    }
+
+    public GeneralResamplingTest(
+            List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm,
+            int numberResampling,
+            double percentResamplingSize,
+            boolean resamplingWithReplacement,
+            int edgeEnsemble, boolean addOriginalDataset) {
+        this.multiDataSetAlgorithm = multiDataSetAlgorithm;
+        this.resamplingSearch = new GeneralResamplingSearch(dataSets, numberResampling);
+        this.resamplingSearch.setPercentResampleSize(percentResamplingSize);
+        this.resamplingSearch.setResamplingWithReplacement(resamplingWithReplacement);
+        this.resamplingSearch.setAddOriginalDataset(addOriginalDataset);
+
+        switch (edgeEnsemble) {
+            case 0:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+                break;
+            case 1:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
+                break;
+            case 2:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
+                break;
+            default:
+                throw new IllegalArgumentException("Expecting 0, 1, or 2.");
+        }
+    }
 
     public void setParallelMode(boolean runParallel) {
         this.runParallel = runParallel;
@@ -76,7 +128,7 @@ public class GeneralResamplingTest {
      * sent to.
      */
     public PrintStream getOut() {
-        return out;
+        return this.out;
     }
 
     public void setParameters(Parameters parameters) {
@@ -85,18 +137,6 @@ public class GeneralResamplingTest {
         if (obj instanceof PrintStream) {
             setOut((PrintStream) obj);
         }
-    }
-
-    public void setPercentResampleSize(double percentResampleSize) {
-        this.resamplingSearch.setPercentResampleSize(percentResampleSize);
-    }
-
-    public void setResamplingWithReplacement(boolean ResamplingWithReplacement) {
-        this.resamplingSearch.setResamplingWithReplacement(ResamplingWithReplacement);
-    }
-
-    public void setNumberResampling(int numberResampling) {
-        this.resamplingSearch.setNumberResampling(numberResampling);
     }
 
     /**
@@ -110,26 +150,6 @@ public class GeneralResamplingTest {
         this.knowledge = knowledge;
     }
 
-    public ResamplingEdgeEnsemble getEdgeEnsemble() {
-        return edgeEnsemble;
-    }
-
-    public void setEdgeEnsemble(ResamplingEdgeEnsemble edgeEnsemble) {
-        this.edgeEnsemble = edgeEnsemble;
-    }
-
-    public void setEdgeEnsemble(String edgeEnsemble) {
-        if (edgeEnsemble.equalsIgnoreCase("Highest")) {
-            this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-        } else if (edgeEnsemble.equalsIgnoreCase("Majority")) {
-            this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-        }
-    }
-
-    public void setAddOriginalDataset(boolean addOriginalDataset) {
-        this.addOriginalDataset = addOriginalDataset;
-    }
-
     /**
      * Sets the initial graph.
      */
@@ -141,78 +161,55 @@ public class GeneralResamplingTest {
         RandomUtil.getInstance().setSeed(seed);
     }
 
-    public GeneralResamplingTest(DataSet data, Algorithm algorithm) {
-        this.algorithm = algorithm;
-        resamplingSearch = new GeneralResamplingSearch(data);
-    }
-
-    public GeneralResamplingTest(DataSet data, Algorithm algorithm, int numberResampling) {
-        this.algorithm = algorithm;
-        resamplingSearch = new GeneralResamplingSearch(data);
-        resamplingSearch.setNumberResampling(numberResampling);
-    }
-
-    public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm) {
-        this.multiDataSetAlgorithm = multiDataSetAlgorithm;
-        resamplingSearch = new GeneralResamplingSearch(dataSets);
-    }
-
-    public GeneralResamplingTest(List<DataSet> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, int numberResampling) {
-        this.multiDataSetAlgorithm = multiDataSetAlgorithm;
-        resamplingSearch = new GeneralResamplingSearch(dataSets);
-        resamplingSearch.setNumberResampling(numberResampling);
-    }
 
     public Graph search() {
         long start, stop;
 
         start = System.currentTimeMillis();
 
-        if (algorithm != null) {
-            resamplingSearch.setAlgorithm(algorithm);
+        if (this.algorithm != null) {
+            this.resamplingSearch.setAlgorithm(this.algorithm);
         } else {
-            resamplingSearch.setMultiDataSetAlgorithm(multiDataSetAlgorithm);
+            this.resamplingSearch.setMultiDataSetAlgorithm(this.multiDataSetAlgorithm);
         }
-        resamplingSearch.setRunParallel(runParallel);
-        resamplingSearch.setVerbose(verbose);
-        resamplingSearch.setParameters(parameters);
+        this.resamplingSearch.setRunParallel(this.runParallel);
+        this.resamplingSearch.setVerbose(this.verbose);
+        this.resamplingSearch.setParameters(this.parameters);
 
-        if (!knowledge.isEmpty()) {
-            resamplingSearch.setKnowledge(knowledge);
-        }
-
-        resamplingSearch.setAddOriginalDataset(addOriginalDataset);
-
-        if (externalGraph != null) {
-            resamplingSearch.setExternalGraph(externalGraph);
+        if (!this.knowledge.isEmpty()) {
+            this.resamplingSearch.setKnowledge(this.knowledge);
         }
 
-        if (verbose) {
-            if (algorithm != null) {
-                out.println("Resampling on the " + algorithm.getDescription());
-            } else if (multiDataSetAlgorithm != null) {
-                out.println("Resampling on the " + multiDataSetAlgorithm.getDescription());
+        if (this.externalGraph != null) {
+            this.resamplingSearch.setExternalGraph(this.externalGraph);
+        }
+
+        if (this.verbose) {
+            if (this.algorithm != null) {
+                this.out.println("Resampling on the " + this.algorithm.getDescription());
+            } else if (this.multiDataSetAlgorithm != null) {
+                this.out.println("Resampling on the " + this.multiDataSetAlgorithm.getDescription());
             }
         }
 
-        PAGs = resamplingSearch.search();
+        this.PAGs = this.resamplingSearch.search();
 
-        if (verbose) {
-            out.println("Resampling number is : " + PAGs.size());
+        if (this.verbose) {
+            this.out.println("Resampling number is : " + this.PAGs.size());
         }
         stop = System.currentTimeMillis();
-        if (verbose) {
-            out.println("Processing time of total resamplings : " + (stop - start) / 1000.0 + " sec");
+        if (this.verbose) {
+            this.out.println("Processing time of total resamplings : " + (stop - start) / 1000.0 + " sec");
         }
 
         start = System.currentTimeMillis();
         Graph graph = generateSamplingGraph();
         stop = System.currentTimeMillis();
-        if (verbose) {
-            out.println("Final Resampling Search Result:");
-            out.println(GraphUtils.graphToText(graph));
-            out.println();
-            out.println("probDistribution finished in " + (stop - start) + " ms");
+        if (this.verbose) {
+            this.out.println("Final Resampling Search Result:");
+            this.out.println(GraphUtils.graphToText(graph));
+            this.out.println();
+            this.out.println("probDistribution finished in " + (stop - start) + " ms");
         }
 
         return graph;
@@ -223,30 +220,30 @@ public class GeneralResamplingTest {
             graph.addNode(nodes.get(start));
         } else if (start < end) {
             int mid = (start + end) / 2;
-            addNodeToGraph(graph, nodes, start, mid);
-            addNodeToGraph(graph, nodes, mid + 1, end);
+            GeneralResamplingTest.addNodeToGraph(graph, nodes, start, mid);
+            GeneralResamplingTest.addNodeToGraph(graph, nodes, mid + 1, end);
         }
     }
 
     private Graph generateSamplingGraph() {
         Graph pag = null;
-        if (verbose) {
-            out.println("PAGs: " + PAGs.size());
-            out.println("Ensemble: " + edgeEnsemble);
-            out.println();
+        if (this.verbose) {
+            this.out.println("PAGs: " + this.PAGs.size());
+            this.out.println("Ensemble: " + this.edgeEnsemble);
+            this.out.println();
         }
-        if (PAGs == null || PAGs.size() == 0) return new EdgeListGraph();
+        if (this.PAGs == null || this.PAGs.size() == 0) return new EdgeListGraph();
 
         int i = 0;
-        for (Graph g : PAGs) {
+        for (Graph g : this.PAGs) {
             if (g != null) {
                 if (pag == null) {
                     pag = g;
                 }
-                if (verbose) {
-                    out.println("Resampling Search Result (" + i + "):");
-                    out.println(GraphUtils.graphToText(g));
-                    out.println();
+                if (this.verbose) {
+                    this.out.println("Resampling Search Result (" + i + "):");
+                    this.out.println(GraphUtils.graphToText(g));
+                    this.out.println();
                     i++;
                 }
             }
@@ -261,7 +258,7 @@ public class GeneralResamplingTest {
         complete.fullyConnect(Endpoint.TAIL);
 
         Graph graph = new EdgeListGraph();
-        addNodeToGraph(graph, complete.getNodes(), 0, complete.getNodes().size() - 1);
+        GeneralResamplingTest.addNodeToGraph(graph, complete.getNodes(), 0, complete.getNodes().size() - 1);
 
         for (Edge e : complete.getEdges()) {
 
@@ -278,7 +275,7 @@ public class GeneralResamplingTest {
                     EdgeType edgeType = etp.getEdgeType();
                     double prob = etp.getProbability();
                     //out.println(edgeType + ": " + prob);
-                    if (edgeType != EdgeType.nil && prob > max_edge_prob) {
+                    if (edgeType != EdgeType.nil) {
                         if (prob > max_edge_prob) {
                             chosen_edge_type = etp;
                             max_edge_prob = prob;
@@ -318,11 +315,11 @@ public class GeneralResamplingTest {
                         // Do nothing
                 }
 
-                for (Property property : chosen_edge_type.getProperties()) {
+                for (Edge.Property property : chosen_edge_type.getProperties()) {
                     edge.addProperty(property);
                 }
 
-                switch (edgeEnsemble) {
+                switch (this.edgeEnsemble) {
                     case Highest:
                         if (no_edge_prob > max_edge_prob) {
                             edge = null;
@@ -338,8 +335,8 @@ public class GeneralResamplingTest {
                 }
 
                 if (edge != null) {
-                    if (verbose) {
-                        out.println("Final result: " + edge + " : " + max_edge_prob);
+                    if (this.verbose) {
+                        this.out.println("Final result: " + edge + " : " + max_edge_prob);
                     }
 
                     for (EdgeTypeProbability etp : edgeTypeProbabilities) {
@@ -358,13 +355,13 @@ public class GeneralResamplingTest {
     private List<EdgeTypeProbability> getProbability(Node node1, Node node2) {
         Map<String, Integer> edgeDist = new HashMap<>();
         int no_edge_num = 0;
-        for (Graph g : PAGs) {
+        for (Graph g : this.PAGs) {
             Edge e = g.getEdge(node1, node2);
             if (e != null) {
                 String edgeString = e.toString();
                 if (e.getEndpoint1() == e.getEndpoint2() && node1.compareTo(e.getNode1()) != 0) {
                     Edge edge = new Edge(node1, node2, e.getEndpoint1(), e.getEndpoint2());
-                    for (Property property : e.getProperties()) {
+                    for (Edge.Property property : e.getProperties()) {
                         edge.addProperty(property);
                     }
                     edgeString = edge.toString();
@@ -373,7 +370,7 @@ public class GeneralResamplingTest {
                 if (num_edge == null) {
                     num_edge = 0;
                 }
-                num_edge = num_edge.intValue() + 1;
+                num_edge = num_edge + 1;
                 edgeDist.put(edgeString, num_edge);
             } else {
                 no_edge_num++;
@@ -473,7 +470,7 @@ public class GeneralResamplingTest {
         // Adjacency Confusion Matrix
         int[][] adjAr = new int[2][2];
 
-        countAdjConfMatrix(adjAr, edges, truth, estimate, 0, numEdges - 1);
+        GeneralResamplingTest.countAdjConfMatrix(adjAr, edges, truth, estimate, 0, numEdges - 1);
 
         return adjAr;
     }
@@ -494,8 +491,8 @@ public class GeneralResamplingTest {
 
         } else if (start < end) {
             int mid = (start + end) / 2;
-            countAdjConfMatrix(adjAr, edges, truth, estimate, start, mid);
-            countAdjConfMatrix(adjAr, edges, truth, estimate, mid + 1, end);
+            GeneralResamplingTest.countAdjConfMatrix(adjAr, edges, truth, estimate, start, mid);
+            GeneralResamplingTest.countAdjConfMatrix(adjAr, edges, truth, estimate, mid + 1, end);
         }
     }
 
@@ -508,7 +505,7 @@ public class GeneralResamplingTest {
         // Edge Type Confusion Matrix
         int[][] edgeAr = new int[8][8];
 
-        countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, 0, numEdges - 1);
+        GeneralResamplingTest.countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, 0, numEdges - 1);
 
         return edgeAr;
     }
@@ -585,8 +582,8 @@ public class GeneralResamplingTest {
 
         } else if (start < end) {
             int mid = (start + end) / 2;
-            countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, start, mid);
-            countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, mid + 1, end);
+            GeneralResamplingTest.countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, start, mid);
+            GeneralResamplingTest.countEdgeTypeConfMatrix(edgeAr, edges, truth, estimate, mid + 1, end);
         }
     }
 

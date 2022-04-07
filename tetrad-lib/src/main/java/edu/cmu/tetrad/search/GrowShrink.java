@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,7 +37,7 @@ public class GrowShrink implements MbSearch {
     /**
      * The independence test used to perform the search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * The list of variables being searched over. Must contain the target.
@@ -73,12 +73,12 @@ public class GrowShrink implements MbSearch {
         while (changed) {
             changed = false;
 
-            List<Node> remaining = new LinkedList<>(variables);
+            List<Node> remaining = new LinkedList<>(this.variables);
             remaining.removeAll(blanket);
             remaining.remove(target);
 
             for (Node node : remaining) {
-                if (!independenceTest.isIndependent(node, target, blanket)) {
+                if (!this.independenceTest.isIndependent(node, target, blanket)) {
                     blanket.add(node);
                     changed = true;
                 }
@@ -93,7 +93,7 @@ public class GrowShrink implements MbSearch {
             for (Node node : new LinkedList<>(blanket)) {
                 blanket.remove(node);
 
-                if (independenceTest.isIndependent(node, target, blanket)) {
+                if (this.independenceTest.isIndependent(node, target, blanket)) {
                     changed = true;
                     continue;
                 }
@@ -116,7 +116,7 @@ public class GrowShrink implements MbSearch {
     private Node getVariableForName(String targetName) {
         Node target = null;
 
-        for (Node V : variables) {
+        for (Node V : this.variables) {
             if (V.getName().equals(targetName)) {
                 target = V;
                 break;

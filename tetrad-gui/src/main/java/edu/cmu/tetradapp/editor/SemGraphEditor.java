@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -50,6 +50,7 @@ import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.net.URL;
@@ -70,16 +71,15 @@ public final class SemGraphEditor extends JPanel
     private static final long serialVersionUID = 6837233499169689575L;
 
     private GraphWorkbench workbench;
-    private SemGraphWrapper semGraphWrapper;
-    private JMenuItem errorTerms;
-    private Parameters parameters;
+    private final SemGraphWrapper semGraphWrapper;
+    private final Parameters parameters;
 
-    private JScrollPane graphEditorScroll = new JScrollPane();
+    private final JScrollPane graphEditorScroll = new JScrollPane();
 
     private final EdgeTypeTable edgeTypeTable;
 
     //===========================CONSTRUCTOR========================//
-    public SemGraphEditor(final SemGraphWrapper semGraphWrapper) {
+    public SemGraphEditor(SemGraphWrapper semGraphWrapper) {
         if (semGraphWrapper == null) {
             throw new NullPointerException();
         }
@@ -98,7 +98,7 @@ public final class SemGraphEditor extends JPanel
      * Sets the name of this editor.
      */
     @Override
-    public final void setName(String name) {
+    public void setName(String name) {
         String oldName = getName();
         super.setName(name);
         firePropertyChange("name", oldName, getName());
@@ -131,13 +131,11 @@ public final class SemGraphEditor extends JPanel
      * Pastes list of session elements into the workbench.
      */
     @Override
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
+    public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
-        for (int i = 0; i < sessionElements.size(); i++) {
-
-            Object o = sessionElements.get(i);
+        for (Object o : sessionElements) {
 
             if (o instanceof GraphNode) {
                 Node modelNode = (Node) o;
@@ -155,36 +153,32 @@ public final class SemGraphEditor extends JPanel
 
     @Override
     public GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     @Override
     public Graph getGraph() {
-        return workbench.getGraph();
+        return this.workbench.getGraph();
     }
 
     @Override
     public Map getModelEdgesToDisplay() {
-        return workbench.getModelEdgesToDisplay();
+        return this.workbench.getModelEdgesToDisplay();
     }
 
     @Override
     public Map getModelNodesToDisplay() {
-        return workbench.getModelNodesToDisplay();
+        return this.workbench.getModelNodesToDisplay();
     }
 
     @Override
     public void setGraph(Graph graph) {
         try {
             SemGraph semGraph = new SemGraph(graph);
-            workbench.setGraph(semGraph);
+            this.workbench.setGraph(semGraph);
         } catch (Exception e) {
             throw new RuntimeException("Not a SEM graph.", e);
         }
-    }
-
-    private SemGraphWrapper getSemGraphWrapper() {
-        return semGraphWrapper;
     }
 
     @Override
@@ -218,9 +212,9 @@ public final class SemGraphEditor extends JPanel
     private void initUI(SemGraphWrapper semGraphWrapper) {
         Graph graph = semGraphWrapper.getGraph();
 
-        workbench = new GraphWorkbench(graph);
+        this.workbench = new GraphWorkbench(graph);
 
-        workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+        this.workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
             String propertyName = evt.getPropertyName();
 
             // Update the bootstrap table if there's changes to the edges or node renaming
@@ -228,7 +222,7 @@ public final class SemGraphEditor extends JPanel
 
             if (Arrays.asList(events).contains(propertyName)) {
                 if (getWorkbench() != null) {
-                    Graph targetGraph = (Graph) getWorkbench().getGraph();
+                    Graph targetGraph = getWorkbench().getGraph();
 
                     // Update the semGraphWrapper
                     semGraphWrapper.setGraph(targetGraph);
@@ -251,8 +245,8 @@ public final class SemGraphEditor extends JPanel
         graphToolbar.setMaximumSize(new Dimension(140, 450));
 
         // topBox right side graph editor
-        graphEditorScroll.setPreferredSize(new Dimension(760, 450));
-        graphEditorScroll.setViewportView(workbench);
+        this.graphEditorScroll.setPreferredSize(new Dimension(760, 450));
+        this.graphEditorScroll.setViewportView(this.workbench);
 
         // topBox contains the topGraphBox and the instructionBox underneath
         Box topBox = Box.createVerticalBox();
@@ -261,7 +255,7 @@ public final class SemGraphEditor extends JPanel
         // topGraphBox contains the vertical graph toolbar and graph editor
         Box topGraphBox = Box.createHorizontalBox();
         topGraphBox.add(graphToolbar);
-        topGraphBox.add(graphEditorScroll);
+        topGraphBox.add(this.graphEditorScroll);
 
         // Instruction with info button
         Box instructionBox = Box.createHorizontalBox();
@@ -279,7 +273,7 @@ public final class SemGraphEditor extends JPanel
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Initialize helpSet
-                String helpHS = "/resources/javahelp/TetradHelp.hs";
+                final String helpHS = "/resources/javahelp/TetradHelp.hs";
 
                 try {
                     URL url = this.getClass().getResource(helpHS);
@@ -305,17 +299,22 @@ public final class SemGraphEditor extends JPanel
         topBox.add(topGraphBox);
         topBox.add(instructionBox);
 
-        edgeTypeTable.setPreferredSize(new Dimension(820, 150));
+        this.edgeTypeTable.setPreferredSize(new Dimension(820, 150));
 
-        // Use JSplitPane to allow resize the bottom box - Zhou
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
-        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
+//        //Use JSplitPane to allow resize the bottom box - Zhou
+//        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
+//        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
+
+        // Switching to tabbed pane because of resizing problems with the split pane... jdramsey 2021.08.25
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
+        tabbedPane.addTab("Graph", new PaddingPanel(topBox));
+        tabbedPane.addTab("Edges", this.edgeTypeTable);
 
         // Add to parent container
         add(menuBar, BorderLayout.NORTH);
-        add(splitPane, BorderLayout.CENTER);
+        add(tabbedPane, BorderLayout.CENTER);
 
-        edgeTypeTable.update(graph);
+        this.edgeTypeTable.update(graph);
 
         // Performs relayout.
         // It means invalid content is asked for all the sizes and
@@ -325,31 +324,25 @@ public final class SemGraphEditor extends JPanel
 
     /**
      * Updates the graph in workbench when changing graph model
-     *
-     * @param graph
      */
     private void updateGraphWorkbench(Graph graph) {
-        workbench = new GraphWorkbench(graph);
-        graphEditorScroll.setViewportView(workbench);
+        this.workbench = new GraphWorkbench(graph);
+        this.graphEditorScroll.setViewportView(this.workbench);
 
         validate();
     }
 
     /**
      * Updates bootstrap table on adding/removing edges or graph changes
-     *
-     * @param graph
      */
     private void updateBootstrapTable(Graph graph) {
-        edgeTypeTable.update(graph);
+        this.edgeTypeTable.update(graph);
 
         validate();
     }
 
     /**
      * Creates the UI component for choosing from multiple graph models
-     *
-     * @param semGraphWrapper
      */
     private void modelSelectin(SemGraphWrapper semGraphWrapper) {
         int numModels = semGraphWrapper.getNumModels();
@@ -360,7 +353,7 @@ public final class SemGraphEditor extends JPanel
                 models.add(i + 1);
             }
 
-            final JComboBox<Integer> comboBox = new JComboBox(models.toArray());
+            JComboBox<Integer> comboBox = new JComboBox(models.toArray());
 
             // Remember the selected model on reopen
             comboBox.setSelectedIndex(semGraphWrapper.getModelIndex());
@@ -417,9 +410,9 @@ public final class SemGraphEditor extends JPanel
         JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
 
         copy.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         paste.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 
         edit.add(copy);
         edit.add(paste);
@@ -436,13 +429,9 @@ public final class SemGraphEditor extends JPanel
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
-//        graph.add(new DirectedPathsAction(getWorkbench()));
-//        graph.add(new TreksAction(getWorkbench()));
-//        graph.add(new AllPathsAction(getWorkbench()));
-//        graph.add(new NeighborhoodsAction(getWorkbench()));
         graph.addSeparator();
 
-        errorTerms = new JMenuItem();
+        JMenuItem errorTerms = new JMenuItem();
 
         if (getSemGraph().isShowErrorTerms()) {
             errorTerms.setText("Hide Error Terms");
@@ -486,11 +475,11 @@ public final class SemGraphEditor extends JPanel
 
 
         randomGraph.addActionListener(e -> {
-            final GraphParamsEditor editor = new GraphParamsEditor();
-            editor.setParams(parameters);
+            GraphParamsEditor editor = new GraphParamsEditor();
+            editor.setParams(this.parameters);
 
             EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
-                    "Done", false, SemGraphEditor.this);
+                    "Done", false, this);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();
@@ -506,13 +495,13 @@ public final class SemGraphEditor extends JPanel
                     }
 
                     RandomUtil.getInstance().setSeed(new Date().getTime());
-                    Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
+                    Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), SemGraphEditor.this.parameters);
 
-                    boolean addCycles = parameters.getBoolean("randomAddCycles", false);
+                    boolean addCycles = SemGraphEditor.this.parameters.getBoolean("randomAddCycles", false);
 
                     if (addCycles) {
-                        int newGraphNumMeasuredNodes = parameters.getInt("newGraphNumMeasuredNodes", 10);
-                        int newGraphNumEdges = parameters.getInt("newGraphNumEdges", 10);
+                        int newGraphNumMeasuredNodes = SemGraphEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
+                        int newGraphNumEdges = SemGraphEditor.this.parameters.getInt("newGraphNumEdges", 10);
                         graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 6);
                     }
 
@@ -527,7 +516,7 @@ public final class SemGraphEditor extends JPanel
     }
 
     private SemGraph getSemGraph() {
-        return (SemGraph) semGraphWrapper.getGraph();
+        return (SemGraph) this.semGraphWrapper.getGraph();
     }
 
     private void correlationExogenousVariables() {
@@ -543,8 +532,7 @@ public final class SemGraphEditor extends JPanel
 
         List<Node> exoNodes = new LinkedList<>();
 
-        for (int i = 0; i < nodes.size(); i++) {
-            Node node = nodes.get(i);
+        for (Node node : nodes) {
             if (graph.isExogenous(node)) {
                 exoNodes.add(node);
             }
@@ -558,8 +546,7 @@ public final class SemGraphEditor extends JPanel
                 Node node2 = exoNodes.get(j);
                 List<Edge> edges = graph.getEdges(node1, node2);
 
-                for (int k = 0; k < edges.size(); k++) {
-                    Edge edge = edges.get(k);
+                for (Edge edge : edges) {
                     if (Edges.isBidirectedEdge(edge)) {
                         continue loop;
                     }
@@ -579,7 +566,7 @@ public final class SemGraphEditor extends JPanel
             if (Edges.isBidirectedEdge(edge)) {
                 try {
                     graph.removeEdge(edge);
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
             }
         }
@@ -587,7 +574,7 @@ public final class SemGraphEditor extends JPanel
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        return new IndTestDSep(workbench.getGraph());
+        return new IndTestDSep(this.workbench.getGraph());
     }
 
 }

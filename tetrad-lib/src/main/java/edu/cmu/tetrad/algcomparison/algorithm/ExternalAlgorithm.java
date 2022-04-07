@@ -31,24 +31,24 @@ public abstract class ExternalAlgorithm implements Algorithm {
     }
 
     public Simulation getSimulation() {
-        return simulation;
+        return this.simulation;
     }
 
     public abstract long getElapsedTime(DataModel dataSet, Parameters parameters);
 
     public List<String> getParameters() {
-        return usedParameters;
+        return this.usedParameters;
     }
 
     public int getNumDataModels() {
-        return simulation.getNumDataModels();
+        return this.simulation.getNumDataModels();
     }
 
     public int getIndex(DataModel dataSet) {
         int index = -1;
 
         for (int i = 0; i < getNumDataModels(); i++) {
-            if (dataSet == simulation.getDataModel(i)) {
+            if (dataSet == this.simulation.getDataModel(i)) {
                 index = i + 1;
                 break;
             }

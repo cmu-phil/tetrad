@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -44,7 +43,7 @@ import java.util.Set;
 public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final ExternalAlgorithm[] algorithms;
-    private String shortDescription = null;
+    private final String shortDescription;
     private long elapsed = -99;
 
     public ExternalAlgorithmIntersection(String shortDescription, ExternalAlgorithm... algorithms) {
@@ -58,18 +57,18 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     public Graph search(DataModel dataSet, Parameters parameters) {
         this.elapsed = 0;
 
-        for (ExternalAlgorithm algorithm : algorithms) {
+        for (ExternalAlgorithm algorithm : this.algorithms) {
             algorithm.setPath(this.path);
             algorithm.setSimIndex(this.simIndex);
             algorithm.setSimulation(this.simulation);
-            elapsed += algorithm.getElapsedTime((DataSet) dataSet, parameters);
+            this.elapsed += algorithm.getElapsedTime(dataSet, parameters);
         }
 
-        Graph graph0 = algorithms[0].search(dataSet, parameters);
+        Graph graph0 = this.algorithms[0].search(dataSet, parameters);
         Set<Edge> edges = graph0.getEdges();
 
-        for (int i = 1; i < algorithms.length; i++) {
-            edges.retainAll(algorithms[i].search(dataSet, parameters).getEdges());
+        for (int i = 1; i < this.algorithms.length; i++) {
+            edges.retainAll(this.algorithms[i].search(dataSet, parameters).getEdges());
         }
 
         EdgeListGraph intersection = new EdgeListGraph(graph0.getNodes());
@@ -85,11 +84,11 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
      * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
-        return algorithms[0].getComparisonGraph(graph);
+        return this.algorithms[0].getComparisonGraph(graph);
     }
 
     public String getDescription() {
-        return shortDescription;
+        return this.shortDescription;
     }
 
     public DataType getDataType() {

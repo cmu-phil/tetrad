@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -45,9 +45,9 @@ import java.util.*;
 public final class StoredCellProbsObs implements TetradSerializable, DiscreteProbs {
     static final long serialVersionUID = 23L;
 
-    private List<Node> variables;
-    private int[] parentDims;
-    private double[] probs;
+    private final List<Node> variables;
+    private final int[] parentDims;
+    private final double[] probs;
 
 
     //============================CONSTRUCTORS============================//
@@ -69,7 +69,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         }
 
         this.variables = Collections.unmodifiableList(variables);
-        Set<Object> variableSet = new HashSet<Object>(this.variables);
+        Set<Object> variableSet = new HashSet<>(this.variables);
         if (variableSet.size() < this.variables.size()) {
             throw new IllegalArgumentException("Duplicate variable.");
         }
@@ -78,7 +78,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
 
         for (int i = 0; i < getVariables().size(); i++) {
             DiscreteVariable var = (DiscreteVariable) getVariables().get(i);
-            parentDims[i] = var.getNumCategories();
+            this.parentDims[i] = var.getNumCategories();
         }
 
         int numCells = 1;
@@ -101,32 +101,12 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
      * Generates a simple exemplar of this class to test serialization.
      */
     public static StoredCellProbsObs serializableInstance() {
-        return new StoredCellProbsObs(new ArrayList<Node>());
+        return new StoredCellProbsObs(new ArrayList<>());
     }
-
-
-    // randomize the probability table
-    /*
-    public void createRandomCellTable() {
-        double sum = 0.0;
-
-        for (int i = 0; i < probs.length; i++) {
-            double value = RandomUtil.getInstance().nextDouble();
-            probs[i] = value;
-            sum += value;
-        }
-
-        for (int i = 0; i < probs.length; i++) {
-            probs[i] /= sum;
-        }
-    }
-	 */
 
     // clear the probability table
     public void clearCellTable() {
-        for (int i = 0; i < probs.length; i++) {
-            probs[i] = Double.NaN;
-        }
+        Arrays.fill(this.probs, Double.NaN);
     }
 
     // get vaues by marginalizing probabilities from allowUnfaithfulness bayesIm
@@ -137,7 +117,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
 
         BayesImProbs cellProbsOnTheFly = new BayesImProbs(bayesIm);
 
-        for (int i = 0; i < probs.length; i++) {
+        for (int i = 0; i < this.probs.length; i++) {
             int[] variableValues = getVariableValues(i);
 
             Proposition targetProp = Proposition.tautology(bayesIm);
@@ -148,10 +128,8 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
                         variableValues[j]);
             }
 
-            probs[i] = cellProbsOnTheFly.getProb(targetProp);
+            this.probs[i] = cellProbsOnTheFly.getProb(targetProp);
         }
-
-        //return cellProbs;
     }
 
     // copy from another MlBayesImObs
@@ -160,8 +138,8 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
             throw new NullPointerException();
         }
 
-        for (int i = 0; i < probs.length; i++) {
-            probs[i] = bayesIm.getProbability(i);
+        for (int i = 0; i < this.probs.length; i++) {
+            this.probs[i] = bayesIm.getProbability(i);
         }
     }
 
@@ -173,7 +151,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
      * returned by get
      */
     public double getCellProb(int[] variableValues) {
-        return probs[getOffset(variableValues)];
+        return this.probs[getOffset(variableValues)];
     }
 
     public double getProb(Proposition assertion) {
@@ -182,7 +160,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         int[] variableValues = new int[assertion.getNumVariables()];
 
         for (int i = 0; i < assertion.getNumVariables(); i++) {
-            variableValues[i] = nextValue(assertion, i, -1);
+            variableValues[i] = StoredCellProbsObs.nextValue(assertion, i, -1);
         }
 
         variableValues[variableValues.length - 1] = -1;
@@ -191,13 +169,13 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         loop:
         while (true) {
             for (int i = assertion.getNumVariables() - 1; i >= 0; i--) {
-                if (hasNextValue(assertion, i, variableValues[i])) {
+                if (StoredCellProbsObs.hasNextValue(assertion, i, variableValues[i])) {
                     variableValues[i] =
-                            nextValue(assertion, i, variableValues[i]);
+                            StoredCellProbsObs.nextValue(assertion, i, variableValues[i]);
 
                     for (int j = i + 1; j < assertion.getNumVariables(); j++) {
-                        if (hasNextValue(assertion, j, -1)) {
-                            variableValues[j] = nextValue(assertion, j, -1);
+                        if (StoredCellProbsObs.hasNextValue(assertion, j, -1)) {
+                            variableValues[j] = StoredCellProbsObs.nextValue(assertion, j, -1);
                         } else {
                             break loop;
                         }
@@ -222,7 +200,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
 
     private static boolean hasNextValue(Proposition proposition, int variable,
                                         int curIndex) {
-        return nextValue(proposition, variable, curIndex) != -1;
+        return StoredCellProbsObs.nextValue(proposition, variable, curIndex) != -1;
     }
 
     private static int nextValue(Proposition proposition, int variable,
@@ -249,7 +227,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         int[] variableValues = new int[condition.getNumVariables()];
 
         for (int i = 0; i < condition.getNumVariables(); i++) {
-            variableValues[i] = nextValue(condition, i, -1);
+            variableValues[i] = StoredCellProbsObs.nextValue(condition, i, -1);
         }
 
         variableValues[variableValues.length - 1] = -1;
@@ -259,13 +237,13 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         loop:
         while (true) {
             for (int i = condition.getNumVariables() - 1; i >= 0; i--) {
-                if (hasNextValue(condition, i, variableValues[i])) {
+                if (StoredCellProbsObs.hasNextValue(condition, i, variableValues[i])) {
                     variableValues[i] =
-                            nextValue(condition, i, variableValues[i]);
+                            StoredCellProbsObs.nextValue(condition, i, variableValues[i]);
 
                     for (int j = i + 1; j < condition.getNumVariables(); j++) {
-                        if (hasNextValue(condition, j, -1)) {
-                            variableValues[j] = nextValue(condition, j, -1);
+                        if (StoredCellProbsObs.hasNextValue(condition, j, -1)) {
+                            variableValues[j] = StoredCellProbsObs.nextValue(condition, j, -1);
                         } else {
                             break loop;
                         }
@@ -296,16 +274,12 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         return assertionTrue / conditionTrue;
     }
 
-    public boolean isMissingValueCaseFound() {
-        return false;
-    }
-
     public List<Node> getVariables() {
         return this.variables;
     }
 
     public int getNumRows() {
-        return probs.length;
+        return this.probs.length;
     }
 
     public String toString() {
@@ -316,14 +290,14 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
 
         buf.append("\n");
 
-        for (Node variable : variables) {
+        for (Node variable : this.variables) {
             buf.append(variable).append("\t");
         }
 
         double sum = 0.0;
-        int maxLines = 500;
+        final int maxLines = 500;
 
-        for (int i = 0; i < probs.length; i++) {
+        for (int i = 0; i < this.probs.length; i++) {
             if (i >= maxLines) {
                 buf.append("\nCowardly refusing to print more than ")
                         .append(maxLines).append(" lines.");
@@ -338,8 +312,8 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
                 buf.append(variableValue).append("\t");
             }
 
-            buf.append(nf.format(probs[i]));
-            sum += probs[i];
+            buf.append(nf.format(this.probs[i]));
+            sum += this.probs[i];
         }
 
         buf.append("\n\nSum = ").append(nf.format(sum));
@@ -370,7 +344,7 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
                     "Probability not in [0.0, 1.0]: " + probability);
         }
 
-        probs[getOffset(variableValues)] = probability;
+        this.probs[getOffset(variableValues)] = probability;
     }
 
     //============================PRIVATE METHODS==========================//

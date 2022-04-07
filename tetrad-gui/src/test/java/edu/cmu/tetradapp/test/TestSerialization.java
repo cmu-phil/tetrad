@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -124,9 +124,9 @@ public class TestSerialization {
      */
 //    @Test
     public void testLoadabilility() {
-        String serializableScope = "target/classes/edu/cmu";
-        String currentDirectory = "build/tetrad/serializable/model";
-        String archiveDirectory = "archives";
+        final String serializableScope = "target/classes/edu/cmu";
+        final String currentDirectory = "build/tetrad/serializable/model";
+        final String archiveDirectory = "archives";
 
         TetradSerializableUtils utils = new TetradSerializableUtils(
                 serializableScope, currentDirectory, archiveDirectory);
@@ -145,9 +145,9 @@ public class TestSerialization {
     }
 
     public void doArchive() {
-        String serializableScope = "build/tetrad/classes/edu/cmu";
-        String currentDirectory = "build/tetrad/serializable/model";
-        String archiveDirectory = "archives";
+        final String serializableScope = "build/tetrad/classes/edu/cmu";
+        final String currentDirectory = "build/tetrad/serializable/model";
+        final String archiveDirectory = "archives";
 
         TetradSerializableUtils utils = new TetradSerializableUtils(
                 serializableScope, currentDirectory, archiveDirectory);

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -33,15 +33,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Identifiability
- * based on RowSummingExactUpdater
+ * Identifiability, based on RowSummingExactUpdater
  * <p>
  * Jin Tian and Judea Pearl.  On the Identification of Causal Effects. Technical Report R-290-L, Department of Computer
  * Science, University of California, Los Angeles, 2002.
  *
  * @author Choh Man Teng
  */
-
 public final class Identifiability implements ManipulatingBayesUpdater {
     static final long serialVersionUID = 23L;
 
@@ -50,7 +48,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
      *
      * @serial Cannot be null.
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * Stores evidence for all variables.
@@ -71,8 +69,6 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
 
     //==============================CONSTRUCTORS===========================//
-
-    /////////////////////////////////////////////////////////////////
 
     /**
      * Constructs a new updater for the given Bayes net.
@@ -102,7 +98,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         //setTargetProp(targetProp);
 
         // misc tests for private methods
-        if (debug) {
+        if (this.debug) {
             int[] cComponents = getCComponents(bayesIm);
             printCComponents(cComponents);
         }
@@ -117,7 +113,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
      * modified; rather, a new BayesIm is created and updated.
      */
     public BayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     /////////////////////////////////////////////////////////////////
@@ -155,12 +151,12 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     }
 
     /////////////////////////////////////////////////////////////////
-    public final void setEvidence(Evidence evidence) {
+    public void setEvidence(Evidence evidence) {
         if (evidence == null) {
             throw new NullPointerException();
         }
 
-        if (evidence.isIncompatibleWith(bayesIm)) {
+        if (evidence.isIncompatibleWith(this.bayesIm)) {
             throw new IllegalArgumentException("The variable list for the " +
                     "given bayesIm must be compatible with the variable list " +
                     "for this evidence.");
@@ -168,16 +164,12 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         this.evidence = evidence;
 
-        Graph graph = bayesIm.getBayesPm().getDag();
+        Graph graph = this.bayesIm.getBayesPm().getDag();
         Dag manipulatedGraph = createManipulatedGraph(graph);
         BayesPm manipulatedPm = createUpdatedBayesPm(manipulatedGraph);
 
         this.manipulatedBayesIm = createdUpdatedBayesIm(manipulatedPm);
         /*
-        this.manipulatedBayesIm = bayesIm;
-		this.bayesImProbs = new BayesImProbs(manipulatedBayesIm);
-		 */
-		/*
       The BayesIm after update, if this was calculated.
 
       */
@@ -208,59 +200,46 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         // the s variables
         List<Node> sNodes = new ArrayList<>();
         for (int sVariable : sVariables) {
-            sNodes.add(bayesIm.getNode(sVariable));
+            sNodes.add(this.bayesIm.getNode(sVariable));
         }
 
-        if (debug) {
+        if (this.debug) {
             System.out.println("\nsVariables: " + sNodes);
         }
 
-        List<Node> tNodesTmp = evidence.getVariablesInEvidence();
+        List<Node> tNodesTmp = this.evidence.getVariablesInEvidence();
 
         // no evidence (tNodes is empty):
         // P_t(s) is identifiable and can be computed directly using
         //    any other regular updater (here: RowSummingExactUpdater)
         if (tNodesTmp.size() == 0) {
-			/*
-			 ManipulatingBayesUpdater rowSumUpdater = 
-				new RowSummingExactUpdater(bayesIm, Evidence.tautology(bayesIm));
-			return rowSumUpdater.getJointMarginal(sVariables, sValues);
-			 */
 
-            Proposition prop = Proposition.tautology(bayesIm);
+            Proposition prop = Proposition.tautology(this.bayesIm);
             for (int i = 0; i < sVariables.length; i++) {
-				/*
-				int[] variableValues = getVariableValues(i);
-				 
-				String nodeName = getVariable().get(j).getNode();
-				Node node = bayesIm.getNode(nodeName);
-				targetProp.setCategory(bayesIm.getNodeIndex(node), 
-									   variableValues[j]);		
-				*/
                 prop.setCategory(sVariables[i], sValues[i]);
             }
 
             // restrict the proposition to only observed variables
             Proposition propObs =
-                    new Proposition(((MlBayesImObs) bayesIm).getBayesImObs(), prop);
+                    new Proposition(((MlBayesImObs) this.bayesIm).getBayesImObs(), prop);
 
-            return ((MlBayesImObs) bayesIm).getJPD().getProb(propObs);
+            return ((MlBayesImObs) this.bayesIm).getJPD().getProb(propObs);
         }
 
         // recast the t variables
         List<Node> tNodes = new ArrayList<>();
         for (Node node1 : tNodesTmp) {
-            tNodes.add(bayesIm.getNode(node1.getName()));
+            tNodes.add(this.bayesIm.getNode(node1.getName()));
         }
 
-        if (debug) {
+        if (this.debug) {
             System.out.println("\ntVariables: " + tNodes);
         }
 
         //////////////////////////////////////
         // collect variable values that are set in S and T
 
-        int nNodes = bayesIm.getNumNodes();
+        int nNodes = this.bayesIm.getNumNodes();
 
         int[] fixedVarValues = new int[nNodes];
 
@@ -275,20 +254,20 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         // incorporate values of T
         // assume all the variables are manipulated
-        for (int i = 0; i < evidence.getNumNodes(); i++) {
-            int tNodeValue = evidence.getProposition().getSingleCategory(i);
+        for (int i = 0; i < this.evidence.getNumNodes(); i++) {
+            int tNodeValue = this.evidence.getProposition().getSingleCategory(i);
             if (tNodeValue != -1)  // only consider variables with a single value
             {
-                Node tNode = evidence.getNode(i);
-                String tNodeStr = evidence.getNode(i).getName();
+                Node tNode = this.evidence.getNode(i);
+                String tNodeStr = this.evidence.getNode(i).getName();
 
-                Node tNodeInBayesIm = bayesIm.getNode(tNodeStr);
-                int tIndexInBayesIm = bayesIm.getNodeIndex(tNodeInBayesIm);
+                Node tNodeInBayesIm = this.bayesIm.getNode(tNodeStr);
+                int tIndexInBayesIm = this.bayesIm.getNodeIndex(tNodeInBayesIm);
 
                 String tCategoryStr =
-                        evidence.getCategory(tNode, tNodeValue);
+                        this.evidence.getCategory(tNode, tNodeValue);
 
-                int tValueInBayesIm = bayesIm.getBayesPm().getCategoryIndex(
+                int tValueInBayesIm = this.bayesIm.getBayesPm().getCategoryIndex(
                         tNodeInBayesIm,
                         tCategoryStr
                 );
@@ -300,7 +279,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                     // remove the variable from S (S and T should be disjoint)
                     {
                         sNodes.remove(tNodeInBayesIm);
-                        if (debug) {
+                        if (this.debug) {
                             System.out.println("sNode removed: index: "
                                     + tNodeInBayesIm
                                     + "; name: " + tNodeStr);
@@ -318,7 +297,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             }
         }
 
-        if (debug) {
+        if (this.debug) {
             System.out.print("fixedVarValues: ");
             for (int i = 0; i < nNodes; i++) {
                 System.out.print(fixedVarValues[i] + "  ");
@@ -334,7 +313,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         //////////////////////////////////////
         // get c-components
 
-        int[] cComponents = getCComponents(bayesIm);
+        int[] cComponents = getCComponents(this.bayesIm);
         int nCComponents = nCComponents(cComponents);
 
         // store the nodes in each c-component
@@ -342,10 +321,10 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         List<List<Node>> cComponentNodes = new LinkedList<>();
 
         for (int i = 0; i < nCComponents; i++) {
-            cComponentNodes.add(getCComponentNodes(bayesIm, cComponents, i));
+            cComponentNodes.add(getCComponentNodes(this.bayesIm, cComponents, i));
         }
 
-        if (debug) {
+        if (this.debug) {
             for (int i = 0; i < nCComponents; i++) {
                 System.out.println("c-component " + i + ": " +
                         cComponentNodes.get(i));
@@ -357,12 +336,12 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         // allowUnfaithfulness joint probability of all the measured variables
         int[] probTermV = new int[nNodes];
         for (int i = 0; i < nNodes; i++) {
-            if (bayesIm.getNode(i).getNodeType() == NodeType.MEASURED) {
+            if (this.bayesIm.getNode(i).getNodeType() == NodeType.MEASURED) {
                 probTermV[i] = 1;
             }
         }
 
-        if (debug) {
+        if (this.debug) {
             System.out.print("probTermV: ");
             for (int i = 0; i < nNodes; i++) {
                 System.out.print(probTermV[i] + "   ");
@@ -377,9 +356,9 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             // Q[V]: allowUnfaithfulness joint probTermV
             QList qV = new QList(nNodes, probTermV);
 
-            if (debug) {
+            if (this.debug) {
                 System.out.println("cFactors " + i + "   " +
-                        bayesIm.getDag().getNodes() + "   " +
+                        this.bayesIm.getDag().getNodes() + "   " +
                         cComponentNodes.get(i)
                 );
                 System.out.println("============== QList: qV ==============");
@@ -387,12 +366,12 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             }
 
             cFactors[i] = qDecomposition(
-                    bayesIm,
-                    bayesIm.getDag().getNodes(),
+                    this.bayesIm,
+                    this.bayesIm.getDag().getNodes(),
                     cComponentNodes.get(i),
                     qV
             );
-            if (debug) {
+            if (this.debug) {
                 System.out.println("============== QList: cFactors[" + i +
                         "] ==============");
                 cFactors[i].printQList(0, 0);
@@ -406,40 +385,36 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         //			would be made to the one in the bayesIm
         // Note: the ordering of the nodes may not be the same as in
         //			the original graph
-        Dag dag = new Dag(bayesIm.getDag());
+        Dag dag = new Dag(this.bayesIm.getDag());
 
-        if (debug) {
+        if (this.debug) {
             System.out.println("------ here1 -------------");
-            System.out.println(bayesIm.getDag());
-            // watch out!  tNodes may be empty
-            //System.out.println(tNodes.get(0));
-            //System.out.println(dag.getNodes().get(1));
-            //System.out.println(tNodes.get(0).equals(dag.getNodes().get(1)));
+            System.out.println(this.bayesIm.getDag());
         }
 
         dag.removeNodes(tNodes);
 
-        if (debug) {
+        if (this.debug) {
             System.out.println("------ here2 -------------");
-            System.out.println(bayesIm.getDag());
+            System.out.println(this.bayesIm.getDag());
         }
 
         List<Node> dNodes = dag.getAncestors(sNodes);
 
         // create a Bayes IM with the dag G_dNodes
-        Dag gD = new Dag(bayesIm.getDag().subgraph(dNodes));
+        Dag gD = new Dag(this.bayesIm.getDag().subgraph(dNodes));
 
-        BayesPm bayesPmD = new BayesPm(gD, bayesIm.getBayesPm());
-        BayesIm bayesImD = new MlBayesIm(bayesPmD, bayesIm, MlBayesIm.RANDOM);
+        BayesPm bayesPmD = new BayesPm(gD, this.bayesIm.getBayesPm());
+        BayesIm bayesImD = new MlBayesIm(bayesPmD, this.bayesIm, MlBayesIm.RANDOM);
 
-        if (debug) {
+        if (this.debug) {
             System.out.println("------ bayeIm.getDag() -------------");
-            System.out.println(bayesIm.getDag());
+            System.out.println(this.bayesIm.getDag());
             System.out.println("------ gD -------------");
             System.out.println(gD);
             System.out.println("------ bayeImD.getDag() -------------");
             System.out.println(bayesImD.getDag());
-            System.out.println("bayesIm node 0: " + bayesIm.getNode(0));
+            System.out.println("bayesIm node 0: " + this.bayesIm.getNode(0));
             System.out.println("bayesImD node 0: " + bayesImD.getNode(0));
         }
 
@@ -464,7 +439,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             while ((j < nCComponents) && !flag) {
                 List<Node> cComponentNodesSj = cComponentNodes.get(j);
                 if (cComponentNodesSj.containsAll(cComponentNodesDi)) {
-                    if (debug) {
+                    if (this.debug) {
                         System.out.println("----- Di   Sj --------");
                         System.out.println(i + "   " + cComponentNodesDi
                                 + "    " + cComponentNodesSj);
@@ -478,7 +453,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
                     // fail: qD[i] not identifiable with this algorithm
                     if (qD[i] == null) {
-                        if (debug) {
+                        if (this.debug) {
                             System.out.println("----- FAIL qD[" + i
                                     + "] --------");
                         }
@@ -486,7 +461,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                         return -1.0;
                     }
 
-                    if (debug) {
+                    if (this.debug) {
                         System.out.println("======================== QList: qD["
                                 + i + "] =================");
                         qD[i].printQList(0, 0);
@@ -521,16 +496,16 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         qPTS.add(qDProducts, sumList(nNodes, dNodes, sNodes), true);
 
 
-        if (debug) {
+        if (this.debug) {
             System.out.println("***************************** QList: qPTS *******************");
             qPTS.printQList(0, 0);
         }
 
         // compute numeric value from the algebraic expression qPTS
-        if (debug) {
+        if (this.debug) {
             System.out.println("***************************** computeValue *******************");
         }
-        return qPTS.computeValue(bayesIm, fixedVarValues);
+        return qPTS.computeValue(this.bayesIm, fixedVarValues);
     }
 
     /////////////////////////////////////////////////////////////////
@@ -538,8 +513,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     //
 
     public double getMarginal(int variable, int value) {
-        int sVariables[] = {variable};
-        int sValues[] = {value};
+        int[] sVariables = {variable};
+        int[] sValues = {value};
         return getJointMarginal(sVariables, sValues);
     }
 
@@ -586,21 +561,6 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /**
      * Set the target proposition.
      */
-	/*
-	public final void setTargetProp(Proposition targetProp) {
-        if (targetProp == null) {
-            throw new NullPointerException();
-        }
-
-		if (!targetProp.getVariableSource().getVariable().equals(bayesIm.getVariable())) {
-            throw new IllegalArgumentException("The variable list for the " +
-				"given bayesIm must be compatible with the variable list " +
-				"for the targetProp.");
-        }
-		
-        this.targetProp	= targetProp;
-	}
-	 */
 
     //==============================PRIVATE METHODS=======================//
 
@@ -611,8 +571,8 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     private int[] getCComponents(BayesIm bayesIm) {
         int nNodes = bayesIm.getNumNodes();
 
-        int cComponents1[] = new int[nNodes];
-        int cComponents2[] = new int[nNodes];
+        int[] cComponents1 = new int[nNodes];
+        int[] cComponents2 = new int[nNodes];
 
         // initialize so that each node is in a separate component
         for (int i = 0; i < nNodes; i++) {
@@ -740,7 +700,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                     graphWhole.getNodeIndex(tierOrdering.get(i));
         }
 
-        if (debug) {
+        if (this.debug) {
             System.out.print("************************* QDecomposition: Tier ordering: ");
             for (int i = 0; i < tierSize; i++) {
                 System.out.print(graphWhole.getNode(tiers[i]) + "  ");
@@ -791,7 +751,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
                 qHj.add(qH, sumOverVariables, true);
 
-                if (debug) {
+                if (this.debug) {
                     System.out.println("************* QDecomposition: Q[H^i], sumOverVariables: ");
                     for (int i = 0; i < nNodes; i++) {
                         System.out.print(sumOverVariables[i] + "   ");
@@ -803,7 +763,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                 sumOverVariables[tiers[nodeHjTierIndex]] = 1;
                 qHj.add(qH, sumOverVariables, false);
 
-                if (debug) {
+                if (this.debug) {
                     System.out.println("************* QDecomposition: Q[H^{i-1}], sumOverVariables: ");
                     for (int i = 0; i < nNodes; i++) {
                         System.out.print(sumOverVariables[i] + "   ");
@@ -829,7 +789,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         for (Node node1 : bigSet) {
             if (!smallSet.contains(node1) &&
                     node1.getNodeType() == NodeType.MEASURED) {
-                sumOverVariables[bayesIm.getNodeIndex(node1)] = 1;
+                sumOverVariables[this.bayesIm.getNodeIndex(node1)] = 1;
             }
         }
 
@@ -842,18 +802,18 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     private QList identify(List<Node> nodesC,
                            List<Node> nodesT,
                            QList qT) {
-        Dag graphT = new Dag(bayesIm.getDag().subgraph(nodesT));
+        Dag graphT = new Dag(this.bayesIm.getDag().subgraph(nodesT));
 
         List<Node> nodesA = graphT.getAncestors(nodesC);
 
-        int nNodes = bayesIm.getNumNodes();
+        int nNodes = this.bayesIm.getNumNodes();
         QList qC = new QList(nNodes);
 
 
-        if (debug) {
+        if (this.debug) {
             System.out.println("-------------- identify -------------");
             System.out.println("----- bayesIm.getDag() -----");
-            System.out.println(bayesIm.getDag());
+            System.out.println(this.bayesIm.getDag());
             System.out.println("----- graphT -----");
             System.out.println(graphT);
             System.out.println("nodesC: " + nodesC);
@@ -879,7 +839,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         if (nodesC.containsAll(nodesA)) {
             qC.add(qT, sumList(nNodes, nodesT, nodesC), true);
 
-            if (debug) {
+            if (this.debug) {
                 System.out.println("***************** identify: QList: qC *****************");
                 qC.printQList(0, 0);
             }
@@ -891,7 +851,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         // else if (nodesA.equals(nodesT))
         // (see comments for the first "if" branch above)
         else if (nodesA.containsAll(nodesT)) {
-            if (debug) {
+            if (this.debug) {
                 System.out.println("----- FAIL: identify -----");
             }
 
@@ -900,11 +860,11 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
         /////////////////////////////////
         // must be: nodesC subset A subset T
-        Dag graphA = new Dag(bayesIm.getDag().subgraph(nodesA));
+        Dag graphA = new Dag(this.bayesIm.getDag().subgraph(nodesA));
 
         // construct an IM with the dag graphA
-        BayesPm bayesPmA = new BayesPm(graphA, bayesIm.getBayesPm());
-        BayesIm bayesImA = new MlBayesIm(bayesPmA, bayesIm, MlBayesIm.RANDOM);
+        BayesPm bayesPmA = new BayesPm(graphA, this.bayesIm.getBayesPm());
+        BayesIm bayesImA = new MlBayesIm(bayesPmA, this.bayesIm, MlBayesIm.RANDOM);
 
         // get c-components of graphA
         int[] cComponentsA = getCComponents(bayesImA);
@@ -914,7 +874,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         QList qA = new QList(nNodes);
         qA.add(qT, sumList(nNodes, nodesT, nodesA), true);
 
-        if (debug) {
+        if (this.debug) {
             System.out.println("***************** identify: QList: qA *****************");
             qC.printQList(0, 0);
         }
@@ -925,7 +885,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             List<Node> cComponentNodesT2 =
                     getCComponentNodes(bayesImA, cComponentsA, i);
 
-            if (debug) {
+            if (this.debug) {
                 System.out.println("identify Q[A]: i: " + i);
                 System.out.println("cComponentNodesT2: " + cComponentNodesT2);
                 System.out.println("cComponentNodesT2.containsAll(nodesC): " +
@@ -936,7 +896,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
 
                 // get Q[T2]
                 QList qT2 =
-                        qDecomposition(bayesIm, nodesA, cComponentNodesT2, qA);
+                        qDecomposition(this.bayesIm, nodesA, cComponentNodesT2, qA);
 
                 // recursive call to "identify"
                 return identify(nodesC, cComponentNodesT2, qT2);
@@ -952,25 +912,24 @@ public final class Identifiability implements ManipulatingBayesUpdater {
     /////////////////////////////////////////////////////////////////
 
     private BayesIm createdUpdatedBayesIm(BayesPm updatedBayesPm) {
-        return new MlBayesIm(updatedBayesPm, bayesIm, MlBayesIm.RANDOM);
+        return new MlBayesIm(updatedBayesPm, this.bayesIm, MlBayesIm.RANDOM);
     }
 
     private BayesPm createUpdatedBayesPm(Dag updatedGraph) {
-        return new BayesPm(updatedGraph, bayesIm.getBayesPm());
+        return new BayesPm(updatedGraph, this.bayesIm.getBayesPm());
     }
 
     private Dag createManipulatedGraph(Graph graph) {
         Dag updatedGraph = new Dag(graph);
 
         // alters graph for manipulated evidenceItems
-        for (int i = 0; i < evidence.getNumNodes(); ++i) {
-            if (evidence.isManipulated(i)) {
-                Node node = updatedGraph.getNode(evidence.getNode(i).getName());
+        for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
+            if (this.evidence.isManipulated(i)) {
+                Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
                 List<Node> parents = updatedGraph.getParents(node);
 
-                for (Object parent1 : parents) {
-                    Node parent = (Node) parent1;
-                    updatedGraph.removeEdge(node, parent);
+                for (Node parent1 : parents) {
+                    updatedGraph.removeEdge(node, parent1);
                 }
             }
         }
@@ -989,19 +948,16 @@ public final class Identifiability implements ManipulatingBayesUpdater {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (evidence == null) {
+        if (this.evidence == null) {
             throw new NullPointerException();
         }
     }

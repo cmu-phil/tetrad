@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -44,35 +44,35 @@ public class Mapping implements TetradSerializable {
      *
      * @serial Can't be null.
      */
-    private ISemIm semIm;
+    private final ISemIm semIm;
 
     /**
      * The parameter this mapping maps.
      *
      * @serial Can't be null.
      */
-    private Parameter parameter;
+    private final Parameter parameter;
 
     /**
      * The 2D double array whose element at (i, j) to be manipulated.
      *
      * @serial Can't be null.
      */
-    private Matrix a;
+    private final Matrix a;
 
     /**
      * The left-hand coordinate of a[i][j].
      *
      * @serial Any value.
      */
-    private int i;
+    private final int i;
 
     /**
      * The right-hand coordinate of a[i][j].
      *
      * @serial Any value.
      */
-    private int j;
+    private final int j;
 
     /**
      * Constructs matrix new mapping using the given freeParameters.
@@ -128,12 +128,12 @@ public class Mapping implements TetradSerializable {
                     "Variances cannot " + "have values <= 0.0: " + x);
         }
 
-        a.set(i, j, x);
+        this.a.set(this.i, this.j, x);
 
         if (getParameter().getType() == ParamType.VAR ||
                 getParameter().getType() == ParamType.COVAR) {
-            a.set(j, i, x);
-            a.set(i, j, x);
+            this.a.set(this.j, this.i, x);
+            this.a.set(this.i, this.j, x);
         }
     }
 
@@ -141,7 +141,7 @@ public class Mapping implements TetradSerializable {
      * @return the value of the array element at (i, j).
      */
     public double getValue() {
-        return a.get(i, j);
+        return this.a.get(this.i, this.j);
     }
 
     /**
@@ -157,7 +157,7 @@ public class Mapping implements TetradSerializable {
      */
     public String toString() {
         return "<" + getParameter().getName() + " " + getParameter().getType() +
-                "[" + i + "][" + j + "]>";
+                "[" + this.i + "][" + this.j + "]>";
     }
 
     /**
@@ -170,20 +170,10 @@ public class Mapping implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
-        if (semIm == null) {
-            throw new NullPointerException();
-        }
-
-        if (parameter == null) {
-            throw new NullPointerException();
-        }
     }
 }
 

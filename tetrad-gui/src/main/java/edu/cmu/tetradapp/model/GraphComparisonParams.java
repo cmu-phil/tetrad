@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -67,7 +67,7 @@ public class GraphComparisonParams extends SessionAdapter
      *
      * @serial True, false both OK.
      */
-    private boolean keepLatents = false;
+    private boolean keepLatents;
 
     /**
      * The name of the session model that has the true graph in it.
@@ -121,10 +121,6 @@ public class GraphComparisonParams extends SessionAdapter
         ContinuousVariable arrowptRec = new ContinuousVariable("ARROWPT_REC");
         ContinuousVariable shd = new ContinuousVariable("SHD");
 
-//        ContinuousVariable twoCycleCorrect = new ContinuousVariable("TC_COR");
-//        ContinuousVariable twoCycleFn = new ContinuousVariable("TC_FN");
-//        ContinuousVariable twoCycleFp = new ContinuousVariable("TC_FP");
-
         List<Node> variables = new LinkedList<>();
         variables.add(adjCorrect);
         variables.add(adjFn);
@@ -137,36 +133,33 @@ public class GraphComparisonParams extends SessionAdapter
         variables.add(arrowptPrec);
         variables.add(arrowptRec);
         variables.add(shd);
-//        variables.add(twoCycleCorrect);
-//        variables.add(twoCycleFn);
-//        variables.add(twoCycleFp);
 
-        dataSet = new BoxDataSet(new VerticalDoubleDataBox(0, variables.size()), variables);
-        dataSet.setNumberFormat(new DecimalFormat("0"));
+        this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(0, variables.size()), variables);
+        this.dataSet.setNumberFormat(new DecimalFormat("0"));
     }
 
     public void addRecord(GraphUtils.GraphComparison comparison) {
-        int newRow = dataSet.getNumRows();
-        dataSet.setDouble(newRow, 0, comparison.getAdjCor());
-        dataSet.setDouble(newRow, 1, comparison.getAdjFn());
-        dataSet.setDouble(newRow, 2, comparison.getAdjFp());
-        dataSet.setDouble(newRow, 3, comparison.getAhdCor());
-        dataSet.setDouble(newRow, 4, comparison.getAhdFn());
-        dataSet.setDouble(newRow, 5, comparison.getAhdFp());
-        dataSet.setDouble(newRow, 6, comparison.getAdjPrec());
-        dataSet.setDouble(newRow, 7, comparison.getAdjRec());
-        dataSet.setDouble(newRow, 8, comparison.getAhdPrec());
-        dataSet.setDouble(newRow, 9, comparison.getAhdRec());
-        dataSet.setDouble(newRow, 10, comparison.getShd());
+        int newRow = this.dataSet.getNumRows();
+        this.dataSet.setDouble(newRow, 0, comparison.getAdjCor());
+        this.dataSet.setDouble(newRow, 1, comparison.getAdjFn());
+        this.dataSet.setDouble(newRow, 2, comparison.getAdjFp());
+        this.dataSet.setDouble(newRow, 3, comparison.getAhdCor());
+        this.dataSet.setDouble(newRow, 4, comparison.getAhdFn());
+        this.dataSet.setDouble(newRow, 5, comparison.getAhdFp());
+        this.dataSet.setDouble(newRow, 6, comparison.getAdjPrec());
+        this.dataSet.setDouble(newRow, 7, comparison.getAdjRec());
+        this.dataSet.setDouble(newRow, 8, comparison.getAhdPrec());
+        this.dataSet.setDouble(newRow, 9, comparison.getAhdRec());
+        this.dataSet.setDouble(newRow, 10, comparison.getShd());
     }
 
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
 
     public boolean isResetTableOnExecute() {
-        return resetTableOnExecute;
+        return this.resetTableOnExecute;
     }
 
     public void setResetTableOnExecute(boolean resetTableOnExecute) {
@@ -174,7 +167,7 @@ public class GraphComparisonParams extends SessionAdapter
     }
 
     public boolean isKeepLatents() {
-        return keepLatents;
+        return this.keepLatents;
     }
 
     public void setKeepLatents(boolean keepLatents) {
@@ -186,7 +179,7 @@ public class GraphComparisonParams extends SessionAdapter
     }
 
     public String getReferenceGraphName() {
-        return referenceGraphName;
+        return this.referenceGraphName;
     }
 
     /**
@@ -198,9 +191,6 @@ public class GraphComparisonParams extends SessionAdapter
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -212,7 +202,7 @@ public class GraphComparisonParams extends SessionAdapter
     }
 
     public String getTargetGraphName() {
-        return targetGraphName;
+        return this.targetGraphName;
     }
 }
 

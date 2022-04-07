@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -56,7 +56,7 @@ public final class SimulationGraphEditor extends JPanel {
      * Constructs the editor. Edited by Zhou on 8/20/18
      */
     public SimulationGraphEditor(List<Graph> graphs) {
-        this.tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
+        this.tabbedPane = new JTabbedPane(SwingConstants.LEFT);
         this.graphs = graphs;
 
         setLayout(new BorderLayout());
@@ -73,8 +73,8 @@ public final class SimulationGraphEditor extends JPanel {
      *
      * @param graphs - The graphs to display now.
      */
-    public final void replace(List<Graph> graphs) {
-        tabbedPane.removeAll();
+    public void replace(List<Graph> graphs) {
+        this.tabbedPane.removeAll();
         setPreferredSize(new Dimension(600, 400));
 
         // now rebuild
@@ -85,12 +85,12 @@ public final class SimulationGraphEditor extends JPanel {
             // Do nothing.
         } else if (graphs.size() > 1) {
             for (int i = 0; i < graphs.size(); i++) {
-                this.tabbedPane.addTab(tabName(i + 1), new JScrollPane(graphDisplay(graphs.get(i))));
+                this.tabbedPane.addTab(SimulationGraphEditor.tabName(i + 1), new JScrollPane(graphDisplay(graphs.get(i))));
             }
 
             add(this.tabbedPane, BorderLayout.CENTER);
         } else {
-            this.tabbedPane.addTab(tabName(1), new JScrollPane(graphDisplay(graphs.get(0))));
+            this.tabbedPane.addTab(SimulationGraphEditor.tabName(1), new JScrollPane(graphDisplay(graphs.get(0))));
             add(this.tabbedPane, BorderLayout.CENTER);
 
         }
@@ -108,11 +108,11 @@ public final class SimulationGraphEditor extends JPanel {
 
         removeAll();
 
-        int selectedIndex = -1;
+        final int selectedIndex = -1;
 
-        for (int i = 0; i < graphs.size(); i++) {
-            Graph graph = graphs.get(i);
-            tabbedPane().addTab(tabName(i + 1), graphDisplay(graph));
+        for (int i = 0; i < this.graphs.size(); i++) {
+            Graph graph = this.graphs.get(i);
+            tabbedPane().addTab(SimulationGraphEditor.tabName(i + 1), graphDisplay(graph));
         }
 
         tabbedPane().setSelectedIndex(selectedIndex);
@@ -157,6 +157,6 @@ public final class SimulationGraphEditor extends JPanel {
     }
 
     private JTabbedPane tabbedPane() {
-        return tabbedPane;
+        return this.tabbedPane;
     }
 }

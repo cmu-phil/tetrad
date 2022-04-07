@@ -52,8 +52,6 @@ public class AlgorithmParameterPanel extends JPanel {
 
     private static final long serialVersionUID = 274638263704283474L;
 
-    protected static final String DEFAULT_TITLE_BORDER = "Algorithm Parameters";
-
     protected final JPanel mainPanel = new JPanel();
 
     public AlgorithmParameterPanel() {
@@ -61,14 +59,14 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     private void initComponents() {
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        this.mainPanel.setLayout(new BoxLayout(this.mainPanel, BoxLayout.Y_AXIS));
 
         setLayout(new BorderLayout());
-        add(mainPanel, BorderLayout.NORTH);
+        add(this.mainPanel, BorderLayout.NORTH);
     }
 
     public void addToPanel(GeneralAlgorithmRunner algorithmRunner) {
-        mainPanel.removeAll();
+        this.mainPanel.removeAll();
 
         Algorithm algorithm = algorithmRunner.getAlgorithm();
         Parameters parameters = algorithmRunner.getParameters();
@@ -84,18 +82,16 @@ public class AlgorithmParameterPanel extends JPanel {
             params.add(Params.MAX_PATH_LENGTH);
             params.add(Params.COMPLETE_RULE_SET_USED);
             params.add(Params.VERBOSE);
-            mainPanel.add(createSubPanel(title, params, parameters));
-            mainPanel.add(Box.createVerticalStrut(10));
+            this.mainPanel.add(createSubPanel(title, params, parameters));
+            this.mainPanel.add(Box.createVerticalStrut(10));
 
             // Stage one: PAG and constraints candidates Searching
             title = "Stage One: PAG and constraints candidates Searching";
             params = new LinkedHashSet<>();
             // Thresholds
             params.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
-            //params.add(Params.THRESHOLD_NO_RANDOM_DATA_SEARCH);
-            //params.add(Params.CUTOFF_DATA_SEARCH);
-            mainPanel.add(createSubPanel(title, params, parameters));
-            mainPanel.add(Box.createVerticalStrut(10));
+            this.mainPanel.add(createSubPanel(title, params, parameters));
+            this.mainPanel.add(Box.createVerticalStrut(10));
 
             // Stage two: Bayesian Scoring of Constraints
             title = "Stage Two: Bayesian Scoring of Constraints";
@@ -106,8 +102,8 @@ public class AlgorithmParameterPanel extends JPanel {
             params.add(Params.LOWER_BOUND);
             params.add(Params.UPPER_BOUND);
             params.add(Params.OUTPUT_RBD);
-            mainPanel.add(createSubPanel(title, params, parameters));
-            mainPanel.add(Box.createVerticalStrut(10));
+            this.mainPanel.add(createSubPanel(title, params, parameters));
+            this.mainPanel.add(Box.createVerticalStrut(10));
 
         } else {
             // add algorithm parameters
@@ -116,31 +112,31 @@ public class AlgorithmParameterPanel extends JPanel {
             if (!params.isEmpty()) {
                 String title = algorithm
                         .getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
-                mainPanel.add(createSubPanel(title, params, parameters));
-                mainPanel.add(Box.createVerticalStrut(10));
+                this.mainPanel.add(createSubPanel(title, params, parameters));
+                this.mainPanel.add(Box.createVerticalStrut(10));
             }
 
             params = Params.getScoreParameters(algorithm);
             if (!params.isEmpty()) {
                 String title = ((UsesScoreWrapper) algorithm).getScoreWrapper()
                         .getClass().getAnnotation(Score.class).name();
-                mainPanel.add(createSubPanel(title, params, parameters));
-                mainPanel.add(Box.createVerticalStrut(10));
+                this.mainPanel.add(createSubPanel(title, params, parameters));
+                this.mainPanel.add(Box.createVerticalStrut(10));
             }
 
             params = Params.getTestParameters(algorithm);
             if (!params.isEmpty()) {
                 String title = ((TakesIndependenceWrapper) algorithm).getIndependenceWrapper()
                         .getClass().getAnnotation(TestOfIndependence.class).name();
-                mainPanel.add(createSubPanel(title, params, parameters));
-                mainPanel.add(Box.createVerticalStrut(10));
+                this.mainPanel.add(createSubPanel(title, params, parameters));
+                this.mainPanel.add(Box.createVerticalStrut(10));
             }
 
             if (algorithmRunner.getSourceGraph() == null) {
                 params = Params.getBootstrappingParameters(algorithm);
                 if (!params.isEmpty()) {
-                    mainPanel.add(createSubPanel("Bootstrapping", params, parameters));
-                    mainPanel.add(Box.createVerticalStrut(10));
+                    this.mainPanel.add(createSubPanel("Bootstrapping", params, parameters));
+                    this.mainPanel.add(Box.createVerticalStrut(10));
                 }
             }
         }
@@ -228,9 +224,9 @@ public class AlgorithmParameterPanel extends JPanel {
         return panel;
     }
 
-    protected DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
-                                             double defaultValue, final double lowerBound, final double upperBound) {
-        final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
+    protected DoubleTextField getDoubleField(String parameter, Parameters parameters,
+                                             double defaultValue, double lowerBound, double upperBound) {
+        DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
         field.setFilter((value, oldValue) -> {
@@ -258,9 +254,9 @@ public class AlgorithmParameterPanel extends JPanel {
         return field;
     }
 
-    protected IntTextField getIntTextField(final String parameter, final Parameters parameters,
-                                           final int defaultValue, final double lowerBound, final double upperBound) {
-        final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
+    protected IntTextField getIntTextField(String parameter, Parameters parameters,
+                                           int defaultValue, double lowerBound, double upperBound) {
+        IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
             if (value == field.getValue()) {
@@ -287,32 +283,8 @@ public class AlgorithmParameterPanel extends JPanel {
         return field;
     }
 
-    // Joe's old implementation with dropdown yes or no
-    protected JComboBox getBooleanBox(final String parameter, final Parameters parameters, boolean defaultValue) {
-        JComboBox<String> box = new JComboBox<>(new String[]{"Yes", "No"});
-
-        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
-        if (aBoolean) {
-            box.setSelectedItem("Yes");
-        } else {
-            box.setSelectedItem("No");
-        }
-
-        box.addActionListener((e) -> {
-            if (((JComboBox) e.getSource()).getSelectedItem().equals("Yes")) {
-                parameters.set(parameter, true);
-            } else {
-                parameters.set(parameter, false);
-            }
-        });
-
-        box.setMaximumSize(box.getPreferredSize());
-
-        return box;
-    }
-
     // Zhou's new implementation with yes/no radio buttons
-    protected Box getBooleanSelectionBox(final String parameter, final Parameters parameters, boolean defaultValue) {
+    protected Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
         JRadioButton yesButton = new JRadioButton("Yes");
@@ -355,8 +327,8 @@ public class AlgorithmParameterPanel extends JPanel {
         return selectionBox;
     }
 
-    protected StringTextField getStringField(final String parameter, final Parameters parameters, String defaultValue) {
-        final StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
+    protected StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+        StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
         field.setFilter((value, oldValue) -> {
             if (value.equals(field.getValue().trim())) {

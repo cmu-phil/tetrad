@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
 
+import java.io.IOException;
+
 /**
  * Implements a space-efficient symmetric matrix
  * (of elements of type <code>short</code>),
@@ -29,10 +31,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 public class SymMatrixF extends LTMatrixF {
 
     /**
@@ -45,7 +43,7 @@ public class SymMatrixF extends LTMatrixF {
     /**
      * Creates a symmetric matrix reading it from file <code>fname</code>.
      */
-    public SymMatrixF(String fname) throws FileNotFoundException, IOException {
+    public SymMatrixF(String fname) throws IOException {
         super(fname);
     }
 

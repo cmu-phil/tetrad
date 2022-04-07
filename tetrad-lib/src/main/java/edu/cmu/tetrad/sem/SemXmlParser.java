@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -50,11 +50,11 @@ public class SemXmlParser {
         Element jointDistributionElement = semImElement.getFirstChildElement(SemXmlConstants.JOINT_ERROR_DISTRIBUTION);
 
 
-        Dag graph = makeVariables(variablesElement);
-        SemIm im = makeEdges(edgesElement, graph);
-        setNodeMeans(variablesElement, im);
-        addMarginalErrorDistribution(marginalDistributionElement, im);
-        addJointErrorDistribution(jointDistributionElement, im);
+        Dag graph = SemXmlParser.makeVariables(variablesElement);
+        SemIm im = SemXmlParser.makeEdges(edgesElement, graph);
+        SemXmlParser.setNodeMeans(variablesElement, im);
+        SemXmlParser.addMarginalErrorDistribution(marginalDistributionElement, im);
+        SemXmlParser.addJointErrorDistribution(jointDistributionElement, im);
 
         return im;
     }
@@ -66,7 +66,7 @@ public class SemXmlParser {
         }
         Element var;
         GraphNode node;
-        Integer x, y;
+        int x, y;
         Dag semGraph = new Dag();
         Elements vars = variablesElement.getChildElements(SemXmlConstants.CONTINUOUS_VARIABLE);
 
@@ -78,8 +78,8 @@ public class SemXmlParser {
             } else {
                 node.setNodeType(NodeType.MEASURED);
             }
-            x = new Integer(var.getAttributeValue(SemXmlConstants.X));
-            y = new Integer(var.getAttributeValue(SemXmlConstants.Y));
+            x = Integer.parseInt(var.getAttributeValue(SemXmlConstants.X));
+            y = Integer.parseInt(var.getAttributeValue(SemXmlConstants.Y));
             node.setCenterX(x);
             node.setCenterY(y);
             semGraph.addNode(node);

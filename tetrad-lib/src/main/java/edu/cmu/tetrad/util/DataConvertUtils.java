@@ -47,13 +47,13 @@ public class DataConvertUtils {
 
     public static DataModel toDataModel(Data data, Metadata metadata) {
         if (data instanceof ContinuousData) {
-            return toContinuousDataModel((ContinuousData) data);
+            return DataConvertUtils.toContinuousDataModel((ContinuousData) data);
         } else if (data instanceof VerticalDiscreteTabularData) {
-            return toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data, metadata);
+            return DataConvertUtils.toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data, metadata);
         } else if (data instanceof MixedTabularData) {
-            return toMixedDataBox((MixedTabularData) data, metadata);
+            return DataConvertUtils.toMixedDataBox((MixedTabularData) data, metadata);
         } else if (data instanceof CovarianceData) {
-            return toCovarianceMatrix((CovarianceData) data);
+            return DataConvertUtils.toCovarianceMatrix((CovarianceData) data);
         } else {
             return null;
         }
@@ -61,20 +61,20 @@ public class DataConvertUtils {
 
     public static DataModel toDataModel(Data data) {
         if (data instanceof ContinuousData) {
-            return toContinuousDataModel((ContinuousData) data);
+            return DataConvertUtils.toContinuousDataModel((ContinuousData) data);
         } else if (data instanceof VerticalDiscreteTabularData) {
-            return toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data);
+            return DataConvertUtils.toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data);
         } else if (data instanceof MixedTabularData) {
-            return toMixedDataBox((MixedTabularData) data);
+            return DataConvertUtils.toMixedDataBox((MixedTabularData) data);
         } else if (data instanceof CovarianceData) {
-            return toCovarianceMatrix((CovarianceData) data);
+            return DataConvertUtils.toCovarianceMatrix((CovarianceData) data);
         } else {
             return null;
         }
     }
 
     public static DataModel toCovarianceMatrix(CovarianceData dataset) {
-        List<Node> variables = toNodes(dataset.getVariables());
+        List<Node> variables = DataConvertUtils.toNodes(dataset.getVariables());
         Matrix matrix = new Matrix(dataset.getData());
         int sampleSize = dataset.getNumberOfCases();
 
@@ -84,9 +84,6 @@ public class DataConvertUtils {
     /**
      * Converting using metadata
      *
-     * @param dataset
-     * @param metadata
-     * @return
      */
     public static DataModel toMixedDataBox(MixedTabularData dataset, Metadata metadata) {
         int numOfRows = dataset.getNumOfRows();
@@ -134,13 +131,9 @@ public class DataConvertUtils {
     /**
      * Converting using metadata
      *
-     * @param dataset
-     * @param metatdata
-     * @return
      */
     public static DataModel toVerticalDiscreteDataModel(VerticalDiscreteTabularData dataset, Metadata metatdata) {
-        Node[] nodes = toNodes(dataset.getDataColumns()).stream()
-                .toArray(Node[]::new);
+        Node[] nodes = DataConvertUtils.toNodes(dataset.getDataColumns()).toArray(new Node[0]);
 
         metatdata.getInterventionalColumns().forEach(e -> {
             ColumnMetadata valueColumn = e.getValueColumn();
@@ -162,14 +155,14 @@ public class DataConvertUtils {
 
     public static DataModel toVerticalDiscreteDataModel(VerticalDiscreteTabularData dataset) {
         DataBox dataBox = new VerticalIntDataBox(dataset.getData());
-        List<Node> variables = toNodes(dataset.getDataColumns());
+        List<Node> variables = DataConvertUtils.toNodes(dataset.getDataColumns());
 
         return new BoxDataSet(dataBox, variables);
     }
 
     public static DataModel toContinuousDataModel(ContinuousData dataset) {
         DataBox dataBox = new DoubleDataBox(dataset.getData());
-        List<Node> variables = toNodes(dataset.getDataColumns());
+        List<Node> variables = DataConvertUtils.toNodes(dataset.getDataColumns());
 
         return new BoxDataSet(dataBox, variables);
     }

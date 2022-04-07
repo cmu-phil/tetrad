@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -31,8 +31,6 @@ import edu.cmu.tetradapp.workbench.IDisplayEdge;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.rmi.MarshalledObject;
 import java.util.Collections;
 import java.util.List;
@@ -64,46 +62,42 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     public SessionEditorWorkbench(SessionWrapper sessionWrapper) {
         super(sessionWrapper);
 
-        sessionWrapper.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                String propertyName = e.getPropertyName();
+        sessionWrapper.addPropertyChangeListener(e -> {
+            String propertyName = e.getPropertyName();
 
-                if ("name".equals(propertyName)) {
-                    firePropertyChange("name", e.getOldValue(),
-                            e.getNewValue());
-                }
+            if ("name".equals(propertyName)) {
+                firePropertyChange("name", e.getOldValue(),
+                        e.getNewValue());
             }
         });
 
-        super.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("cloneMe".equals(evt.getPropertyName())) {
-                    SessionEditorNode sessionEditorNode
-                            = (SessionEditorNode) evt.getNewValue();
-                    SessionNodeWrapper wrapper
-                            = (SessionNodeWrapper) sessionEditorNode.getModelNode();
-                    Object result;
-                    try {
-                        result = new MarshalledObject(wrapper).get();
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                        throw new IllegalStateException("Could not clone.");
-                    }
-                    SessionNodeWrapper clone = (SessionNodeWrapper) result;
-                    List sessionElements = Collections.singletonList(clone);
-                    Point point = EditorUtils.getTopLeftPoint(sessionElements);
-                    point.translate(50, 50);
-
-                    SessionWrapper sessionWrapper = (SessionWrapper) getGraph();
-                    deselectAll();
-                    sessionWrapper.pasteSubsession(sessionElements, point);
-
-                    selectNode(clone);
+        this.addPropertyChangeListener(evt -> {
+            if ("cloneMe".equals(evt.getPropertyName())) {
+                SessionEditorNode sessionEditorNode
+                        = (SessionEditorNode) evt.getNewValue();
+                SessionNodeWrapper wrapper
+                        = (SessionNodeWrapper) sessionEditorNode.getModelNode();
+                Object result;
+                try {
+                    result = new MarshalledObject(wrapper).get();
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                    throw new IllegalStateException("Could not clone.");
                 }
+                SessionNodeWrapper clone = (SessionNodeWrapper) result;
+                List sessionElements = Collections.singletonList(clone);
+                Point point = EditorUtils.getTopLeftPoint(sessionElements);
+                point.translate(50, 50);
+
+                SessionWrapper sessionWrapper1 = (SessionWrapper) getGraph();
+                deselectAll();
+                sessionWrapper1.pasteSubsession(sessionElements, point);
+
+                selectNode(clone);
             }
         });
 
-        List nodes = getGraph().getNodes();
+        List<Node> nodes = getGraph().getNodes();
 
         for (Object node1 : nodes) {
             SessionNodeWrapper node = (SessionNodeWrapper) node1;
@@ -119,7 +113,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * @return a SessionNodeWrapper for a new SessionNode, the type of which is
      * determined by the next button type, and the name of which is the next
      * button type (a String) appended with the next available positive integer.
-     * @see #getNextButtonType
      */
     public Node getNewModelNode() {
         if (this.nextButtonType == null) {
@@ -127,8 +120,8 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
                     "Next button type must be a " + "non-null string.");
         }
 
-        String name = nextUniqueName(this.nextButtonType, getGraph());
-        Class[] modelClasses = getModelClasses(this.nextButtonType);
+        String name = SessionEditorWorkbench.nextUniqueName(this.nextButtonType, getGraph());
+        Class[] modelClasses = SessionEditorWorkbench.getModelClasses(this.nextButtonType);
         SessionNode newNode
                 = new SessionNode(this.nextButtonType, name, modelClasses);
 
@@ -192,19 +185,17 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      * session wrapper.
      */
     public void setSessionWrapper(SessionWrapper sessionWrapper) {
-        super.setGraph(sessionWrapper);
+        this.setGraph(sessionWrapper);
 
         // Force simulation edu.cmu.tetrad.study to be recreated.
         this.simulationStudy = null;
 
-        sessionWrapper.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                String propertyName = e.getPropertyName();
+        sessionWrapper.addPropertyChangeListener(e -> {
+            String propertyName = e.getPropertyName();
 
-                if ("name".equals(propertyName)) {
-                    firePropertyChange("name", e.getOldValue(),
-                            e.getNewValue());
-                }
+            if ("name".equals(propertyName)) {
+                firePropertyChange("name", e.getOldValue(),
+                        e.getNewValue());
             }
         });
     }
@@ -222,21 +213,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
         }
 
         return this.simulationStudy;
-    }
-
-    /**
-     * @return the button type of the next node to be constructed; this will be
-     * the base for the next node's name (for instance "base1", "base2", ...),
-     * and it will be String key for looking up the possible model classes for
-     * the node.
-     */
-    public String getNextButtonType() {
-        if (this.nextButtonType == null) {
-            throw new NullPointerException("getNextButtonType() was called "
-                    + "when there was no next button type set.");
-        }
-
-        return this.nextButtonType;
     }
 
     /**
@@ -314,15 +290,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
             }
         }
 
-//        for (Object key : getModelNodesToDisplay().keySet()) {
-//            if (key instanceof SessionNodeWrapper) {
-//                SessionNodeWrapper wrapper = (SessionNodeWrapper) key;
-//
-//                if (wrapper.getSessionNode() == sessionNode) {
-//                    return wrapper;
-//                }
-//            }
-//        }
         throw new NullPointerException("Session node wrapper not in map.");
     }
 
@@ -358,10 +325,8 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
             i++;
             String name = base + i;
 
-            for (Object o : graph.getNodes()) {
-                Node node = (Node) (o);
-
-                if (node.getName().equals(name)) {
+            for (Node o : graph.getNodes()) {
+                if (o.getName().equals(name)) {
                     continue loop;
                 }
             }

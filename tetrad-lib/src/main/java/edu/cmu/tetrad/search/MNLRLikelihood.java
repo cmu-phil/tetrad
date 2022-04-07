@@ -88,8 +88,8 @@ public class MNLRLikelihood {
         this.structurePrior = structurePrior;
         this.fDegree = fDegree;
 
-        continuousData = new double[dataSet.getNumColumns()][];
-        discreteData = new int[dataSet.getNumColumns()][];
+        this.continuousData = new double[dataSet.getNumColumns()][];
+        this.discreteData = new int[dataSet.getNumColumns()][];
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
             if (v instanceof ContinuousVariable) {
@@ -97,20 +97,20 @@ public class MNLRLikelihood {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     col[i] = dataSet.getDouble(i, j);
                 }
-                continuousData[j] = col;
+                this.continuousData[j] = col;
             } else if (v instanceof DiscreteVariable) {
                 int[] col = new int[dataSet.getNumRows()];
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     col[i] = dataSet.getInt(i, j);
                 }
-                discreteData[j] = col;
+                this.discreteData[j] = col;
             }
         }
 
-        nodesHash = new HashMap<>();
+        this.nodesHash = new HashMap<>();
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
-            nodesHash.put(v, j);
+            this.nodesHash.put(v, j);
         }
 
         this.adTree = new AdLeafTree(dataSet);
@@ -153,11 +153,11 @@ public class MNLRLikelihood {
     public double getLik(int child_index, int[] parents) {
 
         double lik = 0;
-        Node c = variables.get(child_index);
+        Node c = this.variables.get(child_index);
         List<ContinuousVariable> continuous_parents = new ArrayList<>();
         List<DiscreteVariable> discrete_parents = new ArrayList<>();
         for (int p : parents) {
-            Node parent = variables.get(p);
+            Node parent = this.variables.get(p);
             if (parent instanceof ContinuousVariable) {
                 continuous_parents.add((ContinuousVariable) parent);
             } else {
@@ -167,11 +167,11 @@ public class MNLRLikelihood {
 
         int p = continuous_parents.size();
 
-        List<List<Integer>> cells = adTree.getCellLeaves(discrete_parents);
+        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
         //List<List<Integer>> cells = partition(discrete_parents);
 
         int[] continuousCols = new int[p];
-        for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
+        for (int j = 0; j < p; j++) continuousCols[j] = this.nodesHash.get(continuous_parents.get(j));
 
         for (List<Integer> cell : cells) {
             int r = cell.size();
@@ -181,8 +181,8 @@ public class MNLRLikelihood {
                 double[] var = new double[p];
                 for (int i = 0; i < p; i++) {
                     for (Integer integer : cell) {
-                        mean[i] += continuousData[continuousCols[i]][integer];
-                        var[i] += Math.pow(continuousData[continuousCols[i]][integer], 2);
+                        mean[i] += this.continuousData[continuousCols[i]][integer];
+                        var[i] += Math.pow(this.continuousData[continuousCols[i]][integer], 2);
                     }
                     mean[i] /= r;
                     var[i] /= r;
@@ -194,8 +194,8 @@ public class MNLRLikelihood {
                     }
                 }
 
-                int degree = fDegree;
-                if (fDegree < 1) {
+                int degree = this.fDegree;
+                if (this.fDegree < 1) {
                     degree = (int) Math.floor(Math.log(r));
                 }
                 Matrix subset = new Matrix(r, p * degree + 1);
@@ -203,7 +203,7 @@ public class MNLRLikelihood {
                     subset.set(i, p * degree, 1);
                     for (int j = 0; j < p; j++) {
                         for (int d = 0; d < degree; d++) {
-                            subset.set(i, p * d + j, Math.pow((continuousData[continuousCols[j]][cell.get(i)] - mean[j]) / var[j], d + 1));
+                            subset.set(i, p * d + j, Math.pow((this.continuousData[continuousCols[j]][cell.get(i)] - mean[j]) / var[j], d + 1));
                         }
                     }
                 }
@@ -211,7 +211,7 @@ public class MNLRLikelihood {
                 if (c instanceof ContinuousVariable) {
                     Vector target = new Vector(r);
                     for (int i = 0; i < r; i++) {
-                        target.set(i, continuousData[child_index][cell.get(i)]);
+                        target.set(i, this.continuousData[child_index][cell.get(i)]);
                     }
                     lik += multipleRegression(target, subset);
                 } else {
@@ -220,7 +220,7 @@ public class MNLRLikelihood {
                         for (int j = 0; j < ((DiscreteVariable) c).getNumCategories(); j++) {
                             target.set(i, j, -1);
                         }
-                        target.set(i, discreteData[child_index][cell.get(i)], 1);
+                        target.set(i, this.discreteData[child_index][cell.get(i)], 1);
                     }
                     lik += MultinomialLogisticRegression(target, subset);
                 }
@@ -233,11 +233,11 @@ public class MNLRLikelihood {
     public double getDoF(int child_index, int[] parents) {
 
         double dof = 0;
-        Node c = variables.get(child_index);
+        Node c = this.variables.get(child_index);
         List<ContinuousVariable> continuous_parents = new ArrayList<>();
         List<DiscreteVariable> discrete_parents = new ArrayList<>();
         for (int p : parents) {
-            Node parent = variables.get(p);
+            Node parent = this.variables.get(p);
             if (parent instanceof ContinuousVariable) {
                 continuous_parents.add((ContinuousVariable) parent);
             } else {
@@ -245,20 +245,14 @@ public class MNLRLikelihood {
             }
         }
 
-//        int p = continuous_parents.size();
-
-        List<List<Integer>> cells = adTree.getCellLeaves(discrete_parents);
-        //List<List<Integer>> cells = partition(discrete_parents, 0).cells;
-
-//        int[] continuousCols = new int[p];
-//        for (int j = 0; j < p; j++) continuousCols[j] = nodesHash.get(continuous_parents.get(j));
+        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
 
         for (List<Integer> cell : cells) {
             int r = cell.size();
             if (r > 0) {
 
-                int degree = fDegree;
-                if (fDegree < 1) {
+                int degree = this.fDegree;
+                if (this.fDegree < 1) {
                     degree = (int) Math.floor(Math.log(r));
                 }
                 if (c instanceof ContinuousVariable) {
@@ -274,14 +268,14 @@ public class MNLRLikelihood {
 
     public double getStructurePrior(int k) {
 
-        if (structurePrior < 0) {
+        if (this.structurePrior < 0) {
             return getEBICprior();
         }
 
-        double n = dataSet.getNumColumns() - 1;
-        double p = structurePrior / n;
+        double n = this.dataSet.getNumColumns() - 1;
+        double p = this.structurePrior / n;
 
-        if (structurePrior == 0) {
+        if (this.structurePrior == 0) {
             return 0;
         }
         return k * Math.log(p) + (n - k) * Math.log(1 - p);
@@ -290,8 +284,8 @@ public class MNLRLikelihood {
 
     public double getEBICprior() {
 
-        double n = dataSet.getNumColumns();
-        double gamma = -structurePrior;
+        double n = this.dataSet.getNumColumns();
+        double gamma = -this.structurePrior;
         return gamma * Math.log(n);
 
     }
@@ -308,9 +302,9 @@ public class MNLRLikelihood {
                 problem.x[i][j] = new FeatureNode(j + 1, subset.get(i, j));
             }
         }
-        SolverType solver = SolverType.L2R_LR; // -s 0
-        double C = 1.0;    // cost of constraints violation
-        double eps = 1e-4; // stopping criteria
+        final SolverType solver = SolverType.L2R_LR; // -s 0
+        final double C = 1.0;    // cost of constraints violation
+        final double eps = 1e-4; // stopping criteria
         Parameter parameter = new Parameter(solver, C, eps);
         ArrayList<Model> models = new ArrayList<>();
         double lik = 0;
@@ -318,10 +312,10 @@ public class MNLRLikelihood {
         double den;
 
         for (int i = 0; i < targets.columns(); i++) {
-            System.setOut(nullout);
+            System.setOut(this.nullout);
             problem.y = targets.getColumn(i).toArray(); // target values
             models.add(i, Linear.train(problem, parameter));
-            System.setOut(original);
+            System.setOut(this.original);
         }
 
         for (int j = 0; j < problem.l; j++) {

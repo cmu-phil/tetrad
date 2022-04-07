@@ -31,9 +31,6 @@ public class SHD implements Statistic {
     }
 
     @Override
-    /**
-     * This will be given the index of the SHD stat.
-     */
     public double getNormValue(double value) {
         return 1.0 - Math.tanh(0.001 * value);
     }

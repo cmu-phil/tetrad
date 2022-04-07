@@ -27,14 +27,14 @@ import java.util.List;
  */
 public interface DiscreteDataColumn {
 
-    public Integer getEncodeValue(String value);
+    Integer getEncodeValue(String value);
 
-    public void recategorize();
+    void recategorize();
 
-    public List<String> getCategories();
+    List<String> getCategories();
 
-    public DataColumn getDataColumn();
+    DataColumn getDataColumn();
 
-    public void setValue(String value);
+    void setValue(String value);
 
 }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -28,9 +28,9 @@ import java.util.List;
 
 public class PermutationMatrixPair {
 
-    private Matrix matrixW;
+    private final Matrix matrixW;
     private DataSet matrixBhat;
-    private List<Integer> permutation;
+    private final List<Integer> permutation;
 
     public PermutationMatrixPair(List<Integer> permutation, Matrix matrixW) {
         this.permutation = permutation;
@@ -38,11 +38,11 @@ public class PermutationMatrixPair {
     }
 
     public Matrix getMatrixW() {
-        return matrixW;
+        return this.matrixW;
     }
 
     public DataSet getMatrixBhat() {
-        return matrixBhat;
+        return this.matrixBhat;
     }
 
     public void setMatrixBhat(DataSet matrixBhat) {
@@ -50,16 +50,11 @@ public class PermutationMatrixPair {
     }
 
     public List<Integer> getPermutation() {
-        return permutation;
+        return this.permutation;
     }
 
     public String toString() {
-        StringBuilder buf = new StringBuilder();
-
-        buf.append("Permutation: " + permutation);
-        buf.append("matrix W : " + matrixW);
-
-        return buf.toString();
+        return "Permutation: " + this.permutation + "matrix W : " + this.matrixW;
     }
 }
 

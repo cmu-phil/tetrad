@@ -11,7 +11,7 @@ public class HsimSchedule {
         //parameter: set of positive integers, which are resimSize values.
         List<Integer> schedule = Arrays.asList(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5);
 
-        boolean verbose = false;//set this to true if you want HsimautoRun to report information
+        final boolean verbose = false;//set this to true if you want HsimautoRun to report information
         double[] evalTotal;
         evalTotal = new double[5];
         evalTotal[0] = 0;

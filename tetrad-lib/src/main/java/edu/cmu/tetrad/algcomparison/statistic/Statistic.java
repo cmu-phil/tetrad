@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @author jdramsey
  */
 public interface Statistic extends Serializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * The abbreviation for the statistic. This will be printed at the top of each
@@ -34,7 +34,6 @@ public interface Statistic extends Serializable {
      *
      * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph  The estimated graph (same type).
-     * @param dataModel
      * @return The value of the statistic.
      */
     double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel);

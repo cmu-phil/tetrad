@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,11 +46,6 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
      * clipboard.
      */
     public GraphPropertiesAction(GraphWorkbench workbench) {
-        super("Graph Properties");
-        this.workbench = workbench;
-    }
-
-    public GraphPropertiesAction(Graph graph, GraphWorkbench workbench) {
         super("Graph Properties");
         this.workbench = workbench;
     }
@@ -103,16 +98,16 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(300, 300));
 
-        textArea.append("\nNumber of nodes: " + String.valueOf(getGraph().getNumNodes()));
-        textArea.append("\nNumber of latents: " + String.valueOf(numLatents));
-        textArea.append("\nNumber of edges: " + String.valueOf(getGraph().getNumEdges()));
-        textArea.append("\nNumber of directed edges: " + String.valueOf(numDirectedEdges));
-        textArea.append("\nNumber of bidirected edges: " + String.valueOf(numBidirectedEdges));
-        textArea.append("\nNumber of undirected edges: " + String.valueOf(numUndirectedEdges));
-        textArea.append("\nMax degree: " + String.valueOf(getGraph().getConnectivity()));
-        textArea.append("\nMax indegree: " + String.valueOf(maxIndegree));
-        textArea.append("\nMax outdegree: " + String.valueOf(maxOutdegree));
-        textArea.append("\nNumber of latents: " + String.valueOf(numLatents));
+        textArea.append("\nNumber of nodes: " + getGraph().getNumNodes());
+        textArea.append("\nNumber of latents: " + numLatents);
+        textArea.append("\nNumber of edges: " + getGraph().getNumEdges());
+        textArea.append("\nNumber of directed edges: " + numDirectedEdges);
+        textArea.append("\nNumber of bidirected edges: " + numBidirectedEdges);
+        textArea.append("\nNumber of undirected edges: " + numUndirectedEdges);
+        textArea.append("\nMax degree: " + getGraph().getConnectivity());
+        textArea.append("\nMax indegree: " + maxIndegree);
+        textArea.append("\nMax outdegree: " + maxOutdegree);
+        textArea.append("\nNumber of latents: " + numLatents);
         textArea.append("\n" + (cyclic ? "Cyclic" : "Acyclic"));
 
         Box b2 = Box.createHorizontalBox();
@@ -143,7 +138,7 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
     }
 
     public Graph getGraph() {
-        return workbench.getGraph();
+        return this.workbench.getGraph();
     }
 }
 

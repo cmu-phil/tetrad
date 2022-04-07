@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,7 +23,6 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.ideker;
 
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -39,7 +38,7 @@ public class ItkPredictorSearch {
     String[] names;
     int[][] expression;
 
-    public class Gene implements Comparable {
+    public static class Gene implements Comparable {
         int gene;
 
         public Gene(int gene) {
@@ -47,7 +46,7 @@ public class ItkPredictorSearch {
         }
 
         public int getIndex() {
-            return gene;
+            return this.gene;
         }
 
         public int compareTo(Object o) {
@@ -74,32 +73,32 @@ public class ItkPredictorSearch {
 
     public void predictor(int gene) {
 
-        SortedSet[][] S = new TreeSet[nrows][nrows];
-        Gene[] G = new Gene[ngenes];
+        SortedSet[][] S = new TreeSet[this.nrows][this.nrows];
+        Gene[] G = new Gene[this.ngenes];
 
-        System.out.println("For gene " + names[gene] + ":");
+        System.out.println("For gene " + this.names[gene] + ":");
 
-        for (int i = 0; i < nrows; i++) {
-            for (int j = 0; j < nrows; j++) {
+        for (int i = 0; i < this.nrows; i++) {
+            for (int j = 0; j < this.nrows; j++) {
                 S[i][j] = new TreeSet();
             }
         }
 
-        for (int k = 0; k < ngenes; k++) {
+        for (int k = 0; k < this.ngenes; k++) {
             G[k] = new Gene(k);
         }
 
         //Consider all pairs of rows of the expression matrix.
-        ChoiceGenerator cg = new ChoiceGenerator(ngenes, 2);
+        ChoiceGenerator cg = new ChoiceGenerator(this.ngenes, 2);
         int[] rows;
 
         while ((rows = cg.next()) != null) {
 
             //Exclude row pairs in which the given gene was perturbed.
-            if (expression[rows[0]][gene] == -1 ||
-                    expression[rows[0]][gene] == 2 ||
-                    expression[rows[1]][gene] == -1 ||
-                    expression[rows[1]][gene] == 2) {
+            if (this.expression[rows[0]][gene] == -1 ||
+                    this.expression[rows[0]][gene] == 2 ||
+                    this.expression[rows[1]][gene] == -1 ||
+                    this.expression[rows[1]][gene] == 2) {
                 continue;
             }
 
@@ -111,7 +110,7 @@ public class ItkPredictorSearch {
 
             //Find the set of other genes whose expression level differs
             //between the two perturbations.
-            for (int gother = 0; gother < ngenes; gother++) {
+            for (int gother = 0; gother < this.ngenes; gother++) {
                 if (gother == gene) {
                     continue;  //Don't test this gene
                 }
@@ -123,23 +122,23 @@ public class ItkPredictorSearch {
             }
 
             System.out.print("sem" + rows[0] + rows[1] + " = ");
-            for (Iterator it = S[rows[0]][rows[1]].iterator(); it.hasNext(); ) {
-                System.out.print(((Gene) it.next()).getIndex());
+            for (Object o : S[rows[0]][rows[1]]) {
+                System.out.print(((Gene) o).getIndex());
             }
             System.out.println();
 
         }
 
         int sum = 0;
-        for (int i = 0; i < nrows; i++) {
-            for (int j = 0; j < nrows; j++) {
+        for (int i = 0; i < this.nrows; i++) {
+            for (int j = 0; j < this.nrows; j++) {
                 sum += S[i][j].size();
             }
         }
 
         if (sum == 0) {
             System.out.println(
-                    "Insufficient perturbations for gene " + names[gene]);
+                    "Insufficient perturbations for gene " + this.names[gene]);
             System.out.println();
             return;
         }
@@ -206,9 +205,6 @@ public class ItkPredictorSearch {
                 }
             }
 
-            //System.out.println("index = " + subSetIndex + " subset = ");
-            //display(subSet);
-
             sizes[subSetIndex] = subSet.size();
             if (sizes[subSetIndex] > minSize) {
                 continue;
@@ -260,9 +256,6 @@ public class ItkPredictorSearch {
             }
         }
 
-        //for(int i = 0; i < coveringSets.length; i++) {
-        //  display(coveringSets[i]);
-        //}
         return coveringSets;
     }
 
@@ -288,7 +281,7 @@ public class ItkPredictorSearch {
         }
 
         for (Gene value1 : s) {
-            System.out.print(names[value1.getIndex()] + " ");
+            System.out.print(this.names[value1.getIndex()] + " ");
         }
         System.out.println("f");
 
@@ -296,17 +289,17 @@ public class ItkPredictorSearch {
             byte[] b = booleanRepresentation(i, n);
 
             row:
-            for (int j = 0; j < nrows; j++) {
-                if (expression[j][g] == -1 || expression[j][g] == 2) {
+            for (int j = 0; j < this.nrows; j++) {
+                if (this.expression[j][g] == -1 || this.expression[j][g] == 2) {
                     continue;
                 }
                 for (int k = 0; k < n; k++) {
                     //if(expression[j][ss[k]] != b[k]) continue row;
-                    if (differExpressions(expression[j][ss[k]], (int) b[k])) {
+                    if (differExpressions(this.expression[j][ss[k]], b[k])) {
                         continue row;
                     }
                 }
-                f[i] = expression[j][g];
+                f[i] = this.expression[j][g];
             }
 
             for (int k = 0; k < n; k++) {
@@ -341,15 +334,13 @@ public class ItkPredictorSearch {
      * returns true if they do differ and false otherwise.
      */
     public boolean differByPerturbation(int gene, int p0, int p1) {
-        return !(expression[p0][gene] == expression[p1][gene] ||
-                (expression[p0][gene] == -1 && expression[p1][gene] == 0) ||
-                (expression[p1][gene] == -1 && expression[p0][gene] == 0) ||
-                (expression[p0][gene] * expression[p1][gene] == 2));
+        return !(this.expression[p0][gene] == this.expression[p1][gene] ||
+                (this.expression[p0][gene] == -1 && this.expression[p1][gene] == 0) ||
+                (this.expression[p1][gene] == -1 && this.expression[p0][gene] == 0) ||
+                (this.expression[p0][gene] * this.expression[p1][gene] == 2));
     }
 
     public boolean differExpressions(int e1, int e2) {
-//        return !((e1 == e2) || (e1 == -1 && e2 == 0) || (e2 == -1 && e2 == 0) ||
-//                (e1 * e2 == 2));
         return true;
     }
 

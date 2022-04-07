@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -50,17 +50,17 @@ public class FasDci {
      * adjacencies of x are in this graph for every node x. It is hoped (i.e. true in the large sample limit) that true
      * adjacencies are never removed.
      */
-    private Graph graph;
+    private final Graph graph;
 
     /**
      * The variables in the dataset.
      */
-    private Set<Node> variables = new HashSet<>();
+    private final Set<Node> variables = new HashSet<>();
 
     /**
      * The independence tests for each dataset. This should be appropriate to the data.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Specification of which edges are forbidden or required. NOTE: to be implemented later
@@ -106,7 +106,7 @@ public class FasDci {
     /**
      * The logger, by default the empty logger.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
 //    private List<Double> pValues = new ArrayList<Double>();
 
@@ -118,7 +118,7 @@ public class FasDci {
     public FasDci(Graph graph, IndependenceTest independenceTest) {
         this.graph = graph;
         this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
+        variables.addAll(independenceTest.getVariables());
     }
 
     /**
@@ -153,7 +153,7 @@ public class FasDci {
     public SepsetMapDci search() {
         this.logger.log("info", "Starting Fast Adjacency Search (DCI).");
         // Remove edges forbidden both ways.
-        Set<Edge> edges = graph.getEdges();
+        Set<Edge> edges = this.graph.getEdges();
 
 //        logger.log("info", "Edges: " + edges);
 
@@ -161,9 +161,9 @@ public class FasDci {
             String name1 = _edge.getNode1().getName();
             String name2 = _edge.getNode2().getName();
 
-            if (knowledge.isForbidden(name1, name2) &&
-                    knowledge.isForbidden(name2, name1)) {
-                graph.removeEdge(_edge);
+            if (this.knowledge.isForbidden(name1, name2) &&
+                    this.knowledge.isForbidden(name2, name1)) {
+                this.graph.removeEdge(_edge);
 
                 this.logger.log("edgeRemoved", "Removed " + _edge + " because it was " +
                         "forbidden by background knowledge.");
@@ -171,19 +171,16 @@ public class FasDci {
             }
         }
 
-//        this.logger.info("Depth = " + ((depth == Integer
-//               .MAX_VALUE) ? "Unlimited" : Integer.toString(depth)));
-
         SepsetMapDci sepset = new SepsetMapDci();
 
-        int _depth = depth;
+        int _depth = this.depth;
 
         if (_depth == -1) {
             _depth = 1000;
         }
 
         for (int d = 0; d <= _depth; d++) {
-            boolean more = searchAtDepth(graph, independenceTest, new Knowledge2(),
+            boolean more = searchAtDepth(this.graph, this.independenceTest, new Knowledge2(),
                     sepset, d);
 
             if (!more) {
@@ -198,23 +195,8 @@ public class FasDci {
         return sepset;
     }
 
-//    private void verifySepsetIntegrity(SepsetMap sepset) {
-//        for (Node x : graph.getNodes()) {
-//            for (Node y : graph.getNodes()) {
-//                if (x == y) {
-//                    continue;
-//                }
-//
-//                if (graph.isAdjacentTo(y, x) && sepset.get(x, y) != null) {
-//                    System.out.println(x + " " + y + " integrity check failed.");
-//                }
-//            }
-//        }
-//    }
-
-
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     public void setDepth(int depth) {
@@ -227,7 +209,7 @@ public class FasDci {
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -281,10 +263,10 @@ public class FasDci {
 
         boolean more = false;
 
-        for (Node x : variables) {
+        for (Node x : this.variables) {
             List<Node> b = new LinkedList<>();
             for (Node node : graph.getAdjacentNodes(x)) {
-                if (variables.contains(node)) {
+                if (this.variables.contains(node)) {
                     b.add(node);
                 }
             }
@@ -311,8 +293,8 @@ public class FasDci {
 
                         boolean independent = false;
                         boolean known = false;
-                        if (knownIndependencies != null && knownIndependencies.get(x, y) != null) {
-                            for (List<Node> set : knownIndependencies.getSet(x, y)) {
+                        if (this.knownIndependencies != null && this.knownIndependencies.get(x, y) != null) {
+                            for (List<Node> set : this.knownIndependencies.getSet(x, y)) {
                                 if (set.containsAll(condSet) && set.size() == condSet.size()) {
                                     independent = true;
                                     known = true;
@@ -320,8 +302,8 @@ public class FasDci {
                                 }
                             }
                         }
-                        if (knownAssociations != null && knownAssociations.get(x, y) != null) {
-                            for (List<Node> set : knownAssociations.getSet(x, y)) {
+                        if (this.knownAssociations != null && this.knownAssociations.get(x, y) != null) {
+                            for (List<Node> set : this.knownAssociations.getSet(x, y)) {
                                 if (set.containsAll(condSet) && set.size() == condSet.size()) {
                                     independent = false;
                                     known = true;
@@ -331,13 +313,13 @@ public class FasDci {
                         }
                         if (!known) {
                             independent = independenceTest.isIndependent(x, y, condSet);
-                            if (method != null) {
+                            if (this.method != null) {
                                 List<IndependenceTest> testsWithVars = new ArrayList<>();
-                                for (int k = 0; k < marginalVars.size(); k++) {
-                                    Set<Node> marginalSet = marginalVars.get(k);
+                                for (int k = 0; k < this.marginalVars.size(); k++) {
+                                    Set<Node> marginalSet = this.marginalVars.get(k);
                                     if (marginalSet.contains(x) && marginalSet.contains(y) &&
                                             marginalSet.containsAll(condSet)) {
-                                        testsWithVars.add(independenceTests.get(k));
+                                        testsWithVars.add(this.independenceTests.get(k));
                                     }
                                 }
                                 boolean inconsistency = false;
@@ -348,11 +330,11 @@ public class FasDci {
                                     }
                                 }
                                 if (inconsistency) {
-                                    independent = ResolveSepsets.isIndependentPooled(method,
+                                    independent = ResolveSepsets.isIndependentPooled(this.method,
                                             testsWithVars, x, y, condSet);
                                 }
                             }
-                            numIndependenceTests++;
+                            this.numIndependenceTests++;
                         }
 
                         if (independent && noEdgeRequired) {
@@ -367,7 +349,7 @@ public class FasDci {
 
             List<Node> currentAdjNodes = new ArrayList<>();
             for (Node node : graph.getAdjacentNodes(x)) {
-                if (variables.contains(node)) {
+                if (this.variables.contains(node)) {
                     currentAdjNodes.add(node);
                 }
             }
@@ -382,7 +364,7 @@ public class FasDci {
     }
 
     public int getNumIndependenceTests() {
-        return numIndependenceTests;
+        return this.numIndependenceTests;
     }
 }
 

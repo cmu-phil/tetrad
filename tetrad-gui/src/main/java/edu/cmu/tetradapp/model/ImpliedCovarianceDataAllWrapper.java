@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -40,16 +39,14 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class ImpliedCovarianceDataAllWrapper extends DataWrapper implements SessionModel {
+public class ImpliedCovarianceDataAllWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
-    private SemIm semIm = null;
+    private SemIm semIm;
 
 
     //==============================CONSTRUCTORS=============================//
 
     public ImpliedCovarianceDataAllWrapper(SemEstimatorWrapper wrapper, Parameters params) {
-//        int sampleSize = params.getSampleSize();
-//        boolean latentDataSaved = params.isIncludeLatents();
         SemEstimator semEstimator = wrapper.getSemEstimator();
         SemIm semIm1 = semEstimator.getEstimatedSem();
 

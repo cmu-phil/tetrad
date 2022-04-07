@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -91,7 +91,7 @@ public class KMeans implements ClusteringAlgorithm {
      * The dissimilarity metric being used. For K means, the metric must be
      * squared Euclidean. It's an assumption of the algorithm.
      */
-    private Dissimilarity metric = new SquaredErrorLoss();
+    private final Dissimilarity metric = new SquaredErrorLoss();
 
     /**
      * The number of centers (i.e. the number clusters) that the algorithm
@@ -102,12 +102,12 @@ public class KMeans implements ClusteringAlgorithm {
     /**
      * The type of initialization, one of RANDOM_POINTS,
      */
-    private int initializationType = RANDOM_POINTS;
+    private int initializationType = KMeans.RANDOM_POINTS;
 
     /**
      * True if verbose output should be printed.
      */
-    private boolean verbose = false;
+    private boolean verbose;
 
     //============================CONSTRUCTOR==========================//
 
@@ -127,7 +127,7 @@ public class KMeans implements ClusteringAlgorithm {
     public static KMeans randomPoints(int numCenters) {
         KMeans algorithm = new KMeans();
         algorithm.numCenters = numCenters;
-        algorithm.initializationType = RANDOM_POINTS;
+        algorithm.initializationType = KMeans.RANDOM_POINTS;
 
         return algorithm;
     }
@@ -143,24 +143,7 @@ public class KMeans implements ClusteringAlgorithm {
     public static KMeans randomClusters(int numCenters) {
         KMeans algorithm = new KMeans();
         algorithm.numCenters = numCenters;
-        algorithm.initializationType = RANDOM_CLUSTERS;
-
-        return algorithm;
-    }
-
-    /**
-     * Constructs a new KMeansBatch, initializing the algorithm by specifying a
-     * fixed number of centers.
-     *
-     * @param centers The recommended centers to start the algorithm with. This
-     *                is an array, with the number of rows equal to the number
-     *                of centers and the number of columns equal to the number
-     *                of columns in the data (that is, features).
-     * @return The constructed algorithm.
-     */
-    public static KMeans explicitPoints(Matrix centers) {
-        KMeans algorithm = new KMeans();
-        algorithm.centers = centers;
+        algorithm.initializationType = KMeans.RANDOM_CLUSTERS;
 
         return algorithm;
     }
@@ -174,41 +157,41 @@ public class KMeans implements ClusteringAlgorithm {
     public void cluster(Matrix data) {
         this.data = data;
 
-        if (initializationType == RANDOM_POINTS) {
-            centers = pickCenters(numCenters, data);
-            clusters = new ArrayList<>();
+        if (this.initializationType == KMeans.RANDOM_POINTS) {
+            this.centers = pickCenters(this.numCenters, data);
+            this.clusters = new ArrayList<>();
 
             for (int i = 0; i < data.rows(); i++) {
-                clusters.add(-1);
+                this.clusters.add(-1);
             }
-        } else if (initializationType == RANDOM_CLUSTERS) {
-            centers = new Matrix(numCenters, data.columns());
+        } else if (this.initializationType == KMeans.RANDOM_CLUSTERS) {
+            this.centers = new Matrix(this.numCenters, data.columns());
 
             // Randomly assign points to clusters and get the initial centers of
             // mass from that assignment.
-            clusters = new ArrayList<>();
+            this.clusters = new ArrayList<>();
 
             for (int i = 0; i < data.rows(); i++) {
-                clusters.add(RandomUtil.getInstance()
-                        .nextInt(centers.rows()));
+                this.clusters.add(RandomUtil.getInstance()
+                        .nextInt(this.centers.rows()));
             }
 
             moveCentersToMeans();
-        } else if (initializationType == EXPLICIT_POINTS) {
-            clusters = new ArrayList<>();
+        } else if (this.initializationType == KMeans.EXPLICIT_POINTS) {
+            this.clusters = new ArrayList<>();
 
             for (int i = 0; i < data.rows(); i++) {
-                clusters.add(-1);
+                this.clusters.add(-1);
             }
         }
 
         boolean changed = true;
-        iterations = 0;
+        this.iterations = 0;
 
 //        System.out.println("Original centers: " + centers);
 
-        while (changed && (maxIterations == -1 || iterations < maxIterations)) {
-            iterations++;
+        while (changed && (this.maxIterations == -1 || this.iterations < this.maxIterations)) {
+            this.iterations++;
 //            System.out.println("Iteration = " + iterations);
 
             // Step #1: Assign each point to its closest center, forming a cluster for
@@ -218,15 +201,12 @@ public class KMeans implements ClusteringAlgorithm {
 
             // Step #2: Replace each center by the center of mass of its cluster.
             moveCentersToMeans();
-
-//            System.out.println("New centers: " + centers);
-//            System.out.println("Cluster counts: " + countClusterSizes());
         }
 
     }
 
     public List<List<Integer>> getClusters() {
-        return convertClusterIndicesToLists(clusters);
+        return KMeans.convertClusterIndicesToLists(this.clusters);
     }
 
     private static List<List<Integer>> convertClusterIndicesToLists(List<Integer> clusterIndices) {
@@ -239,7 +219,7 @@ public class KMeans implements ClusteringAlgorithm {
         List<List<Integer>> clusters = new ArrayList<>();
 
         for (int i = 0; i <= max; i++) {
-            clusters.add(new LinkedList<Integer>());
+            clusters.add(new LinkedList<>());
         }
 
         for (int i = 0; i < clusterIndices.size(); i++) {
@@ -253,10 +233,6 @@ public class KMeans implements ClusteringAlgorithm {
         return clusters;
     }
 
-    public Matrix getPrototypes() {
-        return centers.copy();
-    }
-
     /**
      * Return the maximum number of iterations, or -1 if the algorithm is
      * allowed to run unconstrainted.
@@ -264,7 +240,7 @@ public class KMeans implements ClusteringAlgorithm {
      * @return This value.
      */
     public int getMaxIterations() {
-        return maxIterations;
+        return this.maxIterations;
     }
 
     /**
@@ -278,14 +254,14 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     public int getNumClusters() {
-        return centers.rows();
+        return this.centers.rows();
     }
 
     public List<Integer> getCluster(int k) {
         List<Integer> cluster = new ArrayList<>();
 
-        for (int i = 0; i < clusters.size(); i++) {
-            if (clusters.get(i) == k) {
+        for (int i = 0; i < this.clusters.size(); i++) {
+            if (this.clusters.get(i) == k) {
                 cluster.add(i);
             }
         }
@@ -294,14 +270,14 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     private Dissimilarity getMetric() {
-        return metric;
+        return this.metric;
     }
 
     /**
      * @return the number of iterations.
      */
     public int iterations() {
-        return iterations;
+        return this.iterations;
     }
 
     /**
@@ -313,11 +289,11 @@ public class KMeans implements ClusteringAlgorithm {
     private double squaredError(int k) {
         double squaredError = 0.0;
 
-        for (int i = 0; i < data.rows(); i++) {
-            if (clusters.get(i) == k) {
-                Vector datum = data.getRow(i);
-                Vector center = centers.getRow(k);
-                squaredError += metric.dissimilarity(datum, center);
+        for (int i = 0; i < this.data.rows(); i++) {
+            if (this.clusters.get(i) == k) {
+                Vector datum = this.data.getRow(i);
+                Vector center = this.centers.getRow(k);
+                squaredError += this.metric.dissimilarity(datum, center);
             }
         }
         return squaredError;
@@ -331,7 +307,7 @@ public class KMeans implements ClusteringAlgorithm {
     private double totalSquaredError() {
         double totalSquaredError = 0.0;
 
-        for (int k = 0; k < centers.rows(); k++) {
+        for (int k = 0; k < this.centers.rows(); k++) {
             totalSquaredError += squaredError(k);
         }
 
@@ -348,12 +324,12 @@ public class KMeans implements ClusteringAlgorithm {
         double totalSquaredError = totalSquaredError();
 
         StringBuilder buf = new StringBuilder();
-        buf.append("Cluster Result (").append(clusters.size())
-                .append(" cases, ").append(centers.columns())
-                .append(" feature(s), ").append(centers.rows())
+        buf.append("Cluster Result (").append(this.clusters.size())
+                .append(" cases, ").append(this.centers.columns())
+                .append(" feature(s), ").append(this.centers.rows())
                 .append(" clusters)");
 
-        for (int k = 0; k < centers.rows(); k++) {
+        for (int k = 0; k < this.centers.rows(); k++) {
             buf.append("\n\tCluster #").append(k + 1).append(": n = ").append(counts.get(k));
             buf.append(" Squared Error = ").append(n1.format(squaredError(k)));
         }
@@ -367,13 +343,13 @@ public class KMeans implements ClusteringAlgorithm {
     private int reassignPoints() {
         int numChanged = 0;
 
-        for (int i = 0; i < data.rows(); i++) {
-            Vector datum = data.getRow(i);
+        for (int i = 0; i < this.data.rows(); i++) {
+            Vector datum = this.data.getRow(i);
             double minDissimilarity = Double.POSITIVE_INFINITY;
             int cluster = -1;
 
-            for (int k = 0; k < centers.rows(); k++) {
-                Vector center = centers.getRow(k);
+            for (int k = 0; k < this.centers.rows(); k++) {
+                Vector center = this.centers.getRow(k);
                 double dissimilarity = getMetric().dissimilarity(datum, center);
 
                 if (dissimilarity < minDissimilarity) {
@@ -382,8 +358,8 @@ public class KMeans implements ClusteringAlgorithm {
                 }
             }
 
-            if (cluster != clusters.get(i)) {
-                clusters.set(i, cluster);
+            if (cluster != this.clusters.get(i)) {
+                this.clusters.set(i, cluster);
                 numChanged++;
             }
         }
@@ -393,14 +369,14 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     private void moveCentersToMeans() {
-        for (int k = 0; k < centers.rows(); k++) {
-            double[] sums = new double[centers.columns()];
+        for (int k = 0; k < this.centers.rows(); k++) {
+            double[] sums = new double[this.centers.columns()];
             int count = 0;
 
-            for (int i = 0; i < data.rows(); i++) {
-                if (clusters.get(i) == k) {
-                    for (int j = 0; j < data.columns(); j++) {
-                        sums[j] += data.get(i, j);
+            for (int i = 0; i < this.data.rows(); i++) {
+                if (this.clusters.get(i) == k) {
+                    for (int j = 0; j < this.data.columns(); j++) {
+                        sums[j] += this.data.get(i, j);
                     }
 
                     count++;
@@ -408,8 +384,8 @@ public class KMeans implements ClusteringAlgorithm {
             }
 
             if (count != 0) {
-                for (int j = 0; j < centers.columns(); j++) {
-                    centers.set(k, j, sums[j] / count);
+                for (int j = 0; j < this.centers.columns(); j++) {
+                    this.centers.set(k, j, sums[j] / count);
                 }
             }
         }
@@ -421,9 +397,7 @@ public class KMeans implements ClusteringAlgorithm {
         while (indexSet.size() < numCenters) {
             int candidate = RandomUtil.getInstance().nextInt(data.rows());
 
-            if (!indexSet.contains(candidate)) {
-                indexSet.add(candidate);
-            }
+            indexSet.add(candidate);
         }
 
         int[] rows = new int[numCenters];
@@ -443,14 +417,10 @@ public class KMeans implements ClusteringAlgorithm {
         return data.getSelection(rows, cols).copy();
     }
 
-//    private double dissimilarity(TetradVector d1, TetradVector d2) {
-//        return DissimilarityMeasures.squaredEuclideanDistance(d1, d2);
-//    }
-
     private Vector countClusterSizes() {
-        Vector counts = new Vector(centers.rows());
+        Vector counts = new Vector(this.centers.rows());
 
-        for (int cluster : clusters) {
+        for (int cluster : this.clusters) {
             if (cluster == -1) {
                 continue;
             }
@@ -462,7 +432,7 @@ public class KMeans implements ClusteringAlgorithm {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {

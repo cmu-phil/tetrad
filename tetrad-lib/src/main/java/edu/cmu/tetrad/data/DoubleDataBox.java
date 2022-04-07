@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,12 +42,12 @@ public class DoubleDataBox implements DataBox {
     /**
      * The number of rows (tracked because it may be zero).
      */
-    private int numRows = 0;
+    private final int numRows;
 
     /**
      * The number of columns (tracked because it may be zero).
      */
-    private int numCols = 0;
+    private final int numCols;
 
     /**
      * Constructs an 2D double array consisting entirely of missing values
@@ -58,7 +58,7 @@ public class DoubleDataBox implements DataBox {
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                data[i][j] = Double.NaN;
+                this.data[i][j] = Double.NaN;
             }
         }
 
@@ -97,14 +97,14 @@ public class DoubleDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return numRows;
+        return this.numRows;
     }
 
     /**
      * @return the number of columns in this data box.
      */
     public int numCols() {
-        return numCols;
+        return this.numCols;
     }
 
     /**
@@ -113,12 +113,12 @@ public class DoubleDataBox implements DataBox {
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
-            synchronized (data) {
-                data[row][col] = Double.NaN;
+            synchronized (this.data) {
+                this.data[row][col] = Double.NaN;
             }
         } else {
-            synchronized (data) {
-                data[row][col] = value.doubleValue();
+            synchronized (this.data) {
+                this.data[row][col] = value.doubleValue();
             }
         }
     }
@@ -128,7 +128,7 @@ public class DoubleDataBox implements DataBox {
      * is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
-        double datum = data[row][col];
+        double datum = this.data[row][col];
 
         if (Double.isNaN(datum)) {
             return null;
@@ -179,7 +179,7 @@ public class DoubleDataBox implements DataBox {
     }
 
     public double[][] getData() {
-        return data;
+        return this.data;
     }
 }
 

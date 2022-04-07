@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,7 +41,7 @@ public class BooleanFunction implements TetradSerializable {
      *
      * @serial
      */
-    private IndexedParent[] parents;
+    private final IndexedParent[] parents;
 
     /**
      * The stored boolean function.  The order of the rows (for the given
@@ -50,7 +50,7 @@ public class BooleanFunction implements TetradSerializable {
      *
      * @serial
      */
-    private boolean[] lookupTable;
+    private final boolean[] lookupTable;
 
     //==============================CONSTRUCTORS=========================//
 
@@ -79,7 +79,7 @@ public class BooleanFunction implements TetradSerializable {
             length *= 2;
         }
 
-        lookupTable = new boolean[length];
+        this.lookupTable = new boolean[length];
     }
 
     /**
@@ -100,7 +100,7 @@ public class BooleanFunction implements TetradSerializable {
      * @return this array.
      */
     public Object[] getParents() {
-        return parents;
+        return this.parents;
     }
 
     /**
@@ -111,7 +111,7 @@ public class BooleanFunction implements TetradSerializable {
      * @see #getRow
      */
     public boolean getValue(int row) {
-        return lookupTable[row];
+        return this.lookupTable[row];
     }
 
     /**
@@ -122,7 +122,7 @@ public class BooleanFunction implements TetradSerializable {
      * @see #getRow
      */
     public void setValue(int row, boolean value) {
-        lookupTable[row] = value;
+        this.lookupTable[row] = value;
     }
 
     /**
@@ -147,7 +147,7 @@ public class BooleanFunction implements TetradSerializable {
 
         int row = 0;
 
-        for (int i = parents.length - 1; i >= 0; i--) {
+        for (int i = this.parents.length - 1; i >= 0; i--) {
             row *= 2;
             row += parentValues[i] ? 0 : 1;
         }
@@ -159,7 +159,7 @@ public class BooleanFunction implements TetradSerializable {
      * Returns the number of rows in the table.
      */
     public int getNumRows() {
-        return lookupTable.length;
+        return this.lookupTable.length;
     }
 
     /**
@@ -168,13 +168,13 @@ public class BooleanFunction implements TetradSerializable {
      */
     public boolean[] getParentValues(int row) {
 
-        boolean[] parentValues = new boolean[parents.length];
+        boolean[] parentValues = new boolean[this.parents.length];
 
-        if (row >= lookupTable.length) {
+        if (row >= this.lookupTable.length) {
             throw new IllegalArgumentException();
         }
 
-        for (int i = parents.length - 1; i >= 0; i--) {
+        for (int i = this.parents.length - 1; i >= 0; i--) {
             parentValues[i] = row % 2 == 1;
             row /= 2;
         }
@@ -186,7 +186,7 @@ public class BooleanFunction implements TetradSerializable {
      * Chooses a random function by flipping a coin for each value in table.
      */
     public void randomize() {
-        for (int i = 0; i < lookupTable.length; i++) {
+        for (int i = 0; i < this.lookupTable.length; i++) {
             this.lookupTable[i] =
                     RandomUtil.getInstance().nextDouble() > 0.5;
         }
@@ -211,14 +211,14 @@ public class BooleanFunction implements TetradSerializable {
 
         // Find the first parent such that all the true's or all the
         // false's map to the same value in the same value.
-        for (int jump = 1; jump < lookupTable.length; jump *= 2) {
+        for (int jump = 1; jump < this.lookupTable.length; jump *= 2) {
             lastValues[0] = -1;
             lastValues[1] = -1;
 
-            for (int row = 0; row < lookupTable.length; row++) {
+            for (int row = 0; row < this.lookupTable.length; row++) {
 
                 // 0 means false, 1 means true.
-                int value = lookupTable[row] ? 1 : 0;
+                int value = this.lookupTable[row] ? 1 : 0;
                 int parentValue = (row / jump) % 2 == 0 ? 1 : 0;
 
                 if (-2 == lastValues[parentValue]) {
@@ -264,14 +264,14 @@ public class BooleanFunction implements TetradSerializable {
      */
     public boolean isEffective() {
 
-        boolean result[] = new boolean[parents.length];
+        boolean[] result = new boolean[this.parents.length];
 
-        for (int row = 0; row < lookupTable.length; row++) {
+        for (int row = 0; row < this.lookupTable.length; row++) {
             int jump = 1;
 
-            for (int i = 0; i < parents.length; i++) {
+            for (int i = 0; i < this.parents.length; i++) {
                 if ((row / jump) % 2 == 0) {
-                    if (lookupTable[row] != lookupTable[row + jump]) {
+                    if (this.lookupTable[row] != this.lookupTable[row + jump]) {
                         result[i] = true;
                     }
                 }
@@ -280,7 +280,7 @@ public class BooleanFunction implements TetradSerializable {
             }
         }
 
-        for (int i = 0; i < parents.length; i++) {
+        for (int i = 0; i < this.parents.length; i++) {
             if (!result[i]) {
                 return false;
             }
@@ -298,9 +298,9 @@ public class BooleanFunction implements TetradSerializable {
 
         StringBuilder buf = new StringBuilder("\nBoolean Function:");
 
-        for (int i = 0; i < lookupTable.length; i++) {
+        for (int i = 0; i < this.lookupTable.length; i++) {
             buf.append("\n").append(i).append("\t");
-            buf.append(lookupTable[i]);
+            buf.append(this.lookupTable[i]);
         }
 
         buf.append("\n\n");
@@ -317,19 +317,16 @@ public class BooleanFunction implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (parents == null) {
+        if (this.parents == null) {
             throw new NullPointerException();
         }
 
-        if (lookupTable == null) {
+        if (this.lookupTable == null) {
             throw new NullPointerException();
         }
     }

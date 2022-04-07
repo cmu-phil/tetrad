@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -163,16 +163,6 @@ public class SimulateNetwork {
         System.out.println();
 
         for (int hour = 1; hour < 6; hour++) {
-            /*
-            TCF.update();
-            Krox.update();
-            Otx.update();
-            Wnt8.update();
-            Krl.update();
-            SoxB1.update();
-            GSK3.update();
-            Eve.update();
-            */
 
             chi.update();
             //ChiSwitch.update();
@@ -184,8 +174,6 @@ public class SimulateNetwork {
             soxB1.update();
             krox.update();
             matOtxMod.update();
-            //OtxSum.update();
-            //Krox.update();
             otx.update();
             otxSum.update();
             eve.update();
@@ -193,10 +181,6 @@ public class SimulateNetwork {
             GSK3Mod.update();
             soxB1Mod.update();
             preChi.update();
-
-            //for(int i = 0; i < components.length; i++)
-            //  System.out.print(components[i].getParamValue() + "\t");
-            //System.out.println();
 
             for (int i = 0; i < components.length; i++) {
                 data[i][hour] = components[i].getValue();

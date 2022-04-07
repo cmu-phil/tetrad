@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -45,7 +45,7 @@ public class Version implements TetradSerializable {
      *
      * @serial Range greater than or equal to 0.
      */
-    private int majorVersion;
+    private final int majorVersion;
 
     /**
      * The minor version number. In release a.b.c-d, b. This number increases
@@ -54,7 +54,7 @@ public class Version implements TetradSerializable {
      *
      * @serial Range greater than or equal to 0.
      */
-    private int minorVersion;
+    private final int minorVersion;
 
     /**
      * The minor release number. In release a.b.c-d, c. This number increases
@@ -63,7 +63,7 @@ public class Version implements TetradSerializable {
      *
      * @serial Range greater than or equal to 0.
      */
-    private int minorSubversion;
+    private final int minorSubversion;
 
     /**
      * The incremental release number. In release a.b.c-d, d. This number
@@ -76,7 +76,7 @@ public class Version implements TetradSerializable {
      *
      * @serial Range greater than or equal to 0.
      */
-    private int incrementalRelease;
+    private final int incrementalRelease;
 
     //===========================CONSTRUCTORS============================//
 
@@ -182,7 +182,7 @@ public class Version implements TetradSerializable {
      */
     public static Version currentViewableVersion() {
         try {
-            String path = "/resources/version";
+            final String path = "/resources/version";
             URL url = Version.class.getResource(path);
 
             if (url == null) {
@@ -224,27 +224,27 @@ public class Version implements TetradSerializable {
     //==========================PUBLIC METHODS===========================//
 
     private int majorVersion() {
-        return majorVersion;
+        return this.majorVersion;
     }
 
     private int minorVersion() {
-        return minorVersion;
+        return this.minorVersion;
     }
 
     private int minorSubversion() {
-        return minorSubversion;
+        return this.minorSubversion;
     }
 
     private int incrementalRelease() {
-        return incrementalRelease;
+        return this.incrementalRelease;
     }
 
     public int hashCode() {
         int hashCode = 61;
-        hashCode += 61 * majorVersion;
-        hashCode += 61 * minorVersion;
-        hashCode += 61 * minorSubversion;
-        hashCode += incrementalRelease;
+        hashCode += 61 * this.majorVersion;
+        hashCode += 61 * this.minorVersion;
+        hashCode += 61 * this.minorSubversion;
+        hashCode += this.incrementalRelease;
         return hashCode;
     }
 
@@ -259,19 +259,19 @@ public class Version implements TetradSerializable {
 
         Version other = (Version) o;
 
-        if (!(majorVersion == other.majorVersion)) {
+        if (!(this.majorVersion == other.majorVersion)) {
             return false;
         }
 
-        if (!(minorVersion == other.minorVersion)) {
+        if (!(this.minorVersion == other.minorVersion)) {
             return false;
         }
 
-        if (!(minorSubversion == other.minorSubversion)) {
+        if (!(this.minorSubversion == other.minorSubversion)) {
             return false;
         }
 
-        if (!(incrementalRelease == other.incrementalRelease)) {
+        if (!(this.incrementalRelease == other.incrementalRelease)) {
             return false;
         }
 
@@ -295,36 +295,33 @@ public class Version implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (majorVersion < 0) {
+        if (this.majorVersion < 0) {
             throw new IllegalStateException();
         }
 
-        if (minorVersion < 0) {
+        if (this.minorVersion < 0) {
             throw new IllegalStateException();
         }
 
-        if (minorSubversion < 0) {
+        if (this.minorSubversion < 0) {
             throw new IllegalStateException();
         }
 
-        if (incrementalRelease < 0) {
+        if (this.incrementalRelease < 0) {
             throw new IllegalStateException();
         }
     }
 
     public Version nextMajorVersion() {
         int majorVersion = this.majorVersion + 1;
-        int minorVersion = 0;
-        int minorSubversion = 0;
-        int incrementalRelease = 0;
+        final int minorVersion = 0;
+        final int minorSubversion = 0;
+        final int incrementalRelease = 0;
 
         return new Version(majorVersion, minorVersion, minorSubversion,
                 incrementalRelease);
@@ -333,8 +330,8 @@ public class Version implements TetradSerializable {
     public Version nextMinorVersion() {
         int majorVersion = this.majorVersion;
         int minorVersion = this.minorVersion + 1;
-        int minorSubversion = 0;
-        int incrementalRelease = 0;
+        final int minorSubversion = 0;
+        final int incrementalRelease = 0;
 
         return new Version(majorVersion, minorVersion, minorSubversion,
                 incrementalRelease);
@@ -344,7 +341,7 @@ public class Version implements TetradSerializable {
         int majorVersion = this.majorVersion;
         int minorVersion = this.minorVersion;
         int minorSubversion = this.minorSubversion + 1;
-        int incrementalRelease = 0;
+        final int incrementalRelease = 0;
 
         return new Version(majorVersion, minorVersion, minorSubversion,
                 incrementalRelease);

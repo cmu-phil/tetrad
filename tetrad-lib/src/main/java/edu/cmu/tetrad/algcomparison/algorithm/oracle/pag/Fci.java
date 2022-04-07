@@ -9,11 +9,11 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag2;
+import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,16 +43,23 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test.getTest(dataSet, parameters));
+            if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+                if (parameters.getInt(Params.TIME_LAG) > 0) {
+                    DataSet dataSet = (DataSet) dataModel;
+                    DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                    if (dataSet.getName() != null) {
+                        timeSeries.setName(dataSet.getName());
+                    }
+                    dataModel = timeSeries;
+                    knowledge = timeSeries.getKnowledge();
+                }
+            }
+
+            edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(this.test.getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
@@ -60,37 +67,13 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
             search.setStable(parameters.getBoolean(Params.STABLE_FAS));
 
-//            if (externalGraph != null) {
-//                search.setExternalGraph(externalGraph);
-//            }
             return search.search();
         } else {
-            Fci algorithm = new Fci(test);
-            //algorithm.setKnowledge(knowledge);
-//          if (externalGraph != null) {
-//      		algorithm.setExternalGraph(externalGraph);
-//  		}
+            Fci algorithm = new Fci(this.test);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            DataSet data = (DataSet) dataModel;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -100,16 +83,16 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag2(new EdgeListGraph(graph)).convert();
+        return new DagToPag(new EdgeListGraph(graph)).convert();
     }
 
     public String getDescription() {
-        return "FCI (Fast Causal Inference) using " + test.getDescription();
+        return "FCI (Fast Causal Inference) using " + this.test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
@@ -121,6 +104,7 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.POSSIBLE_DSEP_DONE);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
+        parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
 
@@ -129,7 +113,7 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
@@ -139,7 +123,7 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
     @Override

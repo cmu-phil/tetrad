@@ -38,13 +38,13 @@ public class VarianceVector implements Variance {
     }
 
     private float[] computeMeans() {
-        float[] mean = new float[numOfCols];
-        for (int col = 0; col < numOfCols; col++) {
+        float[] mean = new float[this.numOfCols];
+        for (int col = 0; col < this.numOfCols; col++) {
             float sum = 0;
-            for (int row = 0; row < numOfRows; row++) {
-                sum += data[row][col];
+            for (int row = 0; row < this.numOfRows; row++) {
+                sum += this.data[row][col];
             }
-            mean[col] = sum / numOfRows;
+            mean[col] = sum / this.numOfRows;
         }
 
         return mean;
@@ -54,18 +54,18 @@ public class VarianceVector implements Variance {
     public float[] compute(boolean biasCorrected) {
         float[] meanVariance = computeMeans();
 
-        for (int col = 0; col < numOfCols; col++) {
+        for (int col = 0; col < this.numOfCols; col++) {
             float mean = meanVariance[col];
             float value = 0;
             float squareValue = 0;
-            for (int row = 0; row < numOfRows; row++) {
-                float val = data[row][col] - mean;
+            for (int row = 0; row < this.numOfRows; row++) {
+                float val = this.data[row][col] - mean;
                 squareValue += val * val;
                 value += val;
             }
             meanVariance[col] = (biasCorrected)
-                    ? (squareValue - (value * value / numOfRows)) / (numOfRows - 1.0f)
-                    : (squareValue - (value * value / numOfRows)) / numOfRows;
+                    ? (squareValue - (value * value / this.numOfRows)) / (this.numOfRows - 1.0f)
+                    : (squareValue - (value * value / this.numOfRows)) / this.numOfRows;
         }
 
         return meanVariance;

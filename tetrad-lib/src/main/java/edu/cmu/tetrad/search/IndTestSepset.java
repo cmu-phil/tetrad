@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,8 +26,10 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.text.NumberFormat;
 import java.util.*;
 
 
@@ -41,23 +43,23 @@ public class IndTestSepset implements IndependenceTest {
     /**
      * The sepset being queried
      */
-    private SepsetMapDci sepset;
+    private final SepsetMapDci sepset;
 
     /**
      * The map from nodes to variables.
      */
-    private Map<Node, Node> nodesToVariables;
+    private final Map<Node, Node> nodesToVariables;
 
     /**
      * The map from variables to nodes.
      */
-    private Map<Node, Node> variablesToNodes;
+    private final Map<Node, Node> variablesToNodes;
 
     /**
      * The list of observed variables (i.e. variables for observed nodes).
      */
-    private List<Node> observedVars;
-    private boolean verbose = false;
+    private final List<Node> observedVars;
+    private boolean verbose;
 
     /**
      * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
@@ -133,33 +135,30 @@ public class IndTestSepset implements IndependenceTest {
 
         boolean independent = false;
 
-        if (sepset.get(x, y) != null) {
-            List<List<Node>> condSets = sepset.getSet(x, y);
+        if (this.sepset.get(x, y) != null) {
+            List<List<Node>> condSets = this.sepset.getSet(x, y);
             for (List<Node> condSet : condSets) {
                 if (condSet.size() == z.size() && condSet.containsAll(z)) {
-                    double pValue = 1.0;
+                    final double pValue = 1.0;
 
-                    if (verbose) {
+                    if (this.verbose) {
                         TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
                     }
                     independent = true;
                     break;
-//                    return true;
                 }
             }
         }
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-            } else {
-                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFact(x, y, z) + " score = " + SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
             }
         }
 
         return independent;
-
-//        return false;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -188,7 +187,7 @@ public class IndTestSepset implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return Collections.unmodifiableList(observedVars);
+        return Collections.unmodifiableList(this.observedVars);
     }
 
     /**
@@ -203,7 +202,7 @@ public class IndTestSepset implements IndependenceTest {
         return nodeNames;
     }
 
-    public boolean determines(List z, Node x1) {
+    public boolean determines(List<Node> z, Node x1) {
         return z.contains(x1);
     }
 
@@ -231,14 +230,14 @@ public class IndTestSepset implements IndependenceTest {
      * @return the variable associated with the given node in the graph.
      */
     public Node getVariable(Node node) {
-        return nodesToVariables.get(node);
+        return this.nodesToVariables.get(node);
     }
 
     /**
      * @return the node associated with the given variable in the graph.
      */
     public Node getNode(Node variable) {
-        return variablesToNodes.get(variable);
+        return this.variablesToNodes.get(variable);
     }
 
     public String toString() {
@@ -275,7 +274,7 @@ public class IndTestSepset implements IndependenceTest {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {

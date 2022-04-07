@@ -15,7 +15,6 @@ import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
             Score score = this.score.getScore(dataSet, parameters);
             edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
 
@@ -63,31 +62,15 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
             }
 
             this.targetName = parameters.getString(Params.TARGET_NAME);
-            Node target = this.score.getVariable(targetName);
+            Node target = this.score.getVariable(this.targetName);
 
             return search.search(Collections.singletonList(target));
         } else {
-            FgesMb fgesMb = new FgesMb(score);
+            FgesMb fgesMb = new FgesMb(this.score);
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMb, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
+            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMb, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -96,18 +79,18 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        Node target = graph.getNode(targetName);
+        Node target = graph.getNode(this.targetName);
         return GraphUtils.markovBlanketDag(target, new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "FGES (Fast Greedy Search) using " + score.getDescription();
+        return "FGES (Fast Greedy Search) using " + this.score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return score.getDataType();
+        return this.score.getDataType();
     }
 
     @Override
@@ -123,7 +106,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
@@ -133,7 +116,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public ScoreWrapper getScoreWrapper() {
-        return score;
+        return this.score;
     }
 
     @Override

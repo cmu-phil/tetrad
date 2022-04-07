@@ -64,23 +64,23 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
     }
 
     public AnnotatedClass<Algorithm> getAlgorithm() {
-        return algorithm;
+        return this.algorithm;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     public boolean isRequiredScore() {
-        return requiredScore;
+        return this.requiredScore;
     }
 
     public boolean isRequiredTest() {
-        return requiredTest;
+        return this.requiredTest;
     }
 
 }

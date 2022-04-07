@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,13 +34,13 @@ public class SessionSupport {
     /**
      * The source of the events.
      */
-    private Object source;
+    private final Object source;
 
     /**
      * The list of session listener--for instance, GUI editors displaying this
      * session and allowing it to be edited.
      */
-    private List sessionListeners = new ArrayList();
+    private final List sessionListeners = new ArrayList();
 
     /**
      * Constructs a new session support object for the given source object. The
@@ -67,9 +67,7 @@ public class SessionSupport {
      * Removes a listener for SessionEvents.
      */
     public void removeSessionListener(SessionListener l) {
-        if (this.sessionListeners.contains(l)) {
-            this.sessionListeners.remove(l);
-        }
+        this.sessionListeners.remove(l);
     }
 
     /**
@@ -203,8 +201,8 @@ public class SessionSupport {
             event = new SessionEvent(this.source, event);
         }
 
-        for (int i = 0; i < sessionListeners.size(); i++) {
-            SessionListener l = (SessionListener) sessionListeners.get(i);
+        for (Object sessionListener : this.sessionListeners) {
+            SessionListener l = (SessionListener) sessionListener;
 
             switch (event.getType()) {
                 case SessionEvent.NODE_ADDED:

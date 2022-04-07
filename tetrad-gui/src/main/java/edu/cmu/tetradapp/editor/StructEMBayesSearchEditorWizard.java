@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -31,8 +31,6 @@ import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -50,11 +48,11 @@ import java.util.List;
  * bayes estimation.
  */
 final class StructEMBayesSearchEditorWizard extends JPanel {
-    private BayesIm bayesIm;
-    private JComboBox varNamesComboBox;
-    private GraphWorkbench workbench;
+    private final BayesIm bayesIm;
+    private final JComboBox varNamesComboBox;
+    private final GraphWorkbench workbench;
     private BayesEstimatorNodeEditingTable editingTable;
-    private JPanel tablePanel;
+    private final JPanel tablePanel;
 
     public StructEMBayesSearchEditorWizard(BayesIm bayesIm,
                                            GraphWorkbench workbench) {
@@ -74,27 +72,25 @@ final class StructEMBayesSearchEditorWizard extends JPanel {
         // Set up components.
         this.varNamesComboBox = createVarNamesComboBox(bayesIm);
         workbench.scrollWorkbenchToNode(
-                (Node) (varNamesComboBox.getSelectedItem()));
+                (Node) (this.varNamesComboBox.getSelectedItem()));
 
         JButton nextButton = new JButton("Next");
         nextButton.setMnemonic('N');
 
-        Node node = (Node) (varNamesComboBox.getSelectedItem());
-        editingTable = new BayesEstimatorNodeEditingTable(node, bayesIm);
-        editingTable.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorValueChanged", null, null);
-                }
+        Node node = (Node) (this.varNamesComboBox.getSelectedItem());
+        this.editingTable = new BayesEstimatorNodeEditingTable(node, bayesIm);
+        this.editingTable.addPropertyChangeListener(evt -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("editorValueChanged", null, null);
             }
         });
 
-        JScrollPane scroll = new JScrollPane(editingTable);
+        JScrollPane scroll = new JScrollPane(this.editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
-        tablePanel = new JPanel();
-        tablePanel.setLayout(new BorderLayout());
-        tablePanel.add(scroll, BorderLayout.CENTER);
-        editingTable.grabFocus();
+        this.tablePanel = new JPanel();
+        this.tablePanel.setLayout(new BorderLayout());
+        this.tablePanel.add(scroll, BorderLayout.CENTER);
+        this.editingTable.grabFocus();
 
         // Do Layout.
         setLayout(new BorderLayout());
@@ -102,7 +98,7 @@ final class StructEMBayesSearchEditorWizard extends JPanel {
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Probability table for values of "));
-        b2.add(varNamesComboBox);
+        b2.add(this.varNamesComboBox);
         b2.add(new JLabel(" conditional on values of its"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
@@ -113,7 +109,7 @@ final class StructEMBayesSearchEditorWizard extends JPanel {
         b1.add(b3);
 
         Box b4 = Box.createHorizontalBox();
-        b4.add(tablePanel, BorderLayout.CENTER);
+        b4.add(this.tablePanel, BorderLayout.CENTER);
         b1.add(b4);
 
         Box b5 = Box.createHorizontalBox();
@@ -125,42 +121,36 @@ final class StructEMBayesSearchEditorWizard extends JPanel {
         add(b1, BorderLayout.CENTER);
 
         // Add listeners.
-        varNamesComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Node node = (Node) (varNamesComboBox.getSelectedItem());
-                getWorkbench().scrollWorkbenchToNode(node);
-                setCurrentNode(node);
-            }
+        this.varNamesComboBox.addActionListener(e -> {
+            Node node1 = (Node) (StructEMBayesSearchEditorWizard.this.varNamesComboBox.getSelectedItem());
+            getWorkbench().scrollWorkbenchToNode(node1);
+            setCurrentNode(node1);
         });
 
-        nextButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int current = varNamesComboBox.getSelectedIndex();
-                int max = varNamesComboBox.getItemCount();
+        nextButton.addActionListener(e -> {
+            int current = StructEMBayesSearchEditorWizard.this.varNamesComboBox.getSelectedIndex();
+            int max = StructEMBayesSearchEditorWizard.this.varNamesComboBox.getItemCount();
 
-                ++current;
+            ++current;
 
-                if (current == max) {
-                    JOptionPane.showMessageDialog(
-                            StructEMBayesSearchEditorWizard.this,
-                            "There are no more variables.");
-                }
-
-                int set = (current < max) ? current : 0;
-
-                varNamesComboBox.setSelectedIndex(set);
+            if (current == max) {
+                JOptionPane.showMessageDialog(
+                        StructEMBayesSearchEditorWizard.this,
+                        "There are no more variables.");
             }
+
+            int set = (current < max) ? current : 0;
+
+            StructEMBayesSearchEditorWizard.this.varNamesComboBox.setSelectedIndex(set);
         });
 
-        workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if (e.getPropertyName().equals("selectedNodes")) {
-                    List selection = (List) (e.getNewValue());
+        workbench.addPropertyChangeListener(e -> {
+            if (e.getPropertyName().equals("selectedNodes")) {
+                List selection = (List) (e.getNewValue());
 
-                    if (selection.size() == 1) {
-                        Node node = (Node) (selection.get(0));
-                        varNamesComboBox.setSelectedItem(node);
-                    }
+                if (selection.size() == 1) {
+                    Node node12 = (Node) (selection.get(0));
+                    StructEMBayesSearchEditorWizard.this.varNamesComboBox.setSelectedItem(node12);
                 }
             }
         });
@@ -194,14 +184,14 @@ final class StructEMBayesSearchEditorWizard extends JPanel {
      * node.
      */
     private void setCurrentNode(Node node) {
-        TableCellEditor cellEditor = editingTable.getCellEditor();
+        TableCellEditor cellEditor = this.editingTable.getCellEditor();
 
         if (cellEditor != null) {
             cellEditor.cancelCellEditing();
         }
 
-        editingTable = new BayesEstimatorNodeEditingTable(node, getBayesIm());
-        editingTable.addPropertyChangeListener(new PropertyChangeListener() {
+        this.editingTable = new BayesEstimatorNodeEditingTable(node, getBayesIm());
+        this.editingTable.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("editorValueChanged".equals(evt.getPropertyName())) {
                     firePropertyChange("editorValueChanged", null, null);
@@ -209,23 +199,23 @@ final class StructEMBayesSearchEditorWizard extends JPanel {
             }
         });
 
-        JScrollPane scroll = new JScrollPane(editingTable);
+        JScrollPane scroll = new JScrollPane(this.editingTable);
         scroll.setPreferredSize(new Dimension(0, 150));
 
-        tablePanel.removeAll();
-        tablePanel.add(scroll, BorderLayout.CENTER);
-        tablePanel.revalidate();
-        tablePanel.repaint();
+        this.tablePanel.removeAll();
+        this.tablePanel.add(scroll, BorderLayout.CENTER);
+        this.tablePanel.revalidate();
+        this.tablePanel.repaint();
 
-        editingTable.grabFocus();
+        this.editingTable.grabFocus();
     }
 
     private BayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     private GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 }
 

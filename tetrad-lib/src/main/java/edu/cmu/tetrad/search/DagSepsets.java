@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,8 +34,8 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class DagSepsets implements SepsetProducer {
-    private EdgeListGraph dag;
-    private boolean verbose = false;
+    private final EdgeListGraph dag;
+    private boolean verbose;
 
     public DagSepsets(Graph dag) {
         this.dag = new EdgeListGraph(dag);
@@ -43,19 +43,19 @@ public class DagSepsets implements SepsetProducer {
 
     @Override
     public List<Node> getSepset(Node a, Node b) {
-        return dag.getSepset(a, b);
+        return this.dag.getSepset(a, b);
     }
 
     @Override
     public boolean isCollider(Node i, Node j, Node k) {
-        List<Node> sepset = dag.getSepset(i, k);
+        List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
 
     @Override
     public boolean isNoncollider(Node i, Node j, Node k) {
 //        return true;
-        List<Node> sepset = dag.getSepset(i, k);
+        List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && sepset.contains(j);
     }
 
@@ -71,16 +71,16 @@ public class DagSepsets implements SepsetProducer {
 
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return dag.isDSeparatedFrom(a, b, c);
+        return this.dag.isDSeparatedFrom(a, b, c);
     }
 
     @Override
     public List<Node> getVariables() {
-        return dag.getNodes();
+        return this.dag.getNodes();
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
@@ -89,7 +89,7 @@ public class DagSepsets implements SepsetProducer {
     }
 
     public Graph getDag() {
-        return dag;
+        return this.dag;
     }
 }
 

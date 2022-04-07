@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,7 +42,7 @@ public final class CpcOrienter implements Reorienter {
     /**
      * The independence test used for the PC search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -63,16 +63,6 @@ public final class CpcOrienter implements Reorienter {
      * Elapsed time of last search.
      */
     private long elapsedTime;
-
-//    /**
-//     * Sepset map from the adjacency search.
-//     */
-//    private SepsetMap sepsetMap;
-
-    /**
-     * The list of all unshielded triples.
-     */
-    private Set<Triple> allTriples;
 
     /**
      * Set of unshielded colliders from the triple orientation step.
@@ -107,11 +97,7 @@ public final class CpcOrienter implements Reorienter {
     //==============================PUBLIC METHODS========================//
 
     private IndependenceTest getIndependenceTest() {
-        return independenceTest;
-    }
-
-    private IKnowledge getKnowledge() {
-        return knowledge;
+        return this.independenceTest;
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -122,40 +108,24 @@ public final class CpcOrienter implements Reorienter {
         this.knowledge = knowledge;
     }
 
-    private int getDepth() {
-        return depth;
-    }
-
-    public final void setDepth(int depth) {
+    public void setDepth(int depth) {
         this.depth = depth;
     }
 
-    public final Graph getPartialGraph() {
-        return new EdgeListGraph(graph);
-    }
-
-    public final long getElapsedTime() {
+    public long getElapsedTime() {
         return this.elapsedTime;
     }
 
-    public final int getNumAmbiguousPairs() {
-        return ambiguousTriples.size();
-    }
-
-    public final int getNumPairs() {
-        return allTriples.size();
-    }
-
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<>(ambiguousTriples);
+        return new HashSet<>(this.ambiguousTriples);
     }
 
     public Set<Triple> getColliderTriples() {
-        return colliderTriples;
+        return this.colliderTriples;
     }
 
     public Set<Triple> getNoncolliderTriples() {
-        return noncolliderTriples;
+        return this.noncolliderTriples;
     }
 
     /**
@@ -163,25 +133,11 @@ public final class CpcOrienter implements Reorienter {
      */
     public void orient(Graph graph) {
         TetradLogger.getInstance().log("info", "Starting CPC Orienter algorithm.");
-        TetradLogger.getInstance().log("info", "Independence test = " + independenceTest + ".");
+        TetradLogger.getInstance().log("info", "Independence test = " + this.independenceTest + ".");
         long startTime = System.currentTimeMillis();
-        this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
-
-        if (getIndependenceTest() == null) {
-            throw new NullPointerException();
-        }
-
-//        List allNodes = getIndependenceTest().getVariable();
-//        if (!allNodes.containsAll(nodes)) {
-//            throw new IllegalArgumentException("All of the given nodes must " +
-//                    "be in the domain of the independence test provided.");
-//        }
-//
-//        graph = new EdgeListGraph(nodes);
-//        graph.fullyConnect(Endpoint.TAIL);
 
         this.graph = graph;
         Set<Edge> edges = graph.getEdges();
@@ -191,41 +147,20 @@ public final class CpcOrienter implements Reorienter {
             graph.addEdge(Edges.undirectedEdge(edge.getNode1(), edge.getNode2()));
         }
 
-//        Fas fas =
-//                new Fas(graph, getIndependenceTest());
-//        fas.setKnowledge(getKnowledge());
-//        fas.setMaxIndegree(getMaxIndegree());
-//        graph = fas.search();
-//        this.sepsetMap = fas.getSepsets();
-
-//        FastAdjacencySearchLo fas =
-//                new FastAdjacencySearchLo(graph, getIndependenceTest());
-//        fas.setKnowledge(getKnowledge());
-//        fas.setMaxIndegree(depth());
-//        fas.search();
-
-//        if (!sepsetMap.equals(sepsetPc)) {
-//            System.out.println("Not equal.");
-//        }
-
-//        verifySepsetIntegrity(sepsetMap, graph);
-
-        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
-        orientUnshieldedTriples(knowledge, getIndependenceTest(), depth);
+        SearchGraphUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
+        orientUnshieldedTriples(this.knowledge, getIndependenceTest(), this.depth);
         MeekRules meekRules = new MeekRules();
-        meekRules.setKnowledge(knowledge);
+        meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - startTime;
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
         logTriples();
         TetradLogger.getInstance().flush();
 
-//        SearchGraphUtils.verifySepsetIntegrity(sepsetMap, graph);
-//        return graph;
     }
 
     private void logTriples() {
@@ -274,17 +209,17 @@ public final class CpcOrienter implements Reorienter {
 
     //==========================PRIVATE METHODS===========================//
 
-    @SuppressWarnings({"SameParameterValue"})
+    @SuppressWarnings("SameParameterValue")
     private void orientUnshieldedTriples(IKnowledge knowledge,
                                          IndependenceTest test, int depth) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
-        colliderTriples = new HashSet<>();
-        noncolliderTriples = new HashSet<>();
-        ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
 
-        for (Node y : graph.getNodes()) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
+        for (Node y : this.graph.getNodes()) {
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(y);
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -301,27 +236,25 @@ public final class CpcOrienter implements Reorienter {
                     continue;
                 }
 
-                allTriples.add(new Triple(x, y, z));
-
-                CpcOrienter.TripleType type = getTripleType(x, y, z, test, depth);
+                TripleType type = getTripleType(x, y, z, test, depth);
 
                 System.out.println(new Triple(x, y, z) + " " + type);
 
-                if (type == CpcOrienter.TripleType.COLLIDER) {
+                if (type == TripleType.COLLIDER) {
                     if (colliderAllowed(x, y, z, knowledge)) {
-                        graph.setEndpoint(x, y, Endpoint.ARROW);
-                        graph.setEndpoint(z, y, Endpoint.ARROW);
+                        this.graph.setEndpoint(x, y, Endpoint.ARROW);
+                        this.graph.setEndpoint(z, y, Endpoint.ARROW);
                         TetradLogger.getInstance().log("colliderOrientations",
                                 SearchLogUtils.colliderOrientedMsg(x, y, z));
                     }
 
-                    colliderTriples.add(new Triple(x, y, z));
-                } else if (type == CpcOrienter.TripleType.AMBIGUOUS) {
+                    this.colliderTriples.add(new Triple(x, y, z));
+                } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
-                    ambiguousTriples.add(triple);
-                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.ambiguousTriples.add(triple);
+                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 } else {
-                    noncolliderTriples.add(new Triple(x, y, z));
+                    this.noncolliderTriples.add(new Triple(x, y, z));
                 }
             }
         }
@@ -334,8 +267,8 @@ public final class CpcOrienter implements Reorienter {
                 CpcOrienter.isArrowpointAllowed1(z, y, knowledge);
     }
 
-    private CpcOrienter.TripleType getTripleType(Node x, Node y, Node z,
-                                                 IndependenceTest test, int depth) {
+    private TripleType getTripleType(Node x, Node y, Node z,
+                                     IndependenceTest test, int depth) {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 
@@ -399,30 +332,12 @@ public final class CpcOrienter implements Reorienter {
             }
         }
 
-        // These lines assume that the sepset information from the FAS was
-        // stored. This check ensures that false positive arrow orientations
-        // by CPC are strictly fewer than for PC, but from a practical standpoint
-        // is not all that helpful.
-//        List<Node> condSet = sepsetMap.get(x, z);
-//
-//        if (condSet == null) {
-//            System.out.println("Wierd, no sepset!");
-//        }
-//
-//        if (condSet != null) {
-//            if (condSet.contains(y)) {
-//                existsSepsetContainingY = true;
-//            } else {
-//                existsSepsetNotContainingY = true;
-//            }
-//        }
-
         if (existsSepsetContainingY == existsSepsetNotContainingY) {
-            return CpcOrienter.TripleType.AMBIGUOUS;
+            return TripleType.AMBIGUOUS;
         } else if (!existsSepsetNotContainingY) {
-            return CpcOrienter.TripleType.NONCOLLIDER;
+            return TripleType.NONCOLLIDER;
         } else {
-            return CpcOrienter.TripleType.COLLIDER;
+            return TripleType.COLLIDER;
         }
     }
 

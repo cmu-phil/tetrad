@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,9 +41,9 @@ import java.util.*;
 public final class StoredCellProbs implements TetradSerializable, DiscreteProbs {
     static final long serialVersionUID = 23L;
 
-    private List<Node> variables;
-    private int[] parentDims;
-    private double[] probs;
+    private final List<Node> variables;
+    private final int[] parentDims;
+    private final double[] probs;
 
     //============================CONSTRUCTORS============================//
 
@@ -64,7 +64,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         }
 
         this.variables = Collections.unmodifiableList(variables);
-        Set<Object> variableSet = new HashSet<Object>(this.variables);
+        Set<Object> variableSet = new HashSet<>(this.variables);
         if (variableSet.size() < this.variables.size()) {
             throw new IllegalArgumentException("Duplicate variable.");
         }
@@ -73,7 +73,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
 
         for (int i = 0; i < getVariables().size(); i++) {
             DiscreteVariable var = (DiscreteVariable) getVariables().get(i);
-            parentDims[i] = var.getNumCategories();
+            this.parentDims[i] = var.getNumCategories();
         }
 
         int numCells = 1;
@@ -87,6 +87,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
 
     public static StoredCellProbs createRandomCellTable(List<Node> variables) {
         StoredCellProbs cellProbs = new StoredCellProbs(variables);
+        RandomUtil.getInstance().setSeed(39492993L);
 
         double sum = 0.0;
 
@@ -125,7 +126,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
      * Generates a simple exemplar of this class to test serialization.
      */
     public static StoredCellProbs serializableInstance() {
-        return new StoredCellProbs(new ArrayList<Node>());
+        return new StoredCellProbs(new ArrayList<>());
     }
 
     //=============================PUBLIC METHODS=========================//
@@ -136,7 +137,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
      * returned by get
      */
     public double getCellProb(int[] variableValues) {
-        return probs[getOffset(variableValues)];
+        return this.probs[getOffset(variableValues)];
     }
 
     public double getProb(Proposition assertion) {
@@ -145,7 +146,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         int[] variableValues = new int[assertion.getNumVariables()];
 
         for (int i = 0; i < assertion.getNumVariables(); i++) {
-            variableValues[i] = nextValue(assertion, i, -1);
+            variableValues[i] = StoredCellProbs.nextValue(assertion, i, -1);
         }
 
         variableValues[variableValues.length - 1] = -1;
@@ -154,13 +155,13 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         loop:
         while (true) {
             for (int i = assertion.getNumVariables() - 1; i >= 0; i--) {
-                if (hasNextValue(assertion, i, variableValues[i])) {
+                if (StoredCellProbs.hasNextValue(assertion, i, variableValues[i])) {
                     variableValues[i] =
-                            nextValue(assertion, i, variableValues[i]);
+                            StoredCellProbs.nextValue(assertion, i, variableValues[i]);
 
                     for (int j = i + 1; j < assertion.getNumVariables(); j++) {
-                        if (hasNextValue(assertion, j, -1)) {
-                            variableValues[j] = nextValue(assertion, j, -1);
+                        if (StoredCellProbs.hasNextValue(assertion, j, -1)) {
+                            variableValues[j] = StoredCellProbs.nextValue(assertion, j, -1);
                         } else {
                             break loop;
                         }
@@ -179,7 +180,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
 
     private static boolean hasNextValue(Proposition proposition, int variable,
                                         int curIndex) {
-        return nextValue(proposition, variable, curIndex) != -1;
+        return StoredCellProbs.nextValue(proposition, variable, curIndex) != -1;
     }
 
     private static int nextValue(Proposition proposition, int variable,
@@ -206,7 +207,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         int[] variableValues = new int[condition.getNumVariables()];
 
         for (int i = 0; i < condition.getNumVariables(); i++) {
-            variableValues[i] = nextValue(condition, i, -1);
+            variableValues[i] = StoredCellProbs.nextValue(condition, i, -1);
         }
 
         variableValues[variableValues.length - 1] = -1;
@@ -216,13 +217,13 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         loop:
         while (true) {
             for (int i = condition.getNumVariables() - 1; i >= 0; i--) {
-                if (hasNextValue(condition, i, variableValues[i])) {
+                if (StoredCellProbs.hasNextValue(condition, i, variableValues[i])) {
                     variableValues[i] =
-                            nextValue(condition, i, variableValues[i]);
+                            StoredCellProbs.nextValue(condition, i, variableValues[i]);
 
                     for (int j = i + 1; j < condition.getNumVariables(); j++) {
-                        if (hasNextValue(condition, j, -1)) {
-                            variableValues[j] = nextValue(condition, j, -1);
+                        if (StoredCellProbs.hasNextValue(condition, j, -1)) {
+                            variableValues[j] = StoredCellProbs.nextValue(condition, j, -1);
                         } else {
                             break loop;
                         }
@@ -253,10 +254,6 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         return assertionTrue / conditionTrue;
     }
 
-    public boolean isMissingValueCaseFound() {
-        return false;
-    }
-
     public List<Node> getVariables() {
         return this.variables;
     }
@@ -269,14 +266,14 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
 
         buf.append("\n");
 
-        for (Node variable : variables) {
+        for (Node variable : this.variables) {
             buf.append(variable).append("\t");
         }
 
         double sum = 0.0;
-        int maxLines = 500;
+        final int maxLines = 500;
 
-        for (int i = 0; i < probs.length; i++) {
+        for (int i = 0; i < this.probs.length; i++) {
             if (i >= maxLines) {
                 buf.append("\nCowardly refusing to print more than ")
                         .append(maxLines).append(" lines.");
@@ -291,8 +288,8 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
                 buf.append(variableValue).append("\t");
             }
 
-            buf.append(nf.format(probs[i]));
-            sum += probs[i];
+            buf.append(nf.format(this.probs[i]));
+            sum += this.probs[i];
         }
 
         buf.append("\n\nSum = ").append(nf.format(sum));
@@ -353,7 +350,7 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
                     "Probability not in [0.0, 1.0]: " + probability);
         }
 
-        probs[getOffset(variableValues)] = probability;
+        this.probs[getOffset(variableValues)] = probability;
     }
 }
 

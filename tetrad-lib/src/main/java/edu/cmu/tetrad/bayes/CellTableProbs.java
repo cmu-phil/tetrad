@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -38,7 +38,7 @@ public final class CellTableProbs implements DiscreteProbs {
     /**
      * The data set that this is a cell count table for.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * An array whose length is the number of dimensions of the cell and whose
@@ -59,18 +59,7 @@ public final class CellTableProbs implements DiscreteProbs {
     /**
      * The total number of points in the cell count table.
      */
-    private int numPoints = 0;
-
-    /**
-     * Indicates whether bounds on coordinate values are explicitly enforced.
-     * This may slow down loops.
-     */
-    private boolean boundsEnforced = true;
-
-    /**
-     * True iff a missing value case was found.
-     */
-    private boolean missingValueCaseFound;
+    private int numPoints;
 
     //============================CONSTRUCTORS===========================//
 
@@ -83,17 +72,17 @@ public final class CellTableProbs implements DiscreteProbs {
         }
 
         this.dataSet = dataSet;
-        dims = new int[dataSet.getNumColumns()];
+        this.dims = new int[dataSet.getNumColumns()];
 
-        for (int i = 0; i < dims.length; i++) {
+        for (int i = 0; i < this.dims.length; i++) {
             DiscreteVariable variable =
                     (DiscreteVariable) dataSet.getVariable(i);
-            dims[i] = variable.getNumCategories();
+            this.dims[i] = variable.getNumCategories();
         }
 
         int size = 1;
 
-        for (int dim : dims) {
+        for (int dim : this.dims) {
             size *= dim;
         }
 
@@ -101,23 +90,26 @@ public final class CellTableProbs implements DiscreteProbs {
 
         int numRows = dataSet.getNumRows();
 
-        int[] point = new int[dims.length];
-        this.missingValueCaseFound = false;
+        int[] point = new int[this.dims.length];
+        /**
+         * True iff a missing value case was found.
+         */
+        boolean missingValueCaseFound = false;
 
         point:
         for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < dims.length; j++) {
+            for (int j = 0; j < this.dims.length; j++) {
                 point[j] = dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
-                    this.missingValueCaseFound = true;
+                    missingValueCaseFound = true;
                     continue point;
                 }
             }
 
             int cellIndex = getCellIndex(point);
-            cells[cellIndex]++;
-            numPoints++;
+            this.cells[cellIndex]++;
+            this.numPoints++;
         }
     }
 
@@ -129,8 +121,8 @@ public final class CellTableProbs implements DiscreteProbs {
      */
     public double getCellProb(int[] variableValues) {
         int cellIndex = getCellIndex(variableValues);
-        int cellCount = cells[cellIndex];
-        return cellCount / (double) numPoints;
+        int cellCount = this.cells[cellIndex];
+        return cellCount / (double) this.numPoints;
     }
 
     /**
@@ -142,7 +134,7 @@ public final class CellTableProbs implements DiscreteProbs {
         int[] variableValues = new int[assertion.getNumVariables()];
 
         for (int i = 0; i < assertion.getNumVariables(); i++) {
-            variableValues[i] = nextValue(assertion, i, -1);
+            variableValues[i] = CellTableProbs.nextValue(assertion, i, -1);
         }
 
         variableValues[variableValues.length - 1] = -1;
@@ -151,13 +143,13 @@ public final class CellTableProbs implements DiscreteProbs {
         loop:
         while (true) {
             for (int i = assertion.getNumVariables() - 1; i >= 0; i--) {
-                if (hasNextValue(assertion, i, variableValues[i])) {
+                if (CellTableProbs.hasNextValue(assertion, i, variableValues[i])) {
                     variableValues[i] =
-                            nextValue(assertion, i, variableValues[i]);
+                            CellTableProbs.nextValue(assertion, i, variableValues[i]);
 
                     for (int j = i + 1; j < assertion.getNumVariables(); j++) {
-                        if (hasNextValue(assertion, j, -1)) {
-                            variableValues[j] = nextValue(assertion, j, -1);
+                        if (CellTableProbs.hasNextValue(assertion, j, -1)) {
+                            variableValues[j] = CellTableProbs.nextValue(assertion, j, -1);
                         } else {
                             break loop;
                         }
@@ -188,7 +180,7 @@ public final class CellTableProbs implements DiscreteProbs {
         }
 
         List<Node> assertionVars = assertion.getVariableSource().getVariables();
-        List<Node> dataVars = dataSet.getVariables();
+        List<Node> dataVars = this.dataSet.getVariables();
 
         if (!assertionVars.equals(dataVars)) {
             throw new IllegalArgumentException(
@@ -201,7 +193,7 @@ public final class CellTableProbs implements DiscreteProbs {
         int[] variableValues = new int[condition.getNumVariables()];
 
         for (int i = 0; i < condition.getNumVariables(); i++) {
-            variableValues[i] = nextValue(condition, i, -1);
+            variableValues[i] = CellTableProbs.nextValue(condition, i, -1);
         }
 
         variableValues[variableValues.length - 1] = -1;
@@ -211,13 +203,13 @@ public final class CellTableProbs implements DiscreteProbs {
         loop:
         while (true) {
             for (int i = condition.getNumVariables() - 1; i >= 0; i--) {
-                if (hasNextValue(condition, i, variableValues[i])) {
+                if (CellTableProbs.hasNextValue(condition, i, variableValues[i])) {
                     variableValues[i] =
-                            nextValue(condition, i, variableValues[i]);
+                            CellTableProbs.nextValue(condition, i, variableValues[i]);
 
                     for (int j = i + 1; j < condition.getNumVariables(); j++) {
-                        if (hasNextValue(condition, j, -1)) {
-                            variableValues[j] = nextValue(condition, j, -1);
+                        if (CellTableProbs.hasNextValue(condition, j, -1)) {
+                            variableValues[j] = CellTableProbs.nextValue(condition, j, -1);
                         } else {
                             break loop;
                         }
@@ -254,7 +246,7 @@ public final class CellTableProbs implements DiscreteProbs {
      * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     /**
@@ -269,15 +261,8 @@ public final class CellTableProbs implements DiscreteProbs {
      * True iff bounds checking is performed on variable values indices.
      */
     private boolean isBoundsEnforced() {
-        return boundsEnforced;
+        return true;
     }
-
-//    /**
-//     * True iff bounds checking is performed on variable values indices.
-//     */
-//    public void setBoundsEnforced(boolean boundsEnforced) {
-//        this.boundsEnforced = boundsEnforced;
-//    }
 
     //===========================PRIVATE METHODS===========================//
 
@@ -292,23 +277,23 @@ public final class CellTableProbs implements DiscreteProbs {
         int cellIndex = 0;
 
         if (isBoundsEnforced()) {
-            if (coords.length != dims.length) {
+            if (coords.length != this.dims.length) {
                 throw new IllegalArgumentException(
                         "Coordinate array must have the proper number of dimensions.");
             }
 
             for (int i = 0; i < coords.length; i++) {
-                if ((coords[i] < 0) || (coords[i] >= dims[i])) {
+                if ((coords[i] < 0) || (coords[i] >= this.dims[i])) {
                     throw new IllegalArgumentException("Coordinate #" + i +
-                            " for variable " + dataSet.getVariable(i) +
-                            " is out of bounds [0, " + (dims[i] - 1) + "]: " +
+                            " for variable " + this.dataSet.getVariable(i) +
+                            " is out of bounds [0, " + (this.dims[i] - 1) + "]: " +
                             coords[i]);
                 }
             }
         }
 
-        for (int i = 0; i < dims.length; i++) {
-            cellIndex *= dims[i];
+        for (int i = 0; i < this.dims.length; i++) {
+            cellIndex *= this.dims[i];
             cellIndex += coords[i];
 
             if (cellIndex == Integer.MAX_VALUE || cellIndex < 0) {
@@ -322,7 +307,7 @@ public final class CellTableProbs implements DiscreteProbs {
 
     private static boolean hasNextValue(Proposition proposition, int variable,
                                         int curIndex) {
-        return nextValue(proposition, variable, curIndex) != -1;
+        return CellTableProbs.nextValue(proposition, variable, curIndex) != -1;
     }
 
     private static int nextValue(Proposition proposition, int variable,
@@ -337,9 +322,6 @@ public final class CellTableProbs implements DiscreteProbs {
         return -1;
     }
 
-    public boolean isMissingValueCaseFound() {
-        return missingValueCaseFound;
-    }
 }
 
 

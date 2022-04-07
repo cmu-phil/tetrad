@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -60,7 +60,7 @@ public final class TestSearchGraph {
 
         List<Node> nodes = graph.getNodes();
 
-        int depth = -1;
+        final int depth = -1;
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
@@ -77,8 +77,8 @@ public final class TestSearchGraph {
                 while ((choice = gen.next()) != null) {
                     List<Node> z = new LinkedList<>();
 
-                    for (int k = 0; k < choice.length; k++) {
-                        z.add(theRest.get(choice[k]));
+                    for (int value : choice) {
+                        z.add(theRest.get(value));
                     }
 
                     if (graph.isDSeparatedFrom(x, y, z) != graph.isDSeparatedFrom(y, x, z)) {
@@ -107,7 +107,7 @@ public final class TestSearchGraph {
 
         List<Node> nodes = graph.getNodes();
 
-        int depth = -1;
+        final int depth = -1;
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i; j < nodes.size(); j++) {
@@ -115,8 +115,6 @@ public final class TestSearchGraph {
                 Node y = nodes.get(j);
 
                 List<Node> theRest = new ArrayList<>(nodes);
-//                theRest.remove(x);
-//                theRest.remove(y);
 
                 DepthChoiceGenerator gen = new DepthChoiceGenerator(theRest.size(), depth);
                 int[] choice;
@@ -124,8 +122,8 @@ public final class TestSearchGraph {
                 while ((choice = gen.next()) != null) {
                     List<Node> z = new LinkedList<>();
 
-                    for (int k = 0; k < choice.length; k++) {
-                        z.add(theRest.get(choice[k]));
+                    for (int value : choice) {
+                        z.add(theRest.get(value));
                     }
 
                     boolean dConnectedTo = graph.isDConnectedTo(x, y, z);
@@ -147,10 +145,10 @@ public final class TestSearchGraph {
     // Trying to trip up the breadth first algorithm.
     public void testDSeparation3() {
         Graph graph = GraphConverter.convert("x-->s1,x-->s2,s1-->s3,s3-->s2,s3<--y");
-        assertTrue(graph.isDSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new ArrayList<Node>()));
+        assertTrue(graph.isDSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new ArrayList<>()));
 
         graph = GraphConverter.convert("1-->2,2<--4,2-->7,2-->3");
-        assertTrue(graph.isDSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new ArrayList<Node>()));
+        assertTrue(graph.isDSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new ArrayList<>()));
 
         graph = GraphConverter.convert("X1-->X5,X1-->X6,X2-->X3,X4-->X6,X5-->X3,X6-->X5,X7-->X3");
         assertTrue(dConnected(graph, "X2", "X4", "X3", "X6"));
@@ -176,7 +174,7 @@ public final class TestSearchGraph {
                 5, 5, 5, false));
 
         long start, stop;
-        int depth = -1;
+        final int depth = -1;
 
         IndependenceTest test = new IndTestDSep(graph);
 
@@ -226,20 +224,7 @@ public final class TestSearchGraph {
 
     public void testAlternativeGraphs() {
 
-//        UniformGraphGenerator gen = new UniformGraphGenerator(UniformGraphGenerator.ANY_DAG);
-//        gen.setNumNodes(100);
-//        gen.setMaxEdges(200);
-//        gen.setMaxDegree(30);
-//        gen.setMaxInDegree(30);
-//        gen.setMaxOutDegree(30);
-////        gen.setNumIterations(3000000);
-//        gen.setResamplingDegree(10);
-//
-//        gen.generate();
-//
-//        Graph graph = gen.getDag();
-
-        Graph graph = weightedRandomGraph(250, 400);
+        Graph graph = TestSearchGraph.weightedRandomGraph(250, 400);
 
         List<Integer> degreeCounts = new ArrayList<>();
         Map<Integer, Integer> degreeCount = new HashMap<>();
@@ -267,10 +252,10 @@ public final class TestSearchGraph {
             System.out.println(log(i + 1) + " " + log(j));
         }
 
-        System.out.println("\nCPL = " + characteristicPathLength(graph));
+        System.out.println("\nCPL = " + TestSearchGraph.characteristicPathLength(graph));
 
-        Graph erGraph = erdosRenyiGraph(200, 200);
-        System.out.println("\n ER CPL = " + characteristicPathLength(erGraph));
+        Graph erGraph = TestSearchGraph.erdosRenyiGraph(200, 200);
+        System.out.println("\n ER CPL = " + TestSearchGraph.characteristicPathLength(erGraph));
     }
 
     public static Graph erdosRenyiGraph(int n, int e) {
@@ -308,11 +293,11 @@ public final class TestSearchGraph {
         Graph graph = new EdgeListGraph(nodes);
 
         for (int e0 = 0; e0 < e; e0++) {
-            int i1 = weightedRandom(nodes, graph);
+            int i1 = TestSearchGraph.weightedRandom(nodes, graph);
 //            int i2 = RandomUtil.getInstance().nextInt(n);
-            int i2 = weightedRandom(nodes, graph);
+            int i2 = TestSearchGraph.weightedRandom(nodes, graph);
 
-            if (!(shortestPath(nodes.get(i1), nodes.get(i2), graph) < 9)) {
+            if (!(TestSearchGraph.shortestPath(nodes.get(i1), nodes.get(i2), graph) < 9)) {
                 e0--;
                 continue;
             }
@@ -394,7 +379,7 @@ public final class TestSearchGraph {
         int n = nodes.size();
 
         for (int b = 0; b < n; b++) {
-            total = weight(nodes, graph, total, b);
+            total = TestSearchGraph.weight(nodes, graph, total, b);
         }
 
         int r = RandomUtil.getInstance().nextInt(total);
@@ -403,7 +388,7 @@ public final class TestSearchGraph {
         int index = 0;
 
         for (int b = 0; b < n; b++) {
-            count = weight(nodes, graph, count, b);
+            count = TestSearchGraph.weight(nodes, graph, count, b);
             if (r <= count) {
                 index = b;
                 break;
@@ -414,10 +399,10 @@ public final class TestSearchGraph {
     }
 
     private static int weight(List<Node> nodes, Graph graph, int total, int b) {
-        double p = 1;
+        final double p = 1;
         int degree = graph.getNumEdges(nodes.get(b));
         int t = degree + 1;
-        total += pow((double) t, p);
+        total += pow(t, p);
         return total;
     }
 
@@ -428,7 +413,7 @@ public final class TestSearchGraph {
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i; j < nodes.size(); j++) {
-                int shortest = shortestPath(nodes.get(i), nodes.get(j), g);
+                int shortest = TestSearchGraph.shortestPath(nodes.get(i), nodes.get(j), g);
                 total += shortest;
                 count++;
             }

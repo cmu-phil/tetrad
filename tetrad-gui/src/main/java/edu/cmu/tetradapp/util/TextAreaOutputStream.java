@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,12 +41,12 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
     /**
      * A string bugger used to buffer lines.
      */
-    private StringBuilder buf = new StringBuilder();
+    private final StringBuilder buf = new StringBuilder();
 
     /**
      * The length of string written to the text area.
      */
-    private int lengthWritten = 0;
+    private int lengthWritten;
 
     /**
      * Creates a text area output stream, for writing text to the given
@@ -60,7 +60,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      */
     public TextAreaOutputStream(JTextArea textArea) {
         this.textArea = textArea;
-        lengthWritten = textArea.getText().length();
+        this.lengthWritten = textArea.getText().length();
     }
 
     /**
@@ -69,34 +69,15 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      * @param b the byte to be written.
      */
     public synchronized void write(int b) {
-        if (buf.length() > 5000) return;
-        buf.append((char) b);
+        if (this.buf.length() > 5000) return;
+        this.buf.append((char) b);
 
         if ((char) b == '\n') {
-            int maxSize = 50000;
 
-            if (false) {//lengthWritten > maxSize) {
-                String text = textArea.getText();
-                StringBuilder buf1 = new StringBuilder(text.substring(maxSize - 10000));
-                buf1.append(buf);
-                textArea.setText(buf1.toString());
-                lengthWritten = buf1.length();
-                buf.setLength(0);
-                buf = new StringBuilder();
-                moveToEnd();
-
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                textArea.append(buf.toString());
-//            textArea.setText(buf.toString());
-                lengthWritten = lengthWritten + buf.length();
-                buf.setLength(0);
-                moveToEnd();
-            }
+            this.textArea.append(this.buf.toString());
+            this.lengthWritten = this.lengthWritten + this.buf.length();
+            this.buf.setLength(0);
+            moveToEnd();
         }
     }
 
@@ -107,7 +88,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      * @return String translated from the buffer's contents.
      */
     public String toString() {
-        return textArea.toString();
+        return this.textArea.toString();
     }
 
 
@@ -123,7 +104,7 @@ public class TextAreaOutputStream extends OutputStream implements TetradLogger.L
      * @return The total string length written to the text area.
      */
     public int getLengthWritten() {
-        return lengthWritten;
+        return this.lengthWritten;
     }
 
     public void moveToEnd() {

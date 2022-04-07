@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
  *
  * @author Tyler Gibson
  */
-@SuppressWarnings({"MethodMayBeStatic"})
+@SuppressWarnings("MethodMayBeStatic")
 public class TetradLogger {
 
 
@@ -76,7 +76,7 @@ public class TetradLogger {
     private final Map<Object, TetradLoggerConfig> nodeConfigMap = new ConcurrentHashMap<>();
 
 
-    private Map<Object, Object> nodeModelMap = new ConcurrentHashMap<>();
+    private final Map<Object, Object> nodeModelMap = new ConcurrentHashMap<>();
 
     /**
      * The configuration to use to determine which events to log.
@@ -99,7 +99,7 @@ public class TetradLogger {
     /**
      * Forces the logger to log all output.
      */
-    private boolean forceLog = false;
+    private boolean forceLog;
 
 
     /**
@@ -127,7 +127,7 @@ public class TetradLogger {
      * @return - instance
      */
     public static TetradLogger getInstance() {
-        return INSTANCE;
+        return TetradLogger.INSTANCE;
     }
 
 
@@ -142,7 +142,7 @@ public class TetradLogger {
     /**
      * Removes the given listener from the logger.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public void removeTetradLoggerListener(TetradLoggerListener l) {
         this.listeners.remove(l);
     }
@@ -163,11 +163,6 @@ public class TetradLogger {
             this.config = config;
             this.fireActived(this.config);
 
-//            TetradLogger.getInstance().info("Supported events");
-//
-//            for (TetradLoggerConfig.Event event : config.getSupportedEvents()) {
-//                TetradLogger.getInstance().info(event + " " + config.isEventActive(event.getSampleId()));
-//            }
         }
     }
 
@@ -176,7 +171,7 @@ public class TetradLogger {
      * This can be used to tell the logger which events to log without having
      * to first define a <code>TetradLoggerConfig</code>.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public void setEventsToLog(String... events) {
         setTetradLoggerConfig(new DefaultTetradLoggerConfig(events));
     }
@@ -199,9 +194,6 @@ public class TetradLogger {
      */
     public void setConfigForClass(Class model) {
         TetradLoggerConfig config = this.classConfigMap.get(model);
-//        if (config == null) {
-//            System.out.println("There is no pre-defined logger config for the model " + model);
-//        }
         setTetradLoggerConfig(config);
     }
 
@@ -284,9 +276,9 @@ public class TetradLogger {
 
         boolean eventActive = isEventActive(event);
 
-        if ((this.logging && eventActive && !writers.isEmpty())) {
+        if ((this.logging && eventActive && !this.writers.isEmpty())) {
             try {
-                for (Writer writer : writers.values()) {
+                for (Writer writer : this.writers.values()) {
                     writer.write(message);
                     writer.write("\n");
                     writer.flush();
@@ -307,7 +299,7 @@ public class TetradLogger {
     public void error(String message) {
         if (this.logging) {
             try {
-                for (Writer writer : writers.values()) {
+                for (Writer writer : this.writers.values()) {
                     writer.write(message);
                     writer.write("\n");
                 }
@@ -331,7 +323,7 @@ public class TetradLogger {
                 this.fireActived(new EmptyConfig(true));
             }
             try {
-                for (Writer writer : writers.values()) {
+                for (Writer writer : this.writers.values()) {
                     writer.write(message);
                     writer.write("\n");
                     writer.flush();
@@ -387,7 +379,7 @@ public class TetradLogger {
      *                               the nature of the error.
      */
     public void setNextOutputStream() {
-        if (logging && this.isFileLoggingEnabled()) {
+        if (this.logging && this.isFileLoggingEnabled()) {
             File dir = new File(getLoggingDirectory());
             if (!dir.exists()) {
                 if (!dir.mkdir()) {
@@ -614,7 +606,7 @@ public class TetradLogger {
     }
 
     public String getLatestFilePath() {
-        return latestFilePath;
+        return this.latestFilePath;
     }
 
     public TetradLoggerConfig getLoggerConfig() {
@@ -632,7 +624,7 @@ public class TetradLogger {
         private final boolean active;
 
 
-        @SuppressWarnings({"SameParameterValue"})
+        @SuppressWarnings("SameParameterValue")
         public EmptyConfig(boolean active) {
             this.active = active;
         }
@@ -655,7 +647,7 @@ public class TetradLogger {
         }
 
         public TetradLoggerConfig copy() {
-            return new EmptyConfig(active);
+            return new EmptyConfig(this.active);
         }
 
         public List<Event> getSupportedEvents() {
@@ -682,7 +674,7 @@ public class TetradLogger {
          *
          * @return The total string length written to the text area.
          */
-        @SuppressWarnings({"UnusedDeclaration"})
+        @SuppressWarnings("UnusedDeclaration")
         int getLengthWritten();
 
 

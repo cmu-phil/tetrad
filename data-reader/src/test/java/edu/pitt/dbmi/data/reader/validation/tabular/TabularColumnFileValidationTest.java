@@ -48,9 +48,9 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidate() {
-        TabularColumnValidation validation = new TabularColumnFileValidation(dataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
+        TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
 
         List<ValidationResult> results = validation.validate();
         List<ValidationResult> infos = new LinkedList<>();
@@ -87,9 +87,9 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidateWithExcludedColumnSet() {
-        TabularColumnValidation validation = new TabularColumnFileValidation(dataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
+        TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
 
         Set<String> columnNames = new HashSet<>(Arrays.asList("\"X3\"", "X5", "X1", " ", "X7", "X9", "", "X10", "X11"));
 
@@ -128,9 +128,9 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidateWithExcludedColumnArray() {
-        TabularColumnValidation validation = new TabularColumnFileValidation(dataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
+        TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
 
         int[] excludedColumns = {7, 5};
 

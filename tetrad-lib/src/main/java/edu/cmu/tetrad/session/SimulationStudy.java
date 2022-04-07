@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -38,7 +38,7 @@ public final class SimulationStudy {
     /**
      * The session, nodes of which this simulation edu.cmu.tetrad.study is executing.
      */
-    private Session session;
+    private final Session session;
 
     /**
      * Support for firing SessionEvent's.
@@ -67,7 +67,7 @@ public final class SimulationStudy {
         session.addSessionListener(new SessionAdapter() {
             public void nodeRemoved(SessionEvent e) {
                 SessionNode node = e.getNode();
-                removeRepetition(node);
+                SimulationStudy.removeRepetition(node);
             }
         });
     }
@@ -128,8 +128,8 @@ public final class SimulationStudy {
         LinkedList<SessionNode> tierOrdering = new LinkedList<>(getTierOrdering(sessionNode));
         notifyDownstreamOfStart(sessionNode);
 
-        boolean doRepetition = true;
-        boolean simulation = true;
+        final boolean doRepetition = true;
+        final boolean simulation = true;
 
         TetradLogger.getInstance().forceLogMessage("\n\n===STARTING SIMULATION STUDY===");
         long time1 = System.currentTimeMillis();
@@ -141,9 +141,9 @@ public final class SimulationStudy {
         TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (time2 - time1) / 1000. + " s");
     }
 
-    public boolean createDescendantModels(final SessionNode sessionNode,
+    public boolean createDescendantModels(SessionNode sessionNode,
                                           boolean overwrite) {
-        if (!session.contains(sessionNode)) {
+        if (!this.session.contains(sessionNode)) {
             throw new IllegalArgumentException("Session node not in the " +
                     "session: " + sessionNode.getDisplayName());
         }
@@ -159,8 +159,8 @@ public final class SimulationStudy {
         }
 
         notifyDownstreamOfStart(sessionNode);
-        boolean doRepetition = false;
-        boolean simulation = true;
+        final boolean doRepetition = false;
+        final boolean simulation = true;
         return execute(tierOrdering, doRepetition, simulation, overwrite);
     }
 
@@ -176,7 +176,7 @@ public final class SimulationStudy {
     private HashSet<SessionNode> nodesWithModels() {
         HashSet<SessionNode> nodesWithModels = new HashSet<>();
 
-        for (SessionNode node : session.getNodes()) {
+        for (SessionNode node : this.session.getNodes()) {
             if (node.getModel() != null) {
                 nodesWithModels.add(node);
             }
@@ -189,7 +189,7 @@ public final class SimulationStudy {
      * Notify session nodes (and their parameters) downstream that a new
      * execution has begun of a simulation edu.cmu.tetrad.study.
      */
-    private void notifyDownstreamOfStart(final SessionNode sessionNode) {
+    private void notifyDownstreamOfStart(SessionNode sessionNode) {
         SessionSupport sessionSupport = new SessionSupport(this);
         sessionSupport.addSessionListener(sessionNode.getSessionHandler());
         sessionSupport.fireExecutionStarted();
@@ -211,13 +211,13 @@ public final class SimulationStudy {
 
         SessionNode sessionNode = tierOrdering.getFirst();
 
-        if (!session.contains(sessionNode)) {
+        if (!this.session.contains(sessionNode)) {
             throw new IllegalArgumentException("Session node not in the " +
                     "session: " + sessionNode.getDisplayName());
         }
 
         // Only fill in nodes that were already filled in.
-        if (!nodesToExecute.contains(sessionNode)) {
+        if (!this.nodesToExecute.contains(sessionNode)) {
             return false;
         }
 
@@ -231,7 +231,7 @@ public final class SimulationStudy {
         // the model for a particular node already exists, in which
         // cases it is not created again. (This avoids repetition.)
         // jdramsey 1/11/01
-        int repetition = doRepetition ? getRepetition(sessionNode) : 1;
+        int repetition = doRepetition ? SimulationStudy.getRepetition(sessionNode) : 1;
 
         Preferences.userRoot().putBoolean("errorFound", false);
 
@@ -293,9 +293,6 @@ public final class SimulationStudy {
             collectParentParamSettings(parent, paramSettings);
         }
 
-//        if (sessionNode.getModel() instanceof SimulationParamsSource) {
-//            paramSettings.putAll(((SimulationParamsSource) sessionNode.getModel()).getParamSettings());
-//        }
     }
 
     /**
@@ -318,11 +315,10 @@ public final class SimulationStudy {
         Set<SessionNode> sessionNodes = session.getNodes();
 
         LinkedList<SessionNode> found = new LinkedList<>();
-        Set<SessionNode> notFound = new HashSet<>();
 
         // The getVariableNodes() method already returns a copy, so there's no
         // need to make a new copy.
-        notFound.addAll(sessionNodes);
+        Set<SessionNode> notFound = new HashSet<>(sessionNodes);
 
         while (!notFound.isEmpty()) {
             for (Iterator<SessionNode> it = notFound.iterator(); it.hasNext(); ) {
@@ -335,13 +331,13 @@ public final class SimulationStudy {
             }
         }
 
-        found.retainAll(getDescendants(node));
+        found.retainAll(SimulationStudy.getDescendants(node));
         return found;
     }
 
     public static Set getDescendants(SessionNode node) {
         HashSet<SessionNode> descendants = new HashSet<>();
-        doChildClosureVisit(node, descendants);
+        SimulationStudy.doChildClosureVisit(node, descendants);
         return descendants;
     }
 
@@ -354,7 +350,7 @@ public final class SimulationStudy {
             Collection<SessionNode> children = node.getChildren();
 
             for (SessionNode child : children) {
-                doChildClosureVisit(child, closure);
+                SimulationStudy.doChildClosureVisit(child, closure);
             }
         }
     }
@@ -367,7 +363,7 @@ public final class SimulationStudy {
     }
 
     public Session getSession() {
-        return session;
+        return this.session;
     }
 }
 

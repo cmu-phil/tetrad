@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,12 +36,11 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class PcRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
-    private Graph externalGraph = null;
+    private Graph externalGraph;
     private Set<Edge> pcAdjacent;
     private Set<Edge> pcNonadjacent;
-    private List<Node> pcNodes;
 
 
     //============================CONSTRUCTORS============================//
@@ -137,7 +136,6 @@ public class PcRunner extends AbstractAlgorithmRunner
         pc.setKnowledge(knowledge);
         pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
         pc.setDepth(depth);
-        pc.setExternalGraph(externalGraph);
         graph = pc.search();
 
         System.out.println(graph);
@@ -173,10 +171,7 @@ public class PcRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with getTriplesList.
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
-//        names.add("ColliderDiscovery");
-//        names.add("Noncolliders");
-        return names;
+        return new ArrayList<>();
     }
 
     /**
@@ -184,19 +179,15 @@ public class PcRunner extends AbstractAlgorithmRunner
      * for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-//        Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
-        return triplesList;
+        return new ArrayList<>();
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<>(pcAdjacent);
+        return new HashSet<>(this.pcAdjacent);
     }
 
     public Set<Edge> getNonAdj() {
-        return new HashSet<>(pcNonadjacent);
+        return new HashSet<>(this.pcNonadjacent);
     }
 
     public boolean supportsKnowledge() {
@@ -206,8 +197,8 @@ public class PcRunner extends AbstractAlgorithmRunner
     @Override
     public Map<String, String> getParamSettings() {
         super.getParamSettings();
-        paramSettings.put("Test", getIndependenceTest().toString());
-        return paramSettings;
+        this.paramSettings.put("Test", getIndependenceTest().toString());
+        return this.paramSettings;
     }
 
     //========================== Private Methods ===============================//
@@ -217,9 +208,9 @@ public class PcRunner extends AbstractAlgorithmRunner
     }
 
     private void setPcFields(Pc pc) {
-        pcAdjacent = pc.getAdjacencies();
-        pcNonadjacent = pc.getNonadjacencies();
-        pcNodes = getGraph().getNodes();
+        this.pcAdjacent = pc.getAdjacencies();
+        this.pcNonadjacent = pc.getNonadjacencies();
+        List<Node> pcNodes = getGraph().getNodes();
     }
 }
 

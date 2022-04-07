@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -73,14 +73,14 @@ public class TestCpc {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D",/*"A-->B,C-->B,A-->D,C-->D",*/
+        checkWithKnowledge(/*"A-->B,C-->B,A-->D,C-->D",*/
                 knowledge);
     }
 
     @Test
     public void test7() {
-        int numVars = 6;
-        int numEdges = 6;
+        final int numVars = 6;
+        final int numEdges = 6;
 
         List<Node> nodes = new ArrayList<>();
 
@@ -133,10 +133,9 @@ public class TestCpc {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String inputGraph, String outputGraph,
-                                    IKnowledge knowledge) {
+    private void checkWithKnowledge(IKnowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -150,7 +149,7 @@ public class TestCpc {
         Graph resultGraph = cpc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
 
         // Do test.
         assertTrue(resultGraph.equals(trueGraph));

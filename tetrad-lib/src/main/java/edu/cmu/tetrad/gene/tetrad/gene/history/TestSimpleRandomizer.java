@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,7 +26,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.util.Iterator;
 import java.util.SortedSet;
 
 /**
@@ -50,10 +49,10 @@ public class TestSimpleRandomizer extends TestCase {
      */
     public void setUp() {
 
-        int numVars = 100;
+        final int numVars = 100;
 
         for (int i = 0; i < numVars; i++) {
-            lagGraph.addFactor("G" + i);
+            this.lagGraph.addFactor("G" + i);
         }
     }
 
@@ -80,15 +79,15 @@ public class TestSimpleRandomizer extends TestCase {
         simpleRandomizer.initialize(this.lagGraph);
 
         // Make sure all nonhousekeeping genes have indegree edges.
-        SortedSet factors = lagGraph.getFactors();
+        SortedSet factors = this.lagGraph.getFactors();
 
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
-            SortedSet parents = lagGraph.getParents(factor);
+        for (Object o : factors) {
+            String factor = (String) o;
+            SortedSet parents = this.lagGraph.getParents(factor);
 
             // Make sure it's not a housekeeping gene.
             if (1 != parents.size()) {
-                assertEquals(indegree, parents.size());
+                TestCase.assertEquals(indegree, parents.size());
             }
         }
     }
@@ -119,11 +118,11 @@ public class TestSimpleRandomizer extends TestCase {
         // have a mean of indegree edges.
         int sum = 0;
         int numNonHousekeeping = 0;
-        SortedSet factors = lagGraph.getFactors();
+        SortedSet factors = this.lagGraph.getFactors();
 
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
-            SortedSet parents = lagGraph.getParents(factor);
+        for (Object o : factors) {
+            String factor = (String) o;
+            SortedSet parents = this.lagGraph.getParents(factor);
 
             if (parents.size() > 1) {
                 numNonHousekeeping++;
@@ -141,7 +140,7 @@ public class TestSimpleRandomizer extends TestCase {
 
             // The mean of the nonhousekeeping genes should be the
             // specified indegree, to within 0.5.
-            assertEquals((double) indegree, mean, 1.2);
+            TestCase.assertEquals(indegree, mean, 1.2);
         }
     }
 
@@ -169,22 +168,22 @@ public class TestSimpleRandomizer extends TestCase {
 
         // Make sure that the maximum number of edges is indegree.
         int max = 0;
-        SortedSet factors = lagGraph.getFactors();
+        SortedSet factors = this.lagGraph.getFactors();
 
-        for (Iterator it = factors.iterator(); it.hasNext(); ) {
-            String factor = (String) it.next();
-            SortedSet parents = lagGraph.getParents(factor);
+        for (Object o : factors) {
+            String factor = (String) o;
+            SortedSet parents = this.lagGraph.getParents(factor);
 
             if (parents.size() > max) {
                 max = parents.size();
             }
         }
 
-        assertTrue(indegree <= max);
+        TestCase.assertTrue(indegree <= max);
     }
 
     public void tearDown() {
-        lagGraph = null;
+        this.lagGraph = null;
     }
 
     /**

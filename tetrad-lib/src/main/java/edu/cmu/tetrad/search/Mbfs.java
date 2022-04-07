@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -44,7 +44,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     /**
      * The independence test used to perform the search.
      */
-    private IndependenceTest test;
+    private final IndependenceTest test;
 
     /**
      * The list of variables being searched over. Must contain the target.
@@ -79,11 +79,6 @@ public final class Mbfs implements MbSearch, GraphSearch {
     private int[] maxRemainingAtDepth;
 
     /**
-     * Information to help understand what part of the search is taking the most time.
-     */
-    private Node[] maxVariableAtDepth;
-
-    /**
      * The set of nodes that edges should not be drawn to in the addDepthZeroAssociates method.
      */
     private Set<Node> a;
@@ -94,20 +89,9 @@ public final class Mbfs implements MbSearch, GraphSearch {
     private long elapsedTime;
 
     /**
-     * The true graph, if known. If this is provided, notes will be printed out for edges removed that are in the true
-     * Markov blanket.
-     */
-    private Dag trueMb;
-
-    /**
      * Knowledge.
      */
     private IKnowledge knowledge = new Knowledge2();
-
-    /**
-     * The list of all unshielded triples.
-     */
-    private Set<Triple> allTriples;
 
     /**
      * Set of unshielded colliders from the triple orientation step.
@@ -133,12 +117,12 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
      * graphs).
      */
-    private boolean aggressivelyPreventCycles = false;
+    private boolean aggressivelyPreventCycles;
 
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     //==============================CONSTRUCTORS==========================//
 
@@ -170,7 +154,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
 
 
     public boolean isAggressivelyPreventCycles() {
-        return aggressivelyPreventCycles;
+        return this.aggressivelyPreventCycles;
     }
 
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
@@ -188,7 +172,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
         }
 
         this.target = getVariableForName(targetName);
-        return search(target);
+        return search(this.target);
     }
 
     /**
@@ -199,7 +183,6 @@ public final class Mbfs implements MbSearch, GraphSearch {
     public Graph search(Node target) {
         long start = System.currentTimeMillis();
         this.numIndependenceTests = 0;
-        this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -211,15 +194,13 @@ public final class Mbfs implements MbSearch, GraphSearch {
 
         this.target = target;
 
-        logger.log("info", "Target = " + target);
+        this.logger.log("info", "Target = " + target);
 
         // Some statistics.
         this.maxRemainingAtDepth = new int[20];
-        this.maxVariableAtDepth = new Node[20];
-        Arrays.fill(maxRemainingAtDepth, -1);
-        Arrays.fill(maxVariableAtDepth, null);
+        Arrays.fill(this.maxRemainingAtDepth, -1);
 
-        logger.log("info", "target = " + getTarget());
+        this.logger.log("info", "target = " + getTarget());
 
         Graph graph = new EdgeListGraph();
 
@@ -234,19 +215,19 @@ public final class Mbfs implements MbSearch, GraphSearch {
         this.a = new HashSet<>();
 
         // Step 1. Get associates for the target.
-        logger.log("info", "BEGINNING step 1 (prune target).");
+        this.logger.log("info", "BEGINNING step 1 (prune target).");
 
         graph.addNode(getTarget());
         constructFan(getTarget(), graph);
 
-        logger.log("graph", "After step 1 (prune target)" + graph);
-        logger.log("graph", "After step 1 (prune target)" + graph);
+        this.logger.log("graph", "After step 1 (prune target)" + graph);
+        this.logger.log("graph", "After step 1 (prune target)" + graph);
 
         // Step 2. Get associates for each variable adjacent to the target,
         // removing edges based on those associates where possible. After this
         // step, adjacencies to the target are parents or children of the target.
         // Call this set PC.
-        logger.log("info", "BEGINNING step 2 (prune PC).");
+        this.logger.log("info", "BEGINNING step 2 (prune PC).");
 
 //        variables = graph.getNodes();
 
@@ -268,17 +249,17 @@ public final class Mbfs implements MbSearch, GraphSearch {
                     break;
                 }
 
-                if (a.contains(w)) {
+                if (this.a.contains(w)) {
                     continue;
                 }
 
-                List _a = new LinkedList<>(a);
+                List<Node> _a = new LinkedList<>(this.a);
                 _a.retainAll(graph.getAdjacentNodes(w));
                 if (_a.size() > 1) continue;
 
                 List<Node> adjT = graph.getAdjacentNodes(getTarget());
                 DepthChoiceGenerator cg = new DepthChoiceGenerator(
-                        adjT.size(), depth);
+                        adjT.size(), this.depth);
                 int[] choice;
 
                 while ((choice = cg.next()) != null) {
@@ -297,13 +278,13 @@ public final class Mbfs implements MbSearch, GraphSearch {
             }
         }
 
-        logger.log("graph", "After step 2 (prune PC)" + graph);
+        this.logger.log("graph", "After step 2 (prune PC)" + graph);
 
         // Step 3. Get associates for each node now two links away from the
         // target, removing edges based on those associates where possible.
         // After this step, adjacencies to adjacencies of the target are parents
         // or children of adjacencies to the target. Call this set PCPC.
-        logger.log("info", "BEGINNING step 3 (prune PCPC).");
+        this.logger.log("info", "BEGINNING step 3 (prune PCPC).");
 
         for (Node v : graph.getAdjacentNodes(getTarget())) {
             for (Node w : graph.getAdjacentNodes(v)) {
@@ -315,47 +296,37 @@ public final class Mbfs implements MbSearch, GraphSearch {
             }
         }
 
-        logger.log("graph", "After step 3 (prune PCPC)" + graph);
+        this.logger.log("graph", "After step 3 (prune PCPC)" + graph);
 
-        logger.log("info", "BEGINNING step 4 (PC Orient).");
+        this.logger.log("info", "BEGINNING step 4 (PC Orient).");
 
-        SearchGraphUtils.pcOrientbk(knowledge, graph, graph.getNodes());
+        SearchGraphUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
 
         List<Node> _visited = new LinkedList<>(getA());
-        orientUnshieldedTriples(knowledge, graph, getTest(), getDepth(), _visited);
+        orientUnshieldedTriples(this.knowledge, graph, getDepth(), _visited);
 
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        meekRules.setKnowledge(knowledge);
+        meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
 
-        logger.log("graph", "After step 4 (PC Orient)" + graph);
+        this.logger.log("graph", "After step 4 (PC Orient)" + graph);
 
-        logger.log("info", "BEGINNING step 5 (Trim graph to {T} U PC U " +
+        this.logger.log("info", "BEGINNING step 5 (Trim graph to {T} U PC U " +
                 "{Parents(Children(T))}).");
 
         MbUtils.trimToMbNodes(graph, getTarget(), false);
 
-        logger.log("graph",
+        this.logger.log("graph",
                 "After step 5 (Trim graph to {T} U PC U {Parents(Children(T))})" +
                         graph);
 
-        logger.log("info", "BEGINNING step 6 (Remove edges among P and P of C).");
+        this.logger.log("info", "BEGINNING step 6 (Remove edges among P and P of C).");
 
         MbUtils.trimEdgesAmongParents(graph, getTarget());
         MbUtils.trimEdgesAmongParentsOfChildren(graph, getTarget());
 
-        logger.log("graph", "After step 6 (Remove edges among P and P of C)" + graph);
-//        logger.log("details", "Bounds: ");
-//
-//        for (int i = 0; i < maxRemainingAtDepth.length; i++) {
-//            if (maxRemainingAtDepth[i] != -1) {
-//                logger.log("details", "\ta" + i + " = " + maxRemainingAtDepth[i] +
-//                                " (" + maxVariableAtDepth[i] + ")");
-//            }
-//        }
-
-//        System.out.println("Number of fan constructions = " + visited.size());
+        this.logger.log("graph", "After step 6 (Remove edges among P and P of C)" + graph);
 
         finishUp(start, graph);
 
@@ -369,18 +340,14 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * Does a CPDAG search.
      */
     public Graph search() {
-        long start = System.currentTimeMillis();
         this.numIndependenceTests = 0;
-        this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
 
         // Some statistics.
         this.maxRemainingAtDepth = new int[20];
-        this.maxVariableAtDepth = new Node[20];
-        Arrays.fill(maxRemainingAtDepth, -1);
-        Arrays.fill(maxVariableAtDepth, null);
+        Arrays.fill(this.maxRemainingAtDepth, -1);
 
 //        logger.info("target = " + getTarget());
 
@@ -395,12 +362,12 @@ public final class Mbfs implements MbSearch, GraphSearch {
         // is removed, it should not be re-added to the graph.
         // jdramsey 8/6/04
         this.a = new HashSet<>();
-        this.variables = test.getVariables();
+        this.variables = this.test.getVariables();
 
-        Node target = variables.get(0);
+        Node target = this.variables.get(0);
         graph.addNode(target);
 
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (!graph.containsNode(node)) {
                 graph.addNode(node);
             }
@@ -408,17 +375,17 @@ public final class Mbfs implements MbSearch, GraphSearch {
             constructFan(node, graph);
         }
 
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (!graph.containsNode(node)) {
                 graph.addNode(node);
             }
         }
 
-        orientUnshieldedTriples(knowledge, graph, getTest(), getDepth(), graph.getNodes());
+        orientUnshieldedTriples(this.knowledge, graph, getDepth(), graph.getNodes());
 
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        meekRules.setKnowledge(knowledge);
+        meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
 
         this.logger.log("graph", "\nReturning this graph: " + graph);
@@ -430,42 +397,42 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * @return the set of triples identified as ambiguous by the CPC algorithm during the most recent search.
      */
     public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<>(ambiguousTriples);
+        return new HashSet<>(this.ambiguousTriples);
     }
 
     /**
      * @return the set of triples identified as colliders by the CPC algorithm during the most recent search.
      */
     public Set<Triple> getColliderTriples() {
-        return colliderTriples;
+        return this.colliderTriples;
     }
 
     /**
      * @return the set of triples identified as noncolliders by the CPC algorithm during the most recent search.
      */
     public Set<Triple> getNoncolliderTriples() {
-        return noncolliderTriples;
+        return this.noncolliderTriples;
     }
 
     /**
      * @return the number of independence tests performed during the most recent search.
      */
     public int getNumIndependenceTests() {
-        return numIndependenceTests;
+        return this.numIndependenceTests;
     }
 
     /**
      * @return the target of the most recent search.
      */
     public Node getTarget() {
-        return target;
+        return this.target;
     }
 
     /**
      * @return the elapsed time of the most recent search.
      */
     public long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     /**
@@ -473,20 +440,6 @@ public final class Mbfs implements MbSearch, GraphSearch {
      */
     public String getAlgorithmName() {
         return "MBFS";
-    }
-
-    /**
-     * If a true MB was set before running the search, this returns it.
-     */
-    public Dag getTrueMb() {
-        return trueMb;
-    }
-
-    /**
-     * Sets the true MB; should be done before running the search to get on-the-fly comparisons.
-     */
-    public void setTrueMb(Dag trueMb) {
-        this.trueMb = trueMb;
     }
 
     /**
@@ -514,7 +467,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * @return Ibid.
      */
     public Graph resultGraph() {
-        return resultGraph;
+        return this.resultGraph;
     }
 
     /**
@@ -523,7 +476,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     public List<Node> findMb(String targetName) {
         Graph graph = search(targetName);
         List<Node> nodes = graph.getNodes();
-        nodes.remove(target);
+        nodes.remove(this.target);
         return nodes;
     }
 
@@ -531,14 +484,14 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * @return Ibid.
      */
     public IndependenceTest getTest() {
-        return test;
+        return this.test;
     }
 
     /**
      * @return Ibid.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -551,13 +504,13 @@ public final class Mbfs implements MbSearch, GraphSearch {
     }
 
     public Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
     //================================PRIVATE METHODS====================//
 
     private Set<Node> getA() {
-        return a;
+        return this.a;
     }
 
     /**
@@ -575,12 +528,12 @@ public final class Mbfs implements MbSearch, GraphSearch {
         getA().add(v);
         int numAssociated = 0;
 
-        for (Node w : variables) {
+        for (Node w : this.variables) {
             if (getA().contains(w)) {
                 continue;
             }
 
-            if (!independent(v, w, new LinkedList<Node>()) && !edgeForbidden(v, w)) {
+            if (!independent(v, w, new LinkedList<>()) && !edgeForbidden(v, w)) {
                 addEdge(graph, w, v);
                 numAssociated++;
             }
@@ -588,7 +541,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
 
 //        System.out.println("***************NUMASSOC = " + numAssociated);
 
-        noteMaxAtDepth(0, numAssociated, v);
+        noteMaxAtDepth(0, numAssociated);
     }
 
     private void prune(Node node, Graph graph) {
@@ -611,7 +564,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * @param depth The maximum number of conditioning variables.
      */
     private void prune(Node node, Graph graph, int depth) {
-        logger.log("pruning", "Trying to remove edges adjacent to node " + node +
+        this.logger.log("pruning", "Trying to remove edges adjacent to node " + node +
                 ", depth = " + depth + ".");
 
         // Otherwise, try removing all other edges adjacent node node. Return
@@ -653,7 +606,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
         }
 
         int numAdjacents = graph.getAdjacentNodes(node).size();
-        noteMaxAtDepth(depth, numAdjacents, node);
+        noteMaxAtDepth(depth, numAdjacents);
     }
 
     private void finishUp(long start, Graph graph) {
@@ -662,42 +615,15 @@ public final class Mbfs implements MbSearch, GraphSearch {
         double seconds = this.elapsedTime / 1000d;
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        logger.log("info", "MB fan search took " + nf.format(seconds) + " seconds.");
-        logger.log("info", "Number of independence tests performed = " +
+        this.logger.log("info", "MB fan search took " + nf.format(seconds) + " seconds.");
+        this.logger.log("info", "Number of independence tests performed = " +
                 getNumIndependenceTests());
 
         this.resultGraph = graph;
     }
 
     private boolean independent(Node v, Node w, List<Node> z) {
-//        if (test.splitDetermines(z, v, w)) {
-//            return false;
-//        }
-
-
         boolean independent = getTest().isIndependent(v, w, z);
-
-        if (independent) {
-            if (getTrueMb() != null) {
-                Node node1 = getTrueMb().getNode(v.getName());
-                Node node2 = getTrueMb().getNode(w.getName());
-
-                if (node1 != null && node2 != null) {
-                    Edge edge = getTrueMb().getEdge(node1, node2);
-
-                    if (edge != null) {
-                        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-                        System.out.println(
-                                "Edge removed that was in the true MB:");
-                        System.out.println("\tTrue edge = " + edge);
-                        System.out.println("\t" +
-                                SearchLogUtils.independenceFact(v, w, z) +
-                                "\tp = " +
-                                nf.format(getTest().getPValue()));
-                    }
-                }
-            }
-        }
 
         this.numIndependenceTests++;
         return independent;
@@ -714,7 +640,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     private Node getVariableForName(String targetVariableName) {
         Node target = null;
 
-        for (Node V : variables) {
+        for (Node V : this.variables) {
             if (V.getName().equals(targetVariableName)) {
                 target = V;
                 break;
@@ -729,21 +655,19 @@ public final class Mbfs implements MbSearch, GraphSearch {
         return target;
     }
 
-    private void noteMaxAtDepth(int depth, int numAdjacents, Node to) {
-        if (depth < maxRemainingAtDepth.length &&
-                numAdjacents > maxRemainingAtDepth[depth]) {
-            maxRemainingAtDepth[depth] = numAdjacents;
-            maxVariableAtDepth[depth] = to;
+    private void noteMaxAtDepth(int depth, int numAdjacents) {
+        if (depth < this.maxRemainingAtDepth.length &&
+                numAdjacents > this.maxRemainingAtDepth[depth]) {
+            this.maxRemainingAtDepth[depth] = numAdjacents;
         }
     }
 
-    private void orientUnshieldedTriples(IKnowledge knowledge, Graph graph,
-                                         IndependenceTest test, int depth, List<Node> nodes) {
-        logger.log("info", "Starting Collider Orientation:");
+    private void orientUnshieldedTriples(IKnowledge knowledge, Graph graph, int depth, List<Node> nodes) {
+        this.logger.log("info", "Starting Collider Orientation:");
 
-        colliderTriples = new HashSet<>();
-        noncolliderTriples = new HashSet<>();
-        ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
+        this.ambiguousTriples = new HashSet<>();
 
         if (nodes == null) {
             nodes = graph.getNodes();
@@ -771,35 +695,32 @@ public final class Mbfs implements MbSearch, GraphSearch {
                     continue;
                 }
 
-                allTriples.add(new Triple(x, y, z));
-
-                TripleType type = getTripleType(graph, x, y, z, test, depth);
+                TripleType type = getTripleType(graph, x, y, z, depth);
 
                 if (type == TripleType.COLLIDER) {
                     if (colliderAllowed(x, y, z, knowledge)) {
                         graph.setEndpoint(x, y, Endpoint.ARROW);
                         graph.setEndpoint(z, y, Endpoint.ARROW);
-                        logger.log("tripleClassifications", "Collider oriented: " + Triple.pathString(graph, x, y, z));
+                        this.logger.log("tripleClassifications", "Collider oriented: " + Triple.pathString(graph, x, y, z));
                     }
 
-                    colliderTriples.add(new Triple(x, y, z));
+                    this.colliderTriples.add(new Triple(x, y, z));
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
-                    ambiguousTriples.add(triple);
+                    this.ambiguousTriples.add(triple);
                     graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-                    logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
+                    this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
                 } else {
-                    noncolliderTriples.add(new Triple(x, y, z));
-                    logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
+                    this.noncolliderTriples.add(new Triple(x, y, z));
+                    this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
                 }
             }
         }
 
-        logger.log("info", "Finishing Collider Orientation.");
+        this.logger.log("info", "Finishing Collider Orientation.");
     }
 
-    private TripleType getTripleType(Graph graph, Node x, Node y, Node z,
-                                     IndependenceTest test, int depth) {
+    private TripleType getTripleType(Graph graph, Node x, Node y, Node z, int depth) {
         boolean existsSepsetContainingY = false;
         boolean existsSepsetNotContainingY = false;
 
@@ -827,7 +748,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
                     break;
                 }
 
-                List<Node> condSet = asList(choice, _nodes);
+                List<Node> condSet = Mbfs.asList(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -863,7 +784,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
                     break;
                 }
 
-                List<Node> condSet = asList(choice, _nodes);
+                List<Node> condSet = Mbfs.asList(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -908,7 +829,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
         for (Node z : adjNode) {
             String _z = z.getName();
 
-            if (possibleParentOf(_z, _x, knowledge)) {
+            if (possibleParentOf(_z, _x, this.knowledge)) {
                 possibleParents.add(z);
             }
         }
@@ -937,8 +858,8 @@ public final class Mbfs implements MbSearch, GraphSearch {
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
-        return isArrowpointAllowed1(x, y, knowledge) &&
-                isArrowpointAllowed1(z, y, knowledge);
+        return Mbfs.isArrowpointAllowed1(x, y, knowledge) &&
+                Mbfs.isArrowpointAllowed1(z, y, knowledge);
     }
 
     private static boolean isArrowpointAllowed1(Node from, Node to,

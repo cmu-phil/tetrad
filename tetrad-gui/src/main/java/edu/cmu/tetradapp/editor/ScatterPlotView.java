@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -48,11 +48,11 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class ScatterPlotView extends JPanel {
-    private ScatterPlot scatterPlot;
-    private ScatterPlotChart scatterPlotChart;
+    private final ScatterPlot scatterPlot;
+    private final ScatterPlotChart scatterPlotChart;
     private String x;
     private String y;
-    private static final String[] tiles = new String[]{"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
+    private static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
 
     public ScatterPlotView(DataSet dataSet) {
@@ -61,13 +61,11 @@ public class ScatterPlotView extends JPanel {
 //        if (!dataSet.isContinuous()) throw new IllegalArgumentException("Data set not continuous.");
         if (!(dataSet.getNumColumns() >= 2)) throw new IllegalArgumentException("Need at least two columns.");
 
-        DataSet dataSet1 = dataSet;
-
         this.x = dataSet.getVariable(0).getName();
         this.y = dataSet.getVariable(1).getName();
 
         setLayout(new BorderLayout());
-        ScatterPlot ScatterPlot = new ScatterPlot(dataSet1, false, x, y);
+        ScatterPlot ScatterPlot = new ScatterPlot(dataSet, false, this.x, this.y);
         ScatterPlotChart ScatterPlotChart = new ScatterPlotChart(ScatterPlot);
         this.scatterPlot = ScatterPlot;
         this.scatterPlotChart = ScatterPlotChart;
@@ -87,7 +85,7 @@ public class ScatterPlotView extends JPanel {
     }
 
     private ScatterPlot getScatterPlot() {
-        return scatterPlot;
+        return this.scatterPlot;
     }
 
     public static class ScatterPlotController extends JPanel {
@@ -106,7 +104,7 @@ public class ScatterPlotView extends JPanel {
         /**
          * Constructs the editor panel given the initial ScatterPlot and the dataset.
          */
-        public ScatterPlotController(final ScatterPlotView ScatterPlotView) {
+        public ScatterPlotController(ScatterPlotView ScatterPlotView) {
             this.setLayout(new BorderLayout());
             this.scatterPlot = ScatterPlotView.getScatterPlot();
             Node xNode = getXNode();
@@ -117,8 +115,8 @@ public class ScatterPlotView extends JPanel {
             this.xSelector.setRenderer(renderer);
             this.ySelector.setRenderer(renderer);
 
-            includeLineCheckbox = new JCheckBox("Show Regression Line");
-            List<Node> variables = scatterPlot.getDataSet().getVariables();
+            this.includeLineCheckbox = new JCheckBox("Show Regression Line");
+            List<Node> variables = this.scatterPlot.getDataSet().getVariables();
 
             Collections.sort(variables);
 
@@ -140,7 +138,7 @@ public class ScatterPlotView extends JPanel {
 
             this.xSelector.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    String node = ((Node) xSelector.getSelectedItem()).getName();
+                    String node = ((Node) ScatterPlotController.this.xSelector.getSelectedItem()).getName();
                     ScatterPlotView.setX(node);
                     refreshChart(ScatterPlotView);
                 }
@@ -154,11 +152,7 @@ public class ScatterPlotView extends JPanel {
                 }
             });
 
-            includeLineCheckbox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    refreshChart(ScatterPlotView);
-                }
-            });
+            this.includeLineCheckbox.addActionListener(e -> refreshChart(ScatterPlotView));
 
             this.newConditioningVariableSelector = new JComboBox();
 
@@ -171,9 +165,9 @@ public class ScatterPlotView extends JPanel {
             this.newConditioningVariableButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     System.out.println("New conditioning variable action performed");
-                    Node selected = (Node) newConditioningVariableSelector.getSelectedItem();
+                    Node selected = (Node) ScatterPlotController.this.newConditioningVariableSelector.getSelectedItem();
 
-                    for (ConditioningPanel panel : conditioningPanels) {
+                    for (ConditioningPanel panel : ScatterPlotController.this.conditioningPanels) {
                         if (selected == panel.getVariable()) {
                             JOptionPane.showMessageDialog(ScatterPlotController.this,
                                     "There is already a conditioning variable called " + selected + ".");
@@ -182,30 +176,30 @@ public class ScatterPlotView extends JPanel {
                     }
 
                     if (selected instanceof ContinuousVariable) {
-                        final ContinuousVariable _var = (ContinuousVariable) selected;
+                        ContinuousVariable _var = (ContinuousVariable) selected;
 
-                        ContinuousConditioningPanel panel1 = (ContinuousConditioningPanel) conditioningPanelMap.get(_var);
+                        ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel panel1 = (ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel) ScatterPlotController.this.conditioningPanelMap.get(_var);
 
                         if (panel1 == null) {
-                            panel1 = ContinuousConditioningPanel.getDefault(_var, scatterPlot);
+                            panel1 = ScatterPlotController.ContinuousConditioningPanel.getDefault(_var, ScatterPlotController.this.scatterPlot);
                         }
 
-                        ContinuousInquiryPanel panel2 = new ContinuousInquiryPanel(_var, scatterPlot, panel1);
+                        ContinuousInquiryPanel panel2 = new ContinuousInquiryPanel(_var, ScatterPlotController.this.scatterPlot, panel1);
 
                         JOptionPane.showOptionDialog(ScatterPlotController.this, panel2,
                                 null, JOptionPane.DEFAULT_OPTION,
                                 JOptionPane.PLAIN_MESSAGE, null, null, null);
 
-                        ContinuousConditioningPanel.Type type = panel2.getType();
+                        ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type type = panel2.getType();
                         double low = panel2.getLow();
                         double high = panel2.getHigh();
                         int ntile = panel2.getNtile();
                         int ntileIndex = panel2.getNtileIndex();
 
-                        ContinuousConditioningPanel panel3 = new ContinuousConditioningPanel(_var, low, high, ntile, ntileIndex, type);
+                        ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel panel3 = new ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel(_var, low, high, ntile, ntileIndex, type);
 
-                        conditioningPanels.add(panel3);
-                        conditioningPanelMap.put(_var, panel3);
+                        ScatterPlotController.this.conditioningPanels.add(panel3);
+                        ScatterPlotController.this.conditioningPanelMap.put(_var, panel3);
                     } else {
                         throw new IllegalStateException();
                     }
@@ -221,11 +215,11 @@ public class ScatterPlotView extends JPanel {
 
             this.removeConditioningVariableButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    for (ConditioningPanel panel : new ArrayList<>(conditioningPanels)) {
+                    for (ConditioningPanel panel : new ArrayList<>(ScatterPlotController.this.conditioningPanels)) {
                         if (panel.isSelected()) {
                             panel.setSelected(false);
-                            conditioningPanels.remove(panel);
-                            scatterPlot.removeConditioningVariable(panel.getVariable().toString());
+                            ScatterPlotController.this.conditioningPanels.remove(panel);
+                            ScatterPlotController.this.scatterPlot.removeConditioningVariable(panel.getVariable().toString());
                             refreshChart(ScatterPlotView);
                         }
                     }
@@ -236,24 +230,24 @@ public class ScatterPlotView extends JPanel {
             });
 
             // build the gui.
-            restrictSize(this.xSelector);
-            restrictSize(this.newConditioningVariableSelector);
-            restrictSize(this.newConditioningVariableButton);
-            restrictSize(this.removeConditioningVariableButton);
+            ScatterPlotController.restrictSize(this.xSelector);
+            ScatterPlotController.restrictSize(this.newConditioningVariableSelector);
+            ScatterPlotController.restrictSize(this.newConditioningVariableButton);
+            ScatterPlotController.restrictSize(this.removeConditioningVariableButton);
 
             buildEditArea();
         }
 
         private void refreshChart(ScatterPlotView ScatterPlotView) {
             ScatterPlot ScatterPlot = new ScatterPlot(ScatterPlotView.scatterPlot.getDataSet(),
-                    includeLineCheckbox.isSelected(),
+                    this.includeLineCheckbox.isSelected(),
                     ScatterPlotView.x, ScatterPlotView.y);
             ScatterPlot.removeConditioningVariables();
-            for (ConditioningPanel panel : conditioningPanels) {
-                if (panel instanceof ContinuousConditioningPanel) {
+            for (ConditioningPanel panel : this.conditioningPanels) {
+                if (panel instanceof ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel) {
                     Node node = panel.getVariable();
-                    double low = ((ContinuousConditioningPanel) panel).getLow();
-                    double high = ((ContinuousConditioningPanel) panel).getHigh();
+                    double low = ((ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel) panel).getLow();
+                    double high = ((ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel) panel).getHigh();
                     ScatterPlot.addConditioningVariable(node.getName(), low, high);
                 }
             }
@@ -265,21 +259,21 @@ public class ScatterPlotView extends JPanel {
         private void resetConditioning() {
 
             // Need to set the conditions on the ScatterPlot and also update the list of conditions in the view.
-            scatterPlot.removeConditioningVariables();
+            this.scatterPlot.removeConditioningVariables();
 
-            for (ConditioningPanel panel : conditioningPanels) {
-                if (panel instanceof ContinuousConditioningPanel) {
+            for (ConditioningPanel panel : this.conditioningPanels) {
+                if (panel instanceof ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel) {
                     Node node = panel.getVariable();
-                    double low = ((ContinuousConditioningPanel) panel).getLow();
-                    double high = ((ContinuousConditioningPanel) panel).getHigh();
-                    scatterPlot.addConditioningVariable(node.getName(), low, high);
+                    double low = ((ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel) panel).getLow();
+                    double high = ((ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel) panel).getHigh();
+                    this.scatterPlot.addConditioningVariable(node.getName(), low, high);
                 }
             }
         }
 
         private void buildEditArea() {
-            restrictSize(xSelector);
-            restrictSize(ySelector);
+            ScatterPlotController.restrictSize(this.xSelector);
+            ScatterPlotController.restrictSize(this.ySelector);
 
             Box main = Box.createVerticalBox();
             Box b1 = Box.createHorizontalBox();
@@ -290,17 +284,17 @@ public class ScatterPlotView extends JPanel {
             Box b1a = Box.createHorizontalBox();
             b1a.add(new JLabel("X-axis = "));
             b1a.add(Box.createHorizontalGlue());
-            b1a.add(xSelector);
+            b1a.add(this.xSelector);
             main.add(b1a);
 
             Box b1b = Box.createHorizontalBox();
             b1b.add(new JLabel("Y-axis = "));
             b1b.add(Box.createHorizontalGlue());
-            b1b.add(ySelector);
+            b1b.add(this.ySelector);
             main.add(b1b);
 
             Box b1c = Box.createHorizontalBox();
-            b1c.add(includeLineCheckbox);
+            b1c.add(this.includeLineCheckbox);
             main.add(b1c);
 
             main.add(Box.createVerticalStrut(20));
@@ -314,7 +308,7 @@ public class ScatterPlotView extends JPanel {
 
             main.add(Box.createVerticalStrut(20));
 
-            for (ConditioningPanel panel : conditioningPanels) {
+            for (ConditioningPanel panel : this.conditioningPanels) {
                 main.add(panel.getBox());
                 main.add(Box.createVerticalStrut(10));
             }
@@ -324,13 +318,13 @@ public class ScatterPlotView extends JPanel {
             main.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
             Box b6 = Box.createHorizontalBox();
-            b6.add(newConditioningVariableSelector);
-            b6.add(newConditioningVariableButton);
+            b6.add(this.newConditioningVariableSelector);
+            b6.add(this.newConditioningVariableButton);
             b6.add(Box.createHorizontalGlue());
             main.add(b6);
 
             Box b7 = Box.createHorizontalBox();
-            b7.add(removeConditioningVariableButton);
+            b7.add(this.removeConditioningVariableButton);
             b7.add(Box.createHorizontalGlue());
             main.add(b7);
 
@@ -389,31 +383,31 @@ public class ScatterPlotView extends JPanel {
             void setSelected(boolean b);
         }
 
-        private static class ContinuousConditioningPanel implements ConditioningPanel {
+        public static class ContinuousConditioningPanel implements ConditioningPanel {
 
             public int getNtile() {
-                return ntile;
+                return this.ntile;
             }
 
             public int getNtileIndex() {
-                return ntileIndex;
+                return this.ntileIndex;
             }
 
             public enum Type {Range, Ntile, AboveAverage, BelowAverage}
 
-            private ContinuousVariable variable;
-            private Box box;
+            private final ContinuousVariable variable;
+            private final Box box;
 
-            private Type type;
-            private double low;
-            private double high;
-            private int ntile;
-            private int ntileIndex;
+            private final ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type type;
+            private final double low;
+            private final double high;
+            private final int ntile;
+            private final int ntileIndex;
 
             // Mark selected if this panel is to be removed.
-            private JCheckBox checkBox;
+            private final JCheckBox checkBox;
 
-            public ContinuousConditioningPanel(ContinuousVariable variable, double low, double high, int ntile, int ntileIndex, Type type) {
+            public ContinuousConditioningPanel(ContinuousVariable variable, double low, double high, int ntile, int ntileIndex, ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type type) {
                 if (variable == null) throw new NullPointerException();
                 if (low >= high) {
                     throw new IllegalArgumentException("Low >= high.");
@@ -434,67 +428,67 @@ public class ScatterPlotView extends JPanel {
                 Box b4 = Box.createHorizontalBox();
                 b4.add(Box.createRigidArea(new Dimension(10, 0)));
 
-                if (type == Type.Range) {
+                if (type == ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.Range) {
                     b4.add(new JLabel(variable + " = (" + nf.format(low) + ", " + nf.format(high) + ")"));
-                } else if (type == Type.AboveAverage) {
+                } else if (type == ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.AboveAverage) {
                     b4.add(new JLabel(variable + " = Above Average"));
-                } else if (type == Type.BelowAverage) {
+                } else if (type == ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.BelowAverage) {
                     b4.add(new JLabel(variable + " = Below Average"));
-                } else if (type == Type.Ntile) {
-                    b4.add(new JLabel(variable + " = " + tiles[ntile - 1] + " " + ntileIndex));
+                } else if (type == ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.Ntile) {
+                    b4.add(new JLabel(variable + " = " + ScatterPlotView.tiles[ntile - 1] + " " + ntileIndex));
                 }
 
                 b4.add(Box.createHorizontalGlue());
                 this.checkBox = new JCheckBox();
-                restrictSize(checkBox);
-                b4.add(checkBox);
+                ScatterPlotController.restrictSize(this.checkBox);
+                b4.add(this.checkBox);
                 this.box = b4;
 
             }
 
-            public static ContinuousConditioningPanel getDefault(ContinuousVariable variable, ScatterPlot ScatterPlot) {
+            public static ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel getDefault(ContinuousVariable variable, ScatterPlot ScatterPlot) {
                 double[] data = ScatterPlot.getContinuousData(variable.getName());
                 double max = StatUtils.max(data);
                 double avg = StatUtils.mean(data);
-                return new ContinuousConditioningPanel(variable, avg, max, 2, 1, Type.AboveAverage);
+                return new ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel(variable, avg, max, 2, 1, ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.AboveAverage);
             }
 
             public ContinuousVariable getVariable() {
-                return variable;
+                return this.variable;
             }
 
-            public Type getType() {
-                return type;
+            public ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type getType() {
+                return this.type;
             }
 
             public Box getBox() {
-                return box;
+                return this.box;
             }
 
             public boolean isSelected() {
-                return checkBox.isSelected();
+                return this.checkBox.isSelected();
             }
 
             public void setSelected(boolean b) {
-                checkBox.setSelected(false);
+                this.checkBox.setSelected(false);
             }
 
             public double getLow() {
-                return low;
+                return this.low;
             }
 
             public double getHigh() {
-                return high;
+                return this.high;
             }
         }
     }
 
     private static class ContinuousInquiryPanel extends JPanel {
-        private JComboBox ntileCombo;
-        private JComboBox ntileIndexCombo;
-        private DoubleTextField field1;
-        private DoubleTextField field2;
-        private ScatterPlotController.ContinuousConditioningPanel.Type type;
+        private final JComboBox ntileCombo;
+        private final JComboBox ntileIndexCombo;
+        private final DoubleTextField field1;
+        private final DoubleTextField field2;
+        private ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type type;
         private final Map<String, Integer> ntileMap = new HashMap<>();
         private final double[] data;
 
@@ -505,9 +499,9 @@ public class ScatterPlotView extends JPanel {
          * @param conditioningPanel We will try to get some initialization information out of the conditioning
          *                          panel. This must be for the same variable as variable.
          */
-        public ContinuousInquiryPanel(final ContinuousVariable variable, ScatterPlot ScatterPlot,
-                                      ScatterPlotController.ContinuousConditioningPanel conditioningPanel) {
-            data = ScatterPlot.getContinuousData(variable.getName());
+        public ContinuousInquiryPanel(ContinuousVariable variable, ScatterPlot ScatterPlot,
+                                      ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel conditioningPanel) {
+            this.data = ScatterPlot.getContinuousData(variable.getName());
 
             if (conditioningPanel == null)
                 throw new NullPointerException();
@@ -517,8 +511,8 @@ public class ScatterPlotView extends JPanel {
             // There is some order dependence in the below; careful rearranging things.
             NumberFormat nf = new DecimalFormat("0.00");
 
-            field1 = new DoubleTextField(conditioningPanel.getLow(), 4, nf);
-            field2 = new DoubleTextField(conditioningPanel.getHigh(), 4, nf);
+            this.field1 = new DoubleTextField(conditioningPanel.getLow(), 4, nf);
+            this.field2 = new DoubleTextField(conditioningPanel.getHigh(), 4, nf);
 
             JRadioButton radio1 = new JRadioButton();
             JRadioButton radio2 = new JRadioButton();
@@ -527,34 +521,34 @@ public class ScatterPlotView extends JPanel {
 
             radio1.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    type = ScatterPlotController.ContinuousConditioningPanel.Type.AboveAverage;
-                    field1.setValue(StatUtils.mean(data));
-                    field2.setValue(StatUtils.max(data));
+                    ContinuousInquiryPanel.this.type = ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.AboveAverage;
+                    ContinuousInquiryPanel.this.field1.setValue(StatUtils.mean(ContinuousInquiryPanel.this.data));
+                    ContinuousInquiryPanel.this.field2.setValue(StatUtils.max(ContinuousInquiryPanel.this.data));
                 }
             });
 
             radio2.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    type = ScatterPlotController.ContinuousConditioningPanel.Type.BelowAverage;
-                    field1.setValue(StatUtils.min(data));
-                    field2.setValue(StatUtils.mean(data));
+                    ContinuousInquiryPanel.this.type = ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.BelowAverage;
+                    ContinuousInquiryPanel.this.field1.setValue(StatUtils.min(ContinuousInquiryPanel.this.data));
+                    ContinuousInquiryPanel.this.field2.setValue(StatUtils.mean(ContinuousInquiryPanel.this.data));
                 }
             });
 
             radio3.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    type = ScatterPlotController.ContinuousConditioningPanel.Type.Ntile;
-                    double[] breakpoints = getNtileBreakpoints(data, getNtile());
+                    ContinuousInquiryPanel.this.type = ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.Ntile;
+                    double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(ContinuousInquiryPanel.this.data, getNtile());
                     double breakpoint1 = breakpoints[getNtileIndex() - 1];
                     double breakpoint2 = breakpoints[getNtileIndex()];
-                    field1.setValue(breakpoint1);
-                    field2.setValue(breakpoint2);
+                    ContinuousInquiryPanel.this.field1.setValue(breakpoint1);
+                    ContinuousInquiryPanel.this.field2.setValue(breakpoint2);
                 }
             });
 
             radio4.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    type = ScatterPlotController.ContinuousConditioningPanel.Type.Range;
+                    ContinuousInquiryPanel.this.type = ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.Range;
                 }
             });
 
@@ -564,76 +558,76 @@ public class ScatterPlotView extends JPanel {
             group.add(radio3);
             group.add(radio4);
 
-            type = conditioningPanel.getType();
+            this.type = conditioningPanel.getType();
 
-            ntileCombo = new JComboBox();
-            ntileIndexCombo = new JComboBox();
+            this.ntileCombo = new JComboBox();
+            this.ntileIndexCombo = new JComboBox();
 
             int ntile = conditioningPanel.getNtile();
             int ntileIndex = conditioningPanel.getNtileIndex();
 
             for (int n = 2; n <= 10; n++) {
-                ntileCombo.addItem(tiles[n - 1]);
-                ntileMap.put(tiles[n - 1], n);
+                this.ntileCombo.addItem(ScatterPlotView.tiles[n - 1]);
+                this.ntileMap.put(ScatterPlotView.tiles[n - 1], n);
             }
 
             for (int n = 1; n <= ntile; n++) {
-                ntileIndexCombo.addItem(n);
+                this.ntileIndexCombo.addItem(n);
             }
 
-            ntileCombo.setSelectedItem(tiles[ntile - 1]);
-            ntileIndexCombo.setSelectedItem(ntileIndex);
+            this.ntileCombo.setSelectedItem(ScatterPlotView.tiles[ntile - 1]);
+            this.ntileIndexCombo.setSelectedItem(ntileIndex);
 
-            ntileCombo.addItemListener(new ItemListener() {
+            this.ntileCombo.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     String item = (String) e.getItem();
-                    int ntileIndex = ntileMap.get(item);
+                    int ntileIndex = ContinuousInquiryPanel.this.ntileMap.get(item);
 
-                    for (int i = ntileIndexCombo.getItemCount() - 1; i >= 0; i--) {
-                        ntileIndexCombo.removeItemAt(i);
+                    for (int i = ContinuousInquiryPanel.this.ntileIndexCombo.getItemCount() - 1; i >= 0; i--) {
+                        ContinuousInquiryPanel.this.ntileIndexCombo.removeItemAt(i);
                     }
 
                     for (int n = 1; n <= ntileIndex; n++) {
-                        ntileIndexCombo.addItem(n);
+                        ContinuousInquiryPanel.this.ntileIndexCombo.addItem(n);
                     }
 
-                    double[] breakpoints = getNtileBreakpoints(data, getNtile());
+                    double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(ContinuousInquiryPanel.this.data, getNtile());
                     double breakpoint1 = breakpoints[getNtileIndex() - 1];
                     double breakpoint2 = breakpoints[getNtileIndex()];
-                    field1.setValue(breakpoint1);
-                    field2.setValue(breakpoint2);
+                    ContinuousInquiryPanel.this.field1.setValue(breakpoint1);
+                    ContinuousInquiryPanel.this.field2.setValue(breakpoint2);
                 }
             });
 
-            ntileIndexCombo.addItemListener(new ItemListener() {
+            this.ntileIndexCombo.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     int ntile = getNtile();
                     int ntileIndex = getNtileIndex();
-                    double[] breakpoints = getNtileBreakpoints(data, ntile);
+                    double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(ContinuousInquiryPanel.this.data, ntile);
                     double breakpoint1 = breakpoints[ntileIndex - 1];
                     double breakpoint2 = breakpoints[ntileIndex];
-                    field1.setValue(breakpoint1);
-                    field2.setValue(breakpoint2);
+                    ContinuousInquiryPanel.this.field1.setValue(breakpoint1);
+                    ContinuousInquiryPanel.this.field2.setValue(breakpoint2);
                 }
             });
 
 
-            if (type == ScatterPlotController.ContinuousConditioningPanel.Type.AboveAverage) {
+            if (this.type == ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.AboveAverage) {
                 radio1.setSelected(true);
-                field1.setValue(StatUtils.mean(data));
-                field2.setValue(StatUtils.max(data));
-            } else if (type == ScatterPlotController.ContinuousConditioningPanel.Type.BelowAverage) {
+                this.field1.setValue(StatUtils.mean(this.data));
+                this.field2.setValue(StatUtils.max(this.data));
+            } else if (this.type == ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.BelowAverage) {
                 radio2.setSelected(true);
-                field1.setValue(StatUtils.min(data));
-                field2.setValue(StatUtils.mean(data));
-            } else if (type == ScatterPlotController.ContinuousConditioningPanel.Type.Ntile) {
+                this.field1.setValue(StatUtils.min(this.data));
+                this.field2.setValue(StatUtils.mean(this.data));
+            } else if (this.type == ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.Ntile) {
                 radio3.setSelected(true);
-                double[] breakpoints = getNtileBreakpoints(data, getNtile());
+                double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(this.data, getNtile());
                 double breakpoint1 = breakpoints[getNtileIndex() - 1];
                 double breakpoint2 = breakpoints[getNtileIndex()];
-                field1.setValue(breakpoint1);
-                field2.setValue(breakpoint2);
-            } else if (type == ScatterPlotController.ContinuousConditioningPanel.Type.Range) {
+                this.field1.setValue(breakpoint1);
+                this.field2.setValue(breakpoint2);
+            } else if (this.type == ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type.Range) {
                 radio4.setSelected(true);
             }
 
@@ -660,17 +654,17 @@ public class ScatterPlotView extends JPanel {
             Box b3 = Box.createHorizontalBox();
             b3.add(radio3);
             b3.add(new JLabel("In "));
-            b3.add(ntileCombo);
-            b3.add(ntileIndexCombo);
+            b3.add(this.ntileCombo);
+            b3.add(this.ntileIndexCombo);
             b3.add(Box.createHorizontalGlue());
             main.add(b3);
 
             Box b4 = Box.createHorizontalBox();
             b4.add(radio4);
             b4.add(new JLabel("In ("));
-            b4.add(field1);
+            b4.add(this.field1);
             b4.add(new JLabel(", "));
-            b4.add(field2);
+            b4.add(this.field2);
             b4.add(new JLabel(")"));
             b4.add(Box.createHorizontalGlue());
             main.add(b4);
@@ -678,25 +672,25 @@ public class ScatterPlotView extends JPanel {
             add(main, BorderLayout.CENTER);
         }
 
-        public ScatterPlotController.ContinuousConditioningPanel.Type getType() {
-            return type;
+        public ScatterPlotView.ScatterPlotController.ContinuousConditioningPanel.Type getType() {
+            return this.type;
         }
 
         public double getLow() {
-            return field1.getValue();
+            return this.field1.getValue();
         }
 
         public double getHigh() {
-            return field2.getValue();
+            return this.field2.getValue();
         }
 
         public int getNtile() {
-            String selectedItem = (String) ntileCombo.getSelectedItem();
-            return ntileMap.get(selectedItem);
+            String selectedItem = (String) this.ntileCombo.getSelectedItem();
+            return this.ntileMap.get(selectedItem);
         }
 
         public int getNtileIndex() {
-            Object selectedItem = ntileIndexCombo.getSelectedItem();
+            Object selectedItem = this.ntileIndexCombo.getSelectedItem();
             return selectedItem == null ? 1 : (Integer) selectedItem;
         }
 
@@ -726,7 +720,7 @@ public class ScatterPlotView extends JPanel {
             chunks.add(new Chunk(startChunkCount, _data.length, _data[_data.length - 1]));
 
             // now find the breakpoints.
-            double interval = _data.length / ntiles;
+            double interval = _data.length / (double) ntiles;
             double[] breakpoints = new double[ntiles + 1];
             breakpoints[0] = StatUtils.min(_data);
 
@@ -802,9 +796,9 @@ public class ScatterPlotView extends JPanel {
 
             setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
-            nf = NumberFormat.getNumberInstance();
-            nf.setMinimumFractionDigits(2);
-            nf.setMaximumFractionDigits(2);
+            this.nf = NumberFormat.getNumberInstance();
+            this.nf.setMinimumFractionDigits(2);
+            this.nf.setMaximumFractionDigits(2);
         }
 
         public void setScatterPlot(ScatterPlot ScatterPlot) {
@@ -815,10 +809,10 @@ public class ScatterPlotView extends JPanel {
          * Renders the view.
          */
         public void paintComponent(Graphics graphics) {
-            final double xmin = scatterPlot.getXmin();
-            final double xmax = scatterPlot.getXmax();
-            final double ymin = scatterPlot.getYmin();
-            final double ymax = scatterPlot.getYmax();
+            double xmin = this.scatterPlot.getXmin();
+            double xmax = this.scatterPlot.getXmax();
+            double ymin = this.scatterPlot.getYmin();
+            double ymax = this.scatterPlot.getYmax();
 
 
             Graphics2D g = (Graphics2D) graphics;
@@ -830,11 +824,11 @@ public class ScatterPlotView extends JPanel {
             int chartWidth = getPreferredSize().width * 8 / 10;
             int chartHeight = getPreferredSize().height * 7 / 10;
 
-            int xStringMin = 10;
-            int xMin = 60;
+            final int xStringMin = 10;
+            final int xMin = 60;
             int xMax = chartWidth - 10;
             int xRange = xMax - xMin;
-            int yMin = 35;
+            final int yMin = 35;
             int yMax = chartHeight - 18;
             int yRange = yMax - yMin;
 
@@ -848,26 +842,26 @@ public class ScatterPlotView extends JPanel {
             g.setFont(g.getFont().deriveFont(11f));
 
             /* draws the labels for the corresponding experiment and sample names */
-            String name = scatterPlot.getDataSet().getName();
+            String name = this.scatterPlot.getDataSet().getName();
             if (name != null) {
                 g.setFont(g.getFont().deriveFont(11f));
                 g.drawString(name, 5, 10);
             }
 
             /* draws axis labels and scale */
-            g.drawString(nf.format(ymax), 2 + xStringMin, yMin + 7);
-            g.drawString(nf.format(ymin), 2 + xStringMin, yMax);
-            g.drawString(nf.format(xmax), xMax - 20, yMax + 14);
-            g.drawString(nf.format(xmin), 20 + 30, yMax + 14);
-            g.drawString(scatterPlot.getXvar(), xMin + (xRange / 2) - 10, yMax + 14);
+            g.drawString(this.nf.format(ymax), 2 + xStringMin, yMin + 7);
+            g.drawString(this.nf.format(ymin), 2 + xStringMin, yMax);
+            g.drawString(this.nf.format(xmax), xMax - 20, yMax + 14);
+            g.drawString(this.nf.format(xmin), 20 + 30, yMax + 14);
+            g.drawString(this.scatterPlot.getXvar(), xMin + (xRange / 2) - 10, yMax + 14);
             g.translate(xMin - 7, yMin + (yRange / 2) + 10);
             g.rotate(-Math.PI / 2.0);
-            g.drawString(scatterPlot.getYvar(), xStringMin, 0);
+            g.drawString(this.scatterPlot.getYvar(), xStringMin, 0);
             g.rotate(Math.PI / 2.0);
             g.translate(-(xMin - 7), -(yMin + (yRange / 2) + 10));
 
             /* draws ScatterPlot of the values */
-            Vector<Point2D.Double> pts = scatterPlot.getSievedValues();
+            Vector<Point2D.Double> pts = this.scatterPlot.getSievedValues();
             double _xRange = xmax - xmin;
             double _yRange = ymax - ymin;
             int x, y;
@@ -880,9 +874,9 @@ public class ScatterPlotView extends JPanel {
             }
 
             /* draws best-fit line */
-            if (scatterPlot.isIncludeLine()) {
-                double a = scatterPlot.getRegressionCoeff();
-                double b = scatterPlot.getRegressionIntercept();
+            if (this.scatterPlot.isIncludeLine()) {
+                double a = this.scatterPlot.getRegressionCoeff();
+                double b = this.scatterPlot.getRegressionIntercept();
 
                 double x1, y1 = 0;
 
@@ -913,13 +907,13 @@ public class ScatterPlotView extends JPanel {
             }
 
             /* draws statistical values */
-            if (scatterPlot.isIncludeLine()) {
+            if (this.scatterPlot.isIncludeLine()) {
                 g.setColor(Color.black);
-                nf.setMinimumFractionDigits(3);
-                nf.setMaximumFractionDigits(3);
-                double r = scatterPlot.getCorrelationCoeff();
-                double p = scatterPlot.getCorrelationPValue();
-                g.drawString("correlation coef = " + nf.format(r) + "  (p=" + nf.format(p) + ")", 100, 21);
+                this.nf.setMinimumFractionDigits(3);
+                this.nf.setMaximumFractionDigits(3);
+                double r = this.scatterPlot.getCorrelationCoeff();
+                double p = this.scatterPlot.getCorrelationPValue();
+                g.drawString("correlation coef = " + this.nf.format(r) + "  (p=" + this.nf.format(p) + ")", 100, 21);
             }
         }
 

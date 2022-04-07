@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,7 +27,6 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -43,7 +42,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput {
+public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
 
     static final long serialVersionUID = 23L;
 
@@ -108,7 +107,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
                 throw new RuntimeException(e);
             }
         }
-        log(semPm);
+        log(this.semPm);
     }
 
     public GeneralizedSemPmWrapper(Graph graph, GeneralizedSemPm oldPm) {
@@ -121,10 +120,10 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
             this.semPm.setParametersTemplate(oldPm.getParametersTemplate());
             this.semPm.setErrorsTemplate(oldPm.getErrorsTemplate());
 
-            for (Node node : semPm.getNodes()) {
+            for (Node node : this.semPm.getNodes()) {
                 Set<String> parents = new HashSet<>();
 
-                for (Node parent : semPm.getParents(node)) {
+                for (Node parent : this.semPm.getParents(node)) {
                     parents.add(parent.getName());
                 }
 
@@ -137,21 +136,18 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
                     oldReferencedNames.add(node2.getName());
                 }
 
-//                System.out.println("\nnode = " + node);
-//                System.out.println("Parents = " + parents);
-//                System.out.println("Old referenced names = " + oldReferencedNames);
                 String template;
 
-                if (semPm.getVariableNodes().contains(node)) {
-                    template = semPm.getVariablesTemplate();
+                if (this.semPm.getVariableNodes().contains(node)) {
+                    template = this.semPm.getVariablesTemplate();
                 } else {
-                    template = semPm.getErrorsTemplate();
+                    template = this.semPm.getErrorsTemplate();
                 }
 
                 String newExpression = "";
 
                 try {
-                    newExpression = TemplateExpander.getInstance().expandTemplate(template, semPm, node);
+                    newExpression = TemplateExpander.getInstance().expandTemplate(template, this.semPm, node);
                 } catch (ParseException e) {
                     //
                 }
@@ -160,7 +156,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
 
                 if (_node == null || !parents.equals(oldReferencedNames)) {
                     this.semPm.setNodeExpression(node, newExpression);
-                    setReferencedParameters(node, semPm, oldPm);
+                    setReferencedParameters(node, this.semPm, oldPm);
                 } else {
                     try {
                         this.semPm.setNodeExpression(node, oldPm.getNodeExpressionString(node));
@@ -172,27 +168,27 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
 
             for (String startsWith : oldPm.startsWithPrefixes()) {
                 try {
-                    semPm.setStartsWithParametersTemplate(startsWith, oldPm.getStartsWithParameterTemplate(startsWith));
+                    this.semPm.setStartsWithParametersTemplate(startsWith, oldPm.getStartsWithParameterTemplate(startsWith));
                 } catch (ParseException e) {
                     throw new RuntimeException(e);
                 }
             }
 
-            for (String parameter : semPm.getParameters()) {
+            for (String parameter : this.semPm.getParameters()) {
                 boolean found = false;
 
                 Set<String> prefixes = oldPm.startsWithPrefixes();
 
                 for (String startsWith : prefixes) {
                     if (parameter.startsWith(startsWith)) {
-                        semPm.setParameterExpression(parameter, oldPm.getStartsWithParameterTemplate(startsWith));
+                        this.semPm.setParameterExpression(parameter, oldPm.getStartsWithParameterTemplate(startsWith));
                         found = true;
                         break;
                     }
                 }
 
                 if (!found) {
-                    semPm.setParameterExpression(parameter, semPm.getParameterExpressionString(parameter));
+                    this.semPm.setParameterExpression(parameter, this.semPm.getParameterExpressionString(parameter));
                 }
             }
 
@@ -202,7 +198,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
     }
 
     public void setReferencedParameters(Node node, GeneralizedSemPm oldPm, GeneralizedSemPm newPm) {
-        Set<String> parameters = semPm.getReferencedParameters(node);
+        Set<String> parameters = this.semPm.getReferencedParameters(node);
 
         for (String parameter : parameters) {
 
@@ -254,7 +250,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
     }
 
     public GeneralizedSemPmWrapper(GeneralizedSemPmWrapper pmWrapper) {
-        semPm = new GeneralizedSemPm(pmWrapper.getSemPm());
+        this.semPm = new GeneralizedSemPm(pmWrapper.getSemPm());
     }
 
     /**
@@ -273,19 +269,19 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
         } catch (Exception e) {
             throw new RuntimeException("SemPm could not be deep cloned.", e);
         }
-        log(semPm);
+        log(this.semPm);
     }
 
     public GeneralizedSemPmWrapper(SemImWrapper wrapper) {
         SemPm oldSemPm = wrapper.getSemIm().getSemPm();
         this.semPm = new GeneralizedSemPm(oldSemPm);
-        log(semPm);
+        log(this.semPm);
     }
 
     public GeneralizedSemPmWrapper(MimBuildRunner wrapper) {
         SemPm oldSemPm = wrapper.getSemPm();
         this.semPm = new GeneralizedSemPm(oldSemPm);
-        log(semPm);
+        log(this.semPm);
     }
 
     public GeneralizedSemPmWrapper(BuildPureClustersRunner wrapper) {
@@ -295,7 +291,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
         }
         SemPm oldSemPm = new SemPm(graph);
         this.semPm = new GeneralizedSemPm(oldSemPm);
-        log(semPm);
+        log(this.semPm);
     }
 
     public GeneralizedSemPmWrapper(AlgorithmRunner wrapper) {
@@ -325,25 +321,22 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (semPm == null) {
+        if (this.semPm == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return semPm.getGraph();
+        return this.semPm.getGraph();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -351,7 +344,7 @@ public class GeneralizedSemPmWrapper implements SessionModel, KnowledgeBoxInput 
     }
 
     public boolean isShowErrors() {
-        return showErrors;
+        return this.showErrors;
     }
 
     public void setShowErrors(boolean showErrors) {

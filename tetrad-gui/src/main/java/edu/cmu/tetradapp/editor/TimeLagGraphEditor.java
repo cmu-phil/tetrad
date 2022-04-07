@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.TimeLagGraphWrapper;
 import edu.cmu.tetradapp.ui.PaddingPanel;
-import edu.cmu.tetradapp.util.CopyLayoutAction;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
@@ -66,7 +65,6 @@ public final class TimeLagGraphEditor extends JPanel
 
     private TimeLagGraphWorkbench workbench;
     private final LayoutEditable layoutEditable;
-    private CopyLayoutAction copyLayoutAction;
 
     private final JScrollPane graphEditorScroll = new JScrollPane();
 
@@ -87,7 +85,7 @@ public final class TimeLagGraphEditor extends JPanel
      * Sets the name of this editor.
      */
     @Override
-    public final void setName(String name) {
+    public void setName(String name) {
         String oldName = getName();
         super.setName(name);
         firePropertyChange("name", oldName, getName());
@@ -126,9 +124,7 @@ public final class TimeLagGraphEditor extends JPanel
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
-        for (int i = 0; i < sessionElements.size(); i++) {
-
-            Object o = sessionElements.get(i);
+        for (Object o : sessionElements) {
 
             if (o instanceof GraphNode) {
                 Node modelNode = (Node) o;
@@ -141,7 +137,7 @@ public final class TimeLagGraphEditor extends JPanel
 
     @Override
     public GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     @Override
@@ -193,9 +189,9 @@ public final class TimeLagGraphEditor extends JPanel
     private void initUI(TimeLagGraphWrapper timeLagGraphWrapper) {
         TimeLagGraph graph = (TimeLagGraph) timeLagGraphWrapper.getGraph();
 
-        workbench = new TimeLagGraphWorkbench(graph);
+        this.workbench = new TimeLagGraphWorkbench(graph);
 
-        workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+        this.workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
             String propertyName = evt.getPropertyName();
 
             // Update the bootstrap table if there's changes to the edges or node renaming
@@ -223,8 +219,8 @@ public final class TimeLagGraphEditor extends JPanel
         graphToolbar.setMaximumSize(new Dimension(140, 450));
 
         // topBox right side graph editor
-        graphEditorScroll.setPreferredSize(new Dimension(760, 450));
-        graphEditorScroll.setViewportView(workbench);
+        this.graphEditorScroll.setPreferredSize(new Dimension(760, 450));
+        this.graphEditorScroll.setViewportView(this.workbench);
 
         // topBox contains the topGraphBox and the instructionBox underneath
         Box topBox = Box.createVerticalBox();
@@ -233,7 +229,7 @@ public final class TimeLagGraphEditor extends JPanel
         // topGraphBox contains the vertical graph toolbar and graph editor
         Box topGraphBox = Box.createHorizontalBox();
         topGraphBox.add(graphToolbar);
-        topGraphBox.add(graphEditorScroll);
+        topGraphBox.add(this.graphEditorScroll);
 
         // Instruction with info button
         Box instructionBox = Box.createHorizontalBox();
@@ -251,7 +247,7 @@ public final class TimeLagGraphEditor extends JPanel
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Initialize helpSet
-                String helpHS = "/resources/javahelp/TetradHelp.hs";
+                final String helpHS = "/resources/javahelp/TetradHelp.hs";
 
                 try {
                     URL url = this.getClass().getResource(helpHS);
@@ -277,17 +273,17 @@ public final class TimeLagGraphEditor extends JPanel
         topBox.add(topGraphBox);
         topBox.add(instructionBox);
 
-        edgeTypeTable.setPreferredSize(new Dimension(820, 150));
+        this.edgeTypeTable.setPreferredSize(new Dimension(820, 150));
 
-        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.BOTTOM);
         tabbedPane.addTab("Graph", new PaddingPanel(topBox));
-        tabbedPane.addTab("Edges", edgeTypeTable);
+        tabbedPane.addTab("Edges", this.edgeTypeTable);
 
         // Add to parent container
         add(menuBar, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
 
-        edgeTypeTable.update(graph);
+        this.edgeTypeTable.update(graph);
 
         // Performs relayout.
         // It means invalid content is asked for all the sizes and
@@ -298,10 +294,9 @@ public final class TimeLagGraphEditor extends JPanel
     /**
      * Updates bootstrap table on adding/removing edges or graph changes
      *
-     * @param graph
      */
     private void updateBootstrapTable(Graph graph) {
-        edgeTypeTable.update(graph);
+        this.edgeTypeTable.update(graph);
 
         validate();
     }
@@ -328,20 +323,9 @@ public final class TimeLagGraphEditor extends JPanel
      * @return this menu.
      */
     private JMenu createNumLagsMenu() {
-        final TimeLagGraph graph = (TimeLagGraph) getLayoutEditable().getGraph();
+        TimeLagGraph graph = (TimeLagGraph) getLayoutEditable().getGraph();
         JMenu edit = new JMenu("Number-of-Lags = " + graph.getMaxLag());
 
-//        JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
-//        JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
-//
-//        copy.setAccelerator(
-//                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
-//        paste.setAccelerator(
-//                KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
-//
-//        edit.add(copy);
-//        edit.add(paste);
-//        edit.addSeparator();
         JMenuItem configuration = new JMenuItem("Configuration...");
         edit.add(configuration);
 
@@ -355,11 +339,11 @@ public final class TimeLagGraphEditor extends JPanel
                 private int maxLag;
                 private int numInitialLags;
 
-                public ConfigurationEditor(final TimeLagGraph graph) {
-                    maxLag = graph.getMaxLag();
-                    numInitialLags = graph.getNumInitialLags();
+                public ConfigurationEditor(TimeLagGraph graph) {
+                    this.maxLag = graph.getMaxLag();
+                    this.numInitialLags = graph.getNumInitialLags();
 
-                    final SpinnerModel maxLagSpinnerModel = new SpinnerNumberModel(graph.getMaxLag(), 0, 300, 1);
+                    SpinnerModel maxLagSpinnerModel = new SpinnerNumberModel(graph.getMaxLag(), 0, 300, 1);
                     JSpinner maxLagSpinner = new JSpinner(maxLagSpinnerModel);
 
                     maxLagSpinner.addChangeListener(e -> {
@@ -369,7 +353,7 @@ public final class TimeLagGraphEditor extends JPanel
                         setMaxLag(value);
                     });
 
-                    final SpinnerModel initialLagsSpinnerModel = new SpinnerNumberModel(graph.getNumInitialLags(), 1, 300, 1);
+                    SpinnerModel initialLagsSpinnerModel = new SpinnerNumberModel(graph.getNumInitialLags(), 1, 300, 1);
                     JSpinner initialLagsSpinner = new JSpinner(initialLagsSpinnerModel);
 
                     initialLagsSpinner.addChangeListener(e -> {
@@ -399,7 +383,7 @@ public final class TimeLagGraphEditor extends JPanel
                 }
 
                 public int getMaxLag() {
-                    return maxLag;
+                    return this.maxLag;
                 }
 
                 public void setMaxLag(int maxLag) {
@@ -408,7 +392,7 @@ public final class TimeLagGraphEditor extends JPanel
                 }
 
                 public int getNumInitialLags() {
-                    return numInitialLags;
+                    return this.numInitialLags;
                 }
 
                 public void setNumInitialLags(int numInitialLags) {
@@ -416,10 +400,10 @@ public final class TimeLagGraphEditor extends JPanel
                 }
             }
 
-            final ConfigurationEditor editor = new ConfigurationEditor((TimeLagGraph) getGraph());
+            ConfigurationEditor editor = new ConfigurationEditor((TimeLagGraph) getGraph());
 
             EditorWindow editorWindow
-                    = new EditorWindow(editor, "Configuration...", "Save", true, TimeLagGraphEditor.this);
+                    = new EditorWindow(editor, "Configuration...", "Save", true, this);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();
@@ -454,11 +438,7 @@ public final class TimeLagGraphEditor extends JPanel
     }
 
     private LayoutEditable getLayoutEditable() {
-        return layoutEditable;
-    }
-
-    private CopyLayoutAction getCopyLayoutAction() {
-        return copyLayoutAction;
+        return this.layoutEditable;
     }
 
 }

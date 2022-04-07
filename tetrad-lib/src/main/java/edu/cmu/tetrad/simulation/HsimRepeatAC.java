@@ -17,28 +17,28 @@ import java.util.Set;
  */
 public class HsimRepeatAC {
 
-    private boolean verbose = false; //set this to true if you want HsimAutoRun to report information to System.out
+    private boolean verbose; //set this to true if you want HsimAutoRun to report information to System.out
     private DataSet data;
-    private boolean write = false;
+    private boolean write;
     private String filenameOut = "defaultOut";
     private char delimiter = ',';
 
     //*********Constructors*************//
     public HsimRepeatAC(DataSet indata) {
-        data = indata;
+        this.data = indata;
         //may need to make this part more complicated if CovarianceMatrix method is finicky
     }
 
     public HsimRepeatAC(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<>();
         eVars.add("MULT");
         Path dataFile = Paths.get(readfilename);
 
         ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
         try {
-            data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
+            this.data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData(eVars));
         } catch (Exception IOException) {
             IOException.printStackTrace();
         }
@@ -47,7 +47,7 @@ public class HsimRepeatAC {
     //***************PUBLIC METHODS********************//
     public double[] run(int resimSize, int repeat) {
         //parameter: set of positive integers, which are resimSize values.
-        List<Integer> schedule = new ArrayList<Integer>();
+        List<Integer> schedule = new ArrayList<>();
 
         for (int i = 0; i < repeat; i++) {
             schedule.add(resimSize);
@@ -63,8 +63,6 @@ public class HsimRepeatAC {
         evalTotal[4] = 0;
 
         double[] evalIncrement;
-        //evalIncrement = new double[5];
-        //Integer count = 0;
         Integer count0 = 0;
         Integer count1 = 0;
         Integer count2 = 0;
@@ -73,15 +71,15 @@ public class HsimRepeatAC {
 
         for (Integer i : schedule) {
             //count++;
-            HsimAutoC study = new HsimAutoC(data);
+            HsimAutoC study = new HsimAutoC(this.data);
             //this is done differently if write is true. in that case, HsimAutoC will be used differently
-            if (write) {
+            if (this.write) {
                 study.setWrite(true);
-                study.setFilenameOut(filenameOut);
-                study.setDelimiter(delimiter);
+                study.setFilenameOut(this.filenameOut);
+                study.setDelimiter(this.delimiter);
             }
             //pass verbose on to the lower level as well
-            if (verbose) {
+            if (this.verbose) {
                 study.setVerbose(true);
             }
 
@@ -115,7 +113,7 @@ public class HsimRepeatAC {
         evalTotal[3] = evalTotal[3] / (double) (count3);
         evalTotal[4] = evalTotal[4] / (double) (count4);
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("Average eval scores: " + evalTotal[0] + " " + evalTotal[1]
                     + " " + evalTotal[2] + " " + evalTotal[3] + " " + evalTotal[4]);
         }
@@ -124,18 +122,18 @@ public class HsimRepeatAC {
 
     //*************************Methods for setting private variables***********//
     public void setVerbose(boolean verbosity) {
-        verbose = verbosity;
+        this.verbose = verbosity;
     }
 
     public void setWrite(boolean setwrite) {
-        write = setwrite;
+        this.write = setwrite;
     }
 
     public void setFilenameOut(String filename) {
-        filenameOut = filename;
+        this.filenameOut = filename;
     }
 
     public void setDelimiter(char delim) {
-        delimiter = delim;
+        this.delimiter = delim;
     }
 }

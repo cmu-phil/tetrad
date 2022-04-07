@@ -98,7 +98,7 @@ public class GaussianProcess {
     public void train(Matrix X, Matrix y, Matrix logtheta0, int iterations) {
         System.out.println("training started...");
         this.X = X;
-        logtheta = minimize(logtheta0, iterations, X, y);
+        this.logtheta = minimize(logtheta0, iterations, X, y);
     }
 
 
@@ -115,16 +115,16 @@ public class GaussianProcess {
 
         int n = x.getRowDimension();
 
-        Matrix K = covFunction.compute(logtheta, x);    // compute training set covariance matrix
+        Matrix K = this.covFunction.compute(logtheta, x);    // compute training set covariance matrix
 
         CholeskyDecomposition cd = K.chol();
         if (!cd.isSPD()) {
             throw new RuntimeException("The covariance Matrix is not SDP, check your covariance function (maybe you mess the noise term..)");
         } else {
-            L = cd.getL();                // cholesky factorization of the covariance
+            this.L = cd.getL();                // cholesky factorization of the covariance
 
             // alpha = L'\(L\y);
-            alpha = bSubstitutionWithTranspose(L, fSubstitution(L, y));
+            this.alpha = GaussianProcess.bSubstitutionWithTranspose(this.L, GaussianProcess.fSubstitution(this.L, y));
 
 //            double[][] yarr = y.getArray();
 //            double[][] alphaarr = alpha.getArray();
@@ -136,15 +136,15 @@ public class GaussianProcess {
 //
 
             // compute the negative log marginal likelihood
-            double lml = (y.transpose().times(alpha).times(0.5)).get(0, 0);
+            double lml = (y.transpose().times(this.alpha).times(0.5)).get(0, 0);
 
-            for (int i = 0; i < L.getRowDimension(); i++) lml += Math.log(L.get(i, i));
+            for (int i = 0; i < this.L.getRowDimension(); i++) lml += Math.log(this.L.get(i, i));
             lml += 0.5 * n * Math.log(2 * Math.PI);
 
 
-            Matrix W = bSubstitutionWithTranspose(L, (fSubstitution(L, Matrix.identity(n, n)))).minus(alpha.times(alpha.transpose()));     // precompute for convenience
+            Matrix W = GaussianProcess.bSubstitutionWithTranspose(this.L, (GaussianProcess.fSubstitution(this.L, Matrix.identity(n, n)))).minus(this.alpha.times(this.alpha.transpose()));     // precompute for convenience
             for (int i = 0; i < df0.getRowDimension(); i++) {
-                df0.set(i, 0, sum(W.arrayTimes(covFunction.computeDerivatives(logtheta, x, i))) / 2);
+                df0.set(i, 0, GaussianProcess.sum(W.arrayTimes(this.covFunction.computeDerivatives(logtheta, x, i))) / 2);
             }
 
             return lml;
@@ -164,24 +164,24 @@ public class GaussianProcess {
 
     public Matrix[] predict(Matrix xstar) {
 
-        if (alpha == null || L == null) {
+        if (this.alpha == null || this.L == null) {
             System.out.println("GP needs to be trained first..");
             System.exit(-1);
         }
-        if (xstar.getColumnDimension() != X.getColumnDimension())
-            throw new IllegalArgumentException("Wrong size of the input " + xstar.getColumnDimension() + " instead of " + X.getColumnDimension());
-        Matrix[] star = covFunction.compute(logtheta, X, xstar);
+        if (xstar.getColumnDimension() != this.X.getColumnDimension())
+            throw new IllegalArgumentException("Wrong size of the input " + xstar.getColumnDimension() + " instead of " + this.X.getColumnDimension());
+        Matrix[] star = this.covFunction.compute(this.logtheta, this.X, xstar);
 
         Matrix Kstar = star[1];
         Matrix Kss = star[0];
 
-        Matrix ystar = Kstar.transpose().times(alpha);
+        Matrix ystar = Kstar.transpose().times(this.alpha);
 
-        Matrix v = fSubstitution(L, Kstar);
+        Matrix v = GaussianProcess.fSubstitution(this.L, Kstar);
 
         v.arrayTimesEquals(v);
 
-        Matrix Sstar = Kss.minus(sumColumns(v).transpose());
+        Matrix Sstar = Kss.minus(GaussianProcess.sumColumns(v).transpose());
 
         return new Matrix[]{ystar, Sstar};
     }
@@ -199,20 +199,18 @@ public class GaussianProcess {
 
     public Matrix predictMean(Matrix xstar) {
 
-        if (alpha == null || L == null) {
+        if (this.alpha == null || this.L == null) {
             System.out.println("GP needs to be trained first..");
             System.exit(-1);
         }
-        if (xstar.getColumnDimension() != X.getColumnDimension())
-            throw new IllegalArgumentException("Wrong size of the input" + xstar.getColumnDimension() + " instead of " + X.getColumnDimension());
+        if (xstar.getColumnDimension() != this.X.getColumnDimension())
+            throw new IllegalArgumentException("Wrong size of the input" + xstar.getColumnDimension() + " instead of " + this.X.getColumnDimension());
 
-        Matrix[] star = covFunction.compute(logtheta, X, xstar);
+        Matrix[] star = this.covFunction.compute(this.logtheta, this.X, xstar);
 
         Matrix Kstar = star[1];
 
-        Matrix ystar = Kstar.transpose().times(alpha);
-
-        return ystar;
+        return Kstar.transpose().times(this.alpha);
     }
 
     private static Matrix sumColumns(Matrix a) {
@@ -234,11 +232,11 @@ public class GaussianProcess {
 
     private static Matrix fSubstitution(Matrix L, Matrix B) {
 
-        final double[][] l = L.getArray();
-        final double[][] b = B.getArray();
-        final double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
+        double[][] l = L.getArray();
+        double[][] b = B.getArray();
+        double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
 
-        final int n = x.length;
+        int n = x.length;
 
         for (int i = 0; i < B.getColumnDimension(); i++) {
             for (int k = 0; k < n; k++) {
@@ -255,11 +253,11 @@ public class GaussianProcess {
 
     private static Matrix bSubstitution(Matrix L, Matrix B) {
 
-        final double[][] l = L.getArray();
-        final double[][] b = B.getArray();
-        final double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
+        double[][] l = L.getArray();
+        double[][] b = B.getArray();
+        double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
 
-        final int n = x.length - 1;
+        int n = x.length - 1;
 
         for (int i = 0; i < B.getColumnDimension(); i++) {
             for (int k = n; k > -1; k--) {
@@ -276,11 +274,11 @@ public class GaussianProcess {
 
     private static Matrix bSubstitutionWithTranspose(Matrix L, Matrix B) {
 
-        final double[][] l = L.getArray();
-        final double[][] b = B.getArray();
-        final double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
+        double[][] l = L.getArray();
+        double[][] b = B.getArray();
+        double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
 
-        final int n = x.length - 1;
+        int n = x.length - 1;
 
         for (int i = 0; i < B.getColumnDimension(); i++) {
             for (int k = n; k > -1; k--) {
@@ -295,15 +293,15 @@ public class GaussianProcess {
 
     }
 
-    private final static double INT = 0.1;                // don't reevaluate within 0.1 of the limit of the current bracket
+    private static final double INT = 0.1;                // don't reevaluate within 0.1 of the limit of the current bracket
 
-    private final static double EXT = 3.0;                // extrapolate maximum 3 times the current step-size
+    private static final double EXT = 3.0;                // extrapolate maximum 3 times the current step-size
 
-    private final static int MAX = 20;                    // max 20 function evaluations per line search
+    private static final int MAX = 20;                    // max 20 function evaluations per line search
 
-    private final static double RATIO = 10;               // maximum allowed slope ratio
+    private static final double RATIO = 10;               // maximum allowed slope ratio
 
-    private final static double SIG = 0.1, RHO = SIG / 2;   // SIG and RHO are the constants controlling the Wolfe-
+    private static final double SIG = 0.1, RHO = GaussianProcess.SIG / 2;   // SIG and RHO are the constants controlling the Wolfe-
     // Powell conditions. SIG is the maximum allowed absolute ratio between
     // previous and new slopes (derivatives in the search direction), thus setting
     // SIG to low (positive) values forces higher precision in the line-searches.
@@ -322,7 +320,7 @@ public class GaussianProcess {
         Matrix df0, df3;
         Matrix fX;
 
-        double red = 1.0;
+        final double red = 1.0;
 
         int i = 0;
         int ls_failed = 0;
@@ -343,7 +341,7 @@ public class GaussianProcess {
         d0 = s.times(-1).transpose().times(s).get(0, 0);
         x3 = red / (1 - d0);                                  // initial step is red/(|s|+1)
 
-        final int nCycles = Math.abs(length);
+        int nCycles = Math.abs(length);
 
         int success;
 
@@ -357,7 +355,7 @@ public class GaussianProcess {
             Matrix X0 = params.copy();
             Matrix dF0 = df0.copy();
 
-            M = (length > 0) ? MAX : Math.min(MAX, -length - i);
+            M = (length > 0) ? GaussianProcess.MAX : Math.min(GaussianProcess.MAX, -length - i);
 
             while (true) {                            // keep extrapolating as long as necessary
 
@@ -378,7 +376,7 @@ public class GaussianProcess {
                     //f3 = f.evaluate(m1,cf, in, out, df3);
                     f3 = negativeLogLikelihood(m1, in, out, df3);
 
-                    if (Double.isNaN(f3) || Double.isInfinite(f3) || hasInvalidNumbers(df3.getRowPackedCopy())) {
+                    if (Double.isNaN(f3) || Double.isInfinite(f3) || GaussianProcess.hasInvalidNumbers(df3.getRowPackedCopy())) {
                         x3 = (x2 + x3) / 2;     // catch any error which occured in f
                     } else {
                         success = 1;
@@ -394,7 +392,7 @@ public class GaussianProcess {
 
                 d3 = df3.transpose().times(s).get(0, 0);  // new slope
 
-                if (d3 > SIG * d0 || f3 > f0 + x3 * RHO * d0 || M == 0) {  // are we done extrapolating?
+                if (d3 > GaussianProcess.SIG * d0 || f3 > f0 + x3 * GaussianProcess.RHO * d0 || M == 0) {  // are we done extrapolating?
                     break;
                 }
 
@@ -411,11 +409,11 @@ public class GaussianProcess {
                 x3 = x1 - d1 * (x2 - x1) * (x2 - x1) / (B + Math.sqrt(B * B - A * d1 * (x2 - x1)));  // num. error possible, ok!
 
                 if (Double.isNaN(x3) || Double.isInfinite(x3) || x3 < 0)     // num prob | wrong sign?
-                    x3 = x2 * EXT;                             // extrapolate maximum amount
-                else if (x3 > x2 * EXT)                        // new point beyond extrapolation limit?
-                    x3 = x2 * EXT;                            // extrapolate maximum amount
-                else if (x3 < x2 + INT * (x2 - x1))               // new point too close to previous point?
-                    x3 = x2 + INT * (x2 - x1);
+                    x3 = x2 * GaussianProcess.EXT;                             // extrapolate maximum amount
+                else if (x3 > x2 * GaussianProcess.EXT)                        // new point beyond extrapolation limit?
+                    x3 = x2 * GaussianProcess.EXT;                            // extrapolate maximum amount
+                else if (x3 < x2 + GaussianProcess.INT * (x2 - x1))               // new point too close to previous point?
+                    x3 = x2 + GaussianProcess.INT * (x2 - x1);
 
             }
 
@@ -423,10 +421,10 @@ public class GaussianProcess {
             x4 = 0;
             d4 = 0;
 
-            while ((Math.abs(d3) > -SIG * d0 ||
-                    f3 > f0 + x3 * RHO * d0) && M > 0) {               // keep interpolating
+            while ((Math.abs(d3) > -GaussianProcess.SIG * d0 ||
+                    f3 > f0 + x3 * GaussianProcess.RHO * d0) && M > 0) {               // keep interpolating
 
-                if (d3 > 0 || f3 > f0 + x3 * RHO * d0) {                // choose subinterval
+                if (d3 > 0 || f3 > f0 + x3 * GaussianProcess.RHO * d0) {                // choose subinterval
                     x4 = x3;
                     f4 = f3;
                     d4 = d3;                  // move point 3 to point 4
@@ -448,7 +446,7 @@ public class GaussianProcess {
                     x3 = (x2 + x4) / 2;               // if we had a numerical problem then bisect
                 }
 
-                x3 = Math.max(Math.min(x3, x4 - INT * (x4 - x2)), x2 + INT * (x4 - x2));  // don't accept too close
+                x3 = Math.max(Math.min(x3, x4 - GaussianProcess.INT * (x4 - x2)), x2 + GaussianProcess.INT * (x4 - x2));  // don't accept too close
 
                 Matrix m1 = s.times(x3).plus(params);
                 //f3 = f.evaluate(m1,cf, in, out, df3);
@@ -467,7 +465,7 @@ public class GaussianProcess {
 
             }                                                    // end interpolation
 
-            if (Math.abs(d3) < -SIG * d0 && f3 < f0 + x3 * RHO * d0) {     // if line search succeeded
+            if (Math.abs(d3) < -GaussianProcess.SIG * d0 && f3 < f0 + x3 * GaussianProcess.RHO * d0) {     // if line search succeeded
                 params = s.times(x3).plus(params);
                 f0 = f3;
 
@@ -496,7 +494,7 @@ public class GaussianProcess {
                     d0 = s.times(-1).transpose().times(s).get(0, 0);
                 }
 
-                x3 = x3 * Math.min(RATIO, d3 / (d0 - Double.MIN_VALUE));    // slope ratio but max RATIO
+                x3 = x3 * Math.min(GaussianProcess.RATIO, d3 / (d0 - Double.MIN_VALUE));    // slope ratio but max RATIO
                 ls_failed = 0;                                          // this line search did not fail
 
             } else {
@@ -545,21 +543,10 @@ public class GaussianProcess {
         CovarianceFunction covFunc = new CovSum(6, new CovLINone(), new CovNoise());
         GaussianProcess gp = new GaussianProcess(covFunc);
 
-        double[][] logtheta0 = new double[][]{
+        double[][] logtheta0 = {
                 {0.1},
                 {Math.log(0.1)}
         };
-        /*
-       double[][] logtheta0 = new double[][]{
-                      {0.1},
-                      {0.2},
-                      {0.3},
-                      {0.4},
-                      {0.5},
-                      {0.6},
-                      {0.7},
-                      {Math.log(0.1)}};
-        */
 
         Matrix params0 = new Matrix(logtheta0);
 
@@ -579,40 +566,6 @@ public class GaussianProcess {
 
         // half of the sinusoid uses points very close to each other and the other half uses
         // more sparse data
-
-//        double inc = 2 * Math.PI / 1000;
-//
-//        double[][] data = new double[1000][2];
-//
-//        Random random = new Random();
-//
-//        for(int i=0; i<1000; i++){
-//            data[i][0] = i*inc;
-//            data[i][1] = Math.sin(i*+inc);
-//        }
-//
-//
-//        // NEED TO FILL Xtrain, Ytrain and Xtest, Ytest
-//
-//
-//        gp.train(Xtrain,Ytest,params0);
-//
-//  //      SimpleRealTimePlotter plot = new SimpleRealTimePlotter("","","",false,false,true,200);
-//
-//        final Matrix[] out = gp.predict(Xtest);
-//
-//        for(int i=0; i<Xtest.getRowDimension(); i++){
-//
-//            final double mean = out[0].get(i,0);
-//            final double var = 3 * Math.sqrt(out[1].get(i,0));
-//
-//            plot.addPoint(i, mean, 0, true);
-//            plot.addPoint(i, mean-var, 1, true);
-//            plot.addPoint(i, mean+var, 2, true);
-//            plot.addPoint(i, Ytest.get(i,0), 3, true);
-//
-//            plot.fillPlot();
-//        }
 
         Matrix[] datastar = CSVtoMatrix.load("../armdatastar.csv", 6, 1);
         Matrix Xstar = datastar[0];

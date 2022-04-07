@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,11 +34,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.*;
-import java.util.prefs.Preferences;
 
 /**
  * Allows the user to specify how a selected list of columns should be
@@ -58,13 +55,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
      * A map from nodes to their editors.
      */
     private final Map<Node, DiscretizationEditor> nodeEditors = new HashMap<>();
-
-
-    /**
-     * The params we are editing.
-     */
-//    private DiscretizationParams params;
-
 
     /**
      * A tabbed pane to store the editors in.
@@ -92,7 +82,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     public void setup() {
         System.out.println("setup");
 
-        final List<Node> variables = this.sourceDataSet.getVariables();
+        List<Node> variables = this.sourceDataSet.getVariables();
         List<Node> allVariables = new LinkedList<>();
         List<Node> discretizeVars = new LinkedList<>();
 
@@ -102,7 +92,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         }
 
         for (Node node : allVariables) {
-            nodeEditors.put(node, createEditor(node));
+            this.nodeEditors.put(node, createEditor(node));
         }
 
         finalizeEdit();
@@ -117,23 +107,23 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         discretizeVariableList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 JList list = (JList) e.getSource();
-                List<Node> selected = getSelected(list);
+                List<Node> selected = DiscretizationParamsEditor.getSelected(list);
 
                 finalizeEdit();
 
                 if (selected.size() == 1) {
-                    editorPane.removeAll();
+                    DiscretizationParamsEditor.this.editorPane.removeAll();
                     Node node = selected.get(0);
-                    editorPane.add(node.getName(), (JPanel) nodeEditors.get(node));
+                    DiscretizationParamsEditor.this.editorPane.add(node.getName(), (JPanel) DiscretizationParamsEditor.this.nodeEditors.get(node));
                 } else if (1 < selected.size()) {
                     if (allContinuous(selected)) {
-                        editorPane.removeAll();
+                        DiscretizationParamsEditor.this.editorPane.removeAll();
                         Node first = selected.get(0);
                         Node last = selected.get(selected.size() - 1);
                         String label = first.getName() + " - " + last.getName();
-                        editorPane.add(label, new VariableSelectionEditor(selected));
+                        DiscretizationParamsEditor.this.editorPane.add(label, new VariableSelectionEditor(selected));
                     } else {
-                        editorPane.removeAll();
+                        DiscretizationParamsEditor.this.editorPane.removeAll();
                     }
                 }
             }
@@ -153,7 +143,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
             if (node instanceof ContinuousVariable) {
                 ContinuousVariable continuousVariable = (ContinuousVariable) node;
                 ContinuousDiscretizationEditor editor = new ContinuousDiscretizationEditor(
-                        sourceDataSet, continuousVariable);
+                        this.sourceDataSet, continuousVariable);
                 DiscretizationSpec spec = getSpecs().get(node);
                 if (spec == null) continue;
                 editor.setDiscretizationSpec(spec);
@@ -173,19 +163,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
         JScrollPane editorScrollPane = new JScrollPane(this.editorPane);
         editorScrollPane.setPreferredSize(new Dimension(400, 350));
-
-//        JCheckBox copyUnselectedCheckBox =
-//                new JCheckBox("Copy unselected columns into new data set");
-//        copyUnselectedCheckBox.setHorizontalTextPosition(AbstractButton.LEFT);
-//        copyUnselectedCheckBox.setSelected(Preferences.userRoot().getBoolean(
-//                "copyUnselectedColumns", false));
-//        copyUnselectedCheckBox.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                JCheckBox checkBox = (JCheckBox) e.getSource();
-//                Preferences.userRoot().putBoolean("copyUnselectedColumns",
-//                        checkBox.isSelected());
-//            }
-//        });
 
         discretizeVariableList.setSelectedIndex(0);
 
@@ -220,13 +197,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         vBox.add(Box.createVerticalStrut(5));
         vBox.add(editorScrollPane);
 
-//        Box b4 = Box.createHorizontalBox();
-//        b4.add(Box.createHorizontalGlue());
-//        b4.add(copyUnselectedCheckBox);
-
-//        vBox.add(b4);
-//        vBox.add(Box.createVerticalStrut(10));
-
         hBox.add(vBox);
         hBox.add(Box.createHorizontalStrut(5));
 
@@ -257,7 +227,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     /**
      * Sets the previous params, must be <code>DiscretizationParams</code>.
      *
-     * @param params
      */
     public void setParams(Parameters params) {
         this.parameters = params;
@@ -321,37 +290,13 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     }
 
 
-    private boolean globalChangeVerification() {
-        if (!Preferences.userRoot().getBoolean("ignoreGlobalDiscretizationWarning", false)) {
-            Box box = Box.createVerticalBox();
-            String message = "<html>This action will change the number of categories for all selected variables<br>" +
-                    "and override any previous work. Are you sure you want continue?</html>";
-            box.add(new JLabel(message));
-            box.add(Box.createVerticalStrut(5));
-            JCheckBox checkBox = new JCheckBox("Don't show this again");
-            checkBox.setHorizontalTextPosition(AbstractButton.LEFT);
-            checkBox.setHorizontalAlignment(AbstractButton.RIGHT);
-            checkBox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JCheckBox box = (JCheckBox) e.getSource();
-                    Preferences.userRoot().putBoolean("ignoreGlobalDiscretizationWarning", box.isSelected());
-                }
-            });
-            box.add(checkBox);
-            box.add(Box.createVerticalStrut(5));
-            int option = JOptionPane.showConfirmDialog(this, box, "Discretization Warning", JOptionPane.YES_NO_OPTION);
-            return JOptionPane.YES_OPTION == option;
-        }
-        return true;
-    }
-
     /**
      * Changes the number of categories on the editors for the given nodes.
      */
     private void changeNumberOfCategories(int numOfCats, List<Node> nodes) {
         for (Node node : nodes) {
             DiscretizationEditor editor = this.nodeEditors.get(node);
-            if (editor != null && editor instanceof ContinuousDiscretizationEditor) {
+            if (editor instanceof ContinuousDiscretizationEditor) {
                 ((ContinuousDiscretizationEditor) editor).setNumCategories(numOfCats);
             }
         }
@@ -363,8 +308,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
      */
     private void changeMethod(List<Node> nodes, ContinuousDiscretizationEditor.Method method) {
         for (Node node : nodes) {
-            DiscretizationEditor editor = this.nodeEditors.get(node);
-            if (editor != null && editor instanceof ContinuousDiscretizationEditor) {
+            DiscretizationEditor editor = nodeEditors.get(node);
+            if (editor instanceof ContinuousDiscretizationEditor) {
                 ((ContinuousDiscretizationEditor) editor).setMethod(method);
             }
         }
@@ -377,8 +322,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
     private ContinuousDiscretizationEditor.Method getCommonMethod(List<Node> nodes) {
         ContinuousDiscretizationEditor.Method method = null;
         for (Node node : nodes) {
-            DiscretizationEditor editor = this.nodeEditors.get(node);
-            if (editor != null && editor instanceof ContinuousDiscretizationEditor) {
+            DiscretizationEditor editor = nodeEditors.get(node);
+            if (editor instanceof ContinuousDiscretizationEditor) {
                 ContinuousDiscretizationEditor _editor = (ContinuousDiscretizationEditor) editor;
 
                 if (method != null && method != _editor.getMethod()) {
@@ -400,9 +345,9 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         if (nodes.isEmpty()) {
             return 3;
         }
-        DiscretizationEditor editor = this.nodeEditors.get(nodes.get(0));
+        DiscretizationEditor editor = nodeEditors.get(nodes.get(0));
 
-        if (editor != null && editor instanceof ContinuousDiscretizationEditor) {
+        if (editor instanceof ContinuousDiscretizationEditor) {
             ContinuousDiscretizationEditor _editor = (ContinuousDiscretizationEditor) editor;
 
             int value = _editor.getNumCategories();
@@ -433,19 +378,14 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         private final List<Node> nodes;
 
         public VariableSelectionEditor(List<Node> vars) {
-            setLayout(new BorderLayout());
-            this.nodes = vars;
-            IntSpinner spinner = new IntSpinner(getDefaultCategoryNum(vars), 1, 3);
-            ContinuousDiscretizationEditor.Method method = getCommonMethod(vars);
+            this.setLayout(new BorderLayout());
+            nodes = vars;
+            IntSpinner spinner = new IntSpinner(DiscretizationParamsEditor.this.getDefaultCategoryNum(vars), 1, 3);
+            ContinuousDiscretizationEditor.Method method = DiscretizationParamsEditor.this.getCommonMethod(vars);
             spinner.setMin(2);
-            spinner.setFilter(new IntSpinner.Filter() {
-                public int filter(int oldValue, int newValue) {
-                    if (true) {//globalChangeVerification()) {
-                        changeNumberOfCategories(newValue, nodes);
-                        return newValue;
-                    }
-                    return oldValue;
-                }
+            spinner.setFilter((oldValue, newValue) -> {
+                DiscretizationParamsEditor.this.changeNumberOfCategories(newValue, nodes);
+                return newValue;
             });
 
             Box vBox = Box.createVerticalBox();
@@ -458,27 +398,15 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
                     method == ContinuousDiscretizationEditor.Method.EQUAL_SIZE_BUCKETS);
             JRadioButton equalInterval = new JRadioButton("Evenly Distributed Intervals",
                     method == ContinuousDiscretizationEditor.Method.EVENLY_DIVIDED_INTERNVALS);
-            none.setHorizontalTextPosition(AbstractButton.RIGHT);
-            equalBuckets.setHorizontalTextPosition(AbstractButton.RIGHT);
-            equalInterval.setHorizontalTextPosition(AbstractButton.RIGHT);
+            none.setHorizontalTextPosition(SwingConstants.RIGHT);
+            equalBuckets.setHorizontalTextPosition(SwingConstants.RIGHT);
+            equalInterval.setHorizontalTextPosition(SwingConstants.RIGHT);
 
-            none.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    changeMethod(nodes, ContinuousDiscretizationEditor.Method.NONE);
-                }
-            });
+            none.addActionListener(e -> DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.NONE));
 
-            equalBuckets.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    changeMethod(nodes, ContinuousDiscretizationEditor.Method.EQUAL_SIZE_BUCKETS);
-                }
-            });
+            equalBuckets.addActionListener(e -> DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.EQUAL_SIZE_BUCKETS));
 
-            equalInterval.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    changeMethod(nodes, ContinuousDiscretizationEditor.Method.EVENLY_DIVIDED_INTERNVALS);
-                }
-            });
+            equalInterval.addActionListener(e -> DiscretizationParamsEditor.this.changeMethod(nodes, ContinuousDiscretizationEditor.Method.EVENLY_DIVIDED_INTERNVALS));
 
             ButtonGroup group = new ButtonGroup();
             group.add(none);

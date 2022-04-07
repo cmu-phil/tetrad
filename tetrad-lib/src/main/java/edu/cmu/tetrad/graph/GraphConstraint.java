@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -32,50 +32,6 @@ import edu.cmu.tetrad.util.TetradSerializable;
  */
 public interface GraphConstraint extends TetradSerializable {
     long serialVersionUID = 23L;
-
-    /**
-     * Checks to make sure that adding the specified edge will comply with the
-     * graph constraint.
-     *
-     * @param edge  the edge to check.
-     * @param graph the graph to check.
-     * @return true if adding the edge would satisfy the constraint, false if
-     * not.
-     */
-    boolean isEdgeAddable(Edge edge, Graph graph);
-
-    /**
-     * Checks to make sure that adding the specified node will comply with the
-     * graph constraint.
-     *
-     * @param node  the node to check.
-     * @param graph the graph to check.
-     * @return true if adding the node would satisfy the constraint, false if
-     * not.
-     */
-    boolean isNodeAddable(Node node, Graph graph);
-
-    /**
-     * Checks to make sure that removing the specified edge will comply with the
-     * graph constraint.
-     *
-     * @param edge  the edge to check.
-     * @param graph the graph to check.
-     * @return true if removing the edge would satisfy the constraint, false if
-     * not.
-     */
-    boolean isEdgeRemovable(Edge edge, Graph graph);
-
-    /**
-     * Checks to make sure that removing the specified node will comply with the
-     * graph constraint.
-     *
-     * @param node  the node to check.
-     * @param graph the graph to check.
-     * @return true if removing the node would satisfy the constraint, false, if
-     * not.
-     */
-    boolean isNodeRemovable(Node node, Graph graph);
 
     /**
      * @return this string.

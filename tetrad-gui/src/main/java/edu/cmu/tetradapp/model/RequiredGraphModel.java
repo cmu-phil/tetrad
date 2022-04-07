@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,15 +23,15 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * @author kaalpurush
@@ -40,22 +40,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
 
     static final long serialVersionUID = 23L;
 
-//    private String name;
-//    private Parameters params;
-//    private KnowledgeBoxInput knowledgeBoxInput;
-//    private List<String> varNames = new ArrayList<String>();
-    /**
-     * @serial @deprecated
-     */
-    private IKnowledge knowledge;
-
-    /**
-     * @serial @deprecated
-     */
-//    private List<Knowledge> knowledgeList;
-    private List<Node> variables = new ArrayList<>();
-    private List<String> variableNames = new ArrayList<>();
-    private Graph resultGraph = new EdgeListGraph();
+    private final Graph resultGraph;
 
     public RequiredGraphModel(BayesPmWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
@@ -117,10 +102,6 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public RequiredGraphModel(LofsRunner wrapper, Parameters params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
     public RequiredGraphModel(MeasurementModelWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
@@ -135,26 +116,13 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
     public RequiredGraphModel(Parameters params, KnowledgeBoxInput input) {
         super(new KnowledgeBoxInput[]{input}, params);
 
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
         if (input == null) {
             throw new NullPointerException();
         }
 
-        SortedSet<Node> variableNodes = new TreeSet<>();
-        SortedSet<String> variableNames = new TreeSet<>();
-
-        variableNodes.addAll(input.getVariables());
-        variableNames.addAll(input.getVariableNames());
-
-        this.variables = new ArrayList<>(variableNodes);
-        this.variableNames = new ArrayList<>(variableNames);
-
         this.resultGraph = input.getResultGraph();
 
-        createKnowledge(params);
+        createKnowledge();
 
         TetradLogger.getInstance().log("info", "Knowledge");
 
@@ -167,7 +135,7 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         }
     }
 
-    private void createKnowledge(Parameters params) {
+    private void createKnowledge() {
         IKnowledge knwl = getKnowledge();
         if (knwl == null) {
             return;
@@ -175,11 +143,11 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
 
         knwl.clear();
 
-        if (resultGraph == null) {
+        if (this.resultGraph == null) {
             throw new NullPointerException("I couldn't find a parent graph.");
         }
 
-        List<Node> nodes = resultGraph.getNodes();
+        List<Node> nodes = this.resultGraph.getNodes();
 
         int numOfNodes = nodes.size();
         for (int i = 0; i < numOfNodes; i++) {
@@ -191,14 +159,15 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
                     continue;
                 }
 
-                Edge edge = resultGraph.getEdge(n1, n2);
-                if (edge == null) {
-                    continue;
-                } else if (edge.isDirected()) {
-                    knwl.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
-                } else if (Edges.isUndirectedEdge(edge)) {
-                    knwl.setRequired(n1.getName(), n2.getName());
-                    knwl.setRequired(n2.getName(), n1.getName());
+                Edge edge = this.resultGraph.getEdge(n1, n2);
+
+                if (edge != null) {
+                    if (edge.isDirected()) {
+                        knwl.setRequired(edge.getNode1().getName(), edge.getNode2().getName());
+                    } else if (Edges.isUndirectedEdge(edge)) {
+                        knwl.setRequired(n1.getName(), n2.getName());
+                        knwl.setRequired(n2.getName(), n1.getName());
+                    }
                 }
             }
         }
@@ -214,6 +183,6 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
     }
 
     public Graph getResultGraph() {
-        return resultGraph;
+        return this.resultGraph;
     }
 }

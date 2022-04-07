@@ -43,11 +43,11 @@ public class InterventionalColumn {
 
     @Override
     public String toString() {
-        return "InterventionalColumn{" + "valueColumn=" + valueColumn + ", statusColumn=" + statusColumn + '}';
+        return "InterventionalColumn{" + "valueColumn=" + this.valueColumn + ", statusColumn=" + this.statusColumn + '}';
     }
 
     public ColumnMetadata getValueColumn() {
-        return valueColumn;
+        return this.valueColumn;
     }
 
     public void setValueColumn(ColumnMetadata valueColumn) {
@@ -55,7 +55,7 @@ public class InterventionalColumn {
     }
 
     public ColumnMetadata getStatusColumn() {
-        return statusColumn;
+        return this.statusColumn;
     }
 
     public void setStatusColumn(ColumnMetadata statusColumn) {

@@ -24,7 +24,7 @@ import java.util.List;
 public class SemSimulation implements Simulation {
 
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private SemPm pm;
     private SemIm im;
     private List<DataSet> dataSets = new ArrayList<>();
@@ -50,7 +50,7 @@ public class SemSimulation implements Simulation {
         this.im = new SemIm(im);
         this.pm = new SemPm(im.getSemPm());
         this.ims = new ArrayList<>();
-        ims.add(im);
+        this.ims.add(im);
     }
 
     @Override
@@ -59,20 +59,20 @@ public class SemSimulation implements Simulation {
         // This should always create new data
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
-        ims = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
+        this.ims = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
 
@@ -97,37 +97,34 @@ public class SemSimulation implements Simulation {
             }
 
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+        return this.graphs.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Linear, Gaussian SEM simulation using " + randomGraph.getDescription();
+        return "Linear, Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 
-        if (!(randomGraph instanceof SingleGraph)) {
-            parameters.addAll(randomGraph.getParameters());
+        if (!(this.randomGraph instanceof SingleGraph)) {
+            parameters.addAll(this.randomGraph.getParameters());
         }
 
-//        if (pm == null) {
-//            parameters.addAll(SemPm.getParameterNames());
-//        }
-        if (im == null) {
+        if (this.im == null) {
             parameters.addAll(SemIm.getParameterNames());
         }
 
@@ -147,7 +144,7 @@ public class SemSimulation implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
@@ -165,21 +162,14 @@ public class SemSimulation implements Simulation {
 
             if (pm == null) {
                 pm = new SemPm(graph);
-                im = new SemIm(pm, parameters);
-                ims.add(im);
-                return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
-            } else {
-                im = new SemIm(pm, parameters);
-                ims.add(im);
-                return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
             }
-        } else {
-            ims.add(im);
-            return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
+            im = new SemIm(pm, parameters);
         }
+        this.ims.add(im);
+        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
     }
 
     public List<SemIm> getSemIms() {
-        return ims;
+        return this.ims;
     }
 }

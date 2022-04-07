@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -28,7 +28,7 @@ public class LTestReveal {
     static int ngenes = 6;
     static int ntimes = 400;
 
-    static int[][] cases = new int[ntimes][ngenes];
+    static int[][] cases = new int[LTestReveal.ntimes][LTestReveal.ngenes];
 
     public static void main(String[] argv) {
 
@@ -45,11 +45,11 @@ public class LTestReveal {
         }
 
         BufferedReader in = new BufferedReader(new InputStreamReader(s));
-        for (int k = 0; k < ntimes; k++) {
+        for (int k = 0; k < LTestReveal.ntimes; k++) {
             try {
                 st = new StringTokenizer(in.readLine());
-                for (int j = 0; j < ngenes; j++) {
-                    cases[k][j] = Integer.parseInt(st.nextToken("\t"));
+                for (int j = 0; j < LTestReveal.ngenes; j++) {
+                    LTestReveal.cases[k][j] = Integer.parseInt(st.nextToken("\t"));
                 }
             } catch (IOException e) {
                 System.out.println("Read error in " + fileName);
@@ -57,39 +57,39 @@ public class LTestReveal {
             }
         }
 
-        System.out.println("case 0 " + cases[0][0] + " " + cases[0][1] + " " +
-                cases[0][2] + " " + cases[0][3] + " " + cases[0][4]);
-        for (int k = 0; k < ntimes; k++) {
-            for (int j = 0; j < ngenes; j++) {
-                if (cases[k][j] == -1) {
-                    cases[k][j] = 0;
+        System.out.println("case 0 " + LTestReveal.cases[0][0] + " " + LTestReveal.cases[0][1] + " " +
+                LTestReveal.cases[0][2] + " " + LTestReveal.cases[0][3] + " " + LTestReveal.cases[0][4]);
+        for (int k = 0; k < LTestReveal.ntimes; k++) {
+            for (int j = 0; j < LTestReveal.ngenes; j++) {
+                if (LTestReveal.cases[k][j] == -1) {
+                    LTestReveal.cases[k][j] = 0;
                 }
             }
         }
 
-        int lag = 1;
+        final int lag = 1;
         //One parent cases
         int[] p = new int[1];
-        for (int child = 0; child < ngenes; child++) {
+        for (int child = 0; child < LTestReveal.ngenes; child++) {
             System.out.println("For gene " + child);
-            for (int i = 0; i < ngenes; i++) {
+            for (int i = 0; i < LTestReveal.ngenes; i++) {
                 //if(i == child) continue;
                 p[0] = i;
-                double m = mutualInformation(child, p, lag);
+                double m = LTestReveal.mutualInformation(child, p, lag);
                 System.out.println("for parent = " + i + " m = " + m);
             }
         }
 
         //Two parent cases
         int[] pp = new int[2];
-        for (int child = 0; child < ngenes; child++) {
+        for (int child = 0; child < LTestReveal.ngenes; child++) {
             System.out.println("For gene " + child);
-            for (int p1 = 0; p1 < ngenes; p1++) {
-                for (int p2 = 0; p2 < ngenes && p1 != p2; p2++) {
+            for (int p1 = 0; p1 < LTestReveal.ngenes; p1++) {
+                for (int p2 = 0; p2 < LTestReveal.ngenes && p1 != p2; p2++) {
                     pp[0] = p1;
                     pp[1] = p2;
 
-                    double mm = mutualInformation(child, pp, lag);
+                    double mm = LTestReveal.mutualInformation(child, pp, lag);
                     System.out.println(
                             "for parents = " + p1 + "," + p2 + " m = " + mm);
                 }
@@ -98,15 +98,15 @@ public class LTestReveal {
 
         //Three parent cases
         int[] ppp = new int[3];
-        for (int child = 0; child < ngenes; child++) {
+        for (int child = 0; child < LTestReveal.ngenes; child++) {
             System.out.println("For gene " + child);
-            for (int p1 = 0; p1 < ngenes; p1++) {
-                for (int p2 = 0; p2 < ngenes && p2 != p1; p2++) {
-                    for (int p3 = 0; p3 < ngenes && p3 != p2 && p3 != p1; p3++) {
+            for (int p1 = 0; p1 < LTestReveal.ngenes; p1++) {
+                for (int p2 = 0; p2 < LTestReveal.ngenes && p2 != p1; p2++) {
+                    for (int p3 = 0; p3 < LTestReveal.ngenes && p3 != p2 && p3 != p1; p3++) {
                         ppp[0] = p1;
                         ppp[1] = p2;
                         ppp[2] = p3;
-                        double mmm = mutualInformation(child, ppp, lag);
+                        double mmm = LTestReveal.mutualInformation(child, ppp, lag);
                         System.out.println("for parents = " + p1 + "," + p2 +
                                 "," + p3 + " m = " + mmm);
                     }
@@ -122,46 +122,46 @@ public class LTestReveal {
         double M = 0.0;
 
         //H(child)
-        int[] c = new int[ntimes - lag];
-        for (int i = lag; i < ntimes; i++) {
-            c[i - lag] = cases[i][child];
+        int[] c = new int[LTestReveal.ntimes - lag];
+        for (int i = lag; i < LTestReveal.ntimes; i++) {
+            c[i - lag] = LTestReveal.cases[i][child];
         }
         //double hchild = entropy(c);
-        double hchild = entropy(child, lag);
+        double hchild = LTestReveal.entropy(child, lag);
 
-        int[] p1 = new int[ntimes - lag];  //1 parent
-        int[][] pm = new int[parents.length][ntimes - lag];  //multiple parents
+        int[] p1 = new int[LTestReveal.ntimes - lag];  //1 parent
+        int[][] pm = new int[parents.length][LTestReveal.ntimes - lag];  //multiple parents
 
         //H(parents)
         double hparents = 0.0;
 
-        for (int i = 0; i < ntimes - lag; i++) {
-            p1[i] = cases[i][parents[0]];
+        for (int i = 0; i < LTestReveal.ntimes - lag; i++) {
+            p1[i] = LTestReveal.cases[i][parents[0]];
         }
-        hparents = entropy(p1);
+        hparents = LTestReveal.entropy(p1);
 
         if (parents.length > 1) {
-            for (int i = 0; i < ntimes - lag; i++) {
+            for (int i = 0; i < LTestReveal.ntimes - lag; i++) {
                 for (int j = 1; j < parents.length; j++) {
-                    pm[j - 1][i] = cases[i][parents[j]];
+                    pm[j - 1][i] = LTestReveal.cases[i][parents[j]];
                 }
             }
-            hparents = jointEntropy(p1, pm);
+            hparents = LTestReveal.jointEntropy(p1, pm);
         }
 
         //H(child + parents)
         double hjoint = 0.0;
         if (parents.length == 1) {
-            hjoint = jointEntropy(c, p1);
+            hjoint = LTestReveal.jointEntropy(c, p1);
         } else {
-            int[][] p1pm = new int[parents.length][ntimes - lag];
-            for (int i = 0; i < ntimes - lag; i++) {
+            int[][] p1pm = new int[parents.length][LTestReveal.ntimes - lag];
+            for (int i = 0; i < LTestReveal.ntimes - lag; i++) {
                 p1pm[0][i] = p1[i];
                 for (int j = 0; j < parents.length - 1; j++) {
                     p1pm[j + 1][i] = pm[j][i];
                 }
             }
-            hjoint = jointEntropy(c, p1pm);
+            hjoint = LTestReveal.jointEntropy(c, p1pm);
         }
 
         M = hchild + hparents - hjoint;
@@ -174,8 +174,8 @@ public class LTestReveal {
         double ln2 = Math.log(2.0);
 
         int n0 = 0;
-        for (int i = 0; i < n; i++) {
-            if (x[i] == 0) {
+        for (int j : x) {
+            if (j == 0) {
                 n0++;
             }
         }
@@ -192,13 +192,13 @@ public class LTestReveal {
 
     public static double entropy(int g, int lag) {
         double h = 0.0;
-        int n = cases.length - lag;
+        int n = LTestReveal.cases.length - lag;
 
         double ln2 = Math.log(2.0);
 
         int n0 = 0;
         for (int i = 0; i < n; i++) {
-            if (cases[i + lag][g] == 0) {
+            if (LTestReveal.cases[i + lag][g] == 0) {
                 n0++;
             }
         }
@@ -233,7 +233,10 @@ public class LTestReveal {
         int ntot = ns[0][0] + ns[0][1] + ns[1][0] + ns[1][1];
 
         double[][] p = new double[2][2];
-        double lp00, lp01, lp10, lp11;
+        double lp00;
+        double lp01;
+        double lp10;
+        double lp11;
 
         p[0][0] = (double) ns[0][0] / (double) ntot;
         p[0][1] = (double) ns[0][1] / (double) ntot;
@@ -297,9 +300,9 @@ public class LTestReveal {
         for (int i = 0; i < n; i++) {
             power = 1;
             config = x[i] * power;
-            for (int j = 0; j < m; j++) {
+            for (int[] ints : y) {
                 power *= 2;
-                config += y[j][i] * power;
+                config += ints[i] * power;
             }
             counts[config]++;
             ntot++;

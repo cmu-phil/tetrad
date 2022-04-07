@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,21 +36,21 @@ import java.util.List;
  */
 
 public class PopulationTetradTest implements TetradTest {
-    private CorrelationMatrix CorrelationMatrix;
-    private boolean bvalues[];
+    private final CorrelationMatrix CorrelationMatrix;
+    private final boolean[] bvalues;
     private final double epsilon = 0.001;
 
     public PopulationTetradTest(CorrelationMatrix CorrelationMatrix) {
         this.CorrelationMatrix = CorrelationMatrix;
-        bvalues = new boolean[3];
+        this.bvalues = new boolean[3];
     }
 
     public String[] getVarNames() {
-        return CorrelationMatrix.getVariableNames().toArray(new String[0]);
+        return this.CorrelationMatrix.getVariableNames().toArray(new String[0]);
     }
 
     public List<Node> getVariables() {
-        return CorrelationMatrix.getVariables();
+        return this.CorrelationMatrix.getVariables();
     }
 
     public DataSet getDataSet() {
@@ -66,28 +66,28 @@ public class PopulationTetradTest implements TetradTest {
     public int tetradScore(int v1, int v2, int v3, int v4) {
         int count = 0;
 
-        double p_12 = CorrelationMatrix.getValue(v1, v2);
-        double p_13 = CorrelationMatrix.getValue(v1, v3);
-        double p_14 = CorrelationMatrix.getValue(v1, v4);
-        double p_23 = CorrelationMatrix.getValue(v2, v3);
-        double p_24 = CorrelationMatrix.getValue(v2, v4);
-        double p_34 = CorrelationMatrix.getValue(v3, v4);
+        double p_12 = this.CorrelationMatrix.getValue(v1, v2);
+        double p_13 = this.CorrelationMatrix.getValue(v1, v3);
+        double p_14 = this.CorrelationMatrix.getValue(v1, v4);
+        double p_23 = this.CorrelationMatrix.getValue(v2, v3);
+        double p_24 = this.CorrelationMatrix.getValue(v2, v4);
+        double p_34 = this.CorrelationMatrix.getValue(v3, v4);
 
         for (int i = 0; i < 3; i++) {
-            bvalues[i] = false;
+            this.bvalues[i] = false;
         }
 
-        if (Math.abs(p_12 * p_34 - p_13 * p_24) < epsilon) {
+        if (Math.abs(p_12 * p_34 - p_13 * p_24) < this.epsilon) {
             count++;
-            bvalues[0] = true;
+            this.bvalues[0] = true;
         }
-        if (Math.abs(p_12 * p_34 - p_14 * p_23) < epsilon) {
+        if (Math.abs(p_12 * p_34 - p_14 * p_23) < this.epsilon) {
             count++;
-            bvalues[1] = true;
+            this.bvalues[1] = true;
         }
-        if (Math.abs(p_13 * p_24 - p_14 * p_23) < epsilon) {
+        if (Math.abs(p_13 * p_24 - p_14 * p_23) < this.epsilon) {
             count++;
-            bvalues[2] = true;
+            this.bvalues[2] = true;
         }
         return count;
     }
@@ -100,16 +100,16 @@ public class PopulationTetradTest implements TetradTest {
         if (tetradScore(v1, v2, v3, v4) != 1) {
             return false;
         }
-        return bvalues[2];
+        return this.bvalues[2];
     }
 
     public boolean tetradHolds(int v1, int v2, int v3, int v4) {
-        double p_12 = CorrelationMatrix.getValue(v1, v2);
-        double p_13 = CorrelationMatrix.getValue(v1, v3);
-        double p_24 = CorrelationMatrix.getValue(v2, v4);
-        double p_34 = CorrelationMatrix.getValue(v3, v4);
-        bvalues[0] = Math.abs(p_12 * p_34 - p_13 * p_24) < epsilon;
-        return bvalues[0];
+        double p_12 = this.CorrelationMatrix.getValue(v1, v2);
+        double p_13 = this.CorrelationMatrix.getValue(v1, v3);
+        double p_24 = this.CorrelationMatrix.getValue(v2, v4);
+        double p_34 = this.CorrelationMatrix.getValue(v3, v4);
+        this.bvalues[0] = Math.abs(p_12 * p_34 - p_13 * p_24) < this.epsilon;
+        return this.bvalues[0];
     }
 
     public boolean oneFactorTest(int a, int b, int c, int d) {
@@ -128,24 +128,24 @@ public class PopulationTetradTest implements TetradTest {
 
     public boolean twoFactorTest(int a, int b, int c, int d) {
         tetradScore(a, b, c, d);
-        return bvalues[2];
+        return this.bvalues[2];
     }
 
     public boolean twoFactorTest(int a, int b, int c, int d, int e) {
         tetradScore(a, b, d, e);
 
-        if (!bvalues[2]) {
+        if (!this.bvalues[2]) {
             return false;
         }
 
         tetradScore(a, c, d, e);
 
-        if (!bvalues[2]) {
+        if (!this.bvalues[2]) {
             return false;
         }
 
         tetradScore(b, c, d, e);
-        return bvalues[2];
+        return this.bvalues[2];
     }
 
     public boolean twoFactorTest(int a, int b, int c, int d, int e, int f) {

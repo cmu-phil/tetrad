@@ -24,17 +24,17 @@ public class ComparisonScript {
         int increment = 100; // ramp up sample size by this increment
         int numTrials = 2; // number of data sets to run for a particular sample size, results will be averaged
 
-        /** If you want to run data sets from file instead of generating random graphs **/
+        // If you want to run data sets from file instead of generating random graphs **/
         params.setDataFromFile(false); // set this to true
-        int maxGraphs = 2; // how many true graphs are in your directory?
-        int dataSetsPerGraph = 3; // how many data sets are there in your directory for each true graph?
+        final int maxGraphs = 2; // how many true graphs are in your directory?
+        final int dataSetsPerGraph = 3; // how many data sets are there in your directory for each true graph?
         // remember the path to the data directory is set in Comparison2.java
-        /** ******************** **/
+        // ******************** **/
 
-        /** If you want to run on NO DATA, i.e., just run each algorithm directly on some random true graphs **/
+        // If you want to run on NO DATA, i.e., just run each algorithm directly on some random true graphs **/
         params.setNoData(false); // set this to true
         // note that the number of random graphs will be equal to numTrials, set above
-        /** ******************** **/
+        // ******************** **/
 
         if (params.isDataFromFile() && params.isNoData()) {
             throw new IllegalArgumentException("Cannot have setDataFromFile and setNoData both be true!");
@@ -50,14 +50,11 @@ public class ComparisonScript {
 
         List<ComparisonParameters.Algorithm> algList = new ArrayList<>();
 
-        /** add algorithm to compare to the list algList. comment out those you don't want to consider. **/
-        //algList.add(ComparisonParameters.Algorithm.PC);
-        //algList.add(ComparisonParameters.Algorithm.FGES);
-        //algList.add(ComparisonParameters.Algorithm.FCI);
+        // add algorithm to compare to the list algList. comment out those you don't want to consider. **/
         algList.add(ComparisonParameters.Algorithm.SVARFCI);
 
-        /** User shouldn't need to change anything below this line **/
-        /***********************************************************/
+        // User shouldn't need to change anything below this line **/
+        //*********************************************************/
 
         if (params.isDataFromFile()) {
             System.out.println("running algorithm on data from input files");

@@ -30,13 +30,13 @@ public interface DataReader {
      *
      * @param quoteCharacter
      */
-    public void setQuoteCharacter(char quoteCharacter);
+    void setQuoteCharacter(char quoteCharacter);
 
     /**
      * Set the value to indicate a line is a comment to be ignored.
      *
      * @param commentMarker
      */
-    public void setCommentMarker(String commentMarker);
+    void setCommentMarker(String commentMarker);
 
 }

@@ -14,10 +14,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Grasp;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ import java.util.List;
 @Bootstrapping
 public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
-    private ScoreWrapper score = null;
+    private ScoreWrapper score;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
@@ -50,10 +50,20 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Score score = this.score.getScore(dataSet, parameters);
-            IndependenceTest test = this.test.getTest(dataSet, parameters);
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                DataSet dataSet = (DataSet) dataModel;
+                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
+                }
+                dataModel = timeSeries;
+                knowledge = timeSeries.getKnowledge();
+            }
+
+            Score score = this.score.getScore(dataModel, parameters);
+            IndependenceTest test = this.test.getTest(dataModel, parameters);
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Grasp grasp = new Grasp(test, score);
@@ -61,6 +71,7 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             grasp.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             grasp.setUncoveredDepth(parameters.getInt(Params.GRASP_UNCOVERED_DEPTH));
             grasp.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
+            grasp.setToleranceDepth(parameters.getInt(Params.GRASP_TOLERANCE_DEPTH));
             grasp.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             grasp.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             grasp.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
@@ -70,32 +81,16 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             grasp.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
             grasp.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            grasp.setKnowledge(knowledge);
+            grasp.setKnowledge(this.knowledge);
             grasp.bestOrder(score.getVariables());
             return grasp.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
         } else {
-            GRaSP algorithm = new GRaSP(score, test);
+            GRaSP algorithm = new GRaSP(this.score, this.test);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
+            DataSet data = (DataSet) dataModel;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -110,13 +105,13 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
     @Override
     public String getDescription() {
-        return "GRaSP (Greedy Relaxed Sparsest Permutation) using " + test.getDescription()
-                + " or " + score.getDescription();
+        return "GRaSP (Greedy Relaxed Sparsest Permutation) using " + this.test.getDescription()
+                + " or " + this.score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return score.getDataType();
+        return this.score.getDataType();
     }
 
     @Override
@@ -127,13 +122,13 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         params.add(Params.GRASP_DEPTH);
         params.add(Params.GRASP_UNCOVERED_DEPTH);
         params.add(Params.GRASP_NONSINGULAR_DEPTH);
+        params.add(Params.GRASP_TOLERANCE_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
 //        params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_VERMA_PEARL);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
-//        params.add(Params.CACHE_SCORES);
-//        params.add(Params.OUTPUT_CPDAG);
+        params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 
         // Parameters
@@ -144,7 +139,7 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
     @Override
     public ScoreWrapper getScoreWrapper() {
-        return score;
+        return this.score;
     }
 
     @Override
@@ -154,7 +149,7 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
     @Override
@@ -164,7 +159,7 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge.copy();
+        return this.knowledge.copy();
     }
 
     @Override

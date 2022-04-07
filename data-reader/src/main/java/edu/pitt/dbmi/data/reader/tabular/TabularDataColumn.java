@@ -47,27 +47,27 @@ public class TabularDataColumn implements DataColumn {
 
     @Override
     public String toString() {
-        return "TabularDataColumn{" + "name=" + name + ", columnNumber=" + columnNumber + ", generated=" + generated + ", discrete=" + discrete + '}';
+        return "TabularDataColumn{" + "name=" + this.name + ", columnNumber=" + this.columnNumber + ", generated=" + this.generated + ", discrete=" + this.discrete + '}';
     }
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     @Override
     public int getColumnNumber() {
-        return columnNumber;
+        return this.columnNumber;
     }
 
     @Override
     public boolean isGenerated() {
-        return generated;
+        return this.generated;
     }
 
     @Override
     public boolean isDiscrete() {
-        return discrete;
+        return this.discrete;
     }
 
     @Override

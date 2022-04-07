@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -53,7 +53,7 @@ public final class IndTestHsic implements IndependenceTest {
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * The significance level of the independence tests.
@@ -66,19 +66,14 @@ public final class IndTestHsic implements IndependenceTest {
     private double thresh = Double.NaN;
 
     /**
-     * The value of the empirical estimate of HSIC
-     */
-    private double hsic;
-
-    /**
      * Formats as 0.0000.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Stores a reference to the dataset being analyzed.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * A stored p value, if the deterministic test was used.
@@ -99,7 +94,7 @@ public final class IndTestHsic implements IndependenceTest {
      * Use incomplete Choleksy decomposition to calculate Gram matrices
      */
     private double useIncompleteCholesky = 1e-18;
-    private boolean verbose = false;
+    private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -143,7 +138,7 @@ public final class IndTestHsic implements IndependenceTest {
         }
 
         for (Node var : vars) {
-            if (!variables.contains(var)) {
+            if (!this.variables.contains(var)) {
                 throw new IllegalArgumentException(
                         "All vars must be original vars");
             }
@@ -152,7 +147,7 @@ public final class IndTestHsic implements IndependenceTest {
         int[] indices = new int[vars.size()];
 
         for (int i = 0; i < indices.length; i++) {
-            indices[i] = variables.indexOf(vars.get(i));
+            indices[i] = this.variables.indexOf(vars.get(i));
         }
 
         double alphaNew = getAlpha();
@@ -178,46 +173,47 @@ public final class IndTestHsic implements IndependenceTest {
         yKernel.setDefaultBw(this.dataSet, y);
         xKernel.setDefaultBw(this.dataSet, x);
         if (!z.isEmpty()) {
-            for (int i = 0; i < z.size(); i++) {
+            for (Node node : z) {
                 Kernel Zi = new KernelGaussian(1);
-                Zi.setDefaultBw(this.dataSet, z.get(i));
+                Zi.setDefaultBw(this.dataSet, node);
                 zKernel.add(Zi);
             }
         }
 
         // consruct Gram matricces
-        Matrix Ky = null;
-        Matrix Kx = null;
+        Matrix Ky;
+        Matrix Kx;
         Matrix Kz = null;
         // use incomplete Cholesky to approximate
-        if (useIncompleteCholesky > 0) {
-            Ky = KernelUtils.incompleteCholeskyGramMatrix(Arrays.asList(yKernel), this.dataSet, Arrays.asList(y), useIncompleteCholesky);
-            Kx = KernelUtils.incompleteCholeskyGramMatrix(Arrays.asList(xKernel), this.dataSet, Arrays.asList(x), useIncompleteCholesky);
+        if (this.useIncompleteCholesky > 0) {
+            Ky = KernelUtils.incompleteCholeskyGramMatrix(Collections.singletonList(yKernel), this.dataSet, Collections.singletonList(y), this.useIncompleteCholesky);
+            Kx = KernelUtils.incompleteCholeskyGramMatrix(Collections.singletonList(xKernel), this.dataSet, Collections.singletonList(x), this.useIncompleteCholesky);
             if (!z.isEmpty()) {
-                Kz = KernelUtils.incompleteCholeskyGramMatrix(zKernel, this.dataSet, z, useIncompleteCholesky);
+                Kz = KernelUtils.incompleteCholeskyGramMatrix(zKernel, this.dataSet, z, this.useIncompleteCholesky);
             }
         }
         // otherwise compute directly
         else {
-            Ky = KernelUtils.constructCentralizedGramMatrix(Arrays.asList(yKernel), this.dataSet, Arrays.asList(y));
-            Kx = KernelUtils.constructCentralizedGramMatrix(Arrays.asList(xKernel), this.dataSet, Arrays.asList(x));
+            Ky = KernelUtils.constructCentralizedGramMatrix(Collections.singletonList(yKernel), this.dataSet, Collections.singletonList(y));
+            Kx = KernelUtils.constructCentralizedGramMatrix(Collections.singletonList(xKernel), this.dataSet, Collections.singletonList(x));
             if (!z.isEmpty()) {
                 Kz = KernelUtils.constructCentralizedGramMatrix(zKernel, this.dataSet, z);
             }
         }
 
         // get Hilbert-Schmidt dependence measure
+        double hsic;
         if (z.isEmpty()) {
-            if (useIncompleteCholesky > 0) {
-                this.hsic = empiricalHSICincompleteCholesky(Ky, Kx, m);
+            if (this.useIncompleteCholesky > 0) {
+                hsic = empiricalHSICincompleteCholesky(Ky, Kx, m);
             } else {
-                this.hsic = empiricalHSIC(Ky, Kx, m);
+                hsic = empiricalHSIC(Ky, Kx, m);
             }
         } else {
-            if (useIncompleteCholesky > 0) {
-                this.hsic = empiricalHSICincompleteCholesky(Ky, Kx, Kz, m);
+            if (this.useIncompleteCholesky > 0) {
+                hsic = empiricalHSICincompleteCholesky(Ky, Kx, Kz, m);
             } else {
-                this.hsic = empiricalHSIC(Ky, Kx, Kz, m);
+                hsic = empiricalHSIC(Ky, Kx, Kz, m);
             }
         }
 
@@ -231,13 +227,13 @@ public final class IndTestHsic implements IndependenceTest {
             KMeans kmeans = KMeans.randomClusters((m / 3));
             zind = new int[z.size()];
             for (int j = 0; j < z.size(); j++) {
-                zind[j] = dataSet.getColumn(z.get(j));
+                zind[j] = this.dataSet.getColumn(z.get(j));
             }
-            kmeans.cluster(dataSet.subsetColumns(z).getDoubleData());
+            kmeans.cluster(this.dataSet.subsetColumns(z).getDoubleData());
             clusterAssign = kmeans.getClusters();
         }
         for (int i = 0; i < this.perms; i++) {
-            DataSet shuffleData = dataSet.copy();
+            DataSet shuffleData = this.dataSet.copy();
             // shuffle data
             if (z.isEmpty()) {
                 List<Integer> indicesList = new ArrayList<>();
@@ -246,23 +242,24 @@ public final class IndTestHsic implements IndependenceTest {
                 }
                 Collections.shuffle(indicesList);
                 for (int j = 0; j < m; j++) {
-                    double shuffleVal = dataSet.getDouble(indicesList.get(j), ycol);
+                    double shuffleVal = this.dataSet.getDouble(indicesList.get(j), ycol);
                     shuffleData.setDouble(j, ycol, shuffleVal);
                 }
             } else {
                 // shuffle data within clusters
-                for (int j = 0; j < clusterAssign.size(); j++) {
-                    List<Integer> shuffleCluster = new ArrayList<>(clusterAssign.get(j));
+                assert clusterAssign != null;
+                for (List<Integer> integers : clusterAssign) {
+                    List<Integer> shuffleCluster = new ArrayList<>(integers);
 
                     Collections.shuffle(shuffleCluster);
 
                     for (int k = 0; k < shuffleCluster.size(); k++) {
                         // first swap y;
-                        double swapVal = dataSet.getDouble(clusterAssign.get(j).get(k), ycol);
+                        double swapVal = this.dataSet.getDouble(integers.get(k), ycol);
                         shuffleData.setDouble(shuffleCluster.get(k), ycol, swapVal);
                         // now swap z
                         for (int zi = 0; zi < z.size(); zi++) {
-                            swapVal = dataSet.getDouble(clusterAssign.get(j).get(k), zind[zi]);
+                            swapVal = this.dataSet.getDouble(integers.get(k), zind[zi]);
                             shuffleData.setDouble(shuffleCluster.get(k), zind[zi], swapVal);
                         }
                     }
@@ -274,30 +271,30 @@ public final class IndTestHsic implements IndependenceTest {
                 zKernel.get(j).setDefaultBw(shuffleData, z.get(j));
             }
             // Gram matrices
-            Matrix Kyn = null;
-            if (useIncompleteCholesky > 0) {
-                Kyn = KernelUtils.incompleteCholeskyGramMatrix(Arrays.asList(yKernel), shuffleData, Arrays.asList(y), useIncompleteCholesky);
+            Matrix Kyn;
+            if (this.useIncompleteCholesky > 0) {
+                Kyn = KernelUtils.incompleteCholeskyGramMatrix(Collections.singletonList(yKernel), shuffleData, Collections.singletonList(y), this.useIncompleteCholesky);
             } else {
-                Kyn = KernelUtils.constructCentralizedGramMatrix(Arrays.asList(yKernel), shuffleData, Arrays.asList(y));
+                Kyn = KernelUtils.constructCentralizedGramMatrix(Collections.singletonList(yKernel), shuffleData, Collections.singletonList(y));
 
             }
-            Matrix Kzn = null;
             if (!z.isEmpty()) {
-                if (useIncompleteCholesky > 0) {
-                    Kzn = KernelUtils.incompleteCholeskyGramMatrix(zKernel, shuffleData, z, useIncompleteCholesky);
+                if (this.useIncompleteCholesky > 0) {
+                    KernelUtils.incompleteCholeskyGramMatrix(zKernel, shuffleData, z, this.useIncompleteCholesky);
                 } else {
-                    Kzn = KernelUtils.constructCentralizedGramMatrix(zKernel, shuffleData, z);
+                    KernelUtils.constructCentralizedGramMatrix(zKernel, shuffleData, z);
                 }
             }
             // HSIC
             if (z.isEmpty()) {
-                if (useIncompleteCholesky > 0) {
+                if (this.useIncompleteCholesky > 0) {
                     nullapprox[i] = empiricalHSICincompleteCholesky(Kyn, Kx, m);
                 } else {
                     nullapprox[i] = empiricalHSIC(Kyn, Kx, m);
                 }
             } else {
-                if (useIncompleteCholesky > 0) {
+                if (this.useIncompleteCholesky > 0) {
+                    assert Kz != null;
                     nullapprox[i] = empiricalHSICincompleteCholesky(Kyn, Kx, Kz, m);
                 } else {
                     nullapprox[i] = empiricalHSIC(Kyn, Kx, Kz, m);
@@ -308,24 +305,24 @@ public final class IndTestHsic implements IndependenceTest {
         // permutation test to get p-value
         double evalCdf = 0.0;
         for (int i = 0; i < this.perms; i++) {
-            if (nullapprox[i] <= this.hsic) {
+            if (nullapprox[i] <= hsic) {
                 evalCdf += 1.0;
             }
         }
 
-        evalCdf /= (double) this.perms;
+        evalCdf /= this.perms;
         this.pValue = 1.0 - evalCdf;
 
         // reject if pvalue <= alpha
-        if (this.pValue <= this.alpha) {
-            TetradLogger.getInstance().log("dependencies", SearchLogUtils
-                    .dependenceFactMsg(x, y, z, getPValue()));
-            return false;
+        boolean independent = this.pValue <= this.alpha;
+
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            }
         }
-        if (verbose) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils
-                    .independenceFactMsg(x, y, z, getPValue()));
-        }
+
         return true;
     }
 
@@ -356,8 +353,6 @@ public final class IndTestHsic implements IndependenceTest {
      */
     public double empiricalHSICincompleteCholesky(Matrix Gy, Matrix Gx, int m) {
         // centralized Choleksy
-        int ky = Gy.columns();
-        int kx = Gx.columns();
         Matrix H = KernelUtils.constructH(m);
         Matrix Gcy = H.times(Gy);
         Matrix Gcx = H.times(Gx);
@@ -394,10 +389,10 @@ public final class IndTestHsic implements IndependenceTest {
         }
         Matrix A = Kzreg.inverse();
         Kzreg = A.times(A);
-        Matrix Kyzzregzx = new Matrix(m, m);
+        Matrix Kyzzregzx;
         A = Kyz.times(Kzreg);
         Kyzzregzx = A.times(Kzx);
-        Matrix Kyzzregzxzzregz = Kyzzregzx.copy();
+        Matrix Kyzzregzxzzregz;
         Kyzzregzxzzregz = Kyzzregzx.times(Kz);
         A = Kyzzregzxzzregz.times(Kzreg);
         Kyzzregzxzzregz = A.times(Kz);
@@ -432,8 +427,6 @@ public final class IndTestHsic implements IndependenceTest {
      */
     public double empiricalHSICincompleteCholesky(Matrix Gy, Matrix Gx, Matrix Gz, int m) {
         // centralize Choleksy
-        int ky = Gy.columns();
-        int kx = Gx.columns();
         int kz = Gz.columns();
 
         Matrix H = KernelUtils.constructH(m);
@@ -442,16 +435,13 @@ public final class IndTestHsic implements IndependenceTest {
         Matrix Gcz = H.times(Gz);
 
         // multiply gram matrices (first block)
-        Matrix A = new Matrix(ky, kx);
+        Matrix A;
         Matrix Gcyt = Gcy.transpose();
         A = Gcyt.times(Gcx);
         Matrix B = Gcy.times(A);
-        Matrix Kyx = new Matrix(m, m);
-        Matrix Gcxt = new Matrix(kx, m);
+        Matrix Gcxt;
         Gcxt = Gcx.transpose();
-        Kyx = B.times(Gcxt);
         double empHSIC = 0.0;
-        double xy = 0.0;
         for (int i = 0; i < m; i++) {
             empHSIC += matrixProductEntry(B, Gcxt, i, i);
         }
@@ -512,154 +502,6 @@ public final class IndTestHsic implements IndependenceTest {
         return empHSIC;
     }
 
-    /**
-     * Empirical unconditional Hilbert-Schmidt Dependence Measure for X and Y given Z using incomplete Cholesky
-     * decomposition to approximate Gram matrices
-     *
-     * @param Gy Choleksy approximate Gram matrix for Y
-     * @param Gx Choleksy approximate Gram matrix for X
-     * @param Gz Choleksy approximate Gram matrix for Z
-     * @param m  sample size
-     */
-    public double empiricalHSICincompleteCholeskyOLD(Matrix Gy, Matrix Gx, Matrix Gz, int m) {
-        // centralize Choleksy
-        int ky = Gy.columns();
-        int kx = Gx.columns();
-        int kz = Gz.columns();
-
-        Matrix H = KernelUtils.constructH(m);
-        Matrix Gcy = H.times(Gy);
-        Matrix Gcx = H.times(Gx);
-        Matrix Gcz = H.times(Gz);
-
-        // multiply gram matrices (first block)
-        Matrix Gcyt = Gcy.transpose();
-        Matrix A = Gcyt.times(Gcx);
-        Matrix B = Gcy.times(A);
-        Matrix Gcxt = Gcx.transpose();
-        Matrix Kyx = B.times(Gcxt);
-        double empHSIC = 0.0;
-
-        double xy = 0.0;
-        for (int i = 0; i < m; i++) {
-            empHSIC += matrixProductEntry(B, Gcxt, i, i);
-        }
-
-        // second block
-        Matrix Gytz = Gcyt.times(Gcz);
-        Matrix Gztx = new Matrix(kz, kx);
-        Matrix Gczt = Gcz.transpose();
-        Gztx = Gczt.times(Gcx);
-        Matrix Gztz = Gczt.times(Gcz);
-        Matrix Gztzztx = Gztz.times(Gztx);
-        Matrix Gytzztzztx = Gytz.times(Gztzztx);
-        Matrix Gyytzztzztx = Gcy.times(Gytzztzztx);
-        double second = 0.0;
-        for (int i = 0; i < m; i++) {
-            second += matrixProductEntry(Gyytzztzztx, Gcxt, i, i);
-        }
-        Matrix Gztzr = Gztz.copy();
-        for (int i = 0; i < kz; i++) {
-            Gztzr.set(i, i, Gztz.get(i, i) + this.regularizer);
-        }
-        Matrix ZI = Gztzr.inverse();
-        Matrix GzGZI = Gcz.times(ZI);
-        Matrix GzGZIGzt = GzGZI.times(Gczt);
-        double inv = 0.0;
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < m; j++) {
-                GzGZIGzt.set(i, j, GzGZIGzt.get(i, j) * (-1 / this.regularizer));
-            }
-        }
-        for (int i = 0; i < m; i++) {
-            GzGZIGzt.set(i, i, GzGZIGzt.get(i, i) + (1 / this.regularizer));
-        }
-        for (int i = 0; i < m; i++) {
-            inv += GzGZIGzt.get(i, i);
-        }
-        System.out.println("inv " + inv);
-        inv = 0.0;
-        Matrix ZI2 = GzGZIGzt.times(GzGZIGzt);
-        for (int i = 0; i < m; i++) {
-            inv += ZI2.get(i, i);
-        }
-        System.out.println("inv " + inv);
-        Matrix Gyytz = Gcy.times(Gytz);
-        Matrix Gyytzzt = Gyytz.times(Gczt);
-        Matrix Gzztx = Gcz.times(Gztx);
-        Matrix Gzztxxt = Gzztx.times(Gcxt);
-        Matrix GyzZI = Gyytzzt.times(ZI2);
-        Matrix GyzZIzx = GyzZI.times(Gzztxxt);
-        double sec = 0.0;
-        for (int i = 0; i < m; i++) {
-            sec += GyzZIzx.get(i, i);
-        }
-        System.out.println("sec " + sec);
-        //
-        Matrix Gytzztz = Gytz.times(Gztz);
-        Matrix GytzztzZI = Gytzztz.times(ZI);
-        Matrix GytzztzZIztzztx = GytzztzZI.times(Gztzztx);
-        Matrix GyytzztzZIztzztx = Gcy.times(GytzztzZIztzztx);
-        double s1 = 0.0;
-        for (int i = 0; i < m; i++) {
-            s1 += matrixProductEntry(GyytzztzZIztzztx, Gcxt, i, i);
-        }
-        second -= 2 * s1;
-        Matrix GZIztzztx = ZI.times(Gztzztx);
-        Matrix GytzztzZIztz = GytzztzZI.times(Gztz);
-        Matrix GytzztzZIztzZIztzztx = GytzztzZIztz.times(GZIztzztx);
-        Matrix GyytzztzZIztzZIztzztx = Gcy.times(GytzztzZIztzZIztzztx);
-        for (int i = 0; i < m; i++) {
-            second += matrixProductEntry(GyytzztzZIztzZIztzztx, Gcxt, i, i);
-        }
-        double reg2 = Math.pow(this.regularizer, 2);
-        empHSIC -= (2 / reg2) * second;
-
-        // third block
-        Matrix Gxtz = Gcxt.times(Gcz);
-        Matrix Gxtzztz = Gxtz.times(Gztz);
-        Matrix Gxtzztzzt = Gxtzztz.times(Gczt);
-        Matrix GxtzztzZI = Gxtzztz.times(ZI);
-        Matrix GxtzztzZIztz = GxtzztzZI.times(Gztz);
-        Matrix GxtzztzZIztzzt = GxtzztzZIztz.times(Gczt);
-        Matrix GxtzztzZIztzZI = GxtzztzZIztz.times(ZI);
-        Matrix GxtzztzZIztzZIztz = GxtzztzZIztzZI.times(Gztz);
-        Matrix GxtzztzZIztzZIztzzt = GxtzztzZIztzZIztz.times(Gczt);
-        double third = 0.0;
-        for (int i = 0; i < m; i++) {
-            third += matrixProductEntry(GyytzztzZIztzztx, Gxtzztzzt, i, i);
-            third += matrixProductEntry(GyytzztzZIztzztx, GxtzztzZIztzZIztzzt, i, i);
-            third += matrixProductEntry(Gyytzztzztx, GxtzztzZIztzzt, i, i);
-            third += matrixProductEntry(GyytzztzZIztzZIztzztx, GxtzztzZIztzzt, i, i);
-        }
-        third *= -2;
-        for (int i = 0; i < m; i++) {
-            third += matrixProductEntry(Gyytzztzztx, Gxtzztzzt, i, i);
-            third += matrixProductEntry(GyytzztzZIztzZIztzztx, Gxtzztzzt, i, i);
-            third += matrixProductEntry(Gyytzztzztx, GxtzztzZIztzZIztzzt, i, i);
-            third += matrixProductEntry(GyytzztzZIztzZIztzztx, GxtzztzZIztzZIztzzt, i, i);
-        }
-        double t1 = 0.0;
-        for (int i = 0; i < m; i++) {
-            t1 += matrixProductEntry(GyytzztzZIztzztx, GxtzztzZIztzzt, i, i);
-        }
-        third += 4 * t1;
-        empHSIC += third / Math.pow(reg2, 2);
-
-        // beta z estimate
-        double betaz = 0.0;
-        for (int i = 0; i < (m - 1); i++) {
-            for (int j = (i + 1); j < m; j++) {
-                betaz += Math.pow(matrixProductEntry(Gcz, Gczt, i, j), 2);
-                betaz += Math.pow(matrixProductEntry(Gcz, Gczt, j, i), 2);
-            }
-        }
-
-        empHSIC *= (m / (betaz * (m - 1)));
-
-        return empHSIC;
-    }
-
     public boolean isIndependent(Node x, Node y, Node... z) {
         return isIndependent(x, y, Arrays.asList(z));
     }
@@ -671,10 +513,6 @@ public final class IndTestHsic implements IndependenceTest {
     public boolean isDependent(Node x, Node y, Node... z) {
         List<Node> zList = Arrays.asList(z);
         return isDependent(x, y, zList);
-    }
-
-    public double getHsic() {
-        return this.hsic;
     }
 
     public double getThreshold() {
@@ -744,13 +582,6 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * Gets the getModel regularizer
-     */
-    public double getRegularizer() {
-        return this.regularizer;
-    }
-
-    /**
      * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
@@ -787,7 +618,7 @@ public final class IndTestHsic implements IndependenceTest {
      * @return the data set being analyzed.
      */
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     @Override
@@ -815,20 +646,14 @@ public final class IndTestHsic implements IndependenceTest {
         return getPValue();
     }
 
-    public void shuffleVariables() {
-        List<Node> nodes = new ArrayList(this.variables);
-        Collections.shuffle(nodes);
-        this.variables = Collections.unmodifiableList(nodes);
-    }
-
     /**
      * @return a string representation of this test.
      */
     public String toString() {
-        return "HSIC, alpha = " + nf.format(getAlpha());
+        return "HSIC, alpha = " + IndTestHsic.nf.format(getAlpha());
     }
 
-    public boolean determines(List z, Node x) throws UnsupportedOperationException {
+    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Method not implemented");
     }
 
@@ -847,16 +672,8 @@ public final class IndTestHsic implements IndependenceTest {
         return entry;
     }
 
-    private static double trace(Matrix A, int m) {
-        double trace = 0.0;
-        for (int i = 0; i < m; i++) {
-            trace += A.get(i, i);
-        }
-        return trace;
-    }
-
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {

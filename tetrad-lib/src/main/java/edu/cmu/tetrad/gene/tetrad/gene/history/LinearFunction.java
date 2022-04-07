@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,7 +42,7 @@ public class LinearFunction implements UpdateFunction {
      *
      * @serial
      */
-    private PolynomialFunction polynomialFunction;
+    private final PolynomialFunction polynomialFunction;
 
     //=========================CONSTRUCTORS=============================//
 
@@ -56,7 +56,7 @@ public class LinearFunction implements UpdateFunction {
         }
 
         this.polynomialFunction = new PolynomialFunction(lagGraph);
-        IndexedLagGraph connectivity = polynomialFunction.getIndexedLagGraph();
+        IndexedLagGraph connectivity = this.polynomialFunction.getIndexedLagGraph();
 
         for (int i = 0; i < connectivity.getNumFactors(); i++) {
             List terms = new ArrayList();
@@ -67,11 +67,11 @@ public class LinearFunction implements UpdateFunction {
             int numParents = connectivity.getNumParents(i);
             for (int j = 0; j < numParents; j++) {
 
-                int[] vars = new int[]{j};
+                int[] vars = {j};
                 terms.add(new PolynomialTerm(1.0 / (double) numParents, vars));
             }
             Polynomial p = new Polynomial(terms);
-            polynomialFunction.setPolynomial(i, p);
+            this.polynomialFunction.setPolynomial(i, p);
         }
     }
 
@@ -132,7 +132,7 @@ public class LinearFunction implements UpdateFunction {
      */
     public boolean setCoefficient(String factor, LaggedFactor parent,
                                   double intercept) {
-        IndexedLagGraph connectivity = polynomialFunction.getIndexedLagGraph();
+        IndexedLagGraph connectivity = this.polynomialFunction.getIndexedLagGraph();
 
         int factorIndex = connectivity.getIndex(factor);
         int parentIndex = connectivity.getIndex(factor, parent);
@@ -181,11 +181,10 @@ public class LinearFunction implements UpdateFunction {
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        IndexedLagGraph connectivity = polynomialFunction.getIndexedLagGraph();
+        IndexedLagGraph connectivity = this.polynomialFunction.getIndexedLagGraph();
         buf.append("\n\nLinear Function:");
         for (int i = 0; i < connectivity.getNumFactors(); i++) {
-            buf.append("\n\tFactor " + connectivity.getFactor(i) + " --> " +
-                    this.polynomialFunction.getPolynomial(i));
+            buf.append("\n\tFactor ").append(connectivity.getFactor(i)).append(" --> ").append(this.polynomialFunction.getPolynomial(i));
         }
         return buf.toString();
     }
@@ -215,15 +214,12 @@ public class LinearFunction implements UpdateFunction {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (polynomialFunction == null) {
+        if (this.polynomialFunction == null) {
             throw new NullPointerException();
         }
     }

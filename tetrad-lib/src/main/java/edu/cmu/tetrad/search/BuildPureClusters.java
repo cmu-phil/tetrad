@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -135,13 +135,13 @@ public final class BuildPureClusters {
                 this.sigTestType == TestType.GAUSSIAN_FACTOR);
 
         if (sigTestType == TestType.DISCRETE) {
-            numVariables = dataSet.getNumColumns();
-            independenceTest = new IndTestGSquare(dataSet, alpha);
-            tetradTest = new DiscreteTetradTest(dataSet, alpha);
+            this.numVariables = this.dataSet.getNumColumns();
+            this.independenceTest = new IndTestGSquare(this.dataSet, alpha);
+            this.tetradTest = new DiscreteTetradTest(this.dataSet, alpha);
         } else {
             assert getCovarianceMatrix() != null;
-            numVariables = getCovarianceMatrix().getSize();
-            independenceTest = new IndTestFisherZ(getCovarianceMatrix(), .1);
+            this.numVariables = getCovarianceMatrix().getSize();
+            this.independenceTest = new IndTestFisherZ(getCovarianceMatrix(), .1);
             TestType type;
 
             if (sigTestType == TestType.TETRAD_WISHART || sigTestType == TestType.TETRAD_DELTA
@@ -152,15 +152,15 @@ public final class BuildPureClusters {
                         sigTestType);
             }
 
-            if (dataSet != null) {
-                tetradTest = new ContinuousTetradTest(dataSet, type, alpha);
+            if (this.dataSet != null) {
+                this.tetradTest = new ContinuousTetradTest(this.dataSet, type, alpha);
             } else {
-                tetradTest = new ContinuousTetradTest(getCovarianceMatrix(), type, alpha);
+                this.tetradTest = new ContinuousTetradTest(getCovarianceMatrix(), type, alpha);
             }
         }
-        labels = new int[numVariables()];
+        this.labels = new int[numVariables()];
         for (int i = 0; i < numVariables(); i++) {
-            labels[i] = i + 1;
+            this.labels[i] = i + 1;
         }
     }
 
@@ -170,11 +170,11 @@ public final class BuildPureClusters {
     public Graph search() {
         long start = System.currentTimeMillis();
 
-        TetradLogger.getInstance().log("info", "BPC alpha = " + alpha + " test = " + sigTestType);
+        TetradLogger.getInstance().log("info", "BPC alpha = " + this.alpha + " test = " + this.sigTestType);
 
         List<int[]> clustering = findMeasurementPattern();
         clustering.removeIf(cluster -> cluster.length < 3);
-        List<Node> variables = tetradTest.getVariables();
+        List<Node> variables = this.tetradTest.getVariables();
         Set<Set<Integer>> clusters = new HashSet<>();
 
         for (int[] _c : clustering) {
@@ -204,7 +204,7 @@ public final class BuildPureClusters {
      * @return the converted search graph, or null if there is no model.
      */
     private Graph convertSearchGraph(List<int[]> clusters) {
-        List<Node> nodes = tetradTest.getVariables();
+        List<Node> nodes = this.tetradTest.getVariables();
         Graph graph = new EdgeListGraph(nodes);
 
         List<Node> latents = new ArrayList<>();
@@ -228,59 +228,59 @@ public final class BuildPureClusters {
 
     private boolean clusteredPartial1(int v1, int v2, int v3, int v4) {
         if (this.scoreTestMode) {
-            return !tetradTest.oneFactorTest(v1, v2, v3, v4);
+            return !this.tetradTest.oneFactorTest(v1, v2, v3, v4);
         } else {
-            return !tetradTest.tetradScore3(v1, v2, v3, v4);
+            return !this.tetradTest.tetradScore3(v1, v2, v3, v4);
         }
     }
 
     private boolean validClusterPairPartial1(int v1, int v2, int v3, int v4, int[][] cv) {
         if (this.scoreTestMode) {
-            return tetradTest.oneFactorTest(v1, v2, v3, v4);
+            return this.tetradTest.oneFactorTest(v1, v2, v3, v4);
         } else {
-            if (cv[v1][v4] == EDGE_NONE && cv[v2][v4] == EDGE_NONE &&
-                    cv[v3][v4] == EDGE_NONE) {
+            if (cv[v1][v4] == this.EDGE_NONE && cv[v2][v4] == this.EDGE_NONE &&
+                    cv[v3][v4] == this.EDGE_NONE) {
                 return true;
             }
 
-            boolean test1 = tetradTest.tetradHolds(v1, v2, v3, v4);
-            boolean test2 = tetradTest.tetradHolds(v1, v2, v4, v3);
+            boolean test1 = this.tetradTest.tetradHolds(v1, v2, v3, v4);
+            boolean test2 = this.tetradTest.tetradHolds(v1, v2, v4, v3);
 
             if (test1 && test2) {
                 return true;
             }
 
-            boolean test3 = tetradTest.tetradHolds(v1, v3, v4, v2);
+            boolean test3 = this.tetradTest.tetradHolds(v1, v3, v4, v2);
             return (test1 && test3) || (test2 && test3);
         }
     }
 
     private boolean clusteredPartial2(int v1, int v2, int v3, int v4, int v5) {
         if (this.scoreTestMode) {
-            return !tetradTest.oneFactorTest(v1, v2, v3, v5) ||
-                    tetradTest.oneFactorTest(v1, v2, v3, v4, v5) ||
-                    !tetradTest.twoFactorTest(v1, v2, v3, v4, v5);
+            return !this.tetradTest.oneFactorTest(v1, v2, v3, v5) ||
+                    this.tetradTest.oneFactorTest(v1, v2, v3, v4, v5) ||
+                    !this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5);
         } else {
-            return !tetradTest.tetradScore3(v1, v2, v3, v5) ||
+            return !this.tetradTest.tetradScore3(v1, v2, v3, v5) ||
 
-                    !tetradTest.tetradScore1(v1, v2, v4, v5) ||
-                    !tetradTest.tetradScore1(v2, v3, v4, v5) ||
-                    !tetradTest.tetradScore1(v1, v3, v4, v5);
+                    !this.tetradTest.tetradScore1(v1, v2, v4, v5) ||
+                    !this.tetradTest.tetradScore1(v2, v3, v4, v5) ||
+                    !this.tetradTest.tetradScore1(v1, v3, v4, v5);
         }
     }
 
     private boolean validClusterPairPartial2(int v1, int v2, int v3, int v5, int[][] cv) {
         if (this.scoreTestMode) {
-            return tetradTest.oneFactorTest(v1, v2, v3, v5);
+            return this.tetradTest.oneFactorTest(v1, v2, v3, v5);
         } else {
-            if (cv[v1][v5] == EDGE_NONE && cv[v2][v5] == EDGE_NONE &&
-                    cv[v3][v5] == EDGE_NONE) {
+            if (cv[v1][v5] == this.EDGE_NONE && cv[v2][v5] == this.EDGE_NONE &&
+                    cv[v3][v5] == this.EDGE_NONE) {
                 return true;
             }
 
-            boolean test1 = tetradTest.tetradHolds(v1, v2, v3, v5);
-            boolean test2 = tetradTest.tetradHolds(v1, v2, v5, v3);
-            boolean test3 = tetradTest.tetradHolds(v1, v3, v5, v2);
+            boolean test1 = this.tetradTest.tetradHolds(v1, v2, v3, v5);
+            boolean test2 = this.tetradTest.tetradHolds(v1, v2, v5, v3);
+            boolean test3 = this.tetradTest.tetradHolds(v1, v3, v5, v2);
 
             return (test1 && test2) || (test1 && test3) || (test2 && test3);
         }
@@ -289,68 +289,68 @@ public final class BuildPureClusters {
     private boolean unclusteredPartial3(int v1, int v2, int v3, int v4, int v5,
                                         int v6) {
         if (this.scoreTestMode) {
-            return tetradTest.oneFactorTest(v1, v2, v3, v6) &&
-                    tetradTest.oneFactorTest(v4, v5, v6, v1) &&
-                    tetradTest.oneFactorTest(v4, v5, v6, v2) &&
-                    tetradTest.oneFactorTest(v4, v5, v6, v3) &&
-                    tetradTest.twoFactorTest(v1, v2, v3, v4, v5, v6);
+            return this.tetradTest.oneFactorTest(v1, v2, v3, v6) &&
+                    this.tetradTest.oneFactorTest(v4, v5, v6, v1) &&
+                    this.tetradTest.oneFactorTest(v4, v5, v6, v2) &&
+                    this.tetradTest.oneFactorTest(v4, v5, v6, v3) &&
+                    this.tetradTest.twoFactorTest(v1, v2, v3, v4, v5, v6);
         } else {
             return
 
-                    tetradTest.tetradScore3(v1, v2, v3, v6) &&
-                            tetradTest.tetradScore3(v4, v5, v6, v1) &&
-                            tetradTest.tetradScore3(v4, v5, v6, v2) &&
-                            tetradTest.tetradScore3(v4, v5, v6, v3) &&
+                    this.tetradTest.tetradScore3(v1, v2, v3, v6) &&
+                            this.tetradTest.tetradScore3(v4, v5, v6, v1) &&
+                            this.tetradTest.tetradScore3(v4, v5, v6, v2) &&
+                            this.tetradTest.tetradScore3(v4, v5, v6, v3) &&
 
-                            tetradTest.tetradScore1(v1, v2, v4, v6) &&
-                            tetradTest.tetradScore1(v1, v2, v5, v6) &&
-                            tetradTest.tetradScore1(v2, v3, v4, v6) &&
-                            tetradTest.tetradScore1(v2, v3, v5, v6) &&
-                            tetradTest.tetradScore1(v1, v3, v4, v6) &&
-                            tetradTest.tetradScore1(v1, v3, v5, v6);
+                            this.tetradTest.tetradScore1(v1, v2, v4, v6) &&
+                            this.tetradTest.tetradScore1(v1, v2, v5, v6) &&
+                            this.tetradTest.tetradScore1(v2, v3, v4, v6) &&
+                            this.tetradTest.tetradScore1(v2, v3, v5, v6) &&
+                            this.tetradTest.tetradScore1(v1, v3, v4, v6) &&
+                            this.tetradTest.tetradScore1(v1, v3, v5, v6);
         }
     }
 
     private boolean validClusterPairPartial3(int v1, int v2, int v3, int v4,
                                              int v5, int v6, int[][] cv) {
         if (this.scoreTestMode) {
-            return tetradTest.oneFactorTest(v1, v2, v3, v6) &&
-                    tetradTest.oneFactorTest(v4, v5, v6, v1) &&
-                    tetradTest.oneFactorTest(v4, v5, v6, v2) &&
-                    tetradTest.oneFactorTest(v4, v5, v6, v3);
+            return this.tetradTest.oneFactorTest(v1, v2, v3, v6) &&
+                    this.tetradTest.oneFactorTest(v4, v5, v6, v1) &&
+                    this.tetradTest.oneFactorTest(v4, v5, v6, v2) &&
+                    this.tetradTest.oneFactorTest(v4, v5, v6, v3);
         } else {
-            if (cv[v1][v6] == EDGE_NONE && cv[v2][v6] == EDGE_NONE &&
-                    cv[v3][v6] == EDGE_NONE) {
+            if (cv[v1][v6] == this.EDGE_NONE && cv[v2][v6] == this.EDGE_NONE &&
+                    cv[v3][v6] == this.EDGE_NONE) {
                 return true;
             }
 
-            boolean test1 = tetradTest.tetradHolds(v1, v2, v3, v6);
-            boolean test2 = tetradTest.tetradHolds(v1, v2, v6, v3);
-            boolean test3 = tetradTest.tetradHolds(v1, v3, v6, v2);
+            boolean test1 = this.tetradTest.tetradHolds(v1, v2, v3, v6);
+            boolean test2 = this.tetradTest.tetradHolds(v1, v2, v6, v3);
+            boolean test3 = this.tetradTest.tetradHolds(v1, v3, v6, v2);
 
             if (!((test1 && test2) || (test1 && test3) || (test2 && test3))) {
                 return false;
             }
 
-            test1 = tetradTest.tetradHolds(v4, v5, v6, v1);
-            test2 = tetradTest.tetradHolds(v4, v5, v1, v6);
-            test3 = tetradTest.tetradHolds(v4, v6, v1, v5);
+            test1 = this.tetradTest.tetradHolds(v4, v5, v6, v1);
+            test2 = this.tetradTest.tetradHolds(v4, v5, v1, v6);
+            test3 = this.tetradTest.tetradHolds(v4, v6, v1, v5);
 
             if (!((test1 && test2) || (test1 && test3) || (test2 && test3))) {
                 return false;
             }
 
-            test1 = tetradTest.tetradHolds(v4, v5, v6, v2);
-            test2 = tetradTest.tetradHolds(v4, v5, v2, v6);
-            test3 = tetradTest.tetradHolds(v4, v6, v2, v5);
+            test1 = this.tetradTest.tetradHolds(v4, v5, v6, v2);
+            test2 = this.tetradTest.tetradHolds(v4, v5, v2, v6);
+            test3 = this.tetradTest.tetradHolds(v4, v6, v2, v5);
 
             if (!((test1 && test2) || (test1 && test3) || (test2 && test3))) {
                 return false;
             }
 
-            test1 = tetradTest.tetradHolds(v4, v5, v6, v3);
-            test2 = tetradTest.tetradHolds(v4, v5, v3, v6);
-            test3 = tetradTest.tetradHolds(v4, v6, v3, v5);
+            test1 = this.tetradTest.tetradHolds(v4, v5, v6, v3);
+            test2 = this.tetradTest.tetradHolds(v4, v5, v3, v6);
+            test3 = this.tetradTest.tetradHolds(v4, v6, v3, v5);
 
             return (test1 && test2) || (test1 && test3) || (test2 && test3);
         }
@@ -358,61 +358,61 @@ public final class BuildPureClusters {
 
     private boolean partialRule1_1(int x1, int x2, int x3, int y1) {
         if (this.scoreTestMode) {
-            return tetradTest.oneFactorTest(x1, y1, x2, x3);
+            return this.tetradTest.oneFactorTest(x1, y1, x2, x3);
         }
 
-        return tetradTest.tetradScore3(x1, y1, x2, x3);
+        return this.tetradTest.tetradScore3(x1, y1, x2, x3);
     }
 
     private boolean partialRule1_2(int x1, int x2, int y1, int y2) {
         if (this.scoreTestMode) {
-            return !tetradTest.oneFactorTest(x1, x2, y1, y2) &&
-                    tetradTest.twoFactorTest(x1, x2, y1, y2);
+            return !this.tetradTest.oneFactorTest(x1, x2, y1, y2) &&
+                    this.tetradTest.twoFactorTest(x1, x2, y1, y2);
         }
 
-        return !tetradTest.tetradHolds(x1, x2, y2, y1) &&
-                !tetradTest.tetradHolds(x1, y1, x2, y2) &&
-                tetradTest.tetradHolds(x1, y1, y2, x2);
+        return !this.tetradTest.tetradHolds(x1, x2, y2, y1) &&
+                !this.tetradTest.tetradHolds(x1, y1, x2, y2) &&
+                this.tetradTest.tetradHolds(x1, y1, y2, x2);
 
     }
 
     private boolean partialRule1_3(int x1, int y1, int y2, int y3) {
         if (this.scoreTestMode) {
-            return tetradTest.oneFactorTest(x1, y1, y2, y3);
+            return this.tetradTest.oneFactorTest(x1, y1, y2, y3);
         }
 
-        return tetradTest.tetradScore3(x1, y1, y2, y3);
+        return this.tetradTest.tetradScore3(x1, y1, y2, y3);
 
     }
 
     private boolean partialRule2_1(int x1, int x2, int y1, int y2) {
         if (this.scoreTestMode) {
-            return !tetradTest.oneFactorTest(x1, x2, y1, y2) &&
-                    tetradTest.twoFactorTest(x1, x2, y1, y2);
+            return !this.tetradTest.oneFactorTest(x1, x2, y1, y2) &&
+                    this.tetradTest.twoFactorTest(x1, x2, y1, y2);
         }
 
-        return tetradTest.tetradHolds(x1, y1, y2, x2) &&
-                !tetradTest.tetradHolds(x1, x2, y2, y1) &&
-                !tetradTest.tetradHolds(x1, y1, x2, y2) &&
-                tetradTest.tetradHolds(x1, y1, y2, x2);
+        return this.tetradTest.tetradHolds(x1, y1, y2, x2) &&
+                !this.tetradTest.tetradHolds(x1, x2, y2, y1) &&
+                !this.tetradTest.tetradHolds(x1, y1, x2, y2) &&
+                this.tetradTest.tetradHolds(x1, y1, y2, x2);
 
     }
 
     private boolean partialRule2_2(int x1, int x2, int x3, int y2) {
         if (this.scoreTestMode) {
-            return tetradTest.twoFactorTest(x1, x3, x2, y2);
+            return this.tetradTest.twoFactorTest(x1, x3, x2, y2);
         }
 
-        return tetradTest.tetradHolds(x1, x2, y2, x3);
+        return this.tetradTest.tetradHolds(x1, x2, y2, x3);
 
     }
 
     private boolean partialRule2_3(int x2, int y1, int y2, int y3) {
         if (this.scoreTestMode) {
-            tetradTest.twoFactorTest(x2, y2, y1, y3);
+            this.tetradTest.twoFactorTest(x2, y2, y1, y3);
         }
 
-        return tetradTest.tetradHolds(x2, y1, y3, y2);
+        return this.tetradTest.tetradHolds(x2, y1, y3, y2);
     }
 
     /*
@@ -433,8 +433,8 @@ public final class BuildPureClusters {
                     variables.get(v2));
 
         } else {
-            return getIndependenceTest().isIndependent(dataSet.getVariable(v1),
-                    dataSet.getVariable(v2));
+            return getIndependenceTest().isIndependent(this.dataSet.getVariable(v1),
+                    this.dataSet.getVariable(v2));
 
         }
     }
@@ -450,7 +450,7 @@ public final class BuildPureClusters {
     private void printClusterIds(int[] c) {
         int[] sorted = new int[c.length];
         for (int i = 0; i < c.length; i++) {
-            sorted[i] = labels[c[i]];
+            sorted[i] = this.labels[c[i]];
         }
         for (int i = 0; i < sorted.length - 1; i++) {
             int min = Integer.MAX_VALUE;
@@ -473,7 +473,7 @@ public final class BuildPureClusters {
     private void printClusterNames(int[] c) {
         String[] sorted = new String[c.length];
         for (int i = 0; i < c.length; i++) {
-            sorted[i] = tetradTest.getVarNames()[c[i]];
+            sorted[i] = this.tetradTest.getVarNames()[c[i]];
         }
         for (int i = 0; i < sorted.length - 1; i++) {
             String min = sorted[i];
@@ -579,7 +579,7 @@ public final class BuildPureClusters {
             for (int j = i; j < connected.length; j++) {
                 if (i != j) {
                     connected[i][j] = connected[j][i] =
-                            (ng[i][j] != EDGE_NONE);
+                            (ng[i][j] != this.EDGE_NONE);
                 } else {
                     connected[i][j] = true;
                 }
@@ -600,7 +600,7 @@ public final class BuildPureClusters {
     private void findMaximalCliquesOperator(int[] numCalls,
                                             List<int[]> output, boolean[][] connected, int[] compsub, int[] c,
                                             int[] old, int ne, int ce) {
-        if (numCalls[0] > MAX_CLIQUE_TRIALS) {
+        if (numCalls[0] > this.MAX_CLIQUE_TRIALS) {
             return;
         }
 
@@ -887,7 +887,7 @@ public final class BuildPureClusters {
                         for (int value : nextCluster) {
                             impurities[currentCluster[jj]][value] =
                                     ng[currentCluster[jj]][value] !=
-                                            EDGE_NONE;
+                                            this.EDGE_NONE;
                             impurities[value][currentCluster[jj]] =
                                     impurities[currentCluster[jj]][value];
                         }
@@ -1065,7 +1065,7 @@ public final class BuildPureClusters {
             swapElements(elements, i, max_idx, temp);
         }
 
-        //Now, within each cluster, select first those that belong to clusters with less than three latents.
+        //Now, within each cluster, select first those that belong to the clusters with less than three latents.
         //Then, in decreasing order of cluster size.
         int start = 0;
 
@@ -1142,15 +1142,15 @@ public final class BuildPureClusters {
         /* Stage 1: identify (partially) uncorrelated and impure pairs */
         for (int v1 = 0; v1 < numVariables() - 1; v1++) {
             for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
-                ng[v1][v2] = ng[v2][v1] = EDGE_BLACK;
+                ng[v1][v2] = ng[v2][v1] = this.EDGE_BLACK;
             }
         }
         for (int v1 = 0; v1 < numVariables() - 1; v1++) {
             for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
                 if (uncorrelated(v1, v2)) {
-                    cv[v1][v2] = cv[v2][v1] = EDGE_NONE;
+                    cv[v1][v2] = cv[v2][v1] = this.EDGE_NONE;
                 } else {
-                    cv[v1][v2] = cv[v2][v1] = EDGE_BLACK;
+                    cv[v1][v2] = cv[v2][v1] = this.EDGE_BLACK;
                 }
                 ng[v1][v2] = ng[v2][v1] = cv[v1][v2];
             }
@@ -1158,38 +1158,38 @@ public final class BuildPureClusters {
 
         for (int v1 = 0; v1 < numVariables() - 1; v1++) {
             for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
-                if (ng[v1][v2] != EDGE_BLACK) {
+                if (ng[v1][v2] != this.EDGE_BLACK) {
                     continue;
                 }
                 boolean notFound = true;
                 for (int v3 = 0; v3 < numVariables() - 1 && notFound; v3++) {
-                    if (v1 == v3 || v2 == v3 || ng[v1][v3] == EDGE_NONE || ng[v1][v3] ==
-                            EDGE_GRAY || ng[v2][v3] == EDGE_NONE || ng[v2][v3] ==
-                            EDGE_GRAY) {
+                    if (v1 == v3 || v2 == v3 || ng[v1][v3] == this.EDGE_NONE || ng[v1][v3] ==
+                            this.EDGE_GRAY || ng[v2][v3] == this.EDGE_NONE || ng[v2][v3] ==
+                            this.EDGE_GRAY) {
                         continue;
                     }
                     for (int v4 = v3 + 1; v4 < numVariables() && notFound; v4++) {
-                        if (v1 == v4 || v2 == v4 || ng[v1][v4] == EDGE_NONE ||
-                                ng[v1][v4] == EDGE_GRAY ||
-                                ng[v2][v4] == EDGE_NONE ||
-                                ng[v2][v4] == EDGE_GRAY ||
-                                ng[v3][v4] == EDGE_NONE ||
-                                ng[v3][v4] == EDGE_GRAY) {
+                        if (v1 == v4 || v2 == v4 || ng[v1][v4] == this.EDGE_NONE ||
+                                ng[v1][v4] == this.EDGE_GRAY ||
+                                ng[v2][v4] == this.EDGE_NONE ||
+                                ng[v2][v4] == this.EDGE_GRAY ||
+                                ng[v3][v4] == this.EDGE_NONE ||
+                                ng[v3][v4] == this.EDGE_GRAY) {
                             continue;
                         }
-                        if (tetradTest.tetradScore3(v1, v2, v3, v4)) {
+                        if (this.tetradTest.tetradScore3(v1, v2, v3, v4)) {
                             notFound = false;
-                            ng[v1][v2] = ng[v2][v1] = EDGE_BLUE;
-                            ng[v1][v3] = ng[v3][v1] = EDGE_BLUE;
-                            ng[v1][v4] = ng[v4][v1] = EDGE_BLUE;
-                            ng[v2][v3] = ng[v3][v2] = EDGE_BLUE;
-                            ng[v2][v4] = ng[v4][v2] = EDGE_BLUE;
-                            ng[v3][v4] = ng[v4][v3] = EDGE_BLUE;
+                            ng[v1][v2] = ng[v2][v1] = this.EDGE_BLUE;
+                            ng[v1][v3] = ng[v3][v1] = this.EDGE_BLUE;
+                            ng[v1][v4] = ng[v4][v1] = this.EDGE_BLUE;
+                            ng[v2][v3] = ng[v3][v2] = this.EDGE_BLUE;
+                            ng[v2][v4] = ng[v4][v2] = this.EDGE_BLUE;
+                            ng[v3][v4] = ng[v4][v3] = this.EDGE_BLUE;
                         }
                     }
                 }
                 if (notFound) {
-                    ng[v1][v2] = ng[v2][v1] = EDGE_GRAY;
+                    ng[v1][v2] = ng[v2][v1] = this.EDGE_GRAY;
                 }
             }
         }
@@ -1205,7 +1205,7 @@ public final class BuildPureClusters {
             for (int v2 = v1 + 1; v2 < numVariables(); v2++) {
 
                 //Trying to find unclustered({v1, v3, v5}, {v2, v4, v6})
-                if (ng[v1][v2] != EDGE_BLUE) {
+                if (ng[v1][v2] != this.EDGE_BLUE) {
                     continue;
                 }
 
@@ -1213,64 +1213,64 @@ public final class BuildPureClusters {
 
                 for (int v3 = 0; v3 < numVariables() - 1 && notFound; v3++) {
                     if (v1 == v3 || v2 == v3 || //ng[v1][v3] != EDGE_BLUE ||
-                            ng[v1][v3] == EDGE_GRAY || ng[v2][v3] == EDGE_GRAY ||
-                            cv[v1][v3] != EDGE_BLACK ||
-                            cv[v2][v3] != EDGE_BLACK) {
+                            ng[v1][v3] == this.EDGE_GRAY || ng[v2][v3] == this.EDGE_GRAY ||
+                            cv[v1][v3] != this.EDGE_BLACK ||
+                            cv[v2][v3] != this.EDGE_BLACK) {
                         continue;
                     }
 
                     for (int v5 = v3 + 1; v5 < numVariables() && notFound; v5++) {
                         if (v1 == v5 || v2 == v5 || //ng[v1][v5] != EDGE_BLUE || ng[v3][v5] != EDGE_BLUE ||
-                                ng[v1][v5] == EDGE_GRAY ||
-                                ng[v2][v5] == EDGE_GRAY ||
-                                ng[v3][v5] == EDGE_GRAY ||
-                                cv[v1][v5] != EDGE_BLACK ||
-                                cv[v2][v5] != EDGE_BLACK ||
-                                cv[v3][v5] != EDGE_BLACK ||
+                                ng[v1][v5] == this.EDGE_GRAY ||
+                                ng[v2][v5] == this.EDGE_GRAY ||
+                                ng[v3][v5] == this.EDGE_GRAY ||
+                                cv[v1][v5] != this.EDGE_BLACK ||
+                                cv[v2][v5] != this.EDGE_BLACK ||
+                                cv[v3][v5] != this.EDGE_BLACK ||
                                 clusteredPartial1(v1, v3, v5, v2)) {
                             continue;
                         }
 
                         for (int v4 = 0; v4 < numVariables() - 1 && notFound; v4++) {
                             if (v1 == v4 || v2 == v4 || v3 == v4 || v5 == v4 ||
-                                    ng[v1][v4] == EDGE_GRAY ||
-                                    ng[v2][v4] == EDGE_GRAY ||
-                                    ng[v3][v4] == EDGE_GRAY ||
-                                    ng[v5][v4] == EDGE_GRAY || //ng[v2][v4] != EDGE_BLUE ||
-                                    cv[v1][v4] != EDGE_BLACK ||
-                                    cv[v2][v4] != EDGE_BLACK ||
-                                    cv[v3][v4] != EDGE_BLACK ||
-                                    cv[v5][v4] != EDGE_BLACK ||
+                                    ng[v1][v4] == this.EDGE_GRAY ||
+                                    ng[v2][v4] == this.EDGE_GRAY ||
+                                    ng[v3][v4] == this.EDGE_GRAY ||
+                                    ng[v5][v4] == this.EDGE_GRAY || //ng[v2][v4] != EDGE_BLUE ||
+                                    cv[v1][v4] != this.EDGE_BLACK ||
+                                    cv[v2][v4] != this.EDGE_BLACK ||
+                                    cv[v3][v4] != this.EDGE_BLACK ||
+                                    cv[v5][v4] != this.EDGE_BLACK ||
                                     clusteredPartial2(v1, v3, v5, v2, v4)) {
                                 continue;
                             }
 
                             for (int v6 = v4 + 1; v6 < numVariables() && notFound; v6++) {
                                 if (v1 == v6 || v2 == v6 || v3 == v6 ||
-                                        v5 == v6 || ng[v1][v6] == EDGE_GRAY ||
-                                        ng[v2][v6] == EDGE_GRAY ||
-                                        ng[v3][v6] == EDGE_GRAY ||
-                                        ng[v4][v6] == EDGE_GRAY ||
-                                        ng[v5][v6] == EDGE_GRAY || //ng[v2][v6] != EDGE_BLUE || ng[v4][v6] != EDGE_BLUE ||
-                                        cv[v1][v6] != EDGE_BLACK ||
-                                        cv[v2][v6] != EDGE_BLACK ||
-                                        cv[v3][v6] != EDGE_BLACK ||
-                                        cv[v4][v6] != EDGE_BLACK ||
-                                        cv[v5][v6] != EDGE_BLACK) {
+                                        v5 == v6 || ng[v1][v6] == this.EDGE_GRAY ||
+                                        ng[v2][v6] == this.EDGE_GRAY ||
+                                        ng[v3][v6] == this.EDGE_GRAY ||
+                                        ng[v4][v6] == this.EDGE_GRAY ||
+                                        ng[v5][v6] == this.EDGE_GRAY || //ng[v2][v6] != EDGE_BLUE || ng[v4][v6] != EDGE_BLUE ||
+                                        cv[v1][v6] != this.EDGE_BLACK ||
+                                        cv[v2][v6] != this.EDGE_BLACK ||
+                                        cv[v3][v6] != this.EDGE_BLACK ||
+                                        cv[v4][v6] != this.EDGE_BLACK ||
+                                        cv[v5][v6] != this.EDGE_BLACK) {
                                     continue;
                                 }
 
                                 if (unclusteredPartial3(v1, v3, v5, v2, v4, v6)) {
                                     notFound = false;
-                                    ng[v1][v2] = ng[v2][v1] = EDGE_NONE;
-                                    ng[v1][v4] = ng[v4][v1] = EDGE_NONE;
-                                    ng[v1][v6] = ng[v6][v1] = EDGE_NONE;
-                                    ng[v3][v2] = ng[v2][v3] = EDGE_NONE;
-                                    ng[v3][v4] = ng[v4][v3] = EDGE_NONE;
-                                    ng[v3][v6] = ng[v6][v3] = EDGE_NONE;
-                                    ng[v5][v2] = ng[v2][v5] = EDGE_NONE;
-                                    ng[v5][v4] = ng[v4][v5] = EDGE_NONE;
-                                    ng[v5][v6] = ng[v6][v5] = EDGE_NONE;
+                                    ng[v1][v2] = ng[v2][v1] = this.EDGE_NONE;
+                                    ng[v1][v4] = ng[v4][v1] = this.EDGE_NONE;
+                                    ng[v1][v6] = ng[v6][v1] = this.EDGE_NONE;
+                                    ng[v3][v2] = ng[v2][v3] = this.EDGE_NONE;
+                                    ng[v3][v4] = ng[v4][v3] = this.EDGE_NONE;
+                                    ng[v3][v6] = ng[v6][v3] = this.EDGE_NONE;
+                                    ng[v5][v2] = ng[v2][v5] = this.EDGE_NONE;
+                                    ng[v5][v4] = ng[v4][v5] = this.EDGE_NONE;
+                                    ng[v5][v6] = ng[v6][v5] = this.EDGE_NONE;
                                     notYellow[v1][v3] = notYellow[v3][v1] = true;
                                     notYellow[v1][v5] = notYellow[v5][v1] = true;
                                     notYellow[v3][v5] = notYellow[v5][v3] = true;
@@ -1291,35 +1291,35 @@ public final class BuildPureClusters {
 
                     //Trying to find unclustered({v1, v2, v3}, {v4, v5, v6})
                     for (int v3 = 0; v3 < numVariables() && notFound; v3++) {
-                        if (v1 == v3 || v2 == v3 || ng[v1][v3] == EDGE_GRAY ||
-                                ng[v2][v3] == EDGE_GRAY ||
-                                cv[v1][v3] != EDGE_BLACK ||
-                                cv[v2][v3] != EDGE_BLACK) {
+                        if (v1 == v3 || v2 == v3 || ng[v1][v3] == this.EDGE_GRAY ||
+                                ng[v2][v3] == this.EDGE_GRAY ||
+                                cv[v1][v3] != this.EDGE_BLACK ||
+                                cv[v2][v3] != this.EDGE_BLACK) {
                             continue;
                         }
 
                         for (int v4 = 0; v4 < numVariables() - 2 && notFound; v4++) {
                             if (v1 == v4 || v2 == v4 || v3 == v4 ||
-                                    ng[v1][v4] == EDGE_GRAY ||
-                                    ng[v2][v4] == EDGE_GRAY ||
-                                    ng[v3][v4] == EDGE_GRAY ||
-                                    cv[v1][v4] != EDGE_BLACK ||
-                                    cv[v2][v4] != EDGE_BLACK ||
-                                    cv[v3][v4] != EDGE_BLACK ||
+                                    ng[v1][v4] == this.EDGE_GRAY ||
+                                    ng[v2][v4] == this.EDGE_GRAY ||
+                                    ng[v3][v4] == this.EDGE_GRAY ||
+                                    cv[v1][v4] != this.EDGE_BLACK ||
+                                    cv[v2][v4] != this.EDGE_BLACK ||
+                                    cv[v3][v4] != this.EDGE_BLACK ||
                                     clusteredPartial1(v1, v2, v3, v4)) {
                                 continue;
                             }
 
                             for (int v5 = v4 + 1; v5 < numVariables() - 1 && notFound; v5++) {
                                 if (v1 == v5 || v2 == v5 || v3 == v5 ||
-                                        ng[v1][v5] == EDGE_GRAY ||
-                                        ng[v2][v5] == EDGE_GRAY ||
-                                        ng[v3][v5] == EDGE_GRAY ||
-                                        ng[v4][v5] == EDGE_GRAY ||
-                                        cv[v1][v5] != EDGE_BLACK ||
-                                        cv[v2][v5] != EDGE_BLACK ||
-                                        cv[v3][v5] != EDGE_BLACK ||
-                                        cv[v4][v5] != EDGE_BLACK || //ng[v4][v5] != EDGE_BLUE ||
+                                        ng[v1][v5] == this.EDGE_GRAY ||
+                                        ng[v2][v5] == this.EDGE_GRAY ||
+                                        ng[v3][v5] == this.EDGE_GRAY ||
+                                        ng[v4][v5] == this.EDGE_GRAY ||
+                                        cv[v1][v5] != this.EDGE_BLACK ||
+                                        cv[v2][v5] != this.EDGE_BLACK ||
+                                        cv[v3][v5] != this.EDGE_BLACK ||
+                                        cv[v4][v5] != this.EDGE_BLACK || //ng[v4][v5] != EDGE_BLUE ||
                                         clusteredPartial2(v1, v2, v3, v4,
                                                 v5)) {
                                     continue;
@@ -1327,30 +1327,30 @@ public final class BuildPureClusters {
 
                                 for (int v6 = v5 + 1; v6 < numVariables() && notFound; v6++) {
                                     if (v1 == v6 || v2 == v6 || v3 == v6 ||
-                                            ng[v1][v6] == EDGE_GRAY ||
-                                            ng[v2][v6] == EDGE_GRAY ||
-                                            ng[v3][v6] == EDGE_GRAY ||
-                                            ng[v4][v6] == EDGE_GRAY ||
-                                            ng[v5][v6] == EDGE_GRAY ||
-                                            cv[v1][v6] != EDGE_BLACK ||
-                                            cv[v2][v6] != EDGE_BLACK ||
-                                            cv[v3][v6] != EDGE_BLACK ||
-                                            cv[v4][v6] != EDGE_BLACK ||
-                                            cv[v5][v6] != EDGE_BLACK) {
+                                            ng[v1][v6] == this.EDGE_GRAY ||
+                                            ng[v2][v6] == this.EDGE_GRAY ||
+                                            ng[v3][v6] == this.EDGE_GRAY ||
+                                            ng[v4][v6] == this.EDGE_GRAY ||
+                                            ng[v5][v6] == this.EDGE_GRAY ||
+                                            cv[v1][v6] != this.EDGE_BLACK ||
+                                            cv[v2][v6] != this.EDGE_BLACK ||
+                                            cv[v3][v6] != this.EDGE_BLACK ||
+                                            cv[v4][v6] != this.EDGE_BLACK ||
+                                            cv[v5][v6] != this.EDGE_BLACK) {
                                         continue;
                                     }
 
                                     if (unclusteredPartial3(v1, v2, v3, v4, v5, v6)) {
                                         notFound = false;
-                                        ng[v1][v4] = ng[v4][v1] = EDGE_NONE;
-                                        ng[v1][v5] = ng[v5][v1] = EDGE_NONE;
-                                        ng[v1][v6] = ng[v6][v1] = EDGE_NONE;
-                                        ng[v2][v4] = ng[v4][v2] = EDGE_NONE;
-                                        ng[v2][v5] = ng[v5][v2] = EDGE_NONE;
-                                        ng[v2][v6] = ng[v6][v2] = EDGE_NONE;
-                                        ng[v3][v4] = ng[v4][v3] = EDGE_NONE;
-                                        ng[v3][v5] = ng[v5][v3] = EDGE_NONE;
-                                        ng[v3][v6] = ng[v6][v3] = EDGE_NONE;
+                                        ng[v1][v4] = ng[v4][v1] = this.EDGE_NONE;
+                                        ng[v1][v5] = ng[v5][v1] = this.EDGE_NONE;
+                                        ng[v1][v6] = ng[v6][v1] = this.EDGE_NONE;
+                                        ng[v2][v4] = ng[v4][v2] = this.EDGE_NONE;
+                                        ng[v2][v5] = ng[v5][v2] = this.EDGE_NONE;
+                                        ng[v2][v6] = ng[v6][v2] = this.EDGE_NONE;
+                                        ng[v3][v4] = ng[v4][v3] = this.EDGE_NONE;
+                                        ng[v3][v5] = ng[v5][v3] = this.EDGE_NONE;
+                                        ng[v3][v6] = ng[v6][v3] = this.EDGE_NONE;
                                         notYellow[v1][v2] = notYellow[v2][v1] = true;
                                         notYellow[v1][v3] = notYellow[v3][v1] = true;
                                         notYellow[v2][v3] = notYellow[v3][v2] = true;
@@ -1364,7 +1364,7 @@ public final class BuildPureClusters {
                     }
                 }
                 if (notFound) {
-                    ng[v1][v2] = ng[v2][v1] = EDGE_YELLOW;
+                    ng[v1][v2] = ng[v2][v1] = this.EDGE_YELLOW;
                 }
 
             }
@@ -1507,11 +1507,11 @@ public final class BuildPureClusters {
         for (int i = 0; i < numVariables(); i++) {
             for (int j = 0; j < numVariables(); j++) {
                 if (selected[i] && selected[j] &&
-                        (ng[i][j] == EDGE_BLUE || ng[i][j] == EDGE_YELLOW)) {
-                    ng[i][j] = EDGE_RED;
+                        (ng[i][j] == this.EDGE_BLUE || ng[i][j] == this.EDGE_YELLOW)) {
+                    ng[i][j] = this.EDGE_RED;
                 } else if ((!selected[i] || !selected[j]) &&
-                        ng[i][j] == EDGE_YELLOW) {
-                    ng[i][j] = EDGE_BLUE;
+                        ng[i][j] == this.EDGE_YELLOW) {
+                    ng[i][j] = this.EDGE_BLUE;
                 }
             }
         }
@@ -1522,42 +1522,42 @@ public final class BuildPureClusters {
         for (int x1 = 0; x1 < numVariables() - 1; x1++) {
             outer_loop:
             for (int y1 = x1 + 1; y1 < numVariables(); y1++) {
-                if (ng[x1][y1] != EDGE_BLUE) {
+                if (ng[x1][y1] != this.EDGE_BLUE) {
                     continue;
                 }
                 for (int x2 = 0; x2 < numVariables(); x2++) {
-                    if (x1 == x2 || y1 == x2 || cv[x1][x2] == EDGE_NONE || cv[y1][x2] ==
-                            EDGE_NONE) {
+                    if (x1 == x2 || y1 == x2 || cv[x1][x2] == this.EDGE_NONE || cv[y1][x2] ==
+                            this.EDGE_NONE) {
                         continue;
                     }
                     for (int x3 = 0; x3 < numVariables(); x3++) {
                         if (x1 == x3 || x2 == x3 || y1 == x3 ||
-                                cv[x1][x3] == EDGE_NONE ||
-                                cv[x2][x3] == EDGE_NONE ||
-                                cv[y1][x3] == EDGE_NONE ||
+                                cv[x1][x3] == this.EDGE_NONE ||
+                                cv[x2][x3] == this.EDGE_NONE ||
+                                cv[y1][x3] == this.EDGE_NONE ||
                                 !partialRule1_1(x1, x2, x3, y1)) {
                             continue;
                         }
                         for (int y2 = 0; y2 < numVariables(); y2++) {
                             if (x1 == y2 || x2 == y2 || x3 == y2 || y1 == y2 ||
-                                    cv[x1][y2] == EDGE_NONE ||
-                                    cv[x2][y2] == EDGE_NONE ||
-                                    cv[x3][y2] == EDGE_NONE ||
-                                    cv[y1][y2] == EDGE_NONE ||
+                                    cv[x1][y2] == this.EDGE_NONE ||
+                                    cv[x2][y2] == this.EDGE_NONE ||
+                                    cv[x3][y2] == this.EDGE_NONE ||
+                                    cv[y1][y2] == this.EDGE_NONE ||
                                     !partialRule1_2(x1, x2, y1, y2)) {
                                 continue;
                             }
                             for (int y3 = 0; y3 < numVariables(); y3++) {
                                 if (x1 == y3 || x2 == y3 || x3 == y3 ||
                                         y1 == y3 || y2 == y3 || cv[x1][y3] ==
-                                        EDGE_NONE || cv[x2][y3] == EDGE_NONE ||
-                                        cv[x3][y3] == EDGE_NONE ||
-                                        cv[y1][y3] == EDGE_NONE ||
-                                        cv[y2][y3] == EDGE_NONE ||
+                                        this.EDGE_NONE || cv[x2][y3] == this.EDGE_NONE ||
+                                        cv[x3][y3] == this.EDGE_NONE ||
+                                        cv[y1][y3] == this.EDGE_NONE ||
+                                        cv[y2][y3] == this.EDGE_NONE ||
                                         !partialRule1_3(x1, y1, y2, y3)) {
                                     continue;
                                 }
-                                ng[x1][y1] = ng[y1][x1] = EDGE_NONE;
+                                ng[x1][y1] = ng[y1][x1] = this.EDGE_NONE;
                                 continue outer_loop;
                             }
                         }
@@ -1570,45 +1570,45 @@ public final class BuildPureClusters {
         for (int x1 = 0; x1 < numVariables() - 1; x1++) {
             outer_loop:
             for (int y1 = x1 + 1; y1 < numVariables(); y1++) {
-                if (ng[x1][y1] != EDGE_BLUE) {
+                if (ng[x1][y1] != this.EDGE_BLUE) {
                     continue;
                 }
                 for (int x2 = 0; x2 < numVariables(); x2++) {
-                    if (x1 == x2 || y1 == x2 || cv[x1][x2] == EDGE_NONE || cv[y1][x2] ==
-                            EDGE_NONE || ng[x1][x2] == EDGE_GRAY) {
+                    if (x1 == x2 || y1 == x2 || cv[x1][x2] == this.EDGE_NONE || cv[y1][x2] ==
+                            this.EDGE_NONE || ng[x1][x2] == this.EDGE_GRAY) {
                         continue;
                     }
                     for (int y2 = 0; y2 < numVariables(); y2++) {
                         if (x1 == y2 || x2 == y2 || y1 == y2 ||
-                                cv[x1][y2] == EDGE_NONE ||
-                                cv[x2][y2] == EDGE_NONE ||
-                                cv[y1][y2] == EDGE_NONE ||
-                                ng[y1][y2] == EDGE_GRAY ||
+                                cv[x1][y2] == this.EDGE_NONE ||
+                                cv[x2][y2] == this.EDGE_NONE ||
+                                cv[y1][y2] == this.EDGE_NONE ||
+                                ng[y1][y2] == this.EDGE_GRAY ||
                                 !partialRule2_1(x1, x2, y1, y2)) {
                             continue;
                         }
                         for (int x3 = 0; x3 < numVariables(); x3++) {
                             if (x1 == x3 || x2 == x3 || y1 == x3 || y2 == x3 ||
-                                    ng[x1][x3] == EDGE_GRAY ||
-                                    cv[x1][x3] == EDGE_NONE ||
-                                    cv[x2][x3] == EDGE_NONE ||
-                                    cv[y1][x3] == EDGE_NONE ||
-                                    cv[y2][x3] == EDGE_NONE ||
+                                    ng[x1][x3] == this.EDGE_GRAY ||
+                                    cv[x1][x3] == this.EDGE_NONE ||
+                                    cv[x2][x3] == this.EDGE_NONE ||
+                                    cv[y1][x3] == this.EDGE_NONE ||
+                                    cv[y2][x3] == this.EDGE_NONE ||
                                     !partialRule2_2(x1, x2, x3, y2)) {
                                 continue;
                             }
                             for (int y3 = 0; y3 < numVariables(); y3++) {
                                 if (x1 == y3 || x2 == y3 || x3 == y3 ||
                                         y1 == y3 || y2 == y3 || ng[y1][y3] ==
-                                        EDGE_GRAY || cv[x1][y3] == EDGE_NONE ||
-                                        cv[x2][y3] == EDGE_NONE ||
-                                        cv[x3][y3] == EDGE_NONE ||
-                                        cv[y1][y3] == EDGE_NONE ||
-                                        cv[y2][y3] == EDGE_NONE ||
+                                        this.EDGE_GRAY || cv[x1][y3] == this.EDGE_NONE ||
+                                        cv[x2][y3] == this.EDGE_NONE ||
+                                        cv[x3][y3] == this.EDGE_NONE ||
+                                        cv[y1][y3] == this.EDGE_NONE ||
+                                        cv[y2][y3] == this.EDGE_NONE ||
                                         !partialRule2_3(x2, y1, y2, y3)) {
                                     continue;
                                 }
-                                ng[x1][y1] = ng[y1][x1] = EDGE_NONE;
+                                ng[x1][y1] = ng[y1][x1] = this.EDGE_NONE;
                                 continue outer_loop;
                             }
                         }
@@ -1619,8 +1619,8 @@ public final class BuildPureClusters {
 
         for (int i = 0; i < numVariables(); i++) {
             for (int j = 0; j < numVariables(); j++) {
-                if (ng[i][j] == EDGE_RED) {
-                    ng[i][j] = EDGE_BLUE;
+                if (ng[i][j] == this.EDGE_RED) {
+                    ng[i][j] = this.EDGE_BLUE;
                 }
             }
         }
@@ -1791,7 +1791,7 @@ public final class BuildPureClusters {
 
             for (int[] codes : partition) {
                 for (int code : codes) {
-                    String var = tetradTest.getVarNames()[code];
+                    String var = this.tetradTest.getVarNames()[code];
                     clustering.addToCluster(clusterId, var);
                 }
 
@@ -1805,7 +1805,7 @@ public final class BuildPureClusters {
                 List<Node> cluster = new ArrayList<>();
 
                 for (int clusterIndex : clusterIndices) {
-                    cluster.add(tetradTest.getVariables().get(clusterIndex));
+                    cluster.add(this.tetradTest.getVariables().get(clusterIndex));
                 }
 
                 partition2.add(cluster);
@@ -1823,15 +1823,15 @@ public final class BuildPureClusters {
      * Data storage
      */
     public ICovarianceMatrix getCovarianceMatrix() {
-        return covarianceMatrix;
+        return this.covarianceMatrix;
     }
 
     public int numVariables() {
-        return numVariables;
+        return this.numVariables;
     }
 
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     public void setVerbose(boolean verbose) {
@@ -1839,7 +1839,7 @@ public final class BuildPureClusters {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 }
 

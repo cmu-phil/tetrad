@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -31,17 +31,17 @@ import java.util.List;
 /**
  * Calculates the BDeu score.
  */
-public class DirichletScore implements LocalDiscreteScore, Score {
-    private List<Node> variables;
-    private int[][] data;
-    private int sampleSize;
+public class DirichletScore implements LocalDiscreteScore {
+    private final List<Node> variables;
+    private final int[][] data;
+    private final int sampleSize;
 
     private double samplePrior = 1;
     private double structurePrior = 1;
 
-    private int[] numCategories;
+    private final int[] numCategories;
 
-    private double lastBumpThreshold = 0.0;
+    private double lastBumpThreshold;
 
     public DirichletScore(DataSet dataSet) {
         if (dataSet == null) {
@@ -59,45 +59,44 @@ public class DirichletScore implements LocalDiscreteScore, Score {
 
             VerticalIntDataBox box = (VerticalIntDataBox) dataBox;
 
-            data = box.getVariableVectors();
-            this.sampleSize = dataSet.getNumRows();
+            this.data = box.getVariableVectors();
         } else {
-            data = new int[dataSet.getNumColumns()][];
+            this.data = new int[dataSet.getNumColumns()][];
             this.variables = dataSet.getVariables();
 
             for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                data[j] = new int[dataSet.getNumRows()];
+                this.data[j] = new int[dataSet.getNumRows()];
 
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
-                    data[j][i] = dataSet.getInt(i, j);
+                    this.data[j][i] = dataSet.getInt(i, j);
                 }
             }
 
-            this.sampleSize = dataSet.getNumRows();
         }
+        this.sampleSize = dataSet.getNumRows();
 
-        final List<Node> variables = dataSet.getVariables();
-        numCategories = new int[variables.size()];
+        List<Node> variables = dataSet.getVariables();
+        this.numCategories = new int[variables.size()];
         for (int i = 0; i < variables.size(); i++) {
-            numCategories[i] = (getVariable(i)).getNumCategories();
+            this.numCategories[i] = (getVariable(i)).getNumCategories();
         }
     }
 
     private DiscreteVariable getVariable(int i) {
-        return (DiscreteVariable) variables.get(i);
+        return (DiscreteVariable) this.variables.get(i);
     }
 
     @Override
-    public double localScore(int node, int parents[]) {
+    public double localScore(int node, int[] parents) {
 
         // Number of categories for node.
-        int r = numCategories[node];
+        int r = this.numCategories[node];
 
         // Numbers of categories of parents.
         int[] dims = new int[parents.length];
 
         for (int p = 0; p < parents.length; p++) {
-            dims[p] = numCategories[parents[p]];
+            dims[p] = this.numCategories[parents[p]];
         }
 
         // Number of parent states.
@@ -108,19 +107,19 @@ public class DirichletScore implements LocalDiscreteScore, Score {
         }
 
         // Conditional cell coefs of data for node given parents(node).
-        int n_jk[][] = new int[q][r];
-        int n_j[] = new int[q];
+        int[][] n_jk = new int[q][r];
+        int[] n_j = new int[q];
 
         int[] parentValues = new int[parents.length];
 
         int[][] myParents = new int[parents.length][];
         for (int i = 0; i < parents.length; i++) {
-            myParents[i] = data[parents[i]];
+            myParents[i] = this.data[parents[i]];
         }
 
-        int[] myChild = data[node];
+        int[] myChild = this.data[node];
 
-        for (int i = 0; i < sampleSize; i++) {
+        for (int i = 0; i < this.sampleSize; i++) {
             for (int p = 0; p < parents.length; p++) {
                 parentValues[p] = myParents[p][i];
             }
@@ -132,7 +131,7 @@ public class DirichletScore implements LocalDiscreteScore, Score {
                         "values (record " + i + " column " + i + ")");
             }
 
-            int rowIndex = getRowIndex(dims, parentValues);
+            int rowIndex = DirichletScore.getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;
@@ -141,8 +140,8 @@ public class DirichletScore implements LocalDiscreteScore, Score {
         //Finally, compute the score
         double score = 0.0;
 
-        final double cellPrior = getSamplePrior();
-        final double rowPrior = r * getSamplePrior();
+        double cellPrior = getSamplePrior();
+        double rowPrior = r * getSamplePrior();
 
         for (int j = 0; j < q; j++) {
             double rowSum = rowPrior + n_j[j];
@@ -160,27 +159,13 @@ public class DirichletScore implements LocalDiscreteScore, Score {
 
             if (rowScore == 0) continue;
             score += rowScore;
-
             score -= 2 * cellCount;
-
-//            score -= .5 * cellCount * Math.log(sampleSize);
         }
 
 
-//        double h = Math.log(1.0 / r) * sampleSize;
-
-//        System.out.println("(1/r)^N = " + h + " score = " + score);
-
-        lastBumpThreshold = 0.01;//((r - 1) * q * FastMath.log(getStructurePrior()));
+        this.lastBumpThreshold = 0.01;//((r - 1) * q * FastMath.log(getStructurePrior()));
 
         return score;
-    }
-
-    private double getPriorForStructure(int numParents) {
-        double e = getStructurePrior();
-        double k = numParents;
-        double n = data.length;
-        return k * Math.log(e / n) + (n - k) * Math.log(1.0 - (e / n));
     }
 
     @Override
@@ -203,87 +188,11 @@ public class DirichletScore implements LocalDiscreteScore, Score {
     @Override
     public double localScore(int node, int parent) {
         return localScore(node, new int[]{parent});
-
-//        // Number of categories for node.
-//        int r = numCategories[node];
-//
-//        // Numbers of categories of parents.
-//        int q = numCategories[parent];
-//
-//        // Conditional cell coefs of data for node given parents(node).
-//        int n_jk[][] = new int[q][r];
-//        int n_j[] = new int[q];
-//
-//        int[] parentData = data[parent];
-//        int[] childData = data[node];
-//
-//        for (int i = 0; i < sampleSize; i++) {
-//            int parentValue = parentData[i];
-//            int childValue = childData[i];
-//            n_jk[parentValue][childValue]++;
-//            n_j[parentValue]++;
-//        }
-//
-//        //Finally, compute the score
-//        double score = r * q * Math.log(getStructurePrior());
-//
-//        final double cellPrior = getSamplePrior() / (r * q);
-//        final double rowPrior = getSamplePrior() / q;
-//
-//        for (int j = 0; j < q; j++) {
-//            score -= Gamma.logGamma(rowPrior + n_j[j]);
-//
-//            for (int k = 0; k < r; k++) {
-//                score += Gamma.logGamma(cellPrior + n_jk[j][k]);
-//            }
-//        }
-//
-//        score += q * Gamma.logGamma(rowPrior);
-//        score -= r * q * Gamma.logGamma(cellPrior);
-//
-//        lastBumpThreshold = 0.01;//((r - 1) * q * FastMath.log(getStructurePrior()));
-//
-//        return score;
     }
 
     @Override
     public double localScore(int node) {
         return localScore(node, new int[0]);
-
-//        // Number of categories for node.
-//        int r = numCategories[node];
-//
-//        // Conditional cell coefs of data for node given parents(node).
-//        int n_jk[] = new int[numCategories[node]];
-//        int n_j = 0;
-//
-//        int[] childData = data[node];
-//
-//        for (int i = 0; i < sampleSize; i++) {
-//            int childValue = childData[i];
-//            n_jk[childValue]++;
-//            n_j++;
-//        }
-//
-//        //Finally, compute the score
-//        int q = 1;
-//        double score = r * q * Math.log(getStructurePrior());
-//
-//        final double cellPrior = getSamplePrior() / r;
-//        final double rowPrior = getSamplePrior();
-//
-//        score -= Gamma.logGamma(rowPrior + n_j);
-//
-//        for (int k = 0; k < r; k++) {
-//            score += Gamma.logGamma(cellPrior + n_jk[k]);
-//        }
-//
-//        score += Gamma.logGamma(rowPrior);
-//        score -= r * Gamma.logGamma(cellPrior);
-//
-//        lastBumpThreshold = 0.01;//((r - 1) * q * FastMath.log(getStructurePrior()));
-//
-//        return score;
     }
 
     @Override
@@ -292,14 +201,14 @@ public class DirichletScore implements LocalDiscreteScore, Score {
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     /**
      * Must be called directly after the corresponding scoring call.
      */
     public boolean isEffectEdge(double bump) {
-        return bump > lastBumpThreshold;
+        return bump > this.lastBumpThreshold;
     }
 
     @Override
@@ -317,11 +226,11 @@ public class DirichletScore implements LocalDiscreteScore, Score {
     }
 
     public double getStructurePrior() {
-        return structurePrior;
+        return this.structurePrior;
     }
 
     public double getSamplePrior() {
-        return samplePrior;
+        return this.samplePrior;
     }
 
     public void setStructurePrior(double structurePrior) {
@@ -334,7 +243,7 @@ public class DirichletScore implements LocalDiscreteScore, Score {
 
     @Override
     public Node getVariable(String targetName) {
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -356,7 +265,7 @@ public class DirichletScore implements LocalDiscreteScore, Score {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "Dirichlet Score StructP " + nf.format(structurePrior) + " SampP " + nf.format(samplePrior);
+        return "Dirichlet Score StructP " + nf.format(this.structurePrior) + " SampP " + nf.format(this.samplePrior);
     }
 
 }

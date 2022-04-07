@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -53,19 +53,11 @@ public class GraphIntersectionsEditor extends JPanel {
     //============================ Private Methods =========================//
 
 
-    private boolean isLegal(String text) {
-//        if (!NamingProtocol.isLegalName(text)) {
-//            JOptionPane.showMessageDialog(this, NamingProtocol.getProtocolDescription() + ": " + text);
-//            return false;
-//        }
-        return true;
-    }
-
     private void setup() {
         String compareString = GraphUtils.getIntersectionComparisonString(this.graphs);
 
         Font font = new Font("Monospaced", Font.PLAIN, 14);
-        final JTextArea textPane = new JTextArea();
+        JTextArea textPane = new JTextArea();
         textPane.setText(compareString);
 
         textPane.setFont(font);

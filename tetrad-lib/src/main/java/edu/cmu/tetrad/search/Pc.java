@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,7 +42,7 @@ public class Pc implements GraphSearch {
     /**
      * The independence test used for the PC search.g
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -73,46 +73,21 @@ public class Pc implements GraphSearch {
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
      * graphs).
      */
-    private boolean aggressivelyPreventCycles = false;
+    private boolean aggressivelyPreventCycles;
 
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * In an enumeration of triple types, these are the collider triples.
-     */
-    private Set<Triple> unshieldedColliders;
-
-    /**
-     * In an enumeration of triple types, these are the noncollider triples.
-     */
-    private Set<Triple> unshieldedNoncolliders;
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * The number of indepdendence tests in the last search.
      */
     private int numIndependenceTests;
 
-    /**
-     * The true graph, for purposes of comparison. Temporary.
-     */
-    private Graph trueGraph;
+    private boolean verbose;
 
-    /**
-     * The number of dependence judgements from FAS. Temporary.
-     */
-    private int numDependenceJudgements;
-
-    /**
-     * The initial graph for the Fast Adjacency Search, or null if there is none.
-     */
-    private Graph externalGraph = null;
-
-    private boolean verbose = false;
-
-    private boolean fdr = false;
+    private boolean fdr;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -150,14 +125,14 @@ public class Pc implements GraphSearch {
      * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -183,7 +158,7 @@ public class Pc implements GraphSearch {
      * independence checked.
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
@@ -215,7 +190,7 @@ public class Pc implements GraphSearch {
      */
     @Override
     public Graph search() {
-        return search(independenceTest.getVariables());
+        return search(this.independenceTest.getVariables());
     }
 
     /**
@@ -228,14 +203,10 @@ public class Pc implements GraphSearch {
      * All of the given nodes must be in the domatein of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
-        IFas fas = null;
+        IFas fas;
 
-        if (externalGraph == null) {
-            fas = new Fas(getIndependenceTest());
-        } else {
-            fas = new Fas(getIndependenceTest());
-        }
-        fas.setVerbose(verbose);
+        fas = new Fas(getIndependenceTest());
+        fas.setVerbose(this.verbose);
         return search(fas, nodes);
     }
 
@@ -259,159 +230,71 @@ public class Pc implements GraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setVerbose(verbose);
+        fas.setVerbose(this.verbose);
 
-        graph = fas.search();
-        sepsets = fas.getSepsets();
+        this.graph = fas.search();
+        this.sepsets = fas.getSepsets();
 
         this.numIndependenceTests = fas.getNumIndependenceTests();
-        this.numDependenceJudgements = fas.getNumDependenceJudgments();
 
 //        enumerateTriples();
 
-        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, knowledge, graph, verbose, false);
+        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
 
-        for (Edge edge : graph.getEdges()) {
+        for (Edge edge : this.graph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                graph.removeEdge(edge.getNode1(), edge.getNode2());
-                graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+                this.graph.removeEdge(edge.getNode1(), edge.getNode2());
+                this.graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
             }
         }
 
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(knowledge);
-        rules.orientImplied(graph);
+        rules.setKnowledge(this.knowledge);
+        rules.orientImplied(this.graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
+        this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
         this.elapsedTime = System.currentTimeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.log("info", "Finishing PC Algorithm.");
         this.logger.flush();
 
-        return graph;
+        return this.graph;
     }
 
     /**
      * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
-        return elapsedTime;
-    }
-
-    /**
-     * @return the set of unshielded colliders in the graph returned by <code>search()</code>. Non-null after
-     * <code>search</code> is called.
-     */
-    public Set<Triple> getUnshieldedColliders() {
-        return unshieldedColliders;
-    }
-
-    /**
-     * @return the set of unshielded noncolliders in the graph returned by <code>search()</code>. Non-null after
-     * <code>search</code> is called.
-     */
-    public Set<Triple> getUnshieldedNoncolliders() {
-        return unshieldedNoncolliders;
+        return this.elapsedTime;
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<>();
-        for (Edge edge : graph.getEdges()) {
-            adjacencies.add(edge);
-        }
-        return adjacencies;
+        return new HashSet<>(this.graph.getEdges());
     }
 
     public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(graph);
+        Graph complete = GraphUtils.completeGraph(this.graph);
         Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(graph);
+        Graph undirected = GraphUtils.undirectedGraph(this.graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
     }
 
     //===============================PRIVATE METHODS=======================//
 
-//    private void enumerateTriples() {
-//        this.unshieldedColliders = new HashSet<Triple>();
-//        this.unshieldedNoncolliders = new HashSet<Triple>();
-//
-//        for (Node y : graph.getNodes()) {
-//            List<Node> adj = graph.getAdjacentNodes(y);
-//
-//            if (adj.size() < 2) {
-//                continue;
-//            }
-//
-//            ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
-//            int[] choice;
-//
-//            while ((choice = gen.next()) != null) {
-//                Node x = adj.get(choice[0]);
-//                Node z = adj.get(choice[1]);
-//
-//                List<Node> nodes = this.sepsets.get(x, z);
-//
-//                // Note that checking adj(x, z) does not suffice when knowledge
-//                // has been specified.
-//                if (nodes == null) {
-//                    continue;
-//                }
-//
-//                if (nodes.contains(y)) {
-//                    getUnshieldedNoncolliders().add(new Triple(x, y, z));
-//                } else {
-//                    getUnshieldedColliders().add(new Triple(x, y, z));
-//                }
-//            }
-//        }
-//    }
-
     public int getNumIndependenceTests() {
-        return numIndependenceTests;
-    }
-
-    public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
-    }
-
-    public int getNumDependenceJudgements() {
-        return numDependenceJudgements;
+        return this.numIndependenceTests;
     }
 
     public List<Node> getNodes() {
-        return graph.getNodes();
-    }
-
-    public List<Triple> getColliders(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getNoncolliders(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getAmbiguousTriples(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getUnderlineTriples(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<Triple> getDottedUnderlineTriples(Node node) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
+        return this.graph.getNodes();
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -422,14 +305,11 @@ public class Pc implements GraphSearch {
      * True iff the algorithm should be run with False Discovery Rate tests.
      */
     public boolean isFdr() {
-        return fdr;
+        return this.fdr;
     }
 
     public void setFdr(boolean fdr) {
         this.fdr = fdr;
-    }
-
-    public void setEnforceCPDAG(boolean enforceCPDAG) {
     }
 }
 

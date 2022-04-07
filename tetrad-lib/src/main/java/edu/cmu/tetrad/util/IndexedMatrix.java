@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -55,8 +55,8 @@ public final class IndexedMatrix {
     /**
      * @return Ibid.
      */
-    public final int[] getIndices() {
-        return indices;
+    public int[] getIndices() {
+        return this.indices;
     }
 
     /**
@@ -66,7 +66,7 @@ public final class IndexedMatrix {
      *
      * @param indices The indices of the submatrix desired.
      */
-    public final void setIndices(int[] indices) {
+    public void setIndices(int[] indices) {
         if (indices == null) {
             throw new NullPointerException("Permutation must not be null.");
         }
@@ -82,25 +82,25 @@ public final class IndexedMatrix {
      * @param j The column value in teh remapped indices of the cell desired.
      * @return Ibid.
      */
-    public final double getValue(int i, int j) {
-        return matrix[indices[i]][indices[j]];
+    public double getValue(int i, int j) {
+        return this.matrix[this.indices[i]][this.indices[j]];
     }
 
     /**
      * @param indices The array indices to check.
      * @return Ibid.
      */
-    @SuppressWarnings({"BooleanMethodIsAlwaysInverted"})
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean isLegal(int[] indices) {
-        int[] check = new int[matrix.length];
+        int[] check = new int[this.matrix.length];
         for (int indice : indices) {
-            if (indice < 0 || indice >= matrix.length) {
+            if (indice < 0 || indice >= this.matrix.length) {
                 return false;
             }
             check[indice]++;
         }
 
-        for (int i = 0; i < matrix.length; i++) {
+        for (int i = 0; i < this.matrix.length; i++) {
             if (check[i] > 1) {
                 return false;
             }

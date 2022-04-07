@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -35,18 +35,10 @@ import java.util.List;
  */
 public class SemStdErrorEstimator {
 
-    //Some constants used by the method SecondPartialDerivativeRidr
-    private static final double CON = 1.4;
-    private static final double CON2 = CON * CON;
-    private static final double BIG = 1.e30;
-    private static final int NTAB = 10;
-    private static final double SAFE = 2.0;
-
     /**
      * The array in which the standard errors of the freeParameters are stored.
      */
-    private double[] stdErrs = null;
-//    private SemIm semIm;
+    private double[] stdErrs;
 
     /**
      * Blank constructor.
@@ -65,24 +57,13 @@ public class SemStdErrorEstimator {
      * @param estSem the estimated SEM.
      */
     public void computeStdErrors(ISemIm estSem) {
-//        if (!unmeasuredLatents(estSem.getSemPm()).isEmpty()) {
-//            int n = estSem.getFreeParameters().size();
-//            stdErrs = new double[n];
-//
-//            for (int i = 0; i < n; i++) {
-//                stdErrs[i] = Double.NaN;
-//            }
-//
-//            return;
-//        }
 
 
-//        this.semIm = estSem;
         estSem.setParameterBoundsEnforced(false);
         double[] paramsOriginal = estSem.getFreeParamValues();
         double delta;
         FittingFunction fcn = new SemFittingFunction(estSem);
-        boolean ridder = false;  // Ridder is more accurate but a lot slower.
+        // Ridder is more accurate but a lot slower.
 
         int n = fcn.getNumParameters();
 
@@ -95,11 +76,7 @@ public class SemStdErrorEstimator {
         //the best delta it is initially set to 0.1.  Otherwise the delta is set to
         //0.005.  That value has worked well for those fitting functions tested to
         //date.
-        if (ridder) {
-            delta = 0.1;
-        } else {
-            delta = 0.005;
-        }
+        delta = 0.005;
 
         //The Hessian matrix of second order partial derivatives is called the
         //information matrix.
@@ -134,19 +111,11 @@ public class SemStdErrorEstimator {
 
                 double v;
 
-                if (ridder) {
-                    v = secondPartialDerivativeRidr(fcn, i, j, params, delta);
-                } else {
-                    v = secondPartialDerivative(fcn, i, j, params, delta);
-                }
+                v = secondPartialDerivative(fcn, i, j, params, delta);
 
                 if (Math.abs(v) < 1e-7) {
                     v = 0;
                 }
-
-//                if (Double.isNaN(v)) {
-//                    v = 0;
-//                }
 
                 hess.set(i, j, v);
                 hess.set(j, i, v);
@@ -169,16 +138,9 @@ public class SemStdErrorEstimator {
         //same as in the array of free parameter values stored in paramsOriginal.
         try {
 
-//            TetradMatrix hessInv = hess.inverse();
             Matrix hessInv = hess.ginverse();
 
-//            System.out.println("Inverse: " + hessInv);
-
-//            for (int i = 0; i < freeParameters.size(); i++) {
-//                System.out.println(i + " = " + freeParameters.get(i));
-//            }
-
-            stdErrs = new double[n];
+            this.stdErrs = new double[n];
 
             //Hence the standard errors of the freeParameters are the square roots of the
             //diagonal elements of the inverse of the information matrix.
@@ -186,22 +148,22 @@ public class SemStdErrorEstimator {
                 double v = Math.sqrt((2.0 / (estSem.getSampleSize() - 1)) * hessInv.get(i, i));
 
                 if (v == 0) {
-                    System.out.println("v = " + v + " hessInv(i, i) = " + hessInv.get(i, i));
+                    System.out.println("v = " + 0 + " hessInv(i, i) = " + hessInv.get(i, i));
                 }
 
                 if (v == 0) {
-                    stdErrs[i] = Double.NaN;
+                    this.stdErrs[i] = Double.NaN;
                 } else {
-                    stdErrs[i] = v;
+                    this.stdErrs[i] = v;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
 
-            stdErrs = new double[n];
+            this.stdErrs = new double[n];
 
             for (int i = 0; i < n; i++) {
-                stdErrs[i] = Double.NaN;
+                this.stdErrs[i] = Double.NaN;
             }
         }
 
@@ -215,7 +177,7 @@ public class SemStdErrorEstimator {
      * SEM.
      */
     public double[] getStdErrors() {
-        return stdErrs;
+        return this.stdErrs;
     }
 
     /**
@@ -266,120 +228,6 @@ public class SemStdErrorEstimator {
     }
 
     /**
-     * This method implements Ridder's algorithm for computing the second order
-     * partial derivatives.  It is a translation of the C program in section 5.7
-     * of Numerical Recipes in C.  It is more robust than the above method in
-     * that it searches for a perferred value of delt.  But based on our
-     * experience to date with SEM fitting functions, the above method seems to
-     * be adequately accurate and faster that this one.
-     */
-    private double secondPartialDerivativeRidr(FittingFunction f, int i, int j,
-                                               double[] args, double delt) {
-
-        double[] arg = new double[args.length];
-        double[][] a = new double[NTAB][NTAB];
-        double hh = delt;
-        double errt;
-        double ans = 0.0;
-        double fac;
-
-        System.arraycopy(args, 0, arg, 0, args.length);
-
-        double center = f.evaluate(arg);
-
-        arg[i] += delt;
-        arg[j] += delt;
-        double ff1 = f.evaluate(arg);
-
-        arg[j] -= 2 * delt;
-        double ff2 = f.evaluate(arg);
-
-        arg[i] -= 2 * delt;
-        arg[j] += 2 * delt;
-        double ff3 = f.evaluate(arg);
-
-        arg[j] -= 2 * delt;
-        double ff4 = f.evaluate(arg);
-
-        if (Double.isNaN(ff1)) {
-            ff1 = center;
-        }
-
-        if (Double.isNaN(ff2)) {
-            ff2 = center;
-        }
-
-        if (Double.isNaN(ff3)) {
-            ff3 = center;
-        }
-
-        if (Double.isNaN(ff4)) {
-            ff4 = center;
-        }
-
-        a[0][0] = (ff1 - ff2 - ff3 + ff4) / (4.0 * delt * delt);
-        double err = BIG;
-
-        for (int ii = 1; ii < NTAB; ii++) {
-            hh /= CON;
-
-            System.arraycopy(args, 0, arg, 0, args.length);
-
-            arg[i] += hh;
-            arg[j] += hh;
-            ff1 = f.evaluate(arg);
-
-            arg[j] -= 2 * hh;
-            ff2 = f.evaluate(arg);
-
-            arg[i] -= 2 * hh;
-            arg[j] += 2 * hh;
-            ff3 = f.evaluate(arg);
-
-            arg[j] -= 2 * hh;
-            ff4 = f.evaluate(arg);
-
-            if (Double.isNaN(ff1)) {
-                ff1 = center;
-            }
-
-            if (Double.isNaN(ff2)) {
-                ff2 = center;
-            }
-
-            if (Double.isNaN(ff3)) {
-                ff3 = center;
-            }
-
-            if (Double.isNaN(ff4)) {
-                ff4 = center;
-            }
-
-            a[0][ii] = (ff1 - ff2 - ff3 + ff4) / (4.0 * hh * hh);
-
-            fac = CON2;
-
-            for (int jj = 1; jj < ii; jj++) {
-                a[jj][ii] =
-                        (a[jj - 1][ii] * fac - a[jj - 1][ii - 1]) / (fac - 1.0);
-                fac = CON2 * fac;
-                errt = Math.max(Math.abs(a[jj][ii] - a[jj - 1][ii]),
-                        Math.abs(a[jj][ii] - a[jj - 1][ii - 1]));
-                if (errt < err) {
-                    err = errt;
-                    ans = a[jj][ii];
-                }
-            }
-
-            if (Math.abs(a[ii][ii] - a[ii - 1][ii - 1]) >= SAFE * err) {
-                break;
-            }
-        }
-
-        return ans;
-    }
-
-    /**
      * Evaluates a fitting function for an array of freeParameters.
      *
      * @author Joseph Ramsey
@@ -424,7 +272,7 @@ public class SemStdErrorEstimator {
          * to parameter values.
          */
         public double evaluate(double[] parameters) {
-            List<Parameter> _parameters = sem.getSemPm().getFreeParameters();
+            List<Parameter> _parameters = this.sem.getSemPm().getFreeParameters();
 
             for (int i = 0; i < _parameters.size(); i++) {
                 Parameter parameter = _parameters.get(i);
@@ -433,11 +281,11 @@ public class SemStdErrorEstimator {
                 }
             }
 
-            sem.setFreeParamValues(parameters);
+            this.sem.setFreeParamValues(parameters);
 
             // This needs to be FML-- see Bollen p. 109.
 //            try {
-            return sem.getScore();
+            return this.sem.getScore();
 //            } catch (Exception e) {
 //                return Double.NEGATIVE_INFINITY;
 //            }

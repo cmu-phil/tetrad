@@ -15,7 +15,7 @@ public class GdistanceUtils {
         double[] output;
         output = new double[Array.getLength(thresholds) + 1];
         //will use length of input list when calcing percents
-        double total = (double) input.size();
+        double total = input.size();
 
         //init output to be all 0s
         for (int i = 0; i < Array.getLength(output); i++) {

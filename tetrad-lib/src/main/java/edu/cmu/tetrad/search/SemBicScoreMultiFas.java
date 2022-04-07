@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,49 +26,42 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Implements the continuous BIC score for FGES.
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreMultiFas implements ISemBicScore, Score {
+public class SemBicScoreMultiFas implements ISemBicScore {
 
     // The covariance matrix.
-    private List<SemBicScore> semBicScores;
+    private final List<SemBicScore> semBicScores;
 
     // The variables of the covariance matrix.
-    private List<Node> variables;
+    private final List<Node> variables;
 
-    private int sampleSize;
+    private final int sampleSize;
 
     // The penalty penaltyDiscount.
     private double penaltyDiscount = 2.0;
 
     // True if linear dependencies should return NaN for the score, and hence be
     // ignored by FGES
-    private boolean ignoreLinearDependent = false;
-
-    // The printstream output should be sent to.
-    private PrintStream out = System.out;
 
     // True if verbose output should be sent to out.
-    private boolean verbose = false;
+    private boolean verbose;
 
-    // Variables that caused computational problems and so are to be avoided.
-    private Set<Integer> forbidden = new HashSet<>();
+    private final Map<String, Integer> indexMap;
 
-    private Map<String, Integer> indexMap;
-
-    private Map<Score, ICovarianceMatrix> covMap;
+    private final Map<Score, ICovarianceMatrix> covMap;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -89,11 +82,11 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
                 }
 
                 SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(dataSet));
-                semBicScore.setPenaltyDiscount(penaltyDiscount);
+                semBicScore.setPenaltyDiscount(this.penaltyDiscount);
                 semBicScores.add(semBicScore);
             } else if (model instanceof ICovarianceMatrix) {
                 SemBicScore semBicScore = new SemBicScore((ICovarianceMatrix) model);
-                semBicScore.setPenaltyDiscount(penaltyDiscount);
+                semBicScore.setPenaltyDiscount(this.penaltyDiscount);
                 semBicScores.add(semBicScore);
             } else {
                 throw new IllegalArgumentException("Only continuous data sets and covariance matrices may be used as input.");
@@ -119,8 +112,8 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
     public double localScoreDiff(int x, int y, int[] z) {
         double sum = 0.0;
 
-        Node _x = variables.get(x);
-        Node _y = variables.get(y);
+        Node _x = this.variables.get(x);
+        Node _y = this.variables.get(y);
         List<Node> _z = getVariableList(z);
 
 
@@ -128,7 +121,7 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
         int p;
         int N;
 
-        for (SemBicScore score : semBicScores) {
+        for (SemBicScore score : this.semBicScores) {
             try {
                 r = partialCorrelation(_x, _y, _z, score);
             } catch (SingularMatrixException e) {
@@ -138,7 +131,7 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
 
             p = 2 + z.length;
 
-            N = covMap.get(score).getSampleSize();
+            N = this.covMap.get(score).getSampleSize();
 
             sum += -N * Math.log(1.0 - r * r) - p * getPenaltyDiscount() * Math.log(N);
         }
@@ -158,7 +151,7 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
         double sum = 0.0;
         int count = 0;
 
-        for (SemBicScore score : semBicScores) {
+        for (SemBicScore score : this.semBicScores) {
             double _score = score.localScore(i, parents);
 
             if (!Double.isNaN(_score)) {
@@ -175,15 +168,7 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
     }
 
     private double localScoreOneDataSet(int i, int[] parents, int index) {
-        return semBicScores.get(index).localScore(i, parents);
-    }
-
-
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
+        return this.semBicScores.get(index).localScore(i, parents);
     }
 
     /**
@@ -193,7 +178,7 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
         double sum = 0.0;
         int count = 0;
 
-        for (SemBicScore score : semBicScores) {
+        for (SemBicScore score : this.semBicScores) {
             double _score = score.localScore(i, parent);
 
             if (!Double.isNaN(_score)) {
@@ -212,7 +197,7 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
         double sum = 0.0;
         int count = 0;
 
-        for (SemBicScore score : semBicScores) {
+        for (SemBicScore score : this.semBicScores) {
             double _score = score.localScore(i);
 
             if (!Double.isNaN(_score)) {
@@ -224,17 +209,13 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
         return sum / count;
     }
 
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > -0.25 * getPenaltyDiscount() * Math.log(sampleSize);
+        return bump > -0.25 * getPenaltyDiscount() * Math.log(this.sampleSize);
     }
 
     public DataSet getDataSet() {
@@ -243,13 +224,13 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
-        for (SemBicScore score : semBicScores) {
+        for (SemBicScore score : this.semBicScores) {
             score.setPenaltyDiscount(penaltyDiscount);
         }
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -258,58 +239,16 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     public boolean getAlternativePenalty() {
         return false;
     }
 
-    public void setAlternativePenalty(double value) {
-    }
-
     @Override
     public int getSampleSize() {
-        return sampleSize;
-    }
-
-    // Calculates the BIC score.
-//    private double score(double residualVariance, int n, int p, double c) {
-//        return -n * Math.log(residualVariance) - c * (2 * p + 1) * Math.log(n);
-//    }
-//
-    private Matrix getSelection1(ICovarianceMatrix cov, int[] rows) {
-        return cov.getSelection(rows, rows);
-    }
-
-    private Vector getSelection2(ICovarianceMatrix cov, int[] rows, int k) {
-        return cov.getSelection(rows, new int[]{k}).getColumn(0);
-    }
-
-    // Prints a smallest subset of parents that causes a singular matrix exception.
-    private void printMinimalLinearlyDependentSet(int[] parents, ICovarianceMatrix cov) {
-        List<Node> _parents = new ArrayList<>();
-        for (int p : parents) _parents.add(variables.get(p));
-
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            int[] sel = new int[choice.length];
-            List<Node> _sel = new ArrayList<>();
-            for (int m = 0; m < choice.length; m++) {
-                sel[m] = parents[m];
-                _sel.add(variables.get(sel[m]));
-            }
-
-            Matrix m = cov.getSelection(sel, sel);
-
-            try {
-                m.inverse();
-            } catch (Exception e2) {
-                out.println("### Linear dependence among variables: " + _sel);
-            }
-        }
+        return this.sampleSize;
     }
 
     private List<Node> getVariableList(int[] indices) {
@@ -322,10 +261,10 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
 
     private double partialCorrelation(Node x, Node y, List<Node> z, SemBicScore score) throws SingularMatrixException {
         int[] indices = new int[z.size() + 2];
-        indices[0] = indexMap.get(x.getName());
-        indices[1] = indexMap.get(y.getName());
-        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i).getName());
-        Matrix submatrix = covMap.get(score).getSubmatrix(indices).getMatrix();
+        indices[0] = this.indexMap.get(x.getName());
+        indices[1] = this.indexMap.get(y.getName());
+        for (int i = 0; i < z.size(); i++) indices[i + 2] = this.indexMap.get(z.get(i).getName());
+        Matrix submatrix = this.covMap.get(score).getSubmatrix(indices).getMatrix();
         return StatUtils.partialCorrelation(submatrix);
     }
 
@@ -343,8 +282,8 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
         Map<Score, ICovarianceMatrix> covMap = new HashMap<>();
         SemBicScore score;
 
-        for (int i = 0; i < scores.size(); i++) {
-            score = scores.get(i);
+        for (SemBicScore semBicScore : scores) {
+            score = semBicScore;
             covMap.put(score, score.getCovariances());
         }
 
@@ -354,7 +293,7 @@ public class SemBicScoreMultiFas implements ISemBicScore, Score {
 
     @Override
     public Node getVariable(String targetName) {
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }

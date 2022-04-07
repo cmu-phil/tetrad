@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -52,7 +52,6 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
     /**
      * Sets the parameters.
      *
-     * @param params
      */
     public void setParams(Parameters params) {
         this.params = params;
@@ -69,12 +68,12 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
      * Builds the panel.
      */
     public void setup() {
-        DoubleTextField lambda = new DoubleTextField(params.getDouble("lambda", 0), 8, new DecimalFormat("0.0"));
+        DoubleTextField lambda = new DoubleTextField(this.params.getDouble("lambda", 0), 8, new DecimalFormat("0.0"));
 
         lambda.setFilter(new DoubleTextField.Filter() {
             public double filter(double value, double oldValue) {
                 if (value >= 0) {
-                    params.set("lambda", value);
+                    BoxCoxParamsEditor.this.params.set("lambda", value);
                     return value;
                 } else {
                     return oldValue;

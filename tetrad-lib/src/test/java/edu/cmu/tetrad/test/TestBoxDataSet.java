@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -45,9 +45,9 @@ import static org.junit.Assert.*;
 public final class TestBoxDataSet {
 
     @Test
-    public final void testContinuous() {
-        int rows = 10;
-        int cols = 5;
+    public void testContinuous() {
+        final int rows = 10;
+        final int cols = 5;
         List<Node> _variables = new LinkedList<>();
 
         for (int i = 0; i < cols; i++) {
@@ -76,8 +76,8 @@ public final class TestBoxDataSet {
 
     @Test
     public void testDiscrete() {
-        int rows = 10;
-        int cols = 5;
+        final int rows = 10;
+        final int cols = 5;
 
         List<Node> variables = new LinkedList<>();
 
@@ -100,29 +100,6 @@ public final class TestBoxDataSet {
         assertEquals(dataSet, _dataSet);
     }
 
-//    @Test
-//    public void testDiscreteFromScratch() {
-//        DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, 0), Collections.EMPTY_LIST);
-//
-//        DiscreteVariable x1 = new DiscreteVariable("X1");
-//        dataSet.addVariable(x1);
-//        dataSet.setInt(0, 0, 0);
-//        dataSet.setInt(1, 0, 2);
-//        dataSet.setInt(2, 0, 1);
-//
-//        DiscreteVariable x2 = new DiscreteVariable("X2");
-//        dataSet.addVariable(x2);
-//        dataSet.setInt(0, 1, 0);
-//        dataSet.setInt(1, 1, 2);
-//        dataSet.setInt(2, 1, 1);
-//
-//        BoxDataSet _dataSet = new BoxDataSet((BoxDataSet) dataSet);
-//
-//        assertEquals(dataSet, _dataSet);
-//
-//        assertEquals(dataSet.getInt(1, 1), 2);
-//    }
-
     @Test
     public void testMixed() {
         List<Node> variables = new LinkedList<>();
@@ -143,8 +120,8 @@ public final class TestBoxDataSet {
 
     @Test
     public void testRemoveColumn() {
-        int rows = 10;
-        int cols = 5;
+        final int rows = 10;
+        final int cols = 5;
 
         List<Node> variables = new LinkedList<>();
 
@@ -176,8 +153,8 @@ public final class TestBoxDataSet {
 
     @Test
     public void testRemoveRows() {
-        int rows = 10;
-        int cols = 5;
+        final int rows = 10;
+        final int cols = 5;
 
         List<Node> variables = new LinkedList<>();
 
@@ -209,8 +186,8 @@ public final class TestBoxDataSet {
 
     @Test
     public void testRowSubset() {
-        int rows = 10;
-        int cols = 5;
+        final int rows = 10;
+        final int cols = 5;
 
         List<Node> variables = new LinkedList<>();
 

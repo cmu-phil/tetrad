@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * Edits the parameters for generating random graphs.
@@ -42,14 +43,14 @@ class RandomMimParamsEditor extends JPanel {
     /**
      * Constructs a dialog to edit the given workbench randomization parameters.
      */
-    public RandomMimParamsEditor(final Parameters parameters) {
-        final JComboBox<String> numFactors = new JComboBox<>();
+    public RandomMimParamsEditor(Parameters parameters) {
+        JComboBox<String> numFactors = new JComboBox<>();
 
         numFactors.addItem("1");
         numFactors.addItem("2");
 
         numFactors.addActionListener((e) -> {
-            if (numFactors.getSelectedItem().equals("1")) {
+            if (Objects.equals(numFactors.getSelectedItem(), "1")) {
                 parameters.set("randomMimNumFactors", 1);
             } else if (numFactors.getSelectedItem().equals("2")) {
                 parameters.set("randomMimNumFactors", 2);
@@ -60,7 +61,7 @@ class RandomMimParamsEditor extends JPanel {
 
         numFactors.setMaximumSize(numFactors.getPreferredSize());
 
-        final IntTextField numStructuralEdges = new IntTextField(
+        IntTextField numStructuralEdges = new IntTextField(
                 parameters.getInt("numStructuralEdges", 3), 4);
         numStructuralEdges.setFilter((value, oldValue) -> {
             try {
@@ -74,7 +75,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("numStructuralEdges", value);
                 return value;
             } catch (Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -94,7 +95,7 @@ class RandomMimParamsEditor extends JPanel {
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
                 return value;
             } catch (Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
                 return oldValue;
@@ -112,7 +113,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("measurementModelDegree", value);
                 return value;
             } catch (Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -129,7 +130,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("latentMeasuredImpureParents", value);
                 return value;
             } catch (Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -146,7 +147,7 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("measuredMeasuredImpureParents", value);
                 return value;
             } catch (Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -164,7 +165,7 @@ class RandomMimParamsEditor extends JPanel {
                         value);
                 return value;
             } catch (Exception exception) {
-                LOGGER.error("", exception);
+                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }

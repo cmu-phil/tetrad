@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,9 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.distribution.TDistribution;
 
-import java.io.PrintStream;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,20 +43,15 @@ public final class IndTestTrekSep implements IndependenceTest {
      * The covariance matrix.
      */
     private final ICovarianceMatrix covMatrix;
-    private List<Node> latents;
+    private final List<Node> latents;
 
-    private boolean verbose = false;
+    private boolean verbose;
 
 
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
-    private List<List<Node>> clustering;
-
-//    /**
-//     * The matrix out of the cov matrix.
-//     */
-//    private final TetradMatrix _covMatrix;
+    private final List<List<Node>> clustering;
 
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
@@ -78,65 +71,17 @@ public final class IndTestTrekSep implements IndependenceTest {
     /**
      * Formats as 0.0000.
      */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Stores a reference to the dataset being analyzed.
      */
     private DataSet dataSet;
 
-    private PrintStream pValueLogger;
-    private Map<Node, Integer> indexMap;
-    private Map<String, Node> nameMap;
-    private TDistribution tDistribution;
+    private final Map<Node, Integer> indexMap;
+    private final Map<String, Node> nameMap;
 
     //==========================CONSTRUCTORS=============================//
-
-//        /**
-//         * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
-//         * given data set (must be continuous). The given significance level is used.
-//         *
-//         * @param dataSet A data set containing only continuous columns.
-//         * @param alpha   The alpha level of the test.
-//         */
-//        public IndTestTrekSep(DataSet dataSet, double alpha, List<List<Node>> clustering) {
-//            if (!(dataSet.isContinuous())) {
-//                throw new IllegalArgumentException("Data set must be continuous.");
-//            }
-//
-//            this.clustering = clustering;
-//
-//            this.covMatrix = new CovarianceMatrix(dataSet);
-////        this._covMatrix = covMatrix.getMatrix();
-//            List<Node> nodes = covMatrix.getVariable();
-//
-//            this.variables = Collections.unmodifiableList(nodes);
-//            this.indexMap = indexMap(variables);
-//            this.nameMap = nameMap(variables);
-//            setAlternativePenalty(alpha);
-//
-//            this.dataSet = DataUtils.center(dataSet);
-//
-//            tDistribution = new TDistribution(dataSet.getNumRows() - 2);
-//        }
-//
-//        /**
-//         * Constructs a new Fisher Z independence test with the listed arguments.
-//         *
-//         * @param data      A 2D continuous data set with no missing values.
-//         * @param variables A list of variables, a subset of the variables of <code>data</code>.
-//         * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
-//         */
-//        public IndTestTrekSep(TetradMatrix data, List<Node> variables, double alpha) {
-//            this.dataSet = ColtDataSet.makeContinuousData(variables, data);
-//            this.dataSet = DataUtils.center(dataSet);
-//            this.covMatrix = new CovarianceMatrix(dataSet);
-////        this._covMatrix = covMatrix.getMatrix();
-//            this.variables = Collections.unmodifiableList(variables);
-//            this.indexMap = indexMap(variables);
-//            this.nameMap = nameMap(variables);
-//            setAlternativePenalty(alpha);
-//        }
 
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
@@ -146,8 +91,8 @@ public final class IndTestTrekSep implements IndependenceTest {
         this.clustering = clustering;
         this.covMatrix = covMatrix;
         this.variables = Collections.unmodifiableList(covMatrix.getVariables());
-        this.indexMap = indexMap(variables, latents);
-        this.nameMap = nameMap(variables);
+        this.indexMap = indexMap(this.variables, latents);
+        this.nameMap = nameMap(this.variables);
         this.latents = latents;
         setAlpha(alpha);
     }
@@ -163,7 +108,7 @@ public final class IndTestTrekSep implements IndependenceTest {
         }
 
         for (Node var : vars) {
-            if (!variables.contains(var)) {
+            if (!this.variables.contains(var)) {
                 throw new IllegalArgumentException(
                         "All vars must be original vars");
             }
@@ -172,13 +117,13 @@ public final class IndTestTrekSep implements IndependenceTest {
         int[] indices = new int[vars.size()];
 
         for (int i = 0; i < indices.length; i++) {
-            indices[i] = indexMap.get(vars.get(i));
+            indices[i] = this.indexMap.get(vars.get(i));
         }
 
-        ICovarianceMatrix newCovMatrix = covMatrix.getSubmatrix(indices);
+        ICovarianceMatrix newCovMatrix = this.covMatrix.getSubmatrix(indices);
 
         double alphaNew = getAlpha();
-        return new IndTestTrekSep(newCovMatrix, alphaNew, clustering, latents);
+        return new IndTestTrekSep(newCovMatrix, alphaNew, this.clustering, this.latents);
     }
 
     /**
@@ -192,13 +137,13 @@ public final class IndTestTrekSep implements IndependenceTest {
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         int n = sampleSize();
-        int xi = latents.indexOf(x);
-        int yi = latents.indexOf(y);
-        int nA = clustering.get(xi).size();
-        int nB = clustering.get(yi).size();
-        for (int i = 0; i < z.size(); i++) {
-            int s = latents.indexOf(z.get(i));
-            int m = clustering.get(s).size() / 2;
+        int xi = this.latents.indexOf(x);
+        int yi = this.latents.indexOf(y);
+        int nA = this.clustering.get(xi).size();
+        int nB = this.clustering.get(yi).size();
+        for (Node node : z) {
+            int s = this.latents.indexOf(node);
+            int m = this.clustering.get(s).size() / 2;
             nA += m;
             nB += m;
         }
@@ -206,50 +151,32 @@ public final class IndTestTrekSep implements IndependenceTest {
         int[] B = new int[nB];
         int a = 0;
         int b = 0;
-        for (int i = 0; i < clustering.get(xi).size(); i++) {
-            A[i] = variables.indexOf(clustering.get(xi).get(i));
+        for (int i = 0; i < this.clustering.get(xi).size(); i++) {
+            A[i] = this.variables.indexOf(this.clustering.get(xi).get(i));
             a++;
         }
-        for (int i = 0; i < clustering.get(yi).size(); i++) {
-            B[i] = variables.indexOf(clustering.get(yi).get(i));
+        for (int i = 0; i < this.clustering.get(yi).size(); i++) {
+            B[i] = this.variables.indexOf(this.clustering.get(yi).get(i));
             b++;
         }
-        for (int i = 0; i < z.size(); i++) {
-            int s = latents.indexOf(z.get(i));
-            int m = clustering.get(s).size() / 2;
+        for (Node node : z) {
+            int s = this.latents.indexOf(node);
+            int m = this.clustering.get(s).size() / 2;
             for (int j = 1; j <= m; j++) {
-                A[a] = variables.indexOf(clustering.get(s).get(j - 1));
+                A[a] = this.variables.indexOf(this.clustering.get(s).get(j - 1));
                 a++;
-                B[b] = variables.indexOf(clustering.get(s).get(m + j - 1));
+                B[b] = this.variables.indexOf(this.clustering.get(s).get(m + j - 1));
                 b++;
             }
         }
 
 
         //With one indicator per latent per set.
-//        int a = variables.indexOf(clustering.get(xi).get(0));
-//        int b = variables.indexOf(clustering.get(yi).get(0));
-//        int[] A = new int[1+z.size()];
-//        int[] B = new int[1+z.size()];
-//        A[0] = a;
-//        B[0] = b;
-//        for (int i = 1; i <= z.size(); i++) {
-//            int s = latents.indexOf(z.get(i-1));
-//            A[i] = variables.indexOf(clustering.get(s).get(0));
-//            B[i] = variables.indexOf(clustering.get(s).get(1));
-//        }
 
-        double[][] CovMatrix = covMatrix.getMatrix().toArray();
+        double[][] CovMatrix = this.covMatrix.getMatrix().toArray();
 
-        //double[][] m = covMatrix.getMatrix().getSelection(rows, cols).toArray();
-
-
-        int rank = new EstimateRank().Estimate(A, B, CovMatrix, n, alpha);
-        boolean independent = rank <= z.size();
-//        System.out.println("A: "+Arrays.toString(A));
-//        System.out.println("B: "+Arrays.toString(A));
-//        System.out.println("Rank: "+rank);
-        return independent;
+        int rank = new EstimateRank().Estimate(A, B, CovMatrix, n, this.alpha);
+        return rank <= z.size();
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -269,7 +196,7 @@ public final class IndTestTrekSep implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return pValue;
+        return this.pValue;
     }
 
     /**
@@ -303,7 +230,7 @@ public final class IndTestTrekSep implements IndependenceTest {
      * @return the variable with the given name.
      */
     public Node getVariable(String name) {
-        return nameMap.get(name);
+        return this.nameMap.get(name);
     }
 
     /**
@@ -326,12 +253,12 @@ public final class IndTestTrekSep implements IndependenceTest {
         int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
-            parents[j] = covMatrix.getVariables().indexOf(z.get(j));
+            parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
         }
 
-        int i = covMatrix.getVariables().indexOf(x);
+        int i = this.covMatrix.getVariables().indexOf(x);
 
-        Matrix matrix2D = covMatrix.getMatrix();
+        Matrix matrix2D = this.covMatrix.getMatrix();
         double variance = matrix2D.get(i, i);
 
         if (parents.length > 0) {
@@ -360,24 +287,14 @@ public final class IndTestTrekSep implements IndependenceTest {
      * @return the data set being analyzed.
      */
     public DataSet getData() {
-        return dataSet;
-    }
-
-    public void shuffleVariables() {
-        ArrayList<Node> nodes = new ArrayList<>(this.variables);
-        Collections.shuffle(nodes);
-        this.variables = Collections.unmodifiableList(nodes);
+        return this.dataSet;
     }
 
     /**
      * @return a string representation of this test.
      */
     public String toString() {
-        return "t-Separation test, alpha = " + nf.format(getAlpha());
-    }
-
-    public void setPValueLogger(PrintStream pValueLogger) {
-        this.pValueLogger = pValueLogger;
+        return "t-Separation test, alpha = " + IndTestTrekSep.nf.format(getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//
@@ -387,7 +304,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     private ICovarianceMatrix covMatrix() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
     private Map<String, Node> nameMap(List<Node> variables) {
@@ -405,12 +322,12 @@ public final class IndTestTrekSep implements IndependenceTest {
 
         int index = 0;
 
-        for (int i = 0; i < variables.size(); i++) {
-            indexMap.put(variables.get(i), index++);
+        for (Node variable : variables) {
+            indexMap.put(variable, index++);
         }
 
-        for (int i = 0; i < latents.size(); i++) {
-            indexMap.put(latents.get(i), index++);
+        for (Node latent : latents) {
+            indexMap.put(latent, index++);
         }
 
         return indexMap;
@@ -419,11 +336,11 @@ public final class IndTestTrekSep implements IndependenceTest {
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
-        covMatrix.setVariables(variables);
+        this.covMatrix.setVariables(variables);
     }
 
     public ICovarianceMatrix getCov() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
     @Override
@@ -431,14 +348,14 @@ public final class IndTestTrekSep implements IndependenceTest {
 
         List<DataSet> dataSets = new ArrayList<>();
 
-        dataSets.add(dataSet);
+        dataSets.add(this.dataSet);
 
         return dataSets;
     }
 
     @Override
     public int getSampleSize() {
-        return covMatrix.getSampleSize();
+        return this.covMatrix.getSampleSize();
     }
 
     @Override
@@ -451,13 +368,9 @@ public final class IndTestTrekSep implements IndependenceTest {
         return getPValue();
     }
 
-    public TDistribution gettDistribution() {
-        return tDistribution;
-    }
-
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override

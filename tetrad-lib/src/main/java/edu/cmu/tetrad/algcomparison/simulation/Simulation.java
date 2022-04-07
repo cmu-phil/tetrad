@@ -15,7 +15,7 @@ import java.util.List;
  * @author jdramsey
  */
 public interface Simulation extends HasParameters, TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Creates a data set and simulates data.

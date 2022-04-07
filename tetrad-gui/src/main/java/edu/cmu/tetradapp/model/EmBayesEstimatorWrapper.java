@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -69,26 +69,6 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
 
     //============================CONSTRUCTORS==========================//
 
-//    public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
-//            BayesPmWrapper bayesPmWrapper) {
-//        if (dataWrapper == null) {
-//            throw new NullPointerException(
-//                    "BayesDataWrapper must not be null.");
-//        }
-//
-//        if (bayesPmWrapper == null) {
-//            throw new NullPointerException("BayesPmWrapper must not be null");
-//        }
-//
-//        this.dataSet = (RectangularDataSet) dataWrapper.getSelectedDataModel();
-//        BayesPm bayesPm = bayesPmWrapper.getBayesPm();
-//
-//        estimate(this.dataSet, bayesPm, 0.001);
-//
-//        LogUtils.getInstance().finer("Estimated Bayes IM:");
-//        LogUtils.getInstance().finer("" + estimateBayesIm);
-//    }
-
     public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
                                    BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -119,47 +99,8 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
                     "Please specify the search tolerance first.");
         }
         TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM:");
-        TetradLogger.getInstance().log("im", "" + estimateBayesIm);
+        TetradLogger.getInstance().log("im", "" + this.estimateBayesIm);
     }
-
-//    public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
-//            BayesImWrapper bayesImWrapper, Parameters params) {
-//        TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM:");
-//
-//        if (dataWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (bayesImWrapper == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (params == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        DataSet dataSet =
-//                (DataSet) dataWrapper.getSelectedDataModel();
-//        BayesPm bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
-//
-//        EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
-//        this.dataSet = estimator.getMixedDataSet();
-//
-//        System.out.println("B" + dataSet.getVariable());
-//
-//        try {
-//            estimator.maximization(params.getDouble("tolerance", 0.0001));
-//            this.estimateBayesIm = estimator.getEstimatedIm();
-//        }
-//        catch (IllegalArgumentException e) {
-//            e.printStackTrace();
-//
-//            throw new RuntimeException(
-//                    "Please specify the search tolerance first.");
-//        }
-//
-//        TetradLogger.getInstance().log("im", "" + estimateBayesIm);
-//    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -196,17 +137,17 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (dataSet == null) {
+        if (this.dataSet == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return estimateBayesIm.getBayesPm().getDag();
+        return this.estimateBayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {

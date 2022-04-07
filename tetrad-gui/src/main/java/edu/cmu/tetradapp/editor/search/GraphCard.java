@@ -60,11 +60,11 @@ public class GraphCard extends JPanel {
     public void refresh() {
         removeAll();
 
-        setBorder(BorderFactory.createTitledBorder(algorithmRunner.getAlgorithm().getDescription()));
+        setBorder(BorderFactory.createTitledBorder(this.algorithmRunner.getAlgorithm().getDescription()));
 
-        Graph graph = algorithmRunner.getGraph();
+        Graph graph = this.algorithmRunner.getGraph();
 
-        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
         tabbedPane.addTab("Graph", new PaddingPanel(createGraphPanel(graph)));
         tabbedPane.addTab("Edges", createEdgeTypeTable(graph));
         add(tabbedPane, BorderLayout.CENTER);
@@ -106,7 +106,7 @@ public class GraphCard extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Initialize helpSet
-                String helpHS = "/resources/javahelp/TetradHelp.hs";
+                final String helpHS = "/resources/javahelp/TetradHelp.hs";
 
                 try {
                     URL url = this.getClass().getResource(helpHS);

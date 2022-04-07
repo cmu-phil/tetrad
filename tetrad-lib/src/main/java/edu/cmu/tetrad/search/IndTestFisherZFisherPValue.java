@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -43,18 +43,17 @@ import static java.lang.Math.*;
 public final class IndTestFisherZFisherPValue implements IndependenceTest {
     private final List<Node> variables;
     private final int sampleSize;
-    private List<DataSet> dataSets;
+    private final List<DataSet> dataSets;
     private double alpha;
     private double pValue = Double.NaN;
-    private int[] rows;
+    private final int[] rows;
     //    private List<TetradMatrix> data;
-    private List<ICovarianceMatrix> ncov;
-    private Map<Node, Integer> variablesMap;
+    private final List<ICovarianceMatrix> ncov;
+    private final Map<Node, Integer> variablesMap;
     private double percent = .5;
-    private List<DataSet> allLagged;
 
-    private List<IndependenceTest> tests = new ArrayList<>();
-    private boolean verbose = false;
+    private final List<IndependenceTest> tests = new ArrayList<>();
+    private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -62,23 +61,19 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
         this.sampleSize = dataSets.get(0).getNumRows();
         setAlpha(alpha);
-        ncov = new ArrayList<>();
-        allLagged = new ArrayList<>();
+        this.ncov = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
-//            dataSet = DataUtils.center(dataSet);
-//            TetradMatrix d = dataSet.getDoubleData();
-            ncov.add(new CovarianceMatrix(dataSet));
-//            allLagged.add(d);
+            this.ncov.add(new CovarianceMatrix(dataSet));
         }
 
-        rows = new int[dataSets.get(0).getNumRows()];
+        this.rows = new int[dataSets.get(0).getNumRows()];
         for (int i = 0; i < getRows().length; i++) getRows()[i] = i;
 
         this.variables = dataSets.get(0).getVariables();
-        variablesMap = new HashMap<>();
-        for (int i = 0; i < variables.size(); i++) {
-            variablesMap.put(variables.get(i), i);
+        this.variablesMap = new HashMap<>();
+        for (int i = 0; i < this.variables.size(); i++) {
+            this.variablesMap.put(this.variables.get(i), i);
         }
 
         for (DataSet dataSet : dataSets) {
@@ -96,40 +91,31 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
     public boolean isIndependent(Node x, Node y, List<Node> z) {
         int[] all = new int[z.size() + 2];
-        all[0] = variablesMap.get(x);
-        all[1] = variablesMap.get(y);
+        all[0] = this.variablesMap.get(x);
+        all[1] = this.variablesMap.get(y);
         for (int i = 0; i < z.size(); i++) {
-            all[i + 2] = variablesMap.get(z.get(i));
+            all[i + 2] = this.variablesMap.get(z.get(i));
         }
 
         List<Double> pValues = new ArrayList<>();
 
-        for (int m = 0; m < ncov.size(); m++) {
-            Matrix _ncov = ncov.get(m).getSelection(all, all);
+        for (ICovarianceMatrix iCovarianceMatrix : this.ncov) {
+            Matrix _ncov = iCovarianceMatrix.getSelection(all, all);
             Matrix inv = _ncov.inverse();
             double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
 //            r *= 0.6;
-            double _z = sqrt(sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
-            double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(_z)));
+            double _z = sqrt(this.sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
+            double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(_z)));
             pValues.add(pvalue);
         }
 
         Collections.sort(pValues);
-//        int numPValues = (int) floor(percent * pValues.size());
         int n = 0;
         double tf = 0.0;
 
-//        for (int i = pValues.size() - numPValues; i < pValues.size(); i++) {
-//            double p = pValues.get(i);
-//            if (p == 0.) continue;
-//            tf += -2.0 * log(p);
-//            n++;
-//        }
-
         int numZeros = 0;
 
-        for (int i = 0; i < pValues.size(); i++) {
-            double p = pValues.get(i);
+        for (double p : pValues) {
             if (p == 0) {
                 numZeros++;
                 continue;
@@ -146,41 +132,16 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * n);
         this.pValue = p;
 
-        boolean independent = p > alpha;
+        boolean independent = p > this.alpha;
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies",
-                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-                System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-            } else {
-                TetradLogger.getInstance().log("dependencies",
-                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, this.pValue));
             }
         }
 
         return independent;
-    }
-
-    private static List<Double> getAvailablePValues(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
-        List<Double> allPValues = new ArrayList<>();
-
-        for (IndependenceTest test : independenceTests) {
-//            if (missingVariable(x, y, condSet, test)) continue;
-            List<Node> localCondSet = new ArrayList<>();
-            for (Node node : condSet) {
-                localCondSet.add(test.getVariable(node.getName()));
-            }
-
-            try {
-                test.isIndependent(test.getVariable(x.getName()), test.getVariable(y.getName()), localCondSet);
-                allPValues.add(test.getPValue());
-            } catch (Exception e) {
-                // Skip that test.
-            }
-        }
-
-        return allPValues;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -257,24 +218,18 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         return variableNames;
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
-    public boolean determines(List z, Node x) throws UnsupportedOperationException {
+    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
     public DataSet getData() {
-        return (DataSet) tests.get(0).getData();
+        return (DataSet) this.tests.get(0).getData();
     }
 
     public ICovarianceMatrix getCov() {
         List<DataSet> _dataSets = new ArrayList<>();
 
-        for (DataSet d : dataSets) {
+        for (DataSet d : this.dataSets) {
             _dataSets.add(DataUtils.standardizeData(d));
         }
 
@@ -305,15 +260,15 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Fisher Z, Fisher P Value Percent = " + round(percent * 100);
+        return "Fisher Z, Fisher P Value Percent = " + round(this.percent * 100);
     }
 
     public int[] getRows() {
-        return rows;
+        return this.rows;
     }
 
     public double getPercent() {
-        return percent;
+        return this.percent;
     }
 
     public void setPercent(double percent) {
@@ -322,7 +277,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {

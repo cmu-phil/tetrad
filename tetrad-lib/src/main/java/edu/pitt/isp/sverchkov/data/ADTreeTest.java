@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,15 +41,15 @@ import java.util.TreeMap;
 public class ADTreeTest {
 
     public static void main(String[] args) throws Exception {
-        int columns = 40;
-        int numEdges = 40;
-        int rows = 500;
+        final int columns = 40;
+        final int numEdges = 40;
+        final int rows = 500;
 
         List<Node> variables = new ArrayList<>();
         List<String> varNames = new ArrayList<>();
 
         for (int i = 0; i < columns; i++) {
-            final String name = "X" + (i + 1);
+            String name = "X" + (i + 1);
             varNames.add(name);
             variables.add(new ContinuousVariable(name));
         }
@@ -76,24 +76,24 @@ public class ADTreeTest {
         // create the tree
         long start = System.currentTimeMillis();
         ADTree<Node, Short> adTree = new ADTree<>(dataTable);
-        System.out.println(String.format("Generated tree in %s millis", System.currentTimeMillis() - start));
+        System.out.printf("Generated tree in %s millis%n", System.currentTimeMillis() - start);
 
         // the query is an arbitrary map of vars and their values
         TreeMap<Node, Short> query = new TreeMap<>();
-        query.put(node(pm, "X1"), (short) 1);
-        query.put(node(pm, "X5"), (short) 0);
+        query.put(ADTreeTest.node(pm, "X1"), (short) 1);
+        query.put(ADTreeTest.node(pm, "X5"), (short) 0);
         start = System.currentTimeMillis();
-        System.out.println(String.format("Count is %d", adTree.count(query)));
-        System.out.println(String.format("Query in %s ms", System.currentTimeMillis() - start));
+        System.out.printf("Count is %d%n", adTree.count(query));
+        System.out.printf("Query in %s ms%n", System.currentTimeMillis() - start);
 
         query.clear();
-        query.put(node(pm, "X1"), (short) 1);
-        query.put(node(pm, "X2"), (short) 1);
-        query.put(node(pm, "X5"), (short) 0);
-        query.put(node(pm, "X10"), (short) 1);
+        query.put(ADTreeTest.node(pm, "X1"), (short) 1);
+        query.put(ADTreeTest.node(pm, "X2"), (short) 1);
+        query.put(ADTreeTest.node(pm, "X5"), (short) 0);
+        query.put(ADTreeTest.node(pm, "X10"), (short) 1);
         start = System.currentTimeMillis();
-        System.out.println(String.format("Count is %d", adTree.count(query)));
-        System.out.println(String.format("Query in %s ms", System.currentTimeMillis() - start));
+        System.out.printf("Count is %d%n", adTree.count(query));
+        System.out.printf("Query in %s ms%n", System.currentTimeMillis() - start);
 
 
     }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -33,8 +33,6 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.*;
 
@@ -48,17 +46,12 @@ class OtherGroupsEditor extends JPanel {
     /**
      * The knowledge that is being edited.
      */
-    private IKnowledge knowledge;
+    private final IKnowledge knowledge;
 
     /**
      * The variables in the graph.
      */
-    private List<String> variables;
-
-    /**
-     * All the interventional variable pairs
-     */
-    private List<Map> interventionalVarPairs;
+    private final List<String> variables;
 
     public OtherGroupsEditor(IKnowledge knowledge, List<String> vars) {
         if (knowledge == null) {
@@ -89,21 +82,17 @@ class OtherGroupsEditor extends JPanel {
         vBox.add(pane);
 
         JButton addForbidden = new JButton("Add New Forbidden Group");
-        addForbidden.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN);
-                knowledge.addKnowledgeGroup(targetKnowledgeGroup);
-                rebuild();
-            }
+        addForbidden.addActionListener(e -> {
+            KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN);
+            OtherGroupsEditor.this.knowledge.addKnowledgeGroup(targetKnowledgeGroup);
+            rebuild();
         });
 
         JButton addRequired = new JButton("Add New Required Group");
-        addRequired.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.REQUIRED);
-                knowledge.addKnowledgeGroup(targetKnowledgeGroup);
-                rebuild();
-            }
+        addRequired.addActionListener(e -> {
+            KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.REQUIRED);
+            OtherGroupsEditor.this.knowledge.addKnowledgeGroup(targetKnowledgeGroup);
+            rebuild();
         });
 
         Box buttons = Box.createHorizontalBox();
@@ -136,7 +125,7 @@ class OtherGroupsEditor extends JPanel {
      *
      * @return - A required/forbidden work area.
      */
-    private Box buildGroupBox(final int index, final KnowledgeGroup group) {
+    private Box buildGroupBox(int index, KnowledgeGroup group) {
         Box vBox = Box.createVerticalBox();
         vBox.setBorder(new EmptyBorder(10, 10, 10, 10));
 
@@ -155,11 +144,7 @@ class OtherGroupsEditor extends JPanel {
 
         // Don't allow to create forbidden group from this required group if 
         // no variables in the from or to boxes - Zhou
-        if (fromGroup.isEmpty() || toGroup.isEmpty()) {
-            forbiddenButton.setEnabled(false);
-        } else {
-            forbiddenButton.setEnabled(true);
-        }
+        forbiddenButton.setEnabled(!fromGroup.isEmpty() && !toGroup.isEmpty());
 
         // Add skinny hand
         forbiddenButton.addActionListener((e) -> {
@@ -173,7 +158,7 @@ class OtherGroupsEditor extends JPanel {
 
             KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, fromGroup, toForbiddenGroup);
 
-            knowledge.addKnowledgeGroup(targetKnowledgeGroup);
+            this.knowledge.addKnowledgeGroup(targetKnowledgeGroup);
 
             rebuild();
         });
@@ -187,12 +172,10 @@ class OtherGroupsEditor extends JPanel {
         JButton remove = new JButton("Remove");
         remove.setFont(remove.getFont().deriveFont(11f));
         remove.setMargin(new Insets(3, 4, 3, 4));
-        remove.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                knowledge.removeKnowledgeGroup(index);
+        remove.addActionListener(e -> {
+            OtherGroupsEditor.this.knowledge.removeKnowledgeGroup(index);
 
-                rebuild();
-            }
+            rebuild();
         });
 
         labelBox.add(new JLabel(title));
@@ -210,19 +193,17 @@ class OtherGroupsEditor extends JPanel {
         vBox.add(Box.createVerticalStrut(2));
 
         Box box = Box.createHorizontalBox();
-        if (group != null) {
-            GroupVariableDragList fromList = new GroupVariableDragList(index, true);
-            GroupVariableDragList toList = new GroupVariableDragList(index, false);
+        GroupVariableDragList fromList = new GroupVariableDragList(index, true);
+        GroupVariableDragList toList = new GroupVariableDragList(index, false);
 
-            JScrollPane pane1 = new JScrollPane(fromList);
-            pane1.setPreferredSize(new Dimension(180, 50));
-            JScrollPane pane2 = new JScrollPane(toList);
-            pane2.setPreferredSize(new Dimension(180, 50));
+        JScrollPane pane1 = new JScrollPane(fromList);
+        pane1.setPreferredSize(new Dimension(180, 50));
+        JScrollPane pane2 = new JScrollPane(toList);
+        pane2.setPreferredSize(new Dimension(180, 50));
 
-            box.add(pane1);
-            box.add(new Arrow());
-            box.add(pane2);
-        }
+        box.add(pane1);
+        box.add(new Arrow());
+        box.add(pane2);
         vBox.add(box);
 
         return vBox;
@@ -280,7 +261,7 @@ class OtherGroupsEditor extends JPanel {
 
         public Arrow() {
             Color b = Color.BLACK;
-            color = new Color(b.getRed(), b.getGreen(), b.getBlue(), 150);
+            this.color = new Color(b.getRed(), b.getGreen(), b.getBlue(), 150);
             this.setMinimumSize(new Dimension(22, 22));
         }
 
@@ -291,7 +272,7 @@ class OtherGroupsEditor extends JPanel {
                 return;
             }
             int mid = size.height / 2;
-            g.setColor(color);
+            g.setColor(this.color);
             int end = size.width - 15;
             g.fillRect(5, mid, end - 5, 2);
             g.fillPolygon(new int[]{end, end + 10, end}, new int[]{mid + 10, mid, mid - 10}, 3);
@@ -320,10 +301,10 @@ class OtherGroupsEditor extends JPanel {
             setText(" " + value + " ");
             if (isSelected) {
                 setForeground(Color.BLACK);
-                setBackground(selectedFillColor);
+                setBackground(this.selectedFillColor);
             } else {
                 setForeground(Color.BLACK);
-                setBackground(fillColor);
+                setBackground(this.fillColor);
             }
 
             return this;
@@ -357,7 +338,7 @@ class OtherGroupsEditor extends JPanel {
                     DnDConstants.ACTION_MOVE, this);
 
             setModel(new DefaultListModel());
-            KnowledgeGroup group = knowledge.getKnowledgeGroups().get(index);
+            KnowledgeGroup group = OtherGroupsEditor.this.knowledge.getKnowledgeGroups().get(index);
             Set<String> vars = from ? group.getFromVariables() : group.getToVariables();
             for (Object item : vars) {
                 ((DefaultListModel) getModel()).addElement(item);
@@ -371,7 +352,7 @@ class OtherGroupsEditor extends JPanel {
                 DefaultListModel model = (DefaultListModel) getModel();
                 boolean added = false;
                 for (Object var : (List) tr.getTransferData(flavor)) {
-                    if (!modelContains(var, model) && !opposingContains((String) var)) {
+                    if (!OtherGroupsEditor.modelContains(var, model) && !opposingContains((String) var)) {
                         model.addElement(var);
                         added = true;
                     }
@@ -382,16 +363,16 @@ class OtherGroupsEditor extends JPanel {
                     return;
                 }
 
-                sort(model);
-                KnowledgeGroup group = knowledge.getKnowledgeGroups().get(index);
+                OtherGroupsEditor.sort(model);
+                KnowledgeGroup group = OtherGroupsEditor.this.knowledge.getKnowledgeGroups().get(this.index);
                 KnowledgeGroup g;
                 if (this.from) {
-                    g = new KnowledgeGroup(group.getType(), getElementsInModel(model), group.getToVariables());
+                    g = new KnowledgeGroup(group.getType(), OtherGroupsEditor.getElementsInModel(model), group.getToVariables());
                 } else {
-                    g = new KnowledgeGroup(group.getType(), group.getFromVariables(), getElementsInModel(model));
+                    g = new KnowledgeGroup(group.getType(), group.getFromVariables(), OtherGroupsEditor.getElementsInModel(model));
                 }
                 try {
-                    knowledge.setKnowledgeGroup(index, g);
+                    OtherGroupsEditor.this.knowledge.setKnowledgeGroup(this.index, g);
                     dtde.getDropTargetContext().dropComplete(true);
 
                     rebuild(); // Zhou added this to reflect the update
@@ -416,15 +397,15 @@ class OtherGroupsEditor extends JPanel {
                     for (Object o : list) {
                         model.removeElement(o);
                     }
-                    KnowledgeGroup group = knowledge.getKnowledgeGroups().get(index);
+                    KnowledgeGroup group = OtherGroupsEditor.this.knowledge.getKnowledgeGroups().get(this.index);
                     KnowledgeGroup g;
                     if (this.from) {
-                        g = new KnowledgeGroup(group.getType(), getElementsInModel(model), group.getToVariables());
+                        g = new KnowledgeGroup(group.getType(), OtherGroupsEditor.getElementsInModel(model), group.getToVariables());
                     } else {
-                        g = new KnowledgeGroup(group.getType(), group.getFromVariables(), getElementsInModel(model));
+                        g = new KnowledgeGroup(group.getType(), group.getFromVariables(), OtherGroupsEditor.getElementsInModel(model));
                     }
                     try {
-                        knowledge.setKnowledgeGroup(index, g);
+                        OtherGroupsEditor.this.knowledge.setKnowledgeGroup(this.index, g);
 
                         rebuild(); // Zhou added this to reflect the update
                     } catch (IllegalArgumentException ex) {
@@ -454,8 +435,8 @@ class OtherGroupsEditor extends JPanel {
         }
 
         private boolean opposingContains(String o) {
-            KnowledgeGroup group = knowledge.getKnowledgeGroups().get(index);
-            Set<String> opposite = from ? group.getToVariables() : group.getFromVariables();
+            KnowledgeGroup group = OtherGroupsEditor.this.knowledge.getKnowledgeGroups().get(this.index);
+            Set<String> opposite = this.from ? group.getToVariables() : group.getFromVariables();
             return opposite.contains(o);
         }
 

@@ -33,7 +33,7 @@ public class PositiveCorr implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Fisher Z test, alpha = " + alpha;
+        return "Fisher Z test, alpha = " + this.alpha;
     }
 
     @Override

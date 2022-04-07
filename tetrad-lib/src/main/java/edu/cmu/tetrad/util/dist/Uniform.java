@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -75,10 +75,10 @@ public class Uniform implements Distribution {
      * Sets the value of the i'th parameter.
      */
     public void setParameter(int index, double value) {
-        if (index == 0 && value < b) {
-            a = value;
-        } else if (index == 1 && value > a) {
-            b = value;
+        if (index == 0 && value < this.b) {
+            this.a = value;
+        } else if (index == 1 && value > this.a) {
+            this.b = value;
         } else {
             throw new IllegalArgumentException("Illegal value for parameter " +
                     index + ": " + value);
@@ -90,9 +90,9 @@ public class Uniform implements Distribution {
      */
     public double getParameter(int index) {
         if (index == 0) {
-            return a;
+            return this.a;
         } else if (index == 1) {
-            return b;
+            return this.b;
         } else {
             throw new IllegalArgumentException("Illegal index: " + index);
         }
@@ -119,7 +119,7 @@ public class Uniform implements Distribution {
      * @return the next random sample from the distribution.
      */
     public double nextRandom() {
-        return RandomUtil.getInstance().nextUniform(a, b);
+        return RandomUtil.getInstance().nextUniform(this.a, this.b);
     }
 
 
@@ -143,15 +143,12 @@ public class Uniform implements Distribution {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (a >= b) {
+        if (this.a >= this.b) {
             throw new IllegalStateException();
         }
     }

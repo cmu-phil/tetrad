@@ -22,7 +22,7 @@ public class ErdosRenyi implements RandomGraph {
         int m = parameters.getInt(Params.NUM_MEASURES);
         int l = parameters.getInt(Params.NUM_LATENTS);
         int t = (m + l) * (m + l - 1) / 2;
-        int max = Integer.MAX_VALUE;
+        final int max = Integer.MAX_VALUE;
         int e = (int) (p * t);
 
         return GraphUtils.randomGraphRandomForwardEdges(

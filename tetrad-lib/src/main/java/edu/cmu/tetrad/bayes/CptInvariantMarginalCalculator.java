@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,7 +41,7 @@ public final class CptInvariantMarginalCalculator
     /**
      * @serial Cannot be null.
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * @serial Cannot be null.
@@ -51,12 +51,12 @@ public final class CptInvariantMarginalCalculator
     /**
      * @serial Cannot be null.
      */
-    private Evidence evidence;
+    private final Evidence evidence;
 
     /**
      * @serial Cannot be null.
      */
-    private UpdatedBayesIm updatedBayesIm;
+    private final UpdatedBayesIm updatedBayesIm;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -109,9 +109,9 @@ public final class CptInvariantMarginalCalculator
         double marginal = 0.0;
         boolean foundANumber = false;
 
-        for (int row = 0; row < bayesIm.getNumRows(variable); row++) {
+        for (int row = 0; row < this.bayesIm.getNumRows(variable); row++) {
             double probability =
-                    updatedBayesIm.getProbability(variable, row, category);
+                    this.updatedBayesIm.getProbability(variable, row, category);
 
             if (Double.isNaN(probability)) {
                 continue;
@@ -146,13 +146,13 @@ public final class CptInvariantMarginalCalculator
             this.storedMarginals[i] = new double[this.bayesIm.getNumColumns(i)];
             Arrays.fill(this.storedMarginals[i], -99.0);
         }
-        return storedMarginals;
+        return this.storedMarginals;
     }
 
 
-    private double getProbabilityOfRow(int variable, final int row) {
-        int[] parents = bayesIm.getParents(variable);
-        int[] parentValues = bayesIm.getParentValues(variable, row);
+    private double getProbabilityOfRow(int variable, int row) {
+        int[] parents = this.bayesIm.getParents(variable);
+        int[] parentValues = this.bayesIm.getParentValues(variable, row);
 
         double probabilityOfRow = 1.0;
 
@@ -168,7 +168,7 @@ public final class CptInvariantMarginalCalculator
             } else {
                 Evidence evidence = new Evidence(this.evidence);
                 CptInvariantMarginalCalculator marginals =
-                        new CptInvariantMarginalCalculator(bayesIm, evidence);
+                        new CptInvariantMarginalCalculator(this.bayesIm, evidence);
                 double marginal = marginals.getMarginal(parents[index],
                         parentValues[index]);
 
@@ -188,15 +188,15 @@ public final class CptInvariantMarginalCalculator
      */
     private boolean noModifiedCpts(int[] parents, int i) {
         List<Node> target =
-                Collections.singletonList(bayesIm.getNode(parents[i]));
+                Collections.singletonList(this.bayesIm.getNode(parents[i]));
         List<Node> conditioners = new LinkedList<>();
 
         for (int j = 0; j < i; j++) {
-            conditioners.add(bayesIm.getNode(parents[j]));
+            conditioners.add(this.bayesIm.getNode(parents[j]));
         }
 
-        List<Node> condAncestors = bayesIm.getDag().getAncestors(conditioners);
-        List<Node> targetAncestor = bayesIm.getDag().getAncestors(target);
+        List<Node> condAncestors = this.bayesIm.getDag().getAncestors(conditioners);
+        List<Node> targetAncestor = this.bayesIm.getDag().getAncestors(target);
         Set<Node> intersection = new HashSet<>(condAncestors);
         intersection.retainAll(targetAncestor);
 
@@ -212,27 +212,24 @@ public final class CptInvariantMarginalCalculator
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (evidence == null) {
+        if (this.evidence == null) {
             throw new NullPointerException();
         }
 
-        if (storedMarginals == null) {
+        if (this.storedMarginals == null) {
             throw new NullPointerException();
         }
 
-        if (updatedBayesIm == null) {
+        if (this.updatedBayesIm == null) {
             throw new NullPointerException();
         }
     }

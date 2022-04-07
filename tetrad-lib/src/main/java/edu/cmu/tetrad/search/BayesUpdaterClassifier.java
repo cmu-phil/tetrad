@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -55,14 +55,14 @@ public final class BayesUpdaterClassifier
      *
      * @serial
      */
-    private BayesIm bayesIm;
+    private final BayesIm bayesIm;
 
     /**
      * The dataset to be classified.
      *
      * @serial
      */
-    private DataSet testData;
+    private final DataSet testData;
 
     /**
      * The percentage of correct estimates of the target variable.  This will be
@@ -79,28 +79,13 @@ public final class BayesUpdaterClassifier
      */
     private DiscreteVariable targetVariable;
 
-    /**
-     * True iff a missing value case was found on the last run through the
-     * data.
-     *
-     * @serial
-     */
-    private boolean missingValueCaseFound;
-
-    /**
-     * The cutoff used for binary classifications.
-     *
-     * @serial
-     */
-    private double binaryCutoff = 0.5;
-
     /*
      * The variables in the dataset to be classified.  These should be
      * the same variables as in the training dataset according to the
      * "equals" method of DiscreteVariable.
      * @serial
      */
-    private List<Node> bayesImVars;
+    private final List<Node> bayesImVars;
 
     /**
      * @serial
@@ -154,7 +139,7 @@ public final class BayesUpdaterClassifier
 
     //==========================PUBLIC METHODS========================//
 
-    public void setTarget(String target, int targetCategory) {
+    public void setTarget(String target) {
 
         //Find the target variable using its name.
         DiscreteVariable targetVariable = null;
@@ -181,7 +166,7 @@ public final class BayesUpdaterClassifier
      * values of the target variable as described above.
      */
     public int[] classify() {
-        if (targetVariable == null) {
+        if (this.targetVariable == null) {
             throw new NullPointerException("Target not set.");
         }
 
@@ -191,17 +176,17 @@ public final class BayesUpdaterClassifier
         //Get the raw data from the dataset to be classified, the number
         //of variables and the number of cases.
         int nvars = getBayesImVars().size();
-        int ncases = testData.getNumRows();
+        int ncases = this.testData.getNumRows();
 
         int[] varIndices = new int[nvars];
-        List<Node> dataVars = testData.getVariables();
+        List<Node> dataVars = this.testData.getVariables();
 
         for (int i = 0; i < nvars; i++) {
             DiscreteVariable variable =
                     (DiscreteVariable) getBayesImVars().get(i);
 
 
-            if (variable == targetVariable) {
+            if (variable == this.targetVariable) {
                 continue;
             }
 
@@ -215,12 +200,12 @@ public final class BayesUpdaterClassifier
             }
         }
 
-        DataSet selectedData = testData.subsetColumns(varIndices);
+        DataSet selectedData = this.testData.subsetColumns(varIndices);
 
         this.numCases = ncases;
 
         int[] estimatedValues = new int[ncases];
-        int numTargetCategories = targetVariable.getNumCategories();
+        int numTargetCategories = this.targetVariable.getNumCategories();
         double[][] probOfClassifiedValues =
                 new double[numTargetCategories][ncases];
         Arrays.fill(estimatedValues, -1);
@@ -237,22 +222,19 @@ public final class BayesUpdaterClassifier
             Evidence evidence = Evidence.tautology(getBayesIm());
 
             //Let the target variable range over all its values.
-            int itarget = evidence.getNodeIndex(targetVariable.getName());
+            int itarget = evidence.getNodeIndex(this.targetVariable.getName());
             evidence.getProposition().setVariable(itarget, true);
-
-            this.missingValueCaseFound = false;
 
             //Restrict all other variables to their observed values in
             //this case.
             for (int j = 0; j < getBayesImVars().size(); j++) {
-                if (j == getBayesImVars().indexOf(targetVariable)) {
+                if (j == getBayesImVars().indexOf(this.targetVariable)) {
                     continue;
                 }
 
                 int observedValue = selectedData.getInt(i, j);
 
                 if (observedValue == DiscreteVariable.MISSING_VALUE) {
-                    this.missingValueCaseFound = true;
                     continue;
                 }
 
@@ -267,7 +249,7 @@ public final class BayesUpdaterClassifier
             //for each possible value of target compute its probability in
             //the updated Bayes net.  Select the value with the highest
             //probability as the estimated value.
-            Node targetNode = getBayesIm().getNode(targetVariable.getName());
+            Node targetNode = getBayesIm().getNode(this.targetVariable.getName());
             int indexTargetBN = getBayesIm().getNodeIndex(targetNode);
 
             //Straw man values--to be replaced.
@@ -313,8 +295,6 @@ public final class BayesUpdaterClassifier
                 TetradLogger.getInstance().log("details", "Case " + i + " does not return valid marginal.");
 
                 for (int m = 0; m < nvars; m++) {
-                    //System.out.print(getBayesImVars()
-                    //        .get(m).getNode());
                     TetradLogger.getInstance().log("details", "  " + selectedData.getDouble(i, m));
                 }
 
@@ -345,18 +325,18 @@ public final class BayesUpdaterClassifier
 
         // Retrieve the column for the test variable from the test data; these
         // will be the observed values.
-        Node variable = testData.getVariable(targetVariable.getName());
-        int varIndex = testData.getVariables().indexOf(variable);
+        Node variable = this.testData.getVariable(this.targetVariable.getName());
+        int varIndex = this.testData.getVariables().indexOf(variable);
 
         if (variable == null) {
             return null;
         }
 
-        int ncases = testData.getNumRows();
+        int ncases = this.testData.getNumRows();
 
         // Create a cross-tabulation table to store the coefs of observed
         // versus estimated occurrences of each value of the target variable.
-        int nvalues = targetVariable.getNumCategories();
+        int nvalues = this.targetVariable.getNumCategories();
         int[][] crosstabs = new int[nvalues][nvalues];
         for (int i = 0; i < nvalues; i++) {
             for (int j = 0; j < nvalues; j++) {
@@ -371,7 +351,7 @@ public final class BayesUpdaterClassifier
 
         for (int i = 0; i < ncases; i++) {
             int estimatedValue = estimatedValues[i];
-            int observedValue = testData.getInt(i, varIndex);
+            int observedValue = this.testData.getInt(i, varIndex);
 
             if (estimatedValue < 0) {
                 continue;
@@ -398,61 +378,45 @@ public final class BayesUpdaterClassifier
      * classified.
      */
     public double getPercentCorrect() {
-        if (Double.isNaN(percentCorrect)) {
+        if (Double.isNaN(this.percentCorrect)) {
             crossTabulation();
         }
-        return percentCorrect;
+        return this.percentCorrect;
     }
 
     /**
      * @return the DiscreteVariable which is the target variable.
      */
     public DiscreteVariable getTargetVariable() {
-        return targetVariable;
+        return this.targetVariable;
     }
 
     public BayesIm getBayesIm() {
-        return bayesIm;
+        return this.bayesIm;
     }
 
     public DataSet getTestData() {
-        return testData;
+        return this.testData;
     }
 
     public int[] getClassifications() {
-        return classifications;
+        return this.classifications;
     }
 
     public double[][] getMarginals() {
-        return marginals;
+        return this.marginals;
     }
 
     public int getNumCases() {
-        return numCases;
+        return this.numCases;
     }
 
     public int getTotalUsableCases() {
-        return totalUsableCases;
-    }
-
-    public boolean isMissingValueCaseFound() {
-        return missingValueCaseFound;
-    }
-
-    public double getBinaryCutoff() {
-        return binaryCutoff;
-    }
-
-    public void setBinaryCutoff(double binaryCutoff) {
-        if (binaryCutoff < 0.0 || binaryCutoff > 1.0) {
-            throw new IllegalArgumentException();
-        }
-
-        this.binaryCutoff = binaryCutoff;
+        return this.totalUsableCases;
     }
 
     public List<Node> getBayesImVars() {
-        return bayesImVars;
+        return this.bayesImVars;
     }
 
     /**
@@ -465,18 +429,16 @@ public final class BayesUpdaterClassifier
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (testData == null) {
+        if (this.testData == null) {
             throw new NullPointerException();
         }
 
@@ -485,9 +447,6 @@ public final class BayesUpdaterClassifier
             throw new NullPointerException();
         }
 
-        if (binaryCutoff < 0.0 || binaryCutoff > 1.0) {
-            throw new IllegalStateException();
-        }
     }
 }
 

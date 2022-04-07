@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,26 +39,21 @@ import java.util.List;
  */
 public class RegressionCovariance implements Regression {
 
-//    /**
-//     * Decimal format for all numbers.
-//     */
-//    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
     /**
      * The correlation matrix.
      */
-    private CorrelationMatrix correlations;
+    private final CorrelationMatrix correlations;
 
     /**
      * 2
      * The standard deviations for the variable in <code>correlations</code>.
      */
-    private Vector sd;
+    private final Vector sd;
 
     /**
      * The means for the variables in <code>correlations</code>. May be null.
      */
-    private Vector means;
+    private final Vector means;
 
     /**
      * The alpha level, determining which coefficients will be considered
@@ -69,7 +64,7 @@ public class RegressionCovariance implements Regression {
     /**
      * The graph of significant regressors into the target
      */
-    private Graph graph = null;
+    private Graph graph;
 
     //=========================CONSTRUCTORS===========================//
 
@@ -80,7 +75,7 @@ public class RegressionCovariance implements Regression {
      * @param covariances The covariance matrix.
      */
     public RegressionCovariance(ICovarianceMatrix covariances) {
-        this(covariances, zeroMeans(covariances.getDimension()));
+        this(covariances, RegressionCovariance.zeroMeans(covariances.getDimension()));
     }
 
     /**
@@ -92,7 +87,7 @@ public class RegressionCovariance implements Regression {
      *                    null.
      */
     private RegressionCovariance(ICovarianceMatrix covariances, Vector means) {
-        this(new CorrelationMatrix(covariances), standardDeviations(covariances),
+        this(new CorrelationMatrix(covariances), RegressionCovariance.standardDeviations(covariances),
                 means);
     }
 
@@ -156,9 +151,9 @@ public class RegressionCovariance implements Regression {
      * @return the regression plane.
      */
     public RegressionResult regress(Node target, List<Node> regressors) {
-        Matrix allCorrelations = correlations.getMatrix();
+        Matrix allCorrelations = this.correlations.getMatrix();
 
-        List<Node> variables = correlations.getVariables();
+        List<Node> variables = this.correlations.getVariables();
 
         int yIndex = variables.indexOf(target);
 
@@ -180,18 +175,18 @@ public class RegressionCovariance implements Regression {
         Vector b = new Vector(bStar.rows() + 1);
 
         for (int k = 1; k < b.size(); k++) {
-            double sdY = sd.get(yIndex);
-            double sdK = sd.get(xIndices[k - 1]);
+            double sdY = this.sd.get(yIndex);
+            double sdK = this.sd.get(xIndices[k - 1]);
             b.set(k, bStar.get(k - 1, 0) * (sdY / sdK));
         }
 
         b.set(0, Double.NaN);
 
-        if (means != null) {
-            double b0 = means.get(yIndex);
+        if (this.means != null) {
+            double b0 = this.means.get(yIndex);
 
             for (int i = 0; i < xIndices.length; i++) {
-                b0 -= b.get(i + 1) * means.get(xIndices[i]);
+                b0 -= b.get(i + 1) * this.means.get(xIndices[i]);
             }
 
             b.set(0, b0);
@@ -207,12 +202,12 @@ public class RegressionCovariance implements Regression {
         Matrix r = allCorrelations.getSelection(allIndices, allIndices);
         Matrix rInv = r.inverse();
 
-        int n = correlations.getSampleSize();
+        int n = this.correlations.getSampleSize();
         int k = regressors.size() + 1;
 
         double vY = rInv.get(0, 0);
         double r2 = 1.0 - (1.0 / vY);
-        double tss = n * sd.get(yIndex) * sd.get(yIndex); // Book says n - 1.
+        double tss = n * this.sd.get(yIndex) * this.sd.get(yIndex); // Book says n - 1.
         double rss = tss * (1.0 - r2);
         double seY = Math.sqrt(rss / (double) (n - k));
 
@@ -228,7 +223,7 @@ public class RegressionCovariance implements Regression {
 
         for (int i = 0; i < regressors.size(); i++) {
             double _r2 = 1.0 - (1.0 / rxInv.get(i, i));
-            double _tss = n * sd.get(xIndices[i]) * sd.get(xIndices[i]);
+            double _tss = n * this.sd.get(xIndices[i]) * this.sd.get(xIndices[i]);
             double _se = seY / Math.sqrt(_tss * (1.0 - _r2));
 
             double _t = b.get(i + 1) / _se;
@@ -249,7 +244,7 @@ public class RegressionCovariance implements Regression {
         double[] seArray = sqErr.toArray();
 
         return new RegressionResult(false, vNames, n,
-                bArray, tArray, pArray, seArray, r2, rss, alpha, null, null);
+                bArray, tArray, pArray, seArray, r2, rss, this.alpha, null);
     }
 
     public RegressionResult regress(Node target, Node... regressors) {
@@ -280,7 +275,7 @@ public class RegressionCovariance implements Regression {
             String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
 
             //Add a node and edge to the output graph for significant predictors:
-            if (p.get(i) < alpha) {
+            if (p.get(i) < this.alpha) {
                 Node predictorNode = new GraphNode(variableName);
                 graph.addNode(predictorNode);
                 Edge newEdge = new Edge(predictorNode, target,
@@ -291,28 +286,6 @@ public class RegressionCovariance implements Regression {
 
         return graph;
     }
-
-//    private String createSummary(int n, int k, double rss, double r2, int[] allIndices, List<Node> regressors, TetradVector b, TetradVector se, TetradVector t, TetradVector p) {
-//        String summary = "\n REGRESSION RESULT";
-//        summary += "\n n = " + n + ", k = " + k + ", alpha = " + alpha + "\n";
-//
-//        // add the SSE and R^2
-//        String rssString = nf.format(rss);
-//        summary += " SSE = " + rssString + "\n";
-//        String r2String = nf.format(r2);
-//        summary += " R^2 = " + r2String + "\n\n";
-//        summary += " VAR\tCOEF\tSE\tT\tP\n";
-//
-//        for (int i = 0; i < allIndices.length; i++) {
-//            String variableName = (i > 0) ? regressors.get(i - 1).getNode() : "const";
-//
-//            summary += " " + variableName + "\t" + nf.format(b.get(i)) +
-//                    "\t" + nf.format(se.get(i)) + "\t" + nf.format(t.get(i)) +
-//                    "\t" + nf.format(p.get(i)) + "\t" +
-//                    ((p.get(i) < alpha) ? "significant " : "") + "\n";
-//        }
-//        return summary;
-//    }
 
     private static Vector zeroMeans(int numVars) {
         return new Vector(numVars);

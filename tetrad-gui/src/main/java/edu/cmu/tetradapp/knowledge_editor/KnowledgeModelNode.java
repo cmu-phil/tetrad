@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.knowledge_editor;
 
-import edu.cmu.tetrad.data.AbstractVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
@@ -40,7 +39,6 @@ import java.util.Map;
 public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 
     static final long serialVersionUID = 23L;
-    private int uniqueId = AbstractVariable.LAST_ID++;
 
     /**
      * @serial
@@ -63,7 +61,7 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
      */
     private int centerY;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //=============================CONSTRUCTORS=========================//
     public KnowledgeModelNode(String varName) {
@@ -72,12 +70,6 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
         }
 
         this.name = varName;
-    }
-
-    public KnowledgeModelNode(KnowledgeModelNode node) {
-        this.name = node.name;
-        this.centerX = node.centerX;
-        this.centerY = node.centerY;
     }
 
     /**
@@ -116,7 +108,7 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
     }
 
     public int getCenterX() {
-        return centerX;
+        return this.centerX;
     }
 
     public void setCenterX(int centerX) {
@@ -150,9 +142,9 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 
     @Override
     public int compareTo(Node node) {
-        final String name = getName();
+        String name = getName();
         String[] tokens1 = name.split(":");
-        final String _name = node.getName();
+        String _name = node.getName();
         String[] tokens2 = _name.split(":");
 
         if (tokens1.length == 1) {
@@ -185,22 +177,22 @@ public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
     public Object getAttribute(String key) {
-        return attributes.get(key);
+        return this.attributes.get(key);
     }
 
     @Override
     public void removeAttribute(String key) {
-        attributes.remove(key);
+        this.attributes.remove(key);
     }
 
     @Override
     public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+        this.attributes.put(key, value);
     }
 
 }

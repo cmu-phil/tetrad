@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.ClusterUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ import java.util.List;
  * @author Joseph Ramsey
  * @author Erin Korber (added remove latents functionality July 2004)
  */
-public final class MeasurementModelWrapper implements SessionModel, ParamsResettable,
+public final class MeasurementModelWrapper implements ParamsResettable,
         KnowledgeBoxInput {
     static final long serialVersionUID = 23L;
 
@@ -63,8 +62,10 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     //=============================CONSTRUCTORS==========================//
 
     public MeasurementModelWrapper(Parameters params) {
-        this.setVarNames(new ArrayList<String>());
-        this.setClusters((Clusters) params.get("clusters", null));
+        this.setVarNames(new ArrayList<>());
+        Clusters clusters = (Clusters) params.get("clusters", null);
+        if (clusters == null) clusters = new Clusters();
+        this.setClusters(clusters);
         this.params = params;
     }
 
@@ -130,9 +131,6 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -141,7 +139,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     }
 
     public Clusters getClusters() {
-        return clusters;
+        return this.clusters;
     }
 
     private void setClusters(Clusters clusters) {
@@ -149,7 +147,7 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     }
 
     public List<String> getVarNames() {
-        return varNames;
+        return this.varNames;
     }
 
     private void setVarNames(List<String> varNames) {
@@ -157,19 +155,19 @@ public final class MeasurementModelWrapper implements SessionModel, ParamsResett
     }
 
     public DataSet getData() {
-        return data;
+        return this.data;
     }
 
     public Graph getSourceGraph() {
-        return sourceGraph;
+        return this.sourceGraph;
     }
 
     public Graph getResultGraph() {
-        return sourceGraph;
+        return this.sourceGraph;
     }
 
     private Parameters getParams() {
-        return params;
+        return this.params;
     }
 
     public void resetParams(Object params) {

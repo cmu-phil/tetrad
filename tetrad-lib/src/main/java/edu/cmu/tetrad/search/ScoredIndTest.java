@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -38,10 +38,10 @@ public class ScoredIndTest implements Score {
     private final IndependenceTest test;
 
     // The variables of the covariance matrix.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // True if verbose output should be sent to out.
-    private boolean verbose = false;
+    private boolean verbose;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -76,8 +76,8 @@ public class ScoredIndTest implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        test.isIndependent(variables.get(x), variables.get(y), getVariableList(z));
-        return test.getScore();
+        this.test.isIndependent(this.variables.get(x), this.variables.get(y), getVariableList(z));
+        return this.test.getScore();
     }
 
     @Override
@@ -85,18 +85,9 @@ public class ScoredIndTest implements Score {
         return localScoreDiff(x, y, new int[0]);
     }
 
-
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
-
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-
     public double localScore(int i, int parent) {
         throw new UnsupportedOperationException();
     }
@@ -118,7 +109,7 @@ public class ScoredIndTest implements Score {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -127,7 +118,7 @@ public class ScoredIndTest implements Score {
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     public int getSampleSize() {
@@ -140,7 +131,7 @@ public class ScoredIndTest implements Score {
 
     @Override
     public Node getVariable(String targetName) {
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }

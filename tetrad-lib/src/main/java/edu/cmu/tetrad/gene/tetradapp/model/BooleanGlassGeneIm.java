@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -90,8 +90,8 @@ public class BooleanGlassGeneIm implements SessionModel {
 
             // These are the two objects which this IM mainly edits.
             this.glassFunction = new BooleanGlassFunction(genePm.getLagGraph());
-            this.initializer = new BasalInitializer(glassFunction, 0, 1);
-            this.history = new GeneHistory(initializer, glassFunction);
+            this.initializer = new BasalInitializer(this.glassFunction, 0, 1);
+            this.history = new GeneHistory(this.initializer, this.glassFunction);
             this.simulator = new MeasurementSimulatorParams(parameters);
         } catch (Exception e) {
             e.printStackTrace();
@@ -203,7 +203,7 @@ public class BooleanGlassGeneIm implements SessionModel {
     public DataModelList simulateData() {
 
         // Simulate the data using the simulator.
-        simulator.simulate(history);
+        this.simulator.simulate(this.history);
 
         // This is the object that will be returned; it can store
         // multiple data sets.
@@ -211,7 +211,7 @@ public class BooleanGlassGeneIm implements SessionModel {
 
         List<Node> variables = new LinkedList<>();
 
-        if (simulator.isIncludeDishAndChipVariables()) {
+        if (this.simulator.isIncludeDishAndChipVariables()) {
             DiscreteVariable dishVar = new DiscreteVariable("Dish");
             DiscreteVariable chipVar = new DiscreteVariable("Chip");
 
@@ -220,10 +220,10 @@ public class BooleanGlassGeneIm implements SessionModel {
         }
 
         // Fetch the measured data and convert it.
-        double[][][] measuredData = simulator.getMeasuredData();
-        int[] timeSteps = simulator.getTimeSteps();
+        double[][][] measuredData = this.simulator.getMeasuredData();
+        int[] timeSteps = this.simulator.getTimeSteps();
         List<String> factors =
-                new ArrayList<>(genePm.getLagGraph().getFactors());
+                new ArrayList<>(this.genePm.getLagGraph().getFactors());
 
         // Order: G1:t1, G2:t1, G3:t1, G1:t1, G2:t2, G3:t2,...
         for (int i = 0; i < measuredData[0].length; i++) {
@@ -258,17 +258,17 @@ public class BooleanGlassGeneIm implements SessionModel {
         measuredDataSet.setName("Measurement Data");
         dataModelList.add(measuredDataSet);
 
-        if (simulator.isIncludeDishAndChipVariables()) {
+        if (this.simulator.isIncludeDishAndChipVariables()) {
             for (int i = 0; i < measuredData[0][0].length; i++) {
-                int samplesPerDish = simulator.getNumSamplesPerDish();
+                int samplesPerDish = this.simulator.getNumSamplesPerDish();
                 measuredDataSet.setInt(i, 0, i / samplesPerDish + 1);
                 measuredDataSet.setInt(i, 1, i + 1);
             }
         }
 
         // Fetch the measured data and convert it.
-        if (simulator.isRawDataSaved()) {
-            double[][][] rawData = simulator.getRawData();
+        if (this.simulator.isRawDataSaved()) {
+            double[][][] rawData = this.simulator.getRawData();
             List<Node> _variables = new LinkedList<>();
 
             // Order: G0:t1, G1:t1, G2:t1, G0:t1, G1:t2, G2:t2,...
@@ -296,9 +296,9 @@ public class BooleanGlassGeneIm implements SessionModel {
             }
 
             int n = rawData[0][0].length;
-            int cellsPerDish = simulator.getNumCellsPerDish();
+            int cellsPerDish = this.simulator.getNumCellsPerDish();
 
-            if (simulator.isIncludeDishAndChipVariables()) {
+            if (this.simulator.isIncludeDishAndChipVariables()) {
                 DiscreteVariable dishVar2 =
                         new DiscreteVariable("Dish", n / cellsPerDish + 1);
 
@@ -306,7 +306,7 @@ public class BooleanGlassGeneIm implements SessionModel {
             }
             rawDataSet.setName("Raw Data");
 
-            if (simulator.isIncludeDishAndChipVariables()) {
+            if (this.simulator.isIncludeDishAndChipVariables()) {
                 for (int i = 0; i < n; i++) {
                     rawDataSet.setInt(i, 0, i / cellsPerDish + 1);
                 }
@@ -316,13 +316,13 @@ public class BooleanGlassGeneIm implements SessionModel {
         }
 
         if (measuredData[0][0].length == 1) {
-            dataModelList.add(0, asTimeSeriesData(measuredData, 0, factors));
+            dataModelList.add(0, asTimeSeriesData(measuredData, factors));
         }
 
         return dataModelList;
     }
 
-    private TimeSeriesData asTimeSeriesData(double[][][] cube, int cell,
+    private TimeSeriesData asTimeSeriesData(double[][][] cube,
                                             List<String> factors) {
         int numTimeSteps = cube[0].length;
         int numFactors = cube.length;
@@ -330,7 +330,7 @@ public class BooleanGlassGeneIm implements SessionModel {
 
         for (int timeStep = 0; timeStep < numTimeSteps; timeStep++) {
             for (int factor = 0; factor < numFactors; factor++) {
-                square[timeStep][factor] = cube[factor][timeStep][cell];
+                square[timeStep][factor] = cube[factor][timeStep][0];
             }
         }
 
@@ -383,37 +383,34 @@ public class BooleanGlassGeneIm implements SessionModel {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (genePm == null) {
+        if (this.genePm == null) {
             throw new NullPointerException();
         }
 
-        if (glassFunction == null) {
+        if (this.glassFunction == null) {
             throw new NullPointerException();
         }
 
-        if (initializer == null) {
+        if (this.initializer == null) {
             throw new NullPointerException();
         }
 
-        if (history == null) {
+        if (this.history == null) {
             throw new NullPointerException();
         }
 
-        if (simulator == null) {
+        if (this.simulator == null) {
             throw new NullPointerException();
         }
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {

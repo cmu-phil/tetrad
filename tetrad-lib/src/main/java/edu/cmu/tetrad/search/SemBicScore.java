@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,7 +34,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr;
-import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
 import static java.lang.Math.log;
@@ -46,7 +45,7 @@ import static java.lang.Math.log;
  */
 public class SemBicScore implements Score {
 
-    private boolean calculateRowSubsets = false;
+    private boolean calculateRowSubsets;
 
     // The dataset.
     private DataModel dataModel;
@@ -64,7 +63,7 @@ public class SemBicScore implements Score {
     private final int sampleSize;
 
     // True if verbose output should be sent to out.
-    private boolean verbose = false;
+    private boolean verbose;
 
     // A  map from variable names to their indices.
     private final Map<Node, Integer> indexMap;
@@ -73,7 +72,7 @@ public class SemBicScore implements Score {
     private double penaltyDiscount = 1.0;
 
     // The structure prior, 0 for standard BIC.
-    private double structurePrior = 0.0;
+    private double structurePrior;
 
     // Equivalent sample size
     private Matrix matrix;
@@ -108,8 +107,8 @@ public class SemBicScore implements Score {
 
         if (!dataSet.existsMissingValue()) {
             setCovariances(new CovarianceMatrix(dataSet, false));
-            this.variables = covariances.getVariables();
-            this.sampleSize = covariances.getSampleSize();
+            this.variables = this.covariances.getVariables();
+            this.sampleSize = this.covariances.getSampleSize();
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
             return;
@@ -123,20 +122,16 @@ public class SemBicScore implements Score {
 
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets) {
         try {
-            int[] all = concat(i, parents);
-            Matrix cov = getCov(getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
-            int[] pp = indexedParents(parents);
+            int[] all = SemBicScore.concat(i, parents);
+            Matrix cov = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
+            int[] pp = SemBicScore.indexedParents(parents);
             Matrix covxx = cov.getSelection(pp, pp);
             Matrix covxy = cov.getSelection(pp, new int[]{0});
             Matrix b = (covxx.inverse().times(covxy));
-            Matrix bStar = bStar(b);
+            Matrix bStar = SemBicScore.bStar(b);
             return (bStar.transpose().times(cov).times(bStar).get(0, 0));
         } catch (SingularMatrixException e) {
-//            List<Node> variables = covariances.getVariables();
-//            List<Node> p = new ArrayList<>();
-//            for (int _p : parents) p.add(variables.get(_p));
-            throw new RuntimeException("Singularity");// + variables.get(i) + " | " + p);
-//            return NEGATIVE_INFINITY;
+            throw new RuntimeException("Singularity");
         }
     }
 
@@ -218,10 +213,10 @@ public class SemBicScore implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        if (ruleType == RuleType.NANDY) {
+        if (this.ruleType == RuleType.NANDY) {
             return nandyBic(x, y, z);
         } else {
-            return localScore(y, append(z, x)) - localScore(y, z);
+            return localScore(y, SemBicScore.append(z, x)) - localScore(y, z);
         }
     }
 
@@ -229,8 +224,8 @@ public class SemBicScore implements Score {
         double sp1 = getStructurePrior(z.length + 1);
         double sp2 = getStructurePrior(z.length);
 
-        Node _x = variables.get(x);
-        Node _y = variables.get(y);
+        Node _x = this.variables.get(x);
+        Node _y = this.variables.get(y);
         List<Node> _z = getVariableList(z);
 
         List<Integer> rows = getRows(x, z);
@@ -243,7 +238,7 @@ public class SemBicScore implements Score {
 
         double c = getPenaltyDiscount();
 
-        return -sampleSize * log(1.0 - r * r) - c * log(sampleSize)
+        return -this.sampleSize * log(1.0 - r * r) - c * log(this.sampleSize)
                 - 2.0 * (sp1 - sp2);
     }
 
@@ -253,23 +248,23 @@ public class SemBicScore implements Score {
     }
 
     public double localScore(int i, int... parents) {
-        final int k = parents.length;
+        int k = parents.length;
 
         // Only do this once.
-        double n = sampleSize;
+        double n = this.sampleSize;
 
         double varey;
 
-        varey = getVarRy(i, parents, data, covariances, calculateRowSubsets);
+        varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
 
         double c = getPenaltyDiscount();
 
-        if (ruleType == RuleType.CHICKERING || ruleType == RuleType.NANDY) {
+        if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
             // Standard BIC, with penalty discount and structure prior.
             return -c * k * log(n) - n * log(varey);// - 2 * getStructurePrior(k);
         } else {
-            throw new IllegalStateException("That rule type is not implemented: " + ruleType);
+            throw new IllegalStateException("That rule type is not implemented: " + this.ruleType);
         }
     }
 
@@ -289,19 +284,19 @@ public class SemBicScore implements Score {
     }
 
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     public double getStructurePrior() {
-        return structurePrior;
+        return this.structurePrior;
     }
 
     public ICovarianceMatrix getCovariances() {
-        return covariances;
+        return this.covariances;
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     @Override
@@ -310,7 +305,7 @@ public class SemBicScore implements Score {
     }
 
     public DataModel getDataModel() {
-        return dataModel;
+        return this.dataModel;
     }
 
     public void setPenaltyDiscount(double penaltyDiscount) {
@@ -322,7 +317,7 @@ public class SemBicScore implements Score {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -331,12 +326,12 @@ public class SemBicScore implements Score {
 
     @Override
     public List<Node> getVariables() {
-        return new ArrayList<>(variables);
+        return new ArrayList<>(this.variables);
     }
 
     public void setVariables(List<Node> variables) {
-        if (covariances != null) {
-            covariances.setVariables(variables);
+        if (this.covariances != null) {
+            this.covariances.setVariables(variables);
         }
 
         this.variables = variables;
@@ -344,7 +339,7 @@ public class SemBicScore implements Score {
 
     @Override
     public Node getVariable(String targetName) {
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -355,17 +350,17 @@ public class SemBicScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(log(sampleSize));
+        return (int) Math.ceil(log(this.sampleSize));
     }
 
     @Override
     public boolean determines(List<Node> z, Node y) {
-        int i = variables.indexOf(y);
+        int i = this.variables.indexOf(y);
 
         int[] k = new int[z.size()];
 
         for (int t = 0; t < z.size(); t++) {
-            k[t] = variables.indexOf(z.get(t));
+            k[t] = this.variables.indexOf(z.get(t));
         }
 
         double v = localScore(i, k);
@@ -373,9 +368,9 @@ public class SemBicScore implements Score {
         return Double.isNaN(v);
     }
 
-//    @Override
+    //    @Override
     public DataModel getData() {
-        return dataModel;
+        return this.dataModel;
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {
@@ -384,10 +379,6 @@ public class SemBicScore implements Score {
 
         this.dataModel = covariances;
 
-//        double n = covariances.getSampleSize();
-//        double ess = DataUtils.getEss(covariances);
-//
-//        System.out.println("n = " + n + " ess = " + ess);
     }
 
     private static int[] append(int[] z, int x) {
@@ -400,8 +391,8 @@ public class SemBicScore implements Score {
         if (abs(getStructurePrior()) <= 0) {
             return 0;
         } else {
-            double p = (getStructurePrior()) / (variables.size());
-            return -((parents) * Math.log(p) + (variables.size() - (parents)) * Math.log(1.0 - p));
+            double p = (getStructurePrior()) / (this.variables.size());
+            return -((parents) * log(p) + (this.variables.size() - (parents)) * log(1.0 - p));
         }
     }
 
@@ -424,13 +415,13 @@ public class SemBicScore implements Score {
     }
 
     private List<Integer> getRows(int i, int[] parents) {
-        if (dataModel == null) {
+        if (this.dataModel == null) {
             return null;
         }
 
         List<Integer> rows = new ArrayList<>();
 
-        DataSet dataSet = (DataSet) dataModel;
+        DataSet dataSet = (DataSet) this.dataModel;
 
         K:
         for (int k = 0; k < dataSet.getNumRows(); k++) {
@@ -456,18 +447,18 @@ public class SemBicScore implements Score {
 
     private int[] indices(Node x, Node y, List<Node> z) {
         int[] indices = new int[z.size() + 2];
-        indices[0] = indexMap.get(x);
-        indices[1] = indexMap.get(y);
-        for (int i = 0; i < z.size(); i++) indices[i + 2] = indexMap.get(z.get(i));
+        indices[0] = this.indexMap.get(x);
+        indices[1] = this.indexMap.get(y);
+        for (int i = 0; i < z.size(); i++) indices[i + 2] = this.indexMap.get(z.get(i));
         return indices;
     }
 
     private Matrix getCov(List<Integer> rows, int[] cols) {
-        if (dataModel == null) {
-            return matrix.getSelection(cols, cols);
+        if (this.dataModel == null) {
+            return this.matrix.getSelection(cols, cols);
         }
 
-        DataSet dataSet = (DataSet) dataModel;
+        DataSet dataSet = (DataSet) this.dataModel;
 
         Matrix cov = new Matrix(cols.length, cols.length);
 

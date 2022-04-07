@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -40,13 +39,13 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class SemGraphWrapper implements SessionModel, GraphSource,
+public class SemGraphWrapper implements GraphSource,
         KnowledgeBoxInput, SimulationParamsSource, DoNotAddOldModel, MultipleGraphSource {
 
     static final long serialVersionUID = 23L;
     private int numModels = 1;
-    private int modelIndex = 0;
-    private String modelSourceName = null;
+    private int modelIndex;
+    private String modelSourceName;
 
     /**
      * @serial Can be null.
@@ -98,10 +97,10 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
             setSemGraph(semGraph);
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters)));
+            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), this.parameters)));
         } else {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters)));
+            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), this.parameters)));
         }
 
         this.parameters = params;
@@ -123,7 +122,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
             }
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters)));
+            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), this.parameters)));
         }
         log();
     }
@@ -136,7 +135,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
             setSemGraph(semGraph);
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters)));
+            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), this.parameters)));
         }
         log();
     }
@@ -148,7 +147,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
             setSemGraph(semGraph);
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
             RandomUtil.getInstance().setSeed(new Date().getTime());
-            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters)));
+            setSemGraph(new SemGraph(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), this.parameters)));
         }
         this.parameters = params;
         log();
@@ -169,7 +168,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
                 this.graphs.add(semGraph);
             }
 
-            this.numModels = graphs.size();
+            this.numModels = this.graphs.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
@@ -256,9 +255,6 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s) throws IOException,
             ClassNotFoundException {
@@ -266,11 +262,11 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
     }
 
     public Graph getGraph() {
-        return graphs.get(getModelIndex());
+        return this.graphs.get(getModelIndex());
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -313,15 +309,15 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
+        return this.allParamSettings;
     }
 
     public Parameters getParameters() {
-        return parameters;
+        return this.parameters;
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
     public void setNumModels(int numModels) {
@@ -329,7 +325,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
     public void setModelIndex(int modelIndex) {
@@ -337,7 +333,7 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
     public void setModelSourceName(String modelSourceName) {
@@ -345,12 +341,12 @@ public class SemGraphWrapper implements SessionModel, GraphSource,
     }
 
     public void setGraph(Graph graph) {
-        graphs = new ArrayList<>();
-        graphs.add(new SemGraph(graph));
+        this.graphs = new ArrayList<>();
+        this.graphs.add(new SemGraph(graph));
         log();
     }
 
     public List<Graph> getGraphs() {
-        return graphs;
+        return this.graphs;
     }
 }

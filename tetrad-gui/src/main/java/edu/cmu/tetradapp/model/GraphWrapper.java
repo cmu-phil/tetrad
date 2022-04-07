@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,7 +29,6 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
-import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -49,12 +48,12 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer,
+public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProducer,
         SimulationParamsSource, GraphSettable, MultipleGraphSource {
     static final long serialVersionUID = 23L;
     private int numModels = 1;
-    private int modelIndex = 0;
-    private String modelSourceName = null;
+    private int modelIndex;
+    private String modelSourceName;
 
     /**
      * @serial Can be null.
@@ -74,10 +73,12 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public GraphWrapper(GraphSource graphSource, Parameters parameters) {
+        this.parameters = parameters;
+
         if (graphSource instanceof Simulation) {
             Simulation simulation = (Simulation) graphSource;
             this.graphs = simulation.getGraphs();
-            this.numModels = graphs.size();
+            this.numModels = this.graphs.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
@@ -112,8 +113,9 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public GraphWrapper(Simulation simulation, Parameters parameters) {
+        this.parameters = parameters;
         this.graphs = simulation.getGraphs();
-        this.numModels = graphs.size();
+        this.numModels = this.graphs.size();
         this.modelIndex = 0;
         this.modelSourceName = simulation.getName();
 
@@ -124,7 +126,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         if (wrapper instanceof Simulation) {
             Simulation simulation = (Simulation) wrapper;
             this.graphs = simulation.getGraphs();
-            this.numModels = graphs.size();
+            this.numModels = this.graphs.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
@@ -135,7 +137,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public GraphWrapper(GeneralizedSemImWrapper wrapper) {
-        this(getStrongestInfluenceGraph(wrapper.getSemIms().get(0)));
+        this(GraphWrapper.getStrongestInfluenceGraph(wrapper.getSemIms().get(0)));
         if (wrapper.getSemIms() == null || wrapper.getSemIms().size() > 1) {
             throw new IllegalArgumentException("I'm sorry; this editor can only edit a single generalized SEM IM.");
         }
@@ -153,12 +155,12 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     //==============================PUBLIC METHODS======================//
 
     public Graph getGraph() {
-        return graphs.get(getModelIndex());
+        return this.graphs.get(getModelIndex());
     }
 
     public void setGraph(Graph graph) {
-        graphs = new ArrayList<>();
-        graphs.add(new EdgeListGraph(graph));
+        this.graphs = new ArrayList<>();
+        this.graphs.add(new EdgeListGraph(graph));
         log();
     }
 
@@ -172,7 +174,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -211,11 +213,11 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     @Override
     public Map<String, String> getAllParamSettings() {
-        return allParamSettings;
+        return this.allParamSettings;
     }
 
     public Parameters getParameters() {
-        return parameters;
+        return this.parameters;
     }
 
     //==========================PRIVATE METaHODS===========================//
@@ -235,7 +237,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
         }
 
         for (Expression _expression : expressions) {
-            String param = findParameter(_expression, name);
+            String param = GraphWrapper.findParameter(_expression, name);
 
             if (param != null) {
                 return param;
@@ -278,8 +280,8 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
                 Expression expression1 = pm.getNodeExpression(node1);
                 Expression expression2 = pm.getNodeExpression(node2);
 
-                String param1 = findParameter(expression1, node2.getName());
-                String param2 = findParameter(expression2, node1.getName());
+                String param1 = GraphWrapper.findParameter(expression1, node2.getName());
+                String param2 = GraphWrapper.findParameter(expression2, node1.getName());
 
                 if (param1 == null || param2 == null) {
                     continue;
@@ -314,9 +316,6 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -324,15 +323,15 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
     }
 
     public int getNumModels() {
-        return numModels;
+        return this.numModels;
     }
 
     public int getModelIndex() {
-        return modelIndex;
+        return this.modelIndex;
     }
 
     public String getModelSourceName() {
-        return modelSourceName;
+        return this.modelSourceName;
     }
 
     public void setModelIndex(int modelIndex) {
@@ -341,7 +340,7 @@ public class GraphWrapper implements SessionModel, GraphSource, KnowledgeBoxInpu
 
     @Override
     public List<Graph> getGraphs() {
-        return graphs;
+        return this.graphs;
     }
 }
 

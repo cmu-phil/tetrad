@@ -11,8 +11,8 @@ import java.util.Map;
  * @author jdramsey
  */
 public class Statistics {
-    private List<Statistic> statistics = new ArrayList<>();
-    private Map<Statistic, Double> weights = new HashMap<>();
+    private final List<Statistic> statistics = new ArrayList<>();
+    private final Map<Statistic, Double> weights = new HashMap<>();
 
     public Statistics() {
     }
@@ -37,7 +37,7 @@ public class Statistics {
 
         boolean set = false;
 
-        for (Statistic stat : statistics) {
+        for (Statistic stat : this.statistics) {
             if (stat.getAbbreviation().equals(abbrebiation)) {
                 this.weights.put(stat, weight);
                 set = true;
@@ -56,7 +56,7 @@ public class Statistics {
      * @return A copy of this list, in the order added.
      */
     public List<Statistic> getStatistics() {
-        return new ArrayList<>(statistics);
+        return new ArrayList<>(this.statistics);
     }
 
     /**
@@ -66,11 +66,7 @@ public class Statistics {
      * @return The utility weight for it.
      */
     public double getWeight(Statistic statistic) {
-        if (weights.keySet().contains(statistic)) {
-            return weights.get(statistic);
-        } else {
-            return 0.0;
-        }
+        return this.weights.getOrDefault(statistic, 0.0);
     }
 
     /**
@@ -79,7 +75,7 @@ public class Statistics {
      * @return This number.
      */
     public int size() {
-        return statistics.size();
+        return this.statistics.size();
     }
 
 

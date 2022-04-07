@@ -57,15 +57,15 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
     private double[][] getCovarianceData(int matrixSize) throws IOException {
         double[][] data = new double[matrixSize][matrixSize];
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
 
-            byte delimChar = delimiter.getByteValue();
+            byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -77,15 +77,15 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
 
             StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !Thread.currentThread().isInterrupted(); i++) {
                     byte currChar = buffer[i];
 
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
-                        if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
+                        if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -93,11 +93,11 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                             if (lineDataNum >= 3) {
                                 if (col > row) {
                                     String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-                                    LOGGER.error(errMsg);
+                                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                     throw new DataReaderException(errMsg);
                                 } else if (col < row) {
                                     String errMsg = String.format("Insufficent data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-                                    LOGGER.error(errMsg);
+                                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                     throw new DataReaderException(errMsg);
                                 } else {
                                     String value = dataBuilder.toString().trim();
@@ -106,7 +106,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                     colNum++;
                                     if (value.isEmpty()) {
                                         String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-                                        LOGGER.error(errMsg);
+                                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                         throw new DataReaderException(errMsg);
                                     } else {
                                         try {
@@ -115,7 +115,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                             data[col][row] = covariance;
                                         } catch (NumberFormatException exception) {
                                             String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                            LOGGER.error(errMsg, exception);
+                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
                                             throw new DataReaderException(errMsg);
                                         }
                                     }
@@ -140,12 +140,12 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                         colNum = 0;
                         checkForComment = comment.length > 0;
                     } else if (!skip) {
-                        if (currChar > SPACE_CHAR) {
+                        if (currChar > DataFileReader.SPACE_CHAR) {
                             hasSeenNonblankChar = true;
                         }
 
                         // skip blank chars at the begining of the line
-                        if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                             continue;
                         }
 
@@ -164,25 +164,23 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                         }
 
                         if (lineDataNum >= 3) {
-                            if (currChar == quoteCharacter) {
+                            if (currChar == this.quoteCharacter) {
                                 hasQuoteChar = !hasQuoteChar;
                             } else {
                                 if (hasQuoteChar) {
                                     dataBuilder.append((char) currChar);
                                 } else {
                                     boolean isDelimiter;
-                                    switch (delimiter) {
-                                        case WHITESPACE:
-                                            isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
-                                            break;
-                                        default:
-                                            isDelimiter = (currChar == delimChar);
+                                    if (this.delimiter == Delimiter.WHITESPACE) {
+                                        isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                    } else {
+                                        isDelimiter = (currChar == delimChar);
                                     }
 
                                     if (isDelimiter) {
                                         if (col > row) {
                                             String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-                                            LOGGER.error(errMsg);
+                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                             throw new DataReaderException(errMsg);
                                         }
 
@@ -192,7 +190,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                         colNum++;
                                         if (value.isEmpty()) {
                                             String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-                                            LOGGER.error(errMsg);
+                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                             throw new DataReaderException(errMsg);
                                         } else {
                                             try {
@@ -201,7 +199,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                                 data[col][row] = covariance;
                                             } catch (NumberFormatException exception) {
                                                 String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                                LOGGER.error(errMsg, exception);
+                                                LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
                                                 throw new DataReaderException(errMsg);
                                             }
                                         }
@@ -223,11 +221,11 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                 if (lineDataNum >= 3) {
                     if (col > row) {
                         String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-                        LOGGER.error(errMsg);
+                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                         throw new DataReaderException(errMsg);
                     } else if (col < row) {
                         String errMsg = String.format("Insufficent data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-                        LOGGER.error(errMsg);
+                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                         throw new DataReaderException(errMsg);
                     } else {
                         String value = dataBuilder.toString().trim();
@@ -236,7 +234,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                         colNum++;
                         if (value.isEmpty()) {
                             String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-                            LOGGER.error(errMsg);
+                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                             throw new DataReaderException(errMsg);
                         } else {
                             try {
@@ -245,7 +243,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                 data[col][row] = covariance;
                             } catch (NumberFormatException exception) {
                                 String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                LOGGER.error(errMsg, exception);
+                                LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
                                 throw new DataReaderException(errMsg);
                             }
                         }
@@ -260,16 +258,16 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
     private List<String> getVariables() throws IOException {
         List<String> variables = new LinkedList<>();
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean hasQuoteChar = false;
             boolean finished = false;
 
-            byte delimChar = delimiter.getByteValue();
+            byte delimChar = this.delimiter.getByteValue();
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -279,15 +277,15 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
 
             StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
                     byte currChar = buffer[i];
 
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
-                        if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
+                        if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -299,7 +297,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                 colNum++;
                                 if (value.isEmpty()) {
                                     String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
-                                    LOGGER.error(errMsg);
+                                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                     throw new DataReaderException(errMsg);
                                 } else {
                                     variables.add(value);
@@ -321,12 +319,12 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                         cmntIndex = 0;
                         checkForComment = comment.length > 0;
                     } else if (!skip) {
-                        if (currChar > SPACE_CHAR) {
+                        if (currChar > DataFileReader.SPACE_CHAR) {
                             hasSeenNonblankChar = true;
                         }
 
                         // skip blank chars at the begining of the line
-                        if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                        if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                             continue;
                         }
 
@@ -345,19 +343,17 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                         }
 
                         if (lineDataNum == 2) {
-                            if (currChar == quoteCharacter) {
+                            if (currChar == this.quoteCharacter) {
                                 hasQuoteChar = !hasQuoteChar;
                             } else {
                                 if (hasQuoteChar) {
                                     dataBuilder.append((char) currChar);
                                 } else {
                                     boolean isDelimiter;
-                                    switch (delimiter) {
-                                        case WHITESPACE:
-                                            isDelimiter = (currChar <= SPACE_CHAR) && (prevChar > SPACE_CHAR);
-                                            break;
-                                        default:
-                                            isDelimiter = (currChar == delimChar);
+                                    if (this.delimiter == Delimiter.WHITESPACE) {
+                                        isDelimiter = (currChar <= DataFileReader.SPACE_CHAR) && (prevChar > DataFileReader.SPACE_CHAR);
+                                    } else {
+                                        isDelimiter = (currChar == delimChar);
                                     }
 
                                     if (isDelimiter) {
@@ -367,7 +363,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                         colNum++;
                                         if (value.isEmpty()) {
                                             String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
-                                            LOGGER.error(errMsg);
+                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                             throw new DataReaderException(errMsg);
                                         } else {
                                             variables.add(value);
@@ -392,7 +388,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                     colNum++;
                     if (value.isEmpty()) {
                         String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
-                        LOGGER.error(errMsg);
+                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                         throw new DataReaderException(errMsg);
                     } else {
                         variables.add(value);
@@ -402,8 +398,8 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
         }
 
         if (variables.isEmpty()) {
-            String errMsg = "Covariance file does not contain variable names.";
-            LOGGER.error(errMsg);
+            final String errMsg = "Covariance file does not contain variable names.";
+            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
             throw new DataReaderException(errMsg);
         }
 
@@ -413,13 +409,13 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
     private int getNumberOfCases() throws IOException {
         int numOfCases = 0;
 
-        try (InputStream in = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+        try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skip = false;
             boolean hasSeenNonblankChar = false;
             boolean finished = false;
 
             // comment marker check
-            byte[] comment = commentMarker.getBytes();
+            byte[] comment = this.commentMarker.getBytes();
             int cmntIndex = 0;
             boolean checkForComment = comment.length > 0;
 
@@ -427,15 +423,15 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
 
             StringBuilder dataBuilder = new StringBuilder();
             byte prevChar = -1;
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[DataFileReader.BUFFER_SIZE];
             int len;
             while ((len = in.read(buffer)) != -1 && !finished && !Thread.currentThread().isInterrupted()) {
                 for (int i = 0; i < len && !finished && !Thread.currentThread().isInterrupted(); i++) {
                     byte currChar = buffer[i];
 
-                    if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
-                        if (currChar == LINE_FEED && prevChar == CARRIAGE_RETURN) {
-                            prevChar = currChar;
+                    if (currChar == DataFileReader.CARRIAGE_RETURN || currChar == DataFileReader.LINE_FEED) {
+                        if (currChar == DataFileReader.LINE_FEED && prevChar == DataFileReader.CARRIAGE_RETURN) {
+                            prevChar = DataFileReader.LINE_FEED;
                             continue;
                         }
 
@@ -454,12 +450,12 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                         }
                     } else {
                         if (!skip) {
-                            if (currChar > SPACE_CHAR) {
+                            if (currChar > DataFileReader.SPACE_CHAR) {
                                 hasSeenNonblankChar = true;
                             }
 
                             // skip blank chars at the begining of the line
-                            if (currChar <= SPACE_CHAR && !hasSeenNonblankChar) {
+                            if (currChar <= DataFileReader.SPACE_CHAR && !hasSeenNonblankChar) {
                                 continue;
                             }
 
@@ -478,7 +474,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                 }
                             }
 
-                            if (currChar != quoteCharacter) {
+                            if (currChar != this.quoteCharacter) {
                                 dataBuilder.append((char) currChar);
                             }
                         }
@@ -491,14 +487,14 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
             String value = dataBuilder.toString().trim();
             if (value.isEmpty()) {
                 String errMsg = String.format("Line %d: Missing number of cases.", lineNum);
-                LOGGER.error(errMsg);
+                LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                 throw new DataReaderException(errMsg);
             } else {
                 try {
                     numOfCases += Integer.parseInt(value);
                 } catch (NumberFormatException exception) {
                     String errMsg = String.format("Invalid number %s on line %d.", value, lineNum);
-                    LOGGER.error(errMsg);
+                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
             }
@@ -507,7 +503,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
         return numOfCases;
     }
 
-    private final class LowerCovarianceData implements CovarianceData {
+    private static final class LowerCovarianceData implements CovarianceData {
 
         private final int numberOfCases;
         private final List<String> variables;
@@ -521,17 +517,17 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
 
         @Override
         public int getNumberOfCases() {
-            return numberOfCases;
+            return this.numberOfCases;
         }
 
         @Override
         public List<String> getVariables() {
-            return variables;
+            return this.variables;
         }
 
         @Override
         public double[][] getData() {
-            return data;
+            return this.data;
         }
 
     }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,20 +37,15 @@ import java.util.List;
  */
 public class RegressionDataset implements Regression {
 
-//    /**
-//     * The number formatter used for all numbers.
-//     */
-//    private NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
     /**
      * The data set.
      */
-    private Matrix data;
+    private final Matrix data;
 
     /**
      * The variables.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * The significance level for determining which regressors are significant
@@ -61,7 +56,7 @@ public class RegressionDataset implements Regression {
     /**
      * The graph of significant regressors into the target.
      */
-    private Graph graph = null;
+    private Graph graph;
 
     private int[] rows;
     private Vector res2;
@@ -119,11 +114,11 @@ public class RegressionDataset implements Regression {
         int n = getRows().length;
         int k = regressors.size() + 1;
 
-        int _target = variables.indexOf(target);
+        int _target = this.variables.indexOf(target);
         int[] _regressors = new int[regressors.size()];
 
         for (int i = 0; i < regressors.size(); i++) {
-            _regressors[i] = variables.indexOf(regressors.get(i));
+            _regressors[i] = this.variables.indexOf(regressors.get(i));
             if (_regressors[i] == -1) {
                 System.out.println();
             }
@@ -133,8 +128,8 @@ public class RegressionDataset implements Regression {
             System.out.println();
         }
 
-        Matrix y = data.getSelection(getRows(), new int[]{_target}).copy();
-        Matrix xSub = data.getSelection(getRows(), _regressors);
+        Matrix y = this.data.getSelection(getRows(), new int[]{_target}).copy();
+        Matrix xSub = this.data.getSelection(getRows(), _regressors);
 
         Matrix x;
 
@@ -144,7 +139,7 @@ public class RegressionDataset implements Regression {
             for (int i = 0; i < x.rows(); i++) {
                 for (int j = 0; j < x.columns(); j++) {
                     if (j == 0) {
-                        x.set(i, j, 1);
+                        x.set(i, 0, 1);
                     } else {
                         x.set(i, j, xSub.get(i, j - 1));
                     }
@@ -181,9 +176,9 @@ public class RegressionDataset implements Regression {
         Matrix res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
         this.res2 = res2.getColumn(0);
 
-        double rss = rss(x, y, b);
+        double rss = RegressionDataset.rss(x, y, b);
         double se = Math.sqrt(rss / (n - k));
-        double tss = tss(y);
+        double tss = RegressionDataset.tss(y);
         double r2 = 1.0 - (rss / tss);
 
         Vector sqErr = new Vector(x.columns());
@@ -216,7 +211,7 @@ public class RegressionDataset implements Regression {
 
 
         return new RegressionResult(regressors.size() == 0, vNames, n,
-                bArray, tArray, pArray, seArray, r2, rss, alpha, _yHat, _res);
+                bArray, tArray, pArray, seArray, r2, rss, this.alpha, _res);
     }
 
     public static RegressionResult regress(double[] target, double[][] regressors) {
@@ -245,16 +240,13 @@ public class RegressionDataset implements Regression {
         Vector _yHat = yHat.getColumn(0);
         Vector _res = res.getColumn(0);
 
-        Matrix b2 = b.copy();
-        Matrix yHat2 = x.times(b2);
-        if (yHat.columns() == 0) yHat2 = y.like();
+        yHat.columns();
 
-        Matrix _res2 = y.minus(yHat2); //  y.copy().assign(yHat, PlusMult.plusMult(-1));
-        Vector res2 = _res2.getColumn(0);
+        //  y.copy().assign(yHat, PlusMult.plusMult(-1));
 
-        double rss = rss(x, y, b);
+        double rss = RegressionDataset.rss(x, y, b);
         double se = Math.sqrt(rss / (n - k));
-        double tss = tss(y);
+        double tss = RegressionDataset.tss(y);
         double r2 = 1.0 - (rss / tss);
 
         Vector sqErr = new Vector(x.columns());
@@ -279,7 +271,7 @@ public class RegressionDataset implements Regression {
 
 
         return new RegressionResult(true, regressorNames, n,
-                bArray, tArray, pArray, seArray, r2, rss, 0.05, _yHat, _res);
+                bArray, tArray, pArray, seArray, r2, rss, 0.05, _res);
     }
 
     public RegressionResult regress(Node target, Node... regressors) {
@@ -301,7 +293,7 @@ public class RegressionDataset implements Regression {
             String variableName = (i > 0) ? regressors.get(i - 1).getName() : "const";
 
             //Add a node and edge to the output graph for significant predictors:
-            if (p.get(i) < alpha) {
+            if (p.get(i) < this.alpha) {
                 Node predictorNode = new GraphNode(variableName);
                 graph.addNode(predictorNode);
                 Edge newEdge = new Edge(predictorNode, targetNode,
@@ -312,31 +304,6 @@ public class RegressionDataset implements Regression {
 
         return graph;
     }
-
-//    private String createResultString(int n, int k, double rss, double r2,
-//                                      TetradMatrix x, List<Node> regressors,
-//                                      TetradMatrix b, TetradVector se,
-//                                      TetradVector t, TetradVector p) {
-//        // Create result string.
-//        String rssString = nf.format(rss);
-//        String r2String = nf.format(r2);
-//        String summary = "\n REGRESSION RESULT";
-//        summary += "\n n = " + n + ", k = " + k + ", alpha = " + alpha + "\n";
-//        summary += " SSE = " + rssString + "\n";
-//        summary += " R^2 = " + r2String + "\n\n";
-//        summary += " VAR\tCOEF\tSE\tT\tP\n";
-//
-//        for (int i = 0; i < x.columns(); i++) {
-//            // Note: the first column contains the regression constants.
-//            String variableName = (i > 0) ? regressors.get(i - 1).getNode() : "const";
-//
-//            summary += " " + variableName + "\t" + nf.format(b.get(i, 0)) +
-//                    "\t" + nf.format(se.get(i)) + "\t" + nf.format(t.get(i)) +
-//                    "\t" + nf.format(p.get(i)) + "\t" +
-//                    ((p.get(i) < alpha) ? "significant " : "") + "\n";
-//        }
-//        return summary;
-//    }
 
     /**
      * Calculates the residual sum of squares for parameter data x, actual
@@ -377,7 +344,7 @@ public class RegressionDataset implements Regression {
             mean += y.get(i, 0);
         }
 
-        mean /= (double) (y.rows());
+        mean /= y.rows();
 
         double ssm = 0.0;
 
@@ -393,7 +360,7 @@ public class RegressionDataset implements Regression {
      * The rows in the data used for the regression.
      */
     private int[] getRows() {
-        return rows;
+        return this.rows;
     }
 
     public void setRows(int[] rows) {
@@ -401,7 +368,7 @@ public class RegressionDataset implements Regression {
     }
 
     public Vector getResidualsWithoutFirstRegressor() {
-        return res2;
+        return this.res2;
     }
 }
 

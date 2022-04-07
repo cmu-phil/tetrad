@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,7 +24,10 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -44,9 +47,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.net.URL;
@@ -65,7 +68,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
     private static final long serialVersionUID = 5123725895449927539L;
 
-    private final static Set<String> EVENTS = new HashSet<>(Arrays.asList(
+    private static final Set<String> EVENTS = new HashSet<>(Arrays.asList(
             "graph",
             "edgeAdded",
             "edgeRemoved",
@@ -103,7 +106,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
      * Sets the name of this editor.
      */
     @Override
-    public final void setName(String name) {
+    public void setName(String name) {
         String oldName = getName();
         super.setName(name);
         firePropertyChange("name", oldName, getName());
@@ -140,7 +143,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
      * Pastes list of session elements into the workbench.
      */
     @Override
-    public void pasteSubsession(List sessionElements, Point upperLeft) {
+    public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
         getWorkbench().deselectAll();
 
@@ -156,7 +159,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
     @Override
     public GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     @Override
@@ -208,14 +211,14 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     private void initUI(GraphWrapper graphWrapper) {
         Graph graph = graphWrapper.getGraph();
 
-        workbench = new GraphWorkbench(graph);
-        workbench.enableEditing(enableEditing);
+        this.workbench = new GraphWorkbench(graph);
+        this.workbench.enableEditing(this.enableEditing);
 
-        workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+        this.workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
             String propertyName = evt.getPropertyName();
-            if (EVENTS.contains(propertyName)) {
+            if (GraphEditor.EVENTS.contains(propertyName)) {
                 if (getWorkbench() != null) {
-                    Graph targetGraph = (Graph) getWorkbench().getGraph();
+                    Graph targetGraph = getWorkbench().getGraph();
 
                     // Update the graphWrapper
                     graphWrapper.setGraph(targetGraph);
@@ -238,8 +241,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graphToolbar.setMaximumSize(new Dimension(140, 450));
 
         // topBox right side graph editor
-        graphEditorScroll.setPreferredSize(new Dimension(760, 450));
-        graphEditorScroll.setViewportView(workbench);
+        this.graphEditorScroll.setPreferredSize(new Dimension(760, 450));
+        this.graphEditorScroll.setViewportView(this.workbench);
 
         // topBox contains the topGraphBox and the instructionBox underneath
         Box topBox = Box.createVerticalBox();
@@ -248,7 +251,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         // topGraphBox contains the vertical graph toolbar and graph editor
         Box topGraphBox = Box.createHorizontalBox();
         topGraphBox.add(graphToolbar);
-        topGraphBox.add(graphEditorScroll);
+        topGraphBox.add(this.graphEditorScroll);
 
         // Instruction with info button
         Box instructionBox = Box.createHorizontalBox();
@@ -266,7 +269,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Initialize helpSet
-                String helpHS = "/resources/javahelp/TetradHelp.hs";
+                final String helpHS = "/resources/javahelp/TetradHelp.hs";
 
                 try {
                     URL url = this.getClass().getResource(helpHS);
@@ -292,22 +295,22 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         topBox.add(topGraphBox);
         topBox.add(instructionBox);
 
-        edgeTypeTable.setPreferredSize(new Dimension(820, 150));
+        this.edgeTypeTable.setPreferredSize(new Dimension(820, 150));
 
 //        //Use JSplitPane to allow resize the bottom box - Zhou
 //        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new PaddingPanel(topBox), new PaddingPanel(edgeTypeTable));
 //        splitPane.setDividerLocation((int) (splitPane.getPreferredSize().getHeight() - 150));
 
         // Switching to tabbed pane because of resizing problems with the split pane... jdramsey 2021.08.25
-        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
         tabbedPane.addTab("Graph", new PaddingPanel(topBox));
-        tabbedPane.addTab("Edges", edgeTypeTable);
+        tabbedPane.addTab("Edges", this.edgeTypeTable);
 
         // Add to parent container
         add(menuBar, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
 
-        edgeTypeTable.update(graph);
+        this.edgeTypeTable.update(graph);
 
         // Performs relayout.
         // It means invalid content is asked for all the sizes and
@@ -318,12 +321,11 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     /**
      * Updates the graph in workbench when changing graph model
      *
-     * @param graph
      */
     private void updateGraphWorkbench(Graph graph) {
-        workbench = new GraphWorkbench(graph);
-        workbench.enableEditing(enableEditing);
-        graphEditorScroll.setViewportView(workbench);
+        this.workbench = new GraphWorkbench(graph);
+        this.workbench.enableEditing(this.enableEditing);
+        this.graphEditorScroll.setViewportView(this.workbench);
 
         validate();
     }
@@ -331,10 +333,9 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     /**
      * Updates bootstrap table on adding/removing edges or graph changes
      *
-     * @param graph
      */
     private void updateBootstrapTable(Graph graph) {
-        edgeTypeTable.update(graph);
+        this.edgeTypeTable.update(graph);
 
         validate();
     }
@@ -342,7 +343,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     /**
      * Creates the UI component for choosing from multiple graph models
      *
-     * @param graphWrapper
      */
     private void modelSelectin(GraphWrapper graphWrapper) {
         int numModels = graphWrapper.getNumModels();
@@ -353,7 +353,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                 models.add(i + 1);
             }
 
-            final JComboBox<Integer> comboBox = new JComboBox(models.toArray());
+            JComboBox<Integer> comboBox = new JComboBox(models.toArray());
 
             // Remember the selected model on reopen
             comboBox.setSelectedIndex(graphWrapper.getModelIndex());
@@ -383,7 +383,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     }
 
     public boolean isEnableEditing() {
-        return enableEditing;
+        return this.enableEditing;
     }
 
     public void enableEditing(boolean enableEditing) {
@@ -421,9 +421,9 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
 
         copy.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         paste.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 
         edit.add(copy);
         edit.add(paste);
@@ -441,6 +441,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
         graph.add(new GraphPropertiesAction(getWorkbench()));
         graph.add(new PathsAction(getWorkbench()));
+        graph.add(new UnderliningsAction(getWorkbench()));
 
         graph.addSeparator();
 
@@ -464,11 +465,11 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
 
         randomGraph.addActionListener(e -> {
-            final GraphParamsEditor editor = new GraphParamsEditor();
-            editor.setParams(parameters);
+            GraphParamsEditor editor = new GraphParamsEditor();
+            editor.setParams(this.parameters);
 
             EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
-                    "Done", false, GraphEditor.this);
+                    "Done", false, this);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();
@@ -484,13 +485,13 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                     }
 
                     RandomUtil.getInstance().setSeed(new Date().getTime());
-                    Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), parameters);
+                    Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), GraphEditor.this.parameters);
 
-                    boolean addCycles = parameters.getBoolean("randomAddCycles", false);
+                    boolean addCycles = GraphEditor.this.parameters.getBoolean("randomAddCycles", false);
 
                     if (addCycles) {
-                        int newGraphNumMeasuredNodes = parameters.getInt("newGraphNumMeasuredNodes", 10);
-                        int newGraphNumEdges = parameters.getInt("newGraphNumEdges", 10);
+                        int newGraphNumMeasuredNodes = GraphEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
+                        int newGraphNumEdges = GraphEditor.this.parameters.getInt("newGraphNumEdges", 10);
                         graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
                     }
 
@@ -577,7 +578,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     }
 
     public boolean isHasInterventional() {
-        return hasInterventional;
+        return this.hasInterventional;
     }
 
     public void setHasInterventional(boolean hasInterventional) {

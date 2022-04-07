@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -44,12 +44,12 @@ abstract class AbstractExpression implements Expression {
     /**
      * The position of the token--infix or prefix or both.
      */
-    private ExpressionDescriptor.Position position;
+    private final ExpressionDescriptor.Position position;
 
     /**
      * The token--for example, + or cos.
      */
-    private String token;
+    private final String token;
 
     public AbstractExpression(String token, ExpressionDescriptor.Position position, Expression... expressions) {
         this.position = position;
@@ -59,7 +59,7 @@ abstract class AbstractExpression implements Expression {
 
 
     public String getToken() {
-        return this.token;
+        return token;
     }
 
     public ExpressionDescriptor.Position getPosition() {
@@ -75,8 +75,8 @@ abstract class AbstractExpression implements Expression {
 
     @Override
     public RealDistribution getRealDistribution(Context context) {
-        if (expressions.size() == 1) {
-            return expressions.get(0).getRealDistribution(context);
+        if (this.expressions.size() == 1) {
+            return this.expressions.get(0).getRealDistribution(context);
         }
 
         return null;
@@ -84,8 +84,8 @@ abstract class AbstractExpression implements Expression {
     }
 
     public IntegerDistribution getIntegerDistribution(Context context) {
-        if (expressions.size() == 1) {
-            return expressions.get(0).getIntegerDistribution(context);
+        if (this.expressions.size() == 1) {
+            return this.expressions.get(0).getIntegerDistribution(context);
         }
 
         return null;

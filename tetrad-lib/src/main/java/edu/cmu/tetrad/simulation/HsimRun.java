@@ -42,7 +42,7 @@ public class HsimRun {
             //apply Hsim to data, with whatever parameters
             //========first make the Dag for Hsim==========
             //ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
-            double penaltyDiscount = 2.0;
+            final double penaltyDiscount = 2.0;
             SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
             score.setPenaltyDiscount(penaltyDiscount);
             Fges fges = new Fges(score);
@@ -70,8 +70,8 @@ public class HsimRun {
             //use for loop through that collection, get each node from the names, add to the set
             Set<Node> simnodes = new HashSet<>();
 
-            for (int i = 0; i < resimNodeNames.length; i++) {
-                Node thisNode = estDAG.getNode(resimNodeNames[i]);
+            for (String resimNodeName : resimNodeNames) {
+                Node thisNode = estDAG.getNode(resimNodeName);
                 simnodes.add(thisNode);
             }
 
@@ -92,11 +92,6 @@ public class HsimRun {
             _score.setPenaltyDiscount(2.0);
             Fges fgesOut = new Fges(_score);
             fgesOut.setVerbose(false);
-//            fgesOut.setCorrErrorsAlpha(2.0);
-            //fgesOut.setOut(out);
-            //fgesOut.setFaithfulnessAssumed(true);
-            // fgesOut.setMaxIndegree(1);
-            // fgesOut.setCycleBound(5);
 
             Graph estGraphOut = fgesOut.search();
             System.out.println(estGraphOut);

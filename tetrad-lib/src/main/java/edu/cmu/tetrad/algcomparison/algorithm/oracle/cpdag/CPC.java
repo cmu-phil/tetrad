@@ -11,10 +11,10 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,9 +44,19 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     }
 
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
+    public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            PcAll.ColliderDiscovery colliderDiscovery
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                DataSet dataSet = (DataSet) dataModel;
+                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
+                }
+                dataModel = timeSeries;
+                knowledge = timeSeries.getKnowledge();
+            }
+
+            final PcAll.ColliderDiscovery colliderDiscovery
                     = PcAll.ColliderDiscovery.CONSERVATIVE;
 
             PcAll.ConflictRule conflictRule;
@@ -65,10 +75,10 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
                     throw new IllegalArgumentException("Not a choice.");
             }
 
-            PcAll search = new PcAll(test.getTest(dataSet, parameters));
+            PcAll search = new PcAll(this.test.getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
 
             if (parameters.getBoolean(Params.STABLE_FAS)) {
                 search.setFasType(PcAll.FasType.STABLE);
@@ -90,28 +100,11 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
             return search.search();
         } else {
-            CPC pcAll = new CPC(test);
+            CPC pcAll = new CPC(this.test);
 
-            DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            DataSet data = (DataSet) dataModel;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, pcAll, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -126,12 +119,12 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "PC using " + test.getDescription();
+        return "PC using " + this.test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
@@ -145,6 +138,7 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         parameters.add(Params.FAS_HEURISTIC);
         parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
         parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
+        parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
         return parameters;
@@ -152,7 +146,7 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
@@ -162,7 +156,7 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 
     @Override

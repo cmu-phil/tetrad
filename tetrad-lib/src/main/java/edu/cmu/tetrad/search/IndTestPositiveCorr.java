@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,14 +26,11 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.io.PrintStream;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -54,11 +51,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     private final ICovarianceMatrix covMatrix;
     private final double[][] data;
 
-//    /**
-//     * The matrix out of the cov matrix.
-//     */
-//    private final TetradMatrix _covMatrix;
-
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
@@ -75,23 +67,15 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     private double pValue;
 
     /**
-     * Formats as 0.0000.
-     */
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-    /**
      * Stores a reference to the dataset being analyzed.
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
-    private PrintStream pValueLogger;
-    private Map<Node, Integer> indexMap;
-    private Map<String, Node> nameMap;
+    private final Map<String, Node> nameMap;
     private boolean verbose = true;
-    private double fisherZ = Double.NaN;
+    private final double fisherZ = Double.NaN;
     private double cutoff = Double.NaN;
-    private double rho;
-    private NormalDistribution normal = new NormalDistribution(0, 1);
+    private final NormalDistribution normal = new NormalDistribution(0, 1);
 
     //==========================CONSTRUCTORS=============================//
 
@@ -112,16 +96,15 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         }
 
         this.covMatrix = new CovarianceMatrix(dataSet);
-        List<Node> nodes = covMatrix.getVariables();
+        List<Node> nodes = this.covMatrix.getVariables();
 
         this.variables = Collections.unmodifiableList(nodes);
-        this.indexMap = indexMap(variables);
-        this.nameMap = nameMap(variables);
+        this.nameMap = nameMap(this.variables);
         setAlpha(alpha);
 
         this.dataSet = dataSet;
 
-        data = dataSet.getDoubleData().transpose().toArray();
+        this.data = dataSet.getDoubleData().transpose().toArray();
 
     }
 
@@ -148,20 +131,20 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         System.out.println(SearchLogUtils.independenceFact(x0, y0, z0));
 
 
-        double[] x = data[dataSet.getColumn(x0)];
-        double[] y = data[dataSet.getColumn(y0)];
+        double[] x = this.data[this.dataSet.getColumn(x0)];
+        double[] y = this.data[this.dataSet.getColumn(y0)];
 
         double[][] _Z = new double[z0.size()][];
 
         for (int f = 0; f < z0.size(); f++) {
             Node _z = z0.get(f);
-            int column = dataSet.getColumn(_z);
-            _Z[f] = data[column];
+            int column = this.dataSet.getColumn(_z);
+            _Z[f] = this.data[column];
         }
 
-        double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY, +1);
-        double pc1 = partialCorrelation(x, y, _Z, x, 0, +1);
-        double pc2 = partialCorrelation(x, y, _Z, y, 0, +1);
+        double pc = partialCorrelation(x, y, _Z, x, Double.NEGATIVE_INFINITY);
+        double pc1 = partialCorrelation(x, y, _Z, x, 0);
+        double pc2 = partialCorrelation(x, y, _Z, y, 0);
 
         int nc = StatUtils.getRows(x, Double.NEGATIVE_INFINITY, +1).size();
         int nc1 = StatUtils.getRows(x, 0, +1).size();
@@ -177,8 +160,8 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         double p1 = (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv1)));
         double p2 = (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(zv2)));
 
-        boolean rejected1 = p1 < alpha;
-        boolean rejected2 = p2 < alpha;
+        boolean rejected1 = p1 < this.alpha;
+        boolean rejected2 = p2 < this.alpha;
 
         boolean possibleEdge = false;
 
@@ -214,7 +197,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * (1.0 - normal.cumulativeProbability(abs(fisherZ)));
+        return 2.0 * (1.0 - this.normal.cumulativeProbability(abs(this.fisherZ)));
     }
 
     /**
@@ -249,7 +232,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      * @return the variable with the given name.
      */
     public Node getVariable(String name) {
-        return nameMap.get(name);
+        return this.nameMap.get(name);
     }
 
     /**
@@ -272,17 +255,13 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
-            parents[j] = covMatrix.getVariables().indexOf(z.get(j));
+            parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
         }
-
-//        int i = covMatrix.getVariable().indexOf(x);
-
-//        double variance = covMatrix.getValue(i, i);
 
         if (parents.length > 0) {
 
             // Regress z onto i, yielding regression coefficients b.
-            Matrix Czz = covMatrix.getSelection(parents, parents);
+            Matrix Czz = this.covMatrix.getSelection(parents, parents);
 //            TetradMatrix inverse;
 
             try {
@@ -294,10 +273,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
                 return true;
             }
 
-//            TetradVector Cyz = covMatrix.getSelection(parents, new int[]{i}).getColumn(0);
-//            TetradVector b = inverse.times(Cyz);
-//
-//            variance -= Cyz.dotProduct(b);
         }
 
         return false;
@@ -309,13 +284,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      * @return the data set being analyzed.
      */
     public DataSet getData() {
-        return dataSet;
-    }
-
-    public void shuffleVariables() {
-        ArrayList<Node> nodes = new ArrayList<>(this.variables);
-        Collections.shuffle(nodes);
-        this.variables = Collections.unmodifiableList(nodes);
+        return this.dataSet;
     }
 
     /**
@@ -325,19 +294,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         return "Fisher Z, alpha = " + new DecimalFormat("0.0E0").format(getAlpha());
     }
 
-    public void setPValueLogger(PrintStream pValueLogger) {
-        this.pValueLogger = pValueLogger;
-    }
-
     //==========================PRIVATE METHODS============================//
-
-    private int sampleSize() {
-        return covMatrix().getSampleSize();
-    }
-
-    private ICovarianceMatrix covMatrix() {
-        return covMatrix;
-    }
 
     private Map<String, Node> nameMap(List<Node> variables) {
         Map<String, Node> nameMap = new ConcurrentHashMap<>();
@@ -349,24 +306,14 @@ public final class IndTestPositiveCorr implements IndependenceTest {
         return nameMap;
     }
 
-    private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            indexMap.put(variables.get(i), i);
-        }
-
-        return indexMap;
-    }
-
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
-        covMatrix.setVariables(variables);
+        this.covMatrix.setVariables(variables);
     }
 
     public ICovarianceMatrix getCov() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
     @Override
@@ -374,14 +321,14 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
         List<DataSet> dataSets = new ArrayList<>();
 
-        dataSets.add(dataSet);
+        dataSets.add(this.dataSet);
 
         return dataSets;
     }
 
     @Override
     public int getSampleSize() {
-        return covMatrix.getSampleSize();
+        return this.covMatrix.getSampleSize();
     }
 
     @Override
@@ -391,23 +338,19 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return Math.abs(fisherZ) - cutoff;
+        return abs(this.fisherZ) - this.cutoff;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public double getRho() {
-        return rho;
-    }
-
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold, double direction) throws SingularMatrixException {
-        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
+    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition, double threshold) throws SingularMatrixException {
+        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, 1);
         Matrix m = new Matrix(cv).transpose();
         return StatUtils.partialCorrelation(m);
     }

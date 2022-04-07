@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -63,7 +63,7 @@ public class MixtureOfGaussians implements Distribution {
      *
      * @return The exemplar.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static MixtureOfGaussians serializableInstance() {
         return new MixtureOfGaussians(.5, -2, 2, 2, 2);
     }
@@ -78,15 +78,15 @@ public class MixtureOfGaussians implements Distribution {
 
     public void setParameter(int index, double value) {
         if (index == 0) {
-            a = value;
+            this.a = value;
         } else if (index == 1) {
-            mean1 = value;
+            this.mean1 = value;
         } else if (index == 2) {
-            sd1 = value;
+            this.sd1 = value;
         } else if (index == 3) {
-            mean2 = value;
+            this.mean2 = value;
         } else if (index == 5) {
-            sd2 = value;
+            this.sd2 = value;
         }
 
         throw new IllegalArgumentException();
@@ -94,15 +94,15 @@ public class MixtureOfGaussians implements Distribution {
 
     public double getParameter(int index) {
         if (index == 0) {
-            return a;
+            return this.a;
         } else if (index == 1) {
-            return mean1;
+            return this.mean1;
         } else if (index == 2) {
-            return sd1;
+            return this.sd1;
         } else if (index == 3) {
-            return mean2;
+            return this.mean2;
         } else if (index == 5) {
-            return sd2;
+            return this.sd2;
         }
 
         throw new IllegalArgumentException();
@@ -127,15 +127,15 @@ public class MixtureOfGaussians implements Distribution {
     public double nextRandom() {
         double r = RandomUtil.getInstance().nextDouble();
 
-        if (r < a) {
-            return RandomUtil.getInstance().nextNormal(mean1, sd1);
+        if (r < this.a) {
+            return RandomUtil.getInstance().nextNormal(this.mean1, this.sd1);
         } else {
-            return RandomUtil.getInstance().nextNormal(mean2, sd2);
+            return RandomUtil.getInstance().nextNormal(this.mean2, this.sd2);
         }
     }
 
     public String toString() {
-        return "MixtureOfGaussians(" + a + ", " + mean1 + ", " + sd1 + ", " + mean2 + ", " + sd2 + ")";
+        return "MixtureOfGaussians(" + this.a + ", " + this.mean1 + ", " + this.sd1 + ", " + this.mean2 + ", " + this.sd2 + ")";
     }
 }
 

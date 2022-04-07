@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -43,14 +43,14 @@ public final class SemManipulation implements TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private SemIm semIm;
+    private final SemIm semIm;
 
     /**
      * An array indicating whether each variable in turn is manipulated.
      *
      * @serial Cannot be null.
      */
-    private boolean[] manipulated;
+    private final boolean[] manipulated;
 
     //===========================CONSTRUCTORS============================//
 
@@ -71,39 +71,6 @@ public final class SemManipulation implements TetradSerializable {
         this.manipulated = Arrays.copyOf(manipulation.manipulated, manipulation.manipulated.length);
     }
 
-//    /**
-//     * Copy constructor.
-//     */
-//    public SemManipulation(SemManipulation evidence) {
-//        if (evidence == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.semIm = evidence.getSemIm();
-//        this.manipulated = new boolean[semIm.getVariableNodes().size()];
-//
-//        for (int i = 0; i < manipulated.length; i++) {
-//            this.manipulated[i] = evidence.isManipulated(i);
-//        }
-//    }
-
-//    public SemManipulation(SemManipulation evidence, SemIm semIm) {
-//        if (semIm == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (evidence == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.semIm = semIm;
-//        this.manipulated = new boolean[semIm.getVariableNodes().size()];
-//
-//        for (int i = 0; i < manipulated.length; i++) {
-//            this.manipulated[i] = evidence.isManipulated(i);
-//        }
-//    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
@@ -113,18 +80,11 @@ public final class SemManipulation implements TetradSerializable {
 
     //===========================PUBLIC METHODS=========================//
 
-//    /**
-//     * @return the Bayes IM that this is evidence for.
-//     */
-//    private SemIm getSemIm() {
-//        return this.semIm;
-//    }
-
     public int getNodeIndex(String nodeName) {
-        List nodes = semIm.getSemPm().getVariableNodes();
+        List<Node> nodes = this.semIm.getSemPm().getVariableNodes();
 
         for (int i = 0; i < nodes.size(); i++) {
-            Node node = (Node) nodes.get(i);
+            Node node = nodes.get(i);
 
             if (node.getName().equals(nodeName)) {
                 return i;
@@ -135,15 +95,15 @@ public final class SemManipulation implements TetradSerializable {
     }
 
     private int getNumNodes() {
-        return semIm.getVariableNodes().size();
+        return this.semIm.getVariableNodes().size();
     }
 
     public Node getNode(int nodeIndex) {
-        return semIm.getVariableNodes().get(nodeIndex);
+        return this.semIm.getVariableNodes().get(nodeIndex);
     }
 
     public boolean isManipulated(int nodeIndex) {
-        return manipulated[nodeIndex];
+        return this.manipulated[nodeIndex];
     }
 
     public void setManipulated(int nodeIndex, boolean manipulated) {
@@ -175,12 +135,12 @@ public final class SemManipulation implements TetradSerializable {
 
         SemManipulation evidence = (SemManipulation) o;
 
-        if (!(semIm == evidence.semIm)) {
+        if (!(this.semIm == evidence.semIm)) {
             return false;
         }
 
-        for (int i = 0; i < manipulated.length; i++) {
-            if (manipulated[i] != evidence.manipulated[i]) {
+        for (int i = 0; i < this.manipulated.length; i++) {
+            if (this.manipulated[i] != evidence.manipulated[i]) {
                 return false;
             }
         }
@@ -190,8 +150,8 @@ public final class SemManipulation implements TetradSerializable {
 
     public int hashCode() {
         int hashCode = 37;
-        hashCode = 19 * hashCode + semIm.hashCode();
-        hashCode = 19 * hashCode + Arrays.hashCode(manipulated);
+        hashCode = 19 * hashCode + this.semIm.hashCode();
+        hashCode = 19 * hashCode + Arrays.hashCode(this.manipulated);
         return hashCode;
     }
 
@@ -205,8 +165,6 @@ public final class SemManipulation implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

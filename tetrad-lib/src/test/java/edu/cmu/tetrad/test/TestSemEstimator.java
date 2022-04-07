@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -101,7 +101,7 @@ public class TestSemEstimator {
     }
 
     private ICovarianceMatrix constructCovMatrix1() {
-        String[] vars = new String[]{"X1", "X2", "X3", "X4", "X5"};
+        String[] vars = {"X1", "X2", "X3", "X4", "X5"};
         double[][] arr = {{1.04408}, {0.80915, 1.55607},
                 {0.89296, 1.67375, 2.87584},
                 {2.23792, 2.68536, 3.94996, 7.78259},
@@ -186,7 +186,7 @@ public class TestSemEstimator {
     }
 
     private ICovarianceMatrix constructCovMatrix2() {
-        String[] vars = new String[]{"X1", "X2", "X3", "X4", "X5", "X6"};
+        String[] vars = {"X1", "X2", "X3", "X4", "X5", "X6"};
 
         double[][] arr = {{0.915736}, {0.636415, 1.446795},
                 {0.596983, 1.289278, 2.202219},

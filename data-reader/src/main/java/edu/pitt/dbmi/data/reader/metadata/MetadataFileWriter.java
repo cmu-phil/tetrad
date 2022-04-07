@@ -43,7 +43,7 @@ public class MetadataFileWriter implements MetadataWriter {
     }
 
     @Override
-    public void write(Metadata metadata, Path outputFile) throws JsonProcessingException, IOException {
+    public void write(Metadata metadata, Path outputFile) throws IOException {
         ObjectWriter writer = new ObjectMapper().writer().withDefaultPrettyPrinter();
         if (Files.exists(outputFile)) {
             if (Files.deleteIfExists(outputFile)) {

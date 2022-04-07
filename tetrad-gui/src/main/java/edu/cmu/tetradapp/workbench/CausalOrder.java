@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -70,7 +70,7 @@ final class CausalOrder {
 
             Node node = tier.get(0);
 
-            DisplayNode displayNode = (DisplayNode) layoutEditable.getModelNodesToDisplay().get(node);
+            DisplayNode displayNode = (DisplayNode) this.layoutEditable.getModelNodesToDisplay().get(node);
             Rectangle r = displayNode.getBounds();
             int x = r.width / 2 + 10;
 
@@ -81,7 +81,7 @@ final class CausalOrder {
 
             for (int i = 1; i < tier.size(); i++) {
                 node = tier.get(i);
-                displayNode = (DisplayNode) layoutEditable.getModelNodesToDisplay().get(node);
+                displayNode = (DisplayNode) this.layoutEditable.getModelNodesToDisplay().get(node);
                 r = displayNode.getBounds();
                 int thisHalf = r.width / 2;
                 x += lastHalf + thisHalf + 5;
@@ -101,13 +101,10 @@ final class CausalOrder {
      */
     private List<List<Node>> getTiers() {
         Set<Node> found = new HashSet<>();
-        Set<Node> notFound = new HashSet<>();
         List<List<Node>> tiers = new LinkedList<>();
 
         // first copy all the nodes into 'notFound'.
-        for (Node node1 : graph.getNodes()) {
-            notFound.add(node1);
-        }
+        Set<Node> notFound = new HashSet<>(this.graph.getNodes());
 
         // repeatedly run through the nodes left in 'notFound'.  If any node
         // has all of its parents already in 'found', then add it to the
@@ -116,7 +113,7 @@ final class CausalOrder {
             List<Node> thisTier = new LinkedList<>();
 
             for (Node node : notFound) {
-                if (found.containsAll(graph.getParents(node))) {
+                if (found.containsAll(this.graph.getParents(node))) {
                     thisTier.add(node);
                 }
             }
@@ -127,7 +124,7 @@ final class CausalOrder {
             }
 
             // shift all the nodes in this tier from 'notFound' to 'found'.
-            notFound.removeAll(thisTier);
+            thisTier.forEach(notFound::remove);
             found.addAll(thisTier);
 
             // add the getModel tier to the list of tiers.
@@ -138,7 +135,7 @@ final class CausalOrder {
     }
 
     private void placeNodes(Node node, Map<Node, Integer> tiers, Graph graph) {
-        if (tiers.keySet().contains(node)) {
+        if (tiers.containsKey(node)) {
             return;
         }
 

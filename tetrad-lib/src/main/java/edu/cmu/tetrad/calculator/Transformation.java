@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -65,7 +65,7 @@ public class Transformation {
             return;
         }
         for (String equation : equations) {
-            transformEquation(data, equation);
+            Transformation.transformEquation(data, equation);
         }
     }
 
@@ -78,7 +78,7 @@ public class Transformation {
         ExpressionParser parser = new ExpressionParser(data.getVariableNames(), ExpressionParser.RestrictionType.MAY_ONLY_CONTAIN);
         Equation equation = parser.parseEquation(eq);
 
-        addVariableIfRequired(data, equation.getVariable());
+        Transformation.addVariableIfRequired(data, equation.getVariable());
         Expression expression = equation.getExpression();
         Node variable = data.getVariable(equation.getVariable());
         if (variable == null) {
@@ -86,7 +86,7 @@ public class Transformation {
         }
         int column = data.getColumn(variable);
         // build the context pairs.
-        List<String> contextVars = getContextVariables(expression);
+        List<String> contextVars = Transformation.getContextVariables(expression);
         // now do the transformation row by row.
         DataBackedContext context = new DataBackedContext(data, contextVars);
         int rows = data.getNumRows();
@@ -119,7 +119,7 @@ public class Transformation {
             if (sub instanceof VariableExpression) {
                 variables.add(((VariableExpression) sub).getVariable());
             } else if (!(sub instanceof ConstantExpression)) {
-                variables.addAll(getContextVariables(sub));
+                variables.addAll(Transformation.getContextVariables(sub));
             }
         }
 
@@ -134,13 +134,13 @@ public class Transformation {
         /**
          * The data.
          */
-        private DataSet data;
+        private final DataSet data;
 
 
         /**
          * Var -> index mapping.
          */
-        private Map<String, Integer> indexes = new HashMap<>();
+        private final Map<String, Integer> indexes = new HashMap<>();
 
 
         /**
@@ -153,7 +153,7 @@ public class Transformation {
             this.data = data;
             for (String v : vars) {
                 Node n = data.getVariable(v);
-                indexes.put(v, data.getColumn(n));
+                this.indexes.put(v, data.getColumn(n));
             }
         }
 
@@ -162,9 +162,9 @@ public class Transformation {
         }
 
         public Double getValue(String var) {
-            Integer i = indexes.get(var);
+            Integer i = this.indexes.get(var);
             if (i != null) {
-                return data.getDouble(row, i);
+                return this.data.getDouble(this.row, i);
             }
             return null;
         }

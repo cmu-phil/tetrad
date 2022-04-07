@@ -42,22 +42,22 @@ public class MixedTabularData implements MixedData {
 
     @Override
     public int getNumOfRows() {
-        return numOfRows;
+        return this.numOfRows;
     }
 
     @Override
     public DiscreteDataColumn[] getDataColumns() {
-        return dataColumns;
+        return this.dataColumns;
     }
 
     @Override
     public double[][] getContinuousData() {
-        return continuousData;
+        return this.continuousData;
     }
 
     @Override
     public int[][] getDiscreteData() {
-        return discreteData;
+        return this.discreteData;
     }
 
 }

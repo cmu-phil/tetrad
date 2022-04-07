@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,12 +40,12 @@ public class HitonVariant implements MbSearch {
     /**
      * The independence test used to perform the search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * The list of variables being searched over. Must contain the target.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * Variables sorted by decreasing association with the target.
@@ -55,7 +55,7 @@ public class HitonVariant implements MbSearch {
     /**
      * The maximum number of conditioning variables.
      */
-    private int depth;
+    private final int depth;
 
     /**
      * Constructs a new search.
@@ -77,12 +77,12 @@ public class HitonVariant implements MbSearch {
         //        numIndTests = 0;
         long time = System.currentTimeMillis();
 
-        final Node t = getVariableForName(targetName);
+        Node t = getVariableForName(targetName);
 
         // Sort variables by decreasing association with the target.
-        sortedVariables = new LinkedList<>(variables);
+        this.sortedVariables = new LinkedList<>(this.variables);
 
-        Collections.sort(sortedVariables, new Comparator<Node>() {
+        Collections.sort(this.sortedVariables, new Comparator<Node>() {
             public int compare(Node o1, Node o2) {
                 double score1 = o1 == t ? 1.0 : association(o1, t);
                 double score2 = o2 == t ? 1.0 : association(o2, t);
@@ -101,8 +101,6 @@ public class HitonVariant implements MbSearch {
 
         long time2 = System.currentTimeMillis() - time;
         TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));
-        //        LogUtils.getInstance().info("Number of independence tests performed: " +
-//            numIndTests);
 
         return nodes;
     }
@@ -130,7 +128,7 @@ public class HitonVariant implements MbSearch {
         currentMb.remove(t);
 
         HashSet<Node> diff = new HashSet<>(currentMb);
-        diff.removeAll(pc);
+        pc.forEach(diff::remove);
         diff.remove(t);
 
         //for each x in PCPC \ PC
@@ -139,7 +137,7 @@ public class HitonVariant implements MbSearch {
 
             // Find an S such PC such that x _||_ t | S
             DepthChoiceGenerator generator =
-                    new DepthChoiceGenerator(pcpc.size(), depth);
+                    new DepthChoiceGenerator(pcpc.size(), this.depth);
             int[] choice;
 
             while ((choice = generator.next()) != null) {
@@ -149,7 +147,7 @@ public class HitonVariant implements MbSearch {
                     _s.add(pcpc.get(index));
                 }
 
-                if (independenceTest.isIndependent(t, x, _s)) {
+                if (this.independenceTest.isIndependent(t, x, _s)) {
                     s = _s;
                     break;
                 }
@@ -177,7 +175,7 @@ public class HitonVariant implements MbSearch {
                 _s.add(y);
 
                 // If x NOT _||_ t | S U {y}
-                if (!independenceTest.isIndependent(t, x, _s)) {
+                if (!this.independenceTest.isIndependent(t, x, _s)) {
                     mb.add(x);
                     break;
                 }
@@ -188,90 +186,8 @@ public class HitonVariant implements MbSearch {
         return new LinkedList<>(mb);
     }
 
-//    public List<Node> findMb(String targetName) {
-//        final Node t = getVariableForName(targetName);
-//
-//        // Sort variables by decreasing association with the target.
-//        sortedVariables = new LinkedList<Node>(variables);
-//
-//        Collections.sort(sortedVariables, new Comparator<Node>() {
-//            public int compare(Node o1, Node o2) {
-//                double score1 = o1 == t ? 1.0 : association(o1, t);
-//                double score2 = o2 == t ? 1.0 : association(o2, t);
-//
-//                if (score1 < score2) {
-//                    return 1;
-//                }
-//                else if (score1 > score2) {
-//                    return -1;
-//                }
-//                else {
-//                    return 0;
-//                }
-//            }
-//        });
-//
-//        Set<Node> pc = new HashSet<Node>(hitonPc(t));
-//        Set<Node> pcpc = new HashSet<Node>();
-//
-//        for (Node node : pc) {
-//            pcpc.addAll(hitonPc(node));
-//        }
-//
-//        Set<Node> currentMb = new HashSet<Node>(pc);
-//        currentMb.addAll(pcpc);
-//        currentMb.remove(t);
-//
-//        // For each x...
-//
-//        X:
-//        for (Node x : new HashSet<Node>(currentMb)) {
-//
-//            // Look for a y such that conditioning on any set containing y
-//            // renders x dependent on the target...
-//
-//            Y:
-//            for (Node y : pc) {
-//                if (x == y) continue;
-//
-//                List<Node> b = new LinkedList<Node>(currentMb);
-//                b.remove(x);
-//                b.remove(y);
-//
-//                // We're going to add y to it, so go on lower.
-//                for (int d = 0; d <= Math.min(b.size(), depth) - 1; d++) {
-//                    ChoiceGenerator generator =
-//                            new ChoiceGenerator(b.size(), d);
-//                    int[] choice;
-//
-//                    while ((choice = generator.next()) != null) {
-//                        List<Node> s = new LinkedList<Node>();
-//
-//                        for (int index : choice) {
-//                            s.add(b.get(index));
-//                        }
-//
-//                        s.add(y);
-//
-//                        if (independenceTest.isIndependent(t, x, s)) {
-//                            continue Y;
-//                        }
-//                    }
-//                }
-//
-//                // If there is such a y, leave x in.
-//                continue X;
-//            }
-//
-//            // Otherwise, take x out.
-//            currentMb.remove(x);
-//        }
-//
-//        return new ArrayList<Node>(currentMb);
-//    }
-
     private List<Node> hitonPc(Node t) {
-        LinkedList<Node> variables = new LinkedList<>(sortedVariables);
+        LinkedList<Node> variables = new LinkedList<>(this.sortedVariables);
 
         variables.remove(t);
 
@@ -285,7 +201,7 @@ public class HitonVariant implements MbSearch {
             for (Node x : new LinkedList<>(currentPc)) {
                 currentPc.remove(x);
 
-                for (int d = 0; d <= Math.min(currentPc.size(), depth); d++) {
+                for (int d = 0; d <= Math.min(currentPc.size(), this.depth); d++) {
                     ChoiceGenerator generator =
                             new ChoiceGenerator(currentPc.size(), d);
                     int[] choice;
@@ -304,7 +220,7 @@ public class HitonVariant implements MbSearch {
 
                         // If it's independent of the target given this
                         // subset...
-                        if (independenceTest.isIndependent(x, t, s)) {
+                        if (this.independenceTest.isIndependent(x, t, s)) {
 
                             // Leave it removed.
                             continue VARS;
@@ -324,8 +240,8 @@ public class HitonVariant implements MbSearch {
      * A measure of strength of association.
      */
     private double association(Node x, Node y) {
-        independenceTest.isIndependent(x, y, new LinkedList<Node>());
-        return 1.0 - independenceTest.getPValue();
+        this.independenceTest.isIndependent(x, y, new LinkedList<>());
+        return 1.0 - this.independenceTest.getPValue();
     }
 
     public String getAlgorithmName() {
@@ -339,7 +255,7 @@ public class HitonVariant implements MbSearch {
     private Node getVariableForName(String targetName) {
         Node target = null;
 
-        for (Node V : variables) {
+        for (Node V : this.variables) {
             if (V.getName().equals(targetName)) {
                 target = V;
                 break;

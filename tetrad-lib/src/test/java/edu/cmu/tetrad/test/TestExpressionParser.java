@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -43,7 +43,7 @@ public class TestExpressionParser {
 
     @Test
     public void test1() {
-        final Map<String, Double> values = new HashMap<>();
+        Map<String, Double> values = new HashMap<>();
 
         values.put("b11", 1.0);
         values.put("X1", 2.0);
@@ -162,7 +162,7 @@ public class TestExpressionParser {
     }
 
     public void test2() {
-        final Map<String, Double> values = new HashMap<>();
+        Map<String, Double> values = new HashMap<>();
 
         values.put("b11", 1.0);
         values.put("X1", 2.0);
@@ -226,21 +226,13 @@ public class TestExpressionParser {
 
         // Need a regex that will match all numbers (and only numbers).
 
-        String regex1 = "[0-9]+((\\.?)[0-9]+)?";
-        String regex2 = "[0-9]+(\\.?)[0-9]*";
-        String regex3 = "(\\.?)[0-9]+";
-        String regex4 = "[0-9]+(\\.?)";
-        String regex5 = "([0-9]+)|([0-9]+\\.?[0-9]*)|([0-9]*\\.?[0-9]+)";
-        String regex6 = "(-?[0-9]+\\.[0-9]*)|(-?[0-9]*\\.[0-9]+)|(-?[0-9]+)";
+        final String regex1 = "[0-9]+((\\.?)[0-9]+)?";
+        final String regex2 = "[0-9]+(\\.?)[0-9]*";
+        final String regex3 = "(\\.?)[0-9]+";
+        final String regex4 = "[0-9]+(\\.?)";
+        final String regex5 = "([0-9]+)|([0-9]+\\.?[0-9]*)|([0-9]*\\.?[0-9]+)";
 
-//        String regex = regex1;
-//        String regex = regex2;
-//        String regex = regex3;
-//        String regex = regex4;
-//        String regex = regex5;
-        String regex = regex6;
-
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(-?[0-9]+\\.[0-9]*)|(-?[0-9]*\\.[0-9]+)|(-?[0-9]+)");
         Matcher matcher = pattern.matcher("0.5");
         boolean matches = matcher.matches();
 
@@ -324,7 +316,7 @@ public class TestExpressionParser {
     // Test distribution means.
     @Test
     public void test5() {
-        final Map<String, Double> values = new HashMap<>();
+        Map<String, Double> values = new HashMap<>();
 
         Context context = new Context() {
             public Double getValue(String var) {
@@ -351,7 +343,7 @@ public class TestExpressionParser {
                 Expression expression = parser.parseExpression(formula);
 
                 double sum = 0.0;
-                int sampleSize = 10000;
+                final int sampleSize = 10000;
 
                 for (int i = 0; i < sampleSize; i++) {
                     double value = expression.evaluate(context);

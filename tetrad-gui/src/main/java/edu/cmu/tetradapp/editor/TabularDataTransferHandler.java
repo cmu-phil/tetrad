@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 class TabularDataTransferHandler extends TransferHandler {
 
     public int getSourceActions(JComponent c) {
-        return COPY_OR_MOVE;
+        return TransferHandler.COPY_OR_MOVE;
     }
 
     /**
@@ -103,8 +103,7 @@ class TabularDataTransferHandler extends TransferHandler {
                 cols = tabularData.getSelectedColumns();
             }
 
-            if (rows == null || cols == null || rows.length == 0 ||
-                    cols.length == 0) {
+            if (cols == null || rows.length == 0 || cols.length == 0) {
                 return null;
             }
 
@@ -127,17 +126,13 @@ class TabularDataTransferHandler extends TransferHandler {
                     }
 
                     if (displayRow == 1) {
-                        String s = (String) tabularData.getValueAt(displayRow, displayCol);
+                        String s = (String) tabularData.getValueAt(1, displayCol);
 
                         if (s.trim().equals("")) {
                             s = "C" + (displayCol - 1);
                         }
 
-                        String val = "";
-
-                        if (s != null) {
-                            val = s;
-                        }
+                        String val = s;
 
                         buf.append(val).append("\t");
                     } else {
@@ -159,18 +154,8 @@ class TabularDataTransferHandler extends TransferHandler {
                                     } else if (datumObj instanceof String) {
 
                                         // Let's quote all Strings...
-                                        datumString = "\"" + datumObj.toString() + "\"";
+                                        datumString = "\"" + datumObj + "\"";
 
-//                                        // This is done to prevent integer discrete
-//                                        // columns from being reinterpreted,
-//                                        // on paste, as continuous columns.
-//                                        try {
-//                                            Double.parseDouble((String) datumObj);
-//                                            datumString = "\"" + datumObj.toString() + "\"";
-//                                        }
-//                                        catch (NumberFormatException e) {
-//                                            datumString = datumObj.toString();
-//                                        }
                                     } else {
                                         throw new IllegalArgumentException();
                                     }
@@ -247,7 +232,7 @@ class TabularDataTransferHandler extends TransferHandler {
                 }
 
                 if (shouldAsk) {
-                    String[] choices = new String[]{
+                    String[] choices = {
                             "Shift corresponding cells down to make room",
                             "Replace corresponding cells"};
 
@@ -266,9 +251,7 @@ class TabularDataTransferHandler extends TransferHandler {
                 }
 
                 doPaste(s, startRow, startCol, shiftDown, tabularData);
-            } catch (UnsupportedFlavorException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+            } catch (UnsupportedFlavorException | IOException e) {
                 e.printStackTrace();
             }
 
@@ -401,10 +384,9 @@ class TabularDataTransferHandler extends TransferHandler {
                 int i = 0;
                 String _name;
 
-                while (true) {
+                do {
                     _name = name + "_" + (++i);
-                    if (dataSet.getVariable(_name) == null) break;
-                }
+                } while (dataSet.getVariable(_name) != null);
 
                 node.setName(_name);
             }
@@ -456,7 +438,7 @@ class TabularDataTransferHandler extends TransferHandler {
     }
 
     public void exportDone(JComponent source, Transferable data, int action) {
-        if (action == MOVE && source instanceof TabularDataJTable) {
+        if (action == TransferHandler.MOVE && source instanceof TabularDataJTable) {
             TabularDataJTable tableTabular = (TabularDataJTable) source;
             tableTabular.deleteSelected();
         }
@@ -467,8 +449,7 @@ class TabularDataTransferHandler extends TransferHandler {
       The number of initial "special" columns not used to display the data
       set.
      */
-        int numLeadingCols = 1;
-        return numLeadingCols;
+        return 1;
     }
 
     private int getNumLeadingRows() {
@@ -476,8 +457,7 @@ class TabularDataTransferHandler extends TransferHandler {
       The number of initial "special" rows not used to display the data
       set.
      */
-        int numLeadingRows = 2;
-        return numLeadingRows;
+        return 2;
     }
 }
 

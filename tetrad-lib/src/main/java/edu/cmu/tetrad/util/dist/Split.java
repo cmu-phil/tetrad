@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,7 +34,7 @@ import java.text.NumberFormat;
  *
  * @author Joseph Ramsey
  */
-@SuppressWarnings({"WeakerAccess"})
+@SuppressWarnings("WeakerAccess")
 public class Split implements Distribution {
     static final long serialVersionUID = 23L;
 
@@ -98,11 +98,11 @@ public class Split implements Distribution {
     }
 
     public double getA() {
-        return a;
+        return this.a;
     }
 
     public double getB() {
-        return b;
+        return this.b;
     }
 
 
@@ -112,15 +112,15 @@ public class Split implements Distribution {
 
     public String toString() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        return "Split(" + nf.format(a) + ", " + nf.format(b) + ", " + ")";
+        return "Split(" + nf.format(this.a) + ", " + nf.format(this.b) + ", " + ")";
     }
 
 
     public void setParameter(int index, double value) {
-        if (index == 0 && value < b) {
-            a = value;
-        } else if (index == 1 && value > a) {
-            b = value;
+        if (index == 0 && value < this.b) {
+            this.a = value;
+        } else if (index == 1 && value > this.a) {
+            this.b = value;
         } else {
             throw new IllegalArgumentException("Cannot set value of " + index + " to " + value);
         }
@@ -128,9 +128,9 @@ public class Split implements Distribution {
 
     public double getParameter(int index) {
         if (index == 0) {
-            return a;
+            return this.a;
         } else if (index == 1) {
-            return b;
+            return this.b;
         } else {
             throw new IllegalArgumentException("There is no parameter " + index);
         }
@@ -169,11 +169,11 @@ public class Split implements Distribution {
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (a < 0) {
+        if (this.a < 0) {
             throw new IllegalStateException();
         }
 
-        if (b <= a) {
+        if (this.b <= this.a) {
             throw new IllegalStateException();
         }
     }

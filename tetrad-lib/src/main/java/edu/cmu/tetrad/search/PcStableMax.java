@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -47,7 +47,7 @@ public class PcStableMax implements GraphSearch {
     /**
      * The independence test used for the PC search. This can  be a test based on a score.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * Forbidden and required edges for the search.
@@ -72,18 +72,13 @@ public class PcStableMax implements GraphSearch {
     /**
      * The logger for this class. The config needs to be set.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * The initial graph for the Fast Adjacency Search, or null if there is none.
-     */
-    private Graph externalGraph = null;
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * True if verbose output should be printed.
      */
-    private boolean verbose = false;
-    private boolean useHeuristic = false;
+    private boolean verbose;
+    private boolean useHeuristic;
     private int maxPathLength;
 
     //=============================CONSTRUCTORS==========================//
@@ -108,14 +103,14 @@ public class PcStableMax implements GraphSearch {
      * @return the independence test being used in the search.
      */
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     /**
@@ -134,7 +129,7 @@ public class PcStableMax implements GraphSearch {
      * independence checked.
      */
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     /**
@@ -161,7 +156,7 @@ public class PcStableMax implements GraphSearch {
      * Runs PC search, returning the output CPDAG.
      */
     public Graph search() {
-        return search(independenceTest.getVariables());
+        return search(this.independenceTest.getVariables());
     }
 
     /**
@@ -188,66 +183,58 @@ public class PcStableMax implements GraphSearch {
         fas.setStable(true);
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
-        fas.setVerbose(verbose);
+        fas.setVerbose(this.verbose);
 //        fas.setRecordSepsets(false);
-        graph = fas.search();
+        this.graph = fas.search();
 
-        SearchGraphUtils.pcOrientbk(knowledge, graph, nodes);
+        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
 
-        final OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(independenceTest);
-        orientCollidersMaxP.setKnowledge(knowledge);
-        orientCollidersMaxP.setUseHeuristic(useHeuristic);
-        orientCollidersMaxP.setMaxPathLength(maxPathLength);
-        orientCollidersMaxP.orient(graph);
+        OrientCollidersMaxP orientCollidersMaxP = new OrientCollidersMaxP(this.independenceTest);
+        orientCollidersMaxP.setKnowledge(this.knowledge);
+        orientCollidersMaxP.setUseHeuristic(this.useHeuristic);
+        orientCollidersMaxP.setMaxPathLength(this.maxPathLength);
+        orientCollidersMaxP.orient(this.graph);
 
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(knowledge);
-        rules.orientImplied(graph);
+        rules.setKnowledge(this.knowledge);
+        rules.orientImplied(this.graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
+        this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
         this.elapsedTime = System.currentTimeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (elapsedTime) / 1000. + " s");
+        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.log("info", "Finishing PC Algorithm.");
         this.logger.flush();
 
-        return graph;
+        return this.graph;
     }
 
     /**
      * @return the elapsed time of the search, in milliseconds.
      */
     public long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     public Set<Edge> getAdjacencies() {
-        Set<Edge> adjacencies = new HashSet<>();
-        for (Edge edge : graph.getEdges()) {
-            adjacencies.add(edge);
-        }
-        return adjacencies;
+        return new HashSet<>(this.graph.getEdges());
     }
 
     public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(graph);
+        Graph complete = GraphUtils.completeGraph(this.graph);
         Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(graph);
+        Graph undirected = GraphUtils.undirectedGraph(this.graph);
         nonAdjacencies.removeAll(undirected.getEdges());
         return new HashSet<>(nonAdjacencies);
     }
 
     public List<Node> getNodes() {
-        return graph.getNodes();
-    }
-
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
+        return this.graph.getNodes();
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -258,16 +245,12 @@ public class PcStableMax implements GraphSearch {
         this.useHeuristic = useHeuristic;
     }
 
-    public boolean isUseHeuristic() {
-        return useHeuristic;
-    }
-
     public void setMaxPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
     }
 
     public int getMaxPathLength() {
-        return maxPathLength;
+        return this.maxPathLength;
     }
 }
 

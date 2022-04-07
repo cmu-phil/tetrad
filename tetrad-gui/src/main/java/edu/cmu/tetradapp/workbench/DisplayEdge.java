@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -119,12 +119,12 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * The type of the edge, one of DIRECTED, NONDIRECTED, UNDIRECTED,
      * PARTIALLY_ORIENTED, BIDIRECTED.
      */
-    private int type = 0;
+    private int type;
 
     /**
      * The node that this edge is linked "from."
      */
-    private DisplayNode node1;
+    private final DisplayNode node1;
 
     /**
      * The node that this edge is linked "to."
@@ -149,12 +149,12 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * True iff only adacencies (and no endpoints) should be shown.
      */
-    private boolean showAdjacenciesOnly = false;
+    private boolean showAdjacenciesOnly;
 
     /**
      * The offset of this edge for multiple edges between node pairs.
      */
-    private double offset = 0;
+    private double offset;
 
     /**
      * The pair of points that this edge connects, from the edge of one
@@ -166,23 +166,14 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * The color that unselected edges will be drawn in.
      */
     private Color lineColor = new Color(78, 117, 175);
-//    private Color lineColor = Color.black;
 
-
-//    public Color lineColor = new Color(99, 101, 188);
-//    public Color lineColor = new Color(0, 4, 255);
-//    public Color lineColor = new Color(52, 55, 217);
 
     /**
      * The color that selected edges will be drawn in.
      */
 
 
-//    private Color selectedColor = new Color(78, 117, 175).darker();
-//    private Color selectedColor = new Color(238, 180, 34); // Dark yellow
     private Color selectedColor = new Color(221, 66, 32);   // this one
-//    public Color selectedColor = new Color(255, 151, 0);
-//    public Color selectedColor = new Color(255, 123, 0);
 
     //    private Color highlightedColor = Color.red.darker().darker();
     private Color highlightedColor = new Color(238, 180, 34);
@@ -195,7 +186,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * True iff this edge is highlighted.
      */
-    private boolean highlighted = false;
+    private boolean highlighted;
 
     /**
      * Handler for <code>ComponentEvent</code>s.
@@ -207,7 +198,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
     private final PropertyChangeHandler propertyChangeHandler =
             new PropertyChangeHandler();
-    private boolean bold = false;
+    private boolean bold;
 
     //==========================CONSTRUCTORS============================//
 
@@ -244,13 +235,13 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
             this.lineColor = color;
         }
 
-        this.mode = ANCHORED_UNSELECTED;
+        this.mode = DisplayEdge.ANCHORED_UNSELECTED;
 
-        node1.addComponentListener(compHandler);
-        node2.addComponentListener(compHandler);
+        node1.addComponentListener(this.compHandler);
+        node2.addComponentListener(this.compHandler);
 
-        node1.addPropertyChangeListener(propertyChangeHandler);
-        node2.addPropertyChangeListener(propertyChangeHandler);
+        node1.addPropertyChangeListener(this.propertyChangeHandler);
+        node2.addPropertyChangeListener(this.propertyChangeHandler);
 
         resetBounds();
     }
@@ -287,13 +278,13 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         if (color != null) {
             this.lineColor = color;
         }
-        this.mode = ANCHORED_UNSELECTED;
+        this.mode = DisplayEdge.ANCHORED_UNSELECTED;
 
-        node1.addComponentListener(compHandler);
-        node2.addComponentListener(compHandler);
+        node1.addComponentListener(this.compHandler);
+        node2.addComponentListener(this.compHandler);
 
-        node1.addPropertyChangeListener(propertyChangeHandler);
-        node2.addPropertyChangeListener(propertyChangeHandler);
+        node1.addPropertyChangeListener(this.propertyChangeHandler);
+        node2.addPropertyChangeListener(this.propertyChangeHandler);
 
         resetBounds();
     }
@@ -338,7 +329,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
             this.lineColor = color;
         }
 
-        this.mode = HALF_ANCHORED;
+        this.mode = DisplayEdge.HALF_ANCHORED;
 
         resetBounds();
     }
@@ -351,7 +342,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         // NOTE:  For this component, the resetBounds() methods should ALWAYS
         // be called before repaint().
         switch (this.mode) {
-            case HALF_ANCHORED:
+            case DisplayEdge.HALF_ANCHORED:
                 g.setColor(getLineColor());
                 Point point = this.getRelativeMouseTrackPoint();
                 setConnectedPoints(calculateEdge(getNode1(), point));
@@ -362,7 +353,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
                 break;
 
-            case ANCHORED_UNSELECTED:
+            case DisplayEdge.ANCHORED_UNSELECTED:
                 g.setColor(getLineColor());
                 setConnectedPoints(calculateEdge(getNode1(), getNode2()));
 
@@ -372,7 +363,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
                 break;
 
-            case ANCHORED_SELECTED:
+            case DisplayEdge.ANCHORED_SELECTED:
                 g.setColor(getSelectedColor());
                 setConnectedPoints(calculateEdge(getNode1(), getNode2()));
 
@@ -436,7 +427,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 //        g2d.setStroke(new BasicStroke(1.000001f));
         BasicStroke s;
 
-        if (bold) {
+        if (this.bold) {
             s = new BasicStroke(3.0f);
         } else {
             s = new BasicStroke(getStrokeWidth() + 0.000001f);
@@ -445,7 +436,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         g2d.setStroke(s);
 
         if (!isSelected()) {
-            g2d.setColor(lineColor);
+            g2d.setColor(this.lineColor);
         }
 
         g2d.drawLine(x1, y1, x2, y2);
@@ -502,15 +493,15 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
     public final PointPair getPointPair() {
         switch (this.mode) {
-            case HALF_ANCHORED:
+            case DisplayEdge.HALF_ANCHORED:
                 Point point = this.getRelativeMouseTrackPoint();
                 setConnectedPoints(calculateEdge(getNode1(), point));
                 break;
 
-            case ANCHORED_UNSELECTED:
+            case DisplayEdge.ANCHORED_UNSELECTED:
 
                 // Falls through!
-            case ANCHORED_SELECTED:
+            case DisplayEdge.ANCHORED_SELECTED:
                 setConnectedPoints(calculateEdge(getNode1(), getNode2()));
                 break;
 
@@ -559,7 +550,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * @return true iff the component is selected.
      */
     public final boolean isSelected() {
-        return this.mode == ANCHORED_SELECTED;
+        return this.mode == DisplayEdge.ANCHORED_SELECTED;
     }
 
     /**
@@ -572,12 +563,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
         boolean oldSelected = isSelected();
 
-        if (this.mode != HALF_ANCHORED) {
-            this.mode = (selected ? ANCHORED_SELECTED : ANCHORED_UNSELECTED);
+        if (this.mode != DisplayEdge.HALF_ANCHORED) {
+            this.mode = (selected ? DisplayEdge.ANCHORED_SELECTED : DisplayEdge.ANCHORED_UNSELECTED);
             firePropertyChange("selected", oldSelected, selected);
-            if (oldSelected != selected) {
-                repaint();
-            }
+            repaint();
         }
     }
 
@@ -588,13 +577,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     /**
-     * Toggles the selection status of the component.
-     */
-    public final void toggleSelected() {
-        setSelected(!isSelected());
-    }
-
-    /**
      * Updates the position of the free end of the edge while it is in the
      * HALF_ANCHORED mode.
      *
@@ -602,7 +584,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      *                               not in the HALF_ANCHORED mode.
      */
     public final void updateTrackPoint(Point p) {
-        if (this.mode != HALF_ANCHORED) {
+        if (this.mode != DisplayEdge.HALF_ANCHORED) {
             throw new IllegalStateException(
                     "Cannot call the updateTrackPoint " +
                             "method when the edge is " +
@@ -633,7 +615,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * intersections of the edge with node 1 and node 2.
      */
     public final PointPair getConnectedPoints() {
-        return connectedPoints;
+        return this.connectedPoints;
     }
 
     /**
@@ -648,7 +630,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * given relative to the containing component.)
      */
     public final Point getRelativeMouseTrackPoint() {
-        return relativeMouseTrackPoint;
+        return this.relativeMouseTrackPoint;
     }
 
     /**
@@ -678,8 +660,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
         double angle = Math.atan2(c1.y - c2.y, c1.x - c2.x);
         angle += Math.PI / 2;
-        Point d = new Point((int) (offset * Math.cos(angle)),
-                (int) (offset * Math.sin(angle)));
+        Point d = new Point((int) (this.offset * Math.cos(angle)),
+                (int) (this.offset * Math.sin(angle)));
         c1.translate(d.x, d.y);
         c2.translate(d.x, d.y);
 
@@ -762,28 +744,28 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         } else {
             switch (this.type) {
 
-                case SESSION:
+                case DisplayEdge.SESSION:
                     drawSessionArrowEndpoint(pp.getFrom(), pp.getTo(), g);
                     break;
 
-                case DIRECTED:
+                case DisplayEdge.DIRECTED:
                     drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
                     break;
 
-                case NONDIRECTED:
+                case DisplayEdge.NONDIRECTED:
                     drawCircleEndpoint(pp.getTo(), pp.getFrom(), g);
                     drawCircleEndpoint(pp.getFrom(), pp.getTo(), g);
                     break;
 
-                case UNDIRECTED:
+                case DisplayEdge.UNDIRECTED:
                     break;
 
-                case PARTIALLY_ORIENTED:
+                case DisplayEdge.PARTIALLY_ORIENTED:
                     drawCircleEndpoint(pp.getTo(), pp.getFrom(), g);
                     drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
                     break;
 
-                case BIDIRECTED:
+                case DisplayEdge.BIDIRECTED:
                     drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
                     drawArrowEndpoint(pp.getTo(), pp.getFrom(), g);
                     break;
@@ -883,7 +865,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         Point pTo = new Point(pIn);
         Point pMid = null;
 
-        while (distance(pFrom, pTo) > 2.0) {
+        while (DisplayEdge.distance(pFrom, pTo) > 2.0) {
             pMid = new Point((pFrom.x + pTo.x) / 2, (pFrom.y + pTo.y) / 2);
 
             if (comp.contains(pMid.x - loc.x, pMid.y - loc.y)) {
@@ -913,12 +895,13 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         int d = (int) getStrokeWidth() + 6;    // halfwidth of the sleeve.
 
         if (Math.abs(pp.getFrom().y - pp.getTo().y) <= 3) {
-            return getHorizSleeve(pp, d);
+            return DisplayEdge.getHorizSleeve(pp, d);
         }
 
-        int xpoints[] = new int[4];
-        int ypoints[] = new int[4];
-        double qx, qy;
+        int[] xpoints = new int[4];
+        int[] ypoints = new int[4];
+        double qx;
+        double qy;
 
         qx = pp.getTo().x - pp.getFrom().x;
         qy = pp.getTo().y - pp.getFrom().y;
@@ -977,7 +960,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
     private void resetBounds() {
         switch (this.mode) {
-            case HALF_ANCHORED:
+            case DisplayEdge.HALF_ANCHORED:
                 Rectangle temp = new Rectangle(this.mouseTrackPoint.x,
                         this.mouseTrackPoint.y, 0, 0);
 
@@ -991,12 +974,12 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
                         -getLocation().y);
                 break;
 
-            case ANCHORED_UNSELECTED:
+            case DisplayEdge.ANCHORED_UNSELECTED:
 
                 // Falls through!
-            case ANCHORED_SELECTED:
-                Rectangle r1 = node1.getBounds();
-                Rectangle r2 = node2.getBounds();
+            case DisplayEdge.ANCHORED_SELECTED:
+                Rectangle r1 = this.node1.getBounds();
+                Rectangle r2 = this.node2.getBounds();
                 Point c1 = new Point((int) (r1.x + r1.width / 2.0),
                         (int) (r1.y + r1.height / 2.0));
                 Point c2 = new Point((int) (r2.x + r2.width / 2.0),
@@ -1004,19 +987,14 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
                 double angle = Math.atan2(c1.y - c2.y, c1.x - c2.x);
                 angle += Math.PI / 2;
-                Point d = new Point((int) (offset * Math.cos(angle)),
-                        (int) (offset * Math.sin(angle)));
+                Point d = new Point((int) (this.offset * Math.cos(angle)),
+                        (int) (this.offset * Math.sin(angle)));
 
                 r1.translate(d.x, d.y);
                 r2.translate(d.x, d.y);
 
                 setBounds(r1.getBounds().union(r2.getBounds()));
 
-                //                node1RelativeBounds = new Rectangle(getNode1().getBounds());
-                //                node2RelativeBounds = new Rectangle(getNode2().getBounds());
-                //
-                //                node1RelativeBounds.translate(-getLocation().x, -getLocation().y);
-                //                node2RelativeBounds.translate(-getLocation().x, -getLocation().y);
                 break;
 
             default:
@@ -1025,19 +1003,15 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     private boolean isShowAdjacenciesOnly() {
-        return showAdjacenciesOnly;
-    }
-
-    public final void setShowAdjacenciesOnly(boolean showAdjacenciesOnly) {
-        this.showAdjacenciesOnly = showAdjacenciesOnly;
+        return this.showAdjacenciesOnly;
     }
 
     public final Edge getModelEdge() {
-        return modelEdge;
+        return this.modelEdge;
     }
 
     public double getOffset() {
-        return offset;
+        return this.offset;
     }
 
     public void setOffset(double offset) {
@@ -1045,7 +1019,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     public Color getLineColor() {
-        return highlighted ? getHighlightedColor() : lineColor;
+        return this.highlighted ? getHighlightedColor() : this.lineColor;
 //        return lineColor;
     }
 
@@ -1056,7 +1030,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     public boolean getBold() {
-        return bold;
+        return this.bold;
     }
 
     public void setBold(boolean bold) {
@@ -1064,7 +1038,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     public Color getSelectedColor() {
-        return selectedColor;
+        return this.selectedColor;
     }
 
     public void setSelectedColor(Color selectedColor) {
@@ -1072,7 +1046,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     public Color getHighlightedColor() {
-        return highlightedColor;
+        return this.highlightedColor;
     }
 
     public void setHighlightedColor(Color highlightedColor) {
@@ -1080,7 +1054,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     public float getStrokeWidth() {
-        return strokeWidth;
+        return this.strokeWidth;
     }
 
     public void setStrokeWidth(float strokeWidth) {
@@ -1101,12 +1075,12 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * Handles <code>ComponentEvent</code>s.
      */
     private final class ComponentHandler extends ComponentAdapter {
-        public final void componentMoved(ComponentEvent e) {
+        public void componentMoved(ComponentEvent e) {
             resetBounds();
             repaint();
         }
 
-        public final void componentResized(ComponentEvent e) {
+        public void componentResized(ComponentEvent e) {
             resetBounds();
             repaint();
         }
@@ -1123,7 +1097,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
          * @param evt A PropertyChangeEvent object describing the event source
          *            and the property that has changed.
          */
-        public final void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(PropertyChangeEvent evt) {
             String name = evt.getPropertyName();
 
             if ("selected".equals(name)) {

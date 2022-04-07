@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -46,14 +45,13 @@ public final class IndTestMulti implements IndependenceTest {
     /**
      * The independence test associated with each data set.
      */
-    private List<IndependenceTest> independenceTests;
+    private final List<IndependenceTest> independenceTests;
 
     /**
      * Pooling method
      */
-    private ResolveSepsets.Method method;
-    private double p = Double.NaN;
-    private boolean verbose = false;
+    private final ResolveSepsets.Method method;
+    private boolean verbose;
 
 //    private DataSet concatenatedData;
 
@@ -70,14 +68,6 @@ public final class IndTestMulti implements IndependenceTest {
         this.variables = independenceTests.get(0).getVariables();
         this.independenceTests = independenceTests;
         this.method = method;
-
-        List<DataSet> dataSets = new ArrayList<>();
-
-        for (IndependenceTest test : independenceTests) {
-            dataSets.add((DataSet) test.getData());
-        }
-
-//        this.concatenatedData = DataUtils.concatenate(dataSets);
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -96,8 +86,7 @@ public final class IndTestMulti implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        boolean independent = ResolveSepsets.isIndependentPooled(method, independenceTests, x, y, z);
-
+        boolean independent = ResolveSepsets.isIndependentPooled(this.method, this.independenceTests, x, y, z);
 
         if (independent) {
             TetradLogger.getInstance().log("independencies", "In aggregate independent: " + SearchLogUtils.independenceFact(x, y, z));
@@ -106,46 +95,6 @@ public final class IndTestMulti implements IndependenceTest {
         }
 
         return independent;
-    }
-
-    public boolean isIndependentPooledFisher2(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
-        double alpha = independenceTests.get(0).getAlpha();
-        List<Double> pValues = getAvailablePValues(independenceTests, x, y, condSet);
-
-        double tf = 0.0;
-        int numPValues = 0;
-
-        for (double p : pValues) {
-//            if (p > 0) {
-            tf += -2.0 * Math.log(p);
-            numPValues++;
-//            }
-        }
-
-        double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * numPValues);
-        this.p = p;
-
-        return (p > alpha);
-    }
-
-    private static List<Double> getAvailablePValues(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
-        List<Double> allPValues = new ArrayList<>();
-
-        for (IndependenceTest test : independenceTests) {
-            List<Node> localCondSet = new ArrayList<>();
-            for (Node node : condSet) {
-                localCondSet.add(test.getVariable(node.getName()));
-            }
-
-            try {
-                test.isIndependent(test.getVariable(x.getName()), test.getVariable(y.getName()), localCondSet);
-                allPValues.add(test.getPValue());
-            } catch (Exception e) {
-                // Skip that test.
-            }
-        }
-
-        return allPValues;
     }
 
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -162,16 +111,10 @@ public final class IndTestMulti implements IndependenceTest {
         return isDependent(x, y, zList);
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
     public double getPValue() {
-        return p;
+        return Double.NaN;
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
@@ -217,19 +160,12 @@ public final class IndTestMulti implements IndependenceTest {
         return variableNames;
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
-    public boolean determines(List z, Node x) throws UnsupportedOperationException {
+    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
     public DataSet getData() {
         throw new UnsupportedOperationException();
-//        return concatenatedData;
     }
 
     @Override
@@ -261,12 +197,12 @@ public final class IndTestMulti implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Pooled Independence Test:  alpha = " + independenceTests.get(0).getAlpha();
+        return "Pooled Independence Test:  alpha = " + this.independenceTests.get(0).getAlpha();
     }
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override

@@ -92,8 +92,8 @@ public class JunctionTreeAlgorithmTest {
         String dataFile = this.getClass().getResource("/jta/data.txt").getFile();
         try {
             JunctionTreeAlgorithm jta = getJunctionTreeAlgorithm(graphFile, dataFile);
-            for (int[] values : THREE_NODE_VALUES) {
-                printExampleProof(jta, values);
+            for (int[] values : JunctionTreeAlgorithmTest.THREE_NODE_VALUES) {
+                JunctionTreeAlgorithmTest.printExampleProof(jta, values);
                 System.out.printf("JTA: %f%n", jta.getJointProbabilityAll(values));
                 System.out.println();
             }
@@ -112,7 +112,7 @@ public class JunctionTreeAlgorithmTest {
 
             DecimalFormat df = new DecimalFormat("#.######");
             df.setRoundingMode(RoundingMode.CEILING);
-            int multiplier = 1000000;
+            final int multiplier = 1000000;
 
             // P(v1=0|v2=0)
             int iNode = 0;
@@ -166,9 +166,9 @@ public class JunctionTreeAlgorithmTest {
     }
 
     private static void printExampleProof(JunctionTreeAlgorithm jta, int[] values) {
-        int v1 = 0;
-        int v2 = 1;
-        int v3 = 2;
+        final int v1 = 0;
+        final int v2 = 1;
+        final int v3 = 2;
 
         double v1GivenV2 = jta.getConditionalProbability(v1, values[v1], new int[]{v2}, new int[]{values[v2]});
         double v2Parent = jta.getMarginalProbability(v2, values[v2]);
@@ -228,11 +228,11 @@ public class JunctionTreeAlgorithmTest {
 
     private DataModel readInDiscreteData(Path file) throws IOException {
         // specify data properties
-        Delimiter delimiter = Delimiter.TAB;
-        char quoteCharacter = '"';
-        String commentMarker = "//";
-        String missingValueMarker = "*";
-        boolean hasHeader = true;
+        final Delimiter delimiter = Delimiter.TAB;
+        final char quoteCharacter = '"';
+        final String commentMarker = "//";
+        final String missingValueMarker = "*";
+        final boolean hasHeader = true;
 
         // create a data reader specifically for the data
         VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(file, delimiter);

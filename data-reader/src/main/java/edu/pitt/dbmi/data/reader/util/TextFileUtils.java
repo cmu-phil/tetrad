@@ -83,7 +83,7 @@ public class TextFileUtils {
             boolean skipLine = false;
             int lineCount = 0;
             byte quoteChar = (byte) quoteCharacter;
-            byte prevNonBlankChar = SPACE_CHAR;
+            byte prevNonBlankChar = TextFileUtils.SPACE_CHAR;
             byte prevChar = -1;
             do {
                 MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, size);
@@ -92,29 +92,29 @@ public class TextFileUtils {
                     byte currChar = buffer.get();
 
                     if (skipLine) {
-                        if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
+                        if (currChar == TextFileUtils.CARRIAGE_RETURN || currChar == TextFileUtils.LINE_FEED) {
                             skipLine = false;
                         }
                     } else {
-                        if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
+                        if (currChar == TextFileUtils.CARRIAGE_RETURN || currChar == TextFileUtils.LINE_FEED) {
                             byteBuffer.clear();
                             reqCheck = prefix.length > 0;
 
-                            if (!(currChar == LINE_FEED && prevChar == CARRIAGE_RETURN)) {
+                            if (!(currChar == TextFileUtils.LINE_FEED && prevChar == TextFileUtils.CARRIAGE_RETURN)) {
                                 lineCount++;
                             }
                         } else {
-                            if (currChar > SPACE_CHAR) {
+                            if (currChar > TextFileUtils.SPACE_CHAR) {
                                 prevNonBlankChar = currChar;
                             }
 
-                            if (reqCheck && prevNonBlankChar > SPACE_CHAR) {
+                            if (reqCheck && prevNonBlankChar > TextFileUtils.SPACE_CHAR) {
                                 if (currChar == prefix[index]) {
                                     index++;
                                     if (index == prefix.length) {
                                         index = 0;
                                         skipLine = true;
-                                        prevNonBlankChar = SPACE_CHAR;
+                                        prevNonBlankChar = TextFileUtils.SPACE_CHAR;
                                         byteBuffer.clear();
 
                                         prevChar = currChar;

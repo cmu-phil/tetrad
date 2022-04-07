@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -104,7 +104,7 @@ final class SaveDataAction extends AbstractAction {
         if (this.dataEditor != null) {
             dataModel = getDataEditor().getDataModelList();
         } else {
-            dataModel = searchEditor.getDataModel();
+            dataModel = this.searchEditor.getDataModel();
         }
 
         if (dataModel == null) {
@@ -169,13 +169,13 @@ final class SaveDataAction extends AbstractAction {
                         "Output file could not be opened: " + file);
             }
 
-            DataWriter.writeCovMatrix((ICovarianceMatrix) dataModel, out, nf);
+            DataWriter.writeCovMatrix((ICovarianceMatrix) dataModel, out, this.nf);
 
             out.close();
         } else if (dataModel instanceof DataModelList) {
             File file = EditorUtils.getSaveFile(name.replace(" ", "_"), "txt", getDataEditor(), false, "Save Data...");
 
-            char delimiter = '\t';
+            final char delimiter = '\t';
 
             DataModelList list = (DataModelList) dataModel;
 
@@ -220,7 +220,7 @@ final class SaveDataAction extends AbstractAction {
                                 "Output file could not be opened: " + name.replace(" ", "_") + ".txt");
                     }
 
-                    DataWriter.writeCovMatrix((ICovarianceMatrix) _dataModel, out, nf);
+                    DataWriter.writeCovMatrix((ICovarianceMatrix) _dataModel, out, this.nf);
                 }
             }
         } else {
@@ -230,7 +230,7 @@ final class SaveDataAction extends AbstractAction {
     }
 
     private DataEditor getDataEditor() {
-        return dataEditor;
+        return this.dataEditor;
     }
 
     private void setDataEditor(DataEditor dataEditor) {

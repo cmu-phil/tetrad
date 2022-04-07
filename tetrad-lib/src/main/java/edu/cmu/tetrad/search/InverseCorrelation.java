@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,8 +36,8 @@ import edu.cmu.tetrad.util.RandomUtil;
  */
 public class InverseCorrelation {
 
-    private DataSet data;
-    private double threshold;
+    private final DataSet data;
+    private final double threshold;
 
     public InverseCorrelation(DataSet dataSet, double threshold) {
         this.data = dataSet;
@@ -45,14 +45,14 @@ public class InverseCorrelation {
     }
 
     public Graph search() {
-        CovarianceMatrix cov = new CovarianceMatrix(data);
+        CovarianceMatrix cov = new CovarianceMatrix(this.data);
 
         Matrix _data = cov.getMatrix();
         Matrix inverse = _data.inverse();
 
         System.out.println(inverse);
 
-        Graph graph = new EdgeListGraph(data.getVariables());
+        Graph graph = new EdgeListGraph(this.data.getVariables());
 
         for (int i = 0; i < inverse.rows(); i++) {
             for (int j = i + 1; j < inverse.columns(); j++) {
@@ -62,32 +62,19 @@ public class InverseCorrelation {
 
                 double r = -a / Math.sqrt(b * c);
 
-                int sampleSize = data.getNumRows();
-                int z = data.getNumColumns();
+                int sampleSize = this.data.getNumRows();
+                int z = this.data.getNumColumns();
 
                 double fisherZ = Math.sqrt(sampleSize - z - 3.0) *
                         0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
 
                 double p = getPValue(fisherZ);
 
-                if (p < threshold) {
+                if (p < this.threshold) {
                     Node x = graph.getNodes().get(i);
                     Node y = graph.getNodes().get(j);
                     graph.addUndirectedEdge(x, y);
                 }
-
-//                if (abs(fisherZ) > threshold) {
-//                    System.out.println(fisherZ + " &&& " + p);
-//                    Node x = graph.getNodes().get(i);
-//                    Node y = graph.getNodes().get(j);
-//                    graph.addUndirectedEdge(x, y);
-//                }
-
-//                if (Math.abs(inverse.get(i, j)) > threshold) {
-//                    Node x = graph.getNodes().get(i);
-//                    Node y = graph.getNodes().get(j);
-//                    graph.addUndirectedEdge(x, y);
-//                }
             }
         }
 

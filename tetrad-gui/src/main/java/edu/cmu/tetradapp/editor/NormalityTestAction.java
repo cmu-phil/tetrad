@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.DesktopController;
 
 import javax.swing.*;
@@ -59,23 +58,17 @@ class NormalityTestAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot run normality tests on an empty data set.");
             return;
         }
         // if there are missing values warn and don't display q-q plot.
-//        if(DataUtils.containsMissingValue(dataSet)){
-//            JOptionPane.showMessageDialog(findOwner(), new JLabel("<html>Data has missing values, " +
-//                    "remove all missing values before<br>" +
-//                    "running normality tests.</html>"));
-//            return;
-//        }
 
-        JPanel panel = createNormalityTestDialog(null);
+        JPanel panel = createNormalityTestDialog();
 
         EditorWindow window = new EditorWindow(panel,
-                "Normality Tests", "Close", false, dataEditor);
+                "Normality Tests", "Close", false, this.dataEditor);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -85,34 +78,15 @@ class NormalityTestAction extends AbstractAction {
 
 
     /**
-     * Sets the location on the given dialog for the given index.
-     */
-    private void setLocation(JDialog dialog, int index) {
-        Rectangle bounds = dialog.getBounds();
-        JFrame frame = findOwner();
-        Dimension dim;
-        if (frame == null) {
-            dim = Toolkit.getDefaultToolkit().getScreenSize();
-        } else {
-            dim = frame.getSize();
-        }
-
-        int x = (int) (150 * Math.cos(index * 15 * (Math.PI / 180)));
-        int y = (int) (150 * Math.sin(index * 15 * (Math.PI / 180)));
-        x += (dim.width - bounds.width) / 2;
-        y += (dim.height - bounds.height) / 2;
-        dialog.setLocation(x, y);
-    }
-
-
-    /**
      * Creates a dialog that is showing the histogram for the given node (if null
      * one is selected for you)
      */
-    private JPanel createNormalityTestDialog(Node selected) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+    private JPanel createNormalityTestDialog(
 
-        QQPlot qqPlot = new QQPlot(dataSet, selected);
+    ) {
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
+
+        QQPlot qqPlot = new QQPlot(dataSet, null);
         NormalityTestEditorPanel editorPanel = new NormalityTestEditorPanel(qqPlot, dataSet);
 
         JTextArea display = new JTextArea(NormalityTests.runNormalityTests(dataSet,
@@ -143,7 +117,7 @@ class NormalityTestAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, dataEditor);
+                JFrame.class, this.dataEditor);
     }
 
     //================================= Inner Class ======================================//

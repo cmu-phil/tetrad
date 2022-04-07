@@ -12,8 +12,11 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Cstar;
+import edu.cmu.tetrad.search.Cstar.PatternAlgorithm;
+import edu.cmu.tetrad.search.Cstar.SampleStyle;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -28,7 +31,7 @@ import java.util.List;
 public class CStaR implements Algorithm, TakesIndependenceWrapper {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private LinkedList<Cstar.Record> records = null;
+    private LinkedList<Cstar.Record> records;
 
     public CStaR() {
     }
@@ -44,14 +47,19 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
         cStaR.setNumSubsamples(parameters.getInt(Params.NUM_SUBSAMPLES));
         cStaR.setqFrom(parameters.getInt(Params.CSTAR_Q));
         cStaR.setqTo(parameters.getInt(Params.CSTAR_Q));
+        cStaR.setSelectionAlpha(parameters.getDouble(Params.SELECTION_MIN_EFFECT));
         cStaR.setqIncrement(1);
-        cStaR.setPatternAlgorithm(Cstar.PatternAlgorithm.PC_STABLE);
-        cStaR.setSampleStyle(Cstar.SampleStyle.SPLIT);
-        cStaR.setVerbose(parameters.getBoolean("verbose"));
+        cStaR.setPatternAlgorithm(PatternAlgorithm.PC_STABLE);
+        cStaR.setSampleStyle(SampleStyle.SPLIT);
+        cStaR.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         List<Node> possibleEffects = new ArrayList<>();
 
-        final String targetName = parameters.getString("targetNames");
+        String targetName = parameters.getString(Params.TARGET_NAMES);
+
+        if (targetName.trim().equalsIgnoreCase("")) {
+            throw new IllegalStateException("Please specify target name(s).");
+        }
 
         if (targetName.trim().equalsIgnoreCase("all")) {
             for (String name : dataSet.getVariableNames()) {
@@ -67,18 +75,21 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
 
         List<Node> possibleCauses = new ArrayList<>(dataSet.getVariables());
 
-        final LinkedList<LinkedList<Cstar.Record>> allRecords
+        LinkedList<LinkedList<Cstar.Record>> allRecords
                 = cStaR.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, test.getTest(dataSet, parameters));
 
         if (allRecords.isEmpty()) {
             throw new IllegalStateException("There were no records.");
         }
 
-        this.records = allRecords.getLast();
+        records = allRecords.getLast();
 
-        System.out.println(cStaR.makeTable(this.getRecords(), false));
+        TetradLogger.getInstance().forceLogMessage("CStaR Table");
+        TetradLogger.getInstance().forceLogMessage(cStaR.makeTable(Cstar.cStar(allRecords), true));
+        TetradLogger.getInstance().forceLogMessage("\nStability Selection Table");
+        TetradLogger.getInstance().forceLogMessage(cStaR.makeTable(getRecords(), true));
 
-        return cStaR.makeGraph(getRecords());
+        return cStaR.makeGraph(this.getRecords());
     }
 
     @Override
@@ -99,17 +110,18 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>(test.getParameters());
-        parameters.add(Params.SELECTION_ALPHA);
+        parameters.add(Params.SELECTION_MIN_EFFECT);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.NUM_SUBSAMPLES);
         parameters.add(Params.TARGET_NAMES);
         parameters.add(Params.CSTAR_Q);
         parameters.add(Params.PARALLELISM);
+        parameters.add(Params.VERBOSE);
         return parameters;
     }
 
     public LinkedList<Cstar.Record> getRecords() {
-        return records;
+        return this.records;
     }
 
     @Override
@@ -119,6 +131,6 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 }

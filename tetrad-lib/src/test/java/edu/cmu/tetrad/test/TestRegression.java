@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,8 +37,6 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * Tests the new regression classes. There is a tabular linear regression
  * model as well as a correlation linear regression model. (Space for more
@@ -62,7 +60,7 @@ public class TestRegression {
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
-        data = im.simulateDataReducedForm(1000, false);
+        this.data = im.simulateDataReducedForm(1000, false);
     }
 
     /**
@@ -75,7 +73,7 @@ public class TestRegression {
 
         RandomUtil.getInstance().setSeed(3848283L);
 
-        List<Node> nodes = data.getVariables();
+        List<Node> nodes = this.data.getVariables();
 
         Node target = nodes.get(0);
         List<Node> regressors = new ArrayList<>();
@@ -84,15 +82,10 @@ public class TestRegression {
             regressors.add(nodes.get(i));
         }
 
-        Regression regression = new RegressionDataset(data);
+        Regression regression = new RegressionDataset(this.data);
         RegressionResult result = regression.regress(target, regressors);
 
         double[] coeffs = result.getCoef();
-//        assertEquals(.08, coeffs[0], 0.01);
-//        assertEquals(-.05, coeffs[1], 0.01);
-//        assertEquals(.035, coeffs[2], 0.01);
-//        assertEquals(0.019, coeffs[3], 0.01);
-//        assertEquals(-.003, coeffs[4], 0.01);
     }
 
     /**
@@ -104,7 +97,7 @@ public class TestRegression {
 
         RandomUtil.getInstance().setSeed(3848283L);
 
-        ICovarianceMatrix cov = new CovarianceMatrix(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(this.data);
         List<Node> nodes = cov.getVariables();
 
         Node target = nodes.get(0);
@@ -118,11 +111,6 @@ public class TestRegression {
         RegressionResult result = regression.regress(target, regressors);
 
         double[] coeffs = result.getCoef();
-//        assertEquals(0.00, coeffs[0], 0.01);
-//        assertEquals(-.053, coeffs[1], 0.01);
-//        assertEquals(0.036, coeffs[2], 0.01);
-//        assertEquals(.019, coeffs[3], 0.01);
-//        assertEquals(.007, coeffs[4], 0.01);
     }
 }
 

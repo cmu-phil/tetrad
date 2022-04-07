@@ -13,7 +13,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -54,9 +53,9 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
                 }
             }
 
-            Fges search = new Fges(score.getScore(dataSet, parameters));
+            Fges search = new Fges(this.score.getScore(dataSet, parameters));
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
@@ -66,28 +65,11 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
 
             return search.search();
         } else {
-            FgesMeasurement fgesMeasurement = new FgesMeasurement(score);
+            FgesMeasurement fgesMeasurement = new FgesMeasurement(this.score);
 
             DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMeasurement, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -102,12 +84,12 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "FGES adding measuremnt noise using " + score.getDescription();
+        return "FGES adding measuremnt noise using " + this.score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return score.getDataType();
+        return this.score.getDataType();
     }
 
     @Override
@@ -123,7 +105,7 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override

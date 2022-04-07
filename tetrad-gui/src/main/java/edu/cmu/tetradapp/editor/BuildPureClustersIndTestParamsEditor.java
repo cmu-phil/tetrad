@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,8 +27,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -42,79 +40,72 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
     private final Parameters paramsPureClusters;
 
     public BuildPureClustersIndTestParamsEditor(
-            final Parameters paramsPureClusters,
+            Parameters paramsPureClusters,
             boolean discreteData) {
         this.paramsPureClusters = paramsPureClusters;
 
         NumberFormat smallNumberFormat = new DecimalFormat("0E00");
-        final DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
+        DoubleTextField alphaField = new DoubleTextField(getParams().getDouble("alpha", 0.001), 8,
                 new DecimalFormat("0.0########"), smallNumberFormat, 1e-4);
 
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    getParams().set("alpha", 0.001);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        alphaField.setFilter((value, oldValue) -> {
+            try {
+                getParams().set("alpha", 0.001);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
-        final JComboBox testSelector = new JComboBox();
+        JComboBox testSelector = new JComboBox();
 
         if (!discreteData) {
-            final TestType[] descriptions = TestType.getTestDescriptions();
+            TestType[] descriptions = TestType.getTestDescriptions();
             testSelector.removeAllItems();
-            for (int i = 0; i < descriptions.length; i++) {
-                testSelector.addItem(descriptions[i]);
+            for (TestType description : descriptions) {
+                testSelector.addItem(description);
             }
 
             testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
-            testSelector.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JComboBox combo = (JComboBox) e.getSource();
-                    TestType index = (TestType) combo.getSelectedItem();
-                    getParams().set("tetradTestType", index);
-                }
+            testSelector.addActionListener(e -> {
+                JComboBox combo = (JComboBox) e.getSource();
+                TestType index = (TestType) combo.getSelectedItem();
+                getParams().set("tetradTestType", index);
             });
         }
 
-        JComboBox algorithmSelector = null;
+        JComboBox algorithmSelector;
 
 //        final BpcAlgorithmType[] descriptions = BpcAlgorithmType.getAlgorithmDescriptions();
-        final BpcAlgorithmType[] descriptions = new BpcAlgorithmType[]{BpcAlgorithmType.BUILD_PURE_CLUSTERS};
+        BpcAlgorithmType[] descriptions = {BpcAlgorithmType.BUILD_PURE_CLUSTERS};
         algorithmSelector = new JComboBox(descriptions);
         algorithmSelector.setSelectedItem(getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS));
 
-        algorithmSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                BpcAlgorithmType type = (BpcAlgorithmType) combo.getSelectedItem();
-                getParams().set("bpcAlgorithmType", type);
+        algorithmSelector.addActionListener(e -> {
+            JComboBox combo = (JComboBox) e.getSource();
+            BpcAlgorithmType type = (BpcAlgorithmType) combo.getSelectedItem();
+            getParams().set("bpcAlgorithmType", type);
 
-                if (type == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
-                    testSelector.removeAllItems();
-                    testSelector.addItem(TestType.SAG);
-                    testSelector.addItem(TestType.GAP);
-                    testSelector.revalidate();
-                } else {
-                    testSelector.removeAllItems();
-                    testSelector.addItem(TestType.TETRAD_WISHART);
-                    testSelector.addItem(TestType.TETRAD_DELTA);
-
-                    testSelector.revalidate();
-                }
-
-
-                if (paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
-                    testSelector.setSelectedItem(TestType.TETRAD_WISHART);
-                } else {
-                    testSelector.setSelectedItem(TestType.TETRAD_DELTA);
-                }
+            if (type == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
+                testSelector.removeAllItems();
+                testSelector.addItem(TestType.SAG);
+                testSelector.addItem(TestType.GAP);
+            } else {
+                testSelector.removeAllItems();
+                testSelector.addItem(TestType.TETRAD_WISHART);
+                testSelector.addItem(TestType.TETRAD_DELTA);
 
             }
+            testSelector.revalidate();
+
+
+            if (paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
+                testSelector.setSelectedItem(TestType.TETRAD_WISHART);
+            } else {
+                testSelector.setSelectedItem(TestType.TETRAD_DELTA);
+            }
+
         });
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -141,12 +132,6 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
         add(b4);
         add(Box.createHorizontalGlue());
 
-//        if (discreteData) {
-//            paramsPureClusters.setPurifyTestType(
-//                    BuildPureClusters.PURIFY_TEST_DISCRETE_LRT);
-//            paramsPureClusters.setTetradTestType(BuildPureClusters.TEST_DISCRETE);
-//
-//        }
     }
 
     private Parameters getParams() {

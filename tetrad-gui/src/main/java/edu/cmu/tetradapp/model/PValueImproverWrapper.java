@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,8 +40,7 @@ import java.util.List;
  *
  * @author Ricardo Silva
  */
-
-public class PValueImproverWrapper extends AbstractAlgorithmRunner implements GraphSource {
+public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     static final long serialVersionUID = 23L;
 
     public enum AlgorithmType {
@@ -56,10 +55,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     private transient List<PropertyChangeListener> listeners;
     private final DataWrapper dataWrapper;
 
-    /**
-     * @deprecated
-     */
-    private Parameters params;
+    private final Parameters params = new Parameters();
     private Parameters params2;
     private SemIm estSem;
     private Graph trueDag;
@@ -67,7 +63,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     /**
      * @deprecated
      */
-    private double alpha = 0.05;
+    private final double alpha = 0.05;
     private SemIm originalSemIm;
     private SemIm newSemIm;
 
@@ -184,7 +180,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
 
     public AlgorithmType getAlgorithmType() {
-        return algorithmType;
+        return this.algorithmType;
     }
 
     public void setName(String name) {
@@ -196,8 +192,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     }
 
     public boolean isShuffleMoves() {
-        boolean shuffleMoves = false;
-        return shuffleMoves;
+        return false;
     }
 
     /**
@@ -207,24 +202,24 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     public void execute() {
         DataModel dataModel = getDataModel();
 
-        IKnowledge knowledge = (IKnowledge) params2.get("knowledge", new Knowledge2());
+        IKnowledge knowledge = (IKnowledge) this.params2.get("knowledge", new Knowledge2());
 
-        if (externalGraph == null) {
-            externalGraph = new EdgeListGraph(dataModel.getVariables());
+        if (this.externalGraph == null) {
+            this.externalGraph = new EdgeListGraph(dataModel.getVariables());
         }
 
-        Graph graph2 = new EdgeListGraph(externalGraph);
+        Graph graph2 = new EdgeListGraph(this.externalGraph);
         graph2 = GraphUtils.replaceNodes(graph2, dataModel.getVariables());
 
-        Bff search;
+        Hbsms search;
 
         if (dataModel instanceof DataSet) {
             DataSet dataSet = (DataSet) dataModel;
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
-                search = new BffBeam(graph2, dataSet, knowledge);
+                search = new HbmsBeam(graph2, dataSet, knowledge);
             } else if (getAlgorithmType() == AlgorithmType.FGES) {
-                search = new BffGes(graph2, dataSet);
+                search = new HbsmsGes(graph2, dataSet);
                 search.setKnowledge(knowledge);
             } else {
                 throw new IllegalStateException();
@@ -233,11 +228,9 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             CovarianceMatrix covarianceMatrix = (CovarianceMatrix) dataModel;
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
-                search = new BffBeam(graph2, covarianceMatrix, knowledge);
+                search = new HbmsBeam(graph2, covarianceMatrix, knowledge);
             } else if (getAlgorithmType() == AlgorithmType.FGES) {
                 throw new IllegalArgumentException("GES method requires a dataset; a covariance matrix was provided.");
-//                search = new BffGes(graph2, covarianceMatrix);
-//                search.setKnowledge(knowledge);
             } else {
                 throw new IllegalStateException();
             }
@@ -256,17 +249,17 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
         setOriginalSemIm(search.getOriginalSemIm());
         this.newSemIm = search.getNewSemIm();
-        fireGraphChange(graph);
+        fireGraphChange(this.graph);
 
         if (getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+            GraphUtils.arrangeBySourceGraph(this.graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
+            SearchGraphUtils.arrangeByKnowledgeTiers(this.graph, knowledge);
         } else {
-            GraphUtils.circleLayout(graph, 200, 200, 150);
+            GraphUtils.circleLayout(this.graph, 200, 200, 150);
         }
 
-        setResultGraph(SearchGraphUtils.cpdagForDag(graph));
+        setResultGraph(SearchGraphUtils.cpdagForDag(this.graph));
     }
 
     public boolean supportsKnowledge() {
@@ -275,7 +268,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge((IKnowledge) params.get("knowledge", new Knowledge2()));
+        rules.setKnowledge((IKnowledge) this.params.get("knowledge", new Knowledge2()));
         return rules;
     }
 
@@ -289,7 +282,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
     }
 
     private boolean isAggressivelyPreventCycles() {
-        return params.getBoolean("aggressivelyPreventCycles", false);
+        return this.params.getBoolean("aggressivelyPreventCycles", false);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -324,19 +317,16 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
 
 
     private List<PropertyChangeListener> getListeners() {
-        if (listeners == null) {
-            listeners = new ArrayList<>();
+        if (this.listeners == null) {
+            this.listeners = new ArrayList<>();
         }
-        return listeners;
+        return this.listeners;
     }
 
 
     public DataSet simulateDataCholesky(int sampleSize, Matrix covar, List<Node> variableNodes) {
-        List<Node> variables = new LinkedList<>();
 
-        for (Node node : variableNodes) {
-            variables.add(node);
-        }
+        List<Node> variables = new LinkedList<>(variableNodes);
 
         List<Node> newVariables = new ArrayList<>();
 
@@ -346,17 +336,15 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             newVariables.add(continuousVariable);
         }
 
-        Matrix impliedCovar = covar;
-
         DataSet fullDataSet = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, newVariables.size()), newVariables);
-        Matrix cholesky = MatrixUtils.cholesky(impliedCovar);
+        Matrix cholesky = MatrixUtils.cholesky(covar);
 
         // Simulate the data by repeatedly calling the Cholesky.exogenousData
         // method. Store only the data for the measured variables.
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            double exoData[] = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.rows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
@@ -364,7 +352,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             }
 
             // Step 2. Multiply by cholesky to get correct covariance.
-            double point[] = new double[exoData.length];
+            double[] point = new double[exoData.length];
 
             for (int i = 0; i < exoData.length; i++) {
                 double sum = 0.0;
@@ -376,11 +364,9 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
                 point[i] = sum;
             }
 
-            double rowData[] = point;
-
             for (int col = 0; col < variables.size(); col++) {
                 int index = variableNodes.indexOf(variables.get(col));
-                double value = rowData[index];
+                double value = point[index];
 
                 if (Double.isNaN(value) || Double.isInfinite(value)) {
                     throw new IllegalArgumentException("Value out of range: " + value);
@@ -415,17 +401,17 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner implements Gr
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (params2 == null) {
-            params2 = new Parameters();
+        if (this.params2 == null) {
+            this.params2 = new Parameters();
         }
     }
 
     public SemIm getOriginalSemIm() {
-        return originalSemIm;
+        return this.originalSemIm;
     }
 
     public SemIm getNewSemIm() {
-        return newSemIm;
+        return this.newSemIm;
     }
 
     public void setNewSemIm(SemIm newSemIm) {

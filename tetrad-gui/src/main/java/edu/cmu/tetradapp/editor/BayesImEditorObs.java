@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -28,8 +28,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and
@@ -52,7 +50,7 @@ public class BayesImEditorObs extends JPanel {
      * The wizard that allows the user to modify parameter values for this IM.
      */
     private BayesImEditorWizardObs wizard;
-    private BayesImWrapperObs wrapper;
+    private final BayesImWrapperObs wrapper;
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.
@@ -78,21 +76,17 @@ public class BayesImEditorObs extends JPanel {
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         menuBar.add(file);
-        //file.add(new SaveBayesImXmlAction(this));
-        //file.add(new LoadBayesImXmlAction(wrapper, this));
         file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         setLayout(new BorderLayout());
         add(menuBar, BorderLayout.NORTH);
 
-        wizard = new BayesImEditorWizardObs(bayesIm, workbench);
-        wizard.enableEditing(false);
+        this.wizard = new BayesImEditorWizardObs(bayesIm, workbench);
+        this.wizard.enableEditing(false);
 
-        wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        this.wizard.addPropertyChangeListener(evt -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -108,21 +102,19 @@ public class BayesImEditorObs extends JPanel {
         add(splitPane, BorderLayout.CENTER);
 
         setName("Bayes IM Obs Editor");
-        getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorClosing".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorClosing", null, getName());
-                }
+        getWizard().addPropertyChangeListener(evt -> {
+            if ("editorClosing".equals(evt.getPropertyName())) {
+                firePropertyChange("editorClosing", null, getName());
+            }
 
-                if ("closeFrame".equals(evt.getPropertyName())) {
-                    firePropertyChange("closeFrame", null, null);
-                    firePropertyChange("editorClosing", true, true);
-                }
+            if ("closeFrame".equals(evt.getPropertyName())) {
+                firePropertyChange("closeFrame", null, null);
+                firePropertyChange("editorClosing", true, true);
+            }
 
-                if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", evt.getOldValue(),
-                            evt.getNewValue());
-                }
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", evt.getOldValue(),
+                        evt.getNewValue());
             }
         });
     }
@@ -147,7 +139,7 @@ public class BayesImEditorObs extends JPanel {
      * @return a reference to this editor.
      */
     private BayesImEditorWizardObs getWizard() {
-        return wizard;
+        return this.wizard;
     }
 
     public void getBayesIm(BayesIm bayesIm) {

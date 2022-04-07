@@ -38,12 +38,12 @@ public class VerticalDiscreteTabularData implements DiscreteData {
 
     @Override
     public DiscreteDataColumn[] getDataColumns() {
-        return dataColumns;
+        return this.dataColumns;
     }
 
     @Override
     public int[][] getData() {
-        return data;
+        return this.data;
     }
 
 }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -55,7 +55,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      *
      * @serial Cannot be null.
      */
-    private Session session;
+    private final Session session;
 
     /**
      * The set of SessionNodeWrappers.
@@ -81,7 +81,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * listeners of this session.
      */
     private transient SessionHandler sessionHandler;
-    private boolean highlighted = false;
+    private final boolean highlighted = false;
     private boolean pag;
     private boolean CPDAG;
 
@@ -351,7 +351,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * the edges in the list is guaranteed.
      */
     public Set<Edge> getEdges() {
-        return new HashSet<>(sessionEdges);
+        return new HashSet<>(this.sessionEdges);
     }
 
     public Edge getEdge(Node node1, Node node2) {
@@ -369,14 +369,14 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return true iff the workbench contain 'edge'.
      */
     public boolean containsEdge(Edge edge) {
-        return sessionEdges.contains(edge);
+        return this.sessionEdges.contains(edge);
     }
 
     /**
      * Determines whether this workbench contains the given node.
      */
     public boolean containsNode(Node node) {
-        return sessionNodeWrappers.contains(node);
+        return this.sessionNodeWrappers.contains(node);
     }
 
     /**
@@ -386,7 +386,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     public List<Edge> getEdges(Node node) {
         List<Edge> edgeList = new LinkedList<>();
 
-        for (Edge edge : sessionEdges) {
+        for (Edge edge : this.sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {
                 edgeList.add(edge);
             }
@@ -401,7 +401,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * In case no node exists with the given name, null is returned.
      */
     public Node getNode(String name) {
-        for (Node sessionNodeWrapper : sessionNodeWrappers) {
+        for (Node sessionNodeWrapper : this.sessionNodeWrappers) {
             SessionNodeWrapper wrapper =
                     (SessionNodeWrapper) sessionNodeWrapper;
 
@@ -417,14 +417,14 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return the number of nodes in the workbench.
      */
     public int getNumNodes() {
-        return sessionNodeWrappers.size();
+        return this.sessionNodeWrappers.size();
     }
 
     /**
      * @return the number of edges in the (entire) workbench.
      */
     public int getNumEdges() {
-        return sessionEdges.size();
+        return this.sessionEdges.size();
     }
 
     /**
@@ -436,7 +436,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
         Set<Edge> edgeSet = new HashSet<>();
 
-        for (Edge edge : sessionEdges) {
+        for (Edge edge : this.sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {
                 edgeSet.add(edge);
             }
@@ -446,14 +446,14 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     }
 
     public List<Node> getNodes() {
-        return new ArrayList<>(sessionNodeWrappers);
+        return new ArrayList<>(this.sessionNodeWrappers);
     }
 
     /**
      * Removes an edge from the workbench.
      */
     public boolean removeEdge(Edge edge) {
-        if (sessionEdges.contains(edge)) {
+        if (this.sessionEdges.contains(edge)) {
             SessionNodeWrapper nodeAWrapper =
                     (SessionNodeWrapper) edge.getNode1();
             SessionNodeWrapper nodeBWrapper =
@@ -463,7 +463,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
             boolean removed = nodeB.removeParent(nodeA);
 
             if (removed) {
-                sessionEdges.remove(edge);
+                this.sessionEdges.remove(edge);
                 getPropertyChangeSupport().firePropertyChange("edgeRemoved",
                         edge, null);
 
@@ -505,7 +505,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return true if the node was removed, false if not.
      */
     public boolean removeNode(Node node) {
-        if (sessionNodeWrappers.contains(node)) {
+        if (this.sessionNodeWrappers.contains(node)) {
             for (Edge edge : getEdges(node)) {
                 removeEdge(edge);
             }
@@ -515,7 +515,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
             try {
                 this.session.removeNode(sessionNode);
-                sessionNodeWrappers.remove(wrapper);
+                this.sessionNodeWrappers.remove(wrapper);
                 getPropertyChangeSupport().firePropertyChange("nodeRemoved",
                         node, null);
 
@@ -716,7 +716,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     public void setName(String name) {
         String oldName = this.session.getName();
         this.session.setName(name);
-        propertyChangeSupport.firePropertyChange("name", oldName,
+        this.propertyChangeSupport.firePropertyChange("name", oldName,
                 this.session.getName());
     }
 
@@ -745,7 +745,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     @Override
     public boolean isPag() {
-        return pag;
+        return this.pag;
     }
 
     @Override
@@ -755,7 +755,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
 
     @Override
     public boolean isCPDAG() {
-        return CPDAG;
+        return this.CPDAG;
     }
 
     @Override
@@ -767,14 +767,14 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * Handles <code>SessionEvent</code>s. Hides the handling of these from the
      * API.
      */
-    private class SessionHandler extends SessionAdapter {
+    private static class SessionHandler extends SessionAdapter {
 
         /**
          * Allows the user to verify that an edge added to a node that already
          * has a model in it is OK.
          */
         public void addingEdge(SessionEvent event) {
-            String message =
+            final String message =
                     "Child node already created. If you add this edge,\n" +
                             "the content of the child node will be made\n" +
                             "consistent with the parent.";
@@ -796,321 +796,13 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     public List<Edge> getEdges(Node node1, Node node2) {
         throw new UnsupportedOperationException();
     }
-//
-//    // Unused methods from Graph
-//
-//    /**
-//     * Adds a directed edge --&gt; to the graph.
-//     */
-//    public boolean addDirectedEdge(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Adds an undirected edge --- to the graph.
-//     */
-//    public boolean addUndirectedEdge(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Adds an nondirected edges o-o to the graph.
-//     */
-//    public boolean addNondirectedEdge(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Adds a bidirected edges &lt;-&gt; to the graph.
-//     */
-//    public boolean addBidirectedEdge(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Adds a partially oriented edge o-&gt; to the graph.
-//     */
-//    public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return true iff there is a directed cycle in the graph.
-//     */
-//    public boolean existsDirectedCycle() {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean isDirectedFromTo(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean isUndirectedFromTo(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean defVisible(Edge edge) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return true iff there is a directed path from node1 to node2 in the
-//     * graph.
-//     */
-//    public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean existsSemiDirectedPathFromTo(Node node1, Set nodes2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean existsSemiDirectedPathFromTo(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return true iff a trek exists between two nodes in the graph.  A trek
-//     * exists if there is a directed path between the two nodes or else, for
-//     * some third node in the graph, there is a path to each of the two nodes in
-//     * question.
-//     */
-//    public boolean existsTrek(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return the list of ancestors for the given nodes.
-//     */
-//    public List<Node> getAncestors(List nodes) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return the Collection of children for a node.
-//     */
-//    public List<Node> getChildren(Node node) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public int getConnectivity() {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public List<Node> getDescendants(List nodes) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return a matrix of endpoints for the nodes in this graph, with nodes in
-//     * the same order as getNodes().
-//     */
-//    public Endpoint[][] getEndpointMatrix() {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return the list of nodes adjacent to the given node.
-//     */
-//    public List<Node> getAdjacentNodes(Node node) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return the number of arrow endpoint adjacent to an edge.
-//     */
-//    public int getIndegree(Node node) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    @Override
-//    public int getDegree(Node node) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return the number of null endpoints adjacent to an edge.
-//     */
-//    public int getOutdegree(Node node) {
-//        throw new UnsupportedOperationException();
-//    }
-//
 
     /**
      * @return the list of parents for a node.
      */
     public List<Node> getParents(Node node) {
-        return new ArrayList<Node>(((SessionNode) node).getParents());
+        return new ArrayList<>(((SessionNode) node).getParents());
     }
-//
-//    /**
-//     * Determines whether one node is an ancestor of another.
-//     */
-//    public boolean isAncestorOf(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean possibleAncestor(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return true iff node1 is adjacent to node2 in the graph.
-//     */
-//    public boolean isAdjacentTo(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return true iff node1 is a child of node2 in the graph.
-//     */
-//    public boolean isChildOf(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return true iff node1 is a (non-proper) descendant of node2.
-//     */
-//    public boolean isDescendentOf(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean defNonDescendent(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean isDefCollider(Node node1, Node node2, Node node3) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Determines whether one node is d-separated from another. According to
-//     * Spirtes, Richardson &amp; Meek, two nodes are d- connected given some
-//     * conditioning set Z if there is an acyclic undirected path U between them,
-//     * such that every collider on U is an ancestor of some element in Z and
-//     * every non-collider on U is not in Z.  Two elements are d-separated just
-//     * in case they are not d-separated.  A collider is a node which two edges
-//     * hold in common for which the endpoints leading into the node are both
-//     * arrow endpoints.
-//     */
-//    public boolean isDConnectedTo(Node node1, Node node2, List z) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Determines whether one node is d-separated from another. According to
-//     * Spirtes, Richardson &amp; Meek, two nodes are d- connected given some
-//     * conditioning set Z if there is an acyclic undirected path U between them,
-//     * such that every collider on U is an ancestor of some element in Z and
-//     * every non-collider on U is not in Z.  Two elements are d-separated just
-//     * in case they are not d-separated.  A collider is a node which two edges
-//     * hold in common for which the endpoints leading into the node are both
-//     * arrow endpoints.
-//     */
-//    public boolean isDSeparatedFrom(Node node1, Node node2, List z) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public boolean possDConnectedTo(Node node1, Node node2, List z) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * @return true iff the given node is exogenous in the graph.
-//     */
-//    public boolean isExogenous(Node node) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Determines whether one node is a parent of another.
-//     */
-//    public boolean isParentOf(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Determines whether one node is a proper ancestor of another.
-//     */
-//    public boolean isProperAncestorOf(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Determines whether one node is a proper decendent of another.
-//     */
-//    public boolean isProperDescendentOf(Node node1, Node node2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Nodes adjacent to the given node with the given proximal endpoint.
-//     */
-//    public List<Node> getNodesInTo(Node node, Endpoint n) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Nodes adjacent to the given node with the given distal endpoint.
-//     */
-//    public List<Node> getNodesOutTo(Node node, Endpoint n) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Removes all edges from the graph and fully connects it using #-# edges,
-//     * where # is the given endpoint.
-//     */
-//    public void fullyConnect(Endpoint endpoint) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void reorientAllWith(Endpoint endpoint) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    public void setHighlighted(Edge edge, boolean highlighted) {
-//        this.highlighted = highlighted;
-//    }
-//
-//    public boolean isHighlighted(Edge edge) {
-//        return highlighted;
-//    }
-//
-//    public boolean isParameterizable(Node node) {
-//        return false;
-//    }
-//
-//    public boolean isTimeLagModel() {
-//        return false;
-//    }
-//
-//    public TimeLagGraph getTimeLagGraph() {
-//        return null;
-//    }
-//
-//    @Override
-//    public void removeTriplesNotInGraph() {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    @Override
-//    public List<Node> getSepset(Node n1, Node n2) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    @Override
-//    public void setNodes(List<Node> nodes) {
-//        throw new UnsupportedOperationException("Sorry, you cannot replace the variables for a time lag graph.");
-//    }
 
     public boolean isSessionChanged() {
         return this.session.isSessionChanged();
@@ -1137,23 +829,20 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (session == null) {
+        if (this.session == null) {
             throw new NullPointerException();
         }
 
-        if (sessionNodeWrappers == null) {
+        if (this.sessionNodeWrappers == null) {
             throw new NullPointerException();
         }
 
-        if (sessionEdges == null) {
+        if (this.sessionEdges == null) {
             throw new NullPointerException();
         }
     }

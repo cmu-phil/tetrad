@@ -14,7 +14,7 @@ import java.util.List;
 public class SingleGraph implements RandomGraph {
     static final long serialVersionUID = 23L;
 
-    private Graph graph;
+    private final Graph graph;
 
     public SingleGraph(Graph graph) {
         this.graph = graph;
@@ -22,7 +22,7 @@ public class SingleGraph implements RandomGraph {
 
     @Override
     public Graph createGraph(Parameters parameters) {
-        return graph;
+        return this.graph;
     }
 
     @Override

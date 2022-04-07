@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,7 +36,7 @@ import java.text.NumberFormat;
  * @see NumberCellRenderer
  */
 class NumberCellEditor extends DefaultCellEditor {
-    private JTextField textField;
+    private final JTextField textField;
     private String emptyString = "";
 
     /**
@@ -50,20 +50,20 @@ class NumberCellEditor extends DefaultCellEditor {
     /**
      * Constructs a new number cell editor.
      */
-    public NumberCellEditor(final NumberFormat nf) {
+    public NumberCellEditor(NumberFormat nf) {
         super(new JTextField());
 
         if (nf == null) {
             throw new NullPointerException();
         }
 
-        textField = (JTextField) editorComponent;
-        textField.setHorizontalAlignment(JTextField.RIGHT);
-        textField.setBorder(new LineBorder(Color.black));
-        textField.setFont(new Font("Serif", Font.PLAIN, 12));
+        this.textField = (JTextField) this.editorComponent;
+        this.textField.setHorizontalAlignment(SwingConstants.RIGHT);
+        this.textField.setBorder(new LineBorder(Color.black));
+        this.textField.setFont(new Font("Serif", Font.PLAIN, 12));
         setClickCountToStart(1);
 
-        delegate = new EditorDelegate() {
+        this.delegate = new EditorDelegate() {
 
             /**
              * Overrides delegate; sets the value of the textfield to the
@@ -73,21 +73,21 @@ class NumberCellEditor extends DefaultCellEditor {
              */
             public void setValue(Object value) {
                 if (value == null) {
-                    textField.setText(emptyString);
+                    NumberCellEditor.this.textField.setText(NumberCellEditor.this.emptyString);
                 } else if (value instanceof Integer) {
-                    textField.setText(value.toString());
+                    NumberCellEditor.this.textField.setText(value.toString());
                 } else if (value instanceof Double) {
                     double doubleValue = (Double) value;
 
                     if (Double.isNaN(doubleValue)) {
-                        textField.setText(emptyString);
+                        NumberCellEditor.this.textField.setText(NumberCellEditor.this.emptyString);
                     } else {
-                        textField.setText(nf.format(doubleValue));
+                        NumberCellEditor.this.textField.setText(nf.format(doubleValue));
                     }
                 }
 
-                textField.setCaretPosition(0);
-                textField.moveCaretPosition(textField.getText().length());
+                NumberCellEditor.this.textField.setCaretPosition(0);
+                NumberCellEditor.this.textField.moveCaretPosition(NumberCellEditor.this.textField.getText().length());
             }
 
             /**
@@ -97,15 +97,15 @@ class NumberCellEditor extends DefaultCellEditor {
              * @return this text value.
              */
             public Object getCellEditorValue() {
-                return textField.getText();
+                return NumberCellEditor.this.textField.getText();
             }
         };
 
-        textField.addActionListener(delegate);
+        this.textField.addActionListener(this.delegate);
     }
 
     public String getEmptyString() {
-        return emptyString;
+        return this.emptyString;
     }
 
     public void setEmptyString(String emptyString) {

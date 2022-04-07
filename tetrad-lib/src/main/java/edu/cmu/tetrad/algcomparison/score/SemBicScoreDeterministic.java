@@ -55,7 +55,7 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
 
     @Override
     public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+        return this.dataSet.getVariable(name);
     }
 
 }

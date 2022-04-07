@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,27 +40,27 @@ public final class Mmmb implements MbSearch {
     /**
      * True if the symmetric algorithm is to be used.
      */
-    private boolean symmetric = false;
+    private final boolean symmetric;
 
     /**
      * The independence test used to perform the search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * The list of variables being searched over. Must contain the target.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * The maximum number of variables conditioned on.
      */
-    int depth = -1;
+    int depth;
 
     /**
      * Number of independence tests.
      */
-    private int numIndTests = 0;
+    private int numIndTests;
 
     /**
      * The function from nodes to their sets of parents and children.
@@ -95,8 +95,8 @@ public final class Mmmb implements MbSearch {
         this.depth = depth;
         this.symmetric = symmetric;
 
-        pc = new HashMap<>();
-        trimmed = new HashSet<>();
+        this.pc = new HashMap<>();
+        this.trimmed = new HashSet<>();
     }
 
     //=============================PUBLIC METHODS=========================//
@@ -109,11 +109,11 @@ public final class Mmmb implements MbSearch {
      */
     public List<Node> findMb(String targetName) {
         TetradLogger.getInstance().log("info", "target = " + targetName);
-        numIndTests = 0;
+        this.numIndTests = 0;
         long time = System.currentTimeMillis();
 
-        pc = new HashMap<>();
-        trimmed = new HashSet<>();
+        this.pc = new HashMap<>();
+        this.trimmed = new HashSet<>();
 
         Node target = getVariableForName(targetName);
         List<Node> nodes = mmmb(target);
@@ -121,7 +121,7 @@ public final class Mmmb implements MbSearch {
         long time2 = System.currentTimeMillis() - time;
         TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));
         TetradLogger.getInstance().log("info", "Number of independence tests performed: " +
-                numIndTests);
+                this.numIndTests);
         //        System.out.println("Number of calls to mmpc = " + pc.size());
 
         return nodes;
@@ -148,7 +148,7 @@ public final class Mmmb implements MbSearch {
         currentMb.remove(t);
 
         HashSet<Node> diff = new HashSet<>(currentMb);
-        diff.removeAll(getPc(t));
+        getPc(t).forEach(diff::remove);
         diff.remove(t);
 
         //for each x in PCPC \ PC
@@ -157,7 +157,7 @@ public final class Mmmb implements MbSearch {
 
             // Find an S such PC such that x _||_ t | S
             DepthChoiceGenerator generator =
-                    new DepthChoiceGenerator(pcpc.size(), depth);
+                    new DepthChoiceGenerator(pcpc.size(), this.depth);
             int[] choice;
 
             while ((choice = generator.next()) != null) {
@@ -167,8 +167,8 @@ public final class Mmmb implements MbSearch {
                     _s.add(pcpc.get(index));
                 }
 
-                numIndTests++;
-                if (independenceTest.isIndependent(t, x, _s)) {
+                this.numIndTests++;
+                if (this.independenceTest.isIndependent(t, x, _s)) {
                     s = _s;
                     break;
                 }
@@ -196,8 +196,8 @@ public final class Mmmb implements MbSearch {
                 _s.add(y);
 
                 // If x NOT _||_ t | S U {y}
-                numIndTests++;
-                if (!independenceTest.isIndependent(t, x, _s)) {
+                this.numIndTests++;
+                if (!this.independenceTest.isIndependent(t, x, _s)) {
                     mb.add(x);
                     break;
                 }
@@ -228,9 +228,9 @@ public final class Mmmb implements MbSearch {
                 break;
             }
 
-            numIndTests++;
+            this.numIndTests++;
 
-            if (!independenceTest.isIndependent(f, t, assocSet)) {
+            if (!this.independenceTest.isIndependent(f, t, assocSet)) {
                 pcIncreased = true;
                 pc.add(f);
             }
@@ -249,29 +249,29 @@ public final class Mmmb implements MbSearch {
      * @return a supserset of PC, or, if the symmetric algorithm is used, PC.
      */
     public List<Node> getPc(Node t) {
-        if (!pc.containsKey(t)) {
-            pc.put(t, mmpc(t));
+        if (!this.pc.containsKey(t)) {
+            this.pc.put(t, mmpc(t));
         }
 
-        if (symmetric && !trimmed.contains(t)) {
+        if (this.symmetric && !this.trimmed.contains(t)) {
             trimPc(t);
-            trimmed.add(t);
+            this.trimmed.add(t);
         }
 
-        return pc.get(t);
+        return this.pc.get(t);
     }
 
     /**
      * Trims away false positives from the given node. Used in the symmetric algorithm.
      */
     private void trimPc(Node t) {
-        for (Node x : new LinkedList<>(pc.get(t))) {
-            if (!pc.containsKey(x)) {
-                pc.put(x, mmpc(x));
+        for (Node x : new LinkedList<>(this.pc.get(t))) {
+            if (!this.pc.containsKey(x)) {
+                this.pc.put(x, mmpc(x));
             }
 
-            if (!pc.get(x).contains(t)) {
-                pc.get(t).remove(x);
+            if (!this.pc.get(x).contains(t)) {
+                this.pc.get(t).remove(x);
             }
         }
     }
@@ -282,7 +282,7 @@ public final class Mmmb implements MbSearch {
         List<Node> maxAssocSet = null;
         double maxAssoc = 0.0;
 
-        for (Node v : variables) {
+        for (Node v : this.variables) {
             if (t == v) continue;
             if (pc.contains(v)) continue;
 
@@ -296,7 +296,7 @@ public final class Mmmb implements MbSearch {
             // If v is conditionally independent of t, don't consider it
             // again. Note if this code is right, then we have to use the
             // association test as an independence test... ugh.
-            if (assoc < 1.0 - independenceTest.getAlpha()) {
+            if (assoc < 1.0 - this.independenceTest.getAlpha()) {
                 indepOfT.add(v);
             }
 
@@ -319,7 +319,7 @@ public final class Mmmb implements MbSearch {
         if (x == target) throw new IllegalArgumentException();
 
         DepthChoiceGenerator generator =
-                new DepthChoiceGenerator(pc.size(), depth);
+                new DepthChoiceGenerator(pc.size(), this.depth);
         int[] choice;
 
         while ((choice = generator.next()) != null) {
@@ -354,33 +354,33 @@ public final class Mmmb implements MbSearch {
 
             List<Node> minAssoc = minAssoc(x, target, _pc);
 
-            numIndTests++;
+            this.numIndTests++;
 
-            if (independenceTest.isIndependent(x, target, minAssoc)) {
+            if (this.independenceTest.isIndependent(x, target, minAssoc)) {
                 pc.remove(x);
             }
         }
     }
 
     private double association(Node x, Node target, List<Node> s) {
-        numIndTests++;
+        this.numIndTests++;
 
-        independenceTest.isIndependent(x, target, s);
-        return 1.0 - independenceTest.getPValue();
+        this.independenceTest.isIndependent(x, target, s);
+        return 1.0 - this.independenceTest.getPValue();
     }
 
     public String getAlgorithmName() {
-        return symmetric ? "MMMB-SYM" : "MMMB";
+        return this.symmetric ? "MMMB-SYM" : "MMMB";
     }
 
     public int getNumIndependenceTests() {
-        return numIndTests;
+        return this.numIndTests;
     }
 
     private Node getVariableForName(String targetName) {
         Node target = null;
 
-        for (Node V : variables) {
+        for (Node V : this.variables) {
             if (V.getName().equals(targetName)) {
                 target = V;
                 break;
@@ -396,8 +396,8 @@ public final class Mmmb implements MbSearch {
     }
 
     private static class MaxMinAssocResult {
-        private Node node;
-        private List<Node> assocSet;
+        private final Node node;
+        private final List<Node> assocSet;
 
         public MaxMinAssocResult(Node node, List<Node> assocSet) {
             this.node = node;
@@ -405,11 +405,11 @@ public final class Mmmb implements MbSearch {
         }
 
         public Node getNode() {
-            return node;
+            return this.node;
         }
 
         public List<Node> getAssocSet() {
-            return assocSet;
+            return this.assocSet;
         }
     }
 }

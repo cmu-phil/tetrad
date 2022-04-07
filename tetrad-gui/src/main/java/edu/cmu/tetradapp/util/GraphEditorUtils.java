@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,8 +26,6 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
 
 /**
@@ -57,63 +55,50 @@ public class GraphEditorUtils {
             randomCombo.setSelectedItem("Yes");
         }
 
-        randomCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                String selection = (String) combo.getSelectedItem();
-                if ("No".equals(selection)) {
-                    Preferences.userRoot().putBoolean(
-                            "kamadaKawaiLayoutInitializeRandomly", false);
-                } else {
-                    Preferences.userRoot().putBoolean(
-                            "kamadaKawaiLayoutInitializeRandomly", true);
-                }
-            }
+        randomCombo.addActionListener(e -> {
+            JComboBox combo = (JComboBox) e.getSource();
+            String selection = (String) combo.getSelectedItem();
+            Preferences.userRoot().putBoolean(
+                    "kamadaKawaiLayoutInitializeRandomly", !"No".equals(selection));
         });
 
         DoubleTextField naturalEdgeLengthField = new DoubleTextField(
                 naturalEdgeLength, 4, NumberFormatUtil.getInstance().getNumberFormat());
         naturalEdgeLengthField.setFilter(
-                new DoubleTextField.Filter() {
-                    public double filter(double value, double oldValue) {
-                        if (value <= 0.0) {
-                            return oldValue;
-                        }
-
-                        Preferences.userRoot().putDouble(
-                                "kamadaKawaiLayoutNaturalEdgeLength", value);
-                        return value;
+                (value, oldValue) -> {
+                    if (value <= 0.0) {
+                        return oldValue;
                     }
+
+                    Preferences.userRoot().putDouble(
+                            "kamadaKawaiLayoutNaturalEdgeLength", value);
+                    return value;
                 });
 
         DoubleTextField springConstantField = new DoubleTextField(
                 springConstant, 4, NumberFormatUtil.getInstance().getNumberFormat());
         springConstantField.setFilter(
-                new DoubleTextField.Filter() {
-                    public double filter(double value, double oldValue) {
-                        if (value < 0.0) {
-                            return oldValue;
-                        }
-
-
-                        Preferences.userRoot().putDouble(
-                                "kamadaKawaiLayoutSpringConstant", value);
-                        return value;
+                (value, oldValue) -> {
+                    if (value < 0.0) {
+                        return oldValue;
                     }
+
+
+                    Preferences.userRoot().putDouble(
+                            "kamadaKawaiLayoutSpringConstant", value);
+                    return value;
                 });
 
         DoubleTextField stopEnergyField =
                 new DoubleTextField(stopEnergy, 4, NumberFormatUtil.getInstance().getNumberFormat());
-        stopEnergyField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                if (value < 0.0) {
-                    return oldValue;
-                }
-
-                Preferences.userRoot().putDouble("kamadaKawaiLayoutStopEnergy",
-                        value);
-                return value;
+        stopEnergyField.setFilter((value, oldValue) -> {
+            if (value < 0.0) {
+                return oldValue;
             }
+
+            Preferences.userRoot().putDouble("kamadaKawaiLayoutStopEnergy",
+                    value);
+            return value;
         });
 
         Box b = Box.createVerticalBox();

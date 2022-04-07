@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 
@@ -36,24 +35,6 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class SearchLogUtils {
-    private static NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-    public static String endpointOrientedMsg(Endpoint e, Node x, Node y) {
-        char endptChar = '*';
-
-        if (e == Endpoint.TAIL) {
-            endptChar = '-';
-        } else if (e == Endpoint.ARROW) {
-            endptChar = '>';
-        } else if (e == Endpoint.CIRCLE) {
-            endptChar = 'o';
-        }
-
-        String msg = "Orienting endpoint: " + x.getName() + " *-" + endptChar +
-                " " + y.getName();
-        return msg;
-    }
-
     public static String edgeOrientedMsg(String reason, Edge edge) {
         return "Orienting edge (" + reason + "): " + edge;
     }
@@ -68,21 +49,22 @@ public class SearchLogUtils {
                 y.getName() + " <-* " + z.getName();
     }
 
-    public static String colliderOrientedMsg(Node x, Node y, Node z, List sepset) {
+    public static String colliderOrientedMsg(Node x, Node y, Node z, List<Node> sepset) {
         return "Orienting collider: " + x.getName() + " *-> " +
                 y.getName() + " <-* " + z.getName() + "\t(Sepset = " + sepset +
                 ")";
     }
 
-    public static String determinismDetected(List sepset, Node x) {
+    public static String determinismDetected(List<Node> sepset, Node x) {
         return "Determinism detected: " + sepset + " -> " + x.getName();
     }
 
     public static String independenceFactMsg(Node x, Node y, List<Node> condSet, double pValue) {
         StringBuilder sb = new StringBuilder();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         sb.append("Independence accepted: ");
-        sb.append(independenceFact(x, y, condSet));
+        sb.append(SearchLogUtils.independenceFact(x, y, condSet));
 
         if (!Double.isNaN(pValue)) {
             sb.append("\tp = ").append(nf.format(pValue));
@@ -93,9 +75,10 @@ public class SearchLogUtils {
 
     public static String dependenceFactMsg(Node x, Node y, List<Node> condSet, double pValue) {
         StringBuilder sb = new StringBuilder();
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         sb.append("Dependent: ");
-        sb.append(independenceFact(x, y, condSet));
+        sb.append(SearchLogUtils.independenceFact(x, y, condSet));
 
         if (!Double.isNaN(pValue)) {
             sb.append("\tp = ").append(nf.format(pValue));
@@ -112,7 +95,7 @@ public class SearchLogUtils {
         sb.append(" _||_ ");
         sb.append(y.getName());
 
-        Iterator it = condSet.iterator();
+        Iterator<Node> it = condSet.iterator();
 
         if (it.hasNext()) {
             sb.append(" | ");

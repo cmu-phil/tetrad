@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -28,11 +28,7 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.CharArrayReader;
 import java.io.File;
 import java.io.FileReader;
@@ -48,7 +44,7 @@ import java.util.prefs.Preferences;
  * @author Joseph Ramsey
  */
 public class IndependenceFactsEditor extends JPanel {
-    private IndependenceFactsModel facts;
+    private final IndependenceFactsModel facts;
 
 
     private JTextArea textArea;
@@ -70,62 +66,54 @@ public class IndependenceFactsEditor extends JPanel {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Text", textDisplay());
 
-        tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                resetTextDisplay();
-            }
-        });
+        tabbedPane.addChangeListener(e -> resetTextDisplay());
 
         add(tabbedPane, BorderLayout.CENTER);
         setPreferredSize(new Dimension(550, 500));
     }
 
     private Component textDisplay() {
-        final JButton loadButton = new JButton("Load from File");
-        final JButton parseButton = new JButton("Parse Text");
+        JButton loadButton = new JButton("Load from File");
+        JButton parseButton = new JButton("Parse Text");
 
-        loadButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        loadButton.addActionListener(e -> {
 
-                JFileChooser chooser = getJFileChooser();
-                chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                chooser.showOpenDialog(IndependenceFactsEditor.this);
+            JFileChooser chooser = IndependenceFactsEditor.getJFileChooser();
+            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            chooser.showOpenDialog(IndependenceFactsEditor.this);
 
-                final File file = chooser.getSelectedFile();
+            File file = chooser.getSelectedFile();
 
-                // Can this happen?
-                if (file == null) {
-                    return;
-                }
-
-                Preferences.userRoot().put("fileSaveLocation", file.getParent());
-
-                try {
-                    facts.setFacts(IndependenceFactsModel.loadFacts(new FileReader(file)).getFacts());
-                    getTextArea().setText(facts.toString());
-                } catch (IOException e1) {
-                    throw new RuntimeException("Couldn't find that file: " + file.getAbsolutePath());
-                }
-
+            // Can this happen?
+            if (file == null) {
+                return;
             }
+
+            Preferences.userRoot().put("fileSaveLocation", file.getParent());
+
+            try {
+                IndependenceFactsEditor.this.facts.setFacts(IndependenceFactsModel.loadFacts(new FileReader(file)).getFacts());
+                getTextArea().setText(IndependenceFactsEditor.this.facts.toString());
+            } catch (IOException e1) {
+                throw new RuntimeException("Couldn't find that file: " + file.getAbsolutePath());
+            }
+
         });
 
-        parseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    String text = getTextArea().getText();
-                    facts.setFacts(IndependenceFactsModel.loadFacts(new CharArrayReader(text.toCharArray())).getFacts());
-                    getTextArea().setText(facts.toString());
-                } catch (Exception e1) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            e1.getMessage());
-                }
+        parseButton.addActionListener(e -> {
+            try {
+                String text = getTextArea().getText();
+                IndependenceFactsEditor.this.facts.setFacts(IndependenceFactsModel.loadFacts(new CharArrayReader(text.toCharArray())).getFacts());
+                getTextArea().setText(IndependenceFactsEditor.this.facts.toString());
+            } catch (Exception e1) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        e1.getMessage());
             }
         });
 
         Box b = Box.createVerticalBox();
 
-        textArea = new JTextArea();
+        this.textArea = new JTextArea();
         resetTextDisplay();
 
         b.add(getTextArea());
@@ -143,11 +131,11 @@ public class IndependenceFactsEditor extends JPanel {
         getTextArea().setFont(new Font("Monospaced", Font.PLAIN, 12));
         getTextArea().setBorder(new CompoundBorder(new LineBorder(Color.black),
                 new EmptyBorder(3, 3, 3, 3)));
-        getTextArea().setText(facts.toString());
+        getTextArea().setText(this.facts.toString());
     }
 
     private JTextArea getTextArea() {
-        return textArea;
+        return this.textArea;
     }
 
 

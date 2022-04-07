@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 /**
@@ -56,7 +57,7 @@ public class StabilityUtils {
         int numVars = data.getNumColumns();
         DoubleMatrix2D thetaMat = DoubleFactory2D.dense.make(numVars, numVars, 0.0);
 
-        int[][] samps = subSampleNoReplacement(data.getNumRows(), b, N);
+        int[][] samps = StabilityUtils.subSampleNoReplacement(data.getNumRows(), b, N);
 
         for (int s = 0; s < N; s++) {
             DataSet dataSubSamp = data.subsetRows(samps[s]);
@@ -71,19 +72,19 @@ public class StabilityUtils {
     }
 
     //returns an adjacency matrix containing the edgewise instability as defined in Liu et al
-    public static DoubleMatrix2D StabilitySearchPar(final DataSet data, final DataGraphSearch gs, int N, int b) {
+    public static DoubleMatrix2D StabilitySearchPar(DataSet data, DataGraphSearch gs, int N, int b) {
 
-        final int numVars = data.getNumColumns();
-        final DoubleMatrix2D thetaMat = DoubleFactory2D.dense.make(numVars, numVars, 0.0);
+        int numVars = data.getNumColumns();
+        DoubleMatrix2D thetaMat = DoubleFactory2D.dense.make(numVars, numVars, 0.0);
 
-        final int[][] samps = subSampleNoReplacement(data.getNumRows(), b, N);
+        int[][] samps = StabilityUtils.subSampleNoReplacement(data.getNumRows(), b, N);
 
-        final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+        ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
         class StabilityAction extends RecursiveAction {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public StabilityAction(int chunk, int from, int to) {
                 this.chunk = chunk;
@@ -99,8 +100,8 @@ public class StabilityUtils {
 
             @Override
             protected void compute() {
-                if (to - from <= chunk) {
-                    for (int s = from; s < to; s++) {
+                if (this.to - this.from <= this.chunk) {
+                    for (int s = this.from; s < this.to; s++) {
                         DataSet dataSubSamp = data.subsetRows(samps[s]).copy();
                         DataGraphSearch curGs = gs.copy();
                         Graph g = curGs.search(dataSubSamp);
@@ -113,17 +114,14 @@ public class StabilityUtils {
                 } else {
                     List<StabilityAction> tasks = new ArrayList<>();
 
-                    final int mid = (to + from) / 2;
+                    int mid = (this.to + this.from) / 2;
 
-                    tasks.add(new StabilityAction(chunk, from, mid));
-                    tasks.add(new StabilityAction(chunk, mid, to));
+                    tasks.add(new StabilityAction(this.chunk, this.from, mid));
+                    tasks.add(new StabilityAction(this.chunk, mid, this.to));
 
-                    invokeAll(tasks);
-
-                    return;
+                    ForkJoinTask.invokeAll(tasks);
                 }
             }
-
         }
 
         final int chunk = 2;
@@ -177,7 +175,7 @@ public class StabilityUtils {
         int[] contInds = MixedUtils.getContinuousInds(vars);
         int p = contInds.length;
         int q = discInds.length;
-        D[0] = xi.zSum() / ((p + q - 1) * (p + q) / 2);
+        D[0] = xi.zSum() / (((p + q - 1) * (p + q) / 2.));
 
         D[1] = xi.viewSelection(contInds, contInds).zSum() / (p * (p - 1));
         D[2] = xi.viewSelection(contInds, discInds).zSum() / (p * q);
@@ -205,7 +203,7 @@ public class StabilityUtils {
             int[] curSamp;
             SAMP:
             while (true) {
-                curSamp = subSampleIndices(sampSize, subSize);
+                curSamp = StabilityUtils.subSampleIndices(sampSize, subSize);
                 for (int j = 0; j < i; j++) {
                     if (Arrays.equals(curSamp, sampMat[j])) {
                         continue SAMP;
@@ -236,7 +234,7 @@ public class StabilityUtils {
 
     //some tests...
     public static void main(String[] args) {
-        String fn = "/Users/ajsedgewick/tetrad_mgm_runs/run2/networks/DAG_0_graph.txt";
+        final String fn = "/Users/ajsedgewick/tetrad_mgm_runs/run2/networks/DAG_0_graph.txt";
         Graph trueGraph = GraphUtils.loadGraphTxt(new File(fn));
         DataSet ds = null;
         try {
@@ -245,15 +243,15 @@ public class StabilityUtils {
             t.printStackTrace();
         }
 
-        double lambda = .1;
-        SearchWrappers.MGMWrapper mgm = new SearchWrappers.MGMWrapper(new double[]{lambda, lambda, lambda});
+        final double lambda = .1;
+        SearchWrappers.MGMWrapper mgm = new SearchWrappers.MGMWrapper(lambda, lambda, lambda);
         long start = System.currentTimeMillis();
-        DoubleMatrix2D xi = StabilitySearch(ds, mgm, 8, 200);
+        DoubleMatrix2D xi = StabilityUtils.StabilitySearch(ds, mgm, 8, 200);
         long end = System.currentTimeMillis();
         System.out.println("Not parallel: " + ((end - start) / 1000.0));
 
         start = System.currentTimeMillis();
-        DoubleMatrix2D xi2 = StabilitySearchPar(ds, mgm, 8, 200);
+        DoubleMatrix2D xi2 = StabilityUtils.StabilitySearchPar(ds, mgm, 8, 200);
         end = System.currentTimeMillis();
         System.out.println("Parallel: " + ((end - start) / 1000.0));
 

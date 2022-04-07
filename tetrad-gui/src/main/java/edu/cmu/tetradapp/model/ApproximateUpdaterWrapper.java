@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -110,7 +110,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
     //============================PUBLIC METHODS=========================//
 
     public ManipulatingBayesUpdater getBayesUpdater() {
-        return bayesUpdater;
+        return this.bayesUpdater;
     }
 
     //============================PRIVATE METHODS========================//
@@ -119,9 +119,9 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
-            bayesUpdater = new ApproximateUpdater(bayesIm);
+            this.bayesUpdater = new ApproximateUpdater(bayesIm);
         } else {
-            bayesUpdater = new ApproximateUpdater(bayesIm,
+            this.bayesUpdater = new ApproximateUpdater(bayesIm,
                     (Evidence) params.get("evidence", null));
         }
 
@@ -180,21 +180,18 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesUpdater == null) {
+        if (this.bayesUpdater == null) {
             throw new NullPointerException();
         }
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -202,7 +199,7 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
     }
 
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

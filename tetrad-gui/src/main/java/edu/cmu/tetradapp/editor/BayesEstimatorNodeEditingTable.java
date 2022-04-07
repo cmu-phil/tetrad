@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,20 +26,16 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.NumberFormat;
@@ -50,8 +46,8 @@ import java.text.NumberFormat;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 class BayesEstimatorNodeEditingTable extends JTable {
-    private int focusRow = 0;
-    private int focusCol = 0;
+    private int focusRow;
+    private int focusCol;
     private int lastX;
     private int lastY;
 
@@ -73,11 +69,9 @@ class BayesEstimatorNodeEditingTable extends JTable {
         }
 
         Model model = new Model(node, bayesIm, this);
-        model.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("modelChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        model.addPropertyChangeListener(evt -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
         setModel(model);
@@ -91,23 +85,19 @@ class BayesEstimatorNodeEditingTable extends JTable {
 
         ListSelectionModel rowSelectionModel = getSelectionModel();
 
-        rowSelectionModel.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                ListSelectionModel m = (ListSelectionModel) (e.getSource());
-                setFocusRow(m.getAnchorSelectionIndex());
-            }
+        rowSelectionModel.addListSelectionListener(e -> {
+            ListSelectionModel m = (ListSelectionModel) (e.getSource());
+            setFocusRow(m.getAnchorSelectionIndex());
         });
 
         ListSelectionModel columnSelectionModel = getColumnModel()
                 .getSelectionModel();
 
         columnSelectionModel.addListSelectionListener(
-                new ListSelectionListener() {
-                    public void valueChanged(ListSelectionEvent e) {
-                        ListSelectionModel m =
-                                (ListSelectionModel) (e.getSource());
-                        setFocusColumn(m.getAnchorSelectionIndex());
-                    }
+                e -> {
+                    ListSelectionModel m =
+                            (ListSelectionModel) (e.getSource());
+                    setFocusColumn(m.getAnchorSelectionIndex());
                 });
 
         addMouseListener(new MouseAdapter() {
@@ -158,70 +148,95 @@ class BayesEstimatorNodeEditingTable extends JTable {
         JMenuItem clearRow = new JMenuItem("Clear this row");
         JMenuItem clearEntireTable = new JMenuItem("Clear entire table");
 
-        randomizeRow.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int nodeIndex = getEditingTableModel().getNodeIndex();
+        randomizeRow.addActionListener(e1 -> {
+            int nodeIndex = getEditingTableModel().getNodeIndex();
 
-                BayesEstimatorNodeEditingTable editingTable =
-                        BayesEstimatorNodeEditingTable.this;
-                TableCellEditor cellEditor = editingTable.getCellEditor();
+            BayesEstimatorNodeEditingTable editingTable =
+                    BayesEstimatorNodeEditingTable.this;
+            TableCellEditor cellEditor = editingTable.getCellEditor();
 
-                if (cellEditor != null) {
-                    cellEditor.cancelCellEditing();
-                }
-
-                Point point = new Point(getLastX(), getLastY());
-                int rowIndex = editingTable.rowAtPoint(point);
-
-                BayesIm bayesIm = getBayesIm();
-                bayesIm.randomizeRow(nodeIndex, rowIndex);
-
-                getEditingTableModel().fireTableDataChanged();
-                firePropertyChange("modelChanged", null, null);
+            if (cellEditor != null) {
+                cellEditor.cancelCellEditing();
             }
+
+            Point point = new Point(getLastX(), getLastY());
+            int rowIndex = editingTable.rowAtPoint(point);
+
+            BayesIm bayesIm = getBayesIm();
+            bayesIm.randomizeRow(nodeIndex, rowIndex);
+
+            getEditingTableModel().fireTableDataChanged();
+            firePropertyChange("modelChanged", null, null);
         });
 
-        randomizeIncompleteRows.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int nodeIndex = getEditingTableModel().getNodeIndex();
-                BayesIm bayesIm = getBayesIm();
+        randomizeIncompleteRows.addActionListener(e12 -> {
+            int nodeIndex = getEditingTableModel().getNodeIndex();
+            BayesIm bayesIm = getBayesIm();
 
-                if (!existsIncompleteRow(bayesIm, nodeIndex)) {
-                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                            "There are no incomplete rows in this table.");
+            if (!existsIncompleteRow(bayesIm, nodeIndex)) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "There are no incomplete rows in this table.");
+                return;
+            }
+
+            BayesEstimatorNodeEditingTable editingTable =
+                    BayesEstimatorNodeEditingTable.this;
+            TableCellEditor cellEditor = editingTable.getCellEditor();
+
+            if (cellEditor != null) {
+                cellEditor.cancelCellEditing();
+            }
+
+            bayesIm.randomizeIncompleteRows(nodeIndex);
+            getEditingTableModel().fireTableDataChanged();
+            firePropertyChange("modelChanged", null, null);
+        });
+
+        randomizeEntireTable.addActionListener(e13 -> {
+            int nodeIndex = getEditingTableModel().getNodeIndex();
+            BayesIm bayesIm = getBayesIm();
+
+            if (existsCompleteRow(bayesIm, nodeIndex)) {
+                int ret = JOptionPane.showConfirmDialog(
+                        JOptionUtils.centeringComp(),
+                        "This will modify all values in the table. " +
+                                "Continue?", "Warning",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (ret == JOptionPane.NO_OPTION) {
                     return;
                 }
-
-                BayesEstimatorNodeEditingTable editingTable =
-                        BayesEstimatorNodeEditingTable.this;
-                TableCellEditor cellEditor = editingTable.getCellEditor();
-
-                if (cellEditor != null) {
-                    cellEditor.cancelCellEditing();
-                }
-
-                bayesIm.randomizeIncompleteRows(nodeIndex);
-                getEditingTableModel().fireTableDataChanged();
-                firePropertyChange("modelChanged", null, null);
             }
+
+            BayesEstimatorNodeEditingTable editingTable =
+                    BayesEstimatorNodeEditingTable.this;
+            TableCellEditor cellEditor = editingTable.getCellEditor();
+
+            if (cellEditor != null) {
+                cellEditor.cancelCellEditing();
+            }
+
+            bayesIm.randomizeTable(nodeIndex);
+
+            getEditingTableModel().fireTableDataChanged();
+            firePropertyChange("modelChanged", null, null);
         });
 
-        randomizeEntireTable.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int nodeIndex = getEditingTableModel().getNodeIndex();
-                BayesIm bayesIm = getBayesIm();
+        randomizeAllTables.addActionListener(e14 -> {
+            int ret = JOptionPane.showConfirmDialog(
+                    JOptionUtils.centeringComp(),
+                    "This will modify all values in the entire Bayes model! " +
+                            "Continue?", "Warning",
+                    JOptionPane.YES_NO_OPTION);
 
-                if (existsCompleteRow(bayesIm, nodeIndex)) {
-                    int ret = JOptionPane.showConfirmDialog(
-                            JOptionUtils.centeringComp(),
-                            "This will modify all values in the table. " +
-                                    "Continue?", "Warning",
-                            JOptionPane.YES_NO_OPTION);
+            if (ret == JOptionPane.NO_OPTION) {
+                return;
+            }
 
-                    if (ret == JOptionPane.NO_OPTION) {
-                        return;
-                    }
-                }
+            BayesIm bayesIm = getBayesIm();
+
+            for (int nodeIndex = 0;
+                 nodeIndex < getBayesIm().getNumNodes(); nodeIndex++) {
 
                 BayesEstimatorNodeEditingTable editingTable =
                         BayesEstimatorNodeEditingTable.this;
@@ -238,92 +253,55 @@ class BayesEstimatorNodeEditingTable extends JTable {
             }
         });
 
-        randomizeAllTables.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        clearRow.addActionListener(e15 -> {
+            int nodeIndex = getEditingTableModel().getNodeIndex();
+
+            BayesEstimatorNodeEditingTable editingTable =
+                    BayesEstimatorNodeEditingTable.this;
+            TableCellEditor cellEditor = editingTable.getCellEditor();
+
+            if (cellEditor != null) {
+                cellEditor.cancelCellEditing();
+            }
+
+            Point point = new Point(getLastX(), getLastY());
+            int rowIndex = editingTable.rowAtPoint(point);
+
+            BayesIm bayesIm = getBayesIm();
+            bayesIm.clearRow(nodeIndex, rowIndex);
+
+            getEditingTableModel().fireTableRowsUpdated(rowIndex, rowIndex);
+            firePropertyChange("modelChanged", null, null);
+        });
+
+        clearEntireTable.addActionListener(e16 -> {
+            int nodeIndex = getEditingTableModel().getNodeIndex();
+            BayesIm bayesIm = getBayesIm();
+
+            if (existsCompleteRow(bayesIm, nodeIndex)) {
                 int ret = JOptionPane.showConfirmDialog(
                         JOptionUtils.centeringComp(),
-                        "This will modify all values in the entire Bayes model! " +
+                        "This will delete all values in the table. " +
                                 "Continue?", "Warning",
                         JOptionPane.YES_NO_OPTION);
 
                 if (ret == JOptionPane.NO_OPTION) {
                     return;
                 }
-
-                BayesIm bayesIm = getBayesIm();
-
-                for (int nodeIndex = 0;
-                     nodeIndex < getBayesIm().getNumNodes(); nodeIndex++) {
-
-                    BayesEstimatorNodeEditingTable editingTable =
-                            BayesEstimatorNodeEditingTable.this;
-                    TableCellEditor cellEditor = editingTable.getCellEditor();
-
-                    if (cellEditor != null) {
-                        cellEditor.cancelCellEditing();
-                    }
-
-                    bayesIm.randomizeTable(nodeIndex);
-
-                    getEditingTableModel().fireTableDataChanged();
-                    firePropertyChange("modelChanged", null, null);
-                }
             }
-        });
 
-        clearRow.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int nodeIndex = getEditingTableModel().getNodeIndex();
+            BayesEstimatorNodeEditingTable editingTable =
+                    BayesEstimatorNodeEditingTable.this;
+            TableCellEditor cellEditor = editingTable.getCellEditor();
 
-                BayesEstimatorNodeEditingTable editingTable =
-                        BayesEstimatorNodeEditingTable.this;
-                TableCellEditor cellEditor = editingTable.getCellEditor();
-
-                if (cellEditor != null) {
-                    cellEditor.cancelCellEditing();
-                }
-
-                Point point = new Point(getLastX(), getLastY());
-                int rowIndex = editingTable.rowAtPoint(point);
-
-                BayesIm bayesIm = getBayesIm();
-                bayesIm.clearRow(nodeIndex, rowIndex);
-
-                getEditingTableModel().fireTableRowsUpdated(rowIndex, rowIndex);
-                firePropertyChange("modelChanged", null, null);
+            if (cellEditor != null) {
+                cellEditor.cancelCellEditing();
             }
-        });
 
-        clearEntireTable.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int nodeIndex = getEditingTableModel().getNodeIndex();
-                BayesIm bayesIm = getBayesIm();
+            bayesIm.clearTable(nodeIndex);
 
-                if (existsCompleteRow(bayesIm, nodeIndex)) {
-                    int ret = JOptionPane.showConfirmDialog(
-                            JOptionUtils.centeringComp(),
-                            "This will delete all values in the table. " +
-                                    "Continue?", "Warning",
-                            JOptionPane.YES_NO_OPTION);
-
-                    if (ret == JOptionPane.NO_OPTION) {
-                        return;
-                    }
-                }
-
-                BayesEstimatorNodeEditingTable editingTable =
-                        BayesEstimatorNodeEditingTable.this;
-                TableCellEditor cellEditor = editingTable.getCellEditor();
-
-                if (cellEditor != null) {
-                    cellEditor.cancelCellEditing();
-                }
-
-                bayesIm.clearTable(nodeIndex);
-
-                getEditingTableModel().fireTableDataChanged();
-                firePropertyChange("modelChanged", null, null);
-            }
+            getEditingTableModel().fireTableDataChanged();
+            firePropertyChange("modelChanged", null, null);
         });
 
         popup.add(randomizeRow);
@@ -366,7 +344,7 @@ class BayesEstimatorNodeEditingTable extends JTable {
         return existsCompleteRow;
     }
 
-    public void setModel(TableModel model) {
+    public void setModel(@NotNull TableModel model) {
         super.setModel(model);
     }
 
@@ -389,8 +367,8 @@ class BayesEstimatorNodeEditingTable extends JTable {
         this.focusRow = row;
 
         if (this.focusCol < getRowCount()) {
-            setRowSelectionInterval(focusRow, focusRow);
-            editCellAt(focusRow, focusCol);
+            setRowSelectionInterval(this.focusRow, this.focusRow);
+            editCellAt(this.focusRow, this.focusCol);
         }
     }
 
@@ -410,12 +388,12 @@ class BayesEstimatorNodeEditingTable extends JTable {
             col = getNumParents();
         }
 
-        this.focusCol = col < getNumParents() ? getNumParents() : col;
+        this.focusCol = Math.max(col, getNumParents());
 
         if (this.focusCol >= getNumParents() &&
                 this.focusCol < getColumnCount()) {
-            setColumnSelectionInterval(focusCol, focusCol);
-            editCellAt(focusRow, focusCol);
+            setColumnSelectionInterval(this.focusCol, this.focusCol);
+            editCellAt(this.focusRow, this.focusCol);
         }
     }
 
@@ -435,11 +413,11 @@ class BayesEstimatorNodeEditingTable extends JTable {
     }
 
     private int getLastX() {
-        return lastX;
+        return this.lastX;
     }
 
     private int getLastY() {
-        return lastY;
+        return this.lastY;
     }
 
     /**
@@ -461,19 +439,13 @@ class BayesEstimatorNodeEditingTable extends JTable {
         /**
          * The BayesIm being edited.
          */
-        private BayesIm bayesIm;
+        private final BayesIm bayesIm;
 
         /**
          * This table can only display conditional probabilities for one node at
          * at time. This is the node.
          */
-        private int nodeIndex;
-
-        /**
-         * The messageAnchor that takes the user through the process of editing
-         * the probability tables.
-         */
-        private JComponent messageAnchor;
+        private final int nodeIndex;
 
         private int failedRow = -1;
         private int failedCol = -1;
@@ -499,7 +471,6 @@ class BayesEstimatorNodeEditingTable extends JTable {
 
             this.bayesIm = bayesIm;
             this.nodeIndex = bayesIm.getNodeIndex(node);
-            this.messageAnchor = messageAnchor;
         }
 
         /**
@@ -602,7 +573,7 @@ class BayesEstimatorNodeEditingTable extends JTable {
 //                probability = Double.parseDouble(nf.format(probability));
                 double sumInRow = sumInRow(row, colIndex) + probability;
 
-                double oldProbability = getBayesIm().getProbability(nodeIndex, row, colIndex);
+                double oldProbability = getBayesIm().getProbability(this.nodeIndex, row, colIndex);
 
                 if (!Double.isNaN(oldProbability)) {
                     oldProbability = Double.parseDouble(nf.format(oldProbability));
@@ -615,14 +586,14 @@ class BayesEstimatorNodeEditingTable extends JTable {
                 if (probabilityOutOfRange(probability)) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Probabilities must be in range [0.0, 1.0].");
-                    failedRow = row;
-                    failedCol = col;
+                    this.failedRow = row;
+                    this.failedCol = col;
                 } else if (numNanCols(row) == 0) {
                     if (sumInRow < 0.99995 || sumInRow > 1.00005) {
                         emptyRow(row);
                         getBayesIm().setProbability(getNodeIndex(), row,
                                 colIndex, probability);
-                        if (bayesIm.getNumColumns((nodeIndex)) == 2) {
+                        if (this.bayesIm.getNumColumns((this.nodeIndex)) == 2) {
                             fillInSingleRemainingColumn(row);
                         }
                         fireTableRowsUpdated(row, row);
@@ -632,8 +603,8 @@ class BayesEstimatorNodeEditingTable extends JTable {
                 } else if (sumInRow > 1.00005) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Sum of probabilities in row must not exceed 1.0.");
-                    failedRow = row;
-                    failedCol = col;
+                    this.failedRow = row;
+                    this.failedCol = col;
                 } else {
                     getBayesIm().setProbability(getNodeIndex(), row, colIndex,
                             probability);
@@ -646,8 +617,8 @@ class BayesEstimatorNodeEditingTable extends JTable {
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Could not interpret '" + aValue + "'");
-                failedRow = row;
-                failedCol = col;
+                this.failedRow = row;
+                this.failedCol = col;
             }
         }
 
@@ -759,31 +730,27 @@ class BayesEstimatorNodeEditingTable extends JTable {
         }
 
         public BayesIm getBayesIm() {
-            return bayesIm;
+            return this.bayesIm;
         }
 
         public int getNodeIndex() {
-            return nodeIndex;
-        }
-
-        public JComponent getMessageAnchor() {
-            return messageAnchor;
+            return this.nodeIndex;
         }
 
         public int getFailedRow() {
-            return failedRow;
+            return this.failedRow;
         }
 
         public int getFailedCol() {
-            return failedCol;
+            return this.failedCol;
         }
 
         public void resetFailedRow() {
-            failedRow = -1;
+            this.failedRow = -1;
         }
 
         public void resetFailedCol() {
-            failedCol = -1;
+            this.failedCol = -1;
         }
     }
 }

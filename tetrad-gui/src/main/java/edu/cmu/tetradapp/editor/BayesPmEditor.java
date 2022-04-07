@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,8 +27,6 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -44,15 +42,6 @@ public class BayesPmEditor extends JPanel
 
     private final JPanel targetPanel;
     private final BayesPmWrapper wrapper;
-    /**
-     * True iff the editing of measured variables is allowed.
-     */
-    private boolean editingMeasuredVariablesAllowed = true;
-
-    /**
-     * True iff the editing of latent variables is allowed.
-     */
-    private boolean editingLatentVariablesAllowed = true;
 
     /**
      * The wizard that lets the user edit values.
@@ -63,32 +52,29 @@ public class BayesPmEditor extends JPanel
      * Constructs a new editor for parameterized models (for now only for Bayes
      * net parameterized models).
      */
-    public BayesPmEditor(final BayesPmWrapper wrapper) {
+    public BayesPmEditor(BayesPmWrapper wrapper) {
         this.wrapper = wrapper;
         setLayout(new BorderLayout());
 
-        targetPanel = new JPanel();
-        targetPanel.setLayout(new BorderLayout());
+        this.targetPanel = new JPanel();
+        this.targetPanel.setLayout(new BorderLayout());
 
         setEditorPanel();
 
-        add(targetPanel, BorderLayout.CENTER);
+        add(this.targetPanel, BorderLayout.CENTER);
         validate();
 
         if (wrapper.getNumModels() > 1) {
-            final JComboBox<Integer> comp = new JComboBox<>();
+            JComboBox<Integer> comp = new JComboBox<>();
 
             for (int i = 0; i < wrapper.getNumModels(); i++) {
                 comp.addItem(i + 1);
             }
 
-            comp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    wrapper.setModelIndex(((Integer) comp.getSelectedItem()).intValue() - 1);
-                    setEditorPanel();
-                    validate();
-                }
+            comp.addActionListener(e -> {
+                wrapper.setModelIndex((Integer) comp.getSelectedItem() - 1);
+                setEditorPanel();
+                validate();
             });
 
             comp.setMaximumSize(comp.getPreferredSize());
@@ -108,16 +94,16 @@ public class BayesPmEditor extends JPanel
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        if (wrapper.getBayesPm().getDag().getNumNodes() == 0) {
+        if (this.wrapper.getBayesPm().getDag().getNumNodes() == 0) {
             throw new IllegalArgumentException("There are no nodes in that Bayes PM.");
         }
 
         setLayout(new BorderLayout());
 
-        Graph graph = wrapper.getBayesPm().getDag();
+        Graph graph = this.wrapper.getBayesPm().getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
         workbench.enableEditing(false);
-        BayesPmEditorWizard wizard = new BayesPmEditorWizard(wrapper.getBayesPm(), workbench);
+        BayesPmEditorWizard wizard = new BayesPmEditorWizard(this.wrapper.getBayesPm(), workbench);
 
         JScrollPane workbenchScroll = new JScrollPane(workbench);
         JScrollPane wizardScroll = new JScrollPane(wizard);
@@ -142,10 +128,10 @@ public class BayesPmEditor extends JPanel
         wizard.addPropertyChangeListener(this);
 
         wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
-        wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
+        wizard.setEditingMeasuredVariablesAllowed(true);
         this.wizard = wizard;
 
-        targetPanel.add(panel, BorderLayout.CENTER);
+        this.targetPanel.add(panel, BorderLayout.CENTER);
     }
 
     /**
@@ -178,37 +164,14 @@ public class BayesPmEditor extends JPanel
     }
 
     public JComponent getEditDelegate() {
-        return wizard;
-    }
-
-    /**
-     * True iff the editing of measured variables is allowed.
-     */
-    private boolean isEditingMeasuredVariablesAllowed() {
-        return editingMeasuredVariablesAllowed;
-    }
-
-    /**
-     * True iff the editing of measured variables is allowed.
-     */
-    public void setEditingMeasuredVariablesAllowed(boolean editingMeasuredVariablesAllowed) {
-        this.editingMeasuredVariablesAllowed = editingMeasuredVariablesAllowed;
-        wizard.setEditingMeasuredVariablesAllowed(isEditingMeasuredVariablesAllowed());
+        return this.wizard;
     }
 
     /**
      * True iff the editing of latent variables is allowed.
      */
     private boolean isEditingLatentVariablesAllowed() {
-        return editingLatentVariablesAllowed;
-    }
-
-    /**
-     * True iff the editing of latent variables is allowed.
-     */
-    public void setEditingLatentVariablesAllowed(boolean editingLatentVariablesAllowed) {
-        this.editingLatentVariablesAllowed = editingLatentVariablesAllowed;
-        wizard.setEditingLatentVariablesAllowed(isEditingLatentVariablesAllowed());
+        return true;
     }
 
 }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -67,11 +67,8 @@ public class KnowledgeModelEdge extends Edge
                               KnowledgeModelNode node2, int type) {
         super(node1, node2, Endpoint.TAIL, Endpoint.ARROW);
 
-        if (node1 == null || node2 == null) {
-            throw new NullPointerException();
-        }
-        if (this.type != FORBIDDEN_EXPLICITLY && this.type != FORBIDDEN_BY_TIERS
-                && this.type != REQUIRED && this.type != FORBIDDEN_BY_GROUPS && this.type != REQUIRED_BY_GROUPS) {
+        if (this.type != KnowledgeModelEdge.FORBIDDEN_EXPLICITLY && this.type != KnowledgeModelEdge.FORBIDDEN_BY_TIERS
+                && this.type != KnowledgeModelEdge.REQUIRED && this.type != KnowledgeModelEdge.FORBIDDEN_BY_GROUPS && this.type != KnowledgeModelEdge.REQUIRED_BY_GROUPS) {
             throw new IllegalArgumentException("The given type is not known");
         }
 
@@ -91,7 +88,7 @@ public class KnowledgeModelEdge extends Edge
     //==============================PUBLIC METHODS========================//
 
     public int getType() {
-        return type;
+        return this.type;
     }
 }
 

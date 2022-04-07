@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -51,11 +51,11 @@ public class TestDeltaTetradTest {
     public void test4aIteratedPositives() {
         RandomUtil.getInstance().setSeed(482834823L);
 
-        int numTrials = 10;
-        double alpha = 0.2;
+        final int numTrials = 10;
+        final double alpha = 0.2;
         SemIm sem = getFigure4aSem();
 
-        int[] sampleSizes = new int[]{100, 500, 1000, 5000};
+        int[] sampleSizes = {100, 500, 1000, 5000};
 
         double[][] answers = {{.1, .5, .2, .1, .1, .1},
                 {0.1, 0.6, 0.0, 0.0, 0.0, 0.0},
@@ -102,10 +102,6 @@ public class TestDeltaTetradTest {
                 _answer[j] = v;
             }
 
-//            System.out.println(MatrixUtils.toString(_answer));
-//            System.out.println(MatrixUtils.toString(answers[i]));
-
-//            assertTrue(Arrays.equals(_answer, answers[i]));
         }
     }
 
@@ -201,7 +197,7 @@ public class TestDeltaTetradTest {
         Tetrad t14 = new Tetrad(y2, y3, y5, y4);
         Tetrad t15 = new Tetrad(y2, y4, y5, y3);
 
-        Tetrad[] tetrads = new Tetrad[]{t1, t2, t3, t4};
+        Tetrad[] tetrads = {t1, t2, t3, t4};
 
         DeltaTetradTest test = new DeltaTetradTest(cov);
 
@@ -211,7 +207,7 @@ public class TestDeltaTetradTest {
         assertEquals(58.1, chiSq, 0.1);
         assertEquals(2.46E-14, pValue, .1E-14);
 
-        Tetrad[] independentTetrads = new Tetrad[]{t1, t2, t4, t6, t10};
+        Tetrad[] independentTetrads = {t1, t2, t4, t6, t10};
 
         chiSq = test.calcChiSquare(independentTetrads[0]);
         pValue = test.getPValue();
@@ -342,7 +338,7 @@ public class TestDeltaTetradTest {
 
         // Sympathy and anger, p. 164.
 
-        double[][] d = new double[][]{
+        double[][] d = {
                 {6.982},
                 {4.686, 6.047},
                 {4.335, 3.307, 5.037},
@@ -382,7 +378,7 @@ public class TestDeltaTetradTest {
 
         // Union sentiment.
 
-        double[][] d = new double[][]{
+        double[][] d = {
                 {14.610},
                 {-5.250, 11.017},
                 {-8.057, 11.087, 31.971},
@@ -417,7 +413,7 @@ public class TestDeltaTetradTest {
 
     private CovarianceMatrix getBollenSimulationExampleData() {
 
-        double[][] d = new double[][]{
+        double[][] d = {
                 {2.034},
                 {0.113, 1.281},
                 {0.510, 0.093, 1.572},

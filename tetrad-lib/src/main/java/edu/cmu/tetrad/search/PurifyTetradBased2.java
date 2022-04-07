@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,11 +36,10 @@ import java.util.*;
  * @author Joe Ramsey
  */
 public class PurifyTetradBased2 implements IPurify {
-    private boolean outputMessage = true;
-    private TetradTest tetradTest;
+    private final boolean outputMessage = true;
+    private final TetradTest tetradTest;
 
-    private List<Node> nodes;
-    private Graph mim;
+    private final List<Node> nodes;
 
     public PurifyTetradBased2(TetradTest tetradTest) {
         this.tetradTest = tetradTest;
@@ -60,7 +59,7 @@ public class PurifyTetradBased2 implements IPurify {
         List<List<Node>> _clustering = new ArrayList<>();
 
         for (List<Node> cluster : clustering) {
-            List<Node> converted = GraphUtils.replaceNodes(cluster, nodes);
+            List<Node> converted = GraphUtils.replaceNodes(cluster, this.nodes);
             _clustering.add(converted);
         }
 
@@ -80,7 +79,6 @@ public class PurifyTetradBased2 implements IPurify {
     }
 
     public void setTrueGraph(Graph mim) {
-        this.mim = mim;
     }
 
 
@@ -88,8 +86,8 @@ public class PurifyTetradBased2 implements IPurify {
         Set<Node> eliminated = new HashSet<>();
 
         Set<Tetrad> allImpurities = null;
-        double cutoff = tetradTest.getSignificance();
-        int count = 0;
+        double cutoff = this.tetradTest.getSignificance();
+        final int count = 0;
 
         for (List<Node> cluster : clustering) {
             Set<Tetrad> impurities = listTetrads(cluster, eliminated, cutoff);
@@ -122,7 +120,7 @@ public class PurifyTetradBased2 implements IPurify {
             Node maxNode = null;
             Map<Node, Set<Tetrad>> impuritiesPerNode = getImpuritiesPerNode(allImpurities, eliminated);
 
-            for (Node node : nodes) {
+            for (Node node : this.nodes) {
                 if (impuritiesPerNode.get(node).size() > max) {
                     max = impuritiesPerNode.get(node).size();
                     maxNode = node;
@@ -154,8 +152,8 @@ public class PurifyTetradBased2 implements IPurify {
     private Map<Node, Set<Tetrad>> getImpuritiesPerNode(Set<Tetrad> allImpurities, Set<Node> _eliminated) {
         Map<Node, Set<Tetrad>> impuritiesPerNode = new HashMap<>();
 
-        for (Node node : nodes) {
-            impuritiesPerNode.put(node, new HashSet<Tetrad>());
+        for (Node node : this.nodes) {
+            impuritiesPerNode.put(node, new HashSet<>());
         }
 
         for (Tetrad tetrad : allImpurities) {
@@ -291,11 +289,13 @@ public class PurifyTetradBased2 implements IPurify {
             }
 
             countable = true;
-            double p1, p2, p3;
+            double p1;
+            double p2;
+            double p3;
 
-            p1 = tetradTest.tetradPValue(nodes.indexOf(ci), nodes.indexOf(cj), nodes.indexOf(ck), nodes.indexOf(cl));
-            p2 = tetradTest.tetradPValue(nodes.indexOf(ci), nodes.indexOf(cj), nodes.indexOf(cl), nodes.indexOf(ck));
-            p3 = tetradTest.tetradPValue(nodes.indexOf(ci), nodes.indexOf(ck), nodes.indexOf(cl), nodes.indexOf(cj));
+            p1 = this.tetradTest.tetradPValue(this.nodes.indexOf(ci), this.nodes.indexOf(cj), this.nodes.indexOf(ck), this.nodes.indexOf(cl));
+            p2 = this.tetradTest.tetradPValue(this.nodes.indexOf(ci), this.nodes.indexOf(cj), this.nodes.indexOf(cl), this.nodes.indexOf(ck));
+            p3 = this.tetradTest.tetradPValue(this.nodes.indexOf(ci), this.nodes.indexOf(ck), this.nodes.indexOf(cl), this.nodes.indexOf(cj));
 
             if (p1 < cutoff) {
                 tetrads.add(new Tetrad(ci, cj, ck, cl, p1));
@@ -327,7 +327,7 @@ public class PurifyTetradBased2 implements IPurify {
             return null;
         }
 
-        double p3 = tetradTest.tetradPValue(nodes.indexOf(ci), nodes.indexOf(ck), nodes.indexOf(cl), nodes.indexOf(cj));
+        double p3 = this.tetradTest.tetradPValue(this.nodes.indexOf(ci), this.nodes.indexOf(ck), this.nodes.indexOf(cl), this.nodes.indexOf(cj));
 //        double p3 = tetradTest.tetradPValue(nodes.indexOf(ci), nodes.indexOf(cj), nodes.indexOf(cl), nodes.indexOf(ck));
 
         if (p3 < cutoff) {

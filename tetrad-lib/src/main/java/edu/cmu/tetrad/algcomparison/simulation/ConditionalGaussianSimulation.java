@@ -27,7 +27,7 @@ import java.util.*;
 public class ConditionalGaussianSimulation implements Simulation {
 
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private DataType dataType;
@@ -76,19 +76,19 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         this.shuffledOrder = null;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
@@ -97,28 +97,28 @@ public class ConditionalGaussianSimulation implements Simulation {
                 dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+        return this.graphs.get(index);
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Conditional Gaussian simulation using " + randomGraph.getDescription();
+        return "Conditional Gaussian simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
+        List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.MIN_CATEGORIES);
         parameters.add(Params.MAX_CATEGORIES);
         parameters.add(Params.PERCENT_DISCRETE);
@@ -140,12 +140,12 @@ public class ConditionalGaussianSimulation implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
     public DataType getDataType() {
-        return dataType;
+        return this.dataType;
     }
 
     private DataSet simulate(Graph G, Parameters parameters) {
@@ -163,16 +163,16 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         for (int i = 0; i < nodes.size(); i++) {
             if (i < nodes.size() * parameters.getDouble(Params.PERCENT_DISCRETE) * 0.01) {
-                final int minNumCategories = parameters.getInt(Params.MIN_CATEGORIES);
-                final int maxNumCategories = parameters.getInt(Params.MAX_CATEGORIES);
-                final int value = pickNumCategories(minNumCategories, maxNumCategories);
-                nd.put(shuffledOrder.get(i).getName(), value);
+                int minNumCategories = parameters.getInt(Params.MIN_CATEGORIES);
+                int maxNumCategories = parameters.getInt(Params.MAX_CATEGORIES);
+                int value = pickNumCategories(minNumCategories, maxNumCategories);
+                nd.put(this.shuffledOrder.get(i).getName(), value);
             } else {
-                nd.put(shuffledOrder.get(i).getName(), 0);
+                nd.put(this.shuffledOrder.get(i).getName(), 0);
             }
         }
 
-        G = makeMixedGraph(G, nd);
+        G = ConditionalGaussianSimulation.makeMixedGraph(G, nd);
         nodes = G.getNodes();
 
         DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
@@ -354,16 +354,16 @@ public class ConditionalGaussianSimulation implements Simulation {
             Parameter parameter = values.getParameter();
 
             if (parameter.getType() == ParamType.VAR) {
-                d = RandomUtil.getInstance().nextUniform(varLow, varHigh);
+                d = RandomUtil.getInstance().nextUniform(this.varLow, this.varHigh);
                 map.put(values, d);
             } else if (parameter.getType() == ParamType.COEF) {
-                double min = coefLow;
-                double max = coefHigh;
+                double min = this.coefLow;
+                double max = this.coefHigh;
                 double value = RandomUtil.getInstance().nextUniform(min, max);
-                d = RandomUtil.getInstance().nextUniform(0, 1) < 0.5 && coefSymmetric ? -value : value;
+                d = RandomUtil.getInstance().nextUniform(0, 1) < 0.5 && this.coefSymmetric ? -value : value;
                 map.put(values, d);
             } else if (parameter.getType() == ParamType.MEAN) {
-                d = RandomUtil.getInstance().nextUniform(meanLow, meanHigh);
+                d = RandomUtil.getInstance().nextUniform(this.meanLow, this.meanHigh);
                 map.put(values, d);
             }
         }
@@ -399,10 +399,10 @@ public class ConditionalGaussianSimulation implements Simulation {
         this.meanHigh = meanHigh;
     }
 
-    private class Combination {
+    private static class Combination {
 
-        private Parameter parameter;
-        private Set<VariableValues> paramValues;
+        private final Parameter parameter;
+        private final Set<VariableValues> paramValues;
 
         public Combination(Parameter parameter) {
             this.parameter = parameter;
@@ -414,7 +414,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
 
         public int hashCode() {
-            return parameter.hashCode() + paramValues.hashCode();
+            return this.parameter.hashCode() + this.paramValues.hashCode();
         }
 
         public boolean equals(Object o) {
@@ -429,14 +429,14 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
 
         public Parameter getParameter() {
-            return parameter;
+            return this.parameter;
         }
     }
 
-    private class VariableValues {
+    private static class VariableValues {
 
-        private DiscreteVariable variable;
-        private int value;
+        private final DiscreteVariable variable;
+        private final int value;
 
         public VariableValues(DiscreteVariable variable, int value) {
             this.variable = variable;
@@ -444,15 +444,15 @@ public class ConditionalGaussianSimulation implements Simulation {
         }
 
         public DiscreteVariable getVariable() {
-            return variable;
+            return this.variable;
         }
 
         public int getValue() {
-            return value;
+            return this.value;
         }
 
         public int hashCode() {
-            return variable.hashCode() + value;
+            return this.variable.hashCode() + this.value;
         }
 
         public boolean equals(Object o) {
@@ -472,15 +472,14 @@ public class ConditionalGaussianSimulation implements Simulation {
         for (int i = 0; i < nodes.size(); i++) {
             Node n = nodes.get(i);
             int nL = m.get(n.getName());
+            Node nNew;
             if (nL > 0) {
-                Node nNew = new DiscreteVariable(n.getName(), nL);
-                nNew.setNodeType(n.getNodeType());
-                nodes.set(i, nNew);
+                nNew = new DiscreteVariable(n.getName(), nL);
             } else {
-                Node nNew = new ContinuousVariable(n.getName());
-                nNew.setNodeType(n.getNodeType());
-                nodes.set(i, nNew);
+                nNew = new ContinuousVariable(n.getName());
             }
+            nNew.setNodeType(n.getNodeType());
+            nodes.set(i, nNew);
 
         }
 

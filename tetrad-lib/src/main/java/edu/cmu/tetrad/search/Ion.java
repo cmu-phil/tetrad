@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,44 +42,43 @@ public class Ion {
     private boolean pathLengthSearch = true;
 
     // prune using adjacencies
-    private boolean adjacencySearch = false;
+    private boolean adjacencySearch;
 
     /**
      * The input PAGs being to be intergrated, possibly FCI outputs.
      */
-    private List<Graph> input = new ArrayList<>();
+    private final List<Graph> input = new ArrayList<>();
 
     /**
      * The output PAGs over all variables consistent with the input PAGs
      */
-    private List<Graph> output = new ArrayList<>();
+    private final List<Graph> output = new ArrayList<>();
 
     /**
      * All the variables being integrated from the input PAGs
      */
-    private List<String> variables = new ArrayList<>();
+    private final List<String> variables = new ArrayList<>();
 
     /**
      * Definite noncolliders
      */
-    private Set<Triple> definiteNoncolliders = new HashSet<>();
+    private final Set<Triple> definiteNoncolliders = new HashSet<>();
 
     /**
      * separations and associations found in the input PAGs
      */
     private Set<IonIndependenceFacts> separations;
-    private Set<IonIndependenceFacts> associations;
 
     /**
      * tracks changes for final orientations orientation methods
      */
     private boolean changeFlag = true;
-    private Set<Graph> discrimGraphs = new HashSet<>();
-    private Set<Graph> finalResult = new HashSet<>();
+    private final Set<Graph> discrimGraphs = new HashSet<>();
+    private final Set<Graph> finalResult = new HashSet<>();
 
     // running runtime and time and size information for hitting sets
-    private List<Integer> recGraphs = new ArrayList<>();
-    private List<Double> recHitTimes = new ArrayList<>();
+    private final List<Integer> recGraphs = new ArrayList<>();
+    private final List<Double> recHitTimes = new ArrayList<>();
     private double runtime;
 
     // maximum memory usage
@@ -94,13 +93,10 @@ public class Ion {
      * @param pags The PAGs to be integrated
      */
     public Ion(List<Graph> pags) {
-        for (Graph pag : pags) {
-            this.input.add(pag);
-
-        }
-        for (Graph pag : input) {
+        this.input.addAll(pags);
+        for (Graph pag : this.input) {
             for (Node node : pag.getNodes()) {
-                if (!variables.contains(node.getName())) {
+                if (!this.variables.contains(node.getName())) {
                     this.variables.add(node.getName());
                 }
             }
@@ -118,14 +114,14 @@ public class Ion {
      * Sets path length search on or off
      */
     public void setPathLengthSearch(boolean b) {
-        pathLengthSearch = b;
+        this.pathLengthSearch = b;
     }
 
     /**
      * Sets adjacency search on or off
      */
     public void setAdjacencySearch(boolean b) {
-        adjacencySearch = b;
+        this.adjacencySearch = b;
     }
 
     /**
@@ -143,7 +139,7 @@ public class Ion {
          * Step 1 - Create the empty graph
          */
         List<Node> varNodes = new ArrayList<>();
-        for (String varName : variables) {
+        for (String varName : this.variables) {
             varNodes.add(new GraphNode(varName));
         }
         Graph graph = new EdgeListGraph(varNodes);
@@ -174,12 +170,12 @@ public class Ion {
         // get d-separations and d-connections
         List<Set<IonIndependenceFacts>> sepAndAssoc = findSepAndAssoc(graph);
         this.separations = sepAndAssoc.get(0);
-        this.associations = sepAndAssoc.get(1);
+        Set<IonIndependenceFacts> associations = sepAndAssoc.get(1);
         Map<Collection<Node>, List<PossibleDConnectingPath>> paths;
         Queue<Graph> step3Pags = new LinkedList<>();
         Set<Graph> reject = new HashSet<>();
         // if no d-separations, nothing left to search
-        if (separations.isEmpty()) {
+        if (this.separations.isEmpty()) {
             // makes orientations preventing definite noncolliders from becoming colliders
             // do final orientations
 //            doFinalOrientation(graph);
@@ -188,41 +184,41 @@ public class Ion {
         // sets length to iterate once if search over path lengths not enabled, otherwise set to 2
         int numNodes = graph.getNumNodes();
         int pl = numNodes - 1;
-        if (pathLengthSearch) {
+        if (this.pathLengthSearch) {
             pl = 2;
         }
         // iterates over path length, then adjacencies
         for (int l = pl; l < numNodes; l++) {
-            if (pathLengthSearch) {
+            if (this.pathLengthSearch) {
                 TetradLogger.getInstance().log("info", "Braching over path lengths: " + l + " of " + (numNodes - 1));
             }
-            int seps = separations.size();
-            int currentSep = 1;
-            int numAdjacencies = separations.size();
-            for (IonIndependenceFacts fact : separations) {
-                if (adjacencySearch) {
+            int seps = this.separations.size();
+            final int currentSep = 1;
+            int numAdjacencies = this.separations.size();
+            for (IonIndependenceFacts fact : this.separations) {
+                if (this.adjacencySearch) {
                     TetradLogger.getInstance().log("info", "Braching over path nonadjacencies: " + currentSep + " of " + numAdjacencies);
                 }
                 seps--;
                 // uses two queues to keep up with which PAGs are being iterated and which have been
                 // accepted to be iterated over in the next iteration of the above for loop
                 searchPags.addAll(step3Pags);
-                recGraphs.add(searchPags.size());
+                this.recGraphs.add(searchPags.size());
                 step3Pags.clear();
                 while (!searchPags.isEmpty()) {
                     System.out.println("ION Step 3 size: " + searchPags.size());
                     double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                    if (currentUsage > maxMemory) maxMemory = currentUsage;
+                    if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
                     // deques first PAG from searchPags
                     Graph pag = searchPags.poll();
                     // Part 3.a - finds possibly d-connecting undirectedPaths between each pair of nodes
                     // known to be d-separated
                     List<PossibleDConnectingPath> dConnections = new ArrayList<>();
                     // checks to see if looping over adjacencies
-                    if (adjacencySearch) {
+                    if (this.adjacencySearch) {
                         for (Collection<Node> conditions : fact.getZ()) {
                             // checks to see if looping over path lengths
-                            if (pathLengthSearch) {
+                            if (this.pathLengthSearch) {
                                 dConnections.addAll(PossibleDConnectingPath.findDConnectingPathsOfLength
                                         (pag, fact.getX(), fact.getY(), conditions, l));
                             } else {
@@ -231,10 +227,10 @@ public class Ion {
                             }
                         }
                     } else {
-                        for (IonIndependenceFacts allfact : separations) {
+                        for (IonIndependenceFacts allfact : this.separations) {
                             for (Collection<Node> conditions : allfact.getZ()) {
                                 // checks to see if looping over path lengths
-                                if (pathLengthSearch) {
+                                if (this.pathLengthSearch) {
                                     dConnections.addAll(PossibleDConnectingPath.findDConnectingPathsOfLength
                                             (pag, allfact.getX(), allfact.getY(), conditions, l));
                                 } else {
@@ -296,7 +292,7 @@ public class Ion {
                     }
                     float starthitset = System.currentTimeMillis();
                     Collection<GraphChange> hittingSets = IonHittingSet.findHittingSet(possibleChanges);
-                    recHitTimes.add((System.currentTimeMillis() - starthitset) / 1000.);
+                    this.recHitTimes.add((System.currentTimeMillis() - starthitset) / 1000.);
                     // Part 3.c - checks the newly constructed graphs from 3.b and rejects those that
                     // cycles or produce independencies known not to occur from the input PAGs or
                     // include undirectedPaths from definite nonancestors
@@ -392,7 +388,7 @@ public class Ion {
                     }
                 }
                 // exits loop if not looping over adjacencies
-                if (!adjacencySearch) {
+                if (!this.adjacencySearch) {
                     break;
                 }
             }
@@ -422,7 +418,7 @@ public class Ion {
             for (IonIndependenceFacts fact : associations) {
                 for (List<Node> nodes : fact.getZ()) {
                     if (nodes.isEmpty()) {
-                        List<List<Node>> treks = treks(pag, fact.x, fact.y);
+                        List<List<Node>> treks = Ion.treks(pag, fact.x, fact.y);
                         if (treks.size() == 1) {
                             List<Node> trek = treks.get(0);
                             List<Triple> triples = new ArrayList<>();
@@ -448,14 +444,14 @@ public class Ion {
             // two variables known to be nconditionally assoicated
             List<Graph> possRemovePags = possRemove(pag, necEdges);
             double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-            if (currentUsage > maxMemory) maxMemory = currentUsage;
+            if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
             for (Graph newPag : possRemovePags) {
                 elimTreks = false;
                 // looks for unconditional associations
                 for (IonIndependenceFacts fact : associations) {
                     for (List<Node> nodes : fact.getZ()) {
                         if (nodes.isEmpty()) {
-                            if (treks(newPag, fact.x, fact.y).isEmpty()) {
+                            if (Ion.treks(newPag, fact.x, fact.y).isEmpty()) {
                                 elimTreks = true;
                             }
                             // stop looping once the empty set is found
@@ -498,7 +494,7 @@ public class Ion {
                 }
                 doFinalOrientation(newGraph);
             }
-            for (Graph outputPag : finalResult) {
+            for (Graph outputPag : this.finalResult) {
                 if (!predictsFalseIndependence(associations, outputPag)) {
                     Set<Triple> underlineTriples = new HashSet<>(outputPag.getUnderLines());
                     for (Triple triple : underlineTriples) {
@@ -508,13 +504,13 @@ public class Ion {
                 }
             }
         }
-        output.addAll(outputSet);
+        this.output.addAll(outputSet);
         TetradLogger.getInstance().log("info", "Step 5: " + (System.currentTimeMillis() - steps) / 1000. + "s");
-        runtime = ((System.currentTimeMillis() - start) / 1000.);
-        logGraphs("\nReturning output (" + output.size() + " Graphs):", output);
+        this.runtime = ((System.currentTimeMillis() - start) / 1000.);
+        logGraphs("\nReturning output (" + this.output.size() + " Graphs):", this.output);
         double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        if (currentUsage > maxMemory) maxMemory = currentUsage;
-        return output;
+        if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
+        return this.output;
     }
 
     // returns total runtime and times for hitting set calculations
@@ -523,15 +519,15 @@ public class Ion {
         double totalhit = 0;
         double longesthit = 0;
         double averagehit = 0;
-        for (Double i : recHitTimes) {
+        for (Double i : this.recHitTimes) {
             totalhit += i;
-            averagehit += i / recHitTimes.size();
+            averagehit += i / this.recHitTimes.size();
             if (i > longesthit) {
                 longesthit = i;
             }
         }
         List<String> list = new ArrayList<>();
-        list.add(Double.toString(runtime));
+        list.add(Double.toString(this.runtime));
         list.add(Double.toString(totalhit));
         list.add(Double.toString(longesthit));
         list.add(Double.toString(averagehit));
@@ -541,7 +537,7 @@ public class Ion {
     // returns the maximum memory used in a run of ION
 
     public double getMaxMemUsage() {
-        return maxMemory;
+        return this.maxMemory;
     }
 
     // return hitting set sizes
@@ -550,9 +546,9 @@ public class Ion {
         int totalit = 0;
         int largestit = 0;
         int averageit = 0;
-        for (Integer i : recGraphs) {
+        for (Integer i : this.recGraphs) {
             totalit += i;
-            averageit += i / recGraphs.size();
+            averageit += i / this.recGraphs.size();
             if (i > largestit) {
                 largestit = i;
             }
@@ -567,24 +563,24 @@ public class Ion {
     // summarizes time and hitting set time and size information for latex
 
     public String getStats() {
-        String stats = "Total running time:  " + runtime + "\\\\";
+        String stats = "Total running time:  " + this.runtime + "\\\\";
         int totalit = 0;
         int largestit = 0;
         int averageit = 0;
-        for (Integer i : recGraphs) {
+        for (Integer i : this.recGraphs) {
             totalit += i;
             averageit += i;
             if (i > largestit) {
                 largestit = i;
             }
         }
-        averageit /= recGraphs.size();
+        averageit /= this.recGraphs.size();
         double totalhit = 0;
         double longesthit = 0;
         double averagehit = 0;
-        for (Double i : recHitTimes) {
+        for (Double i : this.recHitTimes) {
             totalhit += i;
-            averagehit += i / recHitTimes.size();
+            averagehit += i / this.recHitTimes.size();
             if (i > longesthit) {
                 longesthit = i;
             }
@@ -630,7 +626,7 @@ public class Ion {
      */
     private Set<NodePair> nonadjacencies(Graph graph) {
         Set<NodePair> nonadjacencies = new HashSet<>();
-        for (Graph inputPag : input) {
+        for (Graph inputPag : this.input) {
             for (NodePair pair : allNodePairs(inputPag.getNodes())) {
                 if (!inputPag.isAdjacentTo(pair.getFirst(), pair.getSecond())) {
                     nonadjacencies.add(new NodePair(graph.getNode(pair.getFirst().getName()), graph.getNode(pair.getSecond().getName())));
@@ -648,7 +644,7 @@ public class Ion {
 
     private void transferLocal(Graph graph) {
         Set<NodePair> nonadjacencies = nonadjacencies(graph);
-        for (Graph pag : input) {
+        for (Graph pag : this.input) {
             for (Edge edge : pag.getEdges()) {
                 NodePair graphNodePair = new NodePair(graph.getNode(edge.getNode1().getName()), graph.getNode(edge.getNode2().getName()));
                 if (nonadjacencies.contains(graphNodePair)) {
@@ -683,7 +679,7 @@ public class Ion {
                 Triple graphTriple = new Triple(graph.getNode(triple.getX().getName()), graph.getNode(triple.getY().getName()), graph.getNode(triple.getZ().getName()));
                 if (graphTriple.alongPathIn(graph)) {
                     graph.addUnderlineTriple(graphTriple.getX(), graphTriple.getY(), graphTriple.getZ());
-                    definiteNoncolliders.add(graphTriple);
+                    this.definiteNoncolliders.add(graphTriple);
                 }
             }
         }
@@ -713,7 +709,7 @@ public class Ion {
 
     private List<NodePair> nonIntersection(Graph graph) {
         List<Set<String>> varsets = new ArrayList<>();
-        for (Graph inputPag : input) {
+        for (Graph inputPag : this.input) {
             Set<String> varset = new HashSet<>();
             for (Node node : inputPag.getNodes()) {
                 varset.add(node.getName());
@@ -722,17 +718,17 @@ public class Ion {
         }
         List<NodePair> pairs = new ArrayList();
 
-        for (int i = 0; i < variables.size() - 1; i++) {
-            for (int j = i + 1; j < variables.size(); j++) {
+        for (int i = 0; i < this.variables.size() - 1; i++) {
+            for (int j = i + 1; j < this.variables.size(); j++) {
                 boolean intersection = false;
                 for (Set<String> varset : varsets) {
-                    if (varset.containsAll(Arrays.asList(variables.get(i), variables.get(j)))) {
+                    if (varset.containsAll(Arrays.asList(this.variables.get(i), this.variables.get(j)))) {
                         intersection = true;
                         break;
                     }
                 }
                 if (!intersection) {
-                    pairs.add(new NodePair(graph.getNode(variables.get(i)), graph.getNode(variables.get(j))));
+                    pairs.add(new NodePair(graph.getNode(this.variables.get(i)), graph.getNode(this.variables.get(j))));
                 }
             }
         }
@@ -757,12 +753,12 @@ public class Ion {
 
             List<Set<Node>> subsets = SearchGraphUtils.powerSet(variables);
 
-            IonIndependenceFacts indep = new IonIndependenceFacts(x, y, new HashSet<List<Node>>());
-            IonIndependenceFacts assoc = new IonIndependenceFacts(x, y, new HashSet<List<Node>>());
+            IonIndependenceFacts indep = new IonIndependenceFacts(x, y, new HashSet<>());
+            IonIndependenceFacts assoc = new IonIndependenceFacts(x, y, new HashSet<>());
             boolean addIndep = false;
             boolean addAssoc = false;
 
-            for (Graph pag : input) {
+            for (Graph pag : this.input) {
                 for (Set<Node> subset : subsets) {
                     if (containsAll(pag, subset, pair)) {
                         Node pagX = pag.getNode(x.getName());
@@ -831,7 +827,7 @@ public class Ion {
         for (Triple triple : getAllTriples(pag)) {
             if (pag.isAdjacentTo(triple.getX(), triple.getY()) && pag.isAdjacentTo(triple.getY(), triple.getZ())
                     && !pag.isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ()) &&
-                    !definiteNoncolliders.contains(triple) &&
+                    !this.definiteNoncolliders.contains(triple) &&
                     !pag.isDefCollider(triple.getX(), triple.getY(), triple.getZ())) {
                 possibleTriples.add(triple);
             }
@@ -934,7 +930,7 @@ public class Ion {
                             List<PossibleDConnectingPath> decendantPaths = new ArrayList<>();
                             decendantPaths
                                     = PossibleDConnectingPath.findDConnectingPaths
-                                    (possible.getPag(), current, outside, new ArrayList<Node>());
+                                    (possible.getPag(), current, outside, new ArrayList<>());
 
                             if (decendantPaths.isEmpty()) {
                                 gc = new GraphChange();
@@ -1014,27 +1010,27 @@ public class Ion {
      */
 
     private void doFinalOrientation(Graph graph) {
-        discrimGraphs.clear();
+        this.discrimGraphs.clear();
         Set<Graph> currentDiscrimGraphs = new HashSet<>();
         currentDiscrimGraphs.add(graph);
-        while (changeFlag) {
-            changeFlag = false;
-            currentDiscrimGraphs.addAll(discrimGraphs);
-            discrimGraphs.clear();
+        while (this.changeFlag) {
+            this.changeFlag = false;
+            currentDiscrimGraphs.addAll(this.discrimGraphs);
+            this.discrimGraphs.clear();
             for (Graph newGraph : currentDiscrimGraphs) {
                 doubleTriangle(newGraph);
                 awayFromColliderAncestorCycle(newGraph);
                 if (!discrimPaths(newGraph)) {
-                    if (changeFlag) {
-                        discrimGraphs.add(newGraph);
+                    if (this.changeFlag) {
+                        this.discrimGraphs.add(newGraph);
                     } else {
-                        finalResult.add(newGraph);
+                        this.finalResult.add(newGraph);
                     }
                 }
             }
             currentDiscrimGraphs.clear();
         }
-        changeFlag = true;
+        this.changeFlag = true;
     }
 
     /**
@@ -1078,7 +1074,7 @@ public class Ion {
                         }
 
                         graph.setEndpoint(D, B, Endpoint.ARROW);
-                        changeFlag = true;
+                        this.changeFlag = true;
                     }
                 }
             }
@@ -1088,8 +1084,8 @@ public class Ion {
     // Does only the ancestor and cycle rules of these repeatedly until no changes
 
     private void awayFromAncestorCycle(Graph graph) {
-        while (changeFlag) {
-            changeFlag = false;
+        while (this.changeFlag) {
+            this.changeFlag = false;
             List<Node> nodes = graph.getNodes();
 
             for (Node B : nodes) {
@@ -1114,7 +1110,7 @@ public class Ion {
                 }
             }
         }
-        changeFlag = true;
+        this.changeFlag = true;
     }
 
     // Does all 3 of these rules at once instead of going through all
@@ -1157,9 +1153,8 @@ public class Ion {
             return false;
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW &&
-                graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            return true;
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
+            graph.getEndpoint(x, y);
         }
         return true;
     }
@@ -1180,14 +1175,14 @@ public class Ion {
                     }
 
                     graph.setEndpoint(b, c, Endpoint.ARROW);
-                    changeFlag = true;
+                    this.changeFlag = true;
                 }
             }
 
             if (BC == Endpoint.CIRCLE || BC == Endpoint.ARROW) {
                 if (CB == Endpoint.CIRCLE) {
                     graph.setEndpoint(c, b, Endpoint.TAIL);
-                    changeFlag = true;
+                    this.changeFlag = true;
                 }
             }
         }
@@ -1209,7 +1204,7 @@ public class Ion {
                 }
 
                 graph.setEndpoint(a, c, Endpoint.ARROW);
-                changeFlag = true;
+                this.changeFlag = true;
             }
         }
     }
@@ -1222,7 +1217,7 @@ public class Ion {
                 (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
             if (graph.isDirectedFromTo(a, b) && graph.isDirectedFromTo(b, c)) {
                 graph.setEndpoint(c, a, Endpoint.TAIL);
-                changeFlag = true;
+                this.changeFlag = true;
             }
         }
     }
@@ -1323,14 +1318,14 @@ public class Ion {
      * arguments.
      */
     private void doDdpOrientation(Graph graph, Node l, Node a, Node b, Node c) {
-        changeFlag = true;
-        for (IonIndependenceFacts iif : separations) {
+        this.changeFlag = true;
+        for (IonIndependenceFacts iif : this.separations) {
             if ((iif.getX().equals(l) && iif.getY().equals(c)) ||
                     iif.getY().equals(l) && iif.getX().equals(c)) {
                 for (List<Node> condSet : iif.getZ()) {
                     if (condSet.contains(b)) {
                         graph.setEndpoint(c, b, Endpoint.TAIL);
-                        discrimGraphs.add(graph);
+                        this.discrimGraphs.add(graph);
                         return;
                     }
                 }
@@ -1340,10 +1335,10 @@ public class Ion {
         Graph newGraph1 = new EdgeListGraph(graph);
         newGraph1.setEndpoint(a, b, Endpoint.ARROW);
         newGraph1.setEndpoint(c, b, Endpoint.ARROW);
-        discrimGraphs.add(newGraph1);
+        this.discrimGraphs.add(newGraph1);
         Graph newGraph2 = new EdgeListGraph(graph);
         newGraph2.setEndpoint(c, b, Endpoint.TAIL);
-        discrimGraphs.add(newGraph2);
+        this.discrimGraphs.add(newGraph2);
     }
 
     private Set<Graph> removeMoreSpecific(Set<Graph> outputPags) {
@@ -1431,10 +1426,10 @@ public class Ion {
      * sets to be associated with a single pair of nodes, which is necessary for the proper ordering of iterations in
      * the ION search.
      */
-    private final class IonIndependenceFacts {
-        private Node x;
-        private Node y;
-        private Collection<List<Node>> z;
+    private static final class IonIndependenceFacts {
+        private final Node x;
+        private final Node y;
+        private final Collection<List<Node>> z;
 
         /**
          * Constructs a triple of nodes.
@@ -1449,43 +1444,43 @@ public class Ion {
             this.z = z;
         }
 
-        public final Node getX() {
-            return x;
+        public Node getX() {
+            return this.x;
         }
 
-        public final Node getY() {
-            return y;
+        public Node getY() {
+            return this.y;
         }
 
-        public final Collection<List<Node>> getZ() {
-            return z;
+        public Collection<List<Node>> getZ() {
+            return this.z;
         }
 
         public void addMoreZ(List<Node> moreZ) {
-            z.add(moreZ);
+            this.z.add(moreZ);
         }
 
-        public final int hashCode() {
+        public int hashCode() {
             int hash = 17;
-            hash += 19 * x.hashCode() * y.hashCode();
-            hash += 23 * z.hashCode();
+            hash += 19 * this.x.hashCode() * this.y.hashCode();
+            hash += 23 * this.z.hashCode();
             return hash;
         }
 
-        public final boolean equals(Object obj) {
+        public boolean equals(Object obj) {
             if (!(obj instanceof IonIndependenceFacts)) {
                 return false;
             }
 
             IonIndependenceFacts fact = (IonIndependenceFacts) obj;
-            return (x.equals(fact.x) && y.equals(fact.y) &&
-                    z.equals(fact.z))
-                    || (x.equals(fact.y) & y.equals(fact.x) &&
-                    z.equals(fact.z));
+            return (this.x.equals(fact.x) && this.y.equals(fact.y) &&
+                    this.z.equals(fact.z))
+                    || (this.x.equals(fact.y) & this.y.equals(fact.x) &&
+                    this.z.equals(fact.z));
         }
 
         public String toString() {
-            return "I(" + x + ", " + y + " | " + z + ")";
+            return "I(" + this.x + ", " + this.y + " | " + this.z + ")";
         }
     }
 
@@ -1497,7 +1492,7 @@ public class Ion {
      * @author pingel
      */
 
-    private class PowerSet<E> implements Iterable<Set<E>> {
+    private static class PowerSet<E> implements Iterable<Set<E>> {
         Collection<E> all;
 
         public PowerSet(Collection<E> all) {
@@ -1513,7 +1508,7 @@ public class Ion {
             return new PowerSetIterator<>(this);
         }
 
-        class PowerSetIterator<InE> implements Iterator<Set<InE>> {
+        static class PowerSetIterator<InE> implements Iterator<Set<InE>> {
             PowerSet<InE> powerSet;
             List<InE> canonicalOrder = new ArrayList<>();
             List<InE> mask = new ArrayList<>();
@@ -1522,7 +1517,7 @@ public class Ion {
             PowerSetIterator(PowerSet<InE> powerSet) {
 
                 this.powerSet = powerSet;
-                canonicalOrder.addAll(powerSet.all);
+                this.canonicalOrder.addAll(powerSet.all);
             }
 
             public void remove() {
@@ -1530,7 +1525,7 @@ public class Ion {
             }
 
             private boolean allOnes() {
-                for (InE bit : mask) {
+                for (InE bit : this.mask) {
                     if (bit == null) {
                         return false;
                     }
@@ -1541,35 +1536,34 @@ public class Ion {
             private void increment() {
                 int i = 0;
                 while (true) {
-                    if (i < mask.size()) {
-                        InE bit = mask.get(i);
+                    if (i < this.mask.size()) {
+                        InE bit = this.mask.get(i);
                         if (bit == null) {
-                            mask.set(i, canonicalOrder.get(i));
+                            this.mask.set(i, this.canonicalOrder.get(i));
                             return;
                         } else {
-                            mask.set(i, null);
+                            this.mask.set(i, null);
                             i++;
                         }
                     } else {
-                        mask.add(canonicalOrder.get(i));
+                        this.mask.add(this.canonicalOrder.get(i));
                         return;
                     }
                 }
             }
 
             public boolean hasNext() {
-                return hasNext;
+                return this.hasNext;
             }
 
             public Set<InE> next() {
 
-                Set<InE> result = new HashSet<>();
-                result.addAll(mask);
+                Set<InE> result = new HashSet<>(this.mask);
                 result.remove(null);
 
-                hasNext = mask.size() < powerSet.all.size() || !allOnes();
+                this.hasNext = this.mask.size() < this.powerSet.all.size() || !allOnes();
 
-                if (hasNext) {
+                if (this.hasNext) {
                     increment();
                 }
 
@@ -1581,7 +1575,7 @@ public class Ion {
 
     public static List<List<Node>> treks(Graph graph, Node node1, Node node2) {
         List<List<Node>> paths = new LinkedList<>();
-        treks(graph, node1, node2, new LinkedList<Node>(), paths);
+        Ion.treks(graph, node1, node2, new LinkedList<>(), paths);
         return paths;
     }
 
@@ -1622,7 +1616,7 @@ public class Ion {
                 continue;
             }
 
-            treks(graph, next, node2, path, paths);
+            Ion.treks(graph, next, node2, path, paths);
         }
 
         path.removeLast();

@@ -33,10 +33,10 @@ public class FgsApiExample {
         Path dataFile = Paths.get("./tetrad-lib/src/test/resources/", "iq_brain_size.tetrad.txt");
 
         // data file settings
-        Delimiter delimiter = Delimiter.WHITESPACE;
-        int numberOfCategories = 2;
-        boolean hasHeader = true;
-        boolean isDiscrete = false;
+        final Delimiter delimiter = Delimiter.WHITESPACE;
+        final int numberOfCategories = 2;
+        final boolean hasHeader = true;
+        final boolean isDiscrete = false;
 
         // tabular data is our input (can also use covariance)
         TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);

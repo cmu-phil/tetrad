@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.CharArrayWriter;
 import java.io.IOException;
@@ -53,7 +52,7 @@ import java.util.stream.Collectors;
  * @author Joseph Ramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public final class Knowledge2 implements TetradSerializable, IKnowledge {
+public final class Knowledge2 implements IKnowledge {
 
     private static final long serialVersionUID = 23L;
 
@@ -83,7 +82,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         nodes.forEach(node -> {
             if (checkVarName(node)) {
-                variables.add(node);
+                this.variables.add(node);
             } else {
                 throw new IllegalArgumentException(String.format("Bad variable node %s.", node));
             }
@@ -114,11 +113,11 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     private boolean checkVarName(String name) {
-        return VARNAME_PATTERN.matcher(name).matches();
+        return Knowledge2.VARNAME_PATTERN.matcher(name).matches();
     }
 
     private String checkSpec(String spec) {
-        Matcher matcher = SPEC_PATTERN.matcher(spec);
+        Matcher matcher = Knowledge2.SPEC_PATTERN.matcher(spec);
         if (!matcher.matches()) {
             throw new IllegalArgumentException(spec + ": Cpdag names can consist of alphabetic "
                     + "characters plus :, _, -, and .. A wildcard '*' may be included to match a "
@@ -135,13 +134,13 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
             split(spec).stream()
                     .map(e -> e.replace("*", ".*"))
                     .forEach(e -> {
-                        final Pattern cpdag = Pattern.compile(e);
-                        variables.stream()
+                        Pattern cpdag = Pattern.compile(e);
+                        this.variables.stream()
                                 .filter(var -> cpdag.matcher(var).matches())
                                 .collect(Collectors.toCollection(() -> vars));
                     });
         } else {
-            if (variables.contains(spec)) {
+            if (this.variables.contains(spec)) {
                 vars.add(spec);
             }
         }
@@ -150,18 +149,18 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     private Set<String> split(String spec) {
-        return Arrays.stream(COMMAN_DELIM.split(spec))
+        return Arrays.stream(Knowledge2.COMMAN_DELIM.split(spec))
                 .map(String::trim)
                 .filter(e -> !e.isEmpty())
                 .collect(Collectors.toSet());
     }
 
     private void ensureTiers(int tier) {
-        for (int i = tierSpecs.size(); i <= tier; i++) {
-            tierSpecs.add(new LinkedHashSet<>());
+        for (int i = this.tierSpecs.size(); i <= tier; i++) {
+            this.tierSpecs.add(new LinkedHashSet<>());
 
             for (int j = 0; j < i; j++) {
-                forbiddenRulesSpecs.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
+                this.forbiddenRulesSpecs.add(new OrderedPair<>(this.tierSpecs.get(i), this.tierSpecs.get(j)));
             }
         }
     }
@@ -181,23 +180,23 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     private Set<OrderedPair<Set<String>>> forbiddenTierRules() {
         Set<OrderedPair<Set<String>>> rules = new HashSet<>();
 
-        for (int i = 0; i < tierSpecs.size(); i++) {
+        for (int i = 0; i < this.tierSpecs.size(); i++) {
             if (isTierForbiddenWithin(i)) {
-                rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(i)));
+                rules.add(new OrderedPair<>(this.tierSpecs.get(i), this.tierSpecs.get(i)));
             }
         }
 
-        for (int i = 0; i < tierSpecs.size(); i++) {
+        for (int i = 0; i < this.tierSpecs.size(); i++) {
             if (isOnlyCanCauseNextTier(i)) {
-                for (int j = i + 2; j < tierSpecs.size(); j++) {
-                    rules.add(new OrderedPair<>(tierSpecs.get(i), tierSpecs.get(j)));
+                for (int j = i + 2; j < this.tierSpecs.size(); j++) {
+                    rules.add(new OrderedPair<>(this.tierSpecs.get(i), this.tierSpecs.get(j)));
                 }
             }
         }
 
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            for (int j = i + 1; j < tierSpecs.size(); j++) {
-                rules.add(new OrderedPair<>(tierSpecs.get(j), tierSpecs.get(i)));
+        for (int i = 0; i < this.tierSpecs.size(); i++) {
+            for (int j = i + 1; j < this.tierSpecs.size(); j++) {
+                rules.add(new OrderedPair<>(this.tierSpecs.get(j), this.tierSpecs.get(i)));
             }
         }
 
@@ -224,8 +223,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         getExtent(spec).stream()
                 .filter(this::checkVarName)
                 .forEach(e -> {
-                    variables.add(e);
-                    tierSpecs.get(tier).add(e);
+                    this.variables.add(e);
+                    this.tierSpecs.get(tier).add(e);
                 });
     }
 
@@ -235,10 +234,10 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public void addToTiersByVarNames(List<String> varNames) {
-        if (!variables.containsAll(varNames)) {
+        if (!this.variables.containsAll(varNames)) {
             varNames.forEach(e -> {
                 if (checkVarName(e)) {
-                    variables.add(e);
+                    this.variables.add(e);
                 } else {
                     throw new IllegalArgumentException(String.format("Bad variable node %s.", e));
                 }
@@ -262,18 +261,18 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         this.knowledgeGroups.add(group);
 
         OrderedPair<Set<String>> o = getGroupRule(group);
-        knowledgeGroupRules.put(group, o);
+        this.knowledgeGroupRules.put(group, o);
 
         if (group.getType() == KnowledgeGroup.FORBIDDEN) {
-            forbiddenRulesSpecs.add(o);
+            this.forbiddenRulesSpecs.add(o);
         } else if (group.getType() == KnowledgeGroup.REQUIRED) {
-            requiredRulesSpecs.add(o);
+            this.requiredRulesSpecs.add(o);
         }
     }
 
     @Override
     public void addVariable(String varName) {
-        variables.add(varName);
+        this.variables.add(varName);
     }
 
     /**
@@ -288,42 +287,13 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     /**
-     * Iterator over the knowledge's explicitly forbidden edges.
-     */
-    @Override
-    public Iterator<KnowledgeEdge> explicitlyForbiddenEdgesIterator() {
-        Set<OrderedPair<Set<String>>> copy = new HashSet<>(forbiddenRulesSpecs);
-        copy.removeAll(forbiddenTierRules());
-
-        knowledgeGroups.forEach(e -> copy.remove(knowledgeGroupRules.get(e)));
-
-        Set<KnowledgeEdge> edges = new HashSet<>();
-
-        copy.forEach(o -> {
-            for (String s1 : o.getFirst()) {
-                o.getSecond().forEach(s2 -> edges.add(new KnowledgeEdge(s1, s2)));
-            }
-        });
-
-        return edges.iterator();
-    }
-
-    /**
-     * Iterator over the KnowledgeEdge's explicitly required edges.
-     */
-    @Override
-    public Iterator<KnowledgeEdge> explicitlyRequiredEdgesIterator() {
-        return requiredEdgesIterator();
-    }
-
-    /**
      * Iterator over the KnowledgeEdge's representing forbidden edges.
      */
     @Override
     public Iterator<KnowledgeEdge> forbiddenEdgesIterator() {
         Set<KnowledgeEdge> edges = new HashSet<>();
 
-        forbiddenRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
+        this.forbiddenRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
             if (!s1.equals(s2)) {
                 edges.add(new KnowledgeEdge(s1, s2));
             }
@@ -347,7 +317,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public List<String> getVariables() {
-        return variables.stream()
+        return this.variables.stream()
                 .sorted()
                 .collect(Collectors.toList());
     }
@@ -357,9 +327,9 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public List<String> getVariablesNotInTiers() {
-        List<String> notInTier = new ArrayList<>(variables);
+        List<String> notInTier = new ArrayList<>(this.variables);
 
-        for (Set<String> tier : tierSpecs) {
+        for (Set<String> tier : this.tierSpecs) {
             notInTier.removeAll(tier);
         }
 
@@ -375,7 +345,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         ensureTiers(tier);
 
         try {
-            return tierSpecs.get(tier).stream()
+            return this.tierSpecs.get(tier).stream()
                     .sorted()
                     .collect(Collectors.toList());
         } catch (Exception e) {
@@ -388,12 +358,12 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public int getNumTiers() {
-        return tierSpecs.size();
+        return this.tierSpecs.size();
     }
 
     @Override
     public boolean isDefaultToKnowledgeLayout() {
-        return defaultToKnowledgeLayout;
+        return this.defaultToKnowledgeLayout;
     }
 
     @Override
@@ -402,7 +372,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     }
 
     private boolean isForbiddenByRules(String var1, String var2) {
-        return forbiddenRulesSpecs.stream()
+        return this.forbiddenRulesSpecs.stream()
                 .anyMatch(rule -> !var1.equals(var2)
                         && rule.getFirst().contains(var1)
                         && rule.getSecond().contains(var2));
@@ -425,7 +395,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public boolean isForbiddenByGroups(String var1, String var2) {
-        Set<OrderedPair<Set<String>>> s = knowledgeGroups.stream()
+        Set<OrderedPair<Set<String>>> s = this.knowledgeGroups.stream()
                 .filter(e -> e.getType() == KnowledgeGroup.FORBIDDEN)
                 .map(this::getGroupRule)
                 .collect(Collectors.toSet());
@@ -451,7 +421,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public boolean isRequired(String var1, String var2) {
-        return requiredRulesSpecs.stream()
+        return this.requiredRulesSpecs.stream()
                 .anyMatch(rule -> !var1.equals(var2)
                         && rule.getFirst().contains(var1)
                         && rule.getSecond().contains(var2));
@@ -462,7 +432,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public boolean isRequiredByGroups(String var1, String var2) {
-        Set<OrderedPair<Set<String>>> s = knowledgeGroups.stream()
+        Set<OrderedPair<Set<String>>> s = this.knowledgeGroups.stream()
                 .filter(e -> e.getType() == KnowledgeGroup.REQUIRED)
                 .map(this::getGroupRule)
                 .collect(Collectors.toSet());
@@ -477,9 +447,9 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public boolean isEmpty() {
-        return forbiddenRulesSpecs.isEmpty()
-                && requiredRulesSpecs.isEmpty()
-                && tierSpecs.isEmpty();
+        return this.forbiddenRulesSpecs.isEmpty()
+                && this.requiredRulesSpecs.isEmpty()
+                && this.tierSpecs.isEmpty();
     }
 
     /**
@@ -490,12 +460,12 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public boolean isTierForbiddenWithin(int tier) {
         ensureTiers(tier);
 
-        Set<String> varsInTier = tierSpecs.get(tier);
+        Set<String> varsInTier = this.tierSpecs.get(tier);
         if (varsInTier.isEmpty()) {
             return false;
         }
 
-        return forbiddenRulesSpecs.contains(new OrderedPair<>(varsInTier, varsInTier));
+        return this.forbiddenRulesSpecs.contains(new OrderedPair<>(varsInTier, varsInTier));
     }
 
     @Override
@@ -529,7 +499,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         }
 
         spec = checkSpec(spec);
-        getExtent(spec).forEach(s -> tierSpecs.forEach(tier -> tier.remove(s)));
+        getExtent(spec).forEach(s -> this.tierSpecs.forEach(tier -> tier.remove(s)));
     }
 
     /**
@@ -537,36 +507,12 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public void removeKnowledgeGroup(int index) {
-        OrderedPair<Set<String>> old = knowledgeGroupRules.get(knowledgeGroups.get(index));
+        OrderedPair<Set<String>> old = this.knowledgeGroupRules.get(this.knowledgeGroups.get(index));
 
-        forbiddenRulesSpecs.remove(old);
-        requiredRulesSpecs.remove(old);
+        this.forbiddenRulesSpecs.remove(old);
+        this.requiredRulesSpecs.remove(old);
 
         this.knowledgeGroups.remove(index);
-    }
-
-    /**
-     * Removes the given variable from the list of myNodes and all rules.
-     */
-    @Override
-    public void removeVariable(String name) {
-        if (!checkVarName(name)) {
-            throw new IllegalArgumentException("Bad variable name: " + name);
-        }
-
-        variables.remove(name);
-
-        forbiddenRulesSpecs.forEach(o -> {
-            o.getFirst().remove(name);
-            o.getSecond().remove(name);
-        });
-
-        requiredRulesSpecs.forEach(o -> {
-            o.getFirst().remove(name);
-            o.getSecond().remove(name);
-        });
-
-        tierSpecs.forEach(tier -> tier.remove(name));
     }
 
     /**
@@ -576,7 +522,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public Iterator<KnowledgeEdge> requiredEdgesIterator() {
         Set<KnowledgeEdge> edges = new HashSet<>();
 
-        requiredRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
+        this.requiredRulesSpecs.forEach(o -> o.getFirst().forEach(s1 -> o.getSecond().forEach(s2 -> {
             if (!s1.equals(s2)) {
                 edges.add(new KnowledgeEdge(s1, s2));
             }
@@ -599,7 +545,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         Set<String> f1 = getExtent(var1);
         Set<String> f2 = getExtent(var2);
 
-        forbiddenRulesSpecs.add(new OrderedPair<>(f1, f2));
+        this.forbiddenRulesSpecs.add(new OrderedPair<>(f1, f2));
     }
 
     /**
@@ -613,7 +559,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         Set<String> f1 = getExtent(var1);
         Set<String> f2 = getExtent(var2);
 
-        forbiddenRulesSpecs.remove(new OrderedPair<>(f1, f2));
+        this.forbiddenRulesSpecs.remove(new OrderedPair<>(f1, f2));
     }
 
     /**
@@ -632,16 +578,16 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
         f1.forEach(s -> {
             if (checkVarName(s)) {
-                variables.add(s);
+                this.variables.add(s);
             }
         });
         f2.forEach(s -> {
             if (checkVarName(s)) {
-                variables.add(s);
+                this.variables.add(s);
             }
         });
 
-        requiredRulesSpecs.add(new OrderedPair<>(f1, f2));
+        this.requiredRulesSpecs.add(new OrderedPair<>(f1, f2));
     }
 
     /**
@@ -655,7 +601,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
         Set<String> f1 = getExtent(var1);
         Set<String> f2 = getExtent(var2);
 
-        requiredRulesSpecs.remove(new OrderedPair<>(f1, f2));
+        this.requiredRulesSpecs.remove(new OrderedPair<>(f1, f2));
     }
 
     /**
@@ -664,18 +610,18 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     @Override
     public void setKnowledgeGroup(int index, KnowledgeGroup group) {
         OrderedPair<Set<String>> o = getGroupRule(group);
-        OrderedPair<Set<String>> old = knowledgeGroupRules.get(knowledgeGroups.get(index));
+        OrderedPair<Set<String>> old = this.knowledgeGroupRules.get(this.knowledgeGroups.get(index));
 
-        forbiddenRulesSpecs.remove(old);
-        requiredRulesSpecs.remove(old);
+        this.forbiddenRulesSpecs.remove(old);
+        this.requiredRulesSpecs.remove(old);
 
         if (group.getType() == KnowledgeGroup.FORBIDDEN) {
-            forbiddenRulesSpecs.add(o);
+            this.forbiddenRulesSpecs.add(o);
         } else if (group.getType() == KnowledgeGroup.REQUIRED) {
-            requiredRulesSpecs.add(o);
+            this.requiredRulesSpecs.add(o);
         }
 
-        knowledgeGroups.set(index, group);
+        this.knowledgeGroups.set(index, group);
     }
 
     /**
@@ -684,7 +630,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     @Override
     public void setTier(int tier, List<String> vars) {
         ensureTiers(tier);
-        Set<String> varsInTier = tierSpecs.get(tier);
+        Set<String> varsInTier = this.tierSpecs.get(tier);
         if (varsInTier != null) {
             varsInTier.clear();
         }
@@ -699,12 +645,12 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     @Override
     public void setTierForbiddenWithin(int tier, boolean forbidden) {
         ensureTiers(tier);
-        Set<String> varsInTier = tierSpecs.get(tier);
+        Set<String> varsInTier = this.tierSpecs.get(tier);
 
         if (forbidden) {
-            forbiddenRulesSpecs.add(new OrderedPair<>(varsInTier, varsInTier));
+            this.forbiddenRulesSpecs.add(new OrderedPair<>(varsInTier, varsInTier));
         } else {
-            forbiddenRulesSpecs.remove(new OrderedPair<>(varsInTier, varsInTier));
+            this.forbiddenRulesSpecs.remove(new OrderedPair<>(varsInTier, varsInTier));
         }
     }
 
@@ -714,7 +660,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public int getMaxTierForbiddenWithin() {
-        for (int tier = tierSpecs.size(); tier >= 0; tier--) {
+        for (int tier = this.tierSpecs.size(); tier >= 0; tier--) {
             if (isTierForbiddenWithin(tier)) {
                 return tier;
             }
@@ -736,8 +682,8 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
      */
     @Override
     public int isInWhichTier(Node node) {
-        for (int i = 0; i < tierSpecs.size(); i++) {
-            Set<String> tier = tierSpecs.get(i);
+        for (int i = 0; i < this.tierSpecs.size(); i++) {
+            Set<String> tier = this.tierSpecs.get(i);
 
             for (String myNode : tier) {
                 if (myNode.equals(node.getName())) {
@@ -753,7 +699,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public List<KnowledgeEdge> getListOfRequiredEdges() {
         Set<KnowledgeEdge> edges = new LinkedHashSet<>();
 
-        requiredRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
+        this.requiredRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
             if (!e1.equals(e2)) {
                 edges.add(new KnowledgeEdge(e1, e2));
             }
@@ -771,7 +717,7 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public List<KnowledgeEdge> getListOfForbiddenEdges() {
         Set<KnowledgeEdge> edges = new LinkedHashSet<>();
 
-        forbiddenRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
+        this.forbiddenRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
             if (!e1.equals(e2)) {
                 edges.add(new KnowledgeEdge(e1, e2));
             }
@@ -782,10 +728,10 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
 
     @Override
     public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges() {
-        Set<OrderedPair<Set<String>>> copy = new HashSet<>(forbiddenRulesSpecs);
+        Set<OrderedPair<Set<String>>> copy = new HashSet<>(this.forbiddenRulesSpecs);
         copy.removeAll(forbiddenTierRules());
 
-        knowledgeGroups.forEach(e -> copy.remove(knowledgeGroupRules.get(e)));
+        this.knowledgeGroups.forEach(e -> copy.remove(this.knowledgeGroupRules.get(e)));
 
         Set<KnowledgeEdge> edges = new HashSet<>();
         for (OrderedPair<Set<String>> e : copy)
@@ -798,21 +744,21 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public boolean isOnlyCanCauseNextTier(int tier) {
         ensureTiers(tier);
 
-        Set<String> varsInTier = tierSpecs.get(tier);
+        Set<String> varsInTier = this.tierSpecs.get(tier);
         if (varsInTier.isEmpty()) {
             return false;
         }
 
-        if (tier + 2 >= tierSpecs.size()) {
+        if (tier + 2 >= this.tierSpecs.size()) {
             return false;
         }
 
         // all successive tiers > tier + 2 must be forbidden
-        for (int tierN = tier + 2; tierN < tierSpecs.size(); tierN++) {
-            Set<String> varsInTierN = tierSpecs.get(tierN);
+        for (int tierN = tier + 2; tierN < this.tierSpecs.size(); tierN++) {
+            Set<String> varsInTierN = this.tierSpecs.get(tierN);
             OrderedPair<Set<String>> o = new OrderedPair<>(varsInTier, varsInTierN);
 
-            if (!forbiddenRulesSpecs.contains(o)) {
+            if (!this.forbiddenRulesSpecs.contains(o)) {
                 return false;
             }
         }
@@ -824,14 +770,14 @@ public final class Knowledge2 implements TetradSerializable, IKnowledge {
     public void setOnlyCanCauseNextTier(int tier, boolean onlyCausesNext) {
         ensureTiers(tier);
 
-        Set<String> varsInTier = tierSpecs.get(tier);
+        Set<String> varsInTier = this.tierSpecs.get(tier);
 
-        for (int tierN = tier + 2; tierN < tierSpecs.size(); tierN++) {
-            Set<String> varsInTierN = tierSpecs.get(tierN);
+        for (int tierN = tier + 2; tierN < this.tierSpecs.size(); tierN++) {
+            Set<String> varsInTierN = this.tierSpecs.get(tierN);
             if (onlyCausesNext) {
-                forbiddenRulesSpecs.add(new OrderedPair<>(varsInTier, varsInTierN));
+                this.forbiddenRulesSpecs.add(new OrderedPair<>(varsInTier, varsInTierN));
             } else {
-                forbiddenRulesSpecs.remove(new OrderedPair<>(varsInTier, varsInTierN));
+                this.forbiddenRulesSpecs.remove(new OrderedPair<>(varsInTier, varsInTierN));
             }
         }
     }

@@ -13,7 +13,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.List;
 
@@ -23,7 +22,7 @@ import java.util.List;
 @Bootstrapping
 public class MixedFgesDiscretingContinuousVariables implements Algorithm {
     static final long serialVersionUID = 23L;
-    private ScoreWrapper score;
+    private final ScoreWrapper score;
 
     public MixedFgesDiscretingContinuousVariables(ScoreWrapper score) {
         this.score = score;
@@ -42,32 +41,15 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
 
             dataSet = discretizer.discretize();
             DataSet _dataSet = DataUtils.getDiscreteDataSet(dataSet);
-            Fges fges = new Fges(score.getScore(_dataSet, parameters));
+            Fges fges = new Fges(this.score.getScore(_dataSet, parameters));
             fges.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph p = fges.search();
             return convertBack(_dataSet, p);
         } else {
-            MixedFgesDiscretingContinuousVariables algorithm = new MixedFgesDiscretingContinuousVariables(score);
+            MixedFgesDiscretingContinuousVariables algorithm = new MixedFgesDiscretingContinuousVariables(this.score);
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -83,7 +65,7 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGES after discretizing the continuous variables in the data set using " + score.getDescription();
+        return "FGES after discretizing the continuous variables in the data set using " + this.score.getDescription();
     }
 
     private Graph convertBack(DataSet Dk, Graph p) {
@@ -116,7 +98,7 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = score.getParameters();
+        List<String> parameters = this.score.getParameters();
         parameters.add(Params.NUM_CATEGORIES);
         parameters.add(Params.VERBOSE);
         return parameters;

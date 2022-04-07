@@ -13,14 +13,11 @@ import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static java.lang.Math.sqrt;
@@ -35,7 +32,7 @@ import static java.lang.Math.sqrt;
 public class GesMe implements Algorithm {
 
     static final long serialVersionUID = 23L;
-    private boolean compareToTrue = false;
+    private boolean compareToTrue;
     private final ScoreWrapper score = new SemBicScoreDeterministic();
 
     public GesMe() {
@@ -92,23 +89,18 @@ public class GesMe implements Algorithm {
 
             System.out.println(covFa);
 
-            final double[] vars = covarianceMatrix.getMatrix().diag().toArray();
+            double[] vars = covarianceMatrix.getMatrix().diag().toArray();
             List<Integer> indices = new ArrayList<>();
             for (int i = 0; i < vars.length; i++) {
                 indices.add(i);
             }
 
-            Collections.sort(indices, new Comparator<Integer>() {
-                @Override
-                public int compare(Integer o1, Integer o2) {
-                    return -Double.compare(vars[o1], vars[o2]);
-                }
-            });
+            indices.sort((o1, o2) -> -Double.compare(vars[o1], vars[o2]));
 
             NumberFormat nf = new DecimalFormat("0.000");
 
-            for (int i = 0; i < indices.size(); i++) {
-                System.out.println(nf.format(vars[indices.get(i)]) + " ");
+            for (Integer index : indices) {
+                System.out.println(nf.format(vars[index]) + " ");
             }
 
             System.out.println();
@@ -177,27 +169,10 @@ public class GesMe implements Algorithm {
 
             return search.search();
         } else {
-            GesMe algorithm = new GesMe(compareToTrue);
+            GesMe algorithm = new GesMe(this.compareToTrue);
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -207,7 +182,7 @@ public class GesMe implements Algorithm {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        if (compareToTrue) {
+        if (this.compareToTrue) {
             return new EdgeListGraph(graph);
         } else {
             return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
@@ -216,12 +191,12 @@ public class GesMe implements Algorithm {
 
     @Override
     public String getDescription() {
-        return "FGES (Fast Greedy Equivalence Search) using " + score.getDescription();
+        return "FGES (Fast Greedy Equivalence Search) using " + this.score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return score.getDataType();
+        return this.score.getDataType();
     }
 
     @Override
@@ -242,15 +217,6 @@ public class GesMe implements Algorithm {
         return parameters;
     }
 
-    //    @Override
-//    public IKnowledge getKnowledge() {
-//        return knowledge;
-//    }
-//
-//    @Override
-//    public void setKnowledge(IKnowledge knowledge) {
-//        this.knowledge = knowledge;
-//    }
     public void setCompareToTrue(boolean compareToTrue) {
         this.compareToTrue = compareToTrue;
     }
@@ -261,10 +227,10 @@ public class GesMe implements Algorithm {
         for (int i = 0; i < matrix.rows() + 1; i++) {
             for (int j = 0; j < matrix.columns() + 1; j++) {
                 if (i > 0 && j == 0) {
-                    table.setToken(i, j, "X" + i);
+                    table.setToken(i, 0, "X" + i);
                 } else if (i == 0 && j > 0) {
-                    table.setToken(i, j, "Factor " + j);
-                } else if (i > 0 && j > 0) {
+                    table.setToken(0, j, "Factor " + j);
+                } else if (i > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
                     token += Math.abs(coefficient) > threshold ? "*" : " ";

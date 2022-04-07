@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -54,20 +55,19 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private final ConditionalGaussianLikelihood likelihood;
     private double pValue = Double.NaN;
 
-    private boolean verbose = false;
-    private boolean fastFDR = false;
+    private boolean verbose;
     private int numCategoriesToDiscretize = 3;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha, boolean discretize) {
         this.data = data;
         this.likelihood = new ConditionalGaussianLikelihood(data);
         this.likelihood.setDiscretize(discretize);
-        nodesHash = new HashedMap<>();
+        this.nodesHash = new HashedMap<>();
 
         List<Node> variables = data.getVariables();
 
         for (int i = 0; i < variables.size(); i++) {
-            nodesHash.put(variables.get(i), i);
+            this.nodesHash.put(variables.get(i), i);
         }
 
         this.alpha = alpha;
@@ -86,16 +86,16 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        this.likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
+        this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
 
         List<Node> allVars = new ArrayList<>(z);
         allVars.add(x);
         allVars.add(y);
 
-        likelihood.setRows(getRows(allVars, nodesHash));
+        this.likelihood.setRows(getRows(allVars, this.nodesHash));
 
-        int _x = nodesHash.get(x);
-        int _y = nodesHash.get(y);
+        int _x = this.nodesHash.get(x);
+        int _y = this.nodesHash.get(y);
 
         int[] list0 = new int[z.size() + 1];
         int[] list2 = new int[z.size()];
@@ -103,20 +103,20 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         list0[0] = _x;
 
         for (int i = 0; i < z.size(); i++) {
-            int _z = nodesHash.get(z.get(i));
+            int _z = this.nodesHash.get(z.get(i));
             list0[i + 1] = _z;
             list2[i] = _z;
         }
 
         ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_y, list0);
-        ConditionalGaussianLikelihood.Ret ret2 = likelihood.getLikelihood(_y, list2);
+        ConditionalGaussianLikelihood.Ret ret2 = this.likelihood.getLikelihood(_y, list2);
 
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
 
         if (dof0 <= 0) return true;
-        if (alpha == 0) return true;
-        if (alpha == 1) return false;
+        if (this.alpha == 0) return true;
+        if (this.alpha == 1) return false;
         if (lik0 == Double.POSITIVE_INFINITY) return false;
 
         if (Double.isNaN(lik0)) {
@@ -125,19 +125,28 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
             this.pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         }
 
-        return this.pValue > alpha;
+        boolean independent = this.pValue > this.alpha;
+
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, this.pValue));
+            }
+        }
+
+        return independent;
     }
 
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
         List<Integer> rows = new ArrayList<>();
 
         K:
-        for (int k = 0; k < data.getNumRows(); k++) {
+        for (int k = 0; k < this.data.getNumRows(); k++) {
             for (Node node : allVars) {
                 if (node instanceof ContinuousVariable) {
-                    if (Double.isNaN(data.getDouble(k, nodesHash.get(node)))) continue K;
+                    if (Double.isNaN(this.data.getDouble(k, nodesHash.get(node)))) continue K;
                 } else if (node instanceof DiscreteVariable) {
-                    if (data.getInt(k, nodesHash.get(node)) == -99) continue K;
+                    if (this.data.getInt(k, nodesHash.get(node)) == -99) continue K;
                 }
             }
 
@@ -178,7 +187,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * relations.
      */
     public List<Node> getVariables() {
-        return data.getVariables();
+        return this.data.getVariables();
     }
 
     /**
@@ -216,7 +225,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     /**
@@ -227,7 +236,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     }
 
     public DataSet getData() {
-        return data;
+        return this.data;
     }
 
     @Override
@@ -266,16 +275,12 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    public void setFastFDR(boolean fastFDR) {
-        this.fastFDR = fastFDR;
     }
 
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {

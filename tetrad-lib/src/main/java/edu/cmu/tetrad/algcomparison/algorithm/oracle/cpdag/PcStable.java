@@ -13,7 +13,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,38 +39,21 @@ public class PcStable implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(test.getTest(dataSet, parameters));
+            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(this.test.getTest(dataSet, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(knowledge);
-            search.setFasType(edu.cmu.tetrad.search.PcAll.FasType.STABLE);
-            search.setConcurrent(edu.cmu.tetrad.search.PcAll.Concurrent.NO);
-            search.setColliderDiscovery(edu.cmu.tetrad.search.PcAll.ColliderDiscovery.FAS_SEPSETS);
+            search.setKnowledge(this.knowledge);
+            search.setFasType(PcAll.FasType.STABLE);
+            search.setConcurrent(PcAll.Concurrent.NO);
+            search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
             search.setConflictRule(PcAll.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            PcStable pcStable = new PcStable(test);
+            PcStable pcStable = new PcStable(this.test);
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, pcStable, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, pcStable, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -86,12 +68,12 @@ public class PcStable implements Algorithm, HasKnowledge, TakesIndependenceWrapp
 
     @Override
     public String getDescription() {
-        return "PC-Stable (\"Peter and Clark\" Stable), Priority Rule, using " + test.getDescription();
+        return "PC-Stable (\"Peter and Clark\" Stable), Priority Rule, using " + this.test.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return test.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
@@ -106,7 +88,7 @@ public class PcStable implements Algorithm, HasKnowledge, TakesIndependenceWrapp
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
@@ -121,6 +103,6 @@ public class PcStable implements Algorithm, HasKnowledge, TakesIndependenceWrapp
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
-        return test;
+        return this.test;
     }
 }

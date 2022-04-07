@@ -26,9 +26,7 @@ public class ArrowheadFPR implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        int adjTp = adjConfusion.getArrowsTp();
         int adjFp = adjConfusion.getArrowsFp();
-        int adjFn = adjConfusion.getArrowsFn();
         int adjTn = adjConfusion.getArrowsTn();
         return adjFp / (double) (adjFp + adjTn);
     }

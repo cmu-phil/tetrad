@@ -10,12 +10,12 @@ public class LagGraphParams {
     public static final int CONSTANT = 0;
     public static final int MAX = 1;
     public static final int MEAN = 2;
-    private int indegreeType = 0;
+    private int indegreeType;
     private int varsPerInd = 5;
     private int mlag = 1;
     private int indegree = 2;
     private double percentUnregulated = 10;
-    private Parameters parameters;
+    private final Parameters parameters;
 
     public LagGraphParams(Parameters parameters) {
         this.parameters = parameters;
@@ -26,37 +26,37 @@ public class LagGraphParams {
     }
 
     public int getVarsPerInd() {
-        return parameters.getInt("lagGraphVarsPerInd", varsPerInd);
+        return this.parameters.getInt("lagGraphVarsPerInd", this.varsPerInd);
     }
 
     public void setVarsPerInd(int varsPerInd) {
         if (varsPerInd > 0) {
-            parameters.set("lagGraphVarsPerInd", varsPerInd);
+            this.parameters.set("lagGraphVarsPerInd", varsPerInd);
             this.varsPerInd = varsPerInd;
         }
 
     }
 
     public int getMlag() {
-        return parameters.getInt("lagGraphMlag", mlag);
+        return this.parameters.getInt("lagGraphMlag", this.mlag);
     }
 
     public void setMlag(int mlag) {
         if (mlag > 0) {
-            parameters.set("lagGraphMLag", mlag);
+            this.parameters.set("lagGraphMLag", mlag);
             this.mlag = mlag;
         }
 
     }
 
     public int getIndegree() {
-        return parameters.getInt("lagGraphIndegree", indegree);
+        return this.parameters.getInt("lagGraphIndegree", this.indegree);
     }
 
     public void setIndegree(int indegree) {
         if (indegree > 1) {
             this.indegree = indegree;
-            parameters.set("lagGraphIndegree", indegree);
+            this.parameters.set("lagGraphIndegree", indegree);
         }
 
     }

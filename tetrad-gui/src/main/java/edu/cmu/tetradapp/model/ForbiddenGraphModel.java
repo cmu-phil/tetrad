@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -43,17 +43,6 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
 
     static final long serialVersionUID = 23L;
 
-    /**
-     * @serial @deprecated
-     */
-    private IKnowledge knowledge;
-
-    /**
-     * @serial @deprecated
-     */
-//    private List<Knowledge> knowledgeList;
-    private List<Node> variables = new ArrayList<>();
-    private List<String> variableNames = new ArrayList<>();
     private Graph resultGraph = new EdgeListGraph();
 
     public ForbiddenGraphModel(BayesPmWrapper wrapper, Parameters params) {
@@ -116,10 +105,6 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
         this((KnowledgeBoxInput) wrapper, params);
     }
 
-    public ForbiddenGraphModel(LofsRunner wrapper, Parameters params) {
-        this((KnowledgeBoxInput) wrapper, params);
-    }
-
     public ForbiddenGraphModel(MeasurementModelWrapper wrapper, Parameters params) {
         this((KnowledgeBoxInput) wrapper, params);
     }
@@ -134,26 +119,25 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
     public ForbiddenGraphModel(Parameters params, KnowledgeBoxInput input) {
         super(new KnowledgeBoxInput[]{input}, params);
 
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
         if (input == null) {
             throw new NullPointerException();
         }
 
-        SortedSet<Node> variableNodes = new TreeSet<>();
-        SortedSet<String> variableNames = new TreeSet<>();
+        SortedSet<Node> variableNodes = new TreeSet<>(input.getVariables());
+        SortedSet<String> variableNames = new TreeSet<>(input.getVariableNames());
 
-        variableNodes.addAll(input.getVariables());
-        variableNames.addAll(input.getVariableNames());
-
-        this.variables = new ArrayList<>(variableNodes);
-        this.variableNames = new ArrayList<>(variableNames);
+        /*
+         * @serial @deprecated
+         */
+        List<Node> variables = new ArrayList<>(variableNodes);
+        List<String> variableNames1 = new ArrayList<>(variableNames);
 
         this.resultGraph = input.getResultGraph();
 
-        this.knowledge = new Knowledge2();
+        /*
+         * @serial @deprecated
+         */
+        IKnowledge knowledge = new Knowledge2();
 
         for (Node v : input.getVariables()) {
             knowledge.addVariable(v.getName());
@@ -180,11 +164,11 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
 
         knwl.clear();
 
-        if (resultGraph == null) {
+        if (this.resultGraph == null) {
             throw new NullPointerException("I couldn't find a parent graph.");
         }
 
-        List<Node> nodes = resultGraph.getNodes();
+        List<Node> nodes = this.resultGraph.getNodes();
 
         int numOfNodes = nodes.size();
         for (int i = 0; i < numOfNodes; i++) {
@@ -196,7 +180,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
                     continue;
                 }
 
-                Edge edge = resultGraph.getEdge(n1, n2);
+                Edge edge = this.resultGraph.getEdge(n1, n2);
                 if (edge != null && edge.isDirected()) {
                     knwl.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
                 }
@@ -214,7 +198,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
     }
 
     public Graph getResultGraph() {
-        return resultGraph;
+        return this.resultGraph;
     }
 
 }

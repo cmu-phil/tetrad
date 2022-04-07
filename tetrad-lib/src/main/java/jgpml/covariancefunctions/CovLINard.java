@@ -50,7 +50,7 @@ import static jgpml.covariancefunctions.MatrixOperations.sumRows;
 
 public class CovLINard implements CovarianceFunction {
 
-    private int D;
+    private final int D;
 
     /**
      * Creates a new <code>CovSEard CovarianceFunction<code>
@@ -67,7 +67,7 @@ public class CovLINard implements CovarianceFunction {
      * @return number of hyperparameters
      */
     public int numParameters() {
-        return D;
+        return this.D;
     }
 
     /**
@@ -79,14 +79,14 @@ public class CovLINard implements CovarianceFunction {
      */
     public Matrix compute(Matrix loghyper, Matrix X) {
 
-        if (X.getColumnDimension() != D)
-            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + D + " must agree with the size of the input vector" + X.getColumnDimension());
+        if (X.getColumnDimension() != this.D)
+            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + this.D + " must agree with the size of the input vector" + X.getColumnDimension());
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        final Matrix ell = exp(loghyper.getMatrix(0, D - 1, 0, 0));                         // characteristic length scales
-        Matrix diag = new Matrix(D, D);
-        for (int i = 0; i < D; i++)
+        Matrix ell = exp(loghyper.getMatrix(0, this.D - 1, 0, 0));                         // characteristic length scales
+        Matrix diag = new Matrix(this.D, this.D);
+        for (int i = 0; i < this.D; i++)
             diag.set(i, i, 1 / ell.get(i, 0));
 
         X = X.times(diag);
@@ -104,14 +104,14 @@ public class CovLINard implements CovarianceFunction {
      */
     public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
 
-        if (X.getColumnDimension() != D)
-            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + D + " must agree with the size of the input vector" + X.getColumnDimension());
+        if (X.getColumnDimension() != this.D)
+            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + this.D + " must agree with the size of the input vector" + X.getColumnDimension());
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        final Matrix ell = exp(loghyper.getMatrix(0, D - 1, 0, 0));                         // characteristic length scales
-        Matrix diag = new Matrix(D, D);
-        for (int i = 0; i < D; i++)
+        Matrix ell = exp(loghyper.getMatrix(0, this.D - 1, 0, 0));                         // characteristic length scales
+        Matrix diag = new Matrix(this.D, this.D);
+        for (int i = 0; i < this.D; i++)
             diag.set(i, i, 1 / ell.get(i, 0));
 
         X = X.times(diag);
@@ -133,16 +133,16 @@ public class CovLINard implements CovarianceFunction {
      * @return <code>Matrix</code> of derivatives
      */
     public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index) {
-        if (X.getColumnDimension() != D)
-            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + D + " must agree with the size of the input vector" + X.getColumnDimension());
+        if (X.getColumnDimension() != this.D)
+            throw new IllegalArgumentException("The number of dimensions specified on the covariance function " + this.D + " must agree with the size of the input vector" + X.getColumnDimension());
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
         if (index > numParameters() - 1)
             throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
-        final Matrix ell = exp(loghyper.getMatrix(0, D - 1, 0, 0));                         // characteristic length scales
-        Matrix diag = new Matrix(D, D);
-        for (int i = 0; i < D; i++)
+        Matrix ell = exp(loghyper.getMatrix(0, this.D - 1, 0, 0));                         // characteristic length scales
+        Matrix diag = new Matrix(this.D, this.D);
+        for (int i = 0; i < this.D; i++)
             diag.set(i, i, 1 / ell.get(i, 0));
 
         X = X.times(diag);
@@ -161,14 +161,7 @@ public class CovLINard implements CovarianceFunction {
 
         Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
 
-        System.out.println("");
-        //Matrix K = cf.compute(logtheta,X);
-        //K.print(K.getColumnDimension(), 8);
-
-        //Matrix[] res = cf.compute(logtheta,X,z);
-
-        //res[0].print(res[0].getColumnDimension(), 8);
-        //res[1].print(res[1].getColumnDimension(), 8);
+        System.out.println();
 
         Matrix d = cf.computeDerivatives(logtheta, X, 5);
 

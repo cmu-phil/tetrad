@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,10 +37,10 @@ public class RocCalculator {
     public static final int ASCENDING = 0;
     private static final int DESCENDING = 1;
 
-    private int direction = ASCENDING;
+    private final int direction;
 
     private int[][] points;
-    private ScoreCategoryPair[] scoreCatPairs;
+    private final ScoreCategoryPair[] scoreCatPairs;
 
     /**
      * Constructs a calculator using the parameter information below.
@@ -62,7 +64,7 @@ public class RocCalculator {
                     "number of items as inCategory array.");
         }
 
-        if (direction != ASCENDING && direction != DESCENDING) {
+        if (direction != RocCalculator.ASCENDING && direction != RocCalculator.DESCENDING) {
             throw new IllegalArgumentException(
                     "Direction must be ASCENDING or " + "DESCENDING.");
         }
@@ -73,7 +75,7 @@ public class RocCalculator {
         this.scoreCatPairs = new ScoreCategoryPair[scores.length];
 
         for (int i = 0; i < scores.length; i++) {
-            scoreCatPairs[i] = new ScoreCategoryPair(scores[i], inCategory[i]);
+            this.scoreCatPairs[i] = new ScoreCategoryPair(scores[i], inCategory[i]);
         }
     }
 
@@ -84,25 +86,25 @@ public class RocCalculator {
      */
     public double getAuc() {
 
-        if (points == null) {
+        if (this.points == null) {
             getUnscaledRocPlot();
         }
 
-        int lastPoint = points.length - 1;
+        int lastPoint = this.points.length - 1;
 
         int height = 0;
         int area = 0;
 
-        for (int i = 1; i < points.length; i++) {
+        for (int i = 1; i < this.points.length; i++) {
 
-            if (points[i][1] > points[i - 1][1]) {
+            if (this.points[i][1] > this.points[i - 1][1]) {
                 height += 1;
-            } else if (points[i][0] > points[i - 1][0]) {
+            } else if (this.points[i][0] > this.points[i - 1][0]) {
                 area += height;
             }
         }
 
-        return ((double) area) / (points[lastPoint][0] * points[lastPoint][1]);
+        return ((double) area) / (this.points[lastPoint][0] * this.points[lastPoint][1]);
     }
 
     /**
@@ -118,45 +120,43 @@ public class RocCalculator {
         OrderedPairInt pPrime;
         List<OrderedPairInt> plot = new LinkedList<>();
         plot.add(p0);
-        int numPairs = scoreCatPairs.length;
+        int numPairs = this.scoreCatPairs.length;
 
         for (int i = numPairs - 1; i >= 0; i--) {
-            ScoreCategoryPair tPrime = scoreCatPairs[i];
+            ScoreCategoryPair tPrime = this.scoreCatPairs[i];
 
             if (tPrime.getHasProperty()) {
                 pPrime = new OrderedPairInt(p0.getFirst(), p0.getSecond() + 1);
-                plot.add(pPrime);
-                p0 = pPrime;
             } else {
                 pPrime = new OrderedPairInt(p0.getFirst() + 1, p0.getSecond());
-                plot.add(pPrime);
-                p0 = pPrime;
             }
+            plot.add(pPrime);
+            p0 = pPrime;
         }
 
         this.points = new int[plot.size()][2];
 
         for (int i = 0; i < plot.size(); i++) {
             OrderedPairInt point = plot.get(i);
-            points[i][0] = point.getFirst();
-            points[i][1] = point.getSecond();
+            this.points[i][0] = point.getFirst();
+            this.points[i][1] = point.getSecond();
         }
     }
 
     public double[][] getScaledRocPlot() {
-        if (points == null) {
+        if (this.points == null) {
             getUnscaledRocPlot();
         }
 
-        int numPoints = points.length;
+        int numPoints = this.points.length;
         double[][] pointsDouble = new double[numPoints][2];
 
         for (int i = 0; i < numPoints; i++) {
             //System.out.println(plot[i][0] + " " + plot[i][1]);
-            pointsDouble[i][0] = ((double) points[i][0]) /
-                    ((double) points[numPoints - 1][0]);
-            pointsDouble[i][1] = ((double) points[i][1]) /
-                    ((double) points[numPoints - 1][1]);
+            pointsDouble[i][0] = ((double) this.points[i][0]) /
+                    ((double) this.points[numPoints - 1][0]);
+            pointsDouble[i][1] = ((double) this.points[i][1]) /
+                    ((double) this.points[numPoints - 1][1]);
         }
 
         return pointsDouble;
@@ -164,19 +164,19 @@ public class RocCalculator {
 
     private void sortCases() {
         //Sort the score-category pairs.  They will be in increasing order by score.
-        Arrays.sort(scoreCatPairs);
+        Arrays.sort(this.scoreCatPairs);
 
         //If a higher score implies a lower probability that the case has property P
         //reverse the order.
-        if (direction == DESCENDING) {
-            int numPairs = scoreCatPairs.length;
+        if (this.direction == RocCalculator.DESCENDING) {
+            int numPairs = this.scoreCatPairs.length;
             ScoreCategoryPair[] scpRev = new ScoreCategoryPair[numPairs];
 
             for (int i = 0; i < numPairs; i++) {
-                scpRev[i] = scoreCatPairs[numPairs - i - 1];
+                scpRev[i] = this.scoreCatPairs[numPairs - i - 1];
             }
 
-            System.arraycopy(scpRev, 0, scoreCatPairs, 0, numPairs);
+            System.arraycopy(scpRev, 0, this.scoreCatPairs, 0, numPairs);
         }
     }
 
@@ -190,7 +190,7 @@ public class RocCalculator {
         }
 
         public int getFirst() {
-            return first;
+            return this.first;
         }
 
         public void setFirst(int first) {
@@ -198,7 +198,7 @@ public class RocCalculator {
         }
 
         public int getSecond() {
-            return second;
+            return this.second;
         }
 
         public void setSecond(int second) {
@@ -206,7 +206,7 @@ public class RocCalculator {
         }
     }
 
-    private static class ScoreCategoryPair implements Comparable {
+    private static class ScoreCategoryPair implements Comparable<ScoreCategoryPair> {
         private final double score;
         private final boolean hasProperty;
 
@@ -218,17 +218,17 @@ public class RocCalculator {
         }
 
         public double getScore() {
-            return score;
+            return this.score;
         }
 
         public boolean getHasProperty() {
-            return hasProperty;
+            return this.hasProperty;
         }
 
-        public int compareTo(Object other) {
-            if (getScore() < ((ScoreCategoryPair) other).getScore()) {
+        public int compareTo(@NotNull ScoreCategoryPair other) {
+            if (getScore() < other.getScore()) {
                 return -1;
-            } else if (getScore() == ((ScoreCategoryPair) other).getScore()) {
+            } else if (getScore() == other.getScore()) {
                 return 0;
             } else {
                 return 1;

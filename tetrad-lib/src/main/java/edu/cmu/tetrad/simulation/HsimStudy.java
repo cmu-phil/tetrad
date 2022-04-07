@@ -7,12 +7,12 @@ public class HsimStudy {
 
     public static void main(String[] args) {
         //***!!!!===!!!=== Parameters for the User to fill in! !!!===!!!===***
-        String readfilename = "DataHsimTest2.txt";//"GeMSlim.csv";
-        String filenameOut = "dataOut2.txt";//"dataOutGeM.txt";
-        char delimiter = '\t';//',';
+        final String readfilename = "DataHsimTest2.txt";//"GeMSlim.csv";
+        final String filenameOut = "dataOut2.txt";//"dataOutGeM.txt";
+        final char delimiter = '\t';//',';
         String[] resimNodeNames = {"X1", "X2", "X3", "X4"};
 
-        boolean verbose = true;//set verbose to false to suppress System.out reports
+        final boolean verbose = true;//set verbose to false to suppress System.out reports
 
         HsimRun.run(readfilename, filenameOut, delimiter, resimNodeNames, verbose);
 

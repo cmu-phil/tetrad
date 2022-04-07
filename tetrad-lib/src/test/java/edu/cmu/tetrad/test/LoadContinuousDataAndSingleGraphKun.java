@@ -17,12 +17,12 @@ import java.util.List;
  */
 public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
-    private String path;
-    private String prefix;
-    private Graph graph = null;
+    private final String path;
+    private final String prefix;
+    private Graph graph;
     private List<ICovarianceMatrix> covs = new ArrayList<>();
-    private List<String> usedParameters = new ArrayList<>();
-    private Parameters parametersValues = new Parameters();
+    private final List<String> usedParameters = new ArrayList<>();
+    private final Parameters parametersValues = new Parameters();
 
     public LoadContinuousDataAndSingleGraphKun(String path, String prefix) {
         this.path = path;
@@ -33,13 +33,13 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
     public void createData(Parameters parameters, boolean newModel) {
         this.covs = new ArrayList<>();
 
-        File dir = new File(path);
+        File dir = new File(this.path);
 
         if (dir.exists()) {
             for (int i = 1; i <= 20; i++) {
-                File f = new File(path, prefix + i + ".txt");
+                File f = new File(this.path, this.prefix + i + ".txt");
                 try {
-                    covs.add(DataUtils.parseCovariance(f, "//", DelimiterType.WHITESPACE, '\"', "*"));
+                    this.covs.add(DataUtils.parseCovariance(f, "//", DelimiterType.WHITESPACE, '\"', "*"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -58,7 +58,7 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
 
     @Override
     public DataModel getDataModel(int index) {
-        return covs.get(index);
+        return this.covs.get(index);
     }
 
     public String getDescription() {
@@ -73,7 +73,7 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
 
     @Override
     public List<String> getParameters() {
-        return usedParameters;
+        return this.usedParameters;
     }
 
     @Override
@@ -88,6 +88,6 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
 
     @Override
     public Parameters getParameterValues() {
-        return parametersValues;
+        return this.parametersValues;
     }
 }

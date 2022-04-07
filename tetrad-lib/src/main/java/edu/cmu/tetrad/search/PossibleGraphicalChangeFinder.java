@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,17 +37,6 @@ class PossibleGraphicalChangeFinder {
 
 
     /**
-     * The pag that the undirectedPaths are relative to.
-     */
-    private Graph pag;
-
-
-    /**
-     * The separation sets.
-     */
-    private List<List<Node>> separations;
-
-    /**
      * Constructs the finder given the undirectedPaths that must be blocked.
      */
     public PossibleGraphicalChangeFinder(Graph pag, Collection<Collection<Node>> separations) {
@@ -57,10 +46,10 @@ class PossibleGraphicalChangeFinder {
         if (separations == null) {
             throw new NullPointerException("The given separation sets must not be null.");
         }
-        this.pag = pag;
-        this.separations = new ArrayList<>();
+
+        List<List<Node>> separations1 = new ArrayList<>();
         for (Collection<Node> sep : separations) {
-            this.separations.add(new ArrayList<>(sep));
+            separations1.add(new ArrayList<>(sep));
         }
     }
 }

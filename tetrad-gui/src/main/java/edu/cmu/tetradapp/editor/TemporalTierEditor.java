@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,20 +40,20 @@ class TemporalTierEditor extends JPanel
         implements PropertyChangeListener, ActionListener {
 
 
-    private IKnowledge knowledge;
+    private final IKnowledge knowledge;
     //private JButton nameTiers;
     private final JButton clear;
 
     /**
      * Field tierlist
      */
-    private TierList tierList;
+    private final TierList tierList;
 
     public TemporalTierEditor(IKnowledge knowledge, List varNames,
                               String sessionName) {
 
         //nameTiers = new JButton("VariableNameImpliedTiers");
-        clear = new JButton("Clear All Knowledge");
+        this.clear = new JButton("Clear All Knowledge");
 
 
         if (knowledge == null) {
@@ -77,20 +77,20 @@ class TemporalTierEditor extends JPanel
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        tierList = new TierList(knowledge, varNames, this);
+        this.tierList = new TierList(knowledge, varNames, this);
 
-        tierList.addPropertyChangeListener(this);
-        add(tierList);
+        this.tierList.addPropertyChangeListener(this);
+        add(this.tierList);
 
         JPanel southPanel = new JPanel();
         southPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         //southPanel.add(nameTiers);
-        southPanel.add(clear);
+        southPanel.add(this.clear);
 
         add(southPanel);
 
         //nameTiers.addActionListener(this);
-        clear.addActionListener(this);
+        this.clear.addActionListener(this);
 
         setName(getTitle());
     }
@@ -102,9 +102,8 @@ class TemporalTierEditor extends JPanel
      */
     public void propertyChange(PropertyChangeEvent e) {
 
-        //System.out.println("prop change");
-        //firePropertyChange("TemporalTierEditor",null,null);
-        tierList.repaint();
+
+        this.tierList.repaint();
         validate();
     }
 
@@ -121,25 +120,17 @@ class TemporalTierEditor extends JPanel
      * @return the title of this editor.
      */
     private String getTitle() {
-        String graphName = ("Background Knowledge");
+        final String graphName = ("Background Knowledge");
         return getName() + ":  " + graphName;
     }
 
     public void actionPerformed(ActionEvent a) {
         if (a.getSource() == this.clear) {
-            knowledge.clear();
-            tierList.repaint();
-            tierList.refreshInfo();
+            this.knowledge.clear();
+            this.tierList.repaint();
+            this.tierList.refreshInfo();
             validate();
         }
-        /*
-        if (a.getSource() == this.nameTiers) {
-            knowledge.varNameTiers();
-            tierList.repaint();
-            tierList.refreshInfo();
-            validate();
-        }
-        */
     }
 }
 

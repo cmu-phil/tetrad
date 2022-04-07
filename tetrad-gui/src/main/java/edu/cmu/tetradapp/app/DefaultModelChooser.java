@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -77,7 +77,7 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     }
 
     public Class getSelectedModel() {
-        ClassWrapper wrapper = (ClassWrapper) modelClassesBox.getSelectedItem();
+        ClassWrapper wrapper = (ClassWrapper) this.modelClassesBox.getSelectedItem();
         return wrapper.getWrappedClass();
     }
 
@@ -104,17 +104,17 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         this.modelClassesBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    int selectedIndex = modelClassesBox.getSelectedIndex();
-                    String selectedModelType = modelClassesBox.getItemAt(
+                    int selectedIndex = DefaultModelChooser.this.modelClassesBox.getSelectedIndex();
+                    String selectedModelType = DefaultModelChooser.this.modelClassesBox.getItemAt(
                             selectedIndex).toString();
-                    Preferences.userRoot().put(id, selectedModelType);
+                    Preferences.userRoot().put(DefaultModelChooser.this.id, selectedModelType);
                 }
             }
         });
 
         String storedModelType = Preferences.userRoot().get(this.id, "");
-        for (int i = 0; i < modelClassesBox.getItemCount(); i++) {
-            String currModelType = modelClassesBox.getItemAt(i).toString();
+        for (int i = 0; i < this.modelClassesBox.getItemCount(); i++) {
+            String currModelType = this.modelClassesBox.getItemAt(i).toString();
             if (storedModelType.equals(currModelType)) {
                 this.modelClassesBox.setSelectedIndex(i);
             }
@@ -132,7 +132,6 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         /*(
       The session node for the getModel node.
      */
-        SessionNode sessionNode1 = sessionNode;
         this.nodeName = sessionNode.getDisplayName();
     }
 
@@ -142,11 +141,11 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         info.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 SessionUtils.showPermissibleParentsDialog(getSelectedModel(),
-                        modelClassesBox, false, false);
+                        DefaultModelChooser.this.modelClassesBox, false, false);
             }
         });
 
-        JLabel l1 = new JLabel("Node name: " + nodeName);
+        JLabel l1 = new JLabel("Node name: " + this.nodeName);
         l1.setForeground(Color.black);
 
         setLayout(new BorderLayout());
@@ -161,7 +160,7 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
 
         Box b3 = Box.createHorizontalBox();
 
-        b3.add(modelClassesBox);
+        b3.add(this.modelClassesBox);
         Font font = this.modelClassesBox.getFont();
 
         l1.setFont(font);
@@ -177,7 +176,7 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
     /**
      * Basic wrapper class.
      */
-    private final static class ClassWrapper {
+    private static final class ClassWrapper {
         private final Class wrappedClass;
         private final String name;
 

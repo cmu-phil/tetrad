@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,12 +37,12 @@ public class LaggedEdge implements TetradSerializable {
     /**
      * @serial
      */
-    private String factor;
+    private final String factor;
 
     /**
      * @serial
      */
-    private LaggedFactor laggedFactor;
+    private final LaggedFactor laggedFactor;
 
     //==============================CONSTRUCTORS========================//
 
@@ -75,11 +75,11 @@ public class LaggedEdge implements TetradSerializable {
     //=============================PUBLIC METHODS======================//
 
     public String getFactor() {
-        return factor;
+        return this.factor;
     }
 
     public LaggedFactor getLaggedFactor() {
-        return laggedFactor;
+        return this.laggedFactor;
     }
 
     /**
@@ -91,19 +91,16 @@ public class LaggedEdge implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (factor == null) {
+        if (this.factor == null) {
             throw new NullPointerException();
         }
 
-        if (laggedFactor == null) {
+        if (this.laggedFactor == null) {
             throw new NullPointerException();
         }
 

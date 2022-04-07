@@ -8,15 +8,15 @@ import java.util.List;
  */
 public class HsimCompareRepeat {
     public static void main(String... args) {
-        int count = 1;
+        final int count = 1;
 
-        int numVars = 20;
-        double edgesPerNode = 1.1;
-        int numCases = 200;
-        double penaltyDiscount = 1.0;
+        final int numVars = 20;
+        final double edgesPerNode = 1.1;
+        final int numCases = 200;
+        final double penaltyDiscount = 1.0;
 
-        int resimSize = 3;
-        int repeat = 10;
+        final int resimSize = 3;
+        final int repeat = 10;
 
         double gAdjRecallTotal = 0, gAdjPrecisionTotal = 0, gOrRecallTotal = 0, gOrPrecisionTotal = 0;
         double fAdjRecallTotal = 0, fAdjPrecisionTotal = 0, fOrRecallTotal = 0, fOrPrecisionTotal = 0;
@@ -76,12 +76,18 @@ public class HsimCompareRepeat {
             }
 
         }
-        double gAdjRecall = gAdjRecallTotal / count, gAdjPrecision = gAdjPrecisionTotal / count;
-        double gOrRecall = gOrRecallTotal / count, gOrPrecision = gOrPrecisionTotal / (count - gOrPrecCountCorrection);
-        double fAdjRecall = fAdjRecallTotal / count, fAdjPrecision = fAdjPrecisionTotal / count;
-        double fOrRecall = fOrRecallTotal / count, fOrPrecision = fOrPrecisionTotal / (count - fOrPrecCountCorrection);
-        double hAdjRecall = hAdjRecallTotal / count, hAdjPrecision = hAdjPrecisionTotal / count;
-        double hOrRecall = hOrRecallTotal / count, hOrPrecision = hOrPrecisionTotal / count;
+        double gAdjRecall = gAdjRecallTotal / count;
+        double gAdjPrecision = gAdjPrecisionTotal / count;
+        double gOrRecall = gOrRecallTotal / count;
+        double gOrPrecision = gOrPrecisionTotal / (count - gOrPrecCountCorrection);
+        double fAdjRecall = fAdjRecallTotal / count;
+        double fAdjPrecision = fAdjPrecisionTotal / count;
+        double fOrRecall = fOrRecallTotal / count;
+        double fOrPrecision = fOrPrecisionTotal / (count - fOrPrecCountCorrection);
+        double hAdjRecall = hAdjRecallTotal / count;
+        double hAdjPrecision = hAdjPrecisionTotal / count;
+        double hOrRecall = hOrRecallTotal / count;
+        double hOrPrecision = hOrPrecisionTotal / count;
 
         System.out.println(" ");
         String GE = "G errors: AR=" + gAdjRecall + " AP=" + gAdjPrecision + " OR=" + gOrRecall + " OP=" + gOrPrecision;
@@ -92,11 +98,15 @@ public class HsimCompareRepeat {
         System.out.println(HE);
         System.out.println(" ");
 
-        double fgDifAR = fAdjRecall - gAdjRecall, fgDifAP = fAdjPrecision - gAdjPrecision;
-        double fgDifOR = fOrRecall - gOrRecall, fgDifOP = fOrPrecision - gOrPrecision;
+        double fgDifAR = fAdjRecall - gAdjRecall;
+        double fgDifAP = fAdjPrecision - gAdjPrecision;
+        double fgDifOR = fOrRecall - gOrRecall;
+        double fgDifOP = fOrPrecision - gOrPrecision;
 
-        double hgDifAR = hAdjRecall - gAdjRecall, hgDifAP = hAdjPrecision - gAdjPrecision;
-        double hgDifOR = hOrRecall - gOrRecall, hgDifOP = hOrPrecision - gOrPrecision;
+        double hgDifAR = hAdjRecall - gAdjRecall;
+        double hgDifAP = hAdjPrecision - gAdjPrecision;
+        double hgDifOR = hOrRecall - gOrRecall;
+        double hgDifOP = hOrPrecision - gOrPrecision;
 
         String FD = "FG differences: AR=" + fgDifAR + " AP=" + fgDifAP + " OR=" + fgDifOR + " OP=" + fgDifOP;
         String HD = "HG differences: AR=" + hgDifAR + " AP=" + hgDifAP + " OR=" + hgDifOR + " OP=" + hgDifOP;
@@ -104,15 +114,23 @@ public class HsimCompareRepeat {
         System.out.println(HD);
         System.out.println(" ");
 
-        double hfDifDifAR = Math.abs(fgDifAR) - Math.abs(hgDifAR), hfDifDifAP = Math.abs(fgDifAP) - Math.abs(hgDifAP);
-        double hfDifDifOR = Math.abs(fgDifOR) - Math.abs(hgDifOR), hfDifDifOP = Math.abs(fgDifOP) - Math.abs(hgDifOP);
+        double hfDifDifAR = Math.abs(fgDifAR) - Math.abs(hgDifAR);
+        double hfDifDifAP = Math.abs(fgDifAP) - Math.abs(hgDifAP);
+        double hfDifDifOR = Math.abs(fgDifOR) - Math.abs(hgDifOR);
+        double hfDifDifOP = Math.abs(fgDifOP) - Math.abs(hgDifOP);
 
         String AFH = "Absolute F-H: AR=" + hfDifDifAR + " AP=" + hfDifDifAP + " OR=" + hfDifDifOR + " OP=" + hfDifDifOP;
         System.out.println(AFH);
         System.out.println(" ");
 
-        double fMSE_AR = fSE_ART / count, fMSE_AP = fSE_APT / count, fMSE_OR = fSE_ORT / count, fMSE_OP = fSE_OPT / (count - fSE_OPT_CountCorrection);
-        double hMSE_AR = hSE_ART / count, hMSE_AP = hSE_APT / count, hMSE_OR = hSE_ORT / count, hMSE_OP = hSE_OPT / (count - hSE_OPT_CountCorrection);
+        double fMSE_AR = fSE_ART / count;
+        double fMSE_AP = fSE_APT / count;
+        double fMSE_OR = fSE_ORT / count;
+        double fMSE_OP = fSE_OPT / (count - fSE_OPT_CountCorrection);
+        double hMSE_AR = hSE_ART / count;
+        double hMSE_AP = hSE_APT / count;
+        double hMSE_OR = hSE_ORT / count;
+        double hMSE_OP = hSE_OPT / (count - hSE_OPT_CountCorrection);
 
         String FMSE = "F-MSE: AR=" + fMSE_AR + " AP=" + fMSE_AP + " OR=" + fMSE_OR + " OP=" + fMSE_OP;
         String HMSE = "H-MSE: AR=" + hMSE_AR + " AP=" + hMSE_AP + " OR=" + hMSE_OR + " OP=" + hMSE_OP;
@@ -121,7 +139,7 @@ public class HsimCompareRepeat {
 
         String nl = System.getProperty("line.separator");
         String resultsLog = GE + nl + FE + nl + HE + nl + nl + FD + nl + HD + nl + AFH + nl + nl + FMSE + nl + HMSE;
-        String paramsLog = "count = " + count + ", numVars = " + numVars + ", edgesPerNode = " + edgesPerNode + ", numCases = " + numCases + ", resimSize = " + resimSize + ", repeat = " + repeat;
+        final String paramsLog = "count = " + count + ", numVars = " + numVars + ", edgesPerNode = " + edgesPerNode + ", numCases = " + numCases + ", resimSize = " + resimSize + ", repeat = " + repeat;
 
         try {
             PrintWriter writer = new PrintWriter("HsimCR-c" + count + "-v" + numVars + "-s" + numCases + "-rs" + resimSize + "-r" + repeat + ".txt", "UTF-8");

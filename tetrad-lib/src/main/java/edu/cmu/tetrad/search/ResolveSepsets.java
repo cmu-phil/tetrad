@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -48,7 +48,7 @@ public final class ResolveSepsets {
      * separations and associations. resolvedIndependent and resolvedDependent keep up with the number resolved to check
      * later against the truth
      */
-    public static SepsetMapDci ResolveSepsets(List<SepsetMapDci> sepsets, List<IndependenceTest> independenceTests,
+    public static SepsetMapDci resolveSepsets(List<SepsetMapDci> sepsets, List<IndependenceTest> independenceTests,
                                               Method method, SepsetMapDci resolvedIndependent, SepsetMapDci resolvedDependent) {
         SepsetMapDci resolvedSepset = new SepsetMapDci();
         // get all variables
@@ -57,7 +57,7 @@ public final class ResolveSepsets {
             allVars.addAll(independenceTest.getVariables());
         }
         // checks each pair of nodes for inconsistencies across independenceTests
-        for (NodePair pair : allNodePairs(new ArrayList<>(allVars))) {
+        for (NodePair pair : ResolveSepsets.allNodePairs(new ArrayList<>(allVars))) {
             // gets independenceTests and sepsets for every dataset with the pair
             List<List<List<Node>>> pairSepsets = new ArrayList<>();
             List<IndependenceTest> testsWithPair = new ArrayList<>();
@@ -122,84 +122,84 @@ public final class ResolveSepsets {
                 if (inconsistent) {
                     // if using Fisher pooling
                     if (method == Method.fisher) {
-                        if (isIndependentPooledFisher(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentPooledFisher(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
                             resolvedDependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         }
                     } else if (method == Method.fisher2) {
-                        if (isIndependentPooledFisher2(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentPooledFisher2(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
                             resolvedDependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         }
                     } else if (method == Method.tippett) {
-                        if (isIndependentPooledTippett(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentPooledTippett(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
                             resolvedDependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         }
                     } else if (method == Method.worsleyfriston) {
-                        if (isIndependentPooledWorsleyFriston(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentPooledWorsleyFriston(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
                             resolvedDependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         }
                     } else if (method == Method.stouffer) {
-                        if (isIndependentPooledStouffer(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentPooledStouffer(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
                             resolvedDependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         }
                     } else if (method == Method.mudholkergeorge) {
-                        if (isIndependentPooledMudholkerGeorge(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentPooledMudholkerGeorge(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
                             resolvedDependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         }
                     } else if (method == Method.mudholkergeorge2) {
-                        if (isIndependentPooledMudholkerGeorge2(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentPooledMudholkerGeorge2(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
                             resolvedDependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         }
                     } else if (method == Method.averagetest) {
-                        if (isIndependentPooledAverageTest(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentPooledAverageTest(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
                             resolvedDependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         }
                     } else if (method == Method.average) {
-                        if (isIndependentPooledAverage(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentPooledAverage(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
                             resolvedDependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         }
                     } else if (method == Method.random) {
-                        if (isIndependentPooledRandom(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentPooledRandom(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
                             resolvedDependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         }
                     } else if (method == Method.fdr) {
-                        if (isIndependentMajorityFdr(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentMajorityFdr(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
                             resolvedDependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         }
                     } else if (method == Method.majority) {
-                        if (isIndependentMajorityIndep(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                        if (ResolveSepsets.isIndependentMajorityIndep(testsWithSet, pair.getFirst(), pair.getSecond(), conditioningSet)) {
                             resolvedSepset.set(pair.getFirst(), pair.getFirst(), conditioningSet);
                             resolvedIndependent.set(pair.getFirst(), pair.getSecond(), conditioningSet);
                         } else {
@@ -222,29 +222,29 @@ public final class ResolveSepsets {
      */
     public static boolean isIndependentPooled(Method method, List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         if (method == Method.fisher) {
-            return isIndependentPooledFisher(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentPooledFisher(independenceTests, x, y, condSet);
         } else if (method == Method.fisher2) {
-            return isIndependentPooledFisher2(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentPooledFisher2(independenceTests, x, y, condSet);
         } else if (method == Method.tippett) {
-            return isIndependentPooledTippett(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentPooledTippett(independenceTests, x, y, condSet);
         } else if (method == Method.worsleyfriston) {
-            return isIndependentPooledWorsleyFriston(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentPooledWorsleyFriston(independenceTests, x, y, condSet);
         } else if (method == Method.stouffer) {
-            return isIndependentPooledStouffer(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentPooledStouffer(independenceTests, x, y, condSet);
         } else if (method == Method.mudholkergeorge) {
-            return isIndependentPooledMudholkerGeorge(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentPooledMudholkerGeorge(independenceTests, x, y, condSet);
         } else if (method == Method.mudholkergeorge2) {
-            return isIndependentPooledMudholkerGeorge2(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentPooledMudholkerGeorge2(independenceTests, x, y, condSet);
         } else if (method == Method.averagetest) {
-            return isIndependentPooledAverageTest(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentPooledAverageTest(independenceTests, x, y, condSet);
         } else if (method == Method.average) {
-            return isIndependentPooledAverage(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentPooledAverage(independenceTests, x, y, condSet);
         } else if (method == Method.random) {
-            return isIndependentPooledRandom(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentPooledRandom(independenceTests, x, y, condSet);
         } else if (method == Method.fdr) {
-            return isIndependentMajorityFdr(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentMajorityFdr(independenceTests, x, y, condSet);
         } else if (method == Method.majority) {
-            return isIndependentMajorityIndep(independenceTests, x, y, condSet);
+            return ResolveSepsets.isIndependentMajorityIndep(independenceTests, x, y, condSet);
         } else {
             throw new RuntimeException("Invalid Test");
         }
@@ -259,7 +259,7 @@ public final class ResolveSepsets {
         double alpha = independenceTests.get(0).getAlpha();
         double tf = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
-            if (missingVariable(x, y, condSet, independenceTest)) continue;
+            if (ResolveSepsets.missingVariable(x, y, condSet, independenceTest)) continue;
             List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
@@ -276,7 +276,7 @@ public final class ResolveSepsets {
      */
     public static boolean isIndependentPooledFisher2(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
-        List<Double> pValues = getAvailablePValues(independenceTests, x, y, condSet);
+        List<Double> pValues = ResolveSepsets.getAvailablePValues(independenceTests, x, y, condSet);
 
         double tf = 0.0;
         int numPValues = 0;
@@ -302,7 +302,7 @@ public final class ResolveSepsets {
         double alpha = independenceTests.get(0).getAlpha();
         double p = -1.0;
         for (IndependenceTest independenceTest : independenceTests) {
-            if (missingVariable(x, y, condSet, independenceTest)) continue;
+            if (ResolveSepsets.missingVariable(x, y, condSet, independenceTest)) continue;
             List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
@@ -327,7 +327,7 @@ public final class ResolveSepsets {
      */
     public static boolean isIndependentPooledWilkinson(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet, int r) {
         double alpha = independenceTests.get(0).getAlpha();
-        double p[] = new double[independenceTests.size()];
+        double[] p = new double[independenceTests.size()];
         int k = 0;
         for (IndependenceTest independenceTest : independenceTests) {
             p[k] = independenceTest.getPValue();
@@ -348,7 +348,7 @@ public final class ResolveSepsets {
         double p = -1.0;
         for (IndependenceTest independenceTest : independenceTests) {
             List<Node> localCondSet = new ArrayList<>();
-            if (missingVariable(x, y, condSet, independenceTest)) continue;
+            if (ResolveSepsets.missingVariable(x, y, condSet, independenceTest)) continue;
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
@@ -394,7 +394,7 @@ public final class ResolveSepsets {
      */
     public static boolean isIndependentPooledMudholkerGeorge(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
-        double c = Math.sqrt(3 * (5 * independenceTests.size() + 4) / (double) (independenceTests.size() * Math.pow(Math.PI, 2) * (5 * independenceTests.size() + 2)));
+        double c = Math.sqrt(3 * (5 * independenceTests.size() + 4) / (independenceTests.size() * Math.pow(Math.PI, 2) * (5 * independenceTests.size() + 2)));
         double tm = 0.0;
         for (IndependenceTest independenceTest : independenceTests) {
             List<Node> localCondSet = new ArrayList<>();
@@ -416,8 +416,8 @@ public final class ResolveSepsets {
      */
     public static boolean isIndependentPooledMudholkerGeorge2(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();
-        List<Double> pValues = getAvailablePValues(independenceTests, x, y, condSet);
-        double c = Math.sqrt(3 * (5 * pValues.size() + 4) / (double) (pValues.size() * Math.pow(Math.PI, 2) * (5 * pValues.size() + 2)));
+        List<Double> pValues = ResolveSepsets.getAvailablePValues(independenceTests, x, y, condSet);
+        double c = Math.sqrt(3 * (5 * pValues.size() + 4) / (pValues.size() * Math.pow(Math.PI, 2) * (5 * pValues.size() + 2)));
         double tm = 0.0;
         for (double pk : pValues) {
             tm += -c * Math.log(pk / (1 - pk));
@@ -435,7 +435,7 @@ public final class ResolveSepsets {
         int numTests = 0;
 
         for (IndependenceTest independenceTest : independenceTests) {
-            if (missingVariable(x, y, condSet, independenceTest)) continue;
+            if (ResolveSepsets.missingVariable(x, y, condSet, independenceTest)) continue;
 
             List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
@@ -451,13 +451,6 @@ public final class ResolveSepsets {
             numTests++;
         }
 
-//        if (p > alpha) {
-//            System.out.println("Independent: " + SearchLogUtils.independenceFact(x, y, condSet) + " " + p);
-//        }
-//        else {
-//            System.out.println("Dependent: " + SearchLogUtils.independenceFact(x, y, condSet) + " " + p);
-//        }
-
 
         return (sum / numTests > alpha);
     }
@@ -465,16 +458,16 @@ public final class ResolveSepsets {
     private static boolean missingVariable(Node x, Node y, List<Node> condSet, IndependenceTest independenceTest) {
         DataSet dataSet = (DataSet) independenceTest.getData();
 
-        if (isMissing(x, dataSet)) {
+        if (ResolveSepsets.isMissing(x, dataSet)) {
             return true;
         }
 
-        if (isMissing(y, dataSet)) {
+        if (ResolveSepsets.isMissing(y, dataSet)) {
             return true;
         }
 
         for (Node z : condSet) {
-            if (isMissing(z, dataSet)) {
+            if (ResolveSepsets.isMissing(z, dataSet)) {
                 return true;
             }
         }
@@ -555,7 +548,7 @@ public final class ResolveSepsets {
      * threshold.
      */
     private static boolean isIndependentMajorityFdr(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
-        List<Double> allPValues = getAvailablePValues(independenceTests, x, y, condSet);
+        List<Double> allPValues = ResolveSepsets.getAvailablePValues(independenceTests, x, y, condSet);
 
         Collections.sort(allPValues);
         int c = 0;
@@ -571,11 +564,10 @@ public final class ResolveSepsets {
 
         if (independent) {
             TetradLogger.getInstance().log("independence", "***FDR judges " + SearchLogUtils.independenceFact(x, y, condSet) + " independent");
-            TetradLogger.getInstance().log("independence", "c = " + c);
         } else {
             TetradLogger.getInstance().log("independence", "###FDR judges " + SearchLogUtils.independenceFact(x, y, condSet) + " dependent");
-            TetradLogger.getInstance().log("independence", "c = " + c);
         }
+        TetradLogger.getInstance().log("independence", "c = " + c);
 
         return independent;
     }
@@ -584,7 +576,7 @@ public final class ResolveSepsets {
         List<Double> allPValues = new ArrayList<>();
 
         for (IndependenceTest test : independenceTests) {
-            if (missingVariable(x, y, condSet, test)) continue;
+            if (ResolveSepsets.missingVariable(x, y, condSet, test)) continue;
             List<Node> localCondSet = new ArrayList<>();
             for (Node node : condSet) {
                 localCondSet.add(test.getVariable(node.getName()));
@@ -607,7 +599,7 @@ public final class ResolveSepsets {
      * threshold.
      */
     private static boolean isIndependentMajorityIndep(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
-        List<Double> allPValues = getAvailablePValues(independenceTests, x, y, condSet);
+        List<Double> allPValues = ResolveSepsets.getAvailablePValues(independenceTests, x, y, condSet);
 
         Collections.sort(allPValues);
         int c = 0;
@@ -622,11 +614,10 @@ public final class ResolveSepsets {
 
         if (independent) {
             TetradLogger.getInstance().log("independence", "***Majority = " + SearchLogUtils.independenceFact(x, y, condSet) + " independent");
-            TetradLogger.getInstance().log("independence", "c = " + c);
         } else {
             TetradLogger.getInstance().log("independence", "###Majority = " + SearchLogUtils.independenceFact(x, y, condSet) + " dependent");
-            TetradLogger.getInstance().log("independence", "c = " + c);
         }
+        TetradLogger.getInstance().log("independence", "c = " + c);
 
         return independent;
     }

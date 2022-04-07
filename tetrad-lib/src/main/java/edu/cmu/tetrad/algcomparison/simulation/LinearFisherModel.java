@@ -8,7 +8,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -27,9 +26,8 @@ public class LinearFisherModel implements Simulation, TakesData {
     static final long serialVersionUID = 23L;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
-    private RandomGraph randomGraph;
-    private List<Node> shuffledOrder;
-    private List<DataModel> shocks = null;
+    private final RandomGraph randomGraph;
+    private final List<DataModel> shocks;
 
     public LinearFisherModel(RandomGraph graph) {
         this.randomGraph = graph;
@@ -63,28 +61,28 @@ public class LinearFisherModel implements Simulation, TakesData {
 
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
-        Graph graph = randomGraph.createGraph(parameters);
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
+        Graph graph = this.randomGraph.createGraph(parameters);
 
         System.out.println("degree = " + GraphUtils.getDegree(graph));
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
-            if (shocks != null && shocks.size() > 0) {
-                parameters.set(Params.NUM_MEASURES, shocks.get(0).getVariables().size());
+            if (this.shocks != null && this.shocks.size() > 0) {
+                parameters.set(Params.NUM_MEASURES, this.shocks.get(0).getVariables().size());
             }
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            if (shocks != null && shocks.size() > 0) {
-                graph.setNodes(shocks.get(0).getVariables());
+            if (this.shocks != null && this.shocks.size() > 0) {
+                graph.setNodes(this.shocks.get(0).getVariables());
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             int[] tiers = new int[graph.getNodes().size()];
             for (int j = 0; j < tiers.length; j++) {
@@ -110,7 +108,7 @@ public class LinearFisherModel implements Simulation, TakesData {
 
             DataSet dataSet;
 
-            if (shocks == null) {
+            if (this.shocks == null) {
                 dataSet = simulator.simulateDataFisher(
                         parameters.getInt(Params.INTERVAL_BETWEEN_SHOCKS),
                         parameters.getInt(Params.INTERVAL_BETWEEN_RECORDINGS),
@@ -119,7 +117,7 @@ public class LinearFisherModel implements Simulation, TakesData {
                         saveLatentVars
                 );
             } else {
-                DataSet _shocks = (DataSet) shocks.get(i);
+                DataSet _shocks = (DataSet) this.shocks.get(i);
 
                 dataSet = simulator.simulateDataFisher(
                         _shocks.getDoubleData().toArray(),
@@ -142,25 +140,6 @@ public class LinearFisherModel implements Simulation, TakesData {
 
             dataSet.setName("" + (i + 1));
 
-//            if (parameters.getDouble("percentDiscrete") > 0.0) {
-//                if (this.shuffledOrder == null) {
-//                    List<Node> shuffledNodes = new ArrayList<>(dataSet.getVariables());
-//                    Collections.shuffle(shuffledNodes);
-//                    this.shuffledOrder = shuffledNodes;
-//                }
-//
-//                Discretizer discretizer = new Discretizer(dataSet);
-//
-//                for (int k = 0; k < shuffledOrder.size() * parameters.getDouble("percentDiscrete") * 0.01; k++) {
-//                    discretizer.equalIntervals(dataSet.getVariable(shuffledOrder.get(k).getName()),
-//                            parameters.getInt("numCategories"));
-//                }
-//
-//                String name = dataSet.getName();
-//                dataSet = discretizer.discretize();
-//                dataSet.setName(name);
-//            }
-
             if (parameters.getBoolean(Params.STANDARDIZE)) {
                 dataSet = DataUtils.standardizeData(dataSet);
             }
@@ -169,18 +148,18 @@ public class LinearFisherModel implements Simulation, TakesData {
                 dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
-            dataSets.add(saveLatentVars ? dataSet : DataUtils.restrictToMeasured(dataSet));
+            this.dataSets.add(saveLatentVars ? dataSet : DataUtils.restrictToMeasured(dataSet));
         }
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+        return this.graphs.get(index);
     }
 
     @Override
@@ -190,10 +169,9 @@ public class LinearFisherModel implements Simulation, TakesData {
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
-        parameters.addAll(randomGraph.getParameters());
+        List<String> parameters = new ArrayList<>(this.randomGraph.getParameters());
 
-        if (shocks != null) {
+        if (this.shocks != null) {
             parameters.remove(Params.NUM_MEASURES);
             parameters.remove(Params.NUM_LATENTS);
         }
@@ -207,7 +185,6 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add(Params.INCLUDE_NEGATIVE_COEFS);
         parameters.add(Params.ERRORS_NORMAL);
         parameters.add(Params.NUM_RUNS);
-//        parameters.add("percentDiscrete");
         parameters.add(Params.NUM_CATEGORIES);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
@@ -225,7 +202,7 @@ public class LinearFisherModel implements Simulation, TakesData {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override

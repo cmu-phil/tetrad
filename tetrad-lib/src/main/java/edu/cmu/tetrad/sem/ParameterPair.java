@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -53,8 +53,8 @@ public class ParameterPair implements TetradSerializable {
      * Constructs a new (blank) ordered pair where a = null and b = null.
      */
     private ParameterPair() {
-        a = null;
-        b = null;
+        this.a = null;
+        this.b = null;
     }
 
     /**
@@ -82,7 +82,7 @@ public class ParameterPair implements TetradSerializable {
      * @return the first element of the ordered pair.
      */
     public Parameter getA() {
-        return a;
+        return this.a;
     }
 
     /**
@@ -91,7 +91,7 @@ public class ParameterPair implements TetradSerializable {
      * @return the second element of the ordered pair.
      */
     public Parameter getB() {
-        return b;
+        return this.b;
     }
 
     /**
@@ -112,16 +112,16 @@ public class ParameterPair implements TetradSerializable {
         }
 
         ParameterPair pair = (ParameterPair) object;
-        return a.equals(pair.a) && b.equals(pair.b);
+        return this.a.equals(pair.a) && this.b.equals(pair.b);
     }
 
     /**
      * @return this hashcode.
      */
     public int hashCode() {
-        int hashCode = 31 + ((a == null) ? 0 : a.hashCode());
+        int hashCode = 31 + ((this.a == null) ? 0 : this.a.hashCode());
 
-        return 31 * hashCode + ((b == null) ? 0 : b.hashCode());
+        return 31 * hashCode + ((this.b == null) ? 0 : this.b.hashCode());
     }
 
     /**

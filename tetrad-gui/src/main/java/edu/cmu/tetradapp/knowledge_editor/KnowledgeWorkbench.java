@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -45,14 +45,14 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     public static final int REQUIRED_EDGE = 2;
 
     //====================PRIVATE FIELDS=================================//
-    private int edgeMode = FORBIDDEN_EDGE;
+    private int edgeMode = KnowledgeWorkbench.FORBIDDEN_EDGE;
 
     /**
      * Constructs a new workbench workbench for the given workbench model.
      */
     public KnowledgeWorkbench(KnowledgeGraph graph) {
         super(graph);
-        setNodeEdgeErrorsReported(true);
+        setNodeEdgeErrorsReported();
         setRightClickPopupAllowed(false);
         this.setAllowEdgeReorientations(false);
     }
@@ -65,7 +65,7 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      * @see #REQUIRED_EDGE
      */
     public int getEdgeMode() {
-        return edgeMode;
+        return this.edgeMode;
     }
 
     /**
@@ -111,11 +111,11 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
         KnowledgeModelNode _node1 = (KnowledgeModelNode) node1;
         KnowledgeModelNode _node2 = (KnowledgeModelNode) node2;
 
-        switch (edgeMode) {
-            case FORBIDDEN_EDGE:
+        switch (this.edgeMode) {
+            case KnowledgeWorkbench.FORBIDDEN_EDGE:
                 return new KnowledgeModelEdge(_node1, _node2,
                         KnowledgeModelEdge.FORBIDDEN_EXPLICITLY);
-            case REQUIRED_EDGE:
+            case KnowledgeWorkbench.REQUIRED_EDGE:
                 return new KnowledgeModelEdge(_node1, _node2,
                         KnowledgeModelEdge.REQUIRED);
             default:
@@ -158,11 +158,11 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
      * @return the new tracking edge (a display edge).
      */
     public IDisplayEdge getNewTrackingEdge(DisplayNode node, Point mouseLoc) {
-        switch (edgeMode) {
-            case FORBIDDEN_EDGE:
+        switch (this.edgeMode) {
+            case KnowledgeWorkbench.FORBIDDEN_EDGE:
                 return new KnowledgeDisplayEdge(node, mouseLoc,
                         KnowledgeDisplayEdge.FORBIDDEN_EXPLICITLY);
-            case REQUIRED_EDGE:
+            case KnowledgeWorkbench.REQUIRED_EDGE:
                 return new KnowledgeDisplayEdge(node, mouseLoc,
                         KnowledgeDisplayEdge.REQUIRED);
             default:
@@ -171,42 +171,13 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
     }
 
     /**
-     * Given base b (a String), returns the first node in the sequence "b1",
-     * "b2", "b3", etc., which is not already the name of a node in the
-     * workbench.
-     *
-     * @param base the base string.
-     * @return the first string in the sequence not already being used.
-     */
-    public String nextVariableName(String base) {
-
-        // Variable names should start with "1."
-        int i = 0;
-
-        loop:
-        while (true) {
-            String name = base + (++i);
-
-            for (Node node1 : getGraph().getNodes()) {
-                if (node1.getName().equals(name)) {
-                    continue loop;
-                }
-            }
-
-            break;
-        }
-
-        return base + i;
-    }
-
-    /**
      * Sets the edge mode to the given mode.
      */
     public void setEdgeMode(int edgeMode) {
         switch (edgeMode) {
-            case FORBIDDEN_EDGE:
+            case KnowledgeWorkbench.FORBIDDEN_EDGE:
                 // Falls through!
-            case REQUIRED_EDGE:
+            case KnowledgeWorkbench.REQUIRED_EDGE:
                 this.edgeMode = edgeMode;
                 break;
             default:

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -57,7 +57,7 @@ public final class SvarFciOrient {
     /**
      * The SepsetMap being constructed.
      */
-    private SepsetProducer sepsets;
+    private final SepsetProducer sepsets;
 
     private IKnowledge knowledge = new Knowledge2();
 
@@ -66,7 +66,7 @@ public final class SvarFciOrient {
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
      */
-    private boolean completeRuleSetUsed = false;
+    private boolean completeRuleSetUsed;
 
     /**
      * True iff the possible dsep search is done.
@@ -81,16 +81,16 @@ public final class SvarFciOrient {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * True iff verbose output should be printed.
      */
-    private boolean verbose = false;
+    private boolean verbose;
 
     private Graph truePag;
 
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     //============================CONSTRUCTORS============================//
 
@@ -106,11 +106,11 @@ public final class SvarFciOrient {
 
     public Graph orient(Graph graph) {
 
-        logger.log("info", "Starting FCI algorithm.");
+        this.logger.log("info", "Starting FCI algorithm.");
 
         ruleR0(graph);
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("R0");
         }
 
@@ -119,8 +119,8 @@ public final class SvarFciOrient {
         doFinalOrientation(graph);
 
 //        graph.closeInducingPaths();   //to make sure it's a legal PAG
-        if (verbose) {
-            logger.log("graph", "Returning graph: " + graph);
+        if (this.verbose) {
+            this.logger.log("graph", "Returning graph: " + graph);
         }
 
         return graph;
@@ -134,7 +134,7 @@ public final class SvarFciOrient {
      * The background knowledge.
      */
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -150,7 +150,7 @@ public final class SvarFciOrient {
      * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
-        return completeRuleSetUsed;
+        return this.completeRuleSetUsed;
     }
 
     /**
@@ -174,7 +174,7 @@ public final class SvarFciOrient {
      */
     public void ruleR0(Graph graph) {
         graph.reorientAllWith(Endpoint.CIRCLE);
-        fciOrientbk(knowledge, graph, graph.getNodes());
+        fciOrientbk(this.knowledge, graph, graph.getNodes());
 
         List<Node> nodes = graph.getNodes();
 
@@ -191,7 +191,7 @@ public final class SvarFciOrient {
             while ((combination = cg.next()) != null) {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
-                if (knowledge.isInWhichTier(a) == 0 && knowledge.isInWhichTier(b) == 0 && knowledge.isInWhichTier(c) == 0) {
+                if (this.knowledge.isInWhichTier(a) == 0 && this.knowledge.isInWhichTier(b) == 0 && this.knowledge.isInWhichTier(c) == 0) {
                     System.out.println("Skipping triple a,b,c : " + a + " , " + b + " , " + c);
                     continue; // This is added as a temporary measure. Sepsets for lagged vars may be out of window, leading to incorrect collider orientations
                 }
@@ -204,7 +204,7 @@ public final class SvarFciOrient {
                     continue;
                 }
 
-                if (sepsets.isCollider(a, b, c)) {
+                if (this.sepsets.isCollider(a, b, c)) {
                     if (!isArrowpointAllowed(a, b, graph)) {
                         continue;
                     }
@@ -215,23 +215,23 @@ public final class SvarFciOrient {
 
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
-                    if (verbose) {
-                        logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c));
+                    if (this.verbose) {
+                        this.logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c));
                         System.out.println(SearchLogUtils.colliderOrientedMsg(a, b, c));
-                        String location = "R0";
+                        final String location = "R0";
 
-                        printWrongColliderMessage(a, b, c, location, graph);
+                        printWrongColliderMessage(a, b, c, graph);
                     }
-                    this.orientSimilarPairs(graph, knowledge, a, b, Endpoint.ARROW);
-                    this.orientSimilarPairs(graph, knowledge, c, b, Endpoint.ARROW);
+                    this.orientSimilarPairs(graph, this.knowledge, a, b, Endpoint.ARROW);
+                    this.orientSimilarPairs(graph, this.knowledge, c, b, Endpoint.ARROW);
                 }
             }
         }
     }
 
-    private void printWrongColliderMessage(Node a, Node b, Node c, String location, Graph graph) {
-        if (truePag != null && graph.isDefCollider(a, b, c) && !truePag.isDefCollider(a, b, c)) {
-            System.out.println(location + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
+    private void printWrongColliderMessage(Node a, Node b, Node c, Graph graph) {
+        if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
+            System.out.println("R0" + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
         }
     }
 
@@ -242,7 +242,7 @@ public final class SvarFciOrient {
      * Zhang's step F4, rules R1-R10.
      */
     public void doFinalOrientation(Graph graph) {
-        if (completeRuleSetUsed) {
+        if (this.completeRuleSetUsed) {
             zhangFinalOrientation(graph);
         } else {
             spirtesFinalOrientation(graph);
@@ -250,42 +250,42 @@ public final class SvarFciOrient {
     }
 
     private void spirtesFinalOrientation(Graph graph) {
-        changeFlag = true;
+        this.changeFlag = true;
         boolean firstTime = true;
 
-        while (changeFlag) {
-            changeFlag = false;
+        while (this.changeFlag) {
+            this.changeFlag = false;
             rulesR1R2cycle(graph);
             ruleR3(graph);
 
             // R4 requires an arrow orientation.
-            if (changeFlag || (firstTime && !knowledge.isEmpty())) {
+            if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
                 ruleR4B(graph);
                 firstTime = false;
             }
 
-            if (verbose) {
+            if (this.verbose) {
                 System.out.println("Epoch");
             }
         }
     }
 
     private void zhangFinalOrientation(Graph graph) {
-        changeFlag = true;
+        this.changeFlag = true;
         boolean firstTime = true;
 
-        while (changeFlag) {
-            changeFlag = false;
+        while (this.changeFlag) {
+            this.changeFlag = false;
             rulesR1R2cycle(graph);
             ruleR3(graph);
 
             // R4 requires an arrow orientation.
-            if (changeFlag || (firstTime && !knowledge.isEmpty())) {
+            if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
                 ruleR4B(graph);
                 firstTime = false;
             }
 
-            if (verbose) {
+            if (this.verbose) {
                 System.out.println("Epoch");
             }
         }
@@ -297,18 +297,18 @@ public final class SvarFciOrient {
 
             // Now, by a further remark on page 102, we apply R6,R7 as many times
             // as possible.
-            changeFlag = true;
+            this.changeFlag = true;
 
-            while (changeFlag) {
-                changeFlag = false;
+            while (this.changeFlag) {
+                this.changeFlag = false;
                 ruleR6R7(graph);
             }
 
             // Finally, we apply R8-R10 as many times as possible.
-            changeFlag = true;
+            this.changeFlag = true;
 
-            while (changeFlag) {
-                changeFlag = false;
+            while (this.changeFlag) {
+                this.changeFlag = false;
                 rulesR8R9R10(graph);
             }
 
@@ -358,10 +358,10 @@ public final class SvarFciOrient {
 
             graph.setEndpoint(c, b, Endpoint.TAIL);
             graph.setEndpoint(b, c, Endpoint.ARROW);
-            changeFlag = true;
+            this.changeFlag = true;
 
-            if (verbose) {
-                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
+            if (this.verbose) {
+                this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
                 System.out.println(SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
             }
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
@@ -370,7 +370,7 @@ public final class SvarFciOrient {
     }
 
     private boolean isNoncollider(Node a, Node b, Node c) {
-        return sepsets.isNoncollider(a, b, c);
+        return this.sepsets.isNoncollider(a, b, c);
     }
 
     //if a*-oc and either a-->b*->c or a*->b-->c, then a*->c
@@ -390,50 +390,15 @@ public final class SvarFciOrient {
 
                 graph.setEndpoint(a, c, Endpoint.ARROW);
                 this.orientSimilarPairs(graph, this.getKnowledge(), a, c, Endpoint.ARROW);
-                if (verbose) {
-                    logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
+                if (this.verbose) {
+                    this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
                     System.out.println(SearchLogUtils.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
                 }
 
-                changeFlag = true;
+                this.changeFlag = true;
             }
         }
     }
-
-//    /**
-//     * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-oDo-*C, then
-//     * D*->B.
-//     * <p/>
-//     * This is Zhang's rule R3.
-//     */
-//    private void ruleR3(Graph graph) {
-//        List<Node> nodes = graph.getNodes();
-//
-//        for (Node d : nodes) {
-//            final List<Node> adjacentNodes = graph.getAdjacentNodes(d);
-//
-//            if (adjacentNodes.size() < 3) {
-//                continue;
-//            }
-//
-//            ChoiceGenerator gen = new ChoiceGenerator(adjacentNodes.size(), 3);
-//            int[] choice;
-//
-//            while ((choice = gen.next()) != null) {
-//                List<Node> adj = DataGraphUtils.asList(choice, adjacentNodes);
-//
-//                Node a = adj.get(0);
-//                Node b = adj.get(1);
-//                Node c = adj.get(2);
-//
-//                if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.ARROW
-//                    && graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.ARROW
-//                        && !graph.isAdjacentTo(a, c) && graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
-//                    graph.setEndpoint(d, b, Endpoint.ARROW);
-//                }
-//            }
-//        }
-//    }
 
     /**
      * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-oDo-*C, then
@@ -484,33 +449,17 @@ public final class SvarFciOrient {
 
                     graph.setEndpoint(D, B, Endpoint.ARROW);
                     this.orientSimilarPairs(graph, this.getKnowledge(), D, B, Endpoint.ARROW);
-                    if (verbose) {
-                        logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
+                    if (this.verbose) {
+                        this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
                         System.out.println(SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
                     }
 
-                    changeFlag = true;
+                    this.changeFlag = true;
                 }
             }
         }
     }
 
-
-//    public void ruleR4(Graph graph) {
-//        System.out.println("Starting DDP");
-//
-////        if (false) {
-////
-////            // Original implementation
-////            ruleR4A(graph);
-////        } else {
-////
-////            // Alternative implementation.
-////            ruleR4B(graph);
-////        }
-//
-//        System.out.println("Finishing DDP");
-//    }
 
     /**
      * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
@@ -548,7 +497,7 @@ public final class SvarFciOrient {
                     LinkedList<Node> reachable = new LinkedList<>();
                     reachable.add(a);
 
-                    if (verbose) {
+                    if (this.verbose) {
                         System.out.println("Found CPDAG " + a + " " + b + " " + c);
                         reachablePathFind(a, b, c, reachable, graph);
                     }
@@ -564,10 +513,6 @@ public final class SvarFciOrient {
      */
     private void reachablePathFind(Node a, Node b, Node c,
                                    LinkedList<Node> reachable, Graph graph) {
-//        Map<Node, Node> next = new HashMap<Node, Node>();   // RFCI: stores the next node in the disciminating path
-//        // path containing the nodes in the traiangle
-//        next.put(a, b);
-//        next.put(b, c);
 
         Set<Node> cParents = new HashSet<>(graph.getParents(c));
 
@@ -590,7 +535,7 @@ public final class SvarFciOrient {
                 e = x;
                 distance++;
 
-                final int _maxPathLength = maxPathLength == -1 ? 1000 : maxPathLength;
+                int _maxPathLength = this.maxPathLength == -1 ? 1000 : this.maxPathLength;
 
                 if (distance > 0 && distance > _maxPathLength) {
                     continue;
@@ -615,9 +560,6 @@ public final class SvarFciOrient {
                         reachable.add(d);
 
                         // RFCI: only record the next node of the first (shortest) occurrence
-//                        if (next.get(d) == null) {
-//                            next.put(d, x);  // next node of d is x in the shortest path from a
-//                        }
                     }
                 }
             }
@@ -636,12 +578,11 @@ public final class SvarFciOrient {
         if (sepset.contains(b)) {
             graph.setEndpoint(c, b, Endpoint.TAIL);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
-            if (verbose) {
-                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+            if (this.verbose) {
+                this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
                 System.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
 
-            changeFlag = true;
         } else {
             if (!isArrowpointAllowed(a, b, graph)) {
                 return;
@@ -655,9 +596,9 @@ public final class SvarFciOrient {
             graph.setEndpoint(c, b, Endpoint.ARROW);
             this.orientSimilarPairs(graph, this.getKnowledge(), a, b, Endpoint.ARROW);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.ARROW);
-            logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
-            changeFlag = true;
+            this.logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
         }
+        this.changeFlag = true;
     }
 
     /**
@@ -727,10 +668,10 @@ public final class SvarFciOrient {
             if (e == null || e == t) {
                 e = t;
                 distance++;
-                if (distance > 0 && distance > (maxPathLength == -1 ? 1000 : maxPathLength)) return;
+                if (distance > 0 && distance > (this.maxPathLength == -1 ? 1000 : this.maxPathLength)) return;
             }
 
-            final List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
+            List<Node> nodesInTo = graph.getNodesInTo(t, Endpoint.ARROW);
 
             for (Node d : nodesInTo) {
                 if (V.contains(d)) continue;
@@ -780,12 +721,12 @@ public final class SvarFciOrient {
         if (!ind && !ind2) {
             List<Node> sepset = getSepsets().getSepset(d, c);
 
-            if (verbose) {
+            if (this.verbose) {
                 System.out.println("Sepset for d = " + d + " and c = " + c + " = " + sepset);
             }
 
             if (sepset == null) {
-                if (verbose) {
+                if (this.verbose) {
                     System.out.println("Must be a sepset: " + d + " and " + c + "; they're non-adjacent.");
                 }
                 return false;
@@ -800,13 +741,11 @@ public final class SvarFciOrient {
 //            if (sepset.contains(b)) {
             graph.setEndpoint(c, b, Endpoint.TAIL);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
-            if (verbose) {
-                logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
+            if (this.verbose) {
+                this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
                 System.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
 
-            changeFlag = true;
-            return true;
         } else {
             if (!isArrowpointAllowed(a, b, graph)) {
                 return false;
@@ -820,14 +759,14 @@ public final class SvarFciOrient {
             graph.setEndpoint(c, b, Endpoint.ARROW);
             this.orientSimilarPairs(graph, this.getKnowledge(), a, b, Endpoint.ARROW);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.ARROW);
-            if (verbose) {
-                logger.log("impliedOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
+            if (this.verbose) {
+                this.logger.log("impliedOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
                 System.out.println(SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
             }
 
-            changeFlag = true;
-            return true;
         }
+        this.changeFlag = true;
+        return true;
     }
 
     private void printDdp(Node d, List<Node> path, Node a, Node b, Node c, Graph graph) {
@@ -838,7 +777,7 @@ public final class SvarFciOrient {
         nodes.add(b);
         nodes.add(c);
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("DDP subgraph = " + graph.subgraph(nodes));
         }
     }
@@ -885,14 +824,14 @@ public final class SvarFciOrient {
                     if (graph.isAdjacentTo(b, c)) continue;
                     // We know u is as required: R5 applies!
 
-                    logger.log("colliderOrientations", SearchLogUtils.edgeOrientedMsg("Orient circle path", graph.getEdge(a, b)));
+                    this.logger.log("colliderOrientations", SearchLogUtils.edgeOrientedMsg("Orient circle path", graph.getEdge(a, b)));
 
                     graph.setEndpoint(a, b, Endpoint.TAIL);
                     this.orientSimilarPairs(graph, this.getKnowledge(), a, b, Endpoint.TAIL);
                     graph.setEndpoint(b, a, Endpoint.TAIL);
                     this.orientSimilarPairs(graph, this.getKnowledge(), b, a, Endpoint.TAIL);
                     orientTailPath(u, graph);
-                    changeFlag = true;
+                    this.changeFlag = true;
                 }
             }
         }
@@ -927,20 +866,20 @@ public final class SvarFciOrient {
                     // We know A---Bo-*C: R6 applies!
                     graph.setEndpoint(c, b, Endpoint.TAIL);
                     this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
-                    logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
+                    this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
 
-                    changeFlag = true;
+                    this.changeFlag = true;
                 }
 
                 if (graph.getEndpoint(a, b) == Endpoint.CIRCLE) {
 //                    if (graph.isAdjacentTo(a, c)) continue;
 
-                    logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
+                    this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
 
                     // We know A--oBo-*C and A,C nonadjacent: R7 applies!
                     graph.setEndpoint(c, b, Endpoint.TAIL);
                     this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
-                    changeFlag = true;
+                    this.changeFlag = true;
                 }
 
             }
@@ -991,9 +930,9 @@ public final class SvarFciOrient {
             this.orientSimilarPairs(graph, this.getKnowledge(), n1, n2, Endpoint.TAIL);
             graph.setEndpoint(n2, n1, Endpoint.TAIL);
             this.orientSimilarPairs(graph, this.getKnowledge(), n2, n1, Endpoint.TAIL);
-            changeFlag = true;
+            this.changeFlag = true;
 
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Orient circle undirectedPaths", graph.getEdge(n1, n2)));
+            this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Orient circle undirectedPaths", graph.getEdge(n1, n2)));
         }
     }
 
@@ -1124,11 +1063,11 @@ public final class SvarFciOrient {
             if (graph.getEndpoint(a, b) == Endpoint.TAIL) continue;
             // We have A-->B-->C or A--oB-->C: R8 applies!
 
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("R8", graph.getEdge(c, a)));
+            this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("R8", graph.getEdge(c, a)));
 
             graph.setEndpoint(c, a, Endpoint.TAIL);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
-            changeFlag = true;
+            this.changeFlag = true;
             return true;
         }
 
@@ -1155,11 +1094,11 @@ public final class SvarFciOrient {
             if (b == c) continue;
             // We know u is as required: R9 applies!
 
-            logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("R9", graph.getEdge(c, a)));
+            this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("R9", graph.getEdge(c, a)));
 
             graph.setEndpoint(c, a, Endpoint.TAIL);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
-            changeFlag = true;
+            this.changeFlag = true;
             return true;
         }
 
@@ -1204,10 +1143,10 @@ public final class SvarFciOrient {
                         if (graph.isAdjacentTo(m, n)) continue;
                         // We know B,D,u1,u2 as required: R10 applies!
 
-                        logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("R10", graph.getEdge(c, a)));
+                        this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("R10", graph.getEdge(c, a)));
 
                         graph.setEndpoint(c, a, Endpoint.TAIL);
-                        changeFlag = true;
+                        this.changeFlag = true;
                         this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
                         return true;
                     }
@@ -1222,7 +1161,7 @@ public final class SvarFciOrient {
      * Orients according to background knowledge
      */
     private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
-        logger.log("info", "Starting BK Orientation.");
+        this.logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it =
              bk.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -1244,8 +1183,8 @@ public final class SvarFciOrient {
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            changeFlag = true;
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.changeFlag = true;
+            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         for (Iterator<KnowledgeEdge> it =
@@ -1266,11 +1205,11 @@ public final class SvarFciOrient {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            changeFlag = true;
-            logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.changeFlag = true;
+            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        logger.log("info", "Finishing BK Orientation.");
+        this.logger.log("info", "Finishing BK Orientation.");
     }
 
 
@@ -1296,14 +1235,14 @@ public final class SvarFciOrient {
         }
 
         if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
+            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
         }
 
         return graph.getEndpoint(y, x) == Endpoint.CIRCLE;
     }
 
     public boolean isPossibleDsepSearchDone() {
-        return possibleDsepSearchDone;
+        return this.possibleDsepSearchDone;
     }
 
     public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
@@ -1314,7 +1253,7 @@ public final class SvarFciOrient {
      * @return the maximum length of any discriminating path, or -1 of unlimited.
      */
     public int getMaxPathLength() {
-        return maxPathLength;
+        return this.maxPathLength;
     }
 
     /**
@@ -1332,7 +1271,7 @@ public final class SvarFciOrient {
      * True iff verbose output should be printed.
      */
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -1347,7 +1286,7 @@ public final class SvarFciOrient {
      * The true PAG if available. Can be null.
      */
     public Graph getTruePag() {
-        return truePag;
+        return this.truePag;
     }
 
     public void setChangeFlag(boolean changeFlag) {
@@ -1358,7 +1297,7 @@ public final class SvarFciOrient {
      * change flag for repeat rules
      */
     public boolean isChangeFlag() {
-        return changeFlag;
+        return this.changeFlag;
     }
 
     private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
@@ -1414,11 +1353,6 @@ public final class SvarFciOrient {
                 x1 = this.independenceTest.getVariable(A);
                 y1 = this.independenceTest.getVariable(B);
 
-//                if(getSepset2(x1,y1) != null) if (getSepset2(x1,y1).isEmpty() || getSepset2(y1,x1).isEmpty()){
-//                    System.out.println("$$$ empty sepset between x1,y1 = " + x1 + " and " + y1);
-//                    continue;
-//                } // added 05.01.2016
-
                 if (graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
                     System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
                     graph.setEndpoint(x1, y1, mark);
@@ -1440,64 +1374,5 @@ public final class SvarFciOrient {
     }
 
 
-//    private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
-//        System.out.println("orienting similar pairs for x and y: " + x + ", " + y);
-//        int ntiers = knowledge.getNumTiers();
-//        int indx_tier = knowledge.isInWhichTier(x);
-//        int indy_tier = knowledge.isInWhichTier(y);
-//        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
-//        int indx_comp = -1;
-//        int indy_comp = -1;
-//        List tier_x = knowledge.getTier(indx_tier);
-//        Collections.sort(tier_x);
-//        List tier_y = knowledge.getTier(indy_tier);
-//        Collections.sort(tier_y);
-//
-//        int i;
-//        for(i = 0; i < tier_x.size(); ++i) {
-//            if(x.getName().equals(tier_x.get(i))) {
-//                indx_comp = i;
-//                break;
-//            }
-//        }
-//
-//        for(i = 0; i < tier_y.size(); ++i) {
-//            if(y.getName().equals(tier_y.get(i))) {
-//                indy_comp = i;
-//                break;
-//            }
-//        }
-//
-//        for(i = 0; i < ntiers - tier_diff; ++i) {
-//            String A;
-//            Node x1;
-//            String B;
-//            Node y1;
-//            if(indx_tier >= indy_tier) {
-//                if(i != indy_tier) {
-//                    A = (String)knowledge.getTier(i + tier_diff).get(indx_comp);
-//                    B = (String)knowledge.getTier(i).get(indy_comp);
-//                    x1 = this.independenceTest.getVariable(A);
-//                    y1 = this.independenceTest.getVariable(B);
-//                    if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
-//                        System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
-//                        graph.setEndpoint(x1, y1, mark);
-//                        System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
-//                    }
-//                }
-//            } else if(i != indx_tier) {
-//                A = (String)knowledge.getTier(i).get(indx_comp);
-//                B = (String)knowledge.getTier(i + tier_diff).get(indy_comp);
-//                x1 = this.independenceTest.getVariable(A);
-//                y1 = this.independenceTest.getVariable(B);
-//                if(graph.isAdjacentTo(x1, y1) && graph.getEndpoint(x1, y1) == Endpoint.CIRCLE) {
-//                    System.out.print("Orient edge " + graph.getEdge(x1, y1).toString());
-//                    graph.setEndpoint(x1, y1, mark);
-//                    System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
-//                }
-//            }
-//        }
-//
-//    }
 }
 

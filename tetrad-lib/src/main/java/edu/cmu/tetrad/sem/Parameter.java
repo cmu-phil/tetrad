@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -45,7 +45,7 @@ public final class Parameter implements TetradSerializable {
      * The default distribution from which initial values are drawn for this
      * distribution.
      */
-    private static Distribution DEFAULT_DISTRIBUTION =
+    private static final Distribution DEFAULT_DISTRIBUTION =
             new Normal(0.0, 1.0);
 
     /**
@@ -75,14 +75,14 @@ public final class Parameter implements TetradSerializable {
      * @serial Cannot be null. Should be ParamType.VAR if nodeA != nodeB and
      * ParamType.COVAR if nodeA == nodeB.
      */
-    private ParamType type;
+    private final ParamType type;
 
     /**
      * True iff this parameter is fixed in estimation.
      *
      * @serial Any value.
      */
-    private boolean fixed = false;
+    private boolean fixed;
 
     /**
      * True iff this parameter should be initialized randomly.
@@ -97,7 +97,7 @@ public final class Parameter implements TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Distribution distribution = DEFAULT_DISTRIBUTION;
+    private Distribution distribution = Parameter.DEFAULT_DISTRIBUTION;
 
     /**
      * If this parameter is either fixed or not initialized randomly, returns
@@ -105,7 +105,7 @@ public final class Parameter implements TetradSerializable {
      *
      * @serial Any value.
      */
-    private double startingValue = +1.0d;
+    private double startingValue = 1.0d;
 
     //================================CONSTRUCTORS=======================//
 
@@ -164,7 +164,7 @@ public final class Parameter implements TetradSerializable {
      * @return the name of the parameter.
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -198,14 +198,14 @@ public final class Parameter implements TetradSerializable {
      * @return the "from" node for the edge this parameter is associated with.
      */
     public Node getNodeA() {
-        return nodeA;
+        return this.nodeA;
     }
 
     /**
      * @return the "to" node for the edge this parameter is associated with.
      */
     public Node getNodeB() {
-        return nodeB;
+        return this.nodeB;
     }
 
     /**
@@ -213,7 +213,7 @@ public final class Parameter implements TetradSerializable {
      * This is set at construction time.
      */
     public ParamType getType() {
-        return type;
+        return this.type;
     }
 
     /**
@@ -221,7 +221,7 @@ public final class Parameter implements TetradSerializable {
      * this parameter.
      */
     public Distribution getDistribution() {
-        return distribution;
+        return this.distribution;
     }
 
     /**
@@ -242,7 +242,7 @@ public final class Parameter implements TetradSerializable {
      * @return true iff this parameter should be held fixed during estimation.
      */
     public boolean isFixed() {
-        return fixed;
+        return this.fixed;
     }
 
     /**
@@ -258,7 +258,7 @@ public final class Parameter implements TetradSerializable {
      * @return the starting value if this is a fixed parameter.
      */
     public double getStartingValue() {
-        return startingValue;
+        return this.startingValue;
     }
 
     /**
@@ -273,7 +273,7 @@ public final class Parameter implements TetradSerializable {
      * an initial value from its preset random distribution.
      */
     public boolean isInitializedRandomly() {
-        return initializedRandomly;
+        return this.initializedRandomly;
     }
 
     /**
@@ -294,30 +294,24 @@ public final class Parameter implements TetradSerializable {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (name == null) {
+        if (this.name == null) {
             throw new NullPointerException();
         }
 
-        if (type == null) {
+        if (this.distribution == null) {
             throw new NullPointerException();
         }
 
-        if (distribution == null) {
-            throw new NullPointerException();
-        }
-
-        if (type == ParamType.VAR && nodeA != nodeB) {
+        if (this.type == ParamType.VAR && this.nodeA != this.nodeB) {
             throw new IllegalStateException();
         }
 
-        if (type == ParamType.COVAR && nodeA == nodeB) {
+        if (this.type == ParamType.COVAR && this.nodeA == this.nodeB) {
             throw new IllegalStateException();
         }
     }

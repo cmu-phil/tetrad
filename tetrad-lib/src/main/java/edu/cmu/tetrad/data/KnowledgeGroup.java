@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -44,7 +44,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      *
      * @serial - not null
      */
-    private Set<String> fromGroup;
+    private final Set<String> fromGroup;
 
 
     /**
@@ -52,20 +52,20 @@ public final class KnowledgeGroup implements TetradSerializable {
      *
      * @serial - not null
      */
-    private Set<String> toGroup;
+    private final Set<String> toGroup;
 
 
     /**
      * The type of group that this is (currently either required or forbidden).
      */
-    private int type;
+    private final int type;
 
 
     /**
      * The types of groups (Can an enum be used instead?)
      */
-    public final static int REQUIRED = 1;
-    public final static int FORBIDDEN = 2;
+    public static final int REQUIRED = 1;
+    public static final int FORBIDDEN = 2;
 
 
     /**
@@ -74,7 +74,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      * @param type - the type
      */
     public KnowledgeGroup(int type, Set<String> from, Set<String> to) {
-        if (type != REQUIRED && type != FORBIDDEN) {
+        if (type != KnowledgeGroup.REQUIRED && type != KnowledgeGroup.FORBIDDEN) {
             throw new NullPointerException("The given type needs to be either REQUIRED or FORBIDDEN");
         }
         if (from == null) {
@@ -83,7 +83,7 @@ public final class KnowledgeGroup implements TetradSerializable {
         if (to == null) {
             throw new NullPointerException("The to set must not be null");
         }
-        if (intersect(from, to)) {
+        if (KnowledgeGroup.intersect(from, to)) {
             throw new IllegalArgumentException("The from and to sets must not intersect");
         }
         this.fromGroup = new HashSet<>(from);
@@ -96,7 +96,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      * Constructs an empty instance of a knowledge group.
      */
     public KnowledgeGroup(int type) {
-        if (type != REQUIRED && type != FORBIDDEN) {
+        if (type != KnowledgeGroup.REQUIRED && type != KnowledgeGroup.FORBIDDEN) {
             throw new NullPointerException("The given type needs to be either REQUIRED or FORBIDDEN");
         }
         this.type = type;
@@ -112,7 +112,7 @@ public final class KnowledgeGroup implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static KnowledgeGroup serializableInstance() {
-        return new KnowledgeGroup(REQUIRED, new HashSet<String>(0), new HashSet<String>(0));
+        return new KnowledgeGroup(KnowledgeGroup.REQUIRED, new HashSet<>(0), new HashSet<>(0));
     }
 
 
@@ -172,22 +172,6 @@ public final class KnowledgeGroup implements TetradSerializable {
 
 
     /**
-     * States whether this group has a conflict with the given one.
-     *
-     * @return true iff there is a conflict.
-     */
-    public boolean isConflict(KnowledgeGroup group) {
-        // if they have different types, then if they share an edge there is a conflict.
-        if (this.type != group.type) {
-            return intersect(this.fromGroup, group.fromGroup) && intersect(this.toGroup, group.toGroup);
-        }
-        // otherwise they either don't share edges or are the same type and no conflicts
-        // exist (as at worst they will have edges in common).
-        return false;
-    }
-
-
-    /**
      * Equals when they are the same type and have the same edges.
      */
     public boolean equals(Object o) {
@@ -231,23 +215,20 @@ public final class KnowledgeGroup implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (this.type != REQUIRED && this.type != FORBIDDEN) {
+        if (this.type != KnowledgeGroup.REQUIRED && this.type != KnowledgeGroup.FORBIDDEN) {
             throw new IllegalStateException("Type must be REQUIRED or FORBIDDEN");
         }
 
-        if (fromGroup == null) {
+        if (this.fromGroup == null) {
             throw new NullPointerException();
         }
 
-        if (toGroup == null) {
+        if (this.toGroup == null) {
             throw new NullPointerException();
         }
 

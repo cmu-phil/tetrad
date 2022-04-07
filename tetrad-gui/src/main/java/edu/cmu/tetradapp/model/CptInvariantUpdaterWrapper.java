@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -110,11 +110,11 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
     //=============================PUBLIC METHODS==========================//
 
     public ManipulatingBayesUpdater getBayesUpdater() {
-        return bayesUpdater;
+        return this.bayesUpdater;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -127,45 +127,12 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
-            bayesUpdater = new CptInvariantUpdater(bayesIm);
+            this.bayesUpdater = new CptInvariantUpdater(bayesIm);
         } else {
-            bayesUpdater = new CptInvariantUpdater(bayesIm,
+            this.bayesUpdater = new CptInvariantUpdater(bayesIm,
                     (Evidence) params.get("evidence", null));
         }
 
-//        Node node = getParameters().getVariable();
-//
-//        if (node != null) {
-//            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-//
-//            TetradLogger.getInstance().log("info", "\nCPT Invariant Exact Updater");
-//
-//            String nodeName = node.getNode();
-//            int nodeIndex = bayesIm.getNodeIndex(bayesIm.getNode(nodeName));
-//            double[] priors = getBayesUpdater().calculatePriorMarginals(nodeIndex);
-//            double[] marginals = getBayesUpdater().calculateUpdatedMarginals(nodeIndex);
-//
-//            TetradLogger.getInstance().log("details", "\nVariable = " + nodeName);
-//            TetradLogger.getInstance().log("details", "\nEvidence:");
-//            Evidence evidence = getParameters().getEvidence();
-//            Proposition proposition = evidence.getProposition();
-//
-//            for (int i = 0; i < proposition.getNumVariables(); i++) {
-//                Node variable = proposition.getVariableSource().getVariable().get(i);
-//                int category = proposition.getSingleCategory(i);
-//
-//                if (category != -1) {
-//                    TetradLogger.getInstance().log("details", "\t" + variable + " = " + category);
-//                }
-//            }
-//
-//            TetradLogger.getInstance().log("details", "\nCat.\tPrior\tMarginal");
-//
-//            for (int i = 0; i < priors.length; i++) {
-//                TetradLogger.getInstance().log("details", category(evidence, nodeName, i) + "\t"
-//                                + nf.format(priors[i]) + "\t" + nf.format(marginals[i]));
-//            }
-//        }
         TetradLogger.getInstance().reset();
     }
 
@@ -187,21 +154,18 @@ public class CptInvariantUpdaterWrapper implements SessionModel, UpdaterWrapper,
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesUpdater == null) {
+        if (this.bayesUpdater == null) {
             throw new NullPointerException();
         }
     }
 
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

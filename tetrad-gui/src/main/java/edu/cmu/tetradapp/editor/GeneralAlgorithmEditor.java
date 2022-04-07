@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetradapp.app.TetradDesktop;
@@ -33,24 +32,16 @@ import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.WatchedProcess;
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Dimension;
-import java.awt.Window;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Edits some algorithm to search for Markov blanket CPDAGs.
@@ -101,51 +92,49 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     }
 
     private void initComponents() {
-        if (algorithmRunner.hasMissingValues()) {
+        if (this.algorithmRunner.hasMissingValues()) {
             setPreferredSize(new Dimension(827, 670));
         } else {
             setPreferredSize(new Dimension(827, 620));
         }
 
         setLayout(new CardLayout());
-        add(new SingleButtonCard(algorithmCard, algoFwdBtn));
-        add(new DualButtonCard(parameterCard, paramBkBtn, paramFwdBtn));
-        add(new SingleButtonCard(graphCard, graphBkBtn));
+        add(new SingleButtonCard(this.algorithmCard, this.algoFwdBtn));
+        add(new DualButtonCard(this.parameterCard, this.paramBkBtn, this.paramFwdBtn));
+        add(new SingleButtonCard(this.graphCard, this.graphBkBtn));
     }
 
     private void initListeners() {
-        algoFwdBtn.addActionListener(this);
-        paramBkBtn.addActionListener(this);
-        paramFwdBtn.addActionListener(this);
-        graphBkBtn.addActionListener(this);
+        this.algoFwdBtn.addActionListener(this);
+        this.paramBkBtn.addActionListener(this);
+        this.paramFwdBtn.addActionListener(this);
+        this.graphBkBtn.addActionListener(this);
 
-        algorithmCard.addPropertyChangeListener(this);
-        parameterCard.addPropertyChangeListener(this);
-        graphCard.addPropertyChangeListener(this);
+        this.algorithmCard.addPropertyChangeListener(this);
+        this.parameterCard.addPropertyChangeListener(this);
+        this.graphCard.addPropertyChangeListener(this);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        switch (evt.getPropertyName()) {
-            case "algoFwdBtn":
-                algoFwdBtn.setEnabled((boolean) evt.getNewValue());
-                break;
+        if ("algoFwdBtn".equals(evt.getPropertyName())) {
+            this.algoFwdBtn.setEnabled((boolean) evt.getNewValue());
         }
     }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
         Object obj = evt.getSource();
-        if (obj == algoFwdBtn) {
-            if (algorithmCard.isAllValid()) {
-                parameterCard.refresh();
+        if (obj == this.algoFwdBtn) {
+            if (this.algorithmCard.isAllValid()) {
+                this.parameterCard.refresh();
                 showNextCard();
             }
-        } else if (obj == paramBkBtn) {
+        } else if (obj == this.paramBkBtn) {
             showPreviousCard();
-        } else if (obj == paramFwdBtn) {
+        } else if (obj == this.paramFwdBtn) {
             doSearch();
-        } else if (obj == graphBkBtn) {
+        } else if (obj == this.graphBkBtn) {
             showPreviousCard();
         }
     }
@@ -154,19 +143,19 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         this.jsonResult = jsonResult;
         System.out.println("json result: " + jsonResult);
 
-        final Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
-        algorithmRunner.getGraphs().clear();
-        algorithmRunner.getGraphs().add(graph);
+        Graph graph = JsonUtils.parseJSONObjectToTetradGraph(jsonResult);
+        this.algorithmRunner.getGraphs().clear();
+        this.algorithmRunner.getGraphs().add(graph);
 
-        LOGGER.info("Remote graph result assigned to algorithmRunner!");
+        GeneralAlgorithmEditor.LOGGER.info("Remote graph result assigned to algorithmRunner!");
         firePropertyChange("modelChanged", null, null);
 
-        graphCard.refresh();
+        this.graphCard.refresh();
         showGraphCard();
     }
 
     public void setAlgorithmErrorResult(String errorResult) {
-        JOptionPane.showMessageDialog(desktop, jsonResult);
+        JOptionPane.showMessageDialog(this.desktop, this.jsonResult);
 
         throw new IllegalArgumentException(errorResult);
     }
@@ -190,34 +179,24 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         new WatchedProcess((Window) getTopLevelAncestor()) {
             @Override
             public void watch() {
-                AlgorithmModel algoModel = algorithmCard.getSelectedAlgorithm();
+                AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
                 if (algoModel != null) {
-//                    paramBkBtn.setEnabled(false);
-//                    paramFwdBtn.setEnabled(false);
-
-                    if (algoModel.getAlgorithm().getAnnotation().algoType() != AlgType.orient_pairwise
-                            && algorithmRunner.getDataModelList().getModelList().size() == 1) {
-                        String algoName = algoModel.getAlgorithm().getAnnotation().name();
-                    }
-
                     try {
-                        algorithmCard.saveStates();
-                        algorithmRunner.execute();
+                        GeneralAlgorithmEditor.this.algorithmCard.saveStates();
+                        GeneralAlgorithmEditor.this.algorithmRunner.execute();
 
                         firePropertyChange("modelChanged", null, null);
-                        graphCard.refresh();
+                        GeneralAlgorithmEditor.this.graphCard.refresh();
                         showGraphCard();
                     } catch (Exception exception) {
                         exception.printStackTrace(System.err);
 
                         JOptionPane.showMessageDialog(
-                                (Window) getTopLevelAncestor(),
+                                getTopLevelAncestor(),
                                 "Stopped with error:\n"
-                                + exception.getMessage());
+                                        + exception.getMessage());
                     }
 
-//                    paramBkBtn.setEnabled(true);
-//                    paramFwdBtn.setEnabled(true);
                 }
             }
         };
@@ -226,7 +205,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     @Override
     public boolean finalizeEditor() {
-        List<Graph> graphs = algorithmRunner.getGraphs();
+        List<Graph> graphs = this.algorithmRunner.getGraphs();
         if (graphs == null || graphs.isEmpty()) {
             int option = JOptionPane.showConfirmDialog(this, "You have not performed a search. Close anyway?", "Close?",
                     JOptionPane.YES_NO_OPTION);
@@ -236,7 +215,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         return true;
     }
 
-    private class SingleButtonCard extends JPanel {
+    private static class SingleButtonCard extends JPanel {
 
         private static final long serialVersionUID = 7154917933096522203L;
 
@@ -252,12 +231,12 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
         private void initComponents() {
             Dimension buttonSize = new Dimension(268, 25);
-            button.setMinimumSize(buttonSize);
-            button.setMaximumSize(buttonSize);
-            button.setPreferredSize(buttonSize);
+            this.button.setMinimumSize(buttonSize);
+            this.button.setMaximumSize(buttonSize);
+            this.button.setPreferredSize(buttonSize);
 
             setLayout(new BorderLayout());
-            add(new JScrollPane(new PaddingPanel(component)), BorderLayout.CENTER);
+            add(new JScrollPane(new PaddingPanel(this.component)), BorderLayout.CENTER);
             add(new SouthPanel(), BorderLayout.SOUTH);
         }
 
@@ -291,7 +270,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     }
 
-    private class DualButtonCard extends JPanel {
+    private static class DualButtonCard extends JPanel {
 
         private static final long serialVersionUID = 7995297102462362969L;
 
@@ -304,11 +283,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             this.backButton = backButton;
             this.forwardButton = forwardButton;
 
-            initComponents();
+            this.initComponents();
         }
 
         private void initComponents() {
-            setLayout(new BorderLayout());
+            this.setLayout(new BorderLayout());
 
             Dimension buttonSize = new Dimension(268, 25);
 
@@ -320,8 +299,8 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             forwardButton.setMaximumSize(buttonSize);
             forwardButton.setPreferredSize(buttonSize);
 
-            add(new JScrollPane(new PaddingPanel(component)), BorderLayout.CENTER);
-            add(new SouthPanel(), BorderLayout.SOUTH);
+            this.add(new JScrollPane(new PaddingPanel(component)), BorderLayout.CENTER);
+            this.add(new SouthPanel(), BorderLayout.SOUTH);
         }
 
         private class SouthPanel extends JPanel {
@@ -329,12 +308,12 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             private static final long serialVersionUID = 3980233325015220843L;
 
             public SouthPanel() {
-                initComponents();
+                this.initComponents();
             }
 
             private void initComponents() {
                 GroupLayout layout = new GroupLayout(this);
-                this.setLayout(layout);
+                setLayout(layout);
                 layout.setHorizontalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
@@ -345,15 +324,15 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
 
-                layout.linkSize(SwingConstants.HORIZONTAL, new java.awt.Component[]{backButton, forwardButton});
+                layout.linkSize(SwingConstants.HORIZONTAL, backButton, forwardButton);
 
                 layout.setVerticalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
                                         .addContainerGap()
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                                .addComponent(backButton)
-                                                .addComponent(forwardButton))
+                                                .addComponent(DualButtonCard.this.backButton)
+                                                .addComponent(DualButtonCard.this.forwardButton))
                                         .addContainerGap())
                 );
             }

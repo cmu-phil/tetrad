@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -38,14 +38,14 @@ public abstract class AbstractVariable implements Variable {
 
     static final long serialVersionUID = 23L;
 
-    public static int LAST_ID = 0;
+    public static int LAST_ID;
 
     /**
      * Name of this variable.
      *
      * @serial
      */
-    private String name = "??";
+    private String name;
 
     /**
      * Builds a variable having the specified name.
@@ -57,10 +57,6 @@ public abstract class AbstractVariable implements Variable {
 
         name = name.trim();
 
-//        if (!NamingProtocol.isLegalName(name)) {
-//            throw new NullPointerException(
-//                    NamingProtocol.getProtocolDescription() + ": " + name);
-//        }
         this.name = name;
     }
 
@@ -95,7 +91,7 @@ public abstract class AbstractVariable implements Variable {
      * @return the name of this variable.
      */
     public final String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -105,7 +101,7 @@ public abstract class AbstractVariable implements Variable {
      * <tt>checkValue()</tt> in order to provide for subclass-specific value
      * checking. The value should pass the test if it can be converted into an
      * equivalent object of the correct class type (see
-     * <tt>getValueClass()</tt> for this variable; otherwise, it should fail. In
+     * <tt>getValueClass()</tt>) for this variable; otherwise, it should fail. In
      * general, <tt>checkValue()</tt> should not fail a value for simply not
      * being an instance of a particular class. </p> Since this method is not
      * <tt>static</tt>, subclasses may (but need not) provide for
@@ -124,7 +120,7 @@ public abstract class AbstractVariable implements Variable {
      * of the variable is returned.
      */
     public String toString() {
-        return name;
+        return this.name;
     }
 
     public abstract Node like(String name);
@@ -134,12 +130,12 @@ public abstract class AbstractVariable implements Variable {
         String node1 = getName();
         String node2 = node.getName();
 
-        boolean isAlpha1 = ALPHA.matcher(node1).matches();
-        boolean isAlpha2 = ALPHA.matcher(node2).matches();
-        boolean isAlphaNum1 = ALPHA_NUM.matcher(node1).matches();
-        boolean isAlphaNum2 = ALPHA_NUM.matcher(node2).matches();
-        boolean isLag1 = LAG.matcher(node1).matches();
-        boolean isLag2 = LAG.matcher(node2).matches();
+        boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
+        boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
+        boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
+        boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
+        boolean isLag1 = Node.LAG.matcher(node1).matches();
+        boolean isLag2 = Node.LAG.matcher(node2).matches();
 
         if (isAlpha1) {
             if (isLag2) {

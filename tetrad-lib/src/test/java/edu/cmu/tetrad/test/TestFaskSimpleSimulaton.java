@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,7 +37,7 @@ public class TestFaskSimpleSimulaton {
         int xtoy = 0;
         int ytox = 0;
 
-        int sampleSize = 1000;
+        final int sampleSize = 1000;
 
         for (int i = 0; i < 1000; i++) {
 
@@ -93,11 +93,11 @@ public class TestFaskSimpleSimulaton {
     }
 
     private double q(double[] x, double[] y) {
-        return cv(x, y, x) / cv(x, x, x) - cv(x, y, y) / cv(x, x, y);
+        return TestFaskSimpleSimulaton.cv(x, y, x) / TestFaskSimpleSimulaton.cv(x, x, x) - TestFaskSimpleSimulaton.cv(x, y, y) / TestFaskSimpleSimulaton.cv(x, x, y);
     }
 
     private double symmetric(double[] x, double[] y) {
-        return cv(x, y, x) / cv(x, x, x) - cv(x, y, y) / cv(y, y, y);
+        return TestFaskSimpleSimulaton.cv(x, y, x) / TestFaskSimpleSimulaton.cv(x, x, x) - TestFaskSimpleSimulaton.cv(x, y, y) / TestFaskSimpleSimulaton.cv(y, y, y);
     }
 
     public static double cv(double[] x, double[] y, double[] condition) {
@@ -124,7 +124,7 @@ public class TestFaskSimpleSimulaton {
         int xtoy = 0;
         int ytox = 0;
 
-        int sampleSize = 1000;
+        final int sampleSize = 1000;
 
         double[] zzdiff = new double[sampleSize];
         double[] xxdiff = new double[sampleSize];
@@ -154,9 +154,6 @@ public class TestFaskSimpleSimulaton {
             z = DataUtils.center(z);
 
             // Swap x and y so y->x instead.
-//            double[] w = x;
-//            x = y;
-//            y = w;
 
             if (leftright(x, y))
                 xtoy = xtoy + 1;
@@ -164,10 +161,10 @@ public class TestFaskSimpleSimulaton {
             if (leftright(y, x))
                 ytox = ytox + 1;
 
-            zzdiff[i] = cu(z, z, x) - cu(z, z, y);
-            xxdiff[i] = cu(x, x, x) - cu(x, x, y);
+            zzdiff[i] = TestFaskSimpleSimulaton.cu(z, z, x) - TestFaskSimpleSimulaton.cu(z, z, y);
+            xxdiff[i] = TestFaskSimpleSimulaton.cu(x, x, x) - TestFaskSimpleSimulaton.cu(x, x, y);
 
-            ratiodiff[i] = (cu(z, z, x) / cu(x, x, x)) - (cu(z, z, y) / cu(x, x, y));
+            ratiodiff[i] = (TestFaskSimpleSimulaton.cu(z, z, x) / TestFaskSimpleSimulaton.cu(x, x, x)) - (TestFaskSimpleSimulaton.cu(z, z, y) / TestFaskSimpleSimulaton.cu(x, x, y));
 
         }
 

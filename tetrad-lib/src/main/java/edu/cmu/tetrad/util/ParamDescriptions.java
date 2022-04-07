@@ -39,7 +39,7 @@ public final class ParamDescriptions {
         final String VALUE_TYPE_DOUBLE = "Double";
         final String VALUE_TYPE_BOOLEAN = "Boolean";
 
-        final Set<String> PARAM_VALUE_TYPES = new HashSet<>(Arrays.asList(
+        Set<String> PARAM_VALUE_TYPES = new HashSet<>(Arrays.asList(
                 VALUE_TYPE_STRING,
                 VALUE_TYPE_INTEGER,
                 VALUE_TYPE_DOUBLE,
@@ -52,7 +52,7 @@ public final class ParamDescriptions {
                 doc = Jsoup.parse(inputStream, "UTF-8", "");
             }
         } catch (IOException ex) {
-            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
+            ParamDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
 
         // Get the description of each parameter
@@ -65,7 +65,7 @@ public final class ParamDescriptions {
 
                 // Add params that don't have value types for spalsh screen error
                 if (!PARAM_VALUE_TYPES.contains(valueType)) {
-                    paramsWithUnsupportedValueType.add(paramName);
+                    this.paramsWithUnsupportedValueType.add(paramName);
                 } else {
                     String shortDescription = Objects.requireNonNull(doc.getElementById(paramName + "_short_desc")).text().trim();
                     String longDescription = Objects.requireNonNull(doc.getElementById(paramName + "_long_desc")).text().trim();
@@ -106,21 +106,21 @@ public final class ParamDescriptions {
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValue);
                     }
 
-                    map.put(paramName, paramDescription);
+                    this.map.put(paramName, paramDescription);
                 }
             }
         }
 
         // add parameters not in documentation
-        map.put(Params.PRINT_STREAM, new ParamDescription(Params.PRINT_STREAM, "printStream", "A writer to print output messages.", ""));
+        this.map.put(Params.PRINT_STREAM, new ParamDescription(Params.PRINT_STREAM, "printStream", "A writer to print output messages.", ""));
     }
 
     public static ParamDescriptions getInstance() {
-        return INSTANCE;
+        return ParamDescriptions.INSTANCE;
     }
 
     public ParamDescription get(String name) {
-        ParamDescription paramDesc = map.get(name);
+        ParamDescription paramDesc = this.map.get(name);
 
         return (paramDesc == null)
                 ? new ParamDescription(name, String.format("Please add a description for %s to the manual.", name), "", 0)
@@ -128,15 +128,15 @@ public final class ParamDescriptions {
     }
 
     public void put(String name, ParamDescription paramDescription) {
-        map.put(name, paramDescription);
+        this.map.put(name, paramDescription);
     }
 
     public Set<String> getNames() {
-        return map.keySet();
+        return this.map.keySet();
     }
 
     public List<String> getParamsWithUnsupportedValueType() {
-        return paramsWithUnsupportedValueType;
+        return this.paramsWithUnsupportedValueType;
     }
 
 }

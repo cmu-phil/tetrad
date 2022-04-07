@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -56,7 +56,7 @@ public class DegenerateGaussianScore implements Score {
     private double penaltyDiscount = 1.0;
 
     // The structure prior.
-    private double structurePrior = 0.0;
+    private double structurePrior;
 
     // The embedding map.
     private final Map<Integer, List<Integer>> embedding;
@@ -119,7 +119,6 @@ public class DegenerateGaussianScore implements Score {
                 B.remove(i);
 
                 this.embedding.put(i_, new ArrayList<>(keys.values()));
-                i_++;
 
             } else {
 
@@ -134,9 +133,9 @@ public class DegenerateGaussianScore implements Score {
                 index2.add(i);
                 this.embedding.put(i_, index2);
                 i++;
-                i_++;
 
             }
+            i_++;
         }
         double[][] B_ = new double[n][B.size()];
         for (int j = 0; j < B.size(); j++) {
@@ -147,13 +146,13 @@ public class DegenerateGaussianScore implements Score {
 
         // The continuous variables of the post-embedding dataset.
         RealMatrix D = new BlockRealMatrix(B_);
-        ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
-        nodesHash = new HashedMap<>();
+        this.ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
+        this.nodesHash = new HashedMap<>();
 
         List<Node> variables = dataSet.getVariables();
 
         for (int j = 0; j < variables.size(); j++) {
-            nodesHash.put(variables.get(j), j);
+            this.nodesHash.put(variables.get(j), j);
         }
 
     }
@@ -186,16 +185,16 @@ public class DegenerateGaussianScore implements Score {
         double ldetA = log(getCov(rows, A_).det());
         double ldetB = log(getCov(rows, B_).det());
 
-        double lik = N * (ldetB - ldetA + L2PE * (B_.length - A_.length));
+        double lik = N * (ldetB - ldetA + DegenerateGaussianScore.L2PE * (B_.length - A_.length));
         return 2 * lik + 2 * calculateStructurePrior(parents.length) - dof * getPenaltyDiscount() * log(N);
     }
 
     private double calculateStructurePrior(int k) {
-        if (structurePrior <= 0) {
+        if (this.structurePrior <= 0) {
             return 0;
         } else {
-            double n = variables.size() - 1;
-            double p = structurePrior / n;
+            double n = this.variables.size() - 1;
+            double p = this.structurePrior / n;
             return k * log(p) + (n - k) * log(1.0 - p);
         }
     }
@@ -232,7 +231,7 @@ public class DegenerateGaussianScore implements Score {
     }
 
     public int getSampleSize() {
-        return dataSet.getNumRows();
+        return this.dataSet.getNumRows();
     }
 
     @Override
@@ -242,12 +241,12 @@ public class DegenerateGaussianScore implements Score {
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     @Override
     public Node getVariable(String targetName) {
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -258,7 +257,7 @@ public class DegenerateGaussianScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(log(dataSet.getNumRows()));
+        return (int) Math.ceil(log(this.dataSet.getNumRows()));
     }
 
     @Override
@@ -267,7 +266,7 @@ public class DegenerateGaussianScore implements Score {
     }
 
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     public void setPenaltyDiscount(double penaltyDiscount) {
@@ -275,7 +274,7 @@ public class DegenerateGaussianScore implements Score {
     }
 
     public double getStructurePrior() {
-        return structurePrior;
+        return this.structurePrior;
     }
 
     public void setStructurePrior(double structurePrior) {
@@ -285,7 +284,7 @@ public class DegenerateGaussianScore implements Score {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "Degenerate Gaussian Score Penalty " + nf.format(penaltyDiscount);
+        return "Degenerate Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
     }
 
     // Subsample of the continuous mixedVariables conditioning on the given cols.
@@ -299,8 +298,8 @@ public class DegenerateGaussianScore implements Score {
                 double muj = 0.0;
 
                 for (int k : rows) {
-                    mui += ddata.getDouble(k, cols[i]);
-                    muj += ddata.getDouble(k, cols[j]);
+                    mui += this.ddata.getDouble(k, cols[i]);
+                    muj += this.ddata.getDouble(k, cols[j]);
                 }
 
                 mui /= rows.size() - 1;
@@ -309,7 +308,7 @@ public class DegenerateGaussianScore implements Score {
                 double _cov = 0.0;
 
                 for (int k : rows) {
-                    _cov += (ddata.getDouble(k, cols[i]) - mui) * (ddata.getDouble(k, cols[j]) - muj);
+                    _cov += (this.ddata.getDouble(k, cols[i]) - mui) * (this.ddata.getDouble(k, cols[j]) - muj);
                 }
 
                 double mean = _cov / (rows.size());
@@ -324,22 +323,22 @@ public class DegenerateGaussianScore implements Score {
         List<Integer> rows = new ArrayList<>();
 
         K:
-        for (int k = 0; k < dataSet.getNumRows(); k++) {
-            Node ii = variables.get(i);
+        for (int k = 0; k < this.dataSet.getNumRows(); k++) {
+            Node ii = this.variables.get(i);
 
-            List<Integer> A = new ArrayList<>(this.embedding.get(nodesHash.get(ii)));
+            List<Integer> A = new ArrayList<>(this.embedding.get(this.nodesHash.get(ii)));
 
             for (int j : A) {
-                if (Double.isNaN(ddata.getDouble(k, j))) continue K;
+                if (Double.isNaN(this.ddata.getDouble(k, j))) continue K;
             }
 
-            for (int p : parents) {
-                Node pp = variables.get(i);
+            for (int ignored : parents) {
+                Node pp = this.variables.get(i);
 
-                List<Integer> AA = new ArrayList<>(this.embedding.get(nodesHash.get(pp)));
+                List<Integer> AA = new ArrayList<>(this.embedding.get(this.nodesHash.get(pp)));
 
                 for (int j : AA) {
-                    if (Double.isNaN(ddata.getDouble(k, j))) continue K;
+                    if (Double.isNaN(this.ddata.getDouble(k, j))) continue K;
                 }
             }
 

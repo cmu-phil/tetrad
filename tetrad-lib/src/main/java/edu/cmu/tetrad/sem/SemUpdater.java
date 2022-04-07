@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -49,7 +49,7 @@ public class SemUpdater implements TetradSerializable {
 
     static final long serialVersionUID = 23L;
     private SemEvidence evidence;
-    private SemIm semIm;
+    private final SemIm semIm;
 
     public SemUpdater(SemIm semIm) {
         if (semIm == null) {
@@ -107,9 +107,6 @@ public class SemUpdater implements TetradSerializable {
             means.set(i, manipulatedSemIm.getMean(manipulatedSemIm.getVariableNodes().get(i)));
         }
 
-//        System.out.println("vars = " + semIm.getVariableNodes());
-//        System.out.println("means = " + means);
-
         Matrix implcov = manipulatedSemIm.getImplCovar(true);
 
         // Updating on x2 = X.
@@ -139,24 +136,13 @@ public class SemUpdater implements TetradSerializable {
         Vector EX = means.viewSelection(xIndices);
         Vector EY = means.viewSelection(yIndices);
 
-        int[] x2 = new int[nodesInEvidence.size()];
         Vector X = new Vector(nodesInEvidence.size());
-
-        for (int i = 0; i < nodesInEvidence.size(); i++) {
-            Node _node = nodesInEvidence.get(i);
-            x2[i] = evidence.getNodeIndex(_node);
-        }
 
         for (int i = 0; i < nodesInEvidence.size(); i++) {
             int j = evidence.getNodeIndex(nodesInEvidence.get(i));
             X.set(i, evidence.getProposition().getValue(j));
         }
 
-//        System.out.println("covyx = " + covyx);
-//        System.out.println("varx = " + varx);
-//        System.out.println("X = " + X);
-//        System.out.println("EX = " + EX);
-//        System.out.println("EY = " + EY);
         Vector xminusex = X.minus(EX);
 
         Vector mu = new Vector(manipulatedSemIm.getVariableNodes().size());
@@ -203,9 +189,9 @@ public class SemUpdater implements TetradSerializable {
     private SemGraph createManipulatedGraph(Graph graph) {
         SemGraph updatedGraph = new SemGraph(graph);
 
-        for (int i = 0; i < evidence.getNumNodes(); ++i) {
-            if (evidence.isManipulated(i)) {
-                Node node = evidence.getNode(i);
+        for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
+            if (this.evidence.isManipulated(i)) {
+                Node node = this.evidence.getNode(i);
                 List<Node> parents = updatedGraph.getParents(node);
 
                 for (Node parent : parents) {

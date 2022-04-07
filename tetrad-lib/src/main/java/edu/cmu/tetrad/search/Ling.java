@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,8 +46,6 @@ import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -76,7 +74,7 @@ public class Ling {
     /**
      * Time needed to process the search method.
      */
-    private long elapsedTime = 0L;
+    private long elapsedTime;
 
     /**
      * Either passed in through the constructor or simulated using a graph.
@@ -94,7 +92,7 @@ public class Ling {
      * @param d a DataSet over which the algorithm can process
      */
     public Ling(DataSet d) {
-        dataSet = d;
+        this.dataSet = d;
     }
 
     /**
@@ -105,7 +103,7 @@ public class Ling {
      * @param samples the number of samples the algorithm draws in order to generate a DataSet
      */
     public Ling(GraphWithParameters graphWP, int samples) {
-        numSamples = samples;
+        this.numSamples = samples;
         makeDataSet(graphWP);
     }
 
@@ -117,7 +115,7 @@ public class Ling {
      * @param samples the number of samples the algorithm draws in order to generate a DataSet
      */
     public Ling(Graph g, int samples) {
-        numSamples = samples;
+        this.numSamples = samples;
         GraphWithParameters graphWP = new GraphWithParameters(g);
         makeDataSet(graphWP);
     }
@@ -128,7 +126,7 @@ public class Ling {
      * @return DataSet   Returns a dataset of the data used by the algorithm.
      */
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     /**
@@ -141,7 +139,7 @@ public class Ling {
         try {
             long sTime = (new Date()).getTime();
 
-            boolean fastIca = true;
+            final boolean fastIca = true;
 
             if (fastIca) {
                 W = getWFastIca();
@@ -149,22 +147,20 @@ public class Ling {
                 System.out.println("W = " + W);
 
                 //this is the heart of our method:
-                graphs = findCandidateModels(dataSet.getVariables(), W, true);
+                graphs = findCandidateModels(this.dataSet.getVariables(), W);
             } else {
-                double zeta = 1;
+                List<Mapping> allMappings = createMappings(this.dataSet.getNumColumns());
 
-                final List<Mapping> allMappings = createMappings(null, null, dataSet.getNumColumns());
-
-                W = estimateW(new Matrix(dataSet.getDoubleData().transpose()),
-                        dataSet.getNumColumns(), -zeta, zeta, allMappings);
+                W = estimateW(new Matrix(this.dataSet.getDoubleData().transpose()),
+                        this.dataSet.getNumColumns(), allMappings);
 
                 System.out.println("W = " + W);
 
                 //this is the heart of our method:
-                graphs = findCandidateModel(dataSet.getVariables(), W, true);
+                graphs = findCandidateModel(this.dataSet.getVariables(), W);
             }
 
-            elapsedTime = (new Date()).getTime() - sTime;
+            this.elapsedTime = (new Date()).getTime() - sTime;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -173,19 +169,18 @@ public class Ling {
     }
 
 
-    private Matrix estimateW(Matrix matrix, int numNodes, double min, double max, List<Mapping> allMappings) {
+    private Matrix estimateW(Matrix matrix, int numNodes, List<Mapping> allMappings) {
         Matrix W = initializeW(numNodes);
-        maxMappings(matrix, min, max, W, allMappings);
+        maxMappings(matrix, W, allMappings);
         return W;
     }
 
-    private void maxMappings(final Matrix matrix, final double min,
-                             final double max, final Matrix W, final List<Mapping> allMappings) {
+    private void maxMappings(Matrix matrix, Matrix W, List<Mapping> allMappings) {
 
-        final int numNodes = W.rows();
+        int numNodes = W.rows();
 
         for (int i = 0; i < numNodes; i++) {
-            double maxScore = Double.NEGATIVE_INFINITY;
+            final double maxScore = Double.NEGATIVE_INFINITY;
             double[] maxRow = new double[numNodes];
 
             for (Mapping mapping : mappingsForRow(i, allMappings)) {
@@ -216,23 +211,21 @@ public class Ling {
         }
     }
 
-    private void optimizeNonGaussianity(final int rowIndex, final Matrix dataSetTetradMatrix,
-                                        final Matrix W, List<Mapping> allMappings) {
-        final List<Mapping> mappings = mappingsForRow(rowIndex, allMappings);
+    private void optimizeNonGaussianity(int rowIndex, Matrix dataSetTetradMatrix,
+                                        Matrix W, List<Mapping> allMappings) {
+        List<Mapping> mappings = mappingsForRow(rowIndex, allMappings);
 
-        MultivariateFunction function = new MultivariateFunction() {
-            public double value(double[] values) {
-                for (int i = 0; i < values.length; i++) {
-                    Mapping mapping = mappings.get(i);
-                    W.set(mapping.getI(), mapping.getJ(), values[i]);
-                }
-
-                double v = ngFullData(rowIndex, dataSetTetradMatrix, W);
-
-                if (Double.isNaN(v)) return 10000;
-
-                return -(v);
+        MultivariateFunction function = values -> {
+            for (int i = 0; i < values.length; i++) {
+                Mapping mapping = mappings.get(i);
+                W.set(mapping.getI(), mapping.getJ(), values[i]);
             }
+
+            double v = ngFullData(rowIndex, dataSetTetradMatrix, W);
+
+            if (Double.isNaN(v)) return 10000;
+
+            return -(v);
         };
 
         {
@@ -287,8 +280,8 @@ public class Ling {
 
         double sum = 0;
 
-        for (int i = 0; i < col.length; i++) {
-            sum += log(cosh(col[i]));
+        for (double v : col) {
+            sum += log(cosh(v));
         }
 
         return sum / col.length;
@@ -298,9 +291,9 @@ public class Ling {
     private double[] removeNaN(double[] data) {
         List<Double> _leaveOutMissing = new ArrayList<>();
 
-        for (int i = 0; i < data.length; i++) {
-            if (!Double.isNaN(data[i])) {
-                _leaveOutMissing.add(data[i]);
+        for (double datum : data) {
+            if (!Double.isNaN(datum)) {
+                _leaveOutMissing.add(datum);
             }
         }
 
@@ -312,7 +305,7 @@ public class Ling {
     }
 
     private List<Mapping> mappingsForRow(int rowIndex, List<Mapping> allMappings) {
-        final List<Mapping> mappings = new ArrayList<>();
+        List<Mapping> mappings = new ArrayList<>();
 
         for (Mapping mapping : allMappings) {
             if (mapping.getI() == rowIndex) mappings.add(mapping);
@@ -337,10 +330,10 @@ public class Ling {
         return W;
     }
 
-    private List<Mapping> createMappings(Graph graph, List<Node> nodes, int numNodes) {
+    private List<Mapping> createMappings(int numNodes) {
 
         // Mark as parameters all non-adjacencies from the graph, excluding self edges.
-        final List<Mapping> allMappings = new ArrayList<>();
+        List<Mapping> allMappings = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
             for (int j = 0; j < numNodes; j++) {
@@ -353,8 +346,8 @@ public class Ling {
     }
 
     private static class Mapping {
-        private int i = -1;
-        private int j = -1;
+        private final int i;
+        private final int j;
 
         public Mapping(int i, int j) {
             this.i = i;
@@ -362,17 +355,17 @@ public class Ling {
         }
 
         public int getI() {
-            return i;
+            return this.i;
         }
 
         public int getJ() {
-            return j;
+            return this.j;
         }
     }
 
     private Matrix getWFastIca() {
         Matrix W;// Using this Fast ICA to get the logging.
-        Matrix data = new Matrix(dataSet.getDoubleData().toArray()).transpose();
+        Matrix data = new Matrix(this.dataSet.getDoubleData().toArray()).transpose();
         FastIca fastIca = new FastIca(data, 30);
         fastIca.setVerbose(false);
         fastIca.setAlgorithmType(FastIca.DEFLATION);
@@ -389,7 +382,7 @@ public class Ling {
      * Calculates the time used when processing the search method.
      */
     public long getElapsedTime() {
-        return elapsedTime;
+        return this.elapsedTime;
     }
 
     /**
@@ -398,7 +391,7 @@ public class Ling {
      * @param t The value at which the thresholding is set
      */
     public void setThreshold(double t) {
-        threshold = t;
+        this.threshold = t;
     }
 
     //==============================PRIVATE METHODS====================//
@@ -409,129 +402,73 @@ public class Ling {
     public Matrix pruneEdgesByResampling(Matrix data) {
         Matrix X = new Matrix(data.transpose().toArray());
 
-        int npieces = 10;
+        final int npieces = 10;
         int cols = X.columns();
         int rows = X.rows();
-        int piecesize = (int) Math.floor(cols / npieces);
 
         List<Matrix> bpieces = new ArrayList<>();
-        List<Vector> diststdpieces = new ArrayList<>();
-        List<Vector> cpieces = new ArrayList<>();
 
         for (int p = 0; p < npieces; p++) {
-
-//          % Select subset of data, and permute the variables to the causal order
-//          Xp = X(k,((p-1)*piecesize+1):(p*piecesize));
-
-            int p0 = (p) * piecesize;
-            int p1 = (p + 1) * piecesize - 1;
-            int[] range = range(p0, p1);
-
-
-            Matrix Xp = X;
-
-//          % Remember to subract out the mean
-//          Xpm = mean(Xp,2);
-//          Xp = Xp - Xpm*ones(1,size(Xp,2));
-//
-//          % Calculate covariance matrix
-//          cov = (Xp*Xp')/size(Xp,2);
-
             Vector Xpm = new Vector(rows);
 
             for (int i = 0; i < rows; i++) {
                 double sum = 0.0;
 
-                for (int j = 0; j < Xp.columns(); j++) {
-                    sum += Xp.get(i, j);
+                for (int j = 0; j < X.columns(); j++) {
+                    sum += X.get(i, j);
                 }
 
-                Xpm.set(i, sum / Xp.columns());
+                Xpm.set(i, sum / X.columns());
             }
 
             for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < Xp.columns(); j++) {
-                    Xp.set(i, j, Xp.get(i, j) - Xpm.get(i));
+                for (int j = 0; j < X.columns(); j++) {
+                    X.set(i, j, X.get(i, j) - Xpm.get(i));
                 }
             }
 
+            Matrix Xpt = X.transpose();
 
-            Matrix Xpt = Xp.transpose();
-
-            Matrix cov = Xp.times(Xpt);
+            Matrix cov = X.times(Xpt);
 
             for (int i = 0; i < cov.rows(); i++) {
                 for (int j = 0; j < cov.columns(); j++) {
-                    cov.set(i, j, cov.get(i, j) / Xp.columns());
+                    cov.set(i, j, cov.get(i, j) / X.columns());
                 }
             }
 
-//          % Do QL decomposition on the inverse square root of cov
-//          [Q,L] = tridecomp(cov^(-0.5),'ql');
-
             boolean posDef = LingUtils.isPositiveDefinite(cov);
-//            TetradLogger.getInstance().log("lingamDetails","Positive definite = " + posDef);
 
             if (!posDef) {
                 System.out.println("Covariance matrix is not positive definite.");
             }
 
             Matrix sqrt = cov.sqrt();
-            ;
 
             Matrix I = Matrix.identity(rows);
-            Matrix AI = I.copy();
+            I.copy();
             Matrix invSqrt = sqrt.inverse();
 
             QRDecomposition qr = new QRDecomposition(new BlockRealMatrix(invSqrt.toArray()));
             RealMatrix r = qr.getR();
 
-//          % The estimated disturbance-stds are one over the abs of the diag of L
-//          newestdisturbancestd = 1./diag(abs(L));
-
             Vector newestdisturbancestd = new Vector(rows);
 
             for (int t = 0; t < rows; t++) {
-                newestdisturbancestd.set(t, 1.0 / Math.abs(r.getEntry(t, t)));
+                newestdisturbancestd.set(t, 1.0 / abs(r.getEntry(t, t)));
             }
 
-//          % Normalize rows of L to unit diagonal
-//          L = L./(diag(L)*ones(1,dims));
-//
             for (int s = 0; s < rows; s++) {
                 for (int t = 0; t < min(s, cols); t++) {
                     r.setEntry(s, t, r.getEntry(s, t) / r.getEntry(s, s));
                 }
             }
 
-//          % Calculate corresponding B
-//          bnewest = eye(dims)-L;
-
             Matrix bnewest = Matrix.identity(rows);
             bnewest = bnewest.minus(new Matrix(r.getData()));
 
-            Vector cnewest = new Matrix(r.getData()).times(Xpm);
-
             bpieces.add(bnewest);
-            diststdpieces.add(newestdisturbancestd);
-            cpieces.add(cnewest);
         }
-
-
-//
-//        for i=1:dims,
-//          for j=1:dims,
-//
-//            themean = mean(Bpieces(i,j,:));
-//            thestd = std(Bpieces(i,j,:));
-//            if abs(themean)<prunefactor*thestd,
-//          Bfinal(i,j) = 0;
-//            else
-//          Bfinal(i,j) = themean;
-//            end
-//
-//          end
-//        end
 
         Matrix means = new Matrix(rows, rows);
         Matrix stds = new Matrix(rows, rows);
@@ -551,15 +488,15 @@ public class Ling {
                 double sumVar = 0.0;
 
                 for (int y = 0; y < npieces; y++) {
-                    sumVar += Math.pow((bpieces.get(y).get(i, j)) - themean, 2);
+                    sumVar += pow((bpieces.get(y).get(i, j)) - themean, 2);
                 }
 
-                double thestd = Math.sqrt(sumVar / (npieces));
+                double thestd = sqrt(sumVar / (npieces));
 
                 means.set(i, j, themean);
                 stds.set(i, j, thestd);
 
-                if (Math.abs(themean) < threshold * thestd) {//  getPruneFactor() * thestd) {
+                if (abs(themean) < this.threshold * thestd) {//  getPruneFactor() * thestd) {
                     BFinal.set(i, j, 0);
                 } else {
                     BFinal.set(i, j, themean);
@@ -576,20 +513,13 @@ public class Ling {
         Distribution gp2 = new GaussianPower(2);
 
         //the coefficients of the error terms  (here, all 1s)
-        Vector errorCoefficients = getErrorCoeffsIdentity(graphWP.getGraph().getNumNodes());
+        Vector errorCoefficients = Ling.getErrorCoeffsIdentity(graphWP.getGraph().getNumNodes());
 
         //generate data from the SEM
-        Matrix inVectors = simulateCyclic(graphWP, errorCoefficients, numSamples, gp2);
+        Matrix inVectors = Ling.simulateCyclic(graphWP, errorCoefficients, this.numSamples, gp2);
 
         //reformat it
-        dataSet = new BoxDataSet(new DoubleDataBox(inVectors.transpose().toArray()), graphWP.getGraph().getNodes());
-    }
-
-    private int[] range(int i1, int i2) {
-        if (i2 < i1) throw new IllegalArgumentException("i2 must be >=  i2 " + i1 + ", " + i2);
-        int series[] = new int[i2 - i1 + 1];
-        for (int j = i1; j <= i2; j++) series[j - i1] = j;
-        return series;
+        this.dataSet = new BoxDataSet(new DoubleDataBox(inVectors.transpose().toArray()), graphWP.getGraph().getNodes());
     }
 
     /**
@@ -609,11 +539,11 @@ public class Ling {
     // used to produce dataset if one is not provided as the input to the constructor
 
     private static Matrix simulateCyclic(GraphWithParameters dwp, Vector errorCoefficients, int n, Distribution distribution) {
-        Matrix reducedForm = reducedForm(dwp);
+        Matrix reducedForm = Ling.reducedForm(dwp);
 
         Matrix vectors = new Matrix(dwp.getGraph().getNumNodes(), n);
         for (int j = 0; j < n; j++) {
-            Vector vector = simulateReducedForm(reducedForm, errorCoefficients, distribution);
+            Vector vector = Ling.simulateReducedForm(reducedForm, errorCoefficients, distribution);
             vectors.assignColumn(j, vector);
         }
         return vectors;
@@ -657,7 +587,7 @@ public class Ling {
 
     //given the W matrix, outputs the list of SEMs consistent with the observed distribution.
 
-    private StoredGraphs findCandidateModels(List<Node> variables, Matrix matrixW, boolean approximateZeros) {
+    private StoredGraphs findCandidateModels(List<Node> variables, Matrix matrixW) {
 
         Matrix normalizedZldW;
         List<PermutationMatrixPair> zldPerms;
@@ -667,7 +597,7 @@ public class Ling {
         System.out.println("Calculating zeroless diagonal permutations...");
 
         TetradLogger.getInstance().log("lingDetails", "Calculating zeroless diagonal permutations.");
-        zldPerms = zerolessDiagonalPermutations(matrixW, approximateZeros, variables, dataSet);
+        zldPerms = zerolessDiagonalPermutations(matrixW, variables, this.dataSet);
 
         System.out.println("Calculated zeroless diagonal permutations.");
 
@@ -678,9 +608,9 @@ public class Ling {
 
             normalizedZldW = LingUtils.normalizeDiagonal(zldPerm.getMatrixW());
             // Note: add method to deal with this data
-            zldPerm.setMatrixBhat(computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
+            zldPerm.setMatrixBhat(Ling.computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
             Matrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
-            boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
+            boolean isStableTetradMatrix = Ling.allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
             GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
 
             gs.addGraph(graph.getGraph());
@@ -722,7 +652,7 @@ public class Ling {
         return gs;
     }
 
-    private StoredGraphs findCandidateModel(List<Node> variables, Matrix matrixW, boolean approximateZeros) {
+    private StoredGraphs findCandidateModel(List<Node> variables, Matrix matrixW) {
 
         Matrix normalizedZldW;
         List<PermutationMatrixPair> zldPerms;
@@ -732,7 +662,7 @@ public class Ling {
         System.out.println("Calculating zeroless diagonal permutations...");
 
         TetradLogger.getInstance().log("lingDetails", "Calculating zeroless diagonal permutations.");
-        zldPerms = zerolessDiagonalPermutation(matrixW, approximateZeros, variables, dataSet);
+        zldPerms = zerolessDiagonalPermutation(matrixW, variables);
 
 
 //        zldPerms = zerolessDiagonalPermutations(matrixW, approximateZeros, variables, dataSet);
@@ -746,9 +676,9 @@ public class Ling {
 
             normalizedZldW = LingUtils.normalizeDiagonal(zldPerm.getMatrixW());
             // Note: add method to deal with this data
-            zldPerm.setMatrixBhat(computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
+            zldPerm.setMatrixBhat(Ling.computeBhatTetradMatrix(normalizedZldW, variables)); //B~ = I - W~
             Matrix doubleData = zldPerm.getMatrixBhat().getDoubleData();
-            boolean isStableTetradMatrix = allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
+            boolean isStableTetradMatrix = Ling.allEigenvaluesAreSmallerThanOneInModulus(new Matrix(doubleData.toArray()));
             GraphWithParameters graph = new GraphWithParameters(zldPerm.getMatrixBhat());
 
             gs.addGraph(graph.getGraph());
@@ -791,26 +721,23 @@ public class Ling {
     }
 
 
-    private List<PermutationMatrixPair> zerolessDiagonalPermutations(Matrix ica_W, boolean approximateZeros,
-                                                                     List<Node> vars, DataSet dataSet) {
+    private List<PermutationMatrixPair> zerolessDiagonalPermutations(Matrix ica_W, List<Node> vars,
+                                                                     DataSet dataSet) {
 
-        List<PermutationMatrixPair> permutations = new java.util.Vector();
+        List<PermutationMatrixPair> permutations = new java.util.Vector<>();
 
-        if (approximateZeros) {
-//            setInsignificantEntriesToZero(ica_W);
-            pruneEdgesByResampling(dataSet.getDoubleData());
-            ica_W = removeZeroRowsAndCols(ica_W, vars);
-        }
+        pruneEdgesByResampling(dataSet.getDoubleData());
+        ica_W = removeZeroRowsAndCols(ica_W, vars);
 
         //find assignments
         Matrix mat = ica_W.transpose();
         //returns all zeroless-diagonal column-permutations
 
-        List<List<Integer>> nRookAssignments = nRookColumnAssignments(mat, makeAllRows(mat.rows()));
+        List<List<Integer>> nRookAssignments = Ling.nRookColumnAssignments(mat, Ling.makeAllRows(mat.rows()));
 
         //for each assignment, add the corresponding permutation to 'permutations'
         for (List<Integer> permutation : nRookAssignments) {
-            Matrix matrixW = permuteRows(ica_W, permutation).transpose();
+            Matrix matrixW = Ling.permuteRows(ica_W, permutation).transpose();
             PermutationMatrixPair permTetradMatrixPair = new PermutationMatrixPair(permutation, matrixW);
             permutations.add(permTetradMatrixPair);
         }
@@ -818,18 +745,12 @@ public class Ling {
         return permutations;
     }
 
-    private List<PermutationMatrixPair> zerolessDiagonalPermutation(Matrix ica_W, boolean approximateZeros,
-                                                                    List<Node> vars, DataSet dataSet) {
+    private List<PermutationMatrixPair> zerolessDiagonalPermutation(Matrix ica_W, List<Node> vars) {
 
-        List<PermutationMatrixPair> permutations = new java.util.Vector();
+        List<PermutationMatrixPair> permutations = new java.util.Vector<>();
 
-        if (approximateZeros) {
-//            setInsignificantEntriesToZero(ica_W);
-            ica_W = pruneEdgesByResampling(ica_W);
-            ica_W = removeZeroRowsAndCols(ica_W, vars);
-        }
-
-//        List<PermutationMatrixPair > zldPerms = new ArrayList<PermutationMatrixPair >();
+        ica_W = pruneEdgesByResampling(ica_W);
+        ica_W = removeZeroRowsAndCols(ica_W, vars);
 
         List<Integer> perm = new ArrayList<>();
 
@@ -838,22 +759,7 @@ public class Ling {
         Matrix matrixW = ica_W.transpose();
 
         PermutationMatrixPair pair = new PermutationMatrixPair(perm, matrixW);
-
         permutations.add(pair);
-
-
-//        //find assignments
-//        TetradMatrix mat = ica_W.transpose();
-//        //returns all zeroless-diagonal column-permutations
-//
-//        List<List<Integer>> nRookAssignments = nRookColumnAssignments(mat, makeAllRows(mat.rows()));
-//
-//        //for each assignment, add the corresponding permutation to 'permutations'
-//        for (List<Integer> permutation : nRookAssignments) {
-//            TetradMatrix matrixW = permuteRows(ica_W, permutation).transpose();
-//            PermutationMatrixPair  permTetradMatrixPair = new PermutationMatrixPair (permutation, matrixW, vars);
-//            permutations.add(permTetradMatrixPair);
-//        }
 
         return permutations;
     }
@@ -907,19 +813,6 @@ public class Ling {
 
     // uses the thresholding criterion
 
-    private void setInsignificantEntriesToZero(Matrix mat) {
-        int n = mat.rows();
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (Math.abs(mat.get(i, j)) < threshold) {
-                    mat.set(i, j, 0);
-                }
-            }
-        }
-
-        System.out.println("Thresholded W = " + mat);
-    }
-
     private static List<Integer> makeAllRows(int n) {
         List<Integer> l = new ArrayList<>();
         for (int i = 0; i < n; i++) {
@@ -940,10 +833,10 @@ public class Ling {
 
             if (mat.get(currentRowIndex, 0) != 0) {
                 if (mat.columns() > 1) {
-                    java.util.Vector newAvailableRows = (new java.util.Vector(availableRows));
+                    java.util.Vector<Integer> newAvailableRows = (new java.util.Vector<>(availableRows));
                     newAvailableRows.removeElement(currentRowIndex);
                     Matrix subMat = mat.getPart(0, mat.rows() - 1, 1, mat.columns() - 2);
-                    List<List<Integer>> allLater = nRookColumnAssignments(subMat, newAvailableRows);
+                    List<List<Integer>> allLater = Ling.nRookColumnAssignments(subMat, newAvailableRows);
 
                     for (List<Integer> laterPerm : allLater) {
                         laterPerm.add(0, currentRowIndex);
@@ -985,53 +878,18 @@ public class Ling {
         double[] realEigenvalues = dec.getRealEigenvalues();
         double[] imagEigenvalues = dec.getImagEigenvalues();
 
-        double sum = 0.0;
-
-//        boolean allEigenvaluesSmallerThanOneInModulus = true;
         for (int i = 0; i < realEigenvalues.length; i++) {
             double realEigenvalue = realEigenvalues[i];
             double imagEigenvalue = imagEigenvalues[i];
-            double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
-//			double argument = Math.atan(imagEigenvalue/realEigenvalue);
-//			double modulusCubed = Math.pow(modulus, 3);
-//			System.out.println("eigenvalue #"+i+" = " + realEigenvalue + "+" + imagEigenvalue + "i");
-//			System.out.println("eigenvalue #"+i+" has argument = " + argument);
-//			System.out.println("eigenvalue #"+i+" has modulus = " + modulus);
-//			System.out.println("eigenvalue #"+i+" has modulus^3 = " + modulusCubed);
-
-            sum += modulus;
+            double modulus = sqrt(pow(realEigenvalue, 2) + pow(imagEigenvalue, 2));
 
             if (modulus >= 1.5) {
                 return false;
-//                allEigenvaluesSmallerThanOneInModulus = false;
             }
         }
+
         return true;
-//        return allEigenvaluesSmallerThanOneInModulus;
-
-//        return sum / realEigenvalues.size() < 1;
     }
-
-    /**
-     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
-     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
-     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
-     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
-     */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-
-    }
-
-//    public double getPruneFactor() {
-//        return pruneFactor;
-//    }
 
     /**
      * This small class is used to store graph permutations. It contains basic methods for adding and accessing graphs.
@@ -1045,18 +903,18 @@ public class Ling {
         /**
          * Graph permutations are stored here.
          */
-        private List<Graph> graphs = new ArrayList<>();
+        private final List<Graph> graphs = new ArrayList<>();
 
         /**
          * Store data for each graph in case the data is needed later
          */
-        private List<DataSet> dataSet = new ArrayList<>();
+        private final List<DataSet> dataSet = new ArrayList<>();
 
         /**
          * Boolean valued vector that contains the stability information for its corresponding graph. stable = true
          * means the graph has all eigenvalues with modulus < 1.
          */
-        private List<Boolean> stable = new ArrayList<>();
+        private final List<Boolean> stable = new ArrayList<>();
 
         /**
          * Gets the number of graphs stored by the class.
@@ -1064,7 +922,7 @@ public class Ling {
          * @return Returns the number of graphs stored in the class
          */
         public int getNumGraphs() {
-            return graphs.size();
+            return this.graphs.size();
         }
 
         /**
@@ -1072,7 +930,7 @@ public class Ling {
          * @return Returns a Graph
          */
         public Graph getGraph(int g) {
-            return graphs.get(g);
+            return this.graphs.get(g);
         }
 
         /**
@@ -1080,7 +938,7 @@ public class Ling {
          * @return Returns a DataSet
          */
         public DataSet getData(int d) {
-            return dataSet.get(d);
+            return this.dataSet.get(d);
         }
 
         /**
@@ -1088,7 +946,7 @@ public class Ling {
          * @return Returns the shriknig variable value for a specific graph.
          */
         public boolean isStable(int s) {
-            return stable.get(s);
+            return this.stable.get(s);
         }
 
         /**
@@ -1097,7 +955,7 @@ public class Ling {
          * @param g The graph to add
          */
         public void addGraph(Graph g) {
-            graphs.add(g);
+            this.graphs.add(g);
         }
 
         /**
@@ -1106,7 +964,7 @@ public class Ling {
          * @param d The graph to add
          */
         public void addData(DataSet d) {
-            dataSet.add(d);
+            this.dataSet.add(d);
         }
 
         /**
@@ -1116,7 +974,7 @@ public class Ling {
          * @param s The stability value to set for a graph.
          */
         public void addStable(Boolean s) {
-            stable.add(s);
+            this.stable.add(s);
         }
     }
 

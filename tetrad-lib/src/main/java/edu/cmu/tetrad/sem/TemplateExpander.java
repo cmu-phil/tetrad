@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,13 +39,13 @@ import java.util.regex.Pattern;
  * @author Joseph Ramsey
  */
 public class TemplateExpander {
-    private static TemplateExpander INSTANCE = new TemplateExpander();
+    private static final TemplateExpander INSTANCE = new TemplateExpander();
 
     private TemplateExpander() {
     }
 
     public static TemplateExpander getInstance() {
-        return INSTANCE;
+        return TemplateExpander.INSTANCE;
     }
 
     /**
@@ -89,6 +89,7 @@ public class TemplateExpander {
         template = replaceTemplateSums(semPm, template, node);
         template = replaceTemplateProducts(semPm, template, node);
         template = replaceNewParameters(semPm, template, usedNames);
+        assert semPm != null;
         template = replaceError(semPm, template, node);
 
         Node error = null;
@@ -117,11 +118,14 @@ public class TemplateExpander {
             }
         }
 
-        if (node != null && node != error && !template.contains(error.getName())) {
-            if (template.trim().equals("")) {
-                template = error.getName();
-            } else {
-                template += " + " + error.getName();
+        if (node != null && node != error) {
+            assert error != null;
+            if (!template.contains(error.getName())) {
+                if (template.trim().equals("")) {
+                    template = error.getName();
+                } else {
+                    template += " + " + error.getName();
+                }
             }
         }
 
@@ -181,10 +185,6 @@ public class TemplateExpander {
 
             String target = formula.substring(m.end() + 1, pos);
 
-//            if (!target.contains("$")) {
-//                throw new ParseException("Templating operators only apply to expressions containg $.", 0);
-//            }
-
             for (String _operator : templateOperators) {
                 if (operator.equals(_operator)) continue;
 
@@ -234,12 +234,12 @@ public class TemplateExpander {
         formula = formula.trim();
 
         if (formula.startsWith("+")) {
-            formula = formula.substring(1, formula.length());
+            formula = formula.substring(1);
             formula = formula.trim();
         }
 
         if (formula.startsWith("*")) {
-            formula = formula.substring(1, formula.length());
+            formula = formula.substring(1);
             formula = formula.trim();
         }
 
@@ -271,39 +271,39 @@ public class TemplateExpander {
                 boolean plusOrTimes = '+' == symbol || '*' == symbol;
                 boolean space = ' ' == symbol;
 
-                if (space) {
-                    // continue; // (last statement)
-                } else if (plusOrTimes) {
-                    if (operatorList.isEmpty()) {
-                        first = i;
-                    }
+                if (!space) {
+                    if (plusOrTimes) {
+                        if (operatorList.isEmpty()) {
+                            first = i;
+                        }
 
-                    operatorList.add(symbol);
-                } else {
-                    last = i - 1;
+                        operatorList.add(symbol);
+                    } else {
+                        last = i - 1;
 
-                    if (operatorList.size() > 1) {
-                        found = true;
-                        boolean allStar = true;
+                        if (operatorList.size() > 1) {
+                            found = true;
+                            boolean allStar = true;
 
-                        for (Character c : operatorList) {
-                            if (c != '*') {
-                                allStar = false;
-                                break;
+                            for (Character c : operatorList) {
+                                if (c != '*') {
+                                    allStar = false;
+                                    break;
+                                }
+                            }
+
+                            if (allStar) {
+                                formula = formula.substring(0, first - 1) + " * " +
+                                        formula.substring(last + 1);
+                            } else {
+                                formula = formula.substring(0, first - 1) + " + " +
+                                        formula.substring(last + 1);
                             }
                         }
 
-                        if (allStar) {
-                            formula = formula.substring(0, first - 1) + " * " +
-                                    formula.substring(last + 1, formula.length());
-                        } else {
-                            formula = formula.substring(0, first - 1) + " + " +
-                                    formula.substring(last + 1, formula.length());
-                        }
+                        operatorList.clear();
+                        continue WHILE;
                     }
-
-                    operatorList.clear();
-                    continue WHILE;
                 }
             }
         }
@@ -311,7 +311,7 @@ public class TemplateExpander {
     }
 
     private String replaceNewParameters(GeneralizedSemPm semPm, String formula, List<String> usedNames) {
-        String parameterPattern = "\\$|(([a-zA-Z]{1})([a-zA-Z0-9-_/]*))";
+        final String parameterPattern = "\\$|(([a-zA-Z]{1})([a-zA-Z0-9-_/]*))";
         Pattern p = Pattern.compile("NEW\\((" + parameterPattern + ")\\)");
 
         while (true) {
@@ -324,7 +324,7 @@ public class TemplateExpander {
             String group0 = Pattern.quote(m.group(0));
             String group1 = m.group(1);
 
-            String nextName = semPm.nextParameterName(group1, usedNames);
+            String nextName = semPm.nextParameterName(group1);
             formula = formula.replaceFirst(group0, nextName);
             usedNames.add(nextName);
         }
@@ -341,7 +341,7 @@ public class TemplateExpander {
             String group0 = Pattern.quote(m.group(0));
             String group1 = m.group(1);
 
-            String nextName = semPm.nextParameterName(group1, usedNames);
+            String nextName = semPm.nextParameterName(group1);
             formula = formula.replaceFirst(group0, nextName);
             usedNames.add(nextName);
         }

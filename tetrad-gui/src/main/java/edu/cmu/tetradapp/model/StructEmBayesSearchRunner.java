@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -141,7 +141,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
         this.bayesPm = bayesImWrapper.getBayesIm().getBayesPm();
 
         FactoredBayesStructuralEM estimator =
-                new FactoredBayesStructuralEM(dataSet, bayesPm);
+                new FactoredBayesStructuralEM(dataSet, this.bayesPm);
         this.dataSet = estimator.getDataSet();
 
         try {
@@ -171,15 +171,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
     }
 
     private void estimate(DataSet DataSet, BayesPm bayesPm) {
-        double thresh = 0.0001;
-
-        //        for (Iterator i = graph.getNodes().iterator(); i.hasNext();) {
-        //            Node node = (Node) i.next();
-        //            if (node.getNodeType() == NodeType.LATENT) {
-        //                throw new IllegalArgumentException("Estimation of Bayes IM's " +
-        //                        "with latents is not supported.");
-        //            }
-        //        }
+        final double thresh = 0.0001;
 
         try {
             FactoredBayesStructuralEM estimator =
@@ -206,33 +198,26 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-//        if (bayesPm == null) {
-//            throw new NullPointerException();
-//        }
-
-        if (estimatedBayesIm == null) {
+        if (this.estimatedBayesIm == null) {
             throw new NullPointerException();
         }
 
-        if (dataSet == null) {
+        if (this.dataSet == null) {
             throw new NullPointerException();
         }
     }
 
     public Graph getGraph() {
-        return estimatedBayesIm.getBayesPm().getDag();
+        return this.estimatedBayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -241,7 +226,7 @@ public class StructEmBayesSearchRunner implements SessionModel, GraphSource {
 
     private void log() {
         TetradLogger.getInstance().log("info", "EM-Estimated Bayes IM");
-        TetradLogger.getInstance().log("im", "" + estimatedBayesIm);
+        TetradLogger.getInstance().log("im", "" + this.estimatedBayesIm);
     }
 }
 

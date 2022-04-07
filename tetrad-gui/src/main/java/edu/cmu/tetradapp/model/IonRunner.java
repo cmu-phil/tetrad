@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.IonJoeModifications;
+import edu.cmu.tetrad.search.Ion2;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -46,7 +46,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class IonRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource, DoNotAddOldModel, IonInput {
+        implements IndTestProducer, DoNotAddOldModel, IonInput {
     static final long serialVersionUID = 23L;
     private List<Graph> graphs;
 
@@ -198,7 +198,7 @@ public class IonRunner extends AbstractAlgorithmRunner
     public void execute() {
         System.out.println("Executing.");
 
-        IonJoeModifications ion = new IonJoeModifications(getGraphs());
+        Ion2 ion = new Ion2(getGraphs());
 
         ion.setAdjacencySearch(getParams().getBoolean("pruneByAdjacencies", true));
         ion.setPathLengthSearch(getParams().getBoolean("pruneByPathLength", true));
@@ -246,20 +246,14 @@ public class IonRunner extends AbstractAlgorithmRunner
      * @return the names of the triple classifications. Coordinates with
      */
     public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
-//        names.add("Definite ColliderDiscovery");
-//        names.add("Definite Noncolliders");
-        return names;
+        return new ArrayList<>();
     }
 
     /**
      * @return the list of triples corresponding to <code>getTripleClassificationNames</code>.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-//        triplesList.add(DataGraphUtils.getDefiniteCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getDefiniteNoncollidersFromGraph(node, graph));
-        return triplesList;
+        return new ArrayList<>();
     }
 
     public boolean supportsKnowledge() {
@@ -272,11 +266,11 @@ public class IonRunner extends AbstractAlgorithmRunner
     }
 
     public List<Graph> getStoredGraphs() {
-        if (graphs == null) {
+        if (this.graphs == null) {
             return new ArrayList<>();
         }
 
-        return new ArrayList<>(graphs);
+        return new ArrayList<>(this.graphs);
     }
 }
 

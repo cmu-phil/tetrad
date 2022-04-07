@@ -29,7 +29,7 @@ public class DiscreteMixedBicScore implements ScoreWrapper {
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        final DiscreteMixedScore discreteMixedScore
+        DiscreteMixedScore discreteMixedScore
                 = new DiscreteMixedScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"));
         discreteMixedScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return discreteMixedScore;

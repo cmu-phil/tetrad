@@ -41,11 +41,11 @@ public class AnnotatedClass<T extends Annotation> implements Serializable {
     }
 
     public Class getClazz() {
-        return clazz;
+        return this.clazz;
     }
 
     public T getAnnotation() {
-        return annotation;
+        return this.annotation;
     }
 
 }

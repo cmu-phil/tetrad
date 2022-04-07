@@ -29,12 +29,12 @@ import static java.lang.Math.abs;
  */
 public class SpecialDataClark implements Simulation {
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private BayesPm pm;
     private BayesIm im;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
-    private List<BayesIm> ims = new ArrayList<>();
+    private final List<BayesIm> ims = new ArrayList<>();
 
     public SpecialDataClark(RandomGraph graph) {
         this.randomGraph = graph;
@@ -44,59 +44,59 @@ public class SpecialDataClark implements Simulation {
     public void createData(Parameters parameters, boolean newModel) {
 //        if (!newModel && !dataSets.isEmpty()) return;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt("numRuns"); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean("differentGraphs") && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
 
     @Override
     public Graph getTrueGraph(int index) {
-        if (graphs.isEmpty()) {
+        if (this.graphs.isEmpty()) {
             return new EdgeListGraph();
         } else {
-            return graphs.get(index);
+            return this.graphs.get(index);
         }
     }
 
     @Override
     public String getDescription() {
-        return "Bayes net simulation using " + randomGraph.getDescription();
+        return "Bayes net simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 
-        if (!(randomGraph instanceof SingleGraph)) {
-            parameters.addAll(randomGraph.getParameters());
+        if (!(this.randomGraph instanceof SingleGraph)) {
+            parameters.addAll(this.randomGraph.getParameters());
         }
 
-        if (pm == null) {
+        if (this.pm == null) {
             parameters.addAll(BayesPm.getParameterNames());
         }
 
-        if (im == null) {
+        if (this.im == null) {
             parameters.addAll(MlBayesIm.getParameterNames());
         }
 
@@ -108,7 +108,7 @@ public class SpecialDataClark implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -38,7 +38,7 @@ class DiscDetIndepParamsEditor extends JComponent {
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private final Parameters params;
 
     /**
      * A text field to allow the user to enter the number of dishes to
@@ -59,29 +59,25 @@ class DiscDetIndepParamsEditor extends JComponent {
         this.params = params;
 
         // set up text and ties them to the parameters object being edited.
-        alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 5,
+        this.alphaField = new DoubleTextField(params.getDouble("alpha", 0.001), 5,
                 NumberFormatUtil.getInstance().getNumberFormat());
 
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    params().set("alpha", 0.001);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        this.alphaField.setFilter((value, oldValue) -> {
+            try {
+                params().set("alpha", 0.001);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
-        depthField = new IntTextField(params.getInt("depth", -1), 5);
-        depthField.setFilter(new IntTextField.Filter() {
-            public int filter(int value, int oldValue) {
-                try {
-                    params().set("depth", value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        this.depthField = new IntTextField(params.getInt("depth", -1), 5);
+        this.depthField.setFilter((value, oldValue) -> {
+            try {
+                params().set("depth", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
@@ -96,18 +92,18 @@ class DiscDetIndepParamsEditor extends JComponent {
     private void buildGui() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        if (alphaField != null) {
+        if (this.alphaField != null) {
             Box b1 = Box.createHorizontalBox();
             b1.add(new JLabel("Alpha:"));
             b1.add(Box.createHorizontalGlue());
-            b1.add(alphaField);
+            b1.add(this.alphaField);
             add(b1);
         }
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Depth:"));
         b2.add(Box.createHorizontalGlue());
-        b2.add(depthField);
+        b2.add(this.depthField);
         add(b2);
 
         add(Box.createHorizontalGlue());
@@ -118,7 +114,7 @@ class DiscDetIndepParamsEditor extends JComponent {
      * public, but it is needed so that the textfields can edit the model.)
      */
     private Parameters params() {
-        return params;
+        return this.params;
     }
 }
 

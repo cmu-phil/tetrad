@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -64,20 +64,20 @@ public class SepsetsTeyssier implements SepsetProducer {
     }
 
     private List<Node> getSepsetGreedy(Node i, Node k) {
-        if (extraSepsets != null) {
-            final List<Node> v = extraSepsets.get(i, k);
+        if (this.extraSepsets != null) {
+            List<Node> v = this.extraSepsets.get(i, k);
 
             if (v != null) {
                 return v;
             }
         }
 
-        List<Node> adji = graph.getAdjacentNodes(i);
-        List<Node> adjk = graph.getAdjacentNodes(k);
+        List<Node> adji = this.graph.getAdjacentNodes(i);
+        List<Node> adjk = this.graph.getAdjacentNodes(k);
         adji.remove(k);
         adjk.remove(i);
 
-        for (int d = 0; d <= Math.min((sepsetsDepth == -1 ? 1000 : sepsetsDepth), Math.max(adji.size(), adjk.size())); d++) {
+        for (int d = 0; d <= Math.min((this.sepsetsDepth == -1 ? 1000 : this.sepsetsDepth), Math.max(adji.size(), adjk.size())); d++) {
             if (d <= adji.size()) {
                 ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
@@ -114,8 +114,8 @@ public class SepsetsTeyssier implements SepsetProducer {
         nodes.add(a);
         nodes.add(b);
         nodes.addAll(c);
-        scorer.score(nodes);
-        return !scorer.adjacent(a, b);
+        this.scorer.score(nodes);
+        return !this.scorer.adjacent(a, b);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class SepsetsTeyssier implements SepsetProducer {
 
     @Override
     public List<Node> getVariables() {
-        return scorer.getPi();
+        return this.scorer.getPi();
     }
 
     @Override
@@ -138,7 +138,7 @@ public class SepsetsTeyssier implements SepsetProducer {
     }
 
     public Graph getDag() {
-        return scorer.getGraph(false);
+        return this.scorer.getGraph(false);
     }
 }
 

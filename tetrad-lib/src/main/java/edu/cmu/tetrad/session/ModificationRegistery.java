@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -58,29 +58,29 @@ public final class ModificationRegistery {
             editor = ((DelegatesEditing) editor).getEditDelegate();
         }
 
-        EDITORS_TO_SESSION_NODES.put(editor, sessionNode);
+        ModificationRegistery.EDITORS_TO_SESSION_NODES.put(editor, sessionNode);
 
         PropertyChangeListener listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("modelChanged".equals(evt.getPropertyName())) {
                     JComponent editor = (JComponent) evt.getSource();
-                    Object sessionNode = EDITORS_TO_SESSION_NODES.get(editor);
+                    Object sessionNode = ModificationRegistery.EDITORS_TO_SESSION_NODES.get(editor);
                     if (sessionNode != null) {
-                        EDITED_MODELS.add(sessionNode);
+                        ModificationRegistery.EDITED_MODELS.add(sessionNode);
                     }
                 }
             }
         };
 
         editor.addPropertyChangeListener(listener);
-        EDITORS_TO_LISTENERS.put(editor, listener);
+        ModificationRegistery.EDITORS_TO_LISTENERS.put(editor, listener);
     }
 
     /**
      * @return true if an editor has registered that model has changed.
      */
     public static boolean modelHasChanged(SessionNode sessionNode) {
-        return EDITED_MODELS.contains(sessionNode);
+        return ModificationRegistery.EDITED_MODELS.contains(sessionNode);
     }
 
     public static void unregisterEditor(JComponent editor) {
@@ -88,11 +88,11 @@ public final class ModificationRegistery {
             editor = ((DelegatesEditing) editor).getEditDelegate();
         }
 
-        EDITORS_TO_SESSION_NODES.remove(editor);
+        ModificationRegistery.EDITORS_TO_SESSION_NODES.remove(editor);
         PropertyChangeListener listener =
-                EDITORS_TO_LISTENERS.get(editor);
+                ModificationRegistery.EDITORS_TO_LISTENERS.get(editor);
         editor.removePropertyChangeListener(listener);
-        EDITORS_TO_LISTENERS.remove(editor);
+        ModificationRegistery.EDITORS_TO_LISTENERS.remove(editor);
     }
 
     /**
@@ -100,7 +100,7 @@ public final class ModificationRegistery {
      * changes have been made.
      */
     public static void unregisterSessionNode(SessionNode sessionNode) {
-        EDITED_MODELS.remove(sessionNode);
+        ModificationRegistery.EDITED_MODELS.remove(sessionNode);
     }
 }
 

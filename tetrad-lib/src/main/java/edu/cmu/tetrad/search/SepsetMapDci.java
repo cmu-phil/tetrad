@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -54,7 +54,7 @@ public final class SepsetMapDci {
     private Map<Set<Node>, List<List<Node>>> sepsetSets =
             new HashMap<>();
 
-    private Map<Node, LinkedHashSet<Node>> parents = new HashMap<>();
+    private final Map<Node, LinkedHashSet<Node>> parents = new HashMap<>();
 
     //=============================CONSTRUCTORS===========================//
 
@@ -82,19 +82,19 @@ public final class SepsetMapDci {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
-        if (sepsets.get(pair) == null) {
-            sepsets.put(pair, z);
+        if (this.sepsets.get(pair) == null) {
+            this.sepsets.put(pair, z);
         } else {
-            List<Node> newSet = new ArrayList<>(sepsets.get(pair));
+            List<Node> newSet = new ArrayList<>(this.sepsets.get(pair));
             newSet.addAll(z);
-            sepsets.put(pair, newSet);
+            this.sepsets.put(pair, newSet);
         }
-        if (sepsetSets.containsKey(pair)) {
-            sepsetSets.get(pair).add(new ArrayList<>(z));
+        if (this.sepsetSets.containsKey(pair)) {
+            this.sepsetSets.get(pair).add(new ArrayList<>(z));
         } else {
             List<List<Node>> condSets = new ArrayList<>();
             condSets.add(new ArrayList<>(z));
-            sepsetSets.put(pair, condSets);
+            this.sepsetSets.put(pair, condSets);
         }
     }
 
@@ -106,7 +106,7 @@ public final class SepsetMapDci {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
-        return sepsets.get(pair);
+        return this.sepsets.get(pair);
     }
 
     /**
@@ -117,23 +117,23 @@ public final class SepsetMapDci {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
-        return sepsetSets.get(pair);
+        return this.sepsetSets.get(pair);
     }
 
     public void set(Node x, LinkedHashSet<Node> z) {
-        if (parents.get(x) != null) {
-            parents.get(x).addAll(z);
+        if (this.parents.get(x) != null) {
+            this.parents.get(x).addAll(z);
         } else {
-            parents.put(x, z);
+            this.parents.put(x, z);
         }
     }
 
     public LinkedHashSet<Node> get(Node x) {
-        return parents.get(x) == null ? new LinkedHashSet<Node>() : parents.get(x);
+        return this.parents.get(x) == null ? new LinkedHashSet<>() : this.parents.get(x);
     }
 
     public Set<Set<Node>> getSeparatedPairs() {
-        return sepsets.keySet();
+        return this.sepsets.keySet();
     }
 
     public boolean equals(Object o) {
@@ -142,7 +142,7 @@ public final class SepsetMapDci {
         }
 
         SepsetMapDci _sepset = (SepsetMapDci) o;
-        return sepsets.equals(_sepset.sepsets) && sepsetSets.equals(_sepset.sepsetSets);
+        return this.sepsets.equals(_sepset.sepsets) && this.sepsetSets.equals(_sepset.sepsetSets);
     }
 
 
@@ -156,24 +156,22 @@ public final class SepsetMapDci {
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (sepsets == null) {
+        if (this.sepsets == null) {
             throw new NullPointerException();
         }
     }
 
     public int size() {
-        return sepsets.keySet().size();
+        return this.sepsets.keySet().size();
     }
 
     public String toString() {
-        return sepsets.toString() + "\n" + sepsetSets.toString();
+        return this.sepsets.toString() + "\n" + this.sepsetSets.toString();
     }
 }
 

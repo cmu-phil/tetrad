@@ -32,19 +32,19 @@ public class HsimEvalFromData {
         System.out.println("Beginning Evaluation");
         String nl = System.lineSeparator();
         String output = "Simulation edu.cmu.tetrad.study output comparing Fsim and Hsim on predicting graph discovery accuracy" + nl;
-        int iterations = 100;
+        final int iterations = 100;
 
         int vars = 20;
         int cases = 500;
         int edgeratio = 3;
 
-        List<Integer> hsimRepeat = Arrays.asList(40);
-        List<Integer> fsimRepeat = Arrays.asList(40);
+        List<Integer> hsimRepeat = Collections.singletonList(40);
+        List<Integer> fsimRepeat = Collections.singletonList(40);
 
         List<PRAOerrors>[] fsimErrsByPars = new ArrayList[fsimRepeat.size()];
         int whichFrepeat = 0;
         for (int frepeat : fsimRepeat) {
-            fsimErrsByPars[whichFrepeat] = new ArrayList<PRAOerrors>();
+            fsimErrsByPars[whichFrepeat] = new ArrayList<>();
             whichFrepeat++;
         }
         List<PRAOerrors>[][] hsimErrsByPars = new ArrayList[1][hsimRepeat.size()];
@@ -53,7 +53,7 @@ public class HsimEvalFromData {
         whichHrepeat = 0;
         for (int hrepeat : hsimRepeat) {
             //System.out.println(whichrsize+" "+whichHrepeat);
-            hsimErrsByPars[0][whichHrepeat] = new ArrayList<PRAOerrors>();
+            hsimErrsByPars[0][whichHrepeat] = new ArrayList<>();
             whichHrepeat++;
         }
 
@@ -66,7 +66,7 @@ public class HsimEvalFromData {
                 Graph graph1 = GraphUtils.loadGraphTxt(new File("graph/graph.1.txt"));
                 Dag odag = new Dag(graph1);
 
-                Set<String> eVars = new HashSet<String>();
+                Set<String> eVars = new HashSet<>();
                 eVars.add("MULT");
                 Path dataFile = Paths.get("data/data.1.txt");
 
@@ -87,14 +87,11 @@ public class HsimEvalFromData {
 
                 //**then step 1: full resim. iterate through the combinations of estimator parameters (just repeat num)
                 for (whichFrepeat = 0; whichFrepeat < fsimRepeat.size(); whichFrepeat++) {
-                    ArrayList<PRAOerrors> errorsList = new ArrayList<PRAOerrors>();
+                    ArrayList<PRAOerrors> errorsList = new ArrayList<>();
                     for (int r = 0; r < fsimRepeat.get(whichFrepeat); r++) {
                         Graph fgsDag = SearchGraphUtils.dagFromCPDAG(oFGSGraph);
                         Dag fgsdag2 = new Dag(fgsDag);
                         //then fit an IM to this dag and the data. GeneralizedSemEstimator seems to bug out
-                        //GeneralizedSemPm simSemPm = new GeneralizedSemPm(fgsdag2);
-                        //GeneralizedSemEstimator gsemEstimator = new GeneralizedSemEstimator();
-                        //GeneralizedSemIm fittedIM = gsemEstimator.estimate(simSemPm, oData);
 
                         SemPm simSemPm = new SemPm(fgsdag2);
                         //BayesPm simBayesPm = new BayesPm(fgsdag2, bayesPm);
@@ -150,13 +147,13 @@ public class HsimEvalFromData {
             //Average the squared errors for each set of fsim/hsim params across all iterations
             PRAOerrors[] fMSE = new PRAOerrors[fsimRepeat.size()];
             PRAOerrors[][] hMSE = new PRAOerrors[1][hsimRepeat.size()];
-            String[][] latexTableArray = new String[1 * hsimRepeat.size() + fsimRepeat.size()][5];
+            String[][] latexTableArray = new String[hsimRepeat.size() + fsimRepeat.size()][5];
             for (int j = 0; j < fMSE.length; j++) {
                 fMSE[j] = new PRAOerrors(fsimErrsByPars[j], "MSE for Fsim at vars=" + vars + " edgeratio=" + edgeratio
                         + " cases=" + cases + " frepeat=" + fsimRepeat.get(j) + " iterations=" + iterations);
                 //if(verbosity>0){System.out.println(fMSE[j].allToString());}
                 output = output + fMSE[j].allToString() + nl;
-                latexTableArray[j] = prelimToPRAOtable(fMSE[j]);
+                latexTableArray[j] = HsimEvalFromData.prelimToPRAOtable(fMSE[j]);
             }
             for (int j = 0; j < hMSE.length; j++) {
                 for (int k = 0; k < hMSE[j].length; k++) {
@@ -164,7 +161,7 @@ public class HsimEvalFromData {
                             + " cases=" + cases + " rsize=" + 1 + " repeat=" + hsimRepeat.get(k) + " iterations=" + iterations);
                     //if(verbosity>0){System.out.println(hMSE[j][k].allToString());}
                     output = output + hMSE[j][k].allToString() + nl;
-                    latexTableArray[fsimRepeat.size() + j * hMSE[j].length + k] = prelimToPRAOtable(hMSE[j][k]);
+                    latexTableArray[fsimRepeat.size() + j * hMSE[j].length + k] = HsimEvalFromData.prelimToPRAOtable(hMSE[j][k]);
                 }
             }
             //record all the params, the base error values, and the fsim/hsim mean squared errors
@@ -191,9 +188,7 @@ public class HsimEvalFromData {
         double[] values = input.toArray();
         String[] vStrings = HsimUtils.formatErrorsArray(values, "%7.4e");
         output[0] = input.getName();
-        for (int i = 1; i < output.length; i++) {
-            output[i] = vStrings[i - 1];
-        }
+        System.arraycopy(vStrings, 0, output, 1, output.length - 1);
         return output;
     }
 }

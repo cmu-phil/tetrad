@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -57,9 +57,8 @@ public final class CPDAGFitModel implements SessionModel {
     private List<BayesIm> bayesIms;
     private List<BayesPm> bayesPms;
     private List<Graph> referenceGraphs;
-    private DataModelList dataModelList;
+    private final DataModelList dataModelList;
     private List<SemPm> semPms;
-    private List<SemIm> semIms;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -84,20 +83,20 @@ public final class CPDAGFitModel implements SessionModel {
             throw new IllegalArgumentException("Sorry, I was expecting the same number of data sets as result graphs.");
         }
 
-        if (((DataSet) dataModels.get(0)).isDiscrete()) {
-            bayesPms = new ArrayList<>();
-            bayesIms = new ArrayList<>();
+        if (dataModels.get(0).isDiscrete()) {
+            this.bayesPms = new ArrayList<>();
+            this.bayesIms = new ArrayList<>();
 
             for (int i = 0; i < dataModels.size(); i++) {
                 DataSet dataSet = (DataSet) dataModels.get(0);
                 Graph dag = SearchGraphUtils.dagFromCPDAG(graphs.get(0));
                 BayesPm pm = new BayesPmWrapper(dag, new DataWrapper(dataSet)).getBayesPm();
-                bayesPms.add(pm);
-                bayesIms.add(estimate(dataSet, pm));
+                this.bayesPms.add(pm);
+                this.bayesIms.add(estimate(dataSet, pm));
             }
-        } else if (((DataSet) dataModels.get(0)).isContinuous()) {
-            semPms = new ArrayList<>();
-            semIms = new ArrayList<>();
+        } else if (dataModels.get(0).isContinuous()) {
+            this.semPms = new ArrayList<>();
+            List<SemIm> semIms = new ArrayList<>();
 
             for (int i = 0; i < dataModels.size(); i++) {
                 DataSet dataSet = (DataSet) dataModels.get(0);
@@ -105,7 +104,7 @@ public final class CPDAGFitModel implements SessionModel {
 
                 try {
                     SemPm pm = new SemPm(dag);
-                    semPms.add(pm);
+                    this.semPms.add(pm);
                     semIms.add(estimate(dataSet, pm));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -116,7 +115,7 @@ public final class CPDAGFitModel implements SessionModel {
                     SemGraph graph = new SemGraph(mag);
                     graph.setShowErrorTerms(false);
                     SemPm pm = new SemPm(graph);
-                    semPms.add(pm);
+                    this.semPms.add(pm);
                     semIms.add(estimatePag(dataSet, pm));
                 }
             }
@@ -202,7 +201,7 @@ public final class CPDAGFitModel implements SessionModel {
     //==============================PUBLIC METHODS========================//
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -210,7 +209,7 @@ public final class CPDAGFitModel implements SessionModel {
     }
 
     public BayesIm getBayesIm(int i) {
-        return bayesIms.get(i);
+        return this.bayesIms.get(i);
     }
 
     /**
@@ -222,9 +221,6 @@ public final class CPDAGFitModel implements SessionModel {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -232,27 +228,27 @@ public final class CPDAGFitModel implements SessionModel {
     }
 
     public List<Graph> getReferenceGraphs() {
-        return referenceGraphs;
+        return this.referenceGraphs;
     }
 
     public List<BayesIm> getBayesIms() {
-        return bayesIms;
+        return this.bayesIms;
     }
 
     public DataModelList getDataModelList() {
-        return dataModelList;
+        return this.dataModelList;
     }
 
     public List<BayesPm> getBayesPms() {
-        return bayesPms;
+        return this.bayesPms;
     }
 
     public List<SemPm> getSemPms() {
-        return semPms;
+        return this.semPms;
     }
 
     public Parameters getParams() {
-        return parameters;
+        return this.parameters;
     }
 }
 

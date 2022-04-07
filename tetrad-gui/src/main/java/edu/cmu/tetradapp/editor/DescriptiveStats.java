@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,8 +21,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import cern.jet.random.Normal;
-import cern.jet.random.engine.MersenneTwister;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
@@ -74,9 +72,9 @@ class DescriptiveStats {
 
         StringBuilder b = new StringBuilder();
 
-        b.append("Descriptive Statistics for: " + variable.getName() + "\n\n");
+        b.append("Descriptive Statistics for: ").append(variable.getName()).append("\n\n");
 
-        double[] normalValues = normalParams(data);
+        double[] normalValues = DescriptiveStats.normalParams(data);
         TextTable table;
 
         if (continuous) {
@@ -107,10 +105,10 @@ class DescriptiveStats {
 
 
         if (continuous) {
-            double[] median = median(data);
+            double[] median = DescriptiveStats.median(data);
 
             table.setToken(rowindex, 0, "SE Mean:");
-            table.setToken(rowindex++, 1, nf.format(standardErrorMean(normalValues[1], dataSet.getNumRows())));
+            table.setToken(rowindex++, 1, nf.format(DescriptiveStats.standardErrorMean(normalValues[1], dataSet.getNumRows())));
 
             table.setToken(rowindex, 0, "Median:");
             table.setToken(rowindex++, 1, nf.format(median[0]));
@@ -119,7 +117,7 @@ class DescriptiveStats {
             table.setToken(rowindex++, 1, nf.format(median[1]));
 
             table.setToken(rowindex, 0, "Maximum:");
-            table.setToken(rowindex++, 1, nf.format(median[2]));
+            table.setToken(rowindex, 1, nf.format(median[2]));
         }
 
         b.append(table);
@@ -133,7 +131,7 @@ class DescriptiveStats {
     private static double[] median(double[] data) {
         Arrays.sort(data);
 
-        double result[] = new double[3];
+        double[] result = new double[3];
 
         result[1] = data[0];
         result[2] = data[data.length - 1];
@@ -141,28 +139,13 @@ class DescriptiveStats {
         if (data.length % 2 == 1) //dataset is odd, finding middle value is easy
         {
             result[0] = data[data.length / 2];
-            return result;
         } else {
             //average the two middle values
             double firstValue = data[data.length / 2];
             double secondValue = data[data.length / 2 - 1];
             result[0] = (firstValue + secondValue) / 2;
-            return result;
         }
-    }
-
-    /**
-     * Generates an ideal Normal distribution for some variable.
-     *
-     * @return Ideal Normal distribution for a variable.
-     */
-
-    public static Normal getNormal(double[] data) {
-        double[] paramsForNormal = normalParams(data);
-        double mean = paramsForNormal[0];
-        double sd = paramsForNormal[1];
-
-        return new Normal(mean, sd, new MersenneTwister());
+        return result;
     }
 
     private static double standardErrorMean(double stdDev, double sampleSize) {
@@ -180,20 +163,20 @@ class DescriptiveStats {
         double sd = 0.0;
 
         //calculate the mean
-        for (int i = 0; i < data.length; i++) {
-            mean += data[i];
+        for (double datum : data) {
+            mean += datum;
         }
 
         mean /= data.length;
 
         //calculate the standard deviation
-        for (int i = 0; i < data.length; i++) {
-            sd += (data[i] - mean) * (data[i] - mean);
+        for (double datum : data) {
+            sd += (datum - mean) * (datum - mean);
         }
 
         sd /= data.length - 1.0;
 
-        double result[] = new double[3];
+        double[] result = new double[3];
         result[2] = sd; //this is still the variance at this point
         sd = Math.sqrt(sd);
 

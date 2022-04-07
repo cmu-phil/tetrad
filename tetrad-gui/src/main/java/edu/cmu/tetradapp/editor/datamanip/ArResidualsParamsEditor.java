@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,8 +26,6 @@ import edu.cmu.tetradapp.editor.ParameterEditor;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 
 /**
@@ -52,7 +50,6 @@ public class ArResidualsParamsEditor extends JPanel implements ParameterEditor {
     /**
      * Sets the parameters.
      *
-     * @param params
      */
     public void setParams(Parameters params) {
         this.params = params;
@@ -74,11 +71,9 @@ public class ArResidualsParamsEditor extends JPanel implements ParameterEditor {
         JSpinner jSpinner = new JSpinner(model);
         jSpinner.setPreferredSize(jSpinner.getPreferredSize());
 
-        model.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
-                params.set("numTimeLags", model.getNumber().intValue());
-            }
+        model.addChangeListener(e -> {
+            SpinnerNumberModel model1 = (SpinnerNumberModel) e.getSource();
+            ArResidualsParamsEditor.this.params.set("numTimeLags", model1.getNumber().intValue());
         });
 
         Box b1 = Box.createHorizontalBox();

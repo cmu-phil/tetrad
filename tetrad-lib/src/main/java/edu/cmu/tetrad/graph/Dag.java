@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -65,7 +65,7 @@ public final class Dag implements Graph {
     private boolean pag;
     private boolean CPDAG;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //===============================CONSTRUCTORS=======================//
 
@@ -137,10 +137,10 @@ public final class Dag implements Graph {
         Node _node1 = Edges.getDirectedEdgeTail(edge);
         Node _node2 = Edges.getDirectedEdgeHead(edge);
 
-        int i = dpathNodes.indexOf(_node1);
-        int j = dpathNodes.indexOf(_node2);
+        int i = this.dpathNodes.indexOf(_node1);
+        int j = this.dpathNodes.indexOf(_node2);
 
-        if (dpath[j][i] == 1) {
+        if (this.dpath[j][i] == 1) {
             return false;
         }
 
@@ -227,22 +227,12 @@ public final class Dag implements Graph {
     }
 
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-//        resetDPath();
-//        reconstituteDpath();
-
-//        node1 = graph.getNode(node1.getNode());
-//        node2 = graph.getNode(node2.getNode());
-
-        //System.out.println(MatrixUtils.toString(dpath));
 
 
-        int index1 = nodesHash.get(node1);
-        int index2 = nodesHash.get(node2);
+        int index1 = this.nodesHash.get(node1);
+        int index2 = this.nodesHash.get(node2);
 
-//        int index1 = dpathNodes.indexOf(node1);
-//        int index2 = dpathNodes.indexOf(node2);
-
-        return dpath[index1][index2] == 1;
+        return this.dpath[index1][index2] == 1;
     }
 
     @Override
@@ -401,7 +391,7 @@ public final class Dag implements Graph {
 
     @Override
     public void setNodes(List<Node> nodes) {
-        graph.setNodes(nodes);
+        this.graph.setNodes(nodes);
     }
 
     public boolean isAdjacentTo(Node nodeX, Node nodeY) {
@@ -541,49 +531,49 @@ public final class Dag implements Graph {
     }
 
     private void resetDPath() {
-        dpath = null;
+        this.dpath = null;
         dpathNewEdges().clear();
         dpathNewEdges().addAll(getEdges());
     }
 
     private void reconstituteDpath() {
-        if (dpath == null) {
-            dpathNodes = getNodes();
-            int numNodes = dpathNodes.size();
-            dpath = new byte[numNodes][numNodes];
+        if (this.dpath == null) {
+            this.dpathNodes = getNodes();
+            int numNodes = this.dpathNodes.size();
+            this.dpath = new byte[numNodes][numNodes];
         }
 
         while (!dpathNewEdges().isEmpty()) {
             Edge edge = dpathNewEdges().removeFirst();
             Node _node1 = Edges.getDirectedEdgeTail(edge);
             Node _node2 = Edges.getDirectedEdgeHead(edge);
-            int i = dpathNodes.indexOf(_node1);
-            int j = dpathNodes.indexOf(_node2);
+            int i = this.dpathNodes.indexOf(_node1);
+            int j = this.dpathNodes.indexOf(_node2);
             adjustDPath(i, j);
         }
 
-        nodesHash = new HashMap<>();
+        this.nodesHash = new HashMap<>();
 
-        for (int i = 0; i < dpathNodes.size(); i++) {
-            nodesHash.put(dpathNodes.get(i), i);
+        for (int i = 0; i < this.dpathNodes.size(); i++) {
+            this.nodesHash.put(this.dpathNodes.get(i), i);
         }
     }
 
     private void adjustDPath(int i, int j) {
-        dpath[i][j] = 1;
+        this.dpath[i][j] = 1;
 
-        for (int k = 0; k < dpathNodes.size(); k++) {
-            if (dpath[k][i] == 1) {
-                dpath[k][j] = 1;
+        for (int k = 0; k < this.dpathNodes.size(); k++) {
+            if (this.dpath[k][i] == 1) {
+                this.dpath[k][j] = 1;
             }
 
-            if (dpath[j][k] == 1) {
-                dpath[i][k] = 1;
+            if (this.dpath[j][k] == 1) {
+                this.dpath[i][k] = 1;
             }
         }
     }
 
-    public final void transferNodesAndEdges(Graph graph)
+    public void transferNodesAndEdges(Graph graph)
             throws IllegalArgumentException {
         this.getGraph().transferNodesAndEdges(graph);
         for (Node node : this.getGraph().getNodes()) {
@@ -591,7 +581,7 @@ public final class Dag implements Graph {
         }
     }
 
-    public final void transferAttributes(Graph graph)
+    public void transferAttributes(Graph graph)
             throws IllegalArgumentException {
         this.getGraph().transferAttributes(graph);
     }
@@ -677,10 +667,10 @@ public final class Dag implements Graph {
     }
 
     private LinkedList<Edge> dpathNewEdges() {
-        if (dpathNewEdges == null) {
-            dpathNewEdges = new LinkedList<>();
+        if (this.dpathNewEdges == null) {
+            this.dpathNewEdges = new LinkedList<>();
         }
-        return dpathNewEdges;
+        return this.dpathNewEdges;
     }
 
     /**
@@ -703,7 +693,7 @@ public final class Dag implements Graph {
     }
 
     private Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
     @Override
@@ -718,7 +708,7 @@ public final class Dag implements Graph {
 
     @Override
     public boolean isPag() {
-        return pag;
+        return this.pag;
     }
 
     @Override
@@ -728,7 +718,7 @@ public final class Dag implements Graph {
 
     @Override
     public boolean isCPDAG() {
-        return CPDAG;
+        return this.CPDAG;
     }
 
     @Override
@@ -738,22 +728,22 @@ public final class Dag implements Graph {
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
     public Object getAttribute(String key) {
-        return attributes.get(key);
+        return this.attributes.get(key);
     }
 
     @Override
     public void removeAttribute(String key) {
-        attributes.remove(key);
+        this.attributes.remove(key);
     }
 
     @Override
     public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+        this.attributes.put(key, value);
     }
 }
 

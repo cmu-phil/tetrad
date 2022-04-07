@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -55,15 +55,15 @@ public class EdgewiseComparisonEditor extends JPanel {
     private void setup() {
         setLayout(new BorderLayout());
 
-        List<Graph> referenceGraphs = comparison.getReferenceGraphs();
-        JTabbedPane pane = new JTabbedPane(JTabbedPane.LEFT);
+        List<Graph> referenceGraphs = this.comparison.getReferenceGraphs();
+        JTabbedPane pane = new JTabbedPane(SwingConstants.LEFT);
 
         for (int i = 0; i < referenceGraphs.size(); i++) {
-            JTabbedPane pane2 = new JTabbedPane(JTabbedPane.TOP);
-            String compareString = comparison.getComparisonString(i);
+            JTabbedPane pane2 = new JTabbedPane(SwingConstants.TOP);
+            String compareString = this.comparison.getComparisonString(i);
 
             Font font = new Font("Monospaced", Font.PLAIN, 14);
-            final JTextArea textPane = new JTextArea();
+            JTextArea textPane = new JTextArea();
             textPane.setText(compareString);
 
             textPane.setFont(font);
@@ -73,7 +73,7 @@ public class EdgewiseComparisonEditor extends JPanel {
 
             pane2.add("Comparison", scrollTextPane);
 
-            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i)));
+            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getTargetGraphs().get(i)));
             graphEditor.enableEditing(false);
 
             JScrollPane scrollTargetGraph = new JScrollPane(graphEditor.getWorkbench());
@@ -81,7 +81,7 @@ public class EdgewiseComparisonEditor extends JPanel {
 
             pane2.add("Target Graph", scrollTargetGraph);
 
-            graphEditor = new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i)));
+            graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getReferenceGraphs().get(i)));
             graphEditor.enableEditing(false);
 
             JScrollPane scrollTrueGraph = new JScrollPane(graphEditor.getWorkbench());

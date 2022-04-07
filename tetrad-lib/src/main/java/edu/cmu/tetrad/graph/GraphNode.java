@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -20,8 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.TetradSerializable;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -36,7 +34,7 @@ import java.util.Map;
  * @author Joseph Ramsey
  * @author Willie Wheeler
  */
-public class GraphNode implements Node, TetradSerializable {
+public class GraphNode implements Node {
 
     static final long serialVersionUID = 23L;
 
@@ -80,7 +78,7 @@ public class GraphNode implements Node, TetradSerializable {
      */
     private transient PropertyChangeSupport pcs;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS==========================//
 
@@ -122,7 +120,7 @@ public class GraphNode implements Node, TetradSerializable {
      * @see edu.cmu.tetrad.graph.NodeType
      */
     public final NodeType getNodeType() {
-        return nodeType;
+        return this.nodeType;
     }
 
     /**
@@ -145,10 +143,6 @@ public class GraphNode implements Node, TetradSerializable {
             throw new NullPointerException("Name must not be null.");
         }
 
-//        if (!NamingProtocol.isLegalName(name)) {
-//            throw new IllegalArgumentException(
-//                    NamingProtocol.getProtocolDescription() + ": " + name);
-//        }
         String oldName = this.name;
         this.name = name;
         getPcs().firePropertyChange("name", oldName, this.name);
@@ -212,19 +206,16 @@ public class GraphNode implements Node, TetradSerializable {
      * @return the name of the node as its string representation.
      */
     public String toString() {
-        return name;
+        return this.name;
     }
 
     public int hashCode() {
         if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
             return super.hashCode();
         } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            return getName().hashCode();
+            return this.getName().hashCode();
         }
 
-//        return 17 * getNode().hashCode() + 19 * getNodeType().hashCode();
-//        return 17 * getNode().hashCode();
-//        return getNode().hashCode();
         throw new IllegalArgumentException();
     }
 
@@ -257,19 +248,16 @@ public class GraphNode implements Node, TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (name == null) {
+        if (this.name == null) {
             throw new NullPointerException();
         }
 
-        if (nodeType == null) {
+        if (this.nodeType == null) {
             throw new NullPointerException();
         }
     }
@@ -279,12 +267,12 @@ public class GraphNode implements Node, TetradSerializable {
         String node1 = getName();
         String node2 = node.getName();
 
-        boolean isAlpha1 = ALPHA.matcher(node1).matches();
-        boolean isAlpha2 = ALPHA.matcher(node2).matches();
-        boolean isAlphaNum1 = ALPHA_NUM.matcher(node1).matches();
-        boolean isAlphaNum2 = ALPHA_NUM.matcher(node2).matches();
-        boolean isLag1 = LAG.matcher(node1).matches();
-        boolean isLag2 = LAG.matcher(node2).matches();
+        boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
+        boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
+        boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
+        boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
+        boolean isLag1 = Node.LAG.matcher(node1).matches();
+        boolean isLag2 = Node.LAG.matcher(node2).matches();
 
         if (isAlpha1) {
             if (isLag2) {
@@ -339,22 +327,22 @@ public class GraphNode implements Node, TetradSerializable {
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
     public Object getAttribute(String key) {
-        return attributes.get(key);
+        return this.attributes.get(key);
     }
 
     @Override
     public void removeAttribute(String key) {
-        attributes.remove(key);
+        this.attributes.remove(key);
     }
 
     @Override
     public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+        this.attributes.put(key, value);
     }
 
 }

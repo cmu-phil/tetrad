@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,7 +40,7 @@ import java.util.List;
 public class IndTestModel implements SessionModel {
     static final long serialVersionUID = 23L;
 
-    private List<IndTestProducer> indTestProducers;
+    private final List<IndTestProducer> indTestProducers;
     private String name = "";
     private LinkedList<String> vars = new LinkedList<>();
     private List<List<IndependenceResult>> results;
@@ -55,15 +56,13 @@ public class IndTestModel implements SessionModel {
 
 
     public IndTestModel(IndTestProducer[] producers, Parameters parameters) {
-        indTestProducers = new ArrayList<>();
+        this.indTestProducers = new ArrayList<>();
 
-        for (IndTestProducer producer : producers) {
-            indTestProducers.add(producer);
-        }
+        this.indTestProducers.addAll(Arrays.asList(producers));
     }
 
     public List<IndTestProducer> getIndTestProducers() {
-        return indTestProducers;
+        return this.indTestProducers;
     }
 
     @Override
@@ -73,7 +72,7 @@ public class IndTestModel implements SessionModel {
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setVars(LinkedList<String> vars) {
@@ -81,11 +80,11 @@ public class IndTestModel implements SessionModel {
     }
 
     public LinkedList<String> getVars() {
-        return vars;
+        return this.vars;
     }
 
     public List<List<IndependenceResult>> getResults() {
-        return results;
+        return this.results;
     }
 
     public void setResults(List<List<IndependenceResult>> results) {

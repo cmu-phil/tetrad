@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -30,8 +30,7 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 /**
@@ -66,7 +65,7 @@ final class TetradMenuBar extends JMenuBar {
         JMenu loggingMenu = new JMenu("Logging");
         JMenu templateMenu = new JMenu("Pipelines");
         JMenu windowMenu = new JMenu("Window");
-        JMenu helpMenu = new JMenu("About");
+        JMenu helpMenu = new JMenu("Help");
 
         add(fileMenu);
         add(editMenu);
@@ -85,7 +84,7 @@ final class TetradMenuBar extends JMenuBar {
 
     //================================ Private Method ===============================//
 
-    private void buildFileMenu(final JMenu fileMenu) {
+    private void buildFileMenu(JMenu fileMenu) {
         //=======================FILE MENU=========================//
 
         // These have to be wrapped in JMenuItems to get the keyboard
@@ -98,23 +97,6 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.add(newSession);
         fileMenu.add(loadSession);
         fileMenu.add(closeSession);
-//        fileMenu.addSeparator();
-//        fileMenu.add(templateMenu);
-//
-
-//      //=======================EXAMPLES MENU=========================//
-//      // Build a LoadTemplateAction for each file name in
-//      // this.exampleFiles.
-//      String[] templateNames = ConstructTemplateAction.getTemplateNames();
-//      for (String templateName : templateNames) {
-//          if ("--separator--".equals(templateName)) {
-//              fileMenu.addSeparator();
-//          } else {
-//              ConstructTemplateAction action =
-//                      new ConstructTemplateAction(templateName);
-//              fileMenu.add(action);
-//          }
-//      }
 
         fileMenu.addSeparator();
         fileMenu.add(saveSession);
@@ -124,14 +106,12 @@ final class TetradMenuBar extends JMenuBar {
         fileMenu.addSeparator();
 //      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
 
-        final JMenuItem menuItem = new JMenuItem("Save Session Workspace Image...");
-        menuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                SessionEditorIndirectRef editorRef =
-                        DesktopController.getInstance().getFrontmostSessionEditor();
-                SessionEditor editor = (SessionEditor) editorRef;
-                editor.saveSessionImage();
-            }
+        JMenuItem menuItem = new JMenuItem("Save Session Workspace Image...");
+        menuItem.addActionListener(e -> {
+            SessionEditorIndirectRef editorRef =
+                    DesktopController.getInstance().getFrontmostSessionEditor();
+            SessionEditor editor = (SessionEditor) editorRef;
+            editor.saveSessionImage();
         });
 
         fileMenu.add(menuItem);
@@ -149,6 +129,7 @@ final class TetradMenuBar extends JMenuBar {
         });
 
         settingsMenu.add(loggingSettingMenuItem);
+        settingsMenu.add(new JMenuItem(new NumberFormatAction()));
         settingsMenu.add(showExperimentalBox);
 
         fileMenu.add(settingsMenu);
@@ -157,38 +138,36 @@ final class TetradMenuBar extends JMenuBar {
         JMenuItem exit = new JMenuItem(new ExitAction());
         fileMenu.add(exit);
         exit.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK));
 
         newSession.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
         loadSession.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
         saveSession.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
         closeSession.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_DOWN_MASK));
 
     }
 
-    private void buildEditMenu(final JMenu editMenu) {
+    private void buildEditMenu(JMenu editMenu) {
         //=======================EDIT MENU=========================//
         JMenuItem cut = new JMenuItem(new CutSubsessionAction());
         JMenuItem copy = new JMenuItem(new CopySubsessionAction());
         JMenuItem paste = new JMenuItem(new PasteSubsessionAction());
-        JMenuItem numberFormat = new JMenuItem(new NumberFormatAction());
 
         cut.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
         copy.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         paste.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 
         editMenu.add(cut);
         editMenu.add(copy);
         editMenu.add(paste);
         editMenu.addSeparator();
-        editMenu.add(numberFormat);
     }
 
 
@@ -202,7 +181,7 @@ final class TetradMenuBar extends JMenuBar {
         loggingMenu.addMenuListener(new LoggingMenuListener());
     }
 
-    private void buildTemplateMenu(final JMenu templateMenu) {
+    private void buildTemplateMenu(JMenu templateMenu) {
 //      //=======================EXAMPLES MENU=========================//
 //      // Build a LoadTemplateAction for each file name in
 //      // this.exampleFiles.
@@ -219,53 +198,35 @@ final class TetradMenuBar extends JMenuBar {
 
     }
 
-    private void buildWindowMenu(final JMenu windowMenu) {
+    private void buildWindowMenu(JMenu windowMenu) {
         //=======================WINDOW MENU=========================//
         // These items are created on the fly based on whatever session
         // editors are available.
         WindowMenuListener windowMenuListener =
-                new WindowMenuListener(windowMenu, desktop);
+                new WindowMenuListener(windowMenu, this.desktop);
         windowMenu.addMenuListener(windowMenuListener);
     }
 
-    private void buildHelpMenu(final JMenu helpMenu) {
+    private void buildHelpMenu(JMenu helpMenu) {
         //=======================HELP MENU=========================//
         // A reference to the help item is stored at class level so that
         // it can be "clicked" from other classes.
 
-//        String helpHS = "/resources/javahelp/TetradHelp.hs";
-//        HelpSet hs;
-//
-//        try {
-//            URL url = this.getClass().getResource(helpHS);
-//            hs = new HelpSet(null, url);
-//        } catch (Exception ee) {
-//            System.out.println("HelpSet " + ee.getMessage());
-//            System.out.println("HelpSet " + helpHS + " not found");
-//            return;
-//        }
-//
-//        final HelpBroker hb = hs.createHelpBroker();
-//
-//        JMenuItem help = new JMenuItem("Tetrad Help");
-//        help.addActionListener(new CSH.DisplayHelpFromSource(hb));
-////        helpMenu.add(help);
-//
-//        help.addActionListener(new CSH.DisplayHelpFromSource(hb));
-
         helpMenu.add(new AboutTetradAction());
         helpMenu.add(new WarrantyAction());
         helpMenu.add(new LicenseAction());
-
+        helpMenu.add(new ContributorsAction());
+        helpMenu.addSeparator();
+        helpMenu.add(new LaunchManualAction());
+        helpMenu.add(new LaunchFlowchartAction());
     }
-
 
     //========================= Inner Classes ==========================================//
 
     private class LoggingMenuListener implements MenuListener {
 
         public void menuSelected(MenuEvent e) {
-            final JMenu loggingMenu = (JMenu) e.getSource();
+            JMenu loggingMenu = (JMenu) e.getSource();
 
             loggingMenu.removeAll();
             // check box to turn logging on/off
@@ -273,33 +234,20 @@ final class TetradMenuBar extends JMenuBar {
 //            loggingState.setText(TetradLogger.getInstance().isLogging() ? "Turn Logging Off" : "Turn Logging On");
             //check box to set whether logging should be displayed or not
             JMenuItem displayLogging = new JMenuItem();
-            displayLogging.setText(desktop.isDisplayLogging() ? "Stop Logging" : "Start Logging");
+            displayLogging.setText(TetradMenuBar.this.desktop.isDisplayLogging() ? "Stop Logging" : "Start Logging");
 
             loggingMenu.add(displayLogging);
-//            loggingMenu.add(new SetupLoggingAction());
-//            loggingMenu.add(loggingState);
 
 
-            displayLogging.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    JMenuItem item = (JMenuItem) e.getSource();
-                    String text = item.getText();
-                    boolean logging = text.contains("Start");
-                    desktop.setDisplayLogging(logging);
-                    TetradLogger.getInstance().setLogging(true);
-                    item.setText(logging ? "Start Logging" : "Stop Logging");
-                }
+            displayLogging.addActionListener(e1 -> {
+                JMenuItem item = (JMenuItem) e1.getSource();
+                String text = item.getText();
+                boolean logging = text.contains("Start");
+                TetradMenuBar.this.desktop.setDisplayLogging(logging);
+                TetradLogger.getInstance().setLogging(true);
+                item.setText(logging ? "Start Logging" : "Stop Logging");
             });
 
-
-//            loggingState.addActionListener(new ActionListener() {
-//                public void actionPerformed(ActionEvent e) {
-//                    JMenuItem item = (JMenuItem) e.getSource();
-//                    String text = item.getText();
-//                    TetradLogger.getInstance().setLogging(text.contains("On"));
-//                    item.setText(TetradLogger.getInstance().isLogging() ? "Turn Logging Off" : "Turn Logging On");
-//                }
-//            });
 
         }
 

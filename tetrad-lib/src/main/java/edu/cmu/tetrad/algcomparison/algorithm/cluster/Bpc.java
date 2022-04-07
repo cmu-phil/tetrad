@@ -14,7 +14,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,8 +52,6 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 testType = TestType.TETRAD_DELTA;
             }
 
-            TestType purifyType = TestType.TETRAD_BASED;
-
             BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);
             bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -66,8 +63,8 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
                 Clusters clusters = ClusterUtils.mimClusters(graph);
 
-                Mimbuild2 mimbuild = new Mimbuild2();
-                mimbuild.setAlpha(parameters.getDouble(Params.ALPHA));
+                Mimbuild mimbuild = new Mimbuild();
+                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
                 mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge2()));
 
                 if (parameters.getBoolean("includeThreeClusters", true)) {
@@ -101,26 +98,11 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
             Bpc algorithm = new Bpc();
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
+                    parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
+                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT),
+                    parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -145,7 +127,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.ALPHA);
+        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.VERBOSE);
@@ -155,7 +137,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
