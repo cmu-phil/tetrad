@@ -88,10 +88,10 @@ public class BCInference {
      * size of the two-dimensional array is (M + 2) x (N + 2). In other words,
      * the size of the array is always 2 more of the number of data. Likewise,
      * if the data for nodeDimension is N then the size of the array is N + 2.
-     * <p/>
+     *
      * The case array index starts from 1 (not zero) to numberOfCases. The
      * nodeDimension array index start from 1 (not zero) to numberOfNodes.
-     * <p/>
+     *
      * nodeDimension array contains values denote the number of discrete values
      * that Node can have (e.g., 2 for a binary variable).
      *
@@ -142,14 +142,14 @@ public class BCInference {
      * assumes uniform parameter priors and a structure prior of 0.5. A
      * structure prior of 0.5 means taht a priori we have that P(X independent Y
      * given Z) = P(X dependent Y given Z) = 0.5.
-     * <p/>
+     *
      * Z[0] is the length of the set represented by array Z. For an example,
      * Z[0] = 1 represents the set Z of size 1. Z&lsqb;0&rsqb; = 0 represents an empty
      * set.
-     * <p/>
+     *
      * Set Z with two elements: Z = &lcub;3, 2&rcub; Z&lsqb;0&rsqb; = 2 // set Z has two elements
      * (length of 2) Z[1] = 3 // first element Z[2] = 2 // second element.
-     * <p/>
+     *
      * Empty set: Z = &lcub;&rcub; Z&lsqb;0&rsqb; = 0
      *
      * @param constraint has the value OP.independent or OP.dependent

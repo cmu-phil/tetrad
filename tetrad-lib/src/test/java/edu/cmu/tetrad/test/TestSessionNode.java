@@ -35,15 +35,15 @@ import static org.junit.Assert.*;
 
 /**
  * <p>Tests the operation of the session node. The session node needs to be able
- * to:</p> </p> <ul> </p> <li>Add and remove parents or children without
+ * to:</p> <ul> <li>Add and remove parents or children without
  * violating the constraint that the set of models for the parents of a node at
  * any time should be a subset of the set of objects needed to constuct an
  * object of the given model class for some constructor of the model class. Note
  * that in adding parents or children, the lists of parents or children of other
- * nodes need to be adjusted and kept in sync. </p> <li>Create a new model given
+ * nodes need to be adjusted and kept in sync. <li>Create a new model given
  * the parents of the node, provided the models of the node's parents can be
  * mapped unambiguously onto the objects required for some constructor of the
- * model class. </p> <li>Fire events to listeners when any of the following
+ * model class. <li>Fire events to listeners when any of the following
  * happens: (a) parents are added or removed; (b) models are created or
  * destroyed. The adding and removing of listeners must also be tested.
  *
@@ -107,14 +107,14 @@ public class TestSessionNode {
 
     /**
      * <p>Tests the <code>assignParameters</code> method for the case where each
-     * model contains exactly one model type. Must test the following:</p> </p>
-     * <ul> </p> <li>The order of the classes of the returned argument array
+     * model contains exactly one model type. Must test the following:</p>
+     * <ul> <li>The order of the classes of the returned argument array
      * must be the same as the order of the classes in the parameterTypes array.
-     * </p> <li>If one of the classes in the parameterTypes array is null, null
-     * should be returned. </p> <li>If an object of some type required by the
+     * <li>If one of the classes in the parameterTypes array is null, null
+     * should be returned. <li>If an object of some type required by the
      * parameterTypes array does not exist in the object array, null should be
-     * returned. </p> <li>If there are more objects in the object array than are
-     * required by the parameterTypes array, null should be returned. </p>
+     * returned. <li>If there are more objects in the object array than are
+     * required by the parameterTypes array, null should be returned.
      * </ul>
      */
     @Test

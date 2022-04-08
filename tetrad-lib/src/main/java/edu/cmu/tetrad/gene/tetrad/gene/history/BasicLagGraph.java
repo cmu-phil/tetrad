@@ -36,11 +36,11 @@ import java.util.*;
  * temporally, with causal edges extending from lagged factors with lags >= 1 to
  * factors in the getModel time step (lag = 0) only. This "update graph" is
  * viewed as a repeating structure; for each time step, the influences from
- * previous time steps of other factors are as the update graph specifies. </P>
- * </p> <P>Factor names in this model are distinct String's. The form of these
+ * previous time steps of other factors are as the update graph specifies.
+ * <P>Factor names in this model are distinct String's. The form of these
  * String's is left entirely up to the code using this package. Lags are int's
  * >= 0, although of course lagged factors used for edge specifications must
- * have lags >= 1.</P>
+ * have lags >= 1.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -288,7 +288,7 @@ public final class BasicLagGraph implements LagGraph {
      * The way to do this is to use this method to get a copy of the
      * connectivity to store internally in the update function. Because it is a
      * SortedMap, factors and lagged factors can be expected to stay in the same
-     * order. </p> <p><i>Note:</i> This strategy is not implemented yet!  Please
+     * order. <p><i>Note:</i> This strategy is not implemented yet!  Please
      * remove this note when it is implemented.  The idea is to get rid of the
      * classes IndexedParent and Connectivity and use this sorted map to replace
      * them.</p>

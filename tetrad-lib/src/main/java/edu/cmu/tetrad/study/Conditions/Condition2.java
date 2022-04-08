@@ -30,9 +30,9 @@ import edu.cmu.tetrad.util.Parameters;
 /**
  * An example script to load in data sets and graphs from files and analyze them. The
  * files loaded must be in the same format as
- * </p>
+ *
  * new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
- * </p>
+ *
  * saves them. For other formats, specialty data loaders can be written to implement the
  * Simulation interface.
  *

@@ -46,7 +46,7 @@ import java.util.List;
  * causal parents (with 2^n rows) for which each causal parent is
  * "effective"--that is, for which there is some combination of the other causal
  * parents for which the lookup table maps either to true or to false depending
- * on the value of the given causal parent.</p> </p> <p>The basal expression
+ * on the value of the given causal parent. <p>The basal expression
  * level is used in these functions as a threshold, above which a lookup
  * value of <code>true</code> is used for the boolean tables and below which
  * a lookup value of <code>false</code> is used. A return value of
@@ -58,7 +58,7 @@ import java.util.List;
  * the true value. Generalizing, we include a constructor to allow the
  * basalExpression, true value and false value to be set by the user, with
  * the only condition being that the false value must be less than the true
- * value.</p>
+ * value.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -214,9 +214,6 @@ public class BooleanGlassFunction implements UpdateFunction {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static BooleanGlassFunction serializableInstance() {
         return new BooleanGlassFunction(BasicLagGraph.serializableInstance());

@@ -36,7 +36,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * factors and the number and order of the parents (IndexedParent's) for each
  * factor. This information should be encoded in the function itself, but there
  * is no requirement that the function be checked against the graph explicitly
- * to make sure the graph is actually implemented.</p>
+ * to make sure the graph is actually implemented.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */

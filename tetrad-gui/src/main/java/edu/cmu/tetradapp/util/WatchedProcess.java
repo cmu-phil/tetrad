@@ -70,7 +70,7 @@ public abstract class WatchedProcess {
      * displaying them means that users cannot stop processes, so they hate
      * that. SO...if you set this to false, make sure you set it to true before
      * you're done working!
-     * <p/>
+     *
      * It must be set to true for posted versions. There's unit test that checks
      * for that.
      */

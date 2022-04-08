@@ -29,7 +29,7 @@ import java.util.List;
  * <p>Includes methods for estimating the standard errors of the freeParameters of
  * an estimated SEM.  The standard errors are the square roots of the diagonal
  * elements of the inverse of the "information matrix" (see Bollen page
- * 135).</p> </p> <p>This class resembles the SemOptimizer implementations.</p>
+ * 135). <p>This class resembles the SemOptimizer implementations.
  *
  * @author Frank Wimberly
  */
@@ -52,7 +52,7 @@ public class SemStdErrorEstimator {
      * 135 of Bollen) with respect to the free freeParameters of the estimated SEM.
      * It then computes the inverse of the the information matrix and calculates
      * the standard errors of the freeParameters as the square roots of the diagonal
-     * elements of that matrix.</p>
+     * elements of that matrix.
      *
      * @param estSem the estimated SEM.
      */

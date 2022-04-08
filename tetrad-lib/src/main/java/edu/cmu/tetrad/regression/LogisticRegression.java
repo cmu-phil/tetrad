@@ -43,7 +43,7 @@ import java.util.List;
  * http://members.aol.com/johnp71/logistic.html
  * <p>
  * See also  Applied Logistic Regression, by D.W. Hosmer and S. Lemeshow. 1989,
- * John Wiley & Sons, New York which Pezzullo references.  In particular see
+ * John Wiley and Sons, New York which Pezzullo references.  In particular see
  * pages 27-29.
  *
  * @author Frank Wimberly

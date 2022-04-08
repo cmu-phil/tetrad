@@ -64,7 +64,7 @@ public class TetradSerializableUtils {
      * are in no danger of storing any objects in fields whose serializability
      * can't be vouched for. When adding classes to this list, please use
      * similar reasoning to vouch for their safety. Unfortunately, such safety
-     * cannot be automatically checked. Class, for instance, </p> <p>We will
+     * cannot be automatically checked. Class, for instance, <p>We will
      * move to JDK 1.5 as soon as it becomes available for Macs.</p>
      */
     private static final Class[] safelySerializableTypes = {

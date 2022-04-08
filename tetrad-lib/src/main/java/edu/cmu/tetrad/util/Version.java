@@ -70,7 +70,7 @@ public class Version implements TetradSerializable {
      * increases without bound until the next major version, minor version, or
      * minor subversion release, at which point is goes back to zero. If it is
      * zero, release a.b.c.dx may be referred to as a.b.c.
-     * <p/>
+     *
      * With maven snapshots the incremental release number refers to the snapshot build
      * date.  If this field is SNAPSHOT it is set to max int
      *

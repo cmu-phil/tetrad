@@ -30,7 +30,7 @@ import java.util.ArrayList;
 
 /**
  * <p>Implements a polynomial update function, Gi.0 = P(Parents(G0.0)) + ei,
- * where P is a polynomial function and ei is a random noise term.</p>
+ * where P is a polynomial function and ei is a random noise term.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -91,9 +91,6 @@ public class PolynomialFunction implements UpdateFunction {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static PolynomialFunction serializableInstance() {
         return new PolynomialFunction(BasicLagGraph.serializableInstance());

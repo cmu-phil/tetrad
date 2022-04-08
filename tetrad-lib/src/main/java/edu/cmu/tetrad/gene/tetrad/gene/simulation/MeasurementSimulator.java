@@ -50,7 +50,7 @@ import java.util.Arrays;
  * data sets, especially for the raw data set. A simulation with 1,000,000 cells
  * where each cell has 1000 genes, for instance, can take quite a long time and
  * can easily overflow RAM in Java if all of the raw expression levels are saved
- * out.</p> </p> <p>For examples of how to use the measurement simulator code,
+ * out.</p> <p>For examples of how to use the measurement simulator code,
  * see the TestMeasurementSimulator class. This is a JUnit test class that
  * contains several examples of code use.</p>
  *
@@ -565,7 +565,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * cell. To determine which factor is the i'th factor, look at
      * getHistory().getFactor(). To determine which time step is the j'th time
      * step, look at getTimeSteps(). The k'th individual is in dish (k /
-     * numCellsPerDish).</p> </p> <p>If raw data is not saved out, this method
+     * numCellsPerDish).</p> <p>If raw data is not saved out, this method
      * returns null.</p>
      *
      * @return the three dimensional double array of raw data, if raw data is
@@ -583,7 +583,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * the k'th sample. To determine which factor is the i'th factor, look at
      * getHistory().getFactor(). To determine which time step is the j'th time
      * step, look at getTimeSteps(). The k'th sample is drawn from dish (k /
-     * numSamplesPerDish).</p> </p> <p>If measured data is not saved out, this
+     * numSamplesPerDish).</p> <p>If measured data is not saved out, this
      * method returns null.</p>
      *
      * @return the three dimensional double array of measured data, if measured

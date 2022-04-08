@@ -44,21 +44,21 @@ import java.util.List;
 public final class Edges {
 
     /**
-     * Constructs a new bidirected edge from nodeA to nodeB (<->).
+     * Constructs a new bidirected edge from nodeA to nodeB (&lt;-&gt;).
      */
     public static Edge bidirectedEdge(Node nodeA, Node nodeB) {
         return new Edge(nodeA, nodeB, Endpoint.ARROW, Endpoint.ARROW);
     }
 
     /**
-     * Constructs a new directed edge from nodeA to nodeB (-->).
+     * Constructs a new directed edge from nodeA to nodeB (--&gt;).
      */
     public static Edge directedEdge(Node nodeA, Node nodeB) {
         return new Edge(nodeA, nodeB, Endpoint.TAIL, Endpoint.ARROW);
     }
 
     /**
-     * Constructs a new partially oriented edge from nodeA to nodeB (o->).
+     * Constructs a new partially oriented edge from nodeA to nodeB (o-&gt;).
      */
     public static Edge partiallyOrientedEdge(Node nodeA, Node nodeB) {
         return new Edge(nodeA, nodeB, Endpoint.CIRCLE, Endpoint.ARROW);
@@ -79,7 +79,7 @@ public final class Edges {
     }
 
     /**
-     * @return true iff an edge is a bidirected edge (<->).
+     * @return true iff an edge is a bidirected edge (&lt;-&gt;).
      */
     public static boolean isBidirectedEdge(Edge edge) {
         return (edge.getEndpoint1() == Endpoint.ARROW) &&
@@ -87,7 +87,7 @@ public final class Edges {
     }
 
     /**
-     * @return true iff the given edge is a directed edge (-->).
+     * @return true iff the given edge is a directed edge (--&gt;).
      */
     public static boolean isDirectedEdge(Edge edge) {
         if (edge.getEndpoint1() == Endpoint.TAIL) {
@@ -100,7 +100,7 @@ public final class Edges {
     }
 
     /**
-     * @return true iff the given edge is a partially oriented edge (o->)
+     * @return true iff the given edge is a partially oriented edge (o-&gt;)
      */
     public static boolean isPartiallyOrientedEdge(Edge edge) {
         if (edge.getEndpoint1() == Endpoint.CIRCLE) {
@@ -146,7 +146,7 @@ public final class Edges {
     }
 
     /**
-     * For A -> B, given A, returns B; otherwise returns null.
+     * For A -&gt; B, given A, returns B; otherwise returns null.
      */
     public static Node traverseDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
@@ -165,7 +165,7 @@ public final class Edges {
     }
 
     /**
-     * For A -> B, given B, returns A; otherwise returns null.
+     * For A -&gt; B, given B, returns A; otherwise returns null.
      */
     public static Node traverseReverseDirected(Node node, Edge edge) {
         if (edge == null) {
@@ -188,7 +188,7 @@ public final class Edges {
     }
 
     /**
-     * For A --* B or A o-* B, given A, returns B. For A <-* B, returns null.
+     * For A --* B or A o-* B, given A, returns B. For A &lt;-* B, returns null.
      * Added by ekorber, 2004/06/12.
      */
     public static Node traverseSemiDirected(Node node, Edge edge) {

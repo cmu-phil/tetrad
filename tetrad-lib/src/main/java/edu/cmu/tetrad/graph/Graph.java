@@ -30,12 +30,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * <p>Implements a graph capable of storing edges of type N1 *-# N2 where * and
- * # are endpoints of type Endpoint.</p> <p>We stipulate by extending
+ * Implements a graph capable of storing edges of type N1 *-# N2 where * and
+ * # are endpoints of type Endpoint.<p>We stipulate by extending
  * TetradSerializable that all graphs implementing this interface are
  * serializable. This is because for Tetrad they must be serializable. (For
  * randomUtil, in order to be able to cancelAll operations, they must be
- * serializable.)</p>
+ * serializable.)
  *
  * @author Joseph Ramsey
  * @see Endpoint
@@ -44,12 +44,12 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     long serialVersionUID = 23L;
 
     /**
-     * Adds a bidirected edges <-> to the graph.
+     * Adds a bidirected edges &lt;-&gt; to the graph.
      */
     boolean addBidirectedEdge(Node node1, Node node2);
 
     /**
-     * Adds a directed edge --> to the graph.
+     * Adds a directed edge --&gt; to the graph.
      */
     boolean addDirectedEdge(Node node1, Node node2);
 
@@ -64,7 +64,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     boolean addNondirectedEdge(Node node1, Node node2);
 
     /**
-     * Adds a partially oriented edge o-> to the graph.
+     * Adds a partially oriented edge o-&gt; to the graph.
      */
     boolean addPartiallyOrientedEdge(Node node1, Node node2);
 
@@ -128,7 +128,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     boolean existsUndirectedPathFromTo(Node node1, Node node2);
 
     /**
-     * </p> A semi-directed path from A to B is an undirected path in which no
+     * A semi-directed path from A to B is an undirected path in which no
      * edge has an arrowhead pointing "back" towards A.
      *
      * @return true iff there is a semi-directed path from node1 to something in
@@ -365,7 +365,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
 
     /**
      * Determines whether one node is d-connected to another. According to
-     * Spirtes, Richardson & Meek, two nodes are d- connected given some
+     * Spirtes, Richardson and Meek, two nodes are d- connected given some
      * conditioning set Z if there is an acyclic undirected path U between them,
      * such that every collider on U is an ancestor of some element in Z and
      * every non-collider on U is not in Z.  Two elements are d-separated just
@@ -414,8 +414,8 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     boolean isUndirectedFromTo(Node node1, Node node2);
 
     /**
-     * A directed edge A->B is definitely visible if there is a node C not
-     * adjacent to B such that C*->A is in the PAG_of_the_true_DAG. Added by ekorber,
+     * A directed edge A-&gt;B is definitely visible if there is a node C not
+     * adjacent to B such that C*-&gt;A is in the PAG_of_the_true_DAG. Added by ekorber,
      * 2004/06/11.
      *
      * @return true if the given edge is definitely visible (Jiji, pg 25)
@@ -521,76 +521,76 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     void transferAttributes(Graph graph) throws IllegalArgumentException;
 
     /**
-     * @return the list of ambiguous triples associated with this graph. Triples <x, y, z> that no longer
+     * @return the list of ambiguous triples associated with this graph. Triples &lt;x, y, z&gt; that no longer
      * lie along a path in the getModel graph are removed.
      */
     Set<Triple> getAmbiguousTriples();
 
     /**
      * @return the set of underlines associated with this graph. This is used currently by ION, DCI, and CCD.
-     * It used to be used by FCI, but it not in the getModel form.  Triples <x, y, z> that no longer
+     * It used to be used by FCI, but it not in the getModel form.  Triples &lt;x, y, z&gt; that no longer
      * lie along a path in the getModel graph are removed.
      */
     Set<Triple> getUnderLines();
 
     /**
      * @return the set of dotted underlines associated with this graph. This used to be used by FCI, but it is
-     * not used in the getModel form. It is used by CCD.  Triples <x, y, z> that no longer
+     * not used in the getModel form. It is used by CCD.  Triples &lt;x, y, z&gt; that no longer
      * lie along a path in the getModel graph are removed.
      */
     Set<Triple> getDottedUnderlines();
 
     /**
-     * @return true iff the triple <x, y, z> is set as ambiguous.  Triples <x, y, z> that no longer
+     * @return true iff the triple &lt;x, y, z&gt; is set as ambiguous.  Triples &lt;x, y, z&gt; that no longer
      * lie along a path in the getModel graph are removed.
      */
     boolean isAmbiguousTriple(Node x, Node y, Node z);
 
     /**
-     * @return true iff the triple <x, y, z> is set as underlined.  Triples <x, y, z> that no longer
+     * @return true iff the triple &lt;x, y, z&gt; is set as underlined.  Triples &lt;x, y, z&gt; that no longer
      * lie along a path in the getModel graph are removed.
      */
     boolean isUnderlineTriple(Node x, Node y, Node z);
 
     /**
-     * @return true iff the triple <x, y, z> is set as dotted underlined.   Triples <x, y, z> that no longer
+     * @return true iff the triple &lt;x, y, z&gt; is set as dotted underlined.   Triples &lt;x, y, z&gt; that no longer
      * lie along a path in the getModel graph are removed.
      */
     boolean isDottedUnderlineTriple(Node x, Node y, Node z);
 
     /**
-     * Adds the triple <x, y, z> as an ambiguous triple in the graph.
+     * Adds the triple &lt;x, y, z&gt; as an ambiguous triple in the graph.
      *
-     * @throws IllegalArgumentException if <x, y, z> does not lie along a path in the graph.
+     * @throws IllegalArgumentException if &lt;x, y, z&gt; does not lie along a path in the graph.
      */
     void addAmbiguousTriple(Node x, Node y, Node Z);
 
     /**
-     * Adds the triple <x, y, z> as an underline triple in the graph.
+     * Adds the triple &lt;x, y, z&gt; as an underline triple in the graph.
      *
-     * @throws IllegalArgumentException if <x, y, z> does not lie along a path in the graph.
+     * @throws IllegalArgumentException if &lt;x, y, z&gt; does not lie along a path in the graph.
      */
     void addUnderlineTriple(Node x, Node y, Node Z);
 
     /**
-     * Adds the triple <x, y, z> as a dotted underlined triple in the graph.
+     * Adds the triple &lt;x, y, z&gt; as a dotted underlined triple in the graph.
      *
-     * @throws IllegalArgumentException if <x, y, z> does not lie along a path in the graph.
+     * @throws IllegalArgumentException if &lt;x, y, z&gt; does not lie along a path in the graph.
      */
     void addDottedUnderlineTriple(Node x, Node y, Node Z);
 
     /**
-     * Removes the triple <x, y, z> from thet set of ambiguous triples.
+     * Removes the triple &lt;x, y, z&gt; from thet set of ambiguous triples.
      */
     void removeAmbiguousTriple(Node x, Node y, Node z);
 
     /**
-     * Removes the triple <x, y, z> from the set of underlined triples.
+     * Removes the triple &lt;x, y, z&gt; from the set of underlined triples.
      */
     void removeUnderlineTriple(Node x, Node y, Node z);
 
     /**
-     * Removes the triple <x, y, z> from the set of dotted underlined triples.
+     * Removes the triple &lt;x, y, z&gt; from the set of dotted underlined triples.
      */
     void removeDottedUnderlineTriple(Node x, Node y, Node z);
 
@@ -598,7 +598,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      * Sets the list of ambiguous triples to the triples in the given set.
      *
      * @param triples The new set of ambiguous triples. This replaces the old list.
-     * @throws IllegalArgumentException if any triple <x, y, z> in <code>triples</code> does not lie along a path in the graph.
+     * @throws IllegalArgumentException if any triple &lt;x, y, z&gt; in <code>triples</code> does not lie along a path in the graph.
      */
     void setAmbiguousTriples(Set<Triple> triples);
 
@@ -606,7 +606,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      * Sets the list of underlined triples to the triples in the given set.
      *
      * @param triples The new list of ambiguous triples. This replaces the old list.
-     * @throws IllegalArgumentException if any triple <x, y, z> in <code>triples</code> does not lie along a path in the graph.
+     * @throws IllegalArgumentException if any triple &lt;zx, y, z&gt; in <code>triples</code> does not lie along a path in the graph.
      */
     void setUnderLineTriples(Set<Triple> triples);
 
@@ -614,7 +614,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      * Sets the list of dotted underlined triples to the triples in the given set.
      *
      * @param triples The new list of dotted underlined triples. This replaces the old list.
-     * @throws IllegalArgumentException if any triple <x, y, z> in <code>triples</code> does not lie along a path in the graph.
+     * @throws IllegalArgumentException if any triple &lt;zx, y, z&gt; in <code>triples</code> does not lie along a path in the graph.
      */
     void setDottedUnderLineTriples(Set<Triple> triples);
 

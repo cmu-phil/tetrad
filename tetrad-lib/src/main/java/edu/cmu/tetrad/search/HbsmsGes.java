@@ -36,7 +36,7 @@ import java.util.*;
 
 /**
  * Best Fit Finder using the GES algorithm.
- * </p>
+ *
  * Improves the P value of a SEM IM by adding, removing, or reversing single edges.
  *
  * @author Joseph Ramsey
@@ -590,7 +590,7 @@ public final class HbsmsGes implements Hbsms {
     /**
      * Fully direct a graph with background knowledge. I am not sure how to adapt Chickering's suggested algorithm above
      * (dagToPdag) to incorporate background knowledge, so I am also implementing this algorithm based on Meek's 1995
-     * UAI paper. Notice it is the same implemented in PcSearch. </p> *IMPORTANT!* *It assumes all colliders are
+     * UAI paper. Notice it is the same implemented in PcSearch. *IMPORTANT!* *It assumes all colliders are
      * oriented, as well as arrows dictated by time order.*
      */
     private void pdagWithBk(Graph graph, IKnowledge knowledge) {

@@ -369,7 +369,7 @@ public class Purify {
 
     /**
      * ---------------------------------------------------------------------------------------------------------------
-     * TETRAD-BASED PURIFY </p> - using tetrad constraints - This method checks if there is any evidence that a node is
+     * TETRAD-BASED PURIFY - using tetrad constraints - This method checks if there is any evidence that a node is
      * impure. If there is not, then it is treated as pure. This is virtually the original Purify as described in CPS.
      */
 
@@ -414,7 +414,7 @@ public class Purify {
 
     /**
      * Marks for deletion nodes within a single cluster that are part of some tetrad constraint that does not hold
-     * according to a statistical test. </p> False discovery rates will be used to adjust for multiple hypothesis
+     * according to a statistical test. False discovery rates will be used to adjust for multiple hypothesis
      * tests.
      */
     private void intraConstructPhase(int[] cluster, boolean[] eliminated,
@@ -674,7 +674,7 @@ public class Purify {
 
     /**
      * Marks for deletion nodes that are part of some tetrad constraint between two clusters that does not hold
-     * according to a statistical test. </p> False discovery rates will be used to adjust for multiple hypothesis
+     * according to a statistical test. False discovery rates will be used to adjust for multiple hypothesis
      * tests.
      */
 
@@ -1068,13 +1068,13 @@ public class Purify {
         int[][] relations = new int[this.numVars][this.numVars];
         /**
          * ---------------------------------------------------------------------------------------------------------------
-         * TETRAD-BASED PURIFY2 </p> - using tetrad constraints - Second variation: this method checks for each pair (X, Y)
+         * TETRAD-BASED PURIFY2 - using tetrad constraints - Second variation: this method checks for each pair (X, Y)
          * if there is another pair (W, Z) such that all three tetrads hold in (X, Y, W, Z). If not, this pair is marked as
          * impure. This is more likely to leave true impurities in the estimated graph, but on the other hand it tends to
          * remove less true pure indicators. We also do not use all variables as the domain of (W, Z): only those in the
          * given partition, in order to reduce the number of false positives. In my opinion, tetradBasedPurify2 is a better
          * compromise thatn tetradBasedPurify1, but one might want to test it with a larger variety of graphical structures
-         * and sample size. </p> -- Ricardo Silva
+         * and sample size. -- Ricardo Silva
          */
         int PURE = 0;
         int UNDEFINED = 2;
@@ -1237,7 +1237,7 @@ public class Purify {
         return this.purePartitionGraph;
     }
 
-//     SCORE-BASED PURIFY </p> - using BIC score function and Structural EM for
+//     SCORE-BASED PURIFY - using BIC score function and Structural EM for
 //     search. Probabilistic model is Gaussian. - search operator consists only
 //     of adding a bi-directed edge between pairs of error variables - after
 //     such pairs are found, an heuristic is applied to eliminate one member of

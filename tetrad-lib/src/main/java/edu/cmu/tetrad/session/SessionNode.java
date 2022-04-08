@@ -844,7 +844,7 @@ public class SessionNode implements Node {
      * Collections API to determine, for example, containment in an ArrayList,
      * and the sense of equality needed for that is object identity.
      * Nevertheless, for certain other purposes, such as checking serialization,
-     * a looser sense of structural identity is helpful.</p> </p>
+     * a looser sense of structural identity is helpful.</p>
      * <p>
      * Two SessionNodes are structurally identical just in case their possible
      * model classes are equal, the parameter type arrays used to construct
@@ -1262,7 +1262,7 @@ public class SessionNode implements Node {
      * <p>
      * Returns the objects in the List as an array in the same order as the
      * parameter types. If an exact match cannot be found, throws a
-     * RuntimeException with an appropriate message. </p>
+     * RuntimeException with an appropriate message.
      *
      * @param parameterTypes a list of classes; if any of them is null, a
      *                       NullPointerException will be thrown.

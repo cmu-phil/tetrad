@@ -94,7 +94,7 @@ public final class EmBayesEstimator {
      * discrete dataset using EM (Expectation Maximization).  The data columns
      * in the given data must be equal to a variable in the given Bayes IM but
      * the latter may contain variables which don't occur in the dataset (latent
-     * variables). </p> The first argument of the constructoris the BayesPm
+     * variables). The first argument of the constructoris the BayesPm
      * whose graph contains latent and observed variables.  The second is the
      * dataset of observed variables; missing value codes may be present.
      */
@@ -225,7 +225,7 @@ public final class EmBayesEstimator {
     /**
      * This method takes an instantiated Bayes net (BayesIm) whose graph include
      * all the variables (observed and latent) and computes estimated counts
-     * using the data in the DataSet mixedData. </p> The counts that are
+     * using the data in the DataSet mixedData. The counts that are
      * estimated correspond to cells in the conditional probability tables of
      * the Bayes net.  The outermost loop (indexed by j) is over the set of
      * variables.  If the variable has no parents, each case in the dataset is
@@ -233,7 +233,7 @@ public final class EmBayesEstimator {
      * increased by 1.0; if the value of the variable is missing the marginal
      * probabilities its values given the values of the variables that are
      * available for that case are used to increment the corresponding estimated
-     * counts. </p> If a variable has parents then there is a loop which steps
+     * counts. If a variable has parents then there is a loop which steps
      * through all possible sets of values of its parents.  This loop is indexed
      * by the variable "row".  Each case in the dataset is examined.  It the
      * variable and all its parents have values in the case the corresponding
@@ -241,7 +241,7 @@ public final class EmBayesEstimator {
      * parents have missing values, the joint marginal is computed for the
      * variable and the set of values of its parents corresponding to "row" and
      * the corresponding estimated counts are incremented by the appropriate
-     * probability. </p> The estimated counts are stored in the double[][][]
+     * probability. The estimated counts are stored in the double[][][]
      * array estimatedCounts.  The count (possibly fractional) of the number of
      * times each combination of parent values occurs is stored in the
      * double[][] array estimatedCountsDenom.  These two arrays are used to

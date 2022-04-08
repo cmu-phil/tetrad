@@ -42,7 +42,7 @@ import java.util.*;
 /**
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
  * This test is valid for both ordinal and non-ordinal discrete searchVariables.
- * <p/>
+ *
  * This logisticRegression makes multiple assumptions: 1. IIA 2. Large sample size (multiple regressions needed on subsets of
  * sample)
  *

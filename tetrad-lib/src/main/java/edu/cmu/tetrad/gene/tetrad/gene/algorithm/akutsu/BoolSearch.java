@@ -50,7 +50,7 @@ public class BoolSearch {
     /**
      * Implements the BOOL-2 algorithm of Akutsu, et al, found in section 2.2 of
      * their paper "Algorithms for Inferring Qualitative Models of Biological
-     * Networks". </p> The int k is the number of number of regulators of a
+     * Networks". The int k is the number of number of regulators of a
      * given gene and corresponds to K in the paper.
      */
     public RevealOutputGraph bool2(int k) {

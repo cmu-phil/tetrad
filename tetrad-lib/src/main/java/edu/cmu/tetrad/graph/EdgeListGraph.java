@@ -34,8 +34,8 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
  * with an additional list storing all of the edges in the graph. The edges are
  * of the form N1 *-# N2. Multiple edges may be added per node pair to this
  * graph, with the caveat that all edges of the form N1 *-# N2 will be
- * considered equal. For example, if the edge X --> Y is added to the graph,
- * another edge X --> Y may not be added, although an edge Y --> X may be added.
+ * considered equal. For example, if the edge X --&gt; Y is added to the graph,
+ * another edge X --&gt; Y may not be added, although an edge Y --&gt; X may be added.
  * Edges from nodes to themselves may also be added.</p>
  *
  * @author Joseph Ramsey
@@ -777,7 +777,7 @@ public class EdgeListGraph implements Graph {
 
     /**
      * Determines whether one n ode is d-separated from another. According to
-     * Spirtes, Richardson & Meek, two nodes are d- connected given some
+     * Spirtes, Richardson and Meek, two nodes are d- connected given some
      * conditioning set Z if there is an acyclic undirected path U between them,
      * such that every collider on U is an ancestor of some element in Z and
      * every non-collider on U is not in Z. Two elements are d-separated just in

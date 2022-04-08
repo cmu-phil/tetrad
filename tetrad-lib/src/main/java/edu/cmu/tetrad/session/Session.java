@@ -34,7 +34,7 @@ import java.util.Set;
  * <p>Stores a directed graph over models of specific types, where the possible
  * parent relationships between the models are given in the constructors of the
  * model classes themselves. For instance, if a class Model1 has only this
- * constructor:</p> </p> <code>public Model1(Model2 x, Model3 y)... </code> </p>
+ * constructor:</p> <code>public Model1(Model2 x, Model3 y)... </code>
  * <p>then if a SessionNode is constructed with Model.class as argument, it will
  * configure itself as a SessionNode requiring two parents, one capable of
  * implementing models of type Model2 and a second capable of implementing
@@ -46,7 +46,7 @@ import java.util.Set;
  * type of model. A SessionNode, for instance, can support the construction of
  * graphs in general, even if different graphs are implemented using different
  * classes. The SessionNode can keep track of what its parents are and therefore
- * which of its possible models it's capable of constructing. </p> <p>The
+ * which of its possible models it's capable of constructing. <p>The
  * Session itself keeps track of which nodes are in the session and manages
  * adding and removing nodes. Nodes that are added to the session must be
  * freshly constructed. This constraint eliminates a number of problems that
@@ -54,16 +54,16 @@ import java.util.Set;
  * participate in more than one Session. If the addNode method is called with a
  * node that is not in the freshly constructed state (either because it was
  * actually just constructed or because the <code>reset</code> method was just
- * called on the node), an IllegalArgumentException is thrown./p> </p> <p>When a
+ * called on the node), an IllegalArgumentException is thrown./p> <p>When a
  * node is removed from a session, all of its connections to other objects are
  * eliminated and its models destroyed. This has consequences for other objects,
  * since destroying the model of a session node may result in the destruction of
  * models downstream and the elimination of parent/child relationships between
- * nodes is mutual.</p> </p> <p>The Session organizes events coming from the
+ * nodes is mutual.</p> <p>The Session organizes events coming from the
  * nodes in the session so that a listener to the Session receives all events
  * from the Session. This is convenience service so that listeners do not need
  * to pay attention to all of the different nodes in the session individually.
- * See <code>SessionEvent</code> for the types of events that are sent.</p> </p>
+ * See <code>SessionEvent</code> for the types of events that are sent.</p>
  * <p>It is intended for the Session to be serializable. For the Session and
  * SessionNode classes, this can be checked directly in unit tests. For the
  * various models that the Session can construct, this has to be tested

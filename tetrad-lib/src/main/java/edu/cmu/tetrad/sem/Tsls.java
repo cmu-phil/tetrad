@@ -35,8 +35,8 @@ import java.util.List;
  * Implementation of 2SLS, adapted to deal with estimation of covariance
  * matrices. See "An alternative two stage least squares (2SLS) estimator for
  * latent variable equations" by Kenneth Bollen (Psychometrika - vol. 61, no1.,
- * 109-121, March 1996). </p> IMPORTANT: this algorithm assumes that the SemPm
- * is a pure measurement model! With at least TWO measurements per latent. </p>
+ * 109-121, March 1996). IMPORTANT: this algorithm assumes that the SemPm
+ * is a pure measurement model! With at least TWO measurements per latent.
  * Large parts of this code (that is, everything but estimateCoeffs and
  * estimateCovars) were reused from SEMEstimateAdapter.
  *

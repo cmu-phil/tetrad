@@ -128,10 +128,10 @@ public interface LagGraph extends TetradSerializable {
      * The way to do this is to use this method to get a copy of the
      * connectivity to store internally in the update function. Because it is a
      * SortedMap, factors and lagged factors can be expected to stay in the same
-     * order. </p> <p><i>Note:</i> This strategy is not implemented yet!  Please
+     * order. <p><i>Note:</i> This strategy is not implemented yet!  Please
      * remove this note when it is implemented.  The idea is to get rid of the
      * classes IndexedParent and Connectivity and use this sorted map to replace
-     * them.</p>
+     * them.
      *
      * @return this sorted map.
      */

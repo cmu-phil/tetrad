@@ -199,7 +199,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
     /**
      * @return true just in case the edge is pointing toward the given node--
-     * that is, x --> node or x o--> node.
+     * that is, x --&gt; node or x o--&gt; node.
      */
     public boolean pointsTowards(Node node) {
         Endpoint proximal = getProximalEndpoint(node);

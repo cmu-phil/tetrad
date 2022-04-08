@@ -23,12 +23,12 @@ package edu.cmu.tetrad.graph;
 
 
 /**
- * <p>A graph constraint that checks to make sure that in-arrows imply
- * non-ancestry-- that is, when adding an edge A *--> B, where * is any
- * endpoint, B is not an ancestor of A.</p> <p>This can be used, e.g., to guard
+ * A graph constraint that checks to make sure that in-arrows imply
+ * non-ancestry-- that is, when adding an edge A *--&gt; B, where * is any
+ * endpoint, B is not an ancestor of A.<p>This can be used, e.g., to guard
  * against cycles in a DAG.  If we may assume that graph G is already acyclic,
  * then we can use this constraint to check whether adding a new directed edge
- * will create a new cycle.</p>
+ * will create a new cycle.
  *
  * @author Joseph Ramsey
  */

@@ -29,7 +29,7 @@ import java.util.*;
 
 /**
  * This is the same as the usual SepsetMap described below, but also keeps up with the individual sets of conditioning
- * nodes for d-separation relations for use with the Distributed Causal Inference (DCI) algorithm. <p/> <p>Stores a map
+ * nodes for d-separation relations for use with the Distributed Causal Inference (DCI) algorithm.  <p>Stores a map
  * from pairs of nodes to separating sets--that is, for each unordered pair of nodes {node1, node2} in a graph, stores a
  * set of nodes conditional on which node1 and node2 are independent (where the nodes are considered as variables) or
  * stores null if the pair was not judged to be independent. (Note that if a sepset is non-null and empty, that should

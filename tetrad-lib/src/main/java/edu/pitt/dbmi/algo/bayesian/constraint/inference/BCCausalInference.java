@@ -73,14 +73,14 @@ public class BCCausalInference {
      * assumes uniform parameter priors and a structure prior of 0.5. A
      * structure prior of 0.5 means taht a priori we have that P(X independent Y
      * given Z) = P(X dependent Y given Z) = 0.5.
-     * <p/>
+     *
      * Z[0] is the length of the set represented by array Z. For an example,
      * Z[0] = 1 represents the set Z of size 1. Z[0] = 0 represents an empty
      * set.
-     * <p/>
+     *
      * Set Z with two elements: Z = {3, 2} Z[0] = 2 // set Z has two elements
      * (length of 2) Z[1] = 3 // first element Z[2] = 2 // second element.
-     * <p/>
+     *
      * Empty set: Z = {} Z[0] = 0
      *
      * @param constraint has the value OP.independent or OP.dependent

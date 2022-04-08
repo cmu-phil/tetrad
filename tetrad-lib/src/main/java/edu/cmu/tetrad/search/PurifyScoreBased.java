@@ -42,7 +42,7 @@ public class PurifyScoreBased implements IPurify {
     private final int numVars;
     private List forbiddenList;
 
-//     SCORE-BASED PURIFY </p> - using BIC score function and Structural EM for
+//     SCORE-BASED PURIFY - using BIC score function and Structural EM for
 //     search. Probabilistic model is Gaussian. - search operator consists only
 //     of adding a bi-directed edge between pairs of error variables - after
 //     such pairs are found, an heuristic is applied to eliminate one member of

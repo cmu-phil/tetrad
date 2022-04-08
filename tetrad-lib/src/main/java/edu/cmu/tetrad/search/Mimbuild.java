@@ -42,7 +42,7 @@ import java.util.List;
  * throws and exception then a CPC search. The penalty penaltyDiscount parameter is for the GES search; the alpha
  * value is for the CPC search. Or you can just grab the latent covariance matrix and run whatever search you
  * want to. (I don't know why GES sometimes fails, it is a mystery.)
- * </p>
+ *
  * Uses a different (better) algorithm from Mimbuild. Preferable.
  *
  * @author Joseph Ramsey

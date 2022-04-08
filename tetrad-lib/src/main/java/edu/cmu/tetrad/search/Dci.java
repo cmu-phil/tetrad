@@ -641,7 +641,7 @@ public class Dci {
 
     /**
      * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p> The body of
+     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of
      * a DDP consists of colliders that are parents of c. This only considers discriminating undirectedPaths that are completely
      * jointly measured.
      */
@@ -1695,7 +1695,7 @@ public class Dci {
 
     /**
      * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p> The body of
+     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of
      * a DDP consists of colliders that are parents of c.
      */
     private boolean reachablePathFindOrient(Graph graph, Node a, Node b, Node c,

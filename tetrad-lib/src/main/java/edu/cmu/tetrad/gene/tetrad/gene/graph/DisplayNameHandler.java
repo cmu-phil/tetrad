@@ -69,7 +69,7 @@ public final class DisplayNameHandler {
     }
 
     /**
-     * Extracts the lag from the lagged factor name string. </p> precondition
+     * Extracts the lag from the lagged factor name string. precondition
      * laggedFactor is a legal lagged factor.
      *
      * @param laggedFactor the lagged factor whose lag is wanted.

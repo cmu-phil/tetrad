@@ -32,7 +32,7 @@ import java.util.Arrays;
  * in the set {0, 1, 2, ...}. The term has a coefficient and a freely generated
  * list of variables. For example, if "x" -> 0, "y" -> 1, "z" -> 2, then the
  * following terms are represented as follows, where "Vi" stands for the
- * variable mapped to index i:</p> </p> <ol> <li> 2.5x -> 2.5*(V0)(V0) <li>
+ * variable mapped to index i: <ol> <li> 2.5x -> 2.5*(V0)(V0) <li>
  * 1.7xyz^2 -> 1.7*(V0)(V1)(V2)(V2) <li> -5.0z^3y^2 -> -5.0*(V2)(V2)(V2)(V1)(V1)
  * </ol>
  *
@@ -73,9 +73,6 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static PolynomialTerm serializableInstance() {
         return new PolynomialTerm(0.0, new int[0]);

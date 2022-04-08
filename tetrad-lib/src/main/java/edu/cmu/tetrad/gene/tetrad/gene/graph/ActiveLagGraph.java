@@ -40,7 +40,7 @@ import java.util.SortedSet;
 /**
  * Adds Javabean property change events so that it can be used in a MVC type
  * architecture. Does not throw any exceptions, but it will only fire
- * PropertyChange events if the function successfully completed </p> This
+ * PropertyChange events if the function successfully completed This
  * version of a lag graph also differs from a standard BasicLagGraph in that it
  * allows edges with lags > maxLagAllowable to be added. In such a case,
  * maxLagAllowable will be increased
@@ -97,7 +97,7 @@ public class ActiveLagGraph implements LagGraph {
      * Attemps to set the maximum allowable lag of an edge in the graph. This
      * really is not necessary to use publicly anymore since the addEdge
      * function will now automatically increase the MaxAllowableLag of the graph
-     * if an edge's lag is greater than MaxAllowableLag. </p> Will throw a
+     * if an edge's lag is greater than MaxAllowableLag. Will throw a
      * propertyChange event of (null, (Integer) newMaxLagAllowable).
      */
     public void setMaxLagAllowable(int maxLagAllowable) {
@@ -112,7 +112,7 @@ public class ActiveLagGraph implements LagGraph {
     /**
      * Attempts to add an edge to the graph. If the lag of the edge is greater
      * than maxLagAllowable, maxLagAllowable will automatically be increased so
-     * that the edge can be added. </p> Will throw a propertyChange event of
+     * that the edge can be added. Will throw a propertyChange event of
      * (null, (LaggedEdge) newEdge)
      */
     public void addEdge(String factor, LaggedFactor laggedFactor) {
@@ -154,7 +154,7 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
-     * Attempts to remove an edge from the graph. </p> Will throw a
+     * Attempts to remove an edge from the graph. Will throw a
      * propertyChange event of ((LaggedEdge) edge_removed, null).
      */
     public void removeEdge(String factor, LaggedFactor laggedFactor) {
@@ -171,7 +171,7 @@ public class ActiveLagGraph implements LagGraph {
 
     /**
      * Attempts to remove a factor from the graph. Will also search through and
-     * remove any edges that involve this edge. </p> Will throw a propertyChange
+     * remove any edges that involve this edge. Will throw a propertyChange
      * event of ((String) factor_removed, null).
      */
     public void removeFactor(String factor) {
@@ -207,7 +207,7 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
-     * Attempts to rename a factor. </p> Will throw a propertyChange event of
+     * Attempts to rename a factor. Will throw a propertyChange event of
      * ((String) oldName, (String) newName).
      */
     public void renameFactor(String oldName, String newName) {

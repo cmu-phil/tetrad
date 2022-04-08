@@ -64,10 +64,10 @@ import static java.lang.Math.pow;
  * use the method <ul> <li> getParents(int nodeIndex) </ul> To determine the
  * index of a category, use the method <ul> <li> getCategoryIndex(Node node)
  * </ul> in BayesPm. The rest of the methods in this class are easily understood
- * as variants of the methods above. </p>
+ * as variants of the methods above.
  * <p>
  * Thanks to Pucktada Treeratpituk, Frank Wimberly, and Willie Wheeler for
- * advice and earlier versions.</p>
+ * advice and earlier versions.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */

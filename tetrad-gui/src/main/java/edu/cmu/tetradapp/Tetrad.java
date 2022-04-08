@@ -38,16 +38,15 @@ import java.beans.PropertyChangeListener;
 import java.util.Locale;
 
 /**
- * <p>
  * Launches Tetrad as an application. The intended class path in either case is
  * "edu.cmu.tetradapp.Tetrad", so care should be taken not to move this class
  * out of the "INSTANCE" package. The launch itself is carried out by the method
- * "launchFrame()", which generates a new frame for the application.</p>
+ * "launchFrame()", which generates a new frame for the application.
  * <p>
  * Note to programmers: <b>Please don't make any changes to this class.</b>
  * If you need another way of launching Tetrad for special purposes, it's easy
  * enough to create a copy of this class with a different name and modify
- * it.</p>
+ * it.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */

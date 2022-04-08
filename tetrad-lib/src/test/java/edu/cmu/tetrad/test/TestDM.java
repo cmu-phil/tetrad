@@ -29,12 +29,11 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 import java.io.*;
 import java.util.List;
+
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -42,29 +41,18 @@ import java.util.List;
  *
  * @author Alexander Murray-Watters
  */
-public class TestDM extends TestCase {
+public class TestDM {
 
     /**
      * Standard constructor for JUnit test cases.
      */
     public TestDM(String name) {
-        super(name);
+//        super(name);
     }
 
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestDM.class);
-    }
-
-    public static void main(String... args) {
-        new TestDM("Foo").test1();
-    }
+//    public static void main(String... args) {
+//        new TestDM("Foo").test1();
+//    }
 
     public void test1() {
         //setting seed for debug.

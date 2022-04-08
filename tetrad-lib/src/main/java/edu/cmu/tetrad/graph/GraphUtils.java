@@ -55,6 +55,9 @@ public final class GraphUtils {
      * Arranges the nodes in the graph in a circle.
      *
      * @param radius The radius of the circle in pixels; a good default is 150.
+     * @param centerx The x coordinate for the center of the layout.
+     * @param centery The y coordinate for the center of the layout.
+     * @param radius The radius of the layout.
      */
     public static void circleLayout(Graph graph, int centerx, int centery,
                                     int radius) {
@@ -898,7 +901,7 @@ public final class GraphUtils {
 
     /**
      * @return the node associated with a given error node. This should be the
-     * only child of the error node, E --> N.
+     * only child of the error node, E --&gt; N.
      */
     public static Node getAssociatedNode(Node errorNode, Graph graph) {
         if (errorNode.getNodeType() != NodeType.ERROR) {
@@ -923,7 +926,7 @@ public final class GraphUtils {
     }
 
     /**
-     * @return true if <code>set</code> is a clique in <code>graph</code>. </p>
+     * @return true if <code>set</code> is a clique in <code>graph</code>.
      * R. Silva, June 2004
      */
     public static boolean isClique(Collection<Node> set, Graph graph) {
@@ -2735,7 +2738,7 @@ public final class GraphUtils {
     }
 
     /**
-     * @return A list of triples of the form X*->Y<-*Z.
+     * @return A list of triples of the form X*-&gt;Y&lt;-*Z.
      */
     public static List<Triple> getCollidersFromGraph(Node node, Graph graph) {
         List<Triple> colliders = new ArrayList<>();
@@ -2764,7 +2767,7 @@ public final class GraphUtils {
     }
 
     /**
-     * @return A list of triples of the form <X, Y, Z>, where <X, Y, Z> is a
+     * @return A list of triples of the form X, Y, Z, where X, Y, Z is a
      * definite noncollider in the given graph.
      */
     public static List<Triple> getNoncollidersFromGraph(Node node, Graph graph) {
@@ -2796,7 +2799,7 @@ public final class GraphUtils {
     }
 
     /**
-     * @return A list of triples of the form <X, Y, Z>, where <X, Y, Z> is a
+     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a
      * definite noncollider in the given graph.
      */
     public static List<Triple> getAmbiguousTriplesFromGraph(Node node, Graph graph) {
@@ -2823,7 +2826,7 @@ public final class GraphUtils {
     }
 
     /**
-     * @return A list of triples of the form <X, Y, Z>, where <X, Y, Z> is a
+     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a
      * definite noncollider in the given graph.
      */
     public static List<Triple> getUnderlinedTriplesFromGraph(Node node, Graph graph) {
@@ -2851,7 +2854,7 @@ public final class GraphUtils {
     }
 
     /**
-     * @return A list of triples of the form <X, Y, Z>, where <X, Y, Z> is a
+     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a
      * definite noncollider in the given graph.
      */
     public static List<Triple> getDottedUnderlinedTriplesFromGraph(Node node, Graph graph) {

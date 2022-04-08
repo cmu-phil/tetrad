@@ -7,11 +7,11 @@ import edu.cmu.tetrad.graph.Graph;
 /**
  * Calculates the Matthew's correlation coefficient for adjacencies. See this page in
  * Wikipedia:
- * </p>
+ *
  * https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
- * </p>
+ *
  * We calculate the correlation directly from the confusion matrix.
- * </p>
+ *
  * if the true contains X*->Y and estimated graph either does not contain an edge from
  * X to Y or else does not contain an arrowhead at X for an edge from X to Y, one false
  * positive is counted. Similarly, for false negatives

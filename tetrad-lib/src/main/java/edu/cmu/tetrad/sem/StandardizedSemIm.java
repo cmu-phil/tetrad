@@ -51,7 +51,7 @@ import static java.lang.Math.sqrt;
  * the user cannot make any change that does not also allow for a standardized SEM to be
  * defined, with error variances taking up the slack. Thus, the standardized SEM can
  * never go "out of bounds."
- * </p>
+ *
  * Currently we are not allowing bidirected edges in the SEM graph.
  */
 public class StandardizedSemIm implements Simulator {

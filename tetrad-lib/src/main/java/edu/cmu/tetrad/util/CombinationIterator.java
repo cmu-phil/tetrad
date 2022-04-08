@@ -25,9 +25,9 @@ import java.util.Iterator;
 
 /**
  * Iterates through all the posible combinations for a set of variables (each
- * with a different number of possible values). </p> For example, if the number
+ * with a different number of possible values). For example, if the number
  * of values for each variable is two, this would iterate through a truth table.
- * </p> Not to be confused with a combinatorial (taking n values from m possible
+ * Not to be confused with a combinatorial (taking n values from m possible
  * values).
  *
  * @author Juan Casares

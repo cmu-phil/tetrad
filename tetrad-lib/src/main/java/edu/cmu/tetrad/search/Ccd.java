@@ -32,7 +32,7 @@ import java.util.*;
 /**
  * This class provides the data structures and methods for carrying out the Cyclic Causal Discovery algorithm (CCD)
  * described by Thomas Richardson and Peter Spirtes in Chapter 7 of Computation, Causation, & Discovery by Glymour and
- * Cooper eds.  The comments that appear below are keyed to the algorithm specification on pp. 269-271. </p> The search
+ * Cooper eds.  The comments that appear below are keyed to the algorithm specification on pp. 269-271. The search
  * method returns an instance of a Graph but it also constructs two lists of node triples which represent the underlines
  * and dotted underlines that the algorithm discovers.
  *
@@ -58,7 +58,7 @@ public final class Ccd implements GraphSearch {
      * The search method assumes that the IndependenceTest provided to the constructor is a conditional independence
      * oracle for the SEM (or Bayes network) which describes the causal structure of the population. The method returns
      * a PAG instantiated as a Tetrad GaSearchGraph which represents the equivalence class of digraphs which are
-     * d-separation equivalent to the digraph of the underlying model (SEM or BN). </p> Although they are not returned
+     * d-separation equivalent to the digraph of the underlying model (SEM or BN). Although they are not returned
      * by the search method it also computes two lists of triples which, respectively store the underlines and dotted
      * underlines of the PAG.
      */
