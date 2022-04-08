@@ -81,8 +81,8 @@ public final class Fges implements GraphSearch, GraphScorer {
     private final ForkJoinPool pool;
     // The maximum number of threads to use.
     private final int maxThreads;
-    private boolean faithfulnessAssumed = true;
     private final int depth = 10000;
+    private boolean faithfulnessAssumed = true;
     /**
      * Specification of forbidden and required edges.
      */
@@ -1420,70 +1420,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
     }
 
-    class NodeTaskEmptyGraph implements Callable<Boolean> {
-
-        private final int from;
-        private final int to;
-        private final List<Node> nodes;
-        private final Set<Node> emptySet;
-
-        NodeTaskEmptyGraph(int from, int to, List<Node> nodes, Set<Node> emptySet) {
-            this.from = from;
-            this.to = to;
-            this.nodes = nodes;
-            this.emptySet = emptySet;
-        }
-
-        @Override
-        public Boolean call() {
-            for (int i = this.from; i < this.to; i++) {
-                if ((i + 1) % 1000 == 0) {
-                    Fges.this.count[0] += 1000;
-                    Fges.this.out.println("Initializing effect edges: " + (Fges.this.count[0]));
-                }
-
-                Node y = this.nodes.get(i);
-
-                for (int j = i + 1; j < this.nodes.size() && !Thread.currentThread().isInterrupted(); j++) {
-                    Node x = this.nodes.get(j);
-
-                    if (existsKnowledge()) {
-                        if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
-                            continue;
-                        }
-
-                        if (invalidSetByKnowledge(y, this.emptySet)) {
-                            continue;
-                        }
-                    }
-
-                    if (Fges.this.adjacencies != null && !Fges.this.adjacencies.isAdjacentTo(x, y)) {
-                        continue;
-                    }
-
-                    int child = Fges.this.hashIndices.get(y);
-                    int parent = Fges.this.hashIndices.get(x);
-                    double bump = Fges.this.score.localScoreDiff(parent, child);
-
-                    if (Fges.this.symmetricFirstStep) {
-                        double bump2 = Fges.this.score.localScoreDiff(child, parent);
-                        bump = max(bump, bump2);
-                    }
-
-                    if (Fges.this.boundGraph != null && !Fges.this.boundGraph.isAdjacentTo(x, y)) {
-                        continue;
-                    }
-
-                    if (bump > 0) {
-                        Fges.this.effectEdgesGraph.addEdge(Edges.undirectedEdge(x, y));
-                    }
-                }
-            }
-
-            return true;
-        }
-    }
-
     private static class ArrowConfig {
         private Set<Node> T;
         private Set<Node> nayx;
@@ -1561,6 +1497,70 @@ public final class Fges implements GraphSearch, GraphScorer {
         @Override
         public int hashCode() {
             return Objects.hash(this.nayx, this.parents);
+        }
+    }
+
+    class NodeTaskEmptyGraph implements Callable<Boolean> {
+
+        private final int from;
+        private final int to;
+        private final List<Node> nodes;
+        private final Set<Node> emptySet;
+
+        NodeTaskEmptyGraph(int from, int to, List<Node> nodes, Set<Node> emptySet) {
+            this.from = from;
+            this.to = to;
+            this.nodes = nodes;
+            this.emptySet = emptySet;
+        }
+
+        @Override
+        public Boolean call() {
+            for (int i = this.from; i < this.to; i++) {
+                if ((i + 1) % 1000 == 0) {
+                    Fges.this.count[0] += 1000;
+                    Fges.this.out.println("Initializing effect edges: " + (Fges.this.count[0]));
+                }
+
+                Node y = this.nodes.get(i);
+
+                for (int j = i + 1; j < this.nodes.size() && !Thread.currentThread().isInterrupted(); j++) {
+                    Node x = this.nodes.get(j);
+
+                    if (existsKnowledge()) {
+                        if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
+                            continue;
+                        }
+
+                        if (invalidSetByKnowledge(y, this.emptySet)) {
+                            continue;
+                        }
+                    }
+
+                    if (Fges.this.adjacencies != null && !Fges.this.adjacencies.isAdjacentTo(x, y)) {
+                        continue;
+                    }
+
+                    int child = Fges.this.hashIndices.get(y);
+                    int parent = Fges.this.hashIndices.get(x);
+                    double bump = Fges.this.score.localScoreDiff(parent, child);
+
+                    if (Fges.this.symmetricFirstStep) {
+                        double bump2 = Fges.this.score.localScoreDiff(child, parent);
+                        bump = max(bump, bump2);
+                    }
+
+                    if (Fges.this.boundGraph != null && !Fges.this.boundGraph.isAdjacentTo(x, y)) {
+                        continue;
+                    }
+
+                    if (bump > 0) {
+                        Fges.this.effectEdgesGraph.addEdge(Edges.undirectedEdge(x, y));
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }
