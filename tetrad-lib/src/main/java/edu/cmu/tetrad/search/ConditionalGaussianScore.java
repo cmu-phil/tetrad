@@ -82,7 +82,13 @@ public class ConditionalGaussianScore implements Score {
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        return 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(rows.size());
+        double score = 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(rows.size());
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NEGATIVE_INFINITY;
+        } else {
+            return score;
+        }
     }
 
     private List<Integer> getRows(int i, int[] parents) {

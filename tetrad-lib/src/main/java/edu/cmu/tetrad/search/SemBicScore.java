@@ -120,8 +120,9 @@ public class SemBicScore implements Score {
         this.calculateRowSubsets = true;
     }
 
-    public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets) {
-        try {
+    public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)
+            throws SingularMatrixException {
+//        try {
             int[] all = SemBicScore.concat(i, parents);
             Matrix cov = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
             int[] pp = SemBicScore.indexedParents(parents);
@@ -130,9 +131,9 @@ public class SemBicScore implements Score {
             Matrix b = (covxx.inverse().times(covxy));
             Matrix bStar = SemBicScore.bStar(b);
             return (bStar.transpose().times(cov).times(bStar).get(0, 0));
-        } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity");
-        }
+//        } catch (SingularMatrixException e) {
+//            throw new RuntimeException("Singularity");
+//        }
     }
 
     @NotNull
@@ -255,14 +256,24 @@ public class SemBicScore implements Score {
 
         double varey;
 
-        varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+        try {
+            varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+        } catch (SingularMatrixException e) {
+            return Double.NEGATIVE_INFINITY;
+        }
 
         double c = getPenaltyDiscount();
 
         if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
             // Standard BIC, with penalty discount and structure prior.
-            return -c * k * log(n) - n * log(varey);// - 2 * getStructurePrior(k);
+            double _score = -c * k * log(n) - n * log(varey); // - 2 * getStructurePrior(k);
+
+            if (Double.isNaN(_score) || Double.isInfinite(_score)) {
+                return Double.NEGATIVE_INFINITY;
+            } else {
+                return _score;
+            }
         } else {
             throw new IllegalStateException("That rule type is not implemented: " + this.ruleType);
         }
