@@ -370,8 +370,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
         }
 
-        if (algo instanceof HasKnowledge && ((HasKnowledge) algo).getKnowledge().getVariablesNotInTiers().size()
-                < ((HasKnowledge) algo).getKnowledge().getVariables().size()) {
+        if (algo instanceof HasKnowledge && ((HasKnowledge) algo).getKnowledge().getNumTiers() > 0) {
+//                && ((HasKnowledge) algo).getKnowledge().getVariablesNotInTiers().size()
+//                < ((HasKnowledge) algo).getKnowledge().getVariables().size()) {
             IKnowledge _knowledge = ((HasKnowledge) algo).getKnowledge();
             if (_knowledge.getVariablesNotInTiers().size()
                     < _knowledge.getVariables().size()) {

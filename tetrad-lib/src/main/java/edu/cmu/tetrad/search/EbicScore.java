@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -119,12 +120,24 @@ public class EbicScore implements Score {
 
     public double localScore(int i, int... parents) throws RuntimeException {
         int pi = parents.length + 1;
-        double varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+        double varRy;
+
+        try {
+            varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+        } catch (SingularMatrixException e){
+            return Double.NEGATIVE_INFINITY;
+        }
 
         double gamma = this.gamma;//  1.0 - riskBound;
 
-        return -(this.N * log(varRy) + (pi * log(this.N)
+        double _score = -(this.N * log(varRy) + (pi * log(this.N)
                 + 2 * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
+
+        if (Double.isNaN(_score) || Double.isInfinite(_score)) {
+            return Double.NEGATIVE_INFINITY;
+        } else {
+            return _score;
+        }
     }
 
     public static double getP(int pn, int m0, double lambda) {
