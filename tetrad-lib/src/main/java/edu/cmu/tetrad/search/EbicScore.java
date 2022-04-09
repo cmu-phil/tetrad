@@ -94,7 +94,11 @@ public class EbicScore implements Score {
         this.data = _dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            setCovariances(new CovarianceMatrixOnTheFly(dataSet));
+            if (dataSet.getNumColumns() > 5000) {
+                setCovariances(new CovarianceMatrixOnTheFly(dataSet));
+            } else {
+                setCovariances(new CovarianceMatrix(dataSet));
+            }
             this.calculateRowSubsets = false;
         } else {
             this.calculateRowSubsets = true;

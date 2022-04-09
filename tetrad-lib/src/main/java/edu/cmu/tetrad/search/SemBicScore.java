@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
@@ -106,7 +103,11 @@ public class SemBicScore implements Score {
         this.data = dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            setCovariances(new CovarianceMatrix(dataSet, false));
+            if (dataSet.getNumColumns() > 5000) {
+                setCovariances(new CovarianceMatrixOnTheFly(dataSet));
+            } else {
+                setCovariances(new CovarianceMatrix(dataSet));
+            }
             this.variables = this.covariances.getVariables();
             this.sampleSize = this.covariances.getSampleSize();
             this.indexMap = indexMap(this.variables);

@@ -215,7 +215,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         this.mode = Mode.heuristicSpeedup;
         fes();
-        bes();
+//        bes();
 
         this.mode = Mode.coverNoncolliders;
         fes();
