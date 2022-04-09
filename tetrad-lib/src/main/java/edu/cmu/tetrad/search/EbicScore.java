@@ -94,7 +94,7 @@ public class EbicScore implements Score {
         this.data = _dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            setCovariances(new CovarianceMatrix(dataSet));
+            setCovariances(new CovarianceMatrixOnTheFly(dataSet));
             this.calculateRowSubsets = false;
         } else {
             this.calculateRowSubsets = true;
@@ -217,7 +217,7 @@ public class EbicScore implements Score {
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {
-        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
+        CorrelationMatrixOnTheFly correlations = new CorrelationMatrixOnTheFly(covariances);
         this.covariances = covariances;
 
         boolean exists = false;
