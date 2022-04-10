@@ -536,8 +536,6 @@ public final class Fges implements GraphSearch, GraphScorer {
             process.add(x);
             process.add(y);
             process.addAll(getCommonAdjacents(x, y));
-//            process.addAll(graph.getAdjacentNodes(x));
-//            process.addAll(graph.getAdjacentNodes(y));
 
             reevaluateForward(new HashSet<>(process));
         }
