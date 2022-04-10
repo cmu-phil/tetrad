@@ -37,7 +37,7 @@ public class SemBicTest implements IndependenceWrapper {
         if (dataSet instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dataSet);
         } else {
-            score = new SemBicScore((DataSet) dataSet);
+            score = new SemBicScore((DataSet) dataSet, true);
         }
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));

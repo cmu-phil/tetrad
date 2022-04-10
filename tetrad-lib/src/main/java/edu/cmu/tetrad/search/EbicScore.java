@@ -63,6 +63,7 @@ public class EbicScore implements Score {
 
     // The gamma paramter for EBIC.
     private double gamma = 1;
+    private boolean precomputeCovariances = true;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -80,7 +81,9 @@ public class EbicScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public EbicScore(DataSet dataSet) {
+    public EbicScore(DataSet dataSet, boolean precomputeCovariances) {
+        this.precomputeCovariances = precomputeCovariances;
+
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -94,7 +97,7 @@ public class EbicScore implements Score {
         this.data = _dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            if (dataSet.getNumColumns() > 5000) {
+            if (!precomputeCovariances) {
                 setCovariances(new CovarianceMatrixOnTheFly(dataSet));
             } else {
                 setCovariances(new CovarianceMatrix(dataSet));

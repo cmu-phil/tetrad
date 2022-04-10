@@ -36,7 +36,7 @@ public class EbicScore implements ScoreWrapper {
         edu.cmu.tetrad.search.EbicScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.EbicScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.EbicScore((DataSet) this.dataSet, parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
         } else if (dataSet instanceof ICovarianceMatrix) {
             score = new edu.cmu.tetrad.search.EbicScore((ICovarianceMatrix) this.dataSet);
         } else {
@@ -63,6 +63,7 @@ public class EbicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.EBIC_GAMMA);
 //        parameters.add(Params.CORRELATION_THRESHOLD);
+        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         return parameters;
     }
 

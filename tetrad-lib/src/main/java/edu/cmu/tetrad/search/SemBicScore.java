@@ -76,6 +76,7 @@ public class SemBicScore implements Score {
 
     // The rule type to use.
     private RuleType ruleType = RuleType.CHICKERING;
+    private boolean precomputeCovariances = true;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -91,10 +92,16 @@ public class SemBicScore implements Score {
         this.indexMap = indexMap(this.variables);
     }
 
-    /**
-     * Constructs the score using a covariance matrix.
-     */
     public SemBicScore(DataSet dataSet) {
+        this(dataSet, true);
+    }
+
+        /**
+         * Constructs the score using a covariance matrix.
+         */
+    public SemBicScore(DataSet dataSet, boolean precomputeCovariances) {
+        this.precomputeCovariances = precomputeCovariances;
+
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -103,7 +110,7 @@ public class SemBicScore implements Score {
         this.data = dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            if (dataSet.getNumColumns() > 5000) {
+            if (!precomputeCovariances) {
                 setCovariances(new CovarianceMatrixOnTheFly(dataSet));
             } else {
                 setCovariances(new CovarianceMatrix(dataSet));
