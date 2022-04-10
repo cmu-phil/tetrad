@@ -479,7 +479,7 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
-        return existsUndirectedPathVisit(node1, node2, new TreeSet<>());
+        return existsUndirectedPathVisit(node1, node2, new HashSet<>());
     }
 
     @Override
@@ -994,20 +994,17 @@ public class EdgeListGraph implements Graph {
     @Override
     public List<Node> getAdjacentNodes(Node node) {
         Set<Edge> edges = this.edgeLists.get(node);
-        List<Node> adj = new ArrayList<>();
+        Set<Node> adj = new HashSet<>();
 
         for (Edge edge : edges) {
             if (edge == null) {
                 continue;
             }
-            Node z = edge.getDistalNode(node);
 
-            if (!adj.contains(z)) {
-                adj.add(z);
-            }
+            adj.add(edge.getDistalNode(node));
         }
 
-        return adj;
+        return new ArrayList<>(adj);
     }
 
     /**
@@ -1216,7 +1213,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public Set<Edge> getEdges() {
-        return new TreeSet<>(this.edgesSet);
+        return new HashSet<>(this.edgesSet);
     }
 
     /**

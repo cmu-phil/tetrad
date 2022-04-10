@@ -61,7 +61,6 @@ import static java.lang.Math.min;
  * @author Joseph Ramsey, Revisions 5/2015
  */
 public final class Fges implements GraphSearch, GraphScorer {
-
     final Set<Node> emptySet = new HashSet<>();
     final int[] count = new int[1];
     /**
@@ -134,6 +133,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     // True if the first step of adding an edge to an empty graph should be scored in both directions
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep;
+
 
     /**
      * Construct a Score and pass it in here. The totalScore should return a
@@ -215,7 +215,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         this.mode = Mode.heuristicSpeedup;
         fes();
-//        bes();
+        bes();
 
         this.mode = Mode.coverNoncolliders;
         fes();
@@ -327,7 +327,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     /**
      * Sets the output stream that output (except for log output) should be sent
-     * to. By detault System.out.
+     * to. By default System.out.
      */
     public void setOut(PrintStream out) {
         this.out = out;
@@ -638,7 +638,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
                         adj = new ArrayList<>(g);
                     } else if (Fges.this.mode == Mode.allowUnfaithfulness) {
-//                        adj = new ArrayList<>(variables);
                         adj = new ArrayList<>(GraphUtils.getDconnectedVars(y, new ArrayList<>(), Fges.this.graph));
                         adj.remove(y);
                     } else {
@@ -662,19 +661,22 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         int chunkSize = getChunkSize(nodes.size());
 
-        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
-            AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
+        AdjTask task = new AdjTask(new ArrayList<>(nodes), 0, nodes.size());
 
-            if (this.maxThreads == 1) {
+
+//        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+//            AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
+//
+//            if (this.maxThreads == 1) {
                 task.call();
-            } else {
-                tasks.add(task);
-            }
-        }
+//            } else {
+//                tasks.add(task);
+//            }
+//        }
 
-        if (this.maxThreads > 1) {
-            this.pool.invokeAll(tasks);
-        }
+//        if (this.maxThreads > 1) {
+//            this.pool.invokeAll(tasks);
+//        }
     }
 
     // Calculates the new arrows for an a->b edge.
@@ -711,15 +713,78 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         Set<Node> maxT = null;
         double maxBump = Double.NEGATIVE_INFINITY;
+        List<Set<Node>> TT = new ArrayList<>();
 
         while ((choice = gen.next()) != null) {
             Set<Node> _T = GraphUtils.asSet(choice, TNeighbors);
+            TT.add(_T);
+        }
 
-            double _bump = insertEval(a, b, _T, naYX, parents, this.hashIndices);
+        class EvalTask implements Callable<EvalPair> {
+            private final List<Set<Node>> Ts;
+            private final ConcurrentMap<Node, Integer> hashIndices;
+            private final int from;
+            private final int to;
+            private Set<Node> maxT = null;
+            private double maxBump = Double.NEGATIVE_INFINITY;
 
-            if (_bump > maxBump) {
-                maxT = _T;
-                maxBump = _bump;
+            public EvalTask(List<Set<Node>> Ts, int from, int to, ConcurrentMap<Node, Integer> hashIndices) {
+                this.Ts = Ts;
+                this.hashIndices = hashIndices;
+                this.from = from;
+                this.to = to;
+            }
+
+            @Override
+            public EvalPair call() {
+                for (int k = from; k < to; k++) {
+                    double _bump = insertEval(a, b, Ts.get(k), naYX, parents, this.hashIndices);
+
+                    if (_bump > maxBump) {
+                        maxT = Ts.get(k);
+                        maxBump = _bump;
+                    }
+                }
+
+                EvalPair pair = new EvalPair();
+                pair.T = maxT;
+                pair.bump = maxBump;
+
+                return pair;
+            }
+        }
+
+        int chunkSize = getChunkSize(TT.size());
+        List<EvalTask> tasks = new ArrayList<>();
+
+        for (int i = 0; i < TT.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+            EvalTask task = new EvalTask(TT, i, min(TT.size(), i + chunkSize), hashIndices);
+
+            if (this.maxThreads == 1) {
+                EvalPair pair = task.call();
+
+                if (pair.bump > maxBump) {
+                    maxT = pair.T;
+                    maxBump = pair.bump;
+                }
+            } else {
+                tasks.add(task);
+            }
+        }
+
+        if (this.maxThreads > 1) {
+            List<Future<EvalPair>> futures = this.pool.invokeAll(tasks);
+
+            for (Future<EvalPair> future : futures) {
+                try {
+                    EvalPair pair = future.get();
+                    if (pair.bump > maxBump) {
+                        maxT = pair.T;
+                        maxBump = pair.bump;
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -1330,6 +1395,11 @@ public final class Fges implements GraphSearch, GraphScorer {
         allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
     }
 
+    private static class EvalPair {
+        Set<Node> T;
+        double bump;
+    }
+
     // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
     // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
     // For the forward direction, TNeighbors neighbors are needed; for the backward direction, H neighbors are needed.
@@ -1453,8 +1523,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (!(o instanceof ArrowConfig)) return false;
             ArrowConfig that = (ArrowConfig) o;
             return this.T.equals(that.T) && this.nayx.equals(that.nayx) && this.parents.equals(that.parents);
         }

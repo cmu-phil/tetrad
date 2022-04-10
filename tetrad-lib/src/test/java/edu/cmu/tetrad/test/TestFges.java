@@ -652,13 +652,13 @@ public class TestFges {
 
     @Test
     public void testFromGraph() {
-        final int numNodes = 10;
+        final int numNodes = 20;
         final int aveDegree = 4;
         final int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
             Graph dag = GraphUtils.randomDag(numNodes, 0, aveDegree * numNodes / 2, 10, 10, 10, false);
-            Fges fges = new Fges(new GraphScore(dag));
+            Fges fges = new Fges(new GraphScore(dag), 10);
             fges.setFaithfulnessAssumed(true);
             fges.setVerbose(true);
             Graph CPDAG1 = fges.search();

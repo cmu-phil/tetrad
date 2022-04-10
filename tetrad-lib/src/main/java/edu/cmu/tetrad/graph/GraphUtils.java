@@ -4208,7 +4208,7 @@ public final class GraphUtils {
         return false;
     }
 
-    public static Set<Node> getDconnectedVars(Node x, List<Node> z, Graph graph) {
+    public static Set<Node> getDconnectedVars(Node y, List<Node> z, Graph graph) {
         Set<Node> Y = new HashSet<>();
 
         class EdgeNode {
@@ -4237,11 +4237,11 @@ public final class GraphUtils {
         Queue<EdgeNode> Q = new ArrayDeque<>();
         Set<EdgeNode> V = new HashSet<>();
 
-        for (Edge edge : graph.getEdges(x)) {
-            EdgeNode edgeNode = new EdgeNode(edge, x);
+        for (Edge edge : graph.getEdges(y)) {
+            EdgeNode edgeNode = new EdgeNode(edge, y);
             Q.offer(edgeNode);
             V.add(edgeNode);
-            Y.add(edge.getDistalNode(x));
+            Y.add(edge.getDistalNode(y));
         }
 
         while (!Q.isEmpty()) {
