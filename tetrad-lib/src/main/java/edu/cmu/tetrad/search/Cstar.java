@@ -37,6 +37,7 @@ public class Cstar {
     private PatternAlgorithm patternAlgorithm = PatternAlgorithm.PC_STABLE;
     private SampleStyle sampleStyle = SampleStyle.BOOTSTRAP;
     private boolean verbose;
+
     public Cstar() {
     }
 
@@ -288,7 +289,6 @@ public class Cstar {
         List<double[][]> allEffects = runCallablesDoubleArray(tasks, parallelized);
 
         int avgEdges = (int) (edgesTotal[0] / (double) edgesCount[0]);
-//        avgEdges /= 2.0;
 
         qs.clear();
         qs.add(avgEdges);
