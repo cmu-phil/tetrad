@@ -53,7 +53,7 @@ public class CovLINard implements CovarianceFunction {
     private final int D;
 
     /**
-     * Creates a new <code>CovSEard CovarianceFunction<code>
+     * Creates a new <code>CovSEard CovarianceFunction</code>
      *
      * @param inputDimension muber of dimension of the input
      */

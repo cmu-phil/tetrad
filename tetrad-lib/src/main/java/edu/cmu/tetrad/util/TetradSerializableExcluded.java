@@ -28,8 +28,8 @@ import java.io.Serializable;
  * TetradSerializable classes, even if it implements the TetradSerializable
  * interface. This is needed because some interface need to implement
  * TetradSerializable for reasons of sanity, but certain rogue implementations
- * of those interfaces are not actually serialized.</p>
- * <p>See TestSerialization and TestSerializiableUtils.</p>
+ * of those interfaces are not actually serialized.&gt; 0
+ * <p>See TestSerialization and TestSerializiableUtils.&gt; 0
  *
  * @author Joseph Ramsey
  */

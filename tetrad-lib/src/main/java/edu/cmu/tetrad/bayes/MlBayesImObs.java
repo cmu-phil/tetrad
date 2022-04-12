@@ -65,7 +65,7 @@ import java.util.List;
  * as variants of the methods above.
  * <p>
  * Thanks to Pucktada Treeratpituk, Frank Wimberly, and Willie Wheeler for
- * advise and earlier versions.</p>
+ * advise and earlier versions.&gt; 0
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */

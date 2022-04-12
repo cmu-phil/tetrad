@@ -77,7 +77,7 @@ public class TextTable {
     }
 
     /**
-     * Sets the token at the given row and column, each of which must be >= 0
+     * Sets the token at the given row and column, each of which must be &gt;= 0
      * and less than the number of rows or columns, respectively.
      */
     public void setToken(int row, int column, String token) {
@@ -125,7 +125,7 @@ public class TextTable {
     }
 
     /**
-     * Sets the number of spaces between columns, to some number >= 0.
+     * Sets the number of spaces between columns, to some number &gt;= 0.
      */
     public void setColumnSpacing(int numSpaces) {
         if (numSpaces < 0) {

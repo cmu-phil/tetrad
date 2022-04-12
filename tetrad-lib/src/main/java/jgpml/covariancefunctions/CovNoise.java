@@ -45,7 +45,7 @@ import java.util.Arrays;
 public class CovNoise implements CovarianceFunction {
 
     /**
-     * Creates a new <code>CovNoise CovarianceFunction<code>
+     * Creates a new <code>CovNoise CovarianceFunction</code>
      */
     public CovNoise() {
     }

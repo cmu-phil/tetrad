@@ -14,10 +14,10 @@ import org.apache.commons.math3.util.Precision;
  * Calculates the eigen decomposition of a real matrix.
  * <p>The eigen decomposition of matrix A is a set of two matrices:
  * V and D such that A = V &times; D &times; V<sup>T</sup>.
- * A, V and D are all m &times; m matrices.</p>
+ * A, V and D are all m &times; m matrices.&gt; 0
  * <p>This class is similar in spirit to the <code>EigenvalueDecomposition</code>
  * class from the <a href="http://math.nist.gov/javanumerics/jama/">JAMA</a>
- * library, with the following changes:</p>
+ * library, with the following changes:&gt; 0
  * <ul>
  *   <li>a {@link #getVT() getVt} method has been added,</li>
  *   <li>two {@link #getRealEigenvalue(int) getRealEigenvalue} and {@link #getImagEigenvalue(int)

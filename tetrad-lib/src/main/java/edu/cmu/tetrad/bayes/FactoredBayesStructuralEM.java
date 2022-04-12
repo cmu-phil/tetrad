@@ -35,10 +35,10 @@ import java.util.Set;
 
 /**
  * <p>Implements the procedure Factored-Bayesian-SEM found on page 6 of "The
- * Bayesian Structural EM Algorithm" by Nir Friedman.</p> <p>The initial
+ * Bayesian Structural EM Algorithm" by Nir Friedman.&gt; 0 <p>The initial
  * implementation simplifies the algorithm somewhat by computing the score of
  * each model by using the BdeMetric score, which is implemented in the bayes
- * package of Tetrad-4.2.</p>
+ * package of Tetrad-4.2.&gt; 0
  *
  * @author Frank Wimberly
  * @author Robert Tillman (changes since 5-12-2008)
@@ -57,9 +57,9 @@ public final class FactoredBayesStructuralEM {
     // * exploiting the fact that different models may share factors whose score only
     // * has to be computed and stored once.  Hence, the iterate and iterate1 methods
     // * should return the same model with the same score but iterate1 should be more
-    // * efficient.</p>
+    // * efficient.&gt; 0
     // *
-    // * <p>The iterate and iterate1 methods have been replaced by iterate2.</p>
+    // * <p>The iterate and iterate1 methods have been replaced by iterate2.&gt; 0
 
     private final BayesPm bayesPmM0;
     private final DataSet dataSet;

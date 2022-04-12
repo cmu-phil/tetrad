@@ -45,7 +45,7 @@ import java.util.*;
  * put it slightly differently, parents can be added to this node one at a time,
  * though at any step along the way it ought to be possible (perhaps by adding
  * more parent nodes) to use the parent models to construct a model of one of
- * the legal types for this node.</p>
+ * the legal types for this node.&gt; 0
  * <p>
  * To retrieve the list of classes for which models may be created, call the <code>getConsistentModelClasses
  * </code>. To construct a model for a particular model choice, call
@@ -54,10 +54,10 @@ import java.util.*;
  * <code>createParameterizedModel</code> method. For parameterized models, the
  * model object is treated simply as an additional parent to the model and
  * therefore must appear as an argument to one of the constructors of the
- * model.</p>
+ * model.&gt; 0
  * <p>
  * This node keeps track of its parents and its children and keeps these two
- * sets of SessionNodes in sync.</p>
+ * sets of SessionNodes in sync.&gt; 0
  *
  * @author Joseph Ramsey
  * @see Session
@@ -164,7 +164,7 @@ public class SessionNode implements Node {
      * The number of times this session node should be executed (in depth first
      * order) in a simulation edu.cmu.tetrad.study.
      *
-     * @serial Range > 0.
+     * @serial Range &gt; 0.
      */
     private int repetition = 1;
 
@@ -844,13 +844,13 @@ public class SessionNode implements Node {
      * Collections API to determine, for example, containment in an ArrayList,
      * and the sense of equality needed for that is object identity.
      * Nevertheless, for certain other purposes, such as checking serialization,
-     * a looser sense of structural identity is helpful.</p>
+     * a looser sense of structural identity is helpful.&gt; 0
      * <p>
      * Two SessionNodes are structurally identical just in case their possible
      * model classes are equal, the parameter type arrays used to construct
      * their models are equal, their models themselves are equal, and the model
      * classes of the parent and child SessionNodes are equal. We dare not check
-     * equality of parents and children outright for fear of circularity.</p>
+     * equality of parents and children outright for fear of circularity.&gt; 0
      */
     public boolean isStructurallyIdentical(SessionNode node) {
         if (node == null) {
@@ -1207,7 +1207,7 @@ public class SessionNode implements Node {
      * Tests whether the model class has an argument that takes all of the given
      * argument classes (or more) as arguments. The purpose of this is to allow
      * parent nodes to be added one at a time to this node, whether or not any
-     * of the nodes in question have non-null models.</p>
+     * of the nodes in question have non-null models.&gt; 0
      */
     public boolean existsConstructor(Class modelClass, Class[] argumentTypes) {
         for (Class argumentType1 : argumentTypes) {
@@ -1245,7 +1245,7 @@ public class SessionNode implements Node {
     /**
      * <p>
      * Returns the first class c in <code>classes</code> that <code>clazz</code>
-     * is assignable to.</p>
+     * is assignable to.&gt; 0
      */
     public Class getAssignableClass(List classes, Class clazz) {
         for (Object aClass : classes) {

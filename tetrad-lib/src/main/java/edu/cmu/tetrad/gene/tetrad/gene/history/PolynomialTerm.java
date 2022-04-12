@@ -30,10 +30,10 @@ import java.util.Arrays;
 /**
  * <p>Implements a term in a polymonial whose variables are mapped to indices in
  * in the set {0, 1, 2, ...}. The term has a coefficient and a freely generated
- * list of variables. For example, if "x" -> 0, "y" -> 1, "z" -> 2, then the
+ * list of variables. For example, if "x" -&gt; 0, "y" -&gt; 1, "z" -&gt; 2, then the
  * following terms are represented as follows, where "Vi" stands for the
- * variable mapped to index i: <ol> <li> 2.5x -> 2.5*(V0)(V0) <li>
- * 1.7xyz^2 -> 1.7*(V0)(V1)(V2)(V2) <li> -5.0z^3y^2 -> -5.0*(V2)(V2)(V2)(V1)(V1)
+ * variable mapped to index i: <ol> <li> 2.5x -&gt; 2.5*(V0)(V0) <li>
+ * 1.7xyz^2 -&gt; 1.7*(V0)(V1)(V2)(V2) <li> -5.0z^3y^2 -&gt; -5.0*(V2)(V2)(V2)(V1)(V1)
  * </ol>
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu

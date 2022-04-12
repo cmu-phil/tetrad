@@ -271,19 +271,19 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
                             _type = new StringBuilder("-->");
                             break;
                         case at:
-                            _type = new StringBuilder("<--");
+                            _type = new StringBuilder("&lt;--");
                             break;
                         case ca:
                             _type = new StringBuilder("o->");
                             break;
                         case ac:
-                            _type = new StringBuilder("<-o");
+                            _type = new StringBuilder("&lt;-o");
                             break;
                         case cc:
                             _type = new StringBuilder("o-o");
                             break;
                         case aa:
-                            _type = new StringBuilder("<->");
+                            _type = new StringBuilder("&lt;-&gt;");
                             break;
                         case tt:
                             _type = new StringBuilder("---");

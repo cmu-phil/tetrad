@@ -47,7 +47,7 @@ public class TestRicf {
      * <pre>
      * > ## A covariance matrix
      *
-     * > "S" <- structure(c(2.93, -1.7, 0.76, -0.06,
+     * > "S" &lt;- structure(c(2.93, -1.7, 0.76, -0.06,
      * +                   -1.7, 1.64, -0.78, 0.1,
      * +                    0.76, -0.78, 1.66, -0.78,
      * +                   -0.06, 0.1, -0.78, 0.81), .Dim = c(4,4),
@@ -56,9 +56,9 @@ public class TestRicf {
      *
      * > ## The following should give the same fit.
      *
-     * > ## Fit an ancestral graph y -> x <-> z <- u
+     * > ## Fit an ancestral graph y -> x &lt;-> z &lt;- u
      *
-     * > fitAncestralGraph(ag1 <- makeAG(dag=DAG(x~y,z~u), bg = UG(~x*z)), S,
+     * > fitAncestralGraph(ag1 &lt;- makeAG(dag=DAG(x~y,z~u), bg = UG(~x*z)), S,
      * n=100)
      * $Shat
      * y          x          z          u

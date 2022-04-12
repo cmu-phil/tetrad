@@ -31,7 +31,7 @@ import java.util.*;
 
 /**
  * This class provides the data structures and methods for carrying out the Cyclic Causal Discovery algorithm (CCD)
- * described by Thomas Richardson and Peter Spirtes in Chapter 7 of Computation, Causation, & Discovery by Glymour and
+ * described by Thomas Richardson and Peter Spirtes in Chapter 7 of Computation, Causation, and Discovery by Glymour and
  * Cooper eds.  The comments that appear below are keyed to the algorithm specification on pp. 269-271. The search
  * method returns an instance of a Graph but it also constructs two lists of node triples which represent the underlines
  * and dotted underlines that the algorithm discovers.

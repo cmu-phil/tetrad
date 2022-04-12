@@ -41,7 +41,7 @@ import java.util.Map;
  * Wraps a Simulation object for the Tetrad interface. A Simulation object
  * requires a RandomGraph and a choice of Simulation style and can take a
  * variety of parents, either standalone or with graphs, IM's or PM's as
- * parents. It essentially stores an ordered pair of <Graph, List<DataSet>>. It
+ * parents. It essentially stores an ordered pair of [Graph, List[DataSet]]. It
  * is edited by SimulationEditor.
  *
  * @author jdramsey

@@ -251,7 +251,7 @@ public class Discretizer {
     /**
      * Discretizes the continuous data in the given column using the specified
      * cutoffs and category names. The following scheme is used. If cutoffs[i -
-     * 1] < v <= cutoffs[i] (where cutoffs[-1] = negative infinity), then v is
+     * 1] &lt; v &lt;= cutoffs[i] (where cutoffs[-1] = negative infinity), then v is
      * mapped to category i. If category names are supplied, the discrete column
      * returned will use these category names.
      *

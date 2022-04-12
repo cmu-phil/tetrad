@@ -54,9 +54,9 @@ public class EdgeTypeTable extends JPanel {
             "\u2192", // =G> dd nl
             "\u2190", // <G= dd nl
             "o->",
-            "<-o",
+            "&lt;-o",
             "o-o",
-            "<->",
+            "&lt;->",
             "---"
     };
 

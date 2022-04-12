@@ -30,7 +30,7 @@ import java.util.Map;
  * is set in the constructor, it will be passed to the reset() method. Every
  * time the dimensionality is changed, the table is reset to zero throughout. If
  * the dimensionality is set to null, the table cannot be used until a non-null
- * dimensionality is set.</p>
+ * dimensionality is set.&gt; 0
  *
  * @author Joseph Ramsey
  */
@@ -62,8 +62,8 @@ public class MultiDimIntTable {
      * Constructs a new multidimensional table of integer cells, with the given
      * (fixed) dimensions. Each dimension must be an integer greater than zero.
      *
-     * @param dims An int[] array of length > 0, each element of which specifies
-     *             the number of values of that dimension (> 0).
+     * @param dims An int[] array of length &gt; 0, each element of which specifies
+     *             the number of values of that dimension (&gt; 0).
      */
     public MultiDimIntTable(int[] dims) {
         reset(dims);

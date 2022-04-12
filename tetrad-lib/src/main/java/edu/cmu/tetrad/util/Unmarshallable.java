@@ -24,7 +24,7 @@ package edu.cmu.tetrad.util;
 import java.io.Serializable;
 
 /**
- * <p>Interface to tag classes that should not be cloned by marshalling.</p>
+ * <p>Interface to tag classes that should not be cloned by marshalling.&gt; 0
  *
  * @author Joseph Ramsey
  */

@@ -65,9 +65,6 @@ public final class ManualLagGraph implements LagGraph {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static ManualLagGraph serializableInstance() {
         return new ManualLagGraph(ManualLagGraphParams.serializableInstance());

@@ -337,7 +337,7 @@ public class TimeSeriesUtils {
      * is applied to the result of d = 1. And so on.
      *
      * @param data the data to be differenced.
-     * @param d    the number of differences to take, >= 0.
+     * @param d    the number of differences to take, &gt;= 0.
      * @return the differenced data.
      */
     public static DataSet difference(DataSet data, int d) {

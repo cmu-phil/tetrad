@@ -59,11 +59,11 @@ interface DiscreteProbs {
      * combinations of values for bayesIm.getNode(i) as boolean arrays of length
      * bayesim.getNumSplits(i), with a[i][j] = true iff the condition
      * includes the j'th value of bayesIm.getNode(i), and similarly for
-     * b[i][j].</p> <p>This does not allow all possible conditional
+     * b[i][j].&gt; 0 <p>This does not allow all possible conditional
      * probabilities to be calculated, since for instance the condition X1 = 1
      * or X2 = 2 cannot be represented this way directly, but it does capture
      * all conditions for which this type of method would generally be of
-     * interest.</p>
+     * interest.&gt; 0
      */
     double getConditionalProb(Proposition assertion, Proposition condition);
 

@@ -33,14 +33,14 @@ import java.util.*;
  * <P>Stores a time series in the "update" (rather than, say, the "repeated")
  * form--that is, for a given set of factors (the word "factor" is being used
  * here to avoid ambiguity), only lags behind the getModel time step are recorded
- * temporally, with causal edges extending from lagged factors with lags >= 1 to
+ * temporally, with causal edges extending from lagged factors with lags &gt;= 1 to
  * factors in the getModel time step (lag = 0) only. This "update graph" is
  * viewed as a repeating structure; for each time step, the influences from
  * previous time steps of other factors are as the update graph specifies.
  * <P>Factor names in this model are distinct String's. The form of these
  * String's is left entirely up to the code using this package. Lags are int's
- * >= 0, although of course lagged factors used for edge specifications must
- * have lags >= 1.
+ * &gt;= 0, although of course lagged factors used for edge specifications must
+ * have lags &gt;= 1.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -58,7 +58,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * The maximum allowable lag. edges may not be added with lags greater than
-     * this. The value must be >= 1.
+     * this. The value must be &gt;= 1.
      *
      * @serial
      */
@@ -107,7 +107,7 @@ public final class BasicLagGraph implements LagGraph {
      *
      * @param factor       a factor name in the graph.
      * @param laggedFactor a lagged factor with factor name in the graph and lag
-     *                     >=1.
+     *                     &gt;=1.
      * @throws IllegalArgumentException if the edge cannot be added.
      */
     public void addEdge(String factor, LaggedFactor laggedFactor)
@@ -235,7 +235,7 @@ public final class BasicLagGraph implements LagGraph {
 
     /**
      * Sets the maximum allowable lag. Edges may not be added with lags greater
-     * than this. This value must be >= the getModel value of getMaxLag().
+     * than this. This value must be &gt;= the getModel value of getMaxLag().
      */
     public void setMaxLagAllowable(int maxLagAllowable) {
         if (maxLagAllowable >= getMaxLag()) {
@@ -291,7 +291,7 @@ public final class BasicLagGraph implements LagGraph {
      * order. <p><i>Note:</i> This strategy is not implemented yet!  Please
      * remove this note when it is implemented.  The idea is to get rid of the
      * classes IndexedParent and Connectivity and use this sorted map to replace
-     * them.</p>
+     * them.&gt; 0
      *
      * @return this sorted map.
      */

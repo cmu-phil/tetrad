@@ -35,10 +35,10 @@ import java.util.*;
  * stores null if the pair was not judged to be independent. (Note that if a sepset is non-null and empty, that should
  * means that the compared nodes were found to be independent conditional on the empty set, whereas if a sepset is null,
  * that should mean that no set was found yet conditional on which the compared nodes are independent. So at the end of
- * the search, a null sepset carries different information from an empty sepset.)</p> <p>We cast the variable-like
+ * the search, a null sepset carries different information from an empty sepset.)&gt; 0 <p>We cast the variable-like
  * objects to Node to allow them either to be variables explicitly or else to be graph nodes that in some model could be
  * considered as variables. This allows us to use d-separation as a graphical indicator of what independendence in
- * models ideally should be.</p>
+ * models ideally should be.&gt; 0
  *
  * @author Robert Tillman
  */

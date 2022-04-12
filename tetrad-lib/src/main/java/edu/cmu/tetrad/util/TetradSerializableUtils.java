@@ -65,7 +65,7 @@ public class TetradSerializableUtils {
      * can't be vouched for. When adding classes to this list, please use
      * similar reasoning to vouch for their safety. Unfortunately, such safety
      * cannot be automatically checked. Class, for instance, <p>We will
-     * move to JDK 1.5 as soon as it becomes available for Macs.</p>
+     * move to JDK 1.5 as soon as it becomes available for Macs.&gt; 0
      */
     private static final Class[] safelySerializableTypes = {
             String.class, Class.class, Date.class, Collection.class, Map.class,

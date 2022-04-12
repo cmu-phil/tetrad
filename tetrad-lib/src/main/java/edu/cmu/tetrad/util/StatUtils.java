@@ -1600,7 +1600,7 @@ public final class StatUtils {
     }
 
     /**
-     * @return the index, >=, in the sorted list of p values of which all p values are rejected. It
+     * @return the index, &gt;=, in the sorted list of p values of which all p values are rejected. It
      * the index is -1, all p values are rejected.
      */
     public static int fdr(double alpha, List<Double> pValues) {

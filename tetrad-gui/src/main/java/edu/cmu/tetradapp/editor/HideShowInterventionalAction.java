@@ -22,7 +22,7 @@ import java.awt.event.ActionEvent;
 /**
  * Jan 8, 2019 11:26:23 AM
  *
- * @author Zhou Yuan <zhy19@pitt.edu>
+ * @author Zhou Yuan zhy19@pitt.edu
  */
 public class HideShowInterventionalAction extends AbstractAction implements ClipboardOwner {
 

@@ -543,7 +543,7 @@ public final class Rfci implements GraphSearch {
                 continue;
             }
 
-            // Orient to*->from
+            // Orient to*-&gt;from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
             this.changeFlag = true;

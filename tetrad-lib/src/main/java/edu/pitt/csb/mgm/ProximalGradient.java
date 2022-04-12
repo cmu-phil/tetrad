@@ -76,7 +76,7 @@ public class ProximalGradient {
 
     /**
      * Positive edge change tolerance is the number of iterations with 0 edge changes needed to converge.
-     * Negative edge change tolerance means convergence happens when number of difference edges <= |edge change tol|.
+     * Negative edge change tolerance means convergence happens when number of difference edges &lt;= |edge change tol|.
      * Default is 3.
      */
     public void setEdgeChangeTol(int t) {

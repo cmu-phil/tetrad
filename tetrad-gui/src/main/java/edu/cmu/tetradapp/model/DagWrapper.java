@@ -35,7 +35,7 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Holds a tetrad dag with all of the constructors necessary for it <></>o serve as
+ * Holds a tetrad dag with all of the constructors necessary for it to serve as
  * a model for the tetrad application.
  *
  * @author Joseph Ramsey

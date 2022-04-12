@@ -129,7 +129,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * The size of the sample used to calculated this covariance matrix.
      *
-     * @return The sample size (> 0).
+     * @return The sample size (&gt; 0).
      */
     public final int getSampleSize() {
         return this.cov.getSampleSize();

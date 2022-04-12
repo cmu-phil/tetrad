@@ -9,8 +9,8 @@ import java.util.List;
 
 /**
  * A confusion matrix for arrows--i.e. TP, FP, TN, FN for counts of arrow endpoints.
- * A true positive arrow is counted for X*->Y in the estimated graph if X is not adjacent
- * to Y or X--Y or X<--Y.
+ * A true positive arrow is counted for X*-&gt;Y in the estimated graph if X is not adjacent
+ * to Y or X--Y or X&lt;--Y.
  *
  * @author jdramsey, rubens (November, 2016)
  */

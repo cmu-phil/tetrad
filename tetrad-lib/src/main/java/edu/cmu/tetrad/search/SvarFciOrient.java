@@ -231,7 +231,7 @@ public final class SvarFciOrient {
 
     private void printWrongColliderMessage(Node a, Node b, Node c, Graph graph) {
         if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
-            System.out.println("R0" + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
+            System.out.println("R0" + ": Orienting collider by mistake: " + a + "*-&gt;" + b + "&lt;-*" + c);
         }
     }
 
@@ -345,7 +345,7 @@ public final class SvarFciOrient {
     }
 
     /// R1, away from collider
-    // If a*->bo-*c and a, c not adjacent then a*->b->c
+    // If a*-&gt;bo-*c and a, c not adjacent then a*-&gt;b->c
     private void ruleR1(Node a, Node b, Node c, Graph graph) {
         if (graph.isAdjacentTo(a, c)) {
             return;
@@ -373,7 +373,7 @@ public final class SvarFciOrient {
         return this.sepsets.isNoncollider(a, b, c);
     }
 
-    //if a*-oc and either a-->b*->c or a*->b-->c, then a*->c
+    //if a*-oc and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
     // This is Zhang's rule R2.
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c)) &&
@@ -401,8 +401,8 @@ public final class SvarFciOrient {
     }
 
     /**
-     * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-oDo-*C, then
-     * D*->B.
+     * Implements the double-triangle orientation rule, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-oDo-*C, then
+     * D*-&gt;B.
      * <p>
      * This is Zhang's rule R3.
      */
@@ -480,7 +480,7 @@ public final class SvarFciOrient {
         for (Node b : nodes) {
 
             //potential A and C candidate pairs are only those
-            // that look like this:   A<-*Bo-*C
+            // that look like this:   A&lt;-*Bo-*C
             List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
             List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
 
@@ -548,7 +548,7 @@ public final class SvarFciOrient {
 
             for (Node d : pathExtensions) {
                 // If d is reachable and not adjacent to c, its a DDP
-                // endpoint, so do DDP orientation. Otherwise, if d <-> c,
+                // endpoint, so do DDP orientation. Otherwise, if d &lt;-> c,
                 // add d to the list of reachable nodes.
                 if (!graph.isAdjacentTo(d, c)) {
                     // Check whether <a, b, c> should be reoriented given
@@ -610,7 +610,7 @@ public final class SvarFciOrient {
      *         xo           x is either an arrowhead or a circle
      *        /  \
      *       v    v
-     * L....A --> C
+     * L....A --&gt; C
      * </pre>
      * <p>
      * This is Zhang's rule R4, discriminating undirectedPaths.
@@ -621,7 +621,7 @@ public final class SvarFciOrient {
         for (Node b : nodes) {
 
             //potential A and C candidate pairs are only those
-            // that look like this:   A<-*Bo-*C
+            // that look like this:   A&lt;-*Bo-*C
             List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
             List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
 
@@ -800,7 +800,7 @@ public final class SvarFciOrient {
 
     /**
      * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u =
-     * <A,C,...,D,B> such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
+     * [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
      */
     public void ruleR5(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -888,7 +888,7 @@ public final class SvarFciOrient {
 
     /**
      * Implements Zhang's rules R8, R9, R10, applies them over the graph once. Orient arrow tails. I.e., tries R8, R9,
-     * and R10 in that sequence on each Ao->C in the graph.
+     * and R10 in that sequence on each Ao-&gt;C in the graph.
      */
     public void rulesR8R9R10(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -1051,11 +1051,11 @@ public final class SvarFciOrient {
         List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
         for (Node b : intoCArrows) {
-            // We have B*->C.
+            // We have B*-&gt;C.
             if (!graph.isAdjacentTo(a, b)) continue;
             if (!graph.isAdjacentTo(b, c)) continue;
 
-            // We have A*-*B*->C.
+            // We have A*-*B*-&gt;C.
             if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) continue;
             if (!(graph.getEndpoint(c, b) == Endpoint.TAIL)) continue;
             // We have A--*B-->C.
@@ -1110,7 +1110,7 @@ public final class SvarFciOrient {
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
      * <p>
-     * R10: If Ao->C, B-->C<--D, there is an uncovered p.d. path u1=<A,M,...,B> and an uncovered p.d. path
+     * R10: If Ao->C, B-->C&lt;--D, there is an uncovered p.d. path u1=<A,M,...,B> and an uncovered p.d. path
      * u2=<A,N,...,D> with M != N and M,N nonadjacent then A-->C.
      *
      * @param a The node A.
@@ -1180,7 +1180,7 @@ public final class SvarFciOrient {
                 continue;
             }
 
-            // Orient to*->from
+            // Orient to*-&gt;from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
             this.changeFlag = true;

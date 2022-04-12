@@ -539,7 +539,7 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value <= 0
+     * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value &lt;= 0
      * indicates that the Incomplete Cholesky method should not be used and instead use the exact matrices.
      */
     public void setIncompleteCholesky(double precision) {

@@ -100,7 +100,7 @@ public class BasalInitializer implements Initializer {
      * Sets the expression of each unregulated gene in the given history at time
      * step 0 to a random value drawn from N(basalExpression, initStDev),
      * sets the expression level at time step 0 of each regulated gene to zero,
-     * and then copies the values at history[0][j] to history[i][j] for all i >
+     * and then copies the values at history[0][j] to history[i][j] for all i &gt;
      * 0 less than the maximum time lag.
      *
      * @param history the 2D double array to randomize.

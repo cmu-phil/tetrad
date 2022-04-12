@@ -652,7 +652,7 @@ public class TestFges {
 
     @Test
     public void testFromGraph() {
-        final int numNodes = 20;
+        final int numNodes = 10;
         final int aveDegree = 4;
         final int numIterations = 1;
 

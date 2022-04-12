@@ -45,28 +45,28 @@ public interface IndependenceTest {
 
     /**
      * @return true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     boolean isIndependent(Node x, Node y, List<Node> z);
 
     /**
      * @return true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     boolean isIndependent(Node x, Node y, Node... z);
 
     /**
      * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     boolean isDependent(Node x, Node y, List<Node> z);
 
     /**
      * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     boolean isDependent(Node x, Node y, Node... z);

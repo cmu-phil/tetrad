@@ -28,7 +28,7 @@ package edu.cmu.tetrad.util;
  * finished, null is returned.
  * <p>
  * A valid combination for the sequence of combinations for a choose b generated
- * by this class is an array x[] of b integers i, 0 <= i < a, such that x[j] <
+ * by this class is an array x[] of b integers i, 0 &lt;= i &lt; a, such that x[j] &lt;
  * x[j + 1] for each j from 0 to b - 1.
  *
  * @author Joseph Ramsey
@@ -62,7 +62,7 @@ public final class CombinationGenerator {
      * each dimension.
      *
      * @param dims the number of objects in each dimension. Each member must
-     *             be >= 0.
+     *             be &gt;= 0.
      * @throws NullPointerException if dims is null.
      */
     public CombinationGenerator(int[] dims) {

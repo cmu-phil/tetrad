@@ -31,7 +31,7 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * An implementation of a static AD tree based on Moore & Lee 1998 (mostly)
+ * An implementation of a static AD tree based on Moore and Lee 1998 (mostly)
  * <p>
  * Indexing of the variables works backwards:
  * (a_i can't have children a_i ... a_m)

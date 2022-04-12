@@ -51,9 +51,9 @@ import static java.lang.Math.sqrt;
  * is considerably faster for large data sets.
  * <p>
  * Let V be the set of variables in the model. The freeParameters of the model
- * are as follows: (a) the list of linear coefficients for all edges u-->v in
+ * are as follows: (a) the list of linear coefficients for all edges u--&gt;v in
  * the model, where u, v are in V, (b) the list of variances for all variables
- * in V, (c) the list of all error covariances d<-->e, where d an e are
+ * in V, (c) the list of all error covariances d&lt;-&gt;e, where d an e are
  * exogenous terms in the model (either exogenous variables or error terms for
  * endogenous variables), and (d) the list of means for all variables in V.
  * <p>
@@ -63,7 +63,7 @@ import static java.lang.Math.sqrt;
  * coefficients and error covariances in the model.
  * <p>
  * Reference: Bollen, K. A. (1989). Structural Equations with Latent Variables.
- * New York: John Wiley & Sons.
+ * New York: John Wiley and Sons.
  *
  * @author Frank Wimberly
  * @author Ricardo Silva
@@ -157,7 +157,7 @@ public final class SemIm implements IM, ISemIm {
     /**
      * The sample size.
      *
-     * @serial Range >= 0.
+     * @serial Range &gt;= 0.
      */
     private int sampleSize;
     /**

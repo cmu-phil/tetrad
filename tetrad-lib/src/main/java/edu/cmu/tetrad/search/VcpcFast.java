@@ -703,7 +703,7 @@ public final class VcpcFast implements GraphSearch {
             return CpcTripleType.NONCOLLIDER;
         } else {
             if (verbose) {
-                System.out.println("Orienting " + x + "-->" + y + "<-" + z);
+                System.out.println("Orienting " + x + "-->" + y + "&lt;-" + z);
             }
             return CpcTripleType.COLLIDER;
         }
@@ -949,7 +949,7 @@ public final class VcpcFast implements GraphSearch {
 
 
 ////        11/10/14 Find possible orientations of boundary of Y such that no unshielded colliders
-////        result. E.g., for x-y-z, the possible orientations are x->y->z, x<-y<-z, and x<-y->z.
+////        result. E.g., for x-y-z, the possible orientations are x->y->z, x&lt;-y&lt;-z, and x&lt;-y->z.
 ////        For each orientation, calculate bdry(y) and ftre(y). Perform Markov tests for each possible
 ////        orientation - e.g. X_||_Y | bdry(Y). If the answer is yes for each orientation then X and Y
 ////        are definitely non-adjacent for that pattern. If they pass such a test for every pattern, then

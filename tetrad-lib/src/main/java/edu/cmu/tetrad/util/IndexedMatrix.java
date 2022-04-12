@@ -60,8 +60,8 @@ public final class IndexedMatrix {
     }
 
     /**
-     * Sets the index array. The index array must be of length <= the order of
-     * the matrix, each element of which is distinct and < the order of the
+     * Sets the index array. The index array must be of length &lt;= the order of
+     * the matrix, each element of which is distinct and &lt; the order of the
      * matrix.
      *
      * @param indices The indices of the submatrix desired.

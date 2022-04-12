@@ -137,10 +137,6 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     * <p>
-     * //     * @see edu.cmu.TestSerialization
-     *
-     * @see TetradSerializableUtils
      */
     public static SampleVcpcFastRunner serializableInstance() {
         return new SampleVcpcFastRunner(Dag.serializableInstance(), new Parameters());

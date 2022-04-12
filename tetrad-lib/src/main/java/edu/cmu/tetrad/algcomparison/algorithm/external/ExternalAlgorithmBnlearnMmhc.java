@@ -19,22 +19,22 @@ import java.io.IOException;
  * library("MASS");
  * library("pcalg");
  * <p>
- * path<-"/Users/user/tetrad/comparison-final";
- * simulation<-1;
+ * path&lt;-"/Users/user/tetrad/comparison-final";
+ * simulation&lt;-1;
  * <p>
- * subdir<-"pc.solve.confl.TRUE";
+ * subdir&lt;-"pc.solve.confl.TRUE";
  * dir.create(paste(path, "/save/", simulation, "/", subdir, sep=""));
  * <p>
  * for (i in 1:10) {
- * data<-read.table(paste(path, "/save/", simulation, "/data/data.", i, ".txt", sep=""), header=TRUE)
- * n<-nrow(data)
- * C<-cor(data)
- * v<-names(data)
- * suffStat<-list(C = C, n=n)
- * pc.fit<-pc(suffStat=suffStat, indepTest=gaussCItest, alpha=0.001, labels=v,
+ * data&lt;-read.table(paste(path, "/save/", simulation, "/data/data.", i, ".txt", sep=""), header=TRUE)
+ * n&lt;-nrow(data)
+ * C&lt;-cor(data)
+ * v&lt;-names(data)
+ * suffStat&lt;-list(C = C, n=n)
+ * pc.fit&lt;-pc(suffStat=suffStat, indepTest=gaussCItest, alpha=0.001, labels=v,
  * solve.conf=TRUE)
- * A<-as(pc.fit, "amat")
- * name<-paste(path, "/save/", simulation, "/", subdir, "/graph.", i, ".txt", sep="")
+ * A&lt;-as(pc.fit, "amat")
+ * name&lt;-paste(path, "/save/", simulation, "/", subdir, "/graph.", i, ".txt", sep="")
  * print(name)
  * write.matrix(A, file=name, sep="\t")
  * }

@@ -64,9 +64,6 @@ public class LaggedEdge implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static LaggedEdge serializableInstance() {
         return new LaggedEdge("X", LaggedFactor.serializableInstance());

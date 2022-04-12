@@ -159,7 +159,7 @@ public final class MatrixUtils {
      *
      * @param ma        The first 2D matrix to check.
      * @param mb        The second 2D matrix to check.
-     * @param tolerance A double >= 0.
+     * @param tolerance A double &gt;= 0.
      * @return Ibid.
      */
     public static boolean equals(double[][] ma, double[][] mb,
@@ -174,7 +174,7 @@ public final class MatrixUtils {
      *
      * @param va        The first matrix to check.
      * @param vb        The second matrix to check.
-     * @param tolerance A double >= 0.
+     * @param tolerance A double &gt;= 0.
      * @return Ibid.
      */
     public static boolean equals(double[] va, double[] vb, double tolerance) {
@@ -193,7 +193,7 @@ public final class MatrixUtils {
 
     /**
      * @param m         The matrix to check.
-     * @param tolerance A double >= 0.
+     * @param tolerance A double &gt;= 0.
      * @return Ibid.
      */
     @SuppressWarnings({"SameParameterValue", "BooleanMethodIsAlwaysInverted"})
@@ -429,7 +429,7 @@ public final class MatrixUtils {
 
     /**
      * @param edgeCoef The edge covariance matrix. edgeCoef(i, j) is a parameter
-     *                 in this matrix just in case i-->j is an edge in the model. All other
+     *                 in this matrix just in case i--&gt;j is an edge in the model. All other
      *                 entries in the matrix are zero.
      * @param errCovar The error covariance matrix. errCovar(i, i) is the
      *                 variance of i; off-diagonal errCovar(i, j) are covariance parameters that

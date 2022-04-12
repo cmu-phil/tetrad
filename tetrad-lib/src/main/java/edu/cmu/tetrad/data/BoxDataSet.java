@@ -336,7 +336,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * Adds the given variable to the data set, increasing the number of columns
-     * by one, moving columns i >= <code>index</code> to column i + 1, and
+     * by one, moving columns i &gt;= <code>index</code> to column i + 1, and
      * inserting a column of missing values at column i.
      *
      * @throws IllegalArgumentException if the variable already exists in the
@@ -363,7 +363,7 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * Adds the given variable to the dataset, increasing the number of columns
-     * by one, moving columns i >= <code>index</code> to column i + 1, and
+     * by one, moving columns i &gt;= <code>index</code> to column i + 1, and
      * inserting a column of missing values at column i.
      */
     public void addVariable(int index, Node variable) {
@@ -812,9 +812,9 @@ public final class BoxDataSet implements DataSet {
 
     /**
      * @return a string, suitable for printing, of the dataset. Lines are
-     * separated by '\n', tokens in the line by whatever character is set in the      <code>setOutputDelimiter()<code> method. The list of variables is printed
+     * separated by '\n', tokens in the line by whatever character is set in the
+     * <code>setOutputDelimiter()</code> method. The list of variables is printed
      * first, followed by one line for each case.
-     * <p>
      * This method should probably not be used for saving to files. If that's
      * your goal, use the DataSavers class instead.
      * @see #setOutputDelimiter(Character)

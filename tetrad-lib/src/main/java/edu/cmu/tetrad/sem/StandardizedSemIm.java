@@ -46,7 +46,7 @@ import static java.lang.Math.sqrt;
  * from that SEM, standardized, and reestimated with the same SEM PM. The coefficients of
  * such an estimated SEM PM are used to initialize the standardized SEM, repeating if necessary
  * (due to possible noise issues) to get coefficients for which all errors variances can
- * be calculated. (Variances need to be >= 0 for Normal distributions.) This produces a
+ * be calculated. (Variances need to be &gt;= 0 for Normal distributions.) This produces a
  * set of coefficients that are viable candidates for the standardized SEM. From there,
  * the user cannot make any change that does not also allow for a standardized SEM to be
  * defined, with error variances taking up the slack. Thus, the standardized SEM can
@@ -205,12 +205,12 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * Sets the coefficient for the a->b edge to the given coefficient, if within range. Otherwise
+     * Sets the coefficient for the a-&gt;b edge to the given coefficient, if within range. Otherwise
      * does nothing.
      *
-     * @param a    a -> b
-     * @param b    a -> b
-     * @param coef The coefficient of a -> b.
+     * @param a    a -&gt; b
+     * @param b    a -&gt; b
+     * @param coef The coefficient of a -&gt; b.
      * @return true if the coefficent was set (i.e. was within range), false if not.
      */
     public boolean setEdgeCoefficient(Node a, Node b, double coef) {
@@ -234,12 +234,12 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * Sets the covariance for the a<->b edge to the given covariance, if within range. Otherwise
+     * Sets the covariance for the a&lt;-&gt;b edge to the given covariance, if within range. Otherwise
      * does nothing.
      *
-     * @param a     a <-> b
-     * @param b     a <-> b
-     * @param covar The covariance of a <-> b.
+     * @param a     a &lt;-&gt; b
+     * @param b     a &lt;-&gt; b
+     * @param covar The covariance of a &lt;-&gt; b.
      * @return true if the coefficent was set (i.e. was within range), false if not.
      */
     public boolean setErrorCovariance(Node a, Node b, double covar) {
@@ -263,9 +263,9 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * @param a a->b
-     * @param b a->b
-     * @return The coefficient for a->b.
+     * @param a a-&gt;b
+     * @param b a-&gt;b
+     * @return The coefficient for a-&gt;b.
      */
     public double getEdgeCoef(Node a, Node b) {
         Edge edge = Edges.directedEdge(a, b);
@@ -280,9 +280,9 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * @param a a->b
-     * @param b a->b
-     * @return The coefficient for a->b.
+     * @param a a-&gt;b
+     * @param b a-&gt;b
+     * @return The coefficient for a-&gt;b.
      */
     public double getErrorCovariance(Node a, Node b) {
         Edge edge = Edges.bidirectedEdge(this.semGraph.getExogenous(a), this.semGraph.getExogenous(b));
@@ -324,8 +324,8 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * @param edge a->b or a<->b.
-     * @return the range of the covariance parameter for a->b or a<->b.
+     * @param edge a-&gt;b or a&lt;-&gt;b.
+     * @return the range of the covariance parameter for a-&gt;b or a&lt;-&gt;b.
      */
     public ParameterRange getParameterRange(Edge edge) {
         if (Edges.isBidirectedEdge(edge)) {

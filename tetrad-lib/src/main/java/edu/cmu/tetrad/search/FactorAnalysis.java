@@ -348,46 +348,46 @@ public class FactorAnalysis {
 //              subset, na.action, start = NULL, scores = c("none", "regression",
 //                      "Bartlett"), rotation = "varimax", control = NULL, ...)
 //    {
-//        sortLoadings <- function(Lambda) {
-//        cn <- colnames(Lambda)
-//        Phi <- attr(Lambda, "covariance")
-//        ssq <- apply(Lambda, 2L, function(x) -sum(x^2))
-//        Lambda <- Lambda[, order(ssq), drop = FALSE]
-//        colnames(Lambda) <- cn
-//        neg <- colSums(Lambda) < 0
-//        Lambda[, neg] <- -Lambda[, neg]
+//        sortLoadings &lt;- function(Lambda) {
+//        cn &lt;- colnames(Lambda)
+//        Phi &lt;- attr(Lambda, "covariance")
+//        ssq &lt;- apply(Lambda, 2L, function(x) -sum(x^2))
+//        Lambda &lt;- Lambda[, order(ssq), drop = FALSE]
+//        colnames(Lambda) &lt;- cn
+//        neg &lt;- colSums(Lambda) < 0
+//        Lambda[, neg] &lt;- -Lambda[, neg]
 //        if (!is.null(Phi)) {
-//            unit <- ifelse(neg, -1, 1)
-//            attr(Lambda, "covariance") <- unit %*% Phi[order(ssq),
+//            unit &lt;- ifelse(neg, -1, 1)
+//            attr(Lambda, "covariance") &lt;- unit %*% Phi[order(ssq),
 //                    order(ssq)] %*% unit
 //        }
 //        Lambda
 //    }
-//        cl <- match.call()
-//        na.act <- NULL
+//        cl &lt;- match.call()
+//        na.act &lt;- NULL
 //        if (is.list(covmat)) {
 //            if (any(is.na(match(c("cov", "n.obs"), names(covmat)))))
 //                stop("'covmat' is not a valid covariance list")
-//            cv <- covmat$cov
-//            n.obs <- covmat$n.obs
-//            have.x <- FALSE
+//            cv &lt;- covmat$cov
+//            n.obs &lt;- covmat$n.obs
+//            have.x &lt;- FALSE
 //        }
 //        else if (is.matrix(covmat)) {
-//            cv <- covmat
-//            have.x <- FALSE
+//            cv &lt;- covmat
+//            have.x &lt;- FALSE
 //        }
 //        else if (is.null(covmat)) {
 //        if (missing(x))
 //            stop("neither 'x' nor 'covmat' supplied")
-//        have.x <- TRUE
+//        have.x &lt;- TRUE
 //        if (inherits(x, "formula")) {
-//            mt <- terms(x, data = data)
+//            mt &lt;- terms(x, data = data)
 //            if (attr(mt, "response") > 0)
 //                stop("response not allowed in formula")
-//            attr(mt, "intercept") <- 0
-//            mf <- match.call(expand.dots = FALSE)
-//            names(mf)[names(mf) == "x"] <- "formula"
-//            mf$factors <- mf$covmat <- mf$scores <- mf$start <- mf$rotation <- mf$control <- mf$... <- NULL
+//            attr(mt, "intercept") &lt;- 0
+//            mf &lt;- match.call(expand.dots = FALSE)
+//            names(mf)[names(mf) == "x"] &lt;- "formula"
+//            mf$factors &lt;- mf$covmat &lt;- mf$scores <- mf$start <- mf$rotation <- mf$control <- mf$... <- NULL
 //            mf[[1L]] <- quote(stats::model.frame)
 //            mf <- eval.parent(mf)
 //            na.act <- attr(mf, "na.action")

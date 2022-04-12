@@ -95,10 +95,6 @@ public class GraphComparisonParams extends SessionAdapter
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     * <p>
-     * //     * @see edu.cmu.TestSerialization
-     *
-     * @see TetradSerializableUtils
      */
     public static GraphComparisonParams serializableInstance() {
         return new GraphComparisonParams();

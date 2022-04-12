@@ -46,10 +46,10 @@ import static java.lang.Math.*;
 
 /**
  * Runs the FASK (Fast Adjacency Skewness) algorithm. The reference is Sanchez-Romero, R., Ramsey, J. D.,
- * Zhang, K., Glymour, M. R., Huang, B., & Glymour, C. (2019). Estimating feedforward and feedback
+ * Zhang, K., Glymour, M. R., Huang, B., and Glymour, C. (2019). Estimating feedforward and feedback
  * effective connections from fMRI time series: Assessments of statistical methods. Network Neuroscience,
  * 3(2), 274-306, though it has been improved in some ways from that version, and some pairwise methods from
- * Hyvärinen, A., & Smith, S. M. (2013). Pairwise likelihood ratios for estimation of non-Gaussian structural
+ * Hyvärinen, A., and Smith, S. M. (2013). Pairwise likelihood ratios for estimation of non-Gaussian structural
  * equation models. Journal of Machine Learning Research, 14(Jan), 111-152 have been included for
  * comparison (and potential use!--they are quite good!).
  * <p>
@@ -78,7 +78,7 @@ import static java.lang.Math.*;
  * enforces this.
  * <p>
  * Note that orienting a DAG for a linear, non-Gaussian model using the Hyvarinen and Smith pairwise rules
- * is alternatively known in the literature as Pairwise LiNGAM--see Hyvärinen, A., & Smith, S. M. (2013). Pairwise
+ * is alternatively known in the literature as Pairwise LiNGAM--see Hyvärinen, A., and Smith, S. M. (2013). Pairwise
  * likelihood ratios for estimation of non-Gaussian structural equation models. Journal of Machine Learning Research,
  * 14(Jan), 111-152. We include some of these methods here for comparison.
  *
@@ -293,7 +293,7 @@ public final class Fask implements GraphSearch {
                     if (edgeForbiddenByKnowledge(X, Y) && edgeForbiddenByKnowledge(Y, X)) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge_forbidden"
                                 + "\t" + nf.format(lr)
-                                + "\t" + X + "<->" + Y
+                                + "\t" + X + "&lt;-&gt;" + Y
                         );
                         continue;
                     }
@@ -307,7 +307,7 @@ public final class Fask implements GraphSearch {
                     } else if (knowledgeOrients(Y, X)) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge"
                                 + "\t" + nf.format(lr)
-                                + "\t" + X + "<--" + Y
+                                + "\t" + X + "&lt;--" + Y
                         );
                         graph.addDirectedEdge(Y, X);
                     } else {
@@ -419,7 +419,7 @@ public final class Fask implements GraphSearch {
     /**
      * Returns the coefficient matrix for the search. If the search has not yet run, runs it,
      * then estimates coefficients of each node given its parents using linear regression and forms
-     * the B matrix of coefficients from these estimates. B[i][j] != 0 means i->j with that coefficient.
+     * the B matrix of coefficients from these estimates. B[i][j] != 0 means i-&gt;j with that coefficient.
      */
     public double[][] getB() {
         if (this.graph == null) search();

@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 
 /**
  * <p>Tests the operation of the session node. The session node needs to be able
- * to:</p> <ul> <li>Add and remove parents or children without
+ * to:&gt; 0 <ul> <li>Add and remove parents or children without
  * violating the constraint that the set of models for the parents of a node at
  * any time should be a subset of the set of objects needed to constuct an
  * object of the given model class for some constructor of the model class. Note
@@ -59,7 +59,7 @@ public class TestSessionNode {
     /**
      * <p>Tests the <code>existsConstructor</code> method, which determines
      * whether a constructor exists in the model class that accepts objects of
-     * the given classes as arguments.</p>
+     * the given classes as arguments.&gt; 0
      */
     @Test
     public void testExistsConstructor() {
@@ -107,7 +107,7 @@ public class TestSessionNode {
 
     /**
      * <p>Tests the <code>assignParameters</code> method for the case where each
-     * model contains exactly one model type. Must test the following:</p>
+     * model contains exactly one model type. Must test the following:&gt; 0
      * <ul> <li>The order of the classes of the returned argument array
      * must be the same as the order of the classes in the parameterTypes array.
      * <li>If one of the classes in the parameterTypes array is null, null

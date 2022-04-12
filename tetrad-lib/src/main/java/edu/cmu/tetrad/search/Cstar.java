@@ -15,13 +15,13 @@ import java.util.concurrent.*;
 /**
  * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
  * <p>
- * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., & Bühlmann, P. (2012).
+ * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., and Bühlmann, P. (2012).
  * Causal stability ranking. Bioinformatics, 28(21), 2819-2823.
  * <p>
- * Meinshausen, N., & Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society:
+ * Meinshausen, N., and Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society:
  * Series B (Statistical Methodology), 72(4), 417-473.
  * <p>
- * Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning.
+ * Colombo, D., and Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning.
  * The Journal of Machine Learning Research, 15(1), 3741-3782.
  *
  * @author jdramsey@andrew.cmu.edu

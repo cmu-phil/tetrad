@@ -667,7 +667,7 @@ public final class Vcpc implements GraphSearch {
             return CpcTripleType.NONCOLLIDER;
         } else {
             if (verbose) {
-                System.out.println("Orienting " + x + "-->" + y + "<-" + z);
+                System.out.println("Orienting " + x + "-->" + y + "&lt;-" + z);
             }
             return CpcTripleType.COLLIDER;
         }

@@ -36,7 +36,7 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
  * graph, with the caveat that all edges of the form N1 *-# N2 will be
  * considered equal. For example, if the edge X --&gt; Y is added to the graph,
  * another edge X --&gt; Y may not be added, although an edge Y --&gt; X may be added.
- * Edges from nodes to themselves may also be added.</p>
+ * Edges from nodes to themselves may also be added.&gt; 0
  *
  * @author Joseph Ramsey
  * @author Erin Korber additions summer 2004

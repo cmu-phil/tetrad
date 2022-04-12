@@ -25,8 +25,8 @@ import cern.jet.stat.Probability;
 
 /**
  * <p>Implements a number of important functions from probability and
- * statistics.</p> <p>We don't know who wrote this class; we didn't.  All we
- * added was the documentation. -Joe Ramsey, jdramsey@andrew.cmu.edu</p>
+ * statistics.&gt; 0 <p>We don't know who wrote this class; we didn't.  All we
+ * added was the documentation. -Joe Ramsey, jdramsey@andrew.cmu.edu&gt; 0
  *
  * @author Unknown, but thanks
  */
@@ -237,7 +237,7 @@ public class ProbUtils {
      * Java. The static double array above goes with this. Converted
      * to Java by Frank Wimberly
      *
-     * @return the value ln[?(xx)] for xx > 0
+     * @return the value ln[?(xx)] for xx &gt; 0
      */
     public static double lngamma(double xx) {
         //Returns the value ln[?(xx)] for xx > 0.
@@ -1709,7 +1709,7 @@ public class ProbUtils {
      * @param ah upper bound 1
      * @param ak upper bound 1
      * @param r  correlation
-     * @return Prob&lpar;x1 &le; ah, x2 &le; ak&rpar;
+     * @return Prob(x1 &le; ah, x2 &le; ak)
      */
 
     public static double biNormalCdf(double ah, double ak, double r) {

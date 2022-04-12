@@ -97,7 +97,7 @@ public final class SearchGraphUtils {
 
     /**
      * Performs step C of the algorithm, as indicated on page xxx of CPS, with
-     * the modification that X--W--Y is oriented as X-->W<--Y if W is
+     * the modification that X--W--Y is oriented as X--&gt;W&lt;--Y if W is
      * *determined by* the sepset of (X, Y), rather than W just being *in* the
      * sepset of (X, Y).
      */
@@ -228,7 +228,7 @@ public final class SearchGraphUtils {
 
     /**
      * Step C of PC; orients colliders using specified sepset. That is, orients
-     * x *-* y *-* z as x *-> y <-* z just in case y is in Sepset({x, z}).
+     * x *-* y *-* z as x *-&gt; y &lt;-* z just in case y is in Sepset({x, z}).
      */
     public static void orientCollidersUsingSepsets(SepsetMap set, IKnowledge knowledge, Graph graph, boolean verbose,
                                                    boolean enforceCpdag) {
@@ -430,7 +430,7 @@ public final class SearchGraphUtils {
     }
 
     /**
-     * Meek's rule R3. If a--b, a--c, a--d, c-->b, c-->b, then orient a-->b.
+     * Meek's rule R3. If a--b, a--c, a--d, c--&gt;b, c--&gt;b, then orient a--&gt;b.
      */
     public static boolean meekR3(Graph graph, IKnowledge knowledge) {
 
@@ -849,7 +849,7 @@ public final class SearchGraphUtils {
      * legalPairs.isLegalFirstNode(X, Y1) and for each [H1, H2, H3] as subpaths
      * of U, legalPairs.isLegalPairs(H1, H2, H3).
      * <p>
-     * The algorithm used is a variant of Algorithm 1 from Geiger, Verma, &
+     * The algorithm used is a variant of Algorithm 1 from Geiger, Verma, and
      * Pearl (1990).
      */
     public static Set<Node> getReachableNodes(List<Node> initialNodes,
@@ -1107,7 +1107,7 @@ public final class SearchGraphUtils {
     }
 
     /**
-     * Tsamardinos, I., Brown, L. E., & Aliferis, C. F. (2006). The max-min hill-climbing Bayesian network structure
+     * Tsamardinos, I., Brown, L. E., and Aliferis, C. F. (2006). The max-min hill-climbing Bayesian network structure
      * learning algorithm. Machine learning, 65(1), 31-78.
      * <p>
      * Converts each graph (DAG or CPDAG) into its CPDAG before scoring.

@@ -42,7 +42,7 @@ import java.util.SortedSet;
  * architecture. Does not throw any exceptions, but it will only fire
  * PropertyChange events if the function successfully completed This
  * version of a lag graph also differs from a standard BasicLagGraph in that it
- * allows edges with lags > maxLagAllowable to be added. In such a case,
+ * allows edges with lags &gt; maxLagAllowable to be added. In such a case,
  * maxLagAllowable will be increased
  *
  * @author Gregory Li

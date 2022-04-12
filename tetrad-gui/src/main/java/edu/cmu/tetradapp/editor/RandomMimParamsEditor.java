@@ -222,7 +222,7 @@ class RandomMimParamsEditor extends JPanel {
         b1.add(b18);
 
         Box b19 = Box.createHorizontalBox();
-        b19.add(new JLabel("Measured <-> Measured"));
+        b19.add(new JLabel("Measured &lt;-> Measured"));
         b19.add(Box.createHorizontalGlue());
         b19.add(numMeasuredMeasuredImpureAssociations);
         b1.add(b19);

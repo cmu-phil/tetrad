@@ -17,7 +17,7 @@ import java.io.ObjectInputStream;
 /**
  * Feb 11, 2019 4:19:04 PM
  *
- * @author Zhou Yuan <zhy19@pitt.edu>
+ * @author Zhou Yuan zhy19@pitt.edu
  */
 public class DeterminismWraper extends DataWrapper {
     private static final long serialVersionUID = -5573234622763285581L;
@@ -47,9 +47,6 @@ public class DeterminismWraper extends DataWrapper {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @return
-     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

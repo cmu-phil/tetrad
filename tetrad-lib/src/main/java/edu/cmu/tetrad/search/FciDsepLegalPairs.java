@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * Specifies what coefs as a legal pair of edges X---Y---Z for purposes of calculating possible d-separation sets for
  * the FCI algorithm. In this case, legal initial edges are those adjacent to initial nodes, and legal pairs of edges
- * are those for which either X-->Y<--Z or X is adjacent to Z--i.e. X, Y, and Z form a triangle. (It is assumed (and
+ * are those for which either X-->Y&lt;--Z or X is adjacent to Z--i.e. X, Y, and Z form a triangle. (It is assumed (and
  * checked) that is adjacent to Y and Y is adjacent to Z.)
  *
  * @author Joseph Ramsey
@@ -62,7 +62,7 @@ class FciDsepLegalPairs implements LegalPairs {
     }
 
     /**
-     * @return true iff x-->y<--z or else x is adjacent to z.
+     * @return true iff x-->y&lt;--z or else x is adjacent to z.
      * @throws IllegalArgumentException if x is not adjacent to y or y is not adjacent to z.
      */
     public boolean isLegalPair(Node x, Node y, Node z, List<Node> c,

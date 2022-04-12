@@ -53,10 +53,6 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     * <p>
-     * //     * @see edu.cmu.TestSerialization
-     *
-     * @see TetradSerializableUtils
      */
     public static IKnowledge serializableInstance() {
         return new Knowledge2();

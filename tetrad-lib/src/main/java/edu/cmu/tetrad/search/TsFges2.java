@@ -406,7 +406,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     /**
      * A bound on cycle length.
      *
-     * @param cycleBound The bound, >= 1, or -1 for unlimited.
+     * @param cycleBound The bound, &gt;= 1, or -1 for unlimited.
      */
     public void setCycleBound(int cycleBound) {
         if (!(cycleBound == -1 || cycleBound >= 1))

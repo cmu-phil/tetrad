@@ -62,7 +62,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     /**
      * The size of the sample from which this covariance matrix was calculated.
      *
-     * @serial Range > 0.
+     * @serial Range &gt; 0.
      */
     private int sampleSize;
 
@@ -211,7 +211,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     /**
      * The size of the sample used to calculated this covariance matrix.
      *
-     * @return The sample size (> 0).
+     * @return The sample size (&gt; 0).
      */
     public final int getSampleSize() {
         return this.sampleSize;

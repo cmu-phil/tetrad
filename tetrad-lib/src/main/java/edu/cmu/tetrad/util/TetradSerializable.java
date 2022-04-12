@@ -39,17 +39,17 @@ import java.io.Serializable;
  * interpretation of that field changes. So in general, when making a class
  * TetradSerializable, please make sure that its member fields all have good
  * names (that you won't want to change later) and all have clear
- * interpretations (that you won't want to change later).</p> <p>If that all
+ * interpretations (that you won't want to change later).&gt; 0 <p>If that all
  * sounds like a pain, the payoff is that even very large Tetrad sessions will
  * load quickly. This isn't currently true, from what I can tell, for any XML
  * renderer/parser on the market. If a Tetrad session contains a dataset with 50
  * and 5000 cases, for instance, binary serialization will load it in well under
  * a second, whereas XML parsers that I've checked don't come back in under 5
- * minutes.</p> <p>The test class that checks the above conditions are
+ * minutes.&gt; 0 <p>The test class that checks the above conditions are
  * TestSerialization, which in turn uses methods in TetradSerializableUtils.
- * More details can be find there.</p>
+ * More details can be find there.&gt; 0
  * <p>
- * <p>See TestSerialization and TestSerializiableUtils.</p>
+ * <p>See TestSerialization and TestSerializiableUtils.&gt; 0
  *
  * @author Joseph Ramsey
  */

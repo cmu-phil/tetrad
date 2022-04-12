@@ -86,14 +86,14 @@ public final class SemPm implements PM, TetradSerializable {
      * The index of the most recent "T" parameter. (These are variance and
      * covariance terms.)
      *
-     * @serial Range >= 0.
+     * @serial Range &gt;= 0.
      */
     private int tIndex;
 
     /**
      * The index of the most recent "M" parameter. (These are means.)
      *
-     * @serial Range >= 0.
+     * @serial Range &gt;= 0.
      */
     private int mIndex;
 
@@ -101,7 +101,7 @@ public final class SemPm implements PM, TetradSerializable {
      * The index of the most recent "B" parameter. (These are edge
      * coefficients.)
      *
-     * @serial Range >= 0.
+     * @serial Range &gt;= 0.
      */
     private int bIndex;
 

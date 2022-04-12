@@ -48,13 +48,13 @@ public interface Distribution extends TetradSerializable {
     /**
      * Sets the index'th parameter to the given value.
      *
-     * @param index Ibid. Must be >= 0 and < # parameters.
+     * @param index Ibid. Must be &gt;= 0 and &lt; # parameters.
      * @param value Ibid.
      */
     void setParameter(int index, double value);
 
     /**
-     * @param index Ibid. Muist be <= 0 and < # parameters.
+     * @param index Ibid. Muist be &lt;= 0 and &lt; # parameters.
      * @return The Ibid.
      */
     double getParameter(int index);
@@ -62,7 +62,7 @@ public interface Distribution extends TetradSerializable {
     /**
      * The name of the index'th parameter, for display purposes.
      *
-     * @param index Ibid. Must be >= 0 and < # parameters.
+     * @param index Ibid. Must be &gt;= 0 and &lt; # parameters.
      * @return Ibid.
      */
     String getParameterName(int index);

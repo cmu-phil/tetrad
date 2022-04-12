@@ -46,7 +46,7 @@ import java.util.*;
  *     removeEdge(getExogenous(node1), getExogenous(node2));
  * </pre>
  * This avoids the problem of not knowing whether the exogenous node for a
- * node is itself or its associated error node.</p>
+ * node is itself or its associated error node.
  *
  * @author Joseph Ramsey
  */

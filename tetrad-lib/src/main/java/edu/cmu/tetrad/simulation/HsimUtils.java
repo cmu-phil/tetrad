@@ -106,16 +106,16 @@ public class HsimUtils {
         table2.setToken(1, 0, "---");
         table2.setToken(2, 0, "o-o");
         table2.setToken(3, 0, "o->");
-        table2.setToken(4, 0, "<-o");
+        table2.setToken(4, 0, "&lt;-o");
         table2.setToken(5, 0, "-->");
-        table2.setToken(6, 0, "<--");
-        table2.setToken(7, 0, "<->");
+        table2.setToken(6, 0, "&lt;--");
+        table2.setToken(7, 0, "&lt;->");
         table2.setToken(8, 0, "No Edge");
         table2.setToken(0, 1, "---");
         table2.setToken(0, 2, "o-o");
         table2.setToken(0, 3, "o->");
         table2.setToken(0, 4, "-->");
-        table2.setToken(0, 5, "<->");
+        table2.setToken(0, 5, "&lt;->");
         table2.setToken(0, 6, "No Edge");
 
         for (int i = 0; i < 8; i++) {

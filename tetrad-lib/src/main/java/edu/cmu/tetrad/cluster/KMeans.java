@@ -134,7 +134,7 @@ public class KMeans implements ClusteringAlgorithm {
 
     /**
      * Constructs a new KMeansBatch, initializing the algorithm by randomly
-     * assigning each point in the data to one of the <numCenters> clusters,
+     * assigning each point in the data to one of the numCenters clusters,
      * then calculating the centroid of each cluster.
      *
      * @param numCenters The number of centers (clusters).

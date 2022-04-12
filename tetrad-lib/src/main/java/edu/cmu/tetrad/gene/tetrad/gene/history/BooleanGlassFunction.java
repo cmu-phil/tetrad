@@ -35,7 +35,7 @@ import java.util.List;
  * Gi.1), lowerBound), as described in Edwards and Glass, (2000), "Combinatorial
  * explosion in model gene networks", American Institute of Physics. F is a
  * function from R^n to R, where each input to the function is sent to -1.0 if
- * it is < 0.0 and +1.0 if is it >= 0.0 and the combination of -1.0's and +1.0's
+ * it is &lt; 0.0 and +1.0 if is it &gt;= 0.0 and the combination of -1.0's and +1.0's
  * is then used to look up a value in a boolean table.  The output of the
  * function is -1.0 or 1.0. A random boolean Glass fuction is a boolean Glass
  * function in which the boolean lookup table is chosen randomly.  The procedure
@@ -340,7 +340,7 @@ public class BooleanGlassFunction implements UpdateFunction {
 
     /**
      * Sets the rate at which expression levels tend to return to equilibrium.
-     * Must be > 0.0 and <= 1.0.
+     * Must be &gt; 0.0 and &lt;= 1.0.
      */
     public void setDecayRate(double decayRate) {
 
@@ -355,7 +355,7 @@ public class BooleanGlassFunction implements UpdateFunction {
 
     /**
      * Sets the rate at which the output of the Glass function influences the
-     * change in expression level of a gene. Must be > 0.0.
+     * change in expression level of a gene. Must be &gt; 0.0.
      */
     public void setBooleanInfluenceRate(double booleanInfluenceRate) {
 

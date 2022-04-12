@@ -12,7 +12,7 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * We calculate the correlation directly from the confusion matrix.
  *
- * if the true contains X*->Y and estimated graph either does not contain an edge from
+ * if the true contains X*-&gt;Y and estimated graph either does not contain an edge from
  * X to Y or else does not contain an arrowhead at X for an edge from X to Y, one false
  * positive is counted. Similarly, for false negatives
  *

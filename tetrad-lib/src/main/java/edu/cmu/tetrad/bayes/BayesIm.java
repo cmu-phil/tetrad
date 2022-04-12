@@ -211,7 +211,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * then the row number is (7 * (5 * (3 * 0 + 2) + 4)) + 5 = 103. This is the
      * inverse function to getVariableValues().
      * <p>
-     * Note: If the node has n values, the length of 'values' must be >= the
+     * Note: If the node has n values, the length of 'values' must be &gt;= the
      * number of parents. Only the first n values are used.
      * @see #getParentValues
      */

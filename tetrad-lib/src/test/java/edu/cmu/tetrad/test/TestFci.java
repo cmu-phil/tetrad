@@ -74,8 +74,8 @@ public class TestFci {
      */
     @Test
     public void testSearch4() {
-        checkSearch("Latent(G),Latent(R),H-->F,F<--G,G-->A,A<--R,R-->C,B-->C,B-->D,C-->D,F-->D,A-->D",
-                "Ho->F,F<->A,A<->C,Bo->C,B-->D,C-->D,F-->D,A-->D", new Knowledge2());
+        checkSearch("Latent(G),Latent(R),H-->F,F&lt;--G,G-->A,A&lt;--R,R-->C,B-->C,B-->D,C-->D,F-->D,A-->D",
+                "Ho->F,F&lt;->A,A&lt;->C,Bo->C,B-->D,C-->D,F-->D,A-->D", new Knowledge2());
     }
 
     /**
@@ -102,7 +102,7 @@ public class TestFci {
     public void testSearch7() {
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
                         "H-->M,L-->M,S-->D,I-->S,P-->S",
-                "D<->H,D-->L,D-->M,H<->L,H-->M,Io->S,L-->M,Po->S,S-->D", new Knowledge2());
+                "D&lt;->H,D-->L,D-->M,H&lt;->L,H-->M,Io->S,L-->M,Po->S,S-->D", new Knowledge2());
     }
 
     /**
@@ -123,8 +123,8 @@ public class TestFci {
     public void testSearch9() {
         checkSearch("Latent(T1),Latent(T2),T1-->A,T1-->B,B-->E,F-->B,C-->F,C-->H," +
                         "H-->D,D-->A,T2-->D,T2-->E",
-//                "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge2()); // Left out E<->A.
-                "A<->B,B-->E,Co-oH,D-->A,E<->A,E<->D,Fo->B,Fo-oC,Ho->D", new Knowledge2());
+//                "A&lt;->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D&lt;->E,D-->A", new Knowledge2()); // Left out E&lt;->A.
+                "A&lt;->B,B-->E,Co-oH,D-->A,E&lt;->A,E&lt;->D,Fo->B,Fo-oC,Ho->D", new Knowledge2());
     }
 
     /**
@@ -158,7 +158,7 @@ public class TestFci {
     @Test
     public void testSearch12() {
         checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",
-                "X1o->X2,X3o->X4,X2<->X4", new Knowledge2());
+                "X1o->X2,X3o->X4,X2&lt;->X4", new Knowledge2());
 
         Knowledge2 knowledge = new Knowledge2();
         knowledge.setRequired("X2", "X4");

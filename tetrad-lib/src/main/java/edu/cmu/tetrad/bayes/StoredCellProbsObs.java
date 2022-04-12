@@ -33,7 +33,7 @@ import java.util.*;
  * <p>Creates a table of stored cell probabilities for the given list of
  * variables. Since for a moderate number of variables and for a moderate number
  * of values per variables this could get to be a very large table, it might not
- * be a good idea to use this class except for unit testing.</p>
+ * be a good idea to use this class except for unit testing.&gt; 0
  *
  * @author Joseph Ramsey
  */

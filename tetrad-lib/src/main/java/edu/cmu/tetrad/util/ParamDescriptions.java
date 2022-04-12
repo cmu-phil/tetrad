@@ -16,7 +16,7 @@ import java.util.*;
  * that go into the interface need to be described here.
  *
  * @author jdramsey
- * @author Zhou Yuan <zhy19@pitt.edu>
+ * @author Zhou Yuan zhy19@pitt.edu
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public final class ParamDescriptions {

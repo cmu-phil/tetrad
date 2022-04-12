@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * For this class, all variable names are referenced by name only. This is
  * because the same Knowledge object is intended to plug into different graphs
  * with MyNodes that possibly have the same names. Thus, if the Knowledge object
- * forbids the edge X --> Y, then it forbids any edge which connects a MyNode
+ * forbids the edge X --&gt; Y, then it forbids any edge which connects a MyNode
  * named "X" to a MyNode named "Y", even if the underlying MyNodes themselves
  * named "X" and "Y", respectively, are not the same.
  * <p>
@@ -379,7 +379,7 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     /**
-     * Determines whether the edge var1 --> var2 is forbidden.
+     * Determines whether the edge var1 --&gt; var2 is forbidden.
      */
     @Override
     public boolean isForbidden(String var1, String var2) {
@@ -406,7 +406,7 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     /**
-     * Determines whether the edge var1 --> var2 is forbidden by the temporal
+     * Determines whether the edge var1 --&gt; var2 is forbidden by the temporal
      * tiers.
      */
     @Override
@@ -417,7 +417,7 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     /**
-     * Determines whether the edge var1 --> var2 is required.
+     * Determines whether the edge var1 --&gt; var2 is required.
      */
     @Override
     public boolean isRequired(String var1, String var2) {
@@ -532,7 +532,7 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     /**
-     * Marks the edge var1 --> var2 as forbid.
+     * Marks the edge var1 --&gt; var2 as forbid.
      */
     @Override
     public void setForbidden(String var1, String var2) {
@@ -549,7 +549,7 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     /**
-     * Marks the edge var1 --> var2 as not forbid.
+     * Marks the edge var1 --&gt; var2 as not forbid.
      */
     @Override
     public void removeForbidden(String var1, String var2) {
@@ -563,7 +563,7 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     /**
-     * Marks the edge var1 --> var2 as required.
+     * Marks the edge var1 --&gt; var2 as required.
      */
     @Override
     public void setRequired(String var1, String var2) {
@@ -591,7 +591,7 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     /**
-     * Marks the edge var1 --> var2 as not required.
+     * Marks the edge var1 --&gt; var2 as not required.
      */
     @Override
     public void removeRequired(String var1, String var2) {

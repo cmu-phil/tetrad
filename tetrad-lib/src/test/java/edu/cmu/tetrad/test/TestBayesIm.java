@@ -114,7 +114,7 @@ public final class TestBayesIm {
     /**
      * Tests whether the BayesIm does the right thing in a very simple case
      * where values of a nodes are added or removed from the BayesPm. Start with
-     * graph a -> b <- c, construct and fill in probability tables in BayesIm.
+     * graph a -> b &lt;- c, construct and fill in probability tables in BayesIm.
      * Then add edge c -> b "manually." This should create a table of values for
      * c that is unspecified, and it should double up the rows from b. Then
      * remove the node c. Now the table for b should be completely unspecified.

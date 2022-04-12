@@ -25,14 +25,14 @@ import static java.lang.Math.*;
 /***
  * Kernal Independence Test (KCI).
  *
- * Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence
+ * Zhang, K., Peters, J., Janzing, D., and Schölkopf, B. (2012). Kernel-based conditional independence
  * test and application in causal discovery. arXiv preprint arXiv:1202.3775.
  *
  * Please see that paper, especially Theorem 4 and Proposition 5.
  *
  * Using optimal kernel bandwidths suggested by Bowman and Azzalini (1997):
  *
- * Bowman, A. W., & Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel
+ * Bowman, A. W., and Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel
  * approach with S-Plus illustrations (Vol. 18). OUP Oxford.
  *
  * @author Vineet Raghu on 7/3/2016
@@ -117,7 +117,7 @@ public class Kci implements IndependenceTest {
 
     /**
      * Returns true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
@@ -209,7 +209,7 @@ public class Kci implements IndependenceTest {
 
     /**
      * Returns true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -220,7 +220,7 @@ public class Kci implements IndependenceTest {
 
     /**
      * Returns true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     public boolean isDependent(Node x, Node y, List<Node> z) {
@@ -229,7 +229,7 @@ public class Kci implements IndependenceTest {
 
     /**
      * Returns true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     public boolean isDependent(Node x, Node y, Node... z) {

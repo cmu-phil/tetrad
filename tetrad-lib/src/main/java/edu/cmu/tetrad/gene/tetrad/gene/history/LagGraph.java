@@ -39,7 +39,7 @@ public interface LagGraph extends TetradSerializable {
      *
      * @param factor       a factor name in the graph.
      * @param laggedFactor a lagged factor with factor name in the graph and lag
-     *                     >=1.
+     *                     &gt;=1.
      * @throws java.lang.IllegalArgumentException if the edge cannot be added.
      */
     void addEdge(String factor, LaggedFactor laggedFactor)
@@ -101,7 +101,7 @@ public interface LagGraph extends TetradSerializable {
 
     /**
      * Sets the maximum allowable lag. Edges may not be added with lags greater
-     * than this. This value must be >= the getModel value of getMaxLag().
+     * than this. This value must be &gt;= the getModel value of getMaxLag().
      */
     void setMaxLagAllowable(int maxLagAllowable);
 

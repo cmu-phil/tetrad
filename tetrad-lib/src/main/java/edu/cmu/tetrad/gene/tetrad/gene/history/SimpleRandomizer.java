@@ -30,7 +30,7 @@ import java.util.List;
  * Randomizes a graph using existing factors by first removing all edges and
  * then adding for each factor (a) an edge from the same factor at time lag 1
  * and (b) a given number of factors chosen uniformly from all lagged factors
- * with lag > 0. The number of factors added is chosen according to a strategy
+ * with lag &gt; 0. The number of factors added is chosen according to a strategy
  * set in the constructor. If constant indegree n is chosen, then n - 1 edges
  * are added (in addition to the edge from the same factor at time lag 1) for
  * each factor. If max indegree n in chosen, then an integer is chosen uniformly

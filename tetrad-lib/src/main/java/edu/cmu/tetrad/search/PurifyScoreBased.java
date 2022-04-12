@@ -1579,12 +1579,12 @@ public class PurifyScoreBased implements IPurify {
                     //NOTE: code deactivated. Seems not to be worthy trying.
                     //      Here, I am not checking for cycles, and edges are considered only in one direction
 
-                    //indicator <-> indicator edges
+                    //indicator &lt;-> indicator edges
                     if (!this.correlatedErrors[i][j] && !this.observedParent[i][j] &&
                             !this.observedParent[j][i]) {
                         this.correlatedErrors[i][j] = this.correlatedErrors[j][i] = true;
                         double newScore = scoreCandidate();
-                        System.out.println("Trying impurity " + i + " <--> " + j + " (Score = " + newScore + ")"); //System.exit(0);
+                        System.out.println("Trying impurity " + i + " &lt;-&gt; " + j + " (Score = " + newScore + ")"); //System.exit(0);
                         if (newScore > nextScore) {
                             nextScore = newScore;
                             bestChoice1 = i;
@@ -1624,7 +1624,7 @@ public class PurifyScoreBased implements IPurify {
                                 "****************************Added impurity: " +
                                         this.measuredNodes.get(
                                                 bestChoice1).toString() +
-                                        " <--> " + this.measuredNodes.get(
+                                        " &lt;-&gt; " + this.measuredNodes.get(
                                         bestChoice2).toString() + " " +
                                         nextScore);
                         this.correlatedErrors[bestChoice1][bestChoice2] =
@@ -1787,7 +1787,7 @@ public class PurifyScoreBased implements IPurify {
                                 "****************************Removed impurity: " +
                                         this.measuredNodes.get(
                                                 bestChoice1).toString() +
-                                        " <--> " + this.measuredNodes.get(
+                                        " &lt;-&gt; " + this.measuredNodes.get(
                                         bestChoice2).toString() + " " +
                                         nextScore);
                         this.correlatedErrors[bestChoice1][bestChoice2] =

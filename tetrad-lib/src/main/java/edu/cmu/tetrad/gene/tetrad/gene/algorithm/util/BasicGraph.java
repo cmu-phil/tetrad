@@ -89,7 +89,7 @@ public abstract class BasicGraph {
      * equivalent to "no edge".<p> GRAPH sample<br> <br> 4 // # nodes<br>
      * <br> // Node Names Node0<br> Node1<br> Node2<br> Node3<br> <br> //
      * edges<br> 0 1  1 <br> 0 2 1 <br> 0 3  1 <br> 1 2 -1 <br> 1 3 -1 <br> 2 3
-     * 2 <br> </b> <br> Notice there can be slash-slash (and also
+     * 2 <br> Notice there can be slash-slash (and also
      * slash-star) style comments anywhere in the file.  Tokens can be separated
      * by any number of blank delimiters: tabs, spaces, carriage returns.
      * Support of int, long, floating point, or doubles as edge values will
