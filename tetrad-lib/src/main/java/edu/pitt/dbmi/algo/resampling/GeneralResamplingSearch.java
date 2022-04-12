@@ -54,13 +54,13 @@ public class GeneralResamplingSearch {
 
     public GeneralResamplingSearch(DataSet data, int numberResampling) {
         this.data = data;
-        this.pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        this.pool = ForkJoinPool.commonPool();
         this.numberResampling = numberResampling;
     }
 
     public GeneralResamplingSearch(List<DataSet> dataSets, int numberResampling) {
         this.dataSets = dataSets;
-        this.pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        this.pool = ForkJoinPool.commonPool();
         this.numberResampling = numberResampling;
     }
 
@@ -83,7 +83,7 @@ public class GeneralResamplingSearch {
     }
 
     public void setRunParallel(boolean runParallel) {
-        this.runParallel = false;
+        this.runParallel = runParallel;
     }
 
     public void setAddOriginalDataset(boolean addOriginalDataset) {

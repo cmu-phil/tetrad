@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -304,6 +305,9 @@ public class GeneralResamplingTest {
 
         this.graphs = this.resamplingSearch.search();
         this.numNoGraphs = this.resamplingSearch.getNumNograph();
+
+        TetradLogger.getInstance().forceLogMessage(
+                "Number of searches that didn't return a graph = " + this.numNoGraphs);
 
         if (this.verbose) {
             this.out.println("Resampling number is : " + this.graphs.size());
