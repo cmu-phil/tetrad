@@ -52,7 +52,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         double[] covarianceMatrix = new double[(this.numOfCols * (this.numOfCols + 1)) / 2];
         double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        ForkJoinPool pool = ForkJoinPool.commonPool();
         pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
         pool.invoke(new CovarianceLowerTriangleAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
         pool.shutdown();
@@ -65,7 +65,7 @@ public class RealCovarianceMatrixForkJoin implements RealCovariance {
         double[][] covarianceMatrix = new double[this.numOfCols][this.numOfCols];
         double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        ForkJoinPool pool = ForkJoinPool.commonPool();
         pool.invoke(new MeanAction(means, this.data, 0, this.numOfCols - 1));
         pool.invoke(new CovarianceAction(covarianceMatrix, means, 0, this.numOfCols - 1, biasCorrected));
         pool.shutdown();

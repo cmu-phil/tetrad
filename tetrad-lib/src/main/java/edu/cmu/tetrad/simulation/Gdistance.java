@@ -2,7 +2,6 @@ package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,7 @@ public class Gdistance {
 
     private int chunksize = 2;
 
-    private final int cores = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
+    private final int cores = Runtime.getRuntime().availableProcessors();
 
     //With the parallel version, it is better to make a constructor for central data like locationMap
     public Gdistance(DataSet locationMap, double xDist, double yDist, double zDist) {
@@ -89,13 +88,10 @@ public class Gdistance {
             if (taskEdges.size() >= taskSize) {
                 //add the taskEdges to a new task, and then empty it
                 List<Edge> runEdges = new ArrayList<>(taskEdges);
-                todo.add(new Callable() {
-                    public Void call() throws Exception {
-
-                        FindLeastDistanceTask FLDtask = new FindLeastDistanceTask(vicinity);
-                        FLDtask.compute(runEdges);
-                        return null;
-                    }
+                todo.add(() -> {
+                    FindLeastDistanceTask FLDtask = new FindLeastDistanceTask(vicinity);
+                    FLDtask.compute(runEdges);
+                    return null;
                 });
 
                 taskEdges.clear();
@@ -106,13 +102,10 @@ public class Gdistance {
         if (!taskEdges.isEmpty()) {
             //add the taskEdges to a new task, and then empty it
             List<Edge> runEdges = new ArrayList<>(taskEdges);
-            todo.add(new Callable() {
-                public Void call() throws Exception {
-
-                    FindLeastDistanceTask FLDtask = new FindLeastDistanceTask(vicinity);
-                    FLDtask.compute(runEdges);
-                    return null;
-                }
+            todo.add(() -> {
+                FindLeastDistanceTask FLDtask = new FindLeastDistanceTask(vicinity);
+                FLDtask.compute(runEdges);
+                return null;
             });
 
             taskEdges.clear();
@@ -239,9 +232,5 @@ public class Gdistance {
             return Math.min(dist11 + dist22, dist12 + dist21);
         }
 
-    }
-
-    public void setChunksize(int chunk) {
-        this.chunksize = chunk;
     }
 }

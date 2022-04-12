@@ -80,7 +80,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     // The static ForkJoinPool instance.
     private final ForkJoinPool pool;
     // The maximum number of threads to use.
-    private final int maxThreads;
     private boolean faithfulnessAssumed = true;
     /**
      * Specification of forbidden and required edges.
@@ -142,6 +141,9 @@ public final class Fges implements GraphSearch, GraphScorer {
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
 
+    // True if FGES should run in a single thread, no if parallelized.
+    private boolean parallelized = false;
+
     /**
      * Construct a Score and pass it in here. The totalScore should return a
      * positive value in case of conditional dependence and a negative values in
@@ -150,26 +152,12 @@ public final class Fges implements GraphSearch, GraphScorer {
      * the machine.
      */
     public Fges(Score score) {
-        this(score, Runtime.getRuntime().availableProcessors() * 10);
-    }
-
-    //===========================CONSTRUCTORS=============================//
-
-    /**
-     * Lets one construct with a score and a parallelism, that is, the number of threads to effectively use.
-     */
-    public Fges(Score score, int parallelism) {
         if (score == null) {
             throw new NullPointerException();
         }
 
-        if (parallelism < 1) {
-            throw new IllegalArgumentException("Parallelism must be >= 1.");
-        }
-
         setScore(score);
-        this.maxThreads = parallelism;
-        this.pool = new ForkJoinPool(parallelism);
+        this.pool = ForkJoinPool.commonPool();
         this.graph = new EdgeListGraph(getVariables());
     }
 
@@ -453,7 +441,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private int getChunkSize(int n) {
-        int chunk = n / maxThreads;
+        int chunk = n / Runtime.getRuntime().availableProcessors();
         if (chunk < 100) chunk = 100;
         return chunk;
     }
@@ -668,14 +656,14 @@ public final class Fges implements GraphSearch, GraphScorer {
         for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
             AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
 
-            if (this.maxThreads == 1) {
+            if (!this.parallelized) {
                 task.call();
             } else {
                 tasks.add(task);
             }
         }
 
-        if (this.maxThreads > 1) {
+        if (this.parallelized) {
             this.pool.invokeAll(tasks);
         }
     }
@@ -761,7 +749,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         for (int i = 0; i < TT.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
             EvalTask task = new EvalTask(TT, i, min(TT.size(), i + chunkSize), hashIndices);
 
-            if (this.maxThreads == 1) {
+            if (!this.parallelized) {
                 EvalPair pair = task.call();
 
                 if (pair.bump > maxBump) {
@@ -773,7 +761,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
         }
 
-        if (this.maxThreads > 1) {
+        if (this.parallelized) {
             List<Future<EvalPair>> futures = this.pool.invokeAll(tasks);
 
             for (Future<EvalPair> future : futures) {
@@ -1384,6 +1372,10 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         return builder.toString();
+    }
+
+    public void setParallelized(boolean parallelized) {
+        this.parallelized = parallelized;
     }
 
     //===========================SCORING METHODS===================//

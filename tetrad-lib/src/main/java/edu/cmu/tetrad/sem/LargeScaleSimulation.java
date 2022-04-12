@@ -180,7 +180,7 @@ public final class LargeScaleSimulation {
 
         double[][] all = new double[this.variableNodes.size()][sampleSize];
 
-        int chunk = sampleSize / ForkJoinPoolInstance.getInstance().getPool().getParallelism() + 1;
+        int chunk = sampleSize / (Runtime.getRuntime().availableProcessors());
 
         ForkJoinPoolInstance.getInstance().getPool().invoke(new SimulateTask(0, sampleSize, all, chunk));
 

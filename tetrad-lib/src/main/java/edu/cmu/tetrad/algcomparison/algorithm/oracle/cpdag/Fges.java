@@ -58,19 +58,18 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
                 knowledge = timeSeries.getKnowledge();
             }
 
-            int parallelism = parameters.getInt(Params.PARALLELISM);
-
             Score score = this.score.getScore(dataModel, parameters);
             Graph graph;
 
             edu.cmu.tetrad.search.Fges search
-                    = new edu.cmu.tetrad.search.Fges(score, parallelism);
+                    = new edu.cmu.tetrad.search.Fges(score);
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
             search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
+            search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
@@ -115,7 +114,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.SYMMETRIC_FIRST_STEP);
         parameters.add(Params.MAX_DEGREE);
-        parameters.add(Params.PARALLELISM);
+        parameters.add(Params.PARALLELIZED);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.TIME_LAG);
 
