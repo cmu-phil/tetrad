@@ -50,6 +50,7 @@ public class GeneralResamplingSearch {
      * An initial graph to start from.
      */
     private Graph externalGraph;
+    private int numNograph = 0;
 
     public GeneralResamplingSearch(DataSet data, int numberResampling) {
         this.data = data;
@@ -188,22 +189,34 @@ public class GeneralResamplingSearch {
             }
         }
 
+        int numNoGraph = 0;
+
         if (this.runParallel) {
             List<Future<Graph>> futures = this.pool.invokeAll(tasks);
             for (Future<Graph> future : futures) {
                 Graph graph = null;
                 try {
                     graph = future.get();
+
+                    if (graph == null) {
+                        numNograph++;
+                    } else {
+                        this.graphs.add(graph);
+                    }
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
-                this.graphs.add(graph);
             }
         } else {
             for (Callable<Graph> callable : tasks) {
                 try {
                     Graph graph = callable.call();
-                    this.graphs.add(graph);
+
+                    if (graph == null) {
+                        numNoGraph++;
+                    } else {
+                        this.graphs.add(graph);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -211,7 +224,12 @@ public class GeneralResamplingSearch {
         }
 
         this.parameters.set("numberResampling", this.numberResampling);
+        this.numNograph = numNoGraph;
 
         return this.graphs;
+    }
+
+    public int getNumNograph() {
+        return numNograph;
     }
 }

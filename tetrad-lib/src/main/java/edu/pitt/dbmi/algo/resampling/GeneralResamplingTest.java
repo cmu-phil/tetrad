@@ -36,7 +36,7 @@ public class GeneralResamplingTest {
      * An initial graph to start from.
      */
     private Graph externalGraph;
-
+    private int numNoGraphs = 0;
 
     public GeneralResamplingTest(
             DataSet data,
@@ -303,6 +303,7 @@ public class GeneralResamplingTest {
         }
 
         this.graphs = this.resamplingSearch.search();
+        this.numNoGraphs = this.resamplingSearch.getNumNograph();
 
         if (this.verbose) {
             this.out.println("Resampling number is : " + this.graphs.size());
@@ -523,4 +524,7 @@ public class GeneralResamplingTest {
         return edgeTypeProbabilities;
     }
 
+    public int getNumNoGraphs() {
+        return numNoGraphs;
+    }
 }
