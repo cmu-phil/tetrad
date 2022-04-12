@@ -38,7 +38,7 @@ public class GeneralResamplingSearch {
 
     private boolean verbose;
 
-    private final List<Graph> PAGs = Collections.synchronizedList(new ArrayList<>());
+    private final List<Graph> graphs = Collections.synchronizedList(new ArrayList<>());
 
     private final ExecutorService pool;
 
@@ -72,8 +72,8 @@ public class GeneralResamplingSearch {
         this.numberResampling = numberResampling;
     }
 
-    public void addPAG(Graph pag) {
-        this.PAGs.add(pag);
+    public void addGraph(Graph graph) {
+        this.graphs.add(graph);
     }
 
     public void setAlgorithm(Algorithm algorithm) {
@@ -147,7 +147,7 @@ public class GeneralResamplingSearch {
 
     public List<Graph> search() {
 
-        this.PAGs.clear();
+        this.graphs.clear();
         this.parameters.set("numberResampling", 0); // This needs to be set to zero to not loop indefinitely
 
         if (!this.runParallel) {
@@ -291,7 +291,7 @@ public class GeneralResamplingSearch {
         }
 
         // If the pool is prematurely terminated, do sequentially
-        if (this.PAGs.size() == 0) {
+        if (this.graphs.size() == 0) {
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
                 GeneralResamplingSearchRunnable task = null;
 
@@ -355,7 +355,7 @@ public class GeneralResamplingSearch {
 
         this.parameters.set("numberResampling", this.numberResampling); // This needs to be reset back to the previous value
 
-        return this.PAGs;
+        return this.graphs;
     }
 
 }

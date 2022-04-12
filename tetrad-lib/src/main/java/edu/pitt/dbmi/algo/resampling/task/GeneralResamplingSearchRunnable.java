@@ -146,7 +146,7 @@ public class GeneralResamplingSearchRunnable implements Runnable {
             this.out.println("processing time of resampling for a thread was: "
                     + (stop - start) / 1000.0 + " sec");
         }
-        this.resamplingAlgorithmSearch.addPAG(graph);
+        this.resamplingAlgorithmSearch.addGraph(graph);
     }
 
 }
