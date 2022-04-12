@@ -33,14 +33,12 @@ import java.util.List;
  * Calculates the BDeu score.
  */
 public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
-    private List<Node> variables;
     private final int[][] data;
     private final int sampleSize;
-
+    private final int[] numCategories;
+    private List<Node> variables;
     private double samplePrior = 1;
     private double structurePrior = 1;
-
-    private final int[] numCategories;
 
     public BDeuScore(DataSet dataSet) {
         if (dataSet == null) {
@@ -74,6 +72,15 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         for (int i = 0; i < variables.size(); i++) {
             this.numCategories[i] = (getVariable(i)).getNumCategories();
         }
+    }
+
+    private static int getRowIndex(int[] dim, int[] values) {
+        int rowIndex = 0;
+        for (int i = 0; i < dim.length; i++) {
+            rowIndex *= dim[i];
+            rowIndex += values[i];
+        }
+        return rowIndex;
     }
 
     private DiscreteVariable getVariable(int i) {
@@ -154,7 +161,11 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         score += r * Gamma.logGamma(rowPrior);
         score -= c * r * Gamma.logGamma(cellPrior);
 
-        return score;
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
     private double getPriorForStructure(int numParents, int N) {
@@ -195,6 +206,17 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         return this.variables;
     }
 
+    public void setVariables(List<Node> variables) {
+        for (int i = 0; i < variables.size(); i++) {
+            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
+                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
+                        "as the variable being substituted for it.");
+            }
+        }
+
+        this.variables = variables;
+    }
+
     public int getSampleSize() {
         return this.sampleSize;
     }
@@ -211,23 +233,9 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         throw new UnsupportedOperationException();
     }
 
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
-    }
-
     @Override
     public double getStructurePrior() {
         return this.structurePrior;
-    }
-
-    @Override
-    public double getSamplePrior() {
-        return this.samplePrior;
     }
 
     @Override
@@ -236,19 +244,13 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
     }
 
     @Override
-    public void setSamplePrior(double samplePrior) {
-        this.samplePrior = samplePrior;
+    public double getSamplePrior() {
+        return this.samplePrior;
     }
 
-    public void setVariables(List<Node> variables) {
-        for (int i = 0; i < variables.size(); i++) {
-            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
-                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
-                        "as the variable being substituted for it.");
-            }
-        }
-
-        this.variables = variables;
+    @Override
+    public void setSamplePrior(double samplePrior) {
+        this.samplePrior = samplePrior;
     }
 
     public Node getVariable(String targetName) {

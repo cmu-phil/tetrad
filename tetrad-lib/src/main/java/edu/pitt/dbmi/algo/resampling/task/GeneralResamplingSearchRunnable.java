@@ -4,37 +4,29 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch;
 
 import java.io.PrintStream;
-import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Mar 19, 2017 9:45:44 PM
  *
  * @author Chirayu (Kong) Wongchokprasitti, PhD
  */
-public class GeneralResamplingSearchRunnable implements Runnable {
-
-    private DataSet dataSet;
-
-    private List<DataModel> dataSets;
-
-    private Algorithm algorithm;
-
-    private MultiDataSetAlgorithm multiDataSetAlgorithm;
+public class GeneralResamplingSearchRunnable implements Callable<Graph> {
 
     private final Parameters parameters;
-
     private final GeneralResamplingSearch resamplingAlgorithmSearch;
-
     private final boolean verbose;
-
+    private DataModel dataModel;
+    private Algorithm algorithm;
+    private MultiDataSetAlgorithm multiDataSetAlgorithm;
     /**
      * An initial graph to start from.
      */
@@ -47,19 +39,15 @@ public class GeneralResamplingSearchRunnable implements Runnable {
 
     private PrintStream out = System.out;
 
-    public GeneralResamplingSearchRunnable(DataSet dataSet, Algorithm algorithm, Parameters parameters,
+    public GeneralResamplingSearchRunnable(DataModel dataModel, Algorithm algorithm, Parameters parameters,
                                            GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
-        this.dataSet = dataSet;
-        this.algorithm = algorithm;
-        this.parameters = parameters;
-        this.resamplingAlgorithmSearch = resamplingAlgorithmSearch;
-        this.verbose = verbose;
-    }
+        if (dataModel == null) throw new NullPointerException("Data model null.");
+        if (algorithm == null) throw new NullPointerException("Algorithm null.");
+        if (parameters == null) throw new NullPointerException("Parameters null.");
+        if (resamplingAlgorithmSearch == null) throw new NullPointerException("Resampling algroithms search null.");
 
-    public GeneralResamplingSearchRunnable(List<DataModel> dataSets, MultiDataSetAlgorithm multiDataSetAlgorithm, Parameters parameters,
-                                           GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
-        this.dataSets = dataSets;
-        this.multiDataSetAlgorithm = multiDataSetAlgorithm;
+        this.dataModel = dataModel;
+        this.algorithm = algorithm;
         this.parameters = parameters;
         this.resamplingAlgorithmSearch = resamplingAlgorithmSearch;
         this.verbose = verbose;
@@ -93,14 +81,6 @@ public class GeneralResamplingSearchRunnable implements Runnable {
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent
-     * to. By detault System.out.
-     */
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    /**
      * @return the output stream that output (except for log output) should be
      * sent to.
      */
@@ -108,45 +88,58 @@ public class GeneralResamplingSearchRunnable implements Runnable {
         return this.out;
     }
 
-    @Override
-    public void run() {
-        //System.out.println("#dataSet rows: " + dataSet.getNumRows());
+    /**
+     * Sets the output stream that output (except for log output) should be sent
+     * to. By detault System.out.
+     */
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
 
+    @Override
+    public Graph call() {
         long start;
         long stop;
         start = System.currentTimeMillis();
+
         if (this.verbose) {
             this.out.println("thread started ... ");
         }
 
-        Graph graph = null;
+        try {
+            Graph graph;
 
-        if (this.dataSet != null) {
-            if (this.algorithm instanceof HasKnowledge) {
-                ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge);
-                if (this.verbose) {
-                    this.out.println("knowledge being set ... ");
+            if (this.dataModel != null) {
+                if (this.algorithm instanceof HasKnowledge) {
+                    ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge);
+                    if (this.verbose) {
+                        this.out.println("knowledge being set ... ");
+                    }
                 }
-            }
-            graph = this.algorithm.search(this.dataSet, this.parameters);
-        } else {
-            if (this.multiDataSetAlgorithm instanceof HasKnowledge) {
-                ((HasKnowledge) this.multiDataSetAlgorithm).setKnowledge(this.knowledge);
-                if (this.verbose) {
-                    this.out.println("knowledge being set ... ");
+
+                graph = this.algorithm.search(this.dataModel, this.parameters);
+            } else {
+                if (this.multiDataSetAlgorithm instanceof HasKnowledge) {
+                    ((HasKnowledge) this.multiDataSetAlgorithm).setKnowledge(this.knowledge);
+                    if (this.verbose) {
+                        this.out.println("knowledge being set ... ");
+                    }
                 }
+
+                graph = this.multiDataSetAlgorithm.search(this.dataModel, this.parameters);
             }
-            graph = this.multiDataSetAlgorithm.search(this.dataSets, this.parameters);
-        }
 
-        graph.getEdges();
+            graph.getEdges();
 
-        stop = System.currentTimeMillis();
-        if (this.verbose) {
-            this.out.println("processing time of resampling for a thread was: "
-                    + (stop - start) / 1000.0 + " sec");
+            stop = System.currentTimeMillis();
+            if (this.verbose) {
+                this.out.println("processing time of resampling for a thread was: "
+                        + (stop - start) / 1000.0 + " sec");
+            }
+
+            return graph;
+        } catch (Exception e) {
+            return new EdgeListGraph(dataModel.getVariables());
         }
-        this.resamplingAlgorithmSearch.addGraph(graph);
     }
-
 }

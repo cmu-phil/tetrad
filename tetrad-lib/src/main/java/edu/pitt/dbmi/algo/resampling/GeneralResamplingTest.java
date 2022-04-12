@@ -20,7 +20,6 @@ import java.util.*;
  * Updated: Chirayu Kong Wongchokprasitti, PhD on 9/13/2018
  */
 public class GeneralResamplingTest {
-
     private final GeneralResamplingSearch resamplingSearch;
     private final ResamplingEdgeEnsemble edgeEnsemble;
     private PrintStream out = System.out;
@@ -460,6 +459,8 @@ public class GeneralResamplingTest {
         int no_edge_num = 0;
 
         for (Graph g : this.graphs) {
+            if (g == null) continue;
+
             Edge e = g.getEdge(node1, node2);
 
             if (e != null) {

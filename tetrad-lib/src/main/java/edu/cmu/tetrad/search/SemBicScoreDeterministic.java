@@ -100,7 +100,13 @@ public class SemBicScoreDeterministic implements Score {
             return Double.NaN;
         }
 
-        return -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
+        double score = -(n) * log(s2) - getPenaltyDiscount() * k * log(n);
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
 

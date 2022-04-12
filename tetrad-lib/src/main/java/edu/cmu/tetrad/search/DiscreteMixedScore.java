@@ -78,7 +78,13 @@ public class DiscreteMixedScore implements Score {
             strucPrior = -2 * k * strucPrior;
         }
 
-        return 2.0 * lik - /*getPenaltyDiscount() **/ k * Math.log(N) + strucPrior;
+        double score = 2.0 * lik - getPenaltyDiscount() * k * Math.log(N) + strucPrior;
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
     private double getStructurePrior(int[] parents) {

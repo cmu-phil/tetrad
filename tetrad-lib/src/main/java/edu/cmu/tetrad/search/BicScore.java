@@ -157,7 +157,13 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
         int params = r * (c - 1);
 
-        return 2 * lik - this.penaltyDiscount * params * Math.log(N) + 2 * getPriorForStructure(parents.length);
+        double score = 2 * lik - this.penaltyDiscount * params * Math.log(N) + 2 * getPriorForStructure(parents.length);
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
     private double getPriorForStructure(int numParents) {

@@ -186,7 +186,13 @@ public class DegenerateGaussianScore implements Score {
         double ldetB = log(getCov(rows, B_).det());
 
         double lik = N * (ldetB - ldetA + DegenerateGaussianScore.L2PE * (B_.length - A_.length));
-        return 2 * lik + 2 * calculateStructurePrior(parents.length) - dof * getPenaltyDiscount() * log(N);
+        double score = 2 * lik + 2 * calculateStructurePrior(parents.length) - dof * getPenaltyDiscount() * log(N);
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
     private double calculateStructurePrior(int k) {

@@ -29,6 +29,12 @@ import java.util.List;
  * Interface for a score suitable for FGES
  */
 public interface Score {
+
+    /**
+     * @param node The index of the node.
+     * @param parents The indices of the node's parents.
+     * @return The score, or NaN if the score cannot be calculated.
+     */
     double localScore(int node, int... parents);
 
     double localScoreDiff(int x, int y, int[] z);
