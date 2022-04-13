@@ -650,22 +650,23 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         int chunkSize = getChunkSize(nodes.size());
 
-//        AdjTask task = new AdjTask(new ArrayList<>(nodes), 0, nodes.size());
+        AdjTask task = new AdjTask(new ArrayList<>(nodes), 0, nodes.size());
+        task.call();
 
 
-        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
-            AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
-
-            if (!this.parallelized) {
-                task.call();
-            } else {
-                tasks.add(task);
-            }
-        }
-
-        if (this.parallelized) {
-            this.pool.invokeAll(tasks);
-        }
+//        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+//            AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
+//
+//            if (!this.parallelized) {
+//                task.call();
+//            } else {
+//                tasks.add(task);
+//            }
+//        }
+//
+//        if (this.parallelized) {
+//            this.pool.invokeAll(tasks);
+//        }
     }
 
     // Calculates the new arrows for an a->b edge.
