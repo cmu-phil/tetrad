@@ -457,16 +457,15 @@ public final class Fges implements GraphSearch, GraphScorer {
         for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
             NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, min(nodes.size(), i + chunkSize),
                     nodes, emptySet);
-            tasks.add(task);
+
+            if (!parallelized) {
+                task.call();
+            } else {
+                tasks.add(task);
+            }
         }
 
-        if (tasks.size() == 1) {
-            try {
-                tasks.get(0).call();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
+        if (parallelized) {
             pool.invokeAll(tasks);
         }
 
@@ -650,23 +649,23 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         int chunkSize = getChunkSize(nodes.size());
 
-        AdjTask task = new AdjTask(new ArrayList<>(nodes), 0, nodes.size());
-        task.call();
+//        AdjTask task = new AdjTask(new ArrayList<>(nodes), 0, nodes.size());
+//        task.call();
 
 
-//        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
-//            AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
-//
-//            if (!this.parallelized) {
-//                task.call();
-//            } else {
-//                tasks.add(task);
-//            }
-//        }
-//
-//        if (this.parallelized) {
-//            this.pool.invokeAll(tasks);
-//        }
+        for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+            AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
+
+            if (!this.parallelized) {
+                task.call();
+            } else {
+                tasks.add(task);
+            }
+        }
+
+        if (this.parallelized) {
+            this.pool.invokeAll(tasks);
+        }
     }
 
     // Calculates the new arrows for an a->b edge.
