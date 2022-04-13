@@ -46,6 +46,7 @@ import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
 import org.junit.Test;
 
+import javax.help.SearchHit;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -652,7 +653,7 @@ public class TestFges {
 
     @Test
     public void testFromGraph() {
-        final int numNodes = 10;
+        final int numNodes = 15;
         final int aveDegree = 4;
         final int numIterations = 1;
 
@@ -661,8 +662,9 @@ public class TestFges {
             Fges fges = new Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
             fges.setVerbose(true);
+            fges.setParallelized(true);
             Graph CPDAG1 = fges.search();
-            Graph CPDAG2 = new Pc(new IndTestDSep(dag)).search();
+            Graph CPDAG2 = SearchGraphUtils.cpdagFromDag(dag);
             assertEquals(CPDAG2, CPDAG1);
         }
     }
