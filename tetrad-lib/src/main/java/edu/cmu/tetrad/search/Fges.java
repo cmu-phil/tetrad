@@ -1366,7 +1366,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                 + "the more important the edge is to the posterior probability of the IMaGES model. "
                 + "Edges are given in order of their importance so measured.\n\n");
 
-        int i = 0;
+        int i = 0 ;
 
         for (Edge edge : edges) {
             builder.append(++i).append(". ").append(edge).append(" ").append(nf.format(factors.get(edge))).append("\n");
