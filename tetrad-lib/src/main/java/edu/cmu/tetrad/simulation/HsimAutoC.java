@@ -13,6 +13,7 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 
 import java.io.FileWriter;
@@ -79,7 +80,7 @@ public class HsimAutoC {
         //for this class, I'm going to choose variables for resimulation randomly, rather than building cliques
         //select a random node
         List<Node> remainingNodes = estGraph.getNodes();
-        int randIndex = new Random().nextInt(remainingNodes.size());
+        int randIndex = RandomUtil.getInstance().nextInt(remainingNodes.size());
         Node randomnode = remainingNodes.get(randIndex);
         if (this.verbose) {
             System.out.println("the first node is " + randomnode);
@@ -91,7 +92,7 @@ public class HsimAutoC {
         while (queue.size() < resimSize) {
             //choose another node randomly
             remainingNodes.remove(randIndex);
-            randIndex = new Random().nextInt(remainingNodes.size());
+            randIndex = RandomUtil.getInstance().nextInt(remainingNodes.size());
             randomnode = remainingNodes.get(randIndex);
             //add that node to the resim set
             queue.add(randomnode);

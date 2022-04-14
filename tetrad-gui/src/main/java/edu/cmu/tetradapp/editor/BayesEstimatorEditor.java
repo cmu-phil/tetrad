@@ -152,7 +152,7 @@ public class BayesEstimatorEditor extends JPanel {
         BayesProperties properties = new BayesProperties(this.wrapper.getDataSet());
 
         StringBuilder buf = new StringBuilder();
-        buf.append("\nP-value = ").append(properties.getLikelihoodRatioP(graph));
+//        buf.append("\nP-value = ").append(properties.getLikelihoodRatioP(graph));
 //        buf.append("\nP-value = ").append(properties.getVuongP());
         buf.append("\nDf = ").append(properties.getDof());
         /*

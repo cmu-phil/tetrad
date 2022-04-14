@@ -54,7 +54,7 @@ public class RandomUtil {
     private final Map<Long, RandomGenerator> seedsToGenerators = new HashedMap<>();
     // Random number generator from the Apache library.
     private RandomGenerator randomGenerator;
-    private NormalDistribution normal = new NormalDistribution(0, 1);
+//    private NormalDistribution normal = new NormalDistribution(0, 1);
 
 
     //========================================CONSTRUCTORS===================================//
@@ -123,14 +123,14 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double nextNormal(double mean, double sd) {
-        if (sd <= 0) {
-            throw new IllegalArgumentException("Standard deviation must be non-negative: " + sd);
-        }
+//        if (sd <= 0) {
+//            throw new IllegalArgumentException("Standard deviation must be non-negative: " + sd);
+//        }
+//
+//        double sample = this.normal.sample();
+//        return sample * sd + mean;
 
-        double sample = this.normal.sample();
-        return sample * sd + mean;
-
-//        return new NormalDistribution(randomGenerator, mean, sd).sample();
+        return new NormalDistribution(randomGenerator, mean, sd).sample();
     }
 
     /**
@@ -160,7 +160,7 @@ public class RandomUtil {
 
         // Do not change this generator; you will screw up innuerable unit tests!
         this.randomGenerator = this.seedsToGenerators.get(seed);
-        this.normal = new NormalDistribution(this.randomGenerator, 0, 1);
+//        this.normal = new NormalDistribution(this.randomGenerator, 0, 1);
         this.seed = seed;
 
     }
@@ -191,7 +191,7 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double normalCdf(double mean, double sd, double value) {
-        return this.normal.cumulativeProbability((value - mean) / sd);
+        return new NormalDistribution(0, 1).cumulativeProbability((value - mean) / sd);
     }
 
     /**
@@ -257,8 +257,9 @@ public class RandomUtil {
 
         // Do not change this generator; you will screw up innuerable unit tests!
         this.randomGenerator = new SynchronizedRandomGenerator(new Well44497b(seed));
+        for (int i = 0; i < 100000; i++) this.randomGenerator.nextLong();
         this.seedsToGenerators.put(seed, this.randomGenerator);
-        this.normal = new NormalDistribution(this.randomGenerator, 0, 1);
+//        this.normal = new NormalDistribution(this.randomGenerator, 0, 1);
         this.seed = seed;
     }
 

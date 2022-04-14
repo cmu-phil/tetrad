@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
@@ -105,6 +106,7 @@ public final class MlBayesEstimator {
 
                     if (condition.existsCombination()) {
                         double p = discreteProbs.getConditionalProb(assertion, condition);
+//                        if (Double.isNaN(p)) p = 1.0 / numCols;
                         estimatedIm.setProbability(node, row, col, p);
                     } else {
                         estimatedIm.setProbability(node, row, col, Double.NaN);
@@ -112,6 +114,8 @@ public final class MlBayesEstimator {
                 }
             }
         }
+
+//        System.out.println(estimatedIm);
 
         return estimatedIm;
     }
