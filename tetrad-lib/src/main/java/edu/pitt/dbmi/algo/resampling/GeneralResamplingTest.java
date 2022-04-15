@@ -268,10 +268,6 @@ public class GeneralResamplingTest {
         this.externalGraph = externalGraph;
     }
 
-    public void setSeed(long seed) {
-        RandomUtil.getInstance().setSeed(seed);
-    }
-
     public Graph search() {
         long start, stop;
 

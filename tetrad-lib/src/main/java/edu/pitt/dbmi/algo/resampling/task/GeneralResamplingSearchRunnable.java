@@ -4,12 +4,14 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch;
+import edu.pitt.dbmi.data.reader.Data;
 
 import java.io.PrintStream;
 import java.util.concurrent.Callable;
@@ -46,7 +48,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
         if (parameters == null) throw new NullPointerException("Parameters null.");
         if (resamplingAlgorithmSearch == null) throw new NullPointerException("Resampling algroithms search null.");
 
-        this.dataModel = dataModel;
+        this.dataModel = dataModel.copy();
         this.algorithm = algorithm;
         this.parameters = parameters;
         this.resamplingAlgorithmSearch = resamplingAlgorithmSearch;
@@ -128,8 +130,6 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
 
                 graph = this.multiDataSetAlgorithm.search(this.dataModel, this.parameters);
             }
-
-            graph.getEdges();
 
             stop = System.currentTimeMillis();
             if (this.verbose) {

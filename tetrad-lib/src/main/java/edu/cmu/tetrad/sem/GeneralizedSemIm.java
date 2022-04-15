@@ -275,9 +275,6 @@ public class GeneralizedSemIm implements IM, Simulator {
     }
 
     public synchronized DataSet simulateData(int sampleSize, boolean latentDataSaved) {
-        long seed = RandomUtil.getInstance().getSeed();
-        TetradLogger.getInstance().log("info", "Seed = " + seed);
-
         if (this.pm.getGraph().isTimeLagModel()) {
             return simulateTimeSeries(sampleSize);
         }
@@ -288,11 +285,8 @@ public class GeneralizedSemIm implements IM, Simulator {
     @Override
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
-        long _seed = random.getSeed();
         random.setSeed(seed);
-        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
-        random.revertSeed(_seed);
-        return dataSet;
+        return simulateData(sampleSize, latentDataSaved);
     }
 
     private DataSet simulateTimeSeries(int sampleSize) {

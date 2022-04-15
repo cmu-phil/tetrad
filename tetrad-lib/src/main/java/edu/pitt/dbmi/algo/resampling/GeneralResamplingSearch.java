@@ -9,6 +9,7 @@ import edu.pitt.dbmi.algo.resampling.task.GeneralResamplingSearchRunnable;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -28,7 +29,7 @@ public class GeneralResamplingSearch {
     private final ForkJoinPool pool;
     private Algorithm algorithm;
     private MultiDataSetAlgorithm multiDataSetAlgorithm;
-    private double percentResampleSize = 100;
+    private double percentResampleSize = 100.;
     private boolean resamplingWithReplacement = true;
     private boolean runParallel;
     private boolean addOriginalDataset;
@@ -155,12 +156,14 @@ public class GeneralResamplingSearch {
                     dataSet = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
                 }
 
-                Callable<Graph> task = new GeneralResamplingSearchRunnable(dataSet, this.algorithm, this.parameters, this, this.verbose);
+                GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataSet, this.algorithm, this.parameters, this, this.verbose);
+                task.setExternalGraph(this.externalGraph);
+                task.setKnowledge(this.knowledge);
                 tasks.add(task);
             }
 
             if (addOriginalDataset) {
-                GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(data,
+                GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(data.copy(),
                         this.algorithm, this.parameters, this,
                         this.verbose);
                 task.setExternalGraph(this.externalGraph);
@@ -194,7 +197,7 @@ public class GeneralResamplingSearch {
         if (this.runParallel) {
             List<Future<Graph>> futures = this.pool.invokeAll(tasks);
             for (Future<Graph> future : futures) {
-                Graph graph = null;
+                Graph graph;
                 try {
                     graph = future.get();
 

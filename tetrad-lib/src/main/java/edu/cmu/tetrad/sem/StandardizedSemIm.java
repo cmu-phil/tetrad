@@ -557,11 +557,8 @@ public class StandardizedSemIm implements Simulator {
     @Override
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
-        long _seed = random.getSeed();
         random.setSeed(seed);
-        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
-        random.revertSeed(_seed);
-        return dataSet;
+        return simulateData(sampleSize, latentDataSaved);
     }
 
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {

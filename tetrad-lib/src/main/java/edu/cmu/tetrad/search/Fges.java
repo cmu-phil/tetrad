@@ -77,9 +77,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
     private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
-    // The static ForkJoinPool instance.
-    private final ForkJoinPool pool;
-    // The maximum number of threads to use.
     private boolean faithfulnessAssumed = true;
     /**
      * Specification of forbidden and required edges.
@@ -157,7 +154,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         setScore(score);
-        this.pool = ForkJoinPool.commonPool();
         this.graph = new EdgeListGraph(getVariables());
     }
 
@@ -466,7 +462,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         if (parallelized) {
-            pool.invokeAll(tasks);
+            ForkJoinPool.commonPool().invokeAll(tasks);
         }
 
         long stop = System.currentTimeMillis();
@@ -664,7 +660,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         if (this.parallelized) {
-            this.pool.invokeAll(tasks);
+            ForkJoinPool.commonPool().invokeAll(tasks);
         }
     }
 
@@ -762,7 +758,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         if (this.parallelized) {
-            List<Future<EvalPair>> futures = this.pool.invokeAll(tasks);
+            List<Future<EvalPair>> futures = ForkJoinPool.commonPool().invokeAll(tasks);
 
             for (Future<EvalPair> future : futures) {
                 try {
@@ -851,7 +847,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         for (Node r : toProcess) {
             List<Node> adjacentNodes = new ArrayList<>(toProcess);
-            pool.invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
+            ForkJoinPool.commonPool().invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
                     adjacentNodes.size(), hashIndices));
         }
     }
