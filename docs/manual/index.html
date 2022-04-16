@@ -2619,14 +2619,14 @@ tabs will not appear.</p> -->
             testing. (For PC, CPC, JPC, JCPC, FCI, all testing searches.) </p>
 
         <p>The PC algorithm as given in Causation, Prediction and Search (Spirtes,
-        Glymour, and Scheines, 2000) comes with three heuristics designed
-        to reduce dependence on the order of the variables. The heuristic PC-1
-        simple sorts the variables in alphabetical order. The heuristic PC-2
-        and PC-3 sort edges by their p-values in the search. PP-3 further sorts
-        parents of nodes in reverse order by the p-values of the conditional
-        independence facts used to removed edges in the search. Please see
-        Causation, Prediction, and Search for more details for these
-        heuristics.</p>
+            Glymour, and Scheines, 2000) comes with three heuristics designed
+            to reduce dependence on the order of the variables. The heuristic PC-1
+            simple sorts the variables in alphabetical order. The heuristic PC-2
+            and PC-3 sort edges by their p-values in the search. PP-3 further sorts
+            parents of nodes in reverse order by the p-values of the conditional
+            independence facts used to removed edges in the search. Please see
+            Causation, Prediction, and Search for more details for these
+            heuristics.</p>
 
         <p>Note: If one wants to analyze time series data using this algorithms,
             one may set the time lag parameter to a value greater than 0, which
@@ -3288,8 +3288,8 @@ tabs will not appear.</p> -->
     <h4>Parameters</h4>
 
     <p>Cutoff for alpha, maximum size of conditioning set,
-    Yes if orient away from arrow rule should be applied,
-    Yes if verbose output should be printed.</p>
+        Yes if orient away from arrow rule should be applied,
+        Yes if verbose output should be printed.</p>
 
 
     <h3>The FGES-MB Algorithm</h3>
@@ -3412,6 +3412,48 @@ tabs will not appear.</p> -->
     <p><a href="#mgmParam1">mgmParam1</a>, <a
             href="#mgmParam2">mgmParam2</a>, <a href="#mgmParam3">mgmParam3</a></p>
 
+    <h3>The SP Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="sp">
+
+        <p> SP (Sparsest Permutation, Raskutti, G., & Uhler, C. (2018). Learning
+            directed acyclic graph models based on sparsest permutations.
+            Stat, 7(1), e183) searches for model satisfying the SMR (frugality)
+            assumption for small models of up to about 9 variables.
+
+        <p> The algorithms works searching over all possible permutations
+            of the variables and building DAGs for them in the same way as the
+            GRaSP algorithm. Two ways of building DAGs are considered, one
+            independence-based, due to Raskutti and Uhler and a score-based
+            method, using the Grow-Shrink (GS) method (Margaritis and Thrun, 1999).
+            If the Pearl method is selected, an independence test will be used;
+            if the GS method is selected, a score will be used, so both a test
+            and a score need to be supplied so that this choice can be made.
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Causal sufficiency</p>
+
+    <h4>Output Format</h4>
+
+    <p>The CPDAG equivalence class of DAGs representing estimated
+        possible causal structures over the set of variables.</p>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#graspDepth">graspDepth</a>, <a
+            href="#graspNonSingularDepth">graspNonSingularDepth</a> <a
+            href="#graspUncoveredDepth">graspUncoveredDepth</a> <a
+            href="#graspOrderedAlg">graspOrderedAlg</a> <a
+            href="#graspUseVermaPearl">graspUseVermaPearl</a> <a
+            href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
+
+    </p>
+
     <h3>The GRaSP Algorithm</h3>
 
     <h4>Description</h4>
@@ -3423,7 +3465,7 @@ tabs will not appear.</p> -->
             Permutation) algorithm. Is generalizes specifically the algorithms
             TSP (or which GSP is a bounded and iterated version) and ESP (Solus
             et al., 2017) by allowing those algorithms to equivalently be run by
-            selecting particular parameterizations of GrASP, where ESP enlarges
+            selecting particular parameterizations of GRaSP, where ESP enlarges
             the search space of GSP. The implementation given for ESP renders
             that algorithm tractable. By choosing other parameterizations of
             GRaSP, it is possible to further enlarge the search space even over
@@ -3454,11 +3496,11 @@ tabs will not appear.</p> -->
         <p> The algorithms works by building DAGs given
             permutations in ways similar to those described in Raskutti and Uhler
             (ref?) and Solus et al. Two ways of building DAGs are considered, one
-            due to Verma and Pearl and another novel method, using the
-            Grow-Shrink (GS) method (Margaritis and Thrun, 1999). If the Pearl
-            method is selected, an independence test will be used; if the GS
-            method is selected, a score will be used, so both a test and a score
-            need to be supplied so that this choice can be made.
+            independence-based, due to Raskutti and Uhler and a score-based
+            method, using the Grow-Shrink (GS) method (Margaritis and Thrun, 1999).
+            If the Pearl method is selected, an independence test will be used;
+            if the GS method is selected, a score will be used, so both a test
+            and a score need to be supplied so that this choice can be made.
         <p> We recommend
             that the user turn on logging to watch the progress of the algorithm;
             this helps with larger searches especially.
@@ -3497,9 +3539,6 @@ tabs will not appear.</p> -->
             href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
 
     </p>
-
-    // Parameters
-    params.add(Params.NUM_STARTS); params.add(Params.GRASP_DEPTH);
 
     <!--    <h3>The GLASSO Algorithm</h3>-->
 
@@ -6992,7 +7031,7 @@ tabs will not appear.</p> -->
                     id="orientVisibleFeedbackLoops_long_desc"> Please see the description
         of this algorithm in Thomas Richardson and Peter Spirtes in Chapter 7
         of Computation, Causation, & Discovery by Glymour and Cooper
-        eds.</span> </li>
+        eds.</span></li>
             <li>Default Value: <span
                     id="orientVisibleFeedbackLoops_default_value">true</span></li>
             <li>Lower Bound: <span
@@ -8706,56 +8745,13 @@ tabs will not appear.</p> -->
 </div>
 
 <!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
-<script> window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
-ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<script> window.ga = function () {
+    ga.q.push(arguments)
+};
+ga.q = [];
+ga.l = +new Date;
+ga('create', 'UA-XXXXX-Y', 'auto');
+ga('send', 'pageview')
 
 
 </script>
