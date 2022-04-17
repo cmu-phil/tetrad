@@ -3155,6 +3155,43 @@ tabs will not appear.</p> -->
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
         GRaSP.</p>
 
+    <h3>The SP-FCI Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="spfci">
+
+        <p>SP-FCI is wrapper around the SP algorithm that replaces
+            the FGES step in GFCI with the more accurate SP algrorithm, which
+            reasons by considering permutations of variables. This uses the
+            same method for wrapping SP with an FCI method similar to GFCI
+            as GRaSP-FCI. The difference is that SP considers every permutation
+            of the variables and so necessarily return a frugal DAG. This
+            can only be used for very small models, of up to about 8 or 9
+            variables, because of the super-exponential step of considering
+            every permutation of the variables. The second collider
+            orienatation step in GFCI is done using permutation reasoning,
+            leaving the discriminating path rule as the only rule that requires a
+            "raw" conditional independence judgment. Ultimately this independence
+            judgment can be decided using the same scoring apparatus as the other
+            permutation steps, so ultimatly GRaSP-FCI can be treated as a scoring
+            algorithm.</p>
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
+        SP.</p>
+
+
     <h3>The SvarFCI Algorithm</h3>
 
     <h4>Description</h4>
