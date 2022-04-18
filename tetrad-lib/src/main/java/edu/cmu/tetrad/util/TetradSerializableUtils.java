@@ -384,7 +384,7 @@ public class TetradSerializableUtils {
                 try {
                     method = clazz.getMethod("serializableInstance");
                 } catch (NoSuchMethodException e) {
-                    System.out.println("\nThis class does not have the expected 'serializableInstance' method: " + clazz);
+//                    System.out.println("\nThis class does not have the expected 'serializableInstance' method: " + clazz);
                 } catch (SecurityException e) {
                     e.printStackTrace();
                 }

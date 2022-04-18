@@ -603,8 +603,7 @@ public final class MlBayesIm implements BayesIm {
         double sum = 0.0;
 
         for (int i = 0; i < size; i++) {
-            double v = RandomUtil.getInstance().nextBeta(1, size - 1);
-            row[i] = v;// > 0.5 ? 2 * v : 0.5 * v;
+            row[i] = RandomUtil.getInstance().nextBeta(size / 4d, size);
             sum += row[i];
         }
 

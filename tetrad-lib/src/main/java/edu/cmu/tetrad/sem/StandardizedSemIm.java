@@ -127,7 +127,7 @@ public class StandardizedSemIm implements Simulator {
      */
     public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) {
         if (im.getSemPm().getGraph().isTimeLagModel()) {
-            throw new IllegalArgumentException("Cannot create a standardizerd time lag standard SEM.");
+            throw new IllegalArgumentException("Standardized SEM IM with a time lag model with latent variables is not supported.");
         }
 
         this.semPm = new SemPm(im.getSemPm());
