@@ -126,6 +126,10 @@ public class StandardizedSemIm implements Simulator {
      * @param initialization CALCULATE_FROM_SEM if the initial values will be calculated from the given SEM IM;
      */
     public StandardizedSemIm(SemIm im, Initialization initialization, Parameters parameters) {
+        if (im.getSemPm().getGraph().isTimeLagModel()) {
+            throw new IllegalArgumentException("Cannot create a standardizerd time lag standard SEM.");
+        }
+
         this.semPm = new SemPm(im.getSemPm());
         this.semGraph = new SemGraph(this.semPm.getGraph());
         this.semGraph.setShowErrorTerms(true);

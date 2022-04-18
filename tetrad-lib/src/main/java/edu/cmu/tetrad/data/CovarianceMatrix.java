@@ -280,17 +280,32 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     public final CovarianceMatrix getSubmatrix(String[] submatrixVarNames) {
         List<Node> submatrixVars = new LinkedList<>();
 
+            List<String> missing = new ArrayList<>();
+
         for (String submatrixVarName : submatrixVarNames) {
             if (submatrixVarName.startsWith("E_")) continue;
-            submatrixVars.add(getVariable(submatrixVarName));
+            Node variable = getVariable(submatrixVarName);
+            if (variable == null) missing.add(submatrixVarName);
+            submatrixVars.add(variable);
         }
 
-        if (!getVariables().containsAll(submatrixVars)) {
+        if (!missing.isEmpty()) {
             throw new IllegalArgumentException(
-                    "The variables in the submatrix "
-                            + "must be in the original matrix: original=="
-                            + getVariables() + ", sub==" + submatrixVars);
+                    "The following variables in the submatrix are missing from the data: " +
+                            "\n   " + missing +
+                            "\nIf there are lagged variables, try using the data box to convert the data to time " +
+                            "\nlagged data first.");
         }
+
+//        if (!getVariables().containsAll(submatrixVars)) {
+//
+//
+//
+//            throw new IllegalArgumentException(
+//                    "The variables in the submatrix "
+//                            + "must be in the original matrix: original=="
+//                            + getVariables() + ", sub==" + submatrixVars);
+//        }
 
         for (int i = 0; i < submatrixVars.size(); i++) {
             if (submatrixVars.get(i) == null) {

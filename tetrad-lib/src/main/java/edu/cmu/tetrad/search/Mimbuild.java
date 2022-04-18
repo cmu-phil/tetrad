@@ -98,7 +98,7 @@ public class Mimbuild {
             for (Node node : cluster) allVarNames.add(node.getName());
         }
 
-        measuresCov = measuresCov.getSubmatrix(allVarNames);
+//        measuresCov = measuresCov.getSubmatrix(allVarNames);
 
         List<List<Node>> _clustering = new ArrayList<>();
 
@@ -305,9 +305,12 @@ public class Mimbuild {
         int df = (p) * (p + 1) / 2 - (this.numParams);
         double x = (N - 1) * this.minimum;
 
+        System.out.println("p = " + p);
+
         if (df < 1) throw new IllegalStateException(
-                "The degrees of freedom for this model was calculated to be less than 1. Perhaps the model is " +
-                        "\nnot a multiple indicator model or doesn't have enough pure measurments.");
+                "Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)" +
+                        "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
+                        "\nor doesn't have enough pure nmeasurments to do a proper estimation.");
 
         this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
 
