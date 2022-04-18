@@ -163,8 +163,13 @@ public class SemSimulation implements Simulation {
             if (pm == null) {
                 pm = new SemPm(graph);
             }
+
             im = new SemIm(pm, parameters);
         }
+
+        // Need this in case the SEM IM is given externally.
+        im.setParams(parameters);
+
         this.ims.add(im);
         return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
     }

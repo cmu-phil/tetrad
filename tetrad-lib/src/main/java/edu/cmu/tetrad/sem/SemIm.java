@@ -1487,6 +1487,8 @@ public final class SemIm implements IM, ISemIm {
 
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
+        double errorParam1 = params.getDouble(Params.SIMULATION_PARAM1);
+        double errorParam2 = params.getDouble(Params.SIMULATION_PARAM2);
 
         int numVars = getVariableNodes().size();
 
@@ -1510,11 +1512,11 @@ public final class SemIm implements IM, ISemIm {
                     e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(this.errCovar.get(i, i))));
 //                    e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errorParam2)));
                 } else if (errorType == 2) {
-                    e.set(i, RandomUtil.getInstance().nextUniform(this.errorParam1, this.errorParam2));
+                    e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
                 } else if (errorType == 3) {
-                    e.set(i, RandomUtil.getInstance().nextExponential(this.errorParam1));
+                    e.set(i, RandomUtil.getInstance().nextExponential(errorParam1));
                 } else if (errorType == 4) {
-                    e.set(i, RandomUtil.getInstance().nextGumbel(this.errorParam1, this.errorParam2));
+                    e.set(i, RandomUtil.getInstance().nextGumbel(errorParam1, errorParam2));
                 }
             }
 
