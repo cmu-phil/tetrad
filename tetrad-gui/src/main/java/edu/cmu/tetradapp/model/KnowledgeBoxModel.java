@@ -66,6 +66,11 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
             throw new NullPointerException();
         }
 
+        if (inputs.length == 1 && inputs[0] instanceof TimeLagGraphWrapper) {
+            this.knowledge = ((TimeLagGraphWrapper) inputs[0]).getKnowledge();
+            return;
+        }
+
         if (inputs.length == 1 && inputs[0] instanceof KnowledgeTransferable) {
             this.knowledge = ((KnowledgeTransferable) inputs[0]).getKnowledge();
             this.numTiers = this.knowledge.getNumTiers();
