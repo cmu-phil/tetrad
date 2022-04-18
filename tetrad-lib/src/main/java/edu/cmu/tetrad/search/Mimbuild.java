@@ -98,7 +98,7 @@ public class Mimbuild {
             for (Node node : cluster) allVarNames.add(node.getName());
         }
 
-//        measuresCov = measuresCov.getSubmatrix(allVarNames);
+        measuresCov = measuresCov.getSubmatrix(allVarNames);
 
         List<List<Node>> _clustering = new ArrayList<>();
 

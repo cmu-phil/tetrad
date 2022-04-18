@@ -253,7 +253,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 if (scoreWrapper instanceof DSeparationScore) {
                     ((DSeparationScore) scoreWrapper).setGraph(getSourceGraph());
                 }
-            } else if (algo instanceof TakesIndependenceWrapper) {
+            }
+
+            if (algo instanceof TakesIndependenceWrapper) {
                 IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
                 if (wrapper instanceof DSeparationTest) {
                     ((DSeparationTest) wrapper).setGraph(getSourceGraph());
