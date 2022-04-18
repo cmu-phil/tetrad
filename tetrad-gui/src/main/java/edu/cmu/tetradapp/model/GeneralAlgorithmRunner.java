@@ -265,7 +265,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
 
             if (this.algorithm instanceof HasKnowledge) {
-                ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                IKnowledge knowledge1 = TimeSeriesUtils.getKnowledge(getSourceGraph());
+
+                if (this.knowledge.isEmpty() && !knowledge1.isEmpty()) {
+                    ((HasKnowledge) algo).setKnowledge(knowledge1);
+                } else {
+                    ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                }
             }
 
             graphList.add(algo.search(null, this.parameters));
