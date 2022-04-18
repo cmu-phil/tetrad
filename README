@@ -15,7 +15,7 @@ https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/res
 
 The manual is here:
 
-http://cmu-phil.github.io/tetrad/manual/
+https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html
 
 Javadocs can be found by running the javadocs command on the project once checked out.
 
@@ -36,7 +36,9 @@ IntelliJ IDEA, see the Wiki. Alternatively, you can
 run the lifecycle package target and launch the ejar 
 that is  built in the target directory, using the call
 
-java -jar *-launch.jar
+java -Xmx[g]G -jar *-launch.jar
+
+where g is the number of gigabytes allocated for heap.
 
 The project contains fairly well-developed code in these 
 packages:
@@ -47,13 +49,3 @@ tetradapp (now succeeded by Causal Command - https://github.com/bd2kccd/causal-c
 
 The  tetrad-lib package contains the "model" code; the 
 tetrad-gui package contains the "view" (GUI) code.
-
-We have a (small) team working (part-time) on this code,
-but if you have contributions to me, please feel free.
-If you have suggestions or bug reports, please subit 
-those to the github issue tracker. If you have code
-contributions, these will be handled via the
-issue tracker and the GitHub pull-request procedure. As 
-usual, please fork the repository if you'd like to work on 
-it; contributions will be handled through the usual
-github review method by pull request.
