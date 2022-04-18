@@ -79,7 +79,7 @@ public final class TestCellProbabilities {
 
         double prob = cellProbs.getCellProb(new int[]{0, 0, 0, 0});
 
-        assertEquals(0.02, prob, 0.01);
+        assertEquals(0.06, prob, 0.01);
     }
 }
 
