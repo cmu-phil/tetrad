@@ -55,10 +55,6 @@ public class SemSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-
-        // This should always create new data
-//        if (!newModel && !dataSets.isEmpty()) return;
-
         Graph graph = this.randomGraph.createGraph(parameters);
 
         this.dataSets = new ArrayList<>();
