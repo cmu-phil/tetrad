@@ -384,42 +384,51 @@ public class Mimbuild {
     private double[] getAllParams(Node[][] indicators, Matrix latentscov, double[][] loadings, double[] delta) {
         int count = 0;
 
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = i; j < indicators.length; j++) {
+        // Non-redundant elements of cov(latents)
+        for (int i = 0; i < latentscov.rows(); i++) {
+            for (int j = i; j < latentscov.columns(); j++) {
                 count++;
             }
         }
 
+        System.out.println("# nnonredundant elemnts of cov(error) = " + latentscov.rows() * (latentscov.rows() + 1) / 2);
+
+        int _loadings = 0;
+
+        // Loadings
         for (Node[] indicator : indicators) {
             for (int j = 0; j < indicator.length; j++) {
                 count++;
+                _loadings++;
             }
         }
 
+        System.out.println("# loadings = " + _loadings);
+
+        // Variance of measures
         for (int i = 0; i < delta.length; i++) {
             count++;
         }
 
+        System.out.println("# measure variances = " + delta.length);
+
         double[] values = new double[count];
         count = 0;
 
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = i; j < indicators.length; j++) {
-                values[count] = latentscov.get(i, j);
-                count++;
+        for (int i = 0; i < latentscov.rows(); i++) {
+            for (int j = i; j < latentscov.rows(); j++) {
+                values[count++] = latentscov.get(i, j);
             }
         }
 
         for (int i = 0; i < indicators.length; i++) {
             for (int j = 0; j < indicators[i].length; j++) {
-                values[count] = loadings[i][j];
-                count++;
+                values[count++] = loadings[i][j];
             }
         }
 
         for (double v : delta) {
-            values[count] = v;
-            count++;
+            values[count++] = v;
         }
 
         return values;
