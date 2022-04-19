@@ -428,7 +428,7 @@ public class EdgeListGraph implements Graph {
             started = true;
 
             for (Node c : getChildren(t)) {
-                if (!V.contains(c)) {
+                if (c == node1 || !V.contains(c)) {
                     V.add(c);
                     Q.offer(c);
                 }
