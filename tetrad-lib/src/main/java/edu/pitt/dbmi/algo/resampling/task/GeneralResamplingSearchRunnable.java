@@ -26,8 +26,8 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     private final Parameters parameters;
     private final GeneralResamplingSearch resamplingAlgorithmSearch;
     private final boolean verbose;
-    private DataModel dataModel;
-    private Algorithm algorithm;
+    private final DataModel dataModel;
+    private final Algorithm algorithm;
     private MultiDataSetAlgorithm multiDataSetAlgorithm;
     /**
      * An initial graph to start from.

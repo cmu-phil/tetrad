@@ -98,7 +98,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
     private double[][] vectors = null;
 
-    private double[] variances;
+    private final double[] variances;
 
 
     //=============================CONSTRUCTORS=========================//
@@ -214,9 +214,9 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         this.variances = new double[variables.size()];
 
         class VarianceTask extends RecursiveTask<Boolean> {
-            private int chunk;
-            private int from;
-            private int to;
+            private final int chunk;
+            private final int from;
+            private final int to;
 
             public VarianceTask(int chunk, int from, int to) {
                 this.chunk = chunk;

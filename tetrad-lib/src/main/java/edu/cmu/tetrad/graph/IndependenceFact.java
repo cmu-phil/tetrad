@@ -54,6 +54,16 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
         this._z = new HashSet<>(z);
     }
 
+    public IndependenceFact(Node x, Node y, Set<Node> z) {
+        if (x == null || y == null || z == null) {
+            throw new NullPointerException();
+        }
+
+        this.x = x;
+        this.y = y;
+        this._z = z;
+    }
+
     public IndependenceFact(Node x, Node y, Node... z) {
         if (x == null || y == null || z == null) {
             throw new NullPointerException();

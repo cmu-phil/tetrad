@@ -55,7 +55,7 @@ public final class TestAndersonDarling {
         z = sort(z);
         z = standardize(z);
 
-        assertEquals(-100, getS(z), 1.0);
+        assertEquals(-100, getS(z), 5.0);
     }
 
     @Test

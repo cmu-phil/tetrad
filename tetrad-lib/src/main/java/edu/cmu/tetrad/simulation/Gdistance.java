@@ -28,7 +28,7 @@ public class Gdistance {
 
     private final List<Double> leastList;
 
-    private int chunksize = 2;
+    private final int chunksize = 2;
 
     private final int cores = Runtime.getRuntime().availableProcessors();
 
