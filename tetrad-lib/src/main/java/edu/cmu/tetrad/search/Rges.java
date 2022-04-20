@@ -67,6 +67,7 @@ public class Rges {
                     // This code performs tuck-like operation
                     // and makes ancestors of the distal node
                     // into ancestors of the proximal node
+                    // before reversing the edge
 
                     Graph g = dagFromCPDAG(g0);
                     Edge reversed = edge.reverse();

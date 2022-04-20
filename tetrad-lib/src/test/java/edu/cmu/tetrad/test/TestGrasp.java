@@ -126,10 +126,10 @@ public final class TestGrasp {
     @Test
     public void testGrasp1() {
         Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 50);
+        params.set(Params.NUM_MEASURES, 100);
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 1);
+        params.set(Params.NUM_RUNS, 10);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.NUM_STARTS, 1);
@@ -143,7 +143,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
 
-        params.set(Params.GRASP_ORDERED_ALG, false);
+        params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
         params.set(Params.GRASP_USE_DATA_ORDER, false);
@@ -152,7 +152,7 @@ public final class TestGrasp {
         params.set(Params.VERBOSE, false);
 
         Algorithms algorithms = new Algorithms();
-//        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new rGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
