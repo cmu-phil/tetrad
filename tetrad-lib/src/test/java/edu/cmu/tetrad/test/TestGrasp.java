@@ -24,6 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.rGES;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GRaSPFCI;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
@@ -122,13 +123,13 @@ public final class TestGrasp {
 
     }
 
-//    @Test
+    @Test
     public void testGrasp1() {
         Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 20);
-        params.set(Params.AVG_DEGREE, 4);
+        params.set(Params.NUM_MEASURES, 50);
+        params.set(Params.AVG_DEGREE, 6);
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 10);
+        params.set(Params.NUM_RUNS, 1);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.NUM_STARTS, 1);
@@ -138,11 +139,11 @@ public final class TestGrasp {
         params.set(Params.EBIC_GAMMA, 0.8);
         params.set(Params.ALPHA, 0.001);
 
-        params.set(Params.GRASP_DEPTH, 5);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 2);
-        params.set(Params.GRASP_NONSINGULAR_DEPTH, 0, 2);
+        params.set(Params.GRASP_DEPTH, 3);
+        params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
 
-        params.set(Params.GRASP_ORDERED_ALG, true, false);
+        params.set(Params.GRASP_ORDERED_ALG, false);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
         params.set(Params.GRASP_USE_DATA_ORDER, false);
@@ -150,16 +151,17 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.EbicScore(), new FisherZ()));
+//        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.EbicScore(), new FisherZ()));
+        algorithms.add(new rGES(new edu.cmu.tetrad.algcomparison.score.EbicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
 
         Statistics statistics = new Statistics();
-        statistics.add(new ParameterColumn(Params.GRASP_DEPTH));
-        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
-        statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
-        statistics.add(new ParameterColumn(Params.GRASP_ORDERED_ALG));
+//        statistics.add(new ParameterColumn(Params.GRASP_DEPTH));
+//        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
+//        statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
+//        statistics.add(new ParameterColumn(Params.GRASP_ORDERED_ALG));
         statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
         statistics.add(new ParameterColumn(Params.NUM_MEASURES));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
@@ -174,9 +176,9 @@ public final class TestGrasp {
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
-        comparison.compareFromSimulations("/Users/bandrews/Downloads/grasp/testGrasp1",
+        comparison.compareFromSimulations("/Users/bryanandrews/Downloads/grasp/testGrasp1",
                 simulations, algorithms, statistics, params);
     }
 
