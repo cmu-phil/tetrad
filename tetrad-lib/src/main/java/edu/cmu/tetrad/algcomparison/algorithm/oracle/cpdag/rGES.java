@@ -37,10 +37,6 @@ public class rGES implements Algorithm, UsesScoreWrapper {
 
     private ScoreWrapper score;
 
-    public rGES() {
-
-    }
-
     public rGES(ScoreWrapper score) {
         this.score = score;
     }

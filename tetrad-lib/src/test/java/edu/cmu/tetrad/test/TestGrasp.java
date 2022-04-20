@@ -129,7 +129,7 @@ public final class TestGrasp {
         params.set(Params.NUM_MEASURES, 50);
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 10);
+        params.set(Params.NUM_RUNS, 1);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.NUM_STARTS, 1);
@@ -141,7 +141,7 @@ public final class TestGrasp {
 
         params.set(Params.GRASP_DEPTH, 3);
         params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
-        params.set(Params.GRASP_NONSINGULAR_DEPTH, 0);
+        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
 
         params.set(Params.GRASP_ORDERED_ALG, false);
         params.set(Params.GRASP_USE_SCORE, true);
@@ -149,6 +149,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_DATA_ORDER, false);
 //        params.set(Params.GRASP_ALG, false);
 
+        params.set(Params.VERBOSE, false);
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));

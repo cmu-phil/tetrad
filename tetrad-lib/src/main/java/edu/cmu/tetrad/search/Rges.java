@@ -26,8 +26,8 @@ public class Rges {
     public Rges(@NotNull Score score) {
         this.variables = new ArrayList<>(score.getVariables());
         this.ges = new Fges(score);
-//        this.ges.setFaithfulnessAssumed(false);
-//        this.ges.setSymmetricFirstStep(true);
+        this.ges.setFaithfulnessAssumed(false);
+        this.ges.setSymmetricFirstStep(true);
     }
 
     public Graph search() {
@@ -61,6 +61,8 @@ public class Rges {
                         }
 
                         g0.removeEdge(reversed);
+                    } else {
+                        getOut().println("edge reversal ignored");
                     }
 
                     g0.addEdge(edge);
