@@ -129,7 +129,7 @@ public final class TestGrasp {
         params.set(Params.NUM_MEASURES, 50);
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 1);
+        params.set(Params.NUM_RUNS, 10);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.NUM_STARTS, 1);
@@ -141,7 +141,7 @@ public final class TestGrasp {
 
         params.set(Params.GRASP_DEPTH, 3);
         params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
-        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+        params.set(Params.GRASP_NONSINGULAR_DEPTH, 0);
 
         params.set(Params.GRASP_ORDERED_ALG, false);
         params.set(Params.GRASP_USE_SCORE, true);
@@ -151,8 +151,9 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-//        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.EbicScore(), new FisherZ()));
-        algorithms.add(new rGES(new edu.cmu.tetrad.algcomparison.score.EbicScore()));
+        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new rGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -162,7 +163,7 @@ public final class TestGrasp {
 //        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
 //        statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
 //        statistics.add(new ParameterColumn(Params.GRASP_ORDERED_ALG));
-        statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
+//        statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
         statistics.add(new ParameterColumn(Params.NUM_MEASURES));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));

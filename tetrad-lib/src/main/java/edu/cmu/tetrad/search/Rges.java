@@ -21,15 +21,10 @@ public class Rges {
 
     private final List<Node> variables;
 
-    private final Score score;
-
     private final Fges ges;
-
-    private double modelScore;
 
     public Rges(@NotNull Score score) {
         this.variables = new ArrayList<>(score.getVariables());
-        this.score = score;
         this.ges = new Fges(score);
 //        this.ges.setFaithfulnessAssumed(false);
 //        this.ges.setSymmetricFirstStep(true);
@@ -38,7 +33,7 @@ public class Rges {
     public Graph search() {
 
         Graph g0 = ges.search();
-        modelScore = ges.getModelScore();
+        double s0 = ges.getModelScore();
 
         W:
         while (true) {
@@ -59,9 +54,9 @@ public class Rges {
                         Graph g1 = ges.search();
                         double s1 = ges.getModelScore();
 
-                        if (s1 > modelScore) {
+                        if (s1 > s0) {
                             g0 = g1;
-                            modelScore = s1;
+                            s0 = s1;
                             continue W;
                         }
 
@@ -76,10 +71,6 @@ public class Rges {
         }
 
         return g0;
-    }
-
-    public double getModelScore() {
-        return modelScore;
     }
 
     public List<Node> getVariables() {
