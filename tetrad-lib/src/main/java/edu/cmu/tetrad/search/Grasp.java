@@ -11,7 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.util.Collections.shuffle;
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.util.Collections.*;
 
 
 /**
@@ -80,7 +81,7 @@ public class Grasp {
         this.scorer.setCachingScores(this.cachingScores);
 
         List<Node> bestPerm = null;
-        double best = Double.NEGATIVE_INFINITY;
+        double best = NEGATIVE_INFINITY;
 
         this.scorer.score(order);
 
@@ -96,6 +97,9 @@ public class Grasp {
             makeValidKnowledgeOrder(order);
 
             this.scorer.score(order);
+
+//            betterMutation(scorer);
+//            List<Node> perm  = scorer.getPi();
 
             List<Node> perm = grasp(this.scorer);
 
@@ -118,6 +122,90 @@ public class Grasp {
 
         return bestPerm;
     }
+
+    public void betterMutation(@NotNull TeyssierScorer scorer) {
+        List<Node> pi = scorer.getPi();
+        double s;
+        double sp = scorer.score(pi);
+        scorer.bookmark();
+
+        do {
+            s = sp;
+
+            for (Node k : scorer.getPi()) {
+                sp = NEGATIVE_INFINITY;
+                int index = scorer.index(k);
+
+                for (int j = index; j >= 0; j--) {
+                    scorer.moveTo(k, j);
+//                    tuck(k, j, scorer);
+
+                    if (scorer.score() > sp) {
+                        if (!violatesKnowledge(scorer.getPi())) {
+                            sp = scorer.score();
+                            scorer.bookmark();
+                        }
+                    }
+                }
+
+                scorer.goToBookmark();
+                scorer.bookmark();
+
+                for (int j = index; j < scorer.size(); j++) {
+                    scorer.moveTo(k, j);
+//                    tuck(k, j, scorer);
+
+                    if (scorer.score() > sp) {
+                        if (!violatesKnowledge(scorer.getPi())) {
+                            sp = scorer.score();
+                            scorer.bookmark();
+
+                            if (verbose) {
+                                System.out.println("# Edges = " + scorer.getNumEdges()
+                                        + " Score = " + scorer.score()
+                                        + " (betterMutation)"
+                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
+                            }
+                        }
+                    }
+                }
+
+                scorer.goToBookmark();
+            }
+        } while (sp > s);
+   }
+
+    private void tuck(Node k, int j, TeyssierScorer scorer) {
+        if (j >= scorer.index(k)) return;
+        List<Node> d2 = new ArrayList<>();
+        for (int i = j + 1; i < scorer.index(k); i++) {
+            d2.add(scorer.get(i));
+        }
+
+        List<Node> gammac = new ArrayList<>(d2);
+        gammac.removeAll(scorer.getAncestors(k));
+
+        Node first = null;
+
+        if (!gammac.isEmpty()) {
+            first = gammac.get(0);
+
+            for (Node n : gammac) {
+                if (scorer.index(n) < scorer.index(first)) {
+                    first = n;
+                }
+            }
+        }
+
+        if (scorer.getParents(k).contains(scorer.get(j))) {
+            if (first != null) {
+                scorer.moveTo(scorer.get(j), scorer.index(first));
+            }
+//            scorer.moveTo(j, scorer.index(first));
+            scorer.moveTo(k, j);
+        }
+    }
+
 
     public int getNumEdges() {
         return this.scorer.getNumEdges();
