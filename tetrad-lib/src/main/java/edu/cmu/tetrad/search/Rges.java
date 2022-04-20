@@ -113,9 +113,6 @@ public class Rges {
                     }
 
                     g0.removeEdge(reversed);
-
-
-
                     g0.addEdge(edge);
                 }
             }
