@@ -152,7 +152,7 @@ public final class TestGrasp {
         params.set(Params.VERBOSE, false);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+//        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new rGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 

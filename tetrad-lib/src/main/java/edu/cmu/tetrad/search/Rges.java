@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -39,31 +40,80 @@ public class Rges {
         while (true) {
             for (Edge edge : g0.getEdges()) {
                 if (edge.isDirected()) {
-                    g0.removeEdge(edge);
 
-                    if (!GraphUtils.existsSemidirectedPath(
-                            Edges.getDirectedEdgeTail(edge),
-                            Edges.getDirectedEdgeHead(edge), g0)) {
-                        Edge reversed = edge.reverse();
-                        g0.addEdge(reversed);
+//                    g0.removeEdge(edge);
+//                    if (!GraphUtils.existsSemidirectedPath(
+//                            Edges.getDirectedEdgeTail(edge),
+//                            Edges.getDirectedEdgeHead(edge), g0)) {
+//                        Edge reversed = edge.reverse();
+//                        g0.addEdge(reversed);
+//
+//                        Graph g = new EdgeListGraph(g0);
+//                        new MeekRules().orientImplied(g);
+//
+//                        ges.setExternalGraph(g);
+//                        Graph g1 = ges.search();
+//                        double s1 = ges.getModelScore();
+//
+//                        if (s1 > s0) {
+//                            g0 = g1;
+//                            s0 = s1;
+//                            continue W;
+//                        }
+//
+//                        g0.removeEdge(reversed);
+//                    }
 
-                        Graph g = new EdgeListGraph(g0);
-                        new MeekRules().orientImplied(g);
+                    // This code performs tuck-like operation
+                    // and makes ancestors of the distal node
+                    // into ancestors of the proximal node
 
-                        ges.setExternalGraph(g);
-                        Graph g1 = ges.search();
-                        double s1 = ges.getModelScore();
+                    Graph g = dagFromCPDAG(g0);
+                    Edge reversed = edge.reverse();
 
-                        if (s1 > s0) {
-                            g0 = g1;
-                            s0 = s1;
-                            continue W;
+                    List<Node> a = new ArrayList<>();
+                    List<Node> b = new ArrayList<>();
+
+                    a.add(Edges.getDirectedEdgeHead(edge));
+                    b.add(Edges.getDirectedEdgeTail(edge));
+
+                    Set<Node> an = new HashSet<>(g.getAncestors(a));
+                    Set<Node> de = new HashSet<>(g.getDescendants(b));
+
+                    an.retainAll(de);
+                    de.removeAll(an);
+                    de.add(Edges.getDirectedEdgeTail(edge));
+
+                    for (Node c : an) {
+                        for (Node d : de) {
+                            if (g.isChildOf(c, d)) {
+                                Edge flip = g.getEdge(c, d);
+                                g.removeEdge(flip);
+                                flip = flip.reverse();
+                                g.addEdge(flip);
+                            }
                         }
-
-                        g0.removeEdge(reversed);
-                    } else {
-                        getOut().println("edge reversal ignored");
                     }
+
+                    g.removeEdge(edge);
+                    g.addEdge(reversed);
+
+                    new MeekRules().orientImplied(g);
+
+                    ges.setExternalGraph(g);
+                    Graph g1 = ges.search();
+                    double s1 = ges.getModelScore();
+
+                    if (s1 > s0) {
+                        g0 = g1;
+                        s0 = s1;
+                        getOut().println(g0.getNumEdges());
+                        continue W;
+                    }
+
+                    g0.removeEdge(reversed);
+
+
 
                     g0.addEdge(edge);
                 }
