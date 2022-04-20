@@ -1,14 +1,10 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -41,43 +37,45 @@ public class Rges {
 
     public Graph search() {
 
-        Graph cpdag = ges.search();
+        Graph g0 = ges.search();
         modelScore = ges.getModelScore();
 
-        Graph g0;
-        double s0;
-
-        do {
-            g0 = null;
-            s0 = modelScore;
-            Set<Edge> edges = cpdag.getEdges();
-
-            for (Edge edge : edges) {
+        W:
+        while (true) {
+            for (Edge edge : g0.getEdges()) {
                 if (edge.isDirected()) {
-                    Edge reversed = edge.reverse();
-                    cpdag.removeEdge(edge);
-                    cpdag.addEdge(reversed);
-                    if (!cpdag.existsDirectedCycle()) {
-                        ges.setExternalGraph(cpdagFromDag(dagFromCPDAG(cpdag)));
+                    g0.removeEdge(edge);
+
+                    if (!GraphUtils.existsSemidirectedPath(
+                            Edges.getDirectedEdgeTail(edge),
+                            Edges.getDirectedEdgeHead(edge), g0)) {
+                        Edge reversed = edge.reverse();
+                        g0.addEdge(reversed);
+
+                        Graph g = new EdgeListGraph(g0);
+                        new MeekRules().orientImplied(g);
+
+                        ges.setExternalGraph(g);
                         Graph g1 = ges.search();
                         double s1 = ges.getModelScore();
-                        if (s1 == s0) {
+
+                        if (s1 > modelScore) {
                             g0 = g1;
-                            s0 = s1;
+                            modelScore = s1;
+                            continue W;
                         }
+
+                        g0.removeEdge(reversed);
                     }
-                    cpdag.removeEdge(reversed);
-                    cpdag.addEdge(edge);
+
+                    g0.addEdge(edge);
                 }
             }
 
-            if (g0 != null) {
-                cpdag = g0;
-                modelScore = s0;
-            }
-        } while(g0 != null);
+            break;
+        }
 
-        return cpdag;
+        return g0;
     }
 
     public double getModelScore() {
