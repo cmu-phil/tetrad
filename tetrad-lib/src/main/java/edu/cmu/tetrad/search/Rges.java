@@ -41,58 +41,34 @@ public class Rges {
             for (Edge edge : g0.getEdges()) {
                 if (edge.isDirected()) {
 
-//                    g0.removeEdge(edge);
-//                    if (!GraphUtils.existsSemidirectedPath(
-//                            Edges.getDirectedEdgeTail(edge),
-//                            Edges.getDirectedEdgeHead(edge), g0)) {
-//                        Edge reversed = edge.reverse();
-//                        g0.addEdge(reversed);
-//
-//                        Graph g = new EdgeListGraph(g0);
-//                        new MeekRules().orientImplied(g);
-//
-//                        ges.setExternalGraph(g);
-//                        Graph g1 = ges.search();
-//                        double s1 = ges.getModelScore();
-//
-//                        if (s1 > s0) {
-//                            g0 = g1;
-//                            s0 = s1;
-//                            continue W;
-//                        }
-//
-//                        g0.removeEdge(reversed);
-//                    }
-
                     // This code performs tuck-like operation
                     // and makes ancestors of the distal node
-                    // into ancestors of the proximal node
+                    // into parents of the proximal node
                     // before reversing the edge
 
-                    Graph g = dagFromCPDAG(g0);
                     Edge reversed = edge.reverse();
+                    Node a = Edges.getDirectedEdgeHead(edge);
+                    Node b = Edges.getDirectedEdgeTail(edge);
 
-                    List<Node> a = new ArrayList<>();
-                    List<Node> b = new ArrayList<>();
+//                    Graph g = dagFromCPDAG(g0);
+//                    List<Node> an = new ArrayList<>();
+//                    an.add(a);
+//                    an = g.getAncestors(an);
+//                    an.retainAll(g.getChildren(b));
+//                    for (Node c : an) {
+//                        Edge flip = g.getEdge(c, b);
+//                        g.removeEdge(flip);
+//                        flip = flip.reverse();
+//                        g.addEdge(flip);
+//                    }
 
-                    a.add(Edges.getDirectedEdgeHead(edge));
-                    b.add(Edges.getDirectedEdgeTail(edge));
-
-                    Set<Node> an = new HashSet<>(g.getAncestors(a));
-                    Set<Node> de = new HashSet<>(g.getDescendants(b));
-
-                    an.retainAll(de);
-                    de.removeAll(an);
-                    de.add(Edges.getDirectedEdgeTail(edge));
-
-                    for (Node c : an) {
-                        for (Node d : de) {
-                            if (g.isChildOf(c, d)) {
-                                Edge flip = g.getEdge(c, d);
-                                g.removeEdge(flip);
-                                flip = flip.reverse();
-                                g.addEdge(flip);
-                            }
+                    Graph g = new EdgeListGraph(g0);
+                    List<Node> ch = g.getAdjacentNodes(b);
+                    ch.removeAll(g.getParents(b));
+                    for (Node c : ch) {
+                        if (GraphUtils.existsSemidirectedPath(c, a, g)) {
+                            g.removeEdge(g.getEdge(b, c));
+                            g.addDirectedEdge(c, b);
                         }
                     }
 
@@ -113,9 +89,6 @@ public class Rges {
                     }
 
                     g0.removeEdge(reversed);
-
-
-
                     g0.addEdge(edge);
                 }
             }
