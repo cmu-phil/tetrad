@@ -28,9 +28,6 @@ public class Rges {
         this.variables = new ArrayList<>(score.getVariables());
         this.ges = new Fges(score);
         this.meeks = new MeekRules();
-
-        this.ges.setFaithfulnessAssumed(false);
-        this.ges.setSymmetricFirstStep(true);
     }
 
     public Graph search() {
@@ -59,9 +56,7 @@ public class Rges {
                     // and makes ancestors of the distal node
                     // into parents of the proximal node
 
-                    List<Node> sdAdj = g.getAdjacentNodes(b);
-                    sdAdj.removeAll(g.getParents(b));
-                    for (Node c : sdAdj) {
+                    for (Node c : g.getAdjacentNodes(b)) {
                         if (existsSemidirectedPath(c, a, g)) {
                             g.removeEdge(g.getEdge(b, c));
                             g.addDirectedEdge(c, b);
