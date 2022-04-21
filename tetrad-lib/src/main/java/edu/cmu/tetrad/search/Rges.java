@@ -52,9 +52,9 @@ public class Rges {
                     Node a = Edges.getDirectedEdgeHead(edge);
                     Node b = Edges.getDirectedEdgeTail(edge);
 
-                    // This code performs tuck-like operation
-                    // and makes ancestors of the distal node
-                    // into parents of the proximal node
+                    // This code performs "pre-tuck" operation
+                    // that makes anterior nodes of the distal
+                    // node into parents of the proximal node
 
                     for (Node c : g.getAdjacentNodes(b)) {
                         if (existsSemidirectedPath(c, a, g)) {
