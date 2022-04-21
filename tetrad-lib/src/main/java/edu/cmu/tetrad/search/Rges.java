@@ -41,6 +41,7 @@ public class Rges {
         boolean flag = true;
 
         while (flag) {
+            if (Thread.interrupted()) break;
 
             flag = false;
             Iterator<Edge> edges = g0.getEdges().iterator();
