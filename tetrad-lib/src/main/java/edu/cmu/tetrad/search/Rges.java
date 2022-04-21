@@ -5,12 +5,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.cpdagFromDag;
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagFromCPDAG;
+import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
 
 /**
  * Implementation of the experimental rGES algorithm
@@ -24,9 +22,13 @@ public class Rges {
 
     private final Fges ges;
 
+    private final MeekRules meeks;
+
     public Rges(@NotNull Score score) {
         this.variables = new ArrayList<>(score.getVariables());
         this.ges = new Fges(score);
+        this.meeks = new MeekRules();
+
         this.ges.setFaithfulnessAssumed(false);
         this.ges.setSymmetricFirstStep(true);
     }
@@ -36,64 +38,57 @@ public class Rges {
         Graph g0 = ges.search();
         double s0 = ges.getModelScore();
 
-        W:
-        while (true) {
-            for (Edge edge : g0.getEdges()) {
+        boolean flag = true;
+
+        while (flag) {
+
+            flag = false;
+            Iterator<Edge> edges = g0.getEdges().iterator();
+
+            while (!flag && edges.hasNext()) {
+
+                Edge edge = edges.next();
                 if (edge.isDirected()) {
+
+                    Graph g = new EdgeListGraph(g0);
+                    Node a = Edges.getDirectedEdgeHead(edge);
+                    Node b = Edges.getDirectedEdgeTail(edge);
 
                     // This code performs tuck-like operation
                     // and makes ancestors of the distal node
                     // into parents of the proximal node
-                    // before reversing the edge
 
-                    Edge reversed = edge.reverse();
-                    Node a = Edges.getDirectedEdgeHead(edge);
-                    Node b = Edges.getDirectedEdgeTail(edge);
-
-//                    Graph g = dagFromCPDAG(g0);
-//                    List<Node> an = new ArrayList<>();
-//                    an.add(a);
-//                    an = g.getAncestors(an);
-//                    an.retainAll(g.getChildren(b));
-//                    for (Node c : an) {
-//                        Edge flip = g.getEdge(c, b);
-//                        g.removeEdge(flip);
-//                        flip = flip.reverse();
-//                        g.addEdge(flip);
-//                    }
-
-                    Graph g = new EdgeListGraph(g0);
-                    List<Node> ch = g.getAdjacentNodes(b);
-                    ch.removeAll(g.getParents(b));
-                    for (Node c : ch) {
-                        if (GraphUtils.existsSemidirectedPath(c, a, g)) {
+                    List<Node> sdAdj = g.getAdjacentNodes(b);
+                    sdAdj.removeAll(g.getParents(b));
+                    for (Node c : sdAdj) {
+                        if (existsSemidirectedPath(c, a, g)) {
                             g.removeEdge(g.getEdge(b, c));
                             g.addDirectedEdge(c, b);
                         }
                     }
 
+                    Edge reversed = edge.reverse();
+
                     g.removeEdge(edge);
                     g.addEdge(reversed);
 
-                    new MeekRules().orientImplied(g);
+                    meeks.orientImplied(g);
 
                     ges.setExternalGraph(g);
                     Graph g1 = ges.search();
                     double s1 = ges.getModelScore();
 
                     if (s1 > s0) {
+                        flag = true;
                         g0 = g1;
                         s0 = s1;
                         getOut().println(g0.getNumEdges());
-                        continue W;
+                    } else {
+                        g0.removeEdge(reversed);
+                        g0.addEdge(edge);
                     }
-
-                    g0.removeEdge(reversed);
-                    g0.addEdge(edge);
                 }
             }
-
-            break;
         }
 
         return g0;

@@ -123,13 +123,13 @@ public final class TestGrasp {
 
     }
 
-//    @Test
+    @Test
     public void testGrasp1() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 50);
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 10);
+        params.set(Params.NUM_RUNS, 1);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.NUM_STARTS, 1);
@@ -153,7 +153,7 @@ public final class TestGrasp {
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new rGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
@@ -180,7 +180,7 @@ public final class TestGrasp {
         comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
-        comparison.compareFromSimulations("/Users/bryanandrews/Downloads/grasp/testGrasp2",
+        comparison.compareFromSimulations("/Users/bryanandrews/Downloads/grasp/testGrasp4",
                 simulations, algorithms, statistics, params);
     }
 
