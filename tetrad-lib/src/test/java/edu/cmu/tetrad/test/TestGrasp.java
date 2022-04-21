@@ -143,6 +143,9 @@ public final class TestGrasp {
         params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
 
+//        params.set(Params.FAITHFULNESS_ASSUMED, true, false);
+//        params.set(Params.SYMMETRIC_FIRST_STEP, true, false);
+
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
@@ -165,6 +168,7 @@ public final class TestGrasp {
 //        statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
 //        statistics.add(new ParameterColumn(Params.GRASP_ORDERED_ALG));
 //        statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
+//        statistics.add(new ParameterColumn(Params.FAITHFULNESS_ASSUMED));
         statistics.add(new ParameterColumn(Params.NUM_MEASURES));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));

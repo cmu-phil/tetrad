@@ -28,9 +28,6 @@ public class Rges {
         this.variables = new ArrayList<>(score.getVariables());
         this.ges = new Fges(score);
         this.meeks = new MeekRules();
-
-        this.ges.setFaithfulnessAssumed(false);
-        this.ges.setSymmetricFirstStep(true);
     }
 
     public Graph search() {
