@@ -260,8 +260,8 @@ public class Grasp {
                                 scorer.getNumEdges(), sNew - sOld, tucks, tuck);
                         TetradLogger.getInstance().forceLogMessage(s);
 
-//                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
-//                                scorer.getNumEdges(), sNew - sOld, tucks, tuck);
+                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
+                                scorer.getNumEdges(), sNew - sOld, tucks, tuck);
                     }
                     return;
                 } else if (sNew == sOld && currentDepth < depth[0]) {

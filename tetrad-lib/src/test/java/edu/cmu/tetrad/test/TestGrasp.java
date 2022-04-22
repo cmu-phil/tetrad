@@ -126,8 +126,8 @@ public final class TestGrasp {
     @Test
     public void testGrasp1() {
         Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 50);
-        params.set(Params.AVG_DEGREE, 6);
+        params.set(Params.NUM_MEASURES, 500);
+        params.set(Params.AVG_DEGREE, 2);
         params.set(Params.SAMPLE_SIZE, 1000);
         params.set(Params.NUM_RUNS, 1);
         params.set(Params.COEF_LOW, 0);
@@ -142,6 +142,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_DEPTH, 3);
         params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+        params.set(Params.GRASP_TOLERANCE_DEPTH, 0);
 
 //        params.set(Params.FAITHFULNESS_ASSUMED, true, false);
 //        params.set(Params.SYMMETRIC_FIRST_STEP, true, false);
@@ -150,6 +151,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
         params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.CACHE_SCORES, true);
 //        params.set(Params.GRASP_ALG, false);
 
         params.set(Params.VERBOSE, false);
@@ -184,7 +186,7 @@ public final class TestGrasp {
         comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
-        comparison.compareFromSimulations("/Users/bryanandrews/Downloads/grasp/testGrasp4",
+        comparison.compareFromSimulations("/Users/bryanandrews/Downloads/grasp/testGrasp6",
                 simulations, algorithms, statistics, params);
     }
 
