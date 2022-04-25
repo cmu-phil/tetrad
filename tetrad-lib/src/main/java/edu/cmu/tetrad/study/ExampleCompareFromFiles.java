@@ -90,7 +90,7 @@ public class ExampleCompareFromFiles {
         comparison.setSaveGraphs(true);
         //DagToPag p = new DagToPag(graph);
 
-        comparison.compareFromFiles("comparison", algorithms);
+        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
     }
 }
 
