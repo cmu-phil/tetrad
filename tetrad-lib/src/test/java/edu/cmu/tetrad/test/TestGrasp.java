@@ -182,6 +182,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
+    @Test
     public void allPaperRuns() {
         Parameters params = new Parameters();
 
@@ -211,29 +212,31 @@ public final class TestGrasp {
         params.set(Params.CACHE_SCORES, true);
         params.set(Params.VERBOSE, true);
 
+        params.set(Params.PRECOMPUTE_COVARIANCES, true);
+
         {
-            params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
-            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
-
-            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
-            params.set(Params.AVG_DEGREE, 6);
-            params.set(Params.SAMPLE_SIZE, 1000);
-
+//            params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+//            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+//
+//            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
+//            params.set(Params.AVG_DEGREE, 6);
+//            params.set(Params.SAMPLE_SIZE, 1000);
+//
             String dataPath, resultsPath;
-
-            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
-            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_1";
-
-            doPaperRun(params, dataPath, resultsPath, true);
-
-            params.set(Params.NUM_MEASURES, 60);
-            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-            params.set(Params.STANDARDIZE, 1000);
-
-            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
-            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_1";
-
-            doPaperRun(params, dataPath, resultsPath, true);
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_1";
+//
+//            doPaperRun(params, dataPath, resultsPath, true);
+//
+//            params.set(Params.NUM_MEASURES, 60);
+//            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+//            params.set(Params.STANDARDIZE, 1000);
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_1";
+//
+//            doPaperRun(params, dataPath, resultsPath, true);
 
             params.set(Params.NUM_MEASURES, 60);
             params.set(Params.AVG_DEGREE, 6);
@@ -282,7 +285,6 @@ public final class TestGrasp {
         }
     }
 
-    @Test
     public void doPaperRun(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
         Algorithms algorithms = new Algorithms();
         algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
