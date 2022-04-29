@@ -18,8 +18,8 @@
  */
 package edu.pitt.dbmi.data.reader.preview;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -38,7 +38,7 @@ import java.util.List;
  */
 public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPreviewer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicDataPreviewer.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(BasicDataPreviewer.class);
 
     public BasicDataPreviewer(Path dataFile) {
         super(dataFile);
@@ -57,7 +57,7 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
         try {
             getPreviews(fromLine, toLine, numOfCharacters, linePreviews);
         } catch (ClosedByInterruptException exception) {
-            BasicDataPreviewer.LOGGER.error("", exception);
+//            BasicDataPreviewer.LOGGER.error("", exception);
         }
 
         return linePreviews;

@@ -21,8 +21,8 @@ package edu.pitt.dbmi.data.reader.covariance;
 import edu.pitt.dbmi.data.reader.DataFileReader;
 import edu.pitt.dbmi.data.reader.DataReaderException;
 import edu.pitt.dbmi.data.reader.Delimiter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class LowerCovarianceDataFileReader extends DataFileReader implements CovarianceDataReader {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LowerCovarianceDataFileReader.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(LowerCovarianceDataFileReader.class);
 
     public LowerCovarianceDataFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
@@ -93,11 +93,11 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                             if (lineDataNum >= 3) {
                                 if (col > row) {
                                     String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-                                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                     throw new DataReaderException(errMsg);
                                 } else if (col < row) {
                                     String errMsg = String.format("Insufficent data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-                                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                     throw new DataReaderException(errMsg);
                                 } else {
                                     String value = dataBuilder.toString().trim();
@@ -106,7 +106,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                     colNum++;
                                     if (value.isEmpty()) {
                                         String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-                                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                         throw new DataReaderException(errMsg);
                                     } else {
                                         try {
@@ -115,7 +115,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                             data[col][row] = covariance;
                                         } catch (NumberFormatException exception) {
                                             String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
+//                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
                                             throw new DataReaderException(errMsg);
                                         }
                                     }
@@ -180,7 +180,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                     if (isDelimiter) {
                                         if (col > row) {
                                             String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                             throw new DataReaderException(errMsg);
                                         }
 
@@ -190,7 +190,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                         colNum++;
                                         if (value.isEmpty()) {
                                             String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                             throw new DataReaderException(errMsg);
                                         } else {
                                             try {
@@ -199,7 +199,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                                 data[col][row] = covariance;
                                             } catch (NumberFormatException exception) {
                                                 String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                                LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
+//                                                LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
                                                 throw new DataReaderException(errMsg);
                                             }
                                         }
@@ -221,11 +221,11 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                 if (lineDataNum >= 3) {
                     if (col > row) {
                         String errMsg = String.format("Excess data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                         throw new DataReaderException(errMsg);
                     } else if (col < row) {
                         String errMsg = String.format("Insufficent data on line %d.  Extracted %d value(s) but expected %d.", lineNum, col + 1, row + 1);
-                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                         throw new DataReaderException(errMsg);
                     } else {
                         String value = dataBuilder.toString().trim();
@@ -234,7 +234,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                         colNum++;
                         if (value.isEmpty()) {
                             String errMsg = String.format("Missing value on line %d at column %d.", lineNum, colNum);
-                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                             throw new DataReaderException(errMsg);
                         } else {
                             try {
@@ -243,7 +243,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                 data[col][row] = covariance;
                             } catch (NumberFormatException exception) {
                                 String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
+//                                LowerCovarianceDataFileReader.LOGGER.error(errMsg, exception);
                                 throw new DataReaderException(errMsg);
                             }
                         }
@@ -297,7 +297,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                 colNum++;
                                 if (value.isEmpty()) {
                                     String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
-                                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                     throw new DataReaderException(errMsg);
                                 } else {
                                     variables.add(value);
@@ -363,7 +363,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                                         colNum++;
                                         if (value.isEmpty()) {
                                             String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
-                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                                            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                                             throw new DataReaderException(errMsg);
                                         } else {
                                             variables.add(value);
@@ -388,7 +388,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
                     colNum++;
                     if (value.isEmpty()) {
                         String errMsg = String.format("Missing variable name on line %d at column %d.", lineNum, colNum);
-                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                        LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                         throw new DataReaderException(errMsg);
                     } else {
                         variables.add(value);
@@ -399,7 +399,7 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
 
         if (variables.isEmpty()) {
             final String errMsg = "Covariance file does not contain variable names.";
-            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//            LowerCovarianceDataFileReader.LOGGER.error(errMsg);
             throw new DataReaderException(errMsg);
         }
 
@@ -487,14 +487,14 @@ public class LowerCovarianceDataFileReader extends DataFileReader implements Cov
             String value = dataBuilder.toString().trim();
             if (value.isEmpty()) {
                 String errMsg = String.format("Line %d: Missing number of cases.", lineNum);
-                LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                 throw new DataReaderException(errMsg);
             } else {
                 try {
                     numOfCases += Integer.parseInt(value);
                 } catch (NumberFormatException exception) {
                     String errMsg = String.format("Invalid number %s on line %d.", value, lineNum);
-                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
+//                    LowerCovarianceDataFileReader.LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
             }
