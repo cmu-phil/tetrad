@@ -49,9 +49,6 @@ public class Kci implements IndependenceTest {
     // The alpha level of the test.
     private double alpha;
 
-    // P value used to judge independence. This is the last p value calculated.
-    private double p;
-
     // A normal distribution with 1 degree of freedom.
     private final NormalDistribution normal = new NormalDistribution(new SynchronizedRandomGenerator(
             new Well44497b(193924L)), 0, 1);
@@ -81,6 +78,7 @@ public class Kci implements IndependenceTest {
     private double epsilon = 0.001;
 
     private boolean verbose;
+    private IndependenceFact latestFact = null;
 
     /**
      * Constructor.
@@ -97,7 +95,6 @@ public class Kci implements IndependenceTest {
         for (int j = 0; j < n; j++) Ones.set(j, 0, 1);
 
         this.alpha = alpha;
-        this.p = -1;
 
         this.hash = new HashMap<>();
 
@@ -177,30 +174,26 @@ public class Kci implements IndependenceTest {
         }
 
         IndependenceFact fact = new IndependenceFact(x, y, z);
+        this.latestFact = fact;
 
         if (this.facts.get(fact) != null) {
-            independent = this.facts.get(fact);
-            this.p = this.pValues.get(fact);
+            return facts.get(fact);
         } else {
             if (z.isEmpty()) {
                 independent = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
             } else {
                 independent = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
             }
-
-            this.facts.put(fact, independent);
         }
 
-        if (this.verbose) {
+        if (verbose) {
             double p = getPValue();
 
             if (independent) {
-                System.out.println(fact + " INDEPENDENT p = " + p);
-                TetradLogger.getInstance().log("info", fact + " Independent");
+                TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
 
             } else {
-                System.out.println(fact + " dependent p = " + p);
-                TetradLogger.getInstance().log("info", fact.toString());
+                TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
             }
         }
 
@@ -243,7 +236,7 @@ public class Kci implements IndependenceTest {
      * not meaningful for tis test.
      */
     public double getPValue() {
-        return this.p;
+        return pValues.get(latestFact);
     }
 
     /**
@@ -387,9 +380,10 @@ public class Kci implements IndependenceTest {
                 double k_appr = mean_appr * mean_appr / var_appr;
                 double theta_appr = var_appr / mean_appr;
                 double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
+                boolean indep = p > getAlpha();
+                this.facts.put(fact, indep);
                 this.pValues.put(fact, p);
-                this.p = p;
-                return p > this.alpha;
+                return indep;
             } else {
                 return theorem4(kx, ky, fact, N);
             }
@@ -424,9 +418,10 @@ public class Kci implements IndependenceTest {
             return proposition5(kx, ky, fact, N);
         } catch (Exception e) {
             e.printStackTrace();
+            boolean indep = false;
+            this.facts.put(fact, indep);
             this.pValues.put(fact, 0.0);
-            this.facts.put(fact, false);
-            return false;
+            return indep;
         }
     }
 
@@ -460,20 +455,10 @@ public class Kci implements IndependenceTest {
 
         // Calculate p.
         double p = sum / (double) getNumBootstraps();
+        boolean indep = p > getAlpha();
+        this.facts.put(fact, indep);
         this.pValues.put(fact, p);
-
-        boolean independent = p > this.alpha;
-
-        if (independent) {
-            System.out.println(fact + " INDEPENDENT p = " + p);
-            TetradLogger.getInstance().log("info", fact + " Independent");
-
-        } else {
-            System.out.println(fact + " dependent p = " + p);
-            TetradLogger.getInstance().log("info", fact.toString());
-        }
-
-        return independent;
+        return indep;
     }
 
     private boolean proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
@@ -512,8 +497,10 @@ public class Kci implements IndependenceTest {
             double k_appr = mean_appr * mean_appr / var_appr;
             double theta_appr = var_appr / mean_appr;
             double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
+            boolean indep = p > getAlpha();
+            this.facts.put(fact, indep);
             this.pValues.put(fact, p);
-            return p > getAlpha();
+            return indep;
         } else {
 
             // Get top eigenvalues of that.
@@ -536,21 +523,10 @@ public class Kci implements IndependenceTest {
             }
 
             double p = sum / (double) getNumBootstraps();
+            boolean indep = p > getAlpha();
+            this.facts.put(fact, indep);
             this.pValues.put(fact, p);
-            this.p = p;
-
-            boolean independent = p > this.alpha;
-
-            if (independent) {
-                System.out.println(fact + " INDEPENDENT p = " + p);
-                TetradLogger.getInstance().log("info", fact + " Independent");
-
-            } else {
-                System.out.println(fact + " dependent p = " + p);
-                TetradLogger.getInstance().log("info", fact.toString());
-            }
-
-            return independent;
+            return indep;
         }
     }
 

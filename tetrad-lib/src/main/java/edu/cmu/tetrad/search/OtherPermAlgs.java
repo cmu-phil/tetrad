@@ -423,6 +423,12 @@ public class OtherPermAlgs {
                     + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
         }
 
+        System.out.println("Frugal CPDAGs: ");
+
+        for (Graph g : frugalCpdags) {
+            System.out.println(g);
+        }
+
         return maxP;
     }
 

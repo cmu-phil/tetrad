@@ -81,7 +81,7 @@ public class MVPCompareFromFiles {
         comparison.setShowUtilities(false);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
-        comparison.compareFromFiles("comparison", algorithms);
+        comparison.compareFromFiles("comparison", algorithms, statistics, parameters);
     }
 }
 

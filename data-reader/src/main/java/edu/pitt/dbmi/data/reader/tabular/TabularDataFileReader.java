@@ -21,8 +21,8 @@ package edu.pitt.dbmi.data.reader.tabular;
 import edu.pitt.dbmi.data.reader.*;
 import edu.pitt.dbmi.data.reader.metadata.ColumnMetadata;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +40,7 @@ import java.util.Set;
  */
 public final class TabularDataFileReader extends DatasetFileReader implements TabularDataReader {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TabularDataFileReader.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(TabularDataFileReader.class);
 
     public TabularDataFileReader(Path dataFile, Delimiter delimiter) {
         super(dataFile, delimiter);
@@ -167,7 +167,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
                                 String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-                                TabularDataFileReader.LOGGER.error(errMsg);
+//                                TabularDataFileReader.LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
                         }
@@ -272,7 +272,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 // ensure we have enough data
                 if (columnIndex < numOfColsInDataFile) {
                     String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-                    TabularDataFileReader.LOGGER.error(errMsg);
+//                    TabularDataFileReader.LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
             }
@@ -560,7 +560,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                             continuousData[col++][row] = Double.parseDouble(value);
                                         } catch (NumberFormatException exception) {
                                             String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                            TabularDataFileReader.LOGGER.error(errMsg, exception);
+//                                            TabularDataFileReader.LOGGER.error(errMsg, exception);
                                             throw new DataReaderException(errMsg);
                                         }
                                     }
@@ -572,7 +572,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
                                 String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-                                TabularDataFileReader.LOGGER.error(errMsg);
+//                                TabularDataFileReader.LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
 
@@ -650,7 +650,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                                     continuousData[col++][row] = Double.parseDouble(value);
                                                 } catch (NumberFormatException exception) {
                                                     String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                                    TabularDataFileReader.LOGGER.error(errMsg, exception);
+//                                                    TabularDataFileReader.LOGGER.error(errMsg, exception);
                                                     throw new DataReaderException(errMsg);
                                                 }
                                             }
@@ -697,7 +697,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                 continuousData[col++][row] = Double.parseDouble(value);
                             } catch (NumberFormatException exception) {
                                 String errMsg = String.format("Invalid number %s on line %d at column %d.", value, lineNum, colNum);
-                                TabularDataFileReader.LOGGER.error(errMsg, exception);
+//                                TabularDataFileReader.LOGGER.error(errMsg, exception);
                                 throw new DataReaderException(errMsg);
                             }
                         }
@@ -709,7 +709,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 // ensure we have enough data
                 if (columnIndex < numOfColsInDataFile) {
                     String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-                    TabularDataFileReader.LOGGER.error(errMsg);
+//                    TabularDataFileReader.LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
             }
@@ -823,7 +823,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                         data[row][col++] = Double.parseDouble(value);
                                     } catch (NumberFormatException exception) {
                                         String errMsg = String.format("Non-continuous number %s on line %d at column %d.", value, lineNum, colNum);
-                                        TabularDataFileReader.LOGGER.error(errMsg, exception);
+//                                        TabularDataFileReader.LOGGER.error(errMsg, exception);
                                         throw new DataReaderException(errMsg);
                                     }
                                 }
@@ -834,7 +834,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
                                 String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-                                TabularDataFileReader.LOGGER.error(errMsg);
+//                                TabularDataFileReader.LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
 
@@ -904,7 +904,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                                 data[row][col++] = Double.parseDouble(value);
                                             } catch (NumberFormatException exception) {
                                                 String errMsg = String.format("Non-continuous number %s on line %d at column %d.", value, lineNum, colNum);
-                                                TabularDataFileReader.LOGGER.error(errMsg, exception);
+//                                                TabularDataFileReader.LOGGER.error(errMsg, exception);
                                                 throw new DataReaderException(errMsg);
                                             }
                                         }
@@ -942,7 +942,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             data[row][col++] = Double.parseDouble(value);
                         } catch (NumberFormatException exception) {
                             String errMsg = String.format("Non-continuous number %s on line %d at column %d.", value, lineNum, colNum);
-                            TabularDataFileReader.LOGGER.error(errMsg, exception);
+//                            TabularDataFileReader.LOGGER.error(errMsg, exception);
                             throw new DataReaderException(errMsg);
                         }
                     }
@@ -953,7 +953,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 // ensure we have enough data
                 if (columnIndex < numOfColsInDataFile) {
                     String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-                    TabularDataFileReader.LOGGER.error(errMsg);
+//                    TabularDataFileReader.LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
             }
@@ -1086,7 +1086,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
                                 String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-                                TabularDataFileReader.LOGGER.error(errMsg);
+//                                TabularDataFileReader.LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
 
@@ -1195,7 +1195,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 // ensure we have enough data
                 if (columnIndex < numOfColsInDataFile) {
                     String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-                    TabularDataFileReader.LOGGER.error(errMsg);
+//                    TabularDataFileReader.LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
             }
@@ -1311,7 +1311,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                             // ensure we have enough data
                             if (columnIndex < numOfColsInDataFile) {
                                 String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-                                TabularDataFileReader.LOGGER.error(errMsg);
+//                                TabularDataFileReader.LOGGER.error(errMsg);
                                 throw new DataReaderException(errMsg);
                             }
                         }
@@ -1416,7 +1416,7 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                 // ensure we have enough data
                 if (columnIndex < numOfColsInDataFile) {
                     String errMsg = String.format("Insufficient data on line %d.  Extracted %d value(s) but expected %d.", lineNum, columnIndex, numOfColsInDataFile);
-                    TabularDataFileReader.LOGGER.error(errMsg);
+//                    TabularDataFileReader.LOGGER.error(errMsg);
                     throw new DataReaderException(errMsg);
                 }
             }
