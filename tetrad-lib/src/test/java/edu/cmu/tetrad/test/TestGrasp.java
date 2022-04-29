@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.rGES;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GRaSPFCI;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
@@ -36,11 +36,13 @@ import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
+import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -48,21 +50,24 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.data.reader.Delimiter;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import org.apache.commons.collections4.OrderedMap;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static edu.cmu.tetrad.data.DataUtils.loadContinuousData;
+import static edu.cmu.tetrad.graph.GraphUtils.*;
 import static edu.cmu.tetrad.search.OtherPermAlgs.Method.SP;
+import static edu.cmu.tetrad.search.SearchGraphUtils.cpdagFromDag;
 import static java.util.Collections.shuffle;
 
 /**
@@ -124,79 +129,22 @@ public final class TestGrasp {
 
     }
 
-//    @Test
+    @Test
     public void testGrasp1() {
         Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 20);
-        params.set(Params.AVG_DEGREE, 4);
+        params.set(Params.NUM_MEASURES, 60);
+        params.set(Params.AVG_DEGREE, 6);
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 10);
-        params.set(Params.COEF_LOW, 0);
-        params.set(Params.COEF_HIGH, 1);
-        params.set(Params.NUM_STARTS, 1);
-
-        params.set(Params.PENALTY_DISCOUNT, 2);
-        params.set(Params.ZS_RISK_BOUND, 0.001); //, 0.01, 0.1);
-        params.set(Params.EBIC_GAMMA, 0.8);
-        params.set(Params.ALPHA, 0.001);
-
-        params.set(Params.GRASP_DEPTH, 5);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 2);
-        params.set(Params.GRASP_NONSINGULAR_DEPTH, 0, 2);
-
-        params.set(Params.GRASP_ORDERED_ALG, true, false);
-        params.set(Params.GRASP_USE_SCORE, true);
-        params.set(Params.GRASP_USE_VERMA_PEARL, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
-//        params.set(Params.GRASP_ALG, false);
-
-
-        Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.EbicScore(), new FisherZ()));
-
-        Simulations simulations = new Simulations();
-        simulations.add(new SemSimulation(new RandomForward()));
-
-        Statistics statistics = new Statistics();
-        statistics.add(new ParameterColumn(Params.GRASP_DEPTH));
-        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
-        statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
-        statistics.add(new ParameterColumn(Params.GRASP_ORDERED_ALG));
-        statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
-        statistics.add(new ParameterColumn(Params.NUM_MEASURES));
-        statistics.add(new ParameterColumn(Params.AVG_DEGREE));
-        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-        statistics.add(new NumberOfEdgesTrue());
-        statistics.add(new NumberOfEdgesEst());
-        statistics.add(new AdjacencyPrecision());
-        statistics.add(new AdjacencyRecall());
-        statistics.add(new ArrowheadPrecision());
-        statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
-
-        Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
-
-        comparison.compareFromSimulations("/Users/bandrews/Downloads/grasp/testGrasp1",
-                simulations, algorithms, statistics, params);
-    }
-
-    @Test
-    public void allPaperRuns() {
-        Parameters params = new Parameters();
-
         params.set(Params.RANDOMIZE_COLUMNS, true);
         params.set(Params.DIFFERENT_GRAPHS, true);
-        params.set(Params.NUM_RUNS, 20);
+        params.set(Params.NUM_RUNS, 3);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.NUM_STARTS, 1);
-        params.set(Params.VAR_LOW, 1.0);
-        params.set(Params.VAR_HIGH, 1.0);
-        params.set(Params.STANDARDIZE, true);
 
         params.set(Params.PENALTY_DISCOUNT, 2);
+//        params.set(Params.ZS_RISK_BOUND, 0.001); //, 0.01, 0.1);
+//        params.set(Params.EBIC_GAMMA, 0.8);
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 3);
@@ -204,108 +152,34 @@ public final class TestGrasp {
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
         params.set(Params.GRASP_TOLERANCE_DEPTH, 0);
 
+//        params.set(Params.FAITHFULNESS_ASSUMED, true, false);
+//        params.set(Params.SYMMETRIC_FIRST_STEP, true, false);
+
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
         params.set(Params.GRASP_USE_DATA_ORDER, true);
         params.set(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM, false);
         params.set(Params.CACHE_SCORES, true);
-        params.set(Params.VERBOSE, true);
+//        params.set(Params.GRASP_ALG, false);
 
-        params.set(Params.PRECOMPUTE_COVARIANCES, true);
+        params.set(Params.VERBOSE, false);
 
-        {
-//            params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
-//            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
-//
-//            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
-//            params.set(Params.AVG_DEGREE, 6);
-//            params.set(Params.SAMPLE_SIZE, 1000);
-//
-            String dataPath, resultsPath;
-//
-//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
-//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_1";
-//
-//            doPaperRun(params, dataPath, resultsPath, true);
-//
-//            params.set(Params.NUM_MEASURES, 60);
-//            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-//            params.set(Params.STANDARDIZE, 1000);
-//
-//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
-//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_1";
-//
-//            doPaperRun(params, dataPath, resultsPath, true);
-
-            params.set(Params.NUM_MEASURES, 60);
-            params.set(Params.AVG_DEGREE, 6);
-            params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
-
-            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_sample_size";
-            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_1";
-
-            doPaperRun(params, dataPath, resultsPath, true);
-
-        }
-
-        {
-            params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
-            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
-
-            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
-            params.set(Params.AVG_DEGREE, 6);
-            params.set(Params.SAMPLE_SIZE, 1000);
-
-            String dataPath, resultsPath;
-
-            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
-            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_2";
-
-            doPaperRun(params, dataPath, resultsPath, false);
-
-            params.set(Params.NUM_MEASURES, 60);
-            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-            params.set(Params.STANDARDIZE, 1000);
-
-            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
-            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_2";
-
-            doPaperRun(params, dataPath, resultsPath, false);
-
-            params.set(Params.NUM_MEASURES, 60);
-            params.set(Params.AVG_DEGREE, 6);
-            params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
-
-            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_sample_size";
-            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_2";
-
-            doPaperRun(params, dataPath, resultsPath, false);
-
-        }
-    }
-
-    public void doPaperRun(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-
-        if (doPcFges) {
-            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
-                    new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-            algorithms.add(new PC(new FisherZ()));
-        }
+//        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new rGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
-        Simulation simulation = new SemSimulation(new RandomForward());
-        simulations.add(simulation);
+        simulations.add(new SemSimulation(new RandomForward()));
 
         Statistics statistics = new Statistics();
-        statistics.add(new ParameterColumn(Params.GRASP_DEPTH));
-        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
-        statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
-        statistics.add(new ParameterColumn(Params.GRASP_ORDERED_ALG));
-        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
-        statistics.add(new ParameterColumn(Params.ALPHA));
+//        statistics.add(new ParameterColumn(Params.GRASP_DEPTH));
+//        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
+//        statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
+//        statistics.add(new ParameterColumn(Params.GRASP_ORDERED_ALG));
+//        statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
+//        statistics.add(new ParameterColumn(Params.FAITHFULNESS_ASSUMED));
         statistics.add(new ParameterColumn(Params.NUM_MEASURES));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
@@ -319,20 +193,113 @@ public final class TestGrasp {
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
-        comparison.setSaveGraphs(true);
-        comparison.setSavePags(true);
-        comparison.setSaveData(false);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
-//        comparison.saveToFiles("/Users/josephramsey/Downloads/grasp/vary_sample_size",
-//                simulation, params);
-
-        comparison.compareFromFiles(dataPath,
-                resultsPath,
-                algorithms, statistics, params);
+        comparison.compareFromSimulations("/Users/bryanandrews/Downloads/grasp/testGrasp6",
+                simulations, algorithms, statistics, params);
     }
 
-//    @Test
+
+    @Test
+    public void testGraspOnLuData() {
+
+        List<String> paths = new ArrayList();
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.03_N500_pow1/");
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.04_N500_pow1/");
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.05_N500_pow1/");
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.06_N500_pow1/");
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.07_N500_pow1/");
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.08_N500_pow1/");
+
+        List<String> labels = new ArrayList();
+        labels.add("AdjP");
+        labels.add("AdjR");
+        labels.add("AdjF1");
+        labels.add("ArrP");
+        labels.add("ArrR");
+        labels.add("ArrF1");
+        labels.add("mSec");
+
+        for (String path : paths) {
+
+            double[] stats = new double[]{0, 0, 0, 0, 0, 0, 0};
+
+            for (int i = 0; i < 50; i++) {
+
+                String index = "13";
+                if (i < 10) {
+                    index += "0" + String.valueOf(i);
+                } else {
+                    index += String.valueOf(i);
+                }
+
+                FileReader reader = null;
+                try {
+                    reader = new FileReader(new File(path + "tetrad_graph_" + index));
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+
+                try {
+                    Graph readGraph = readerToGraphTxt(reader);
+                    Graph trueGraph = cpdagFromDag(readGraph);
+                    try {
+                        DataSet dataSet = loadContinuousData(new File(path + "tetrad_data_" + index + ".csv"), "//", '\"', "*", true, Delimiter.COMMA);
+                        SemBicScore score = new edu.cmu.tetrad.search.SemBicScore((DataSet) dataSet, true);
+                        score.setPenaltyDiscount(2);
+                        IndependenceTest test = new IndTestFisherZ((DataSet) dataSet, 0.01);
+                        Grasp grasp = new Grasp(test, score);
+                        grasp.setDepth(3);
+                        grasp.setUncoveredDepth(1);
+                        grasp.setNonSingularDepth(1);
+                        grasp.setToleranceDepth(0);
+//                        grasp.setOrdered(true);
+                        grasp.setOrdered(false);
+                        grasp.setUseScore(true);
+                        grasp.setUseRaskuttiUhler(false);
+                        grasp.setUseDataOrder(true);
+                        grasp.setAllowRandomnessInsideAlgorithm(false);
+                        grasp.setVerbose(false);
+                        grasp.setCacheScores(true);
+                        grasp.setNumStarts(1);
+                        long start = System.currentTimeMillis();
+                        grasp.bestOrder(score.getVariables());
+                        long stop = System.currentTimeMillis();
+                        Graph estGraph = grasp.getGraph(true);
+                        trueGraph = replaceNodes(trueGraph, estGraph.getNodes());
+
+                        AdjacencyPrecision AdjP = new AdjacencyPrecision();
+                        AdjacencyRecall AdjR = new AdjacencyRecall();
+                        F1Adj AdjF1 = new F1Adj();
+                        ArrowheadPrecision ArrP = new ArrowheadPrecision();
+                        ArrowheadRecall ArrR = new ArrowheadRecall();
+                        F1Arrow ArrF1 = new F1Arrow();
+
+                        stats[0] += AdjP.getValue(trueGraph, estGraph, null);
+                        stats[1] += AdjR.getValue(trueGraph, estGraph, null);
+                        stats[2] += AdjF1.getValue(trueGraph, estGraph, null);
+                        stats[3] += ArrP.getValue(trueGraph, estGraph, null);
+                        stats[4] += ArrR.getValue(trueGraph, estGraph, null);
+                        stats[5] += ArrF1.getValue(trueGraph, estGraph, null);
+                        stats[6] += (stop - start);
+
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            System.out.println("Probability of edge: " + path.substring(45,49));
+            for (int i = 0; i < 7; i++) {
+                System.out.println(labels.get(i) + "\t" + String.valueOf(stats[i] / 50.0));
+            }
+            System.out.println();
+        }
+    }
+
+    //    @Test
     public void testGraspForClark() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 10);
@@ -394,7 +361,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testGrasp1Bryan() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 100);
@@ -459,7 +426,7 @@ public final class TestGrasp {
     }
 
 
-//    @Test
+    //    @Test
     public void testComparePearlGrowShrink() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 20);
@@ -506,7 +473,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testCompareGrasp1Grasp2() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 10, 20, 40);
@@ -557,7 +524,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testGrasp2() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 7);
@@ -615,7 +582,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void tesLuFigure3() {
         RandomUtil.getInstance().setSeed(492939494L);
 
@@ -675,7 +642,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testLuFigure6() {
         RandomUtil.getInstance().setSeed(492939494L);
 
@@ -731,7 +698,7 @@ public final class TestGrasp {
     }
 
 
-//    @Test
+    //    @Test
     public void testPaperSimulations() {
         RandomUtil.getInstance().setSeed(492939494L);
 
@@ -793,7 +760,7 @@ public final class TestGrasp {
                 algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testPaperSimulationsAll() {
         Parameters params = new Parameters();
 
@@ -880,7 +847,7 @@ public final class TestGrasp {
                 algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void wayneCheckDensityClaim1() {
         int count1 = 0;
 
@@ -922,7 +889,7 @@ public final class TestGrasp {
         System.out.println(count1);
     }
 
-//    @Test
+    //    @Test
     public void wayneCheckDensityClaim2() {
         List<Ret> allFacts = new ArrayList<>();
 
@@ -1001,7 +968,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void bryanCheckDensityClaims() {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
@@ -1323,7 +1290,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void simulateDataForPaper() {
         NumberFormatUtil.getInstance().setNumberFormat(new DecimalFormat("0.000000"));
 
@@ -1413,7 +1380,7 @@ public final class TestGrasp {
         return new GraphoidAxioms(facts, nodes, textSpecs);
     }
 
-//    @Test
+    //    @Test
     public void testLuFigure3() {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);//, 200000);
@@ -1462,7 +1429,7 @@ public final class TestGrasp {
                 algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testClark() {
 
         // Special graph that fans from one node to 5 then back to one.
@@ -1558,7 +1525,7 @@ public final class TestGrasp {
         return prefix;
     }
 
-//    @Test
+    //    @Test
     public void testRaskutti() {
         Ret facts = getFactsRaskutti();
 
@@ -1583,7 +1550,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void testManyVarManyDegreeTest() {
         Parameters params = new Parameters();
 
@@ -2000,7 +1967,7 @@ public final class TestGrasp {
         return list;
     }
 
-//    @Test
+    //    @Test
     public void testPfci() {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 1000);
@@ -2059,7 +2026,7 @@ public final class TestGrasp {
                 algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void test6Examples() {
         List<Ret> allFacts = new ArrayList<>();
 
@@ -2130,7 +2097,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void test7Examples() {
         List<Ret> allFacts = new ArrayList<>();
 
@@ -2205,7 +2172,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void testWorstCaseExamples() {
         List<Ret> allFacts = new ArrayList<>();
 
@@ -2272,7 +2239,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void testWayne2() {
 //        int[] numNodes = new int[]{30};//4, 5, 6, 7};
 //        int[] avgDegree = new int[]{8};//1, 2, 3, 4};
@@ -2401,7 +2368,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void testFgesCondition1() {
 
         // This just checks to make sure the causalOrdering method is behaving correctly.
@@ -2429,7 +2396,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void testFgesCondition2() {
 
         // This just checks to make sure the causalOrdering method is behaving correctly.
@@ -2478,7 +2445,7 @@ public final class TestGrasp {
         System.out.println(count / (float) all);
     }
 
-//    @Test
+    //    @Test
     public void testAddUnfaithfulIndependencies() {
         Graph graph = GraphUtils.randomGraph(7, 0, 15, 100, 100,
                 100, false);
