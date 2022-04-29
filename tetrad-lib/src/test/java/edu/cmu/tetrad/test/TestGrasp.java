@@ -38,8 +38,11 @@ import edu.cmu.tetrad.algcomparison.simulation.BayesNetSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
+import edu.cmu.tetrad.algcomparison.statistic.utils.ArrowConfusion;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -47,21 +50,24 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.data.reader.Delimiter;
+import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDataReader;
+import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import org.apache.commons.collections4.OrderedMap;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static edu.cmu.tetrad.data.DataUtils.loadContinuousData;
+import static edu.cmu.tetrad.graph.GraphUtils.*;
 import static edu.cmu.tetrad.search.OtherPermAlgs.Method.SP;
+import static edu.cmu.tetrad.search.SearchGraphUtils.cpdagFromDag;
 import static java.util.Collections.shuffle;
 
 /**
@@ -126,17 +132,19 @@ public final class TestGrasp {
     @Test
     public void testGrasp1() {
         Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 500);
-        params.set(Params.AVG_DEGREE, 2);
+        params.set(Params.NUM_MEASURES, 60);
+        params.set(Params.AVG_DEGREE, 6);
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 1);
+        params.set(Params.RANDOMIZE_COLUMNS, true);
+        params.set(Params.DIFFERENT_GRAPHS, true);
+        params.set(Params.NUM_RUNS, 3);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.NUM_STARTS, 1);
 
         params.set(Params.PENALTY_DISCOUNT, 2);
-        params.set(Params.ZS_RISK_BOUND, 0.001); //, 0.01, 0.1);
-        params.set(Params.EBIC_GAMMA, 0.8);
+//        params.set(Params.ZS_RISK_BOUND, 0.001); //, 0.01, 0.1);
+//        params.set(Params.EBIC_GAMMA, 0.8);
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 3);
@@ -150,7 +158,8 @@ public final class TestGrasp {
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM, false);
         params.set(Params.CACHE_SCORES, true);
 //        params.set(Params.GRASP_ALG, false);
 
@@ -188,6 +197,106 @@ public final class TestGrasp {
 
         comparison.compareFromSimulations("/Users/bryanandrews/Downloads/grasp/testGrasp6",
                 simulations, algorithms, statistics, params);
+    }
+
+
+    @Test
+    public void testGraspOnLuData() {
+
+        List<String> paths = new ArrayList();
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.03_N500_pow1/");
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.04_N500_pow1/");
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.05_N500_pow1/");
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.06_N500_pow1/");
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.07_N500_pow1/");
+        paths.add("/Users/bryanandrews/Desktop/Figure_6/n60_prob0.08_N500_pow1/");
+
+        List<String> labels = new ArrayList();
+        labels.add("AdjP");
+        labels.add("AdjR");
+        labels.add("AdjF1");
+        labels.add("ArrP");
+        labels.add("ArrR");
+        labels.add("ArrF1");
+        labels.add("mSec");
+
+        for (String path : paths) {
+
+            double[] stats = new double[]{0, 0, 0, 0, 0, 0, 0};
+
+            for (int i = 0; i < 50; i++) {
+
+                String index = "13";
+                if (i < 10) {
+                    index += "0" + String.valueOf(i);
+                } else {
+                    index += String.valueOf(i);
+                }
+
+                FileReader reader = null;
+                try {
+                    reader = new FileReader(new File(path + "tetrad_graph_" + index));
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+
+                try {
+                    Graph readGraph = readerToGraphTxt(reader);
+                    Graph trueGraph = cpdagFromDag(readGraph);
+                    try {
+                        DataSet dataSet = loadContinuousData(new File(path + "tetrad_data_" + index + ".csv"), "//", '\"', "*", true, Delimiter.COMMA);
+                        SemBicScore score = new edu.cmu.tetrad.search.SemBicScore((DataSet) dataSet, true);
+                        score.setPenaltyDiscount(2);
+                        IndependenceTest test = new IndTestFisherZ((DataSet) dataSet, 0.01);
+                        Grasp grasp = new Grasp(test, score);
+                        grasp.setDepth(3);
+                        grasp.setUncoveredDepth(1);
+                        grasp.setNonSingularDepth(1);
+                        grasp.setToleranceDepth(0);
+//                        grasp.setOrdered(true);
+                        grasp.setOrdered(false);
+                        grasp.setUseScore(true);
+                        grasp.setUseRaskuttiUhler(false);
+                        grasp.setUseDataOrder(true);
+                        grasp.setAllowRandomnessInsideAlgorithm(false);
+                        grasp.setVerbose(false);
+                        grasp.setCacheScores(true);
+                        grasp.setNumStarts(1);
+                        long start = System.currentTimeMillis();
+                        grasp.bestOrder(score.getVariables());
+                        long stop = System.currentTimeMillis();
+                        Graph estGraph = grasp.getGraph(true);
+                        trueGraph = replaceNodes(trueGraph, estGraph.getNodes());
+
+                        AdjacencyPrecision AdjP = new AdjacencyPrecision();
+                        AdjacencyRecall AdjR = new AdjacencyRecall();
+                        F1Adj AdjF1 = new F1Adj();
+                        ArrowheadPrecision ArrP = new ArrowheadPrecision();
+                        ArrowheadRecall ArrR = new ArrowheadRecall();
+                        F1Arrow ArrF1 = new F1Arrow();
+
+                        stats[0] += AdjP.getValue(trueGraph, estGraph, null);
+                        stats[1] += AdjR.getValue(trueGraph, estGraph, null);
+                        stats[2] += AdjF1.getValue(trueGraph, estGraph, null);
+                        stats[3] += ArrP.getValue(trueGraph, estGraph, null);
+                        stats[4] += ArrR.getValue(trueGraph, estGraph, null);
+                        stats[5] += ArrF1.getValue(trueGraph, estGraph, null);
+                        stats[6] += (stop - start);
+
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            System.out.println("Probability of edge: " + path.substring(45,49));
+            for (int i = 0; i < 7; i++) {
+                System.out.println(labels.get(i) + "\t" + String.valueOf(stats[i] / 50.0));
+            }
+            System.out.println();
+        }
     }
 
 //    @Test
