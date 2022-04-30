@@ -1273,24 +1273,24 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         for (Node node : getVariables()) {
 
-            if (score instanceof SemBicScore) {
-                List<Node> x = dag.getParents(node);
+//            if (score instanceof SemBicScore) {
+            List<Node> x = dag.getParents(node);
 
-                int[] parentIndices = new int[x.size()];
+            int[] parentIndices = new int[x.size()];
 
-                int count = 0;
-                for (Node parent : x) {
-                    parentIndices[count++] = hashIndices.get(parent);
-                }
-
-                final double bic = score.localScore(hashIndices.get(node), parentIndices);
-
-                if (recordScores) {
-                    node.addAttribute("BIC", bic);
-                }
-
-                _score += bic;
+            int count = 0;
+            for (Node parent : x) {
+                parentIndices[count++] = hashIndices.get(parent);
             }
+
+            final double nodeScore = score.localScore(hashIndices.get(node), parentIndices);
+
+            if (recordScores) {
+                node.addAttribute("Score", nodeScore);
+            }
+
+            _score += nodeScore;
+//            }
         }
 
         if (recordScores) {

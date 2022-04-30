@@ -21,9 +21,10 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.IntTextField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,7 +39,7 @@ class RandomMimParamsEditor extends JPanel {
 
     private static final long serialVersionUID = -1478898170626611725L;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RandomMimParamsEditor.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(RandomMimParamsEditor.class);
 
     /**
      * Constructs a dialog to edit the given workbench randomization parameters.
@@ -75,7 +76,8 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("numStructuralEdges", value);
                 return value;
             } catch (Exception exception) {
-                RandomMimParamsEditor.LOGGER.error("", exception);
+                TetradLogger.getInstance().forceLogMessage(exception.toString());
+//                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -95,7 +97,8 @@ class RandomMimParamsEditor extends JPanel {
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
                 return value;
             } catch (Exception exception) {
-                RandomMimParamsEditor.LOGGER.error("", exception);
+                TetradLogger.getInstance().forceLogMessage(exception.toString());
+//                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 numStructuralEdges.setValue(numStructuralEdges.getValue());
                 return oldValue;
@@ -113,7 +116,8 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("measurementModelDegree", value);
                 return value;
             } catch (Exception exception) {
-                RandomMimParamsEditor.LOGGER.error("", exception);
+                TetradLogger.getInstance().forceLogMessage(exception.toString());
+//                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -130,7 +134,8 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("latentMeasuredImpureParents", value);
                 return value;
             } catch (Exception exception) {
-                RandomMimParamsEditor.LOGGER.error("", exception);
+                TetradLogger.getInstance().forceLogMessage(exception.toString());
+//                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -147,7 +152,8 @@ class RandomMimParamsEditor extends JPanel {
                 parameters.set("measuredMeasuredImpureParents", value);
                 return value;
             } catch (Exception exception) {
-                RandomMimParamsEditor.LOGGER.error("", exception);
+                TetradLogger.getInstance().forceLogMessage(exception.toString());
+//                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }
@@ -165,7 +171,8 @@ class RandomMimParamsEditor extends JPanel {
                         value);
                 return value;
             } catch (Exception exception) {
-                RandomMimParamsEditor.LOGGER.error("", exception);
+                TetradLogger.getInstance().forceLogMessage(exception.toString());
+//                RandomMimParamsEditor.LOGGER.error("", exception);
 
                 return oldValue;
             }

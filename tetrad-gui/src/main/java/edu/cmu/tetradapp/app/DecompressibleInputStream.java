@@ -18,8 +18,8 @@
  */
 package edu.cmu.tetradapp.app;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +37,7 @@ import java.io.ObjectStreamClass;
  */
 public class DecompressibleInputStream extends ObjectInputStream {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DecompressibleInputStream.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(DecompressibleInputStream.class);
 
     public DecompressibleInputStream(InputStream in) throws IOException {
         super(in);
@@ -50,7 +50,7 @@ public class DecompressibleInputStream extends ObjectInputStream {
         try {
             localClass = Class.forName(resultClassDescriptor.getName());
         } catch (ClassNotFoundException e) {
-            DecompressibleInputStream.LOGGER.error("No local class for " + resultClassDescriptor.getName(), e);
+//            DecompressibleInputStream.LOGGER.error("No local class for " + resultClassDescriptor.getName(), e);
             return resultClassDescriptor;
         }
         ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);

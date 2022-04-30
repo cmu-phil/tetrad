@@ -15,7 +15,7 @@ import java.util.List;
 
 public class TestCheckMarkov {
 
-    @Test
+//    @Test
     public void test1() {
         Graph dag = GraphUtils.randomDag(10, 0, 10, 100, 100,
                 100, false);

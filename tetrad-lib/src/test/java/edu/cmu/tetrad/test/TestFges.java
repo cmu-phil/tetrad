@@ -731,7 +731,7 @@ public class TestFges {
     }
 
 
-    @Test
+//    @Test
     public void testFromGraphWithForbiddenKnowledge() {
         final int numNodes = 20;
         final int numIterations = 20;

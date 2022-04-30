@@ -20,6 +20,7 @@ package edu.cmu.tetradapp.ui.tool;
 
 import edu.cmu.tetrad.session.Session;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
 import edu.cmu.tetradapp.app.DecompressibleInputStream;
 import edu.cmu.tetradapp.app.SessionEditor;
@@ -27,8 +28,8 @@ import edu.cmu.tetradapp.app.SessionEditorWorkbench;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;
@@ -52,7 +53,7 @@ public class SessionFileTransferHandler extends TransferHandler {
 
     private static final long serialVersionUID = -6674597813640455425L;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SessionFileTransferHandler.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(SessionFileTransferHandler.class);
 
     @Override
     public boolean canImport(TransferSupport support) {
@@ -138,15 +139,16 @@ public class SessionFileTransferHandler extends TransferHandler {
                     DesktopController.getInstance().closeEmptySessions();
                     DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
                 } catch (FileNotFoundException exception) {
-                    SessionFileTransferHandler.LOGGER.error("", exception);
+                    TetradLogger.getInstance().forceLogMessage(exception.toString());
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);
                 } catch (Exception exception) {
-                    SessionFileTransferHandler.LOGGER.error("", exception);
+                    TetradLogger.getInstance().forceLogMessage(exception.toString());
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
             }
         } catch (UnsupportedFlavorException | IOException exception) {
-            SessionFileTransferHandler.LOGGER.error("", exception);
+            TetradLogger.getInstance().forceLogMessage(exception.toString());
+//            SessionFileTransferHandler.LOGGER.error("", exception);
         }
 
         return super.importData(support);
