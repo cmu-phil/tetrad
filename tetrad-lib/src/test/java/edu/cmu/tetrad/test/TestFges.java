@@ -46,7 +46,6 @@ import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
 import org.junit.Test;
 
-import javax.help.SearchHit;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -731,10 +730,10 @@ public class TestFges {
     }
 
 
-//    @Test
+    @Test
     public void testFromGraphWithForbiddenKnowledge() {
         final int numNodes = 20;
-        final int numIterations = 20;
+        final int numIterations = 5;
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));

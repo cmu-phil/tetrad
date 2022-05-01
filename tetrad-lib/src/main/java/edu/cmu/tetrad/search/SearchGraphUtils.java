@@ -654,9 +654,10 @@ public final class SearchGraphUtils {
             }
         }
 
-        if (graph.existsDirectedCycle()) {
-            throw new IllegalArgumentException("That 'cpdag' contains a directed cycle.");
-        }
+        // FGES with incoherent forbidden knowledge may produce a cycle
+//        if (graph.existsDirectedCycle()) {
+//            throw new IllegalArgumentException("That 'cpdag' contains a directed cycle.");
+//        }
 
         MeekRules rules = new MeekRules();
 
