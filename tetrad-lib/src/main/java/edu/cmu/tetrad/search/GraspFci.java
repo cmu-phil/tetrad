@@ -110,7 +110,7 @@ public final class GraspFci implements GraphSearch {
         grasp.setDepth(this.depth);
         grasp.setUncoveredDepth(this.uncoveredDepth);
         grasp.setNonSingularDepth(this.nonsingularDepth);
-        grasp.setToleranceDepth(this.toleranceDepth);
+//        grasp.setToleranceDepth(this.toleranceDepth);
         grasp.setOrdered(this.ordered);
         grasp.setUseScore(this.useScore);
         grasp.setUseRaskuttiUhler(this.useRaskuttiUhler);

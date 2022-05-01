@@ -182,7 +182,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    @Test
     public void allPaperRuns() {
         Parameters params = new Parameters();
 
@@ -215,9 +215,9 @@ public final class TestGrasp {
         params.set(Params.PRECOMPUTE_COVARIANCES, true);
 
         {
-//            params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
-//            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
-//
+            params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+
 //            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
 //            params.set(Params.AVG_DEGREE, 6);
 //            params.set(Params.SAMPLE_SIZE, 1000);
@@ -226,9 +226,9 @@ public final class TestGrasp {
 //
 //            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
 //            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_1";
-//
+
 //            doPaperRun(params, dataPath, resultsPath, true);
-//
+
 //            params.set(Params.NUM_MEASURES, 60);
 //            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 //            params.set(Params.STANDARDIZE, 1000);
@@ -237,7 +237,7 @@ public final class TestGrasp {
 //            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_1";
 //
 //            doPaperRun(params, dataPath, resultsPath, true);
-
+//
             params.set(Params.NUM_MEASURES, 60);
             params.set(Params.AVG_DEGREE, 6);
             params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
@@ -249,40 +249,40 @@ public final class TestGrasp {
 
         }
 
-        {
-            params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
-            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
-
-            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
-            params.set(Params.AVG_DEGREE, 6);
-            params.set(Params.SAMPLE_SIZE, 1000);
-
-            String dataPath, resultsPath;
-
-            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
-            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_2";
-
-            doPaperRun(params, dataPath, resultsPath, false);
-
-            params.set(Params.NUM_MEASURES, 60);
-            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-            params.set(Params.STANDARDIZE, 1000);
-
-            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
-            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_2";
-
-            doPaperRun(params, dataPath, resultsPath, false);
-
-            params.set(Params.NUM_MEASURES, 60);
-            params.set(Params.AVG_DEGREE, 6);
-            params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
-
-            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_sample_size";
-            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_2";
-
-            doPaperRun(params, dataPath, resultsPath, false);
-
-        }
+//        {
+//            params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
+//            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+//
+//            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
+//            params.set(Params.AVG_DEGREE, 6);
+//            params.set(Params.SAMPLE_SIZE, 1000);
+//
+//            String dataPath, resultsPath;
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_2";
+//
+//            doPaperRun(params, dataPath, resultsPath, false);
+//
+//            params.set(Params.NUM_MEASURES, 60);
+//            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+//            params.set(Params.STANDARDIZE, 1000);
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_2";
+//
+//            doPaperRun(params, dataPath, resultsPath, false);
+//
+//            params.set(Params.NUM_MEASURES, 60);
+//            params.set(Params.AVG_DEGREE, 6);
+//            params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_sample_size";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_2";
+//
+//            doPaperRun(params, dataPath, resultsPath, false);
+//
+//        }
     }
 
     public void doPaperRun(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
@@ -332,7 +332,96 @@ public final class TestGrasp {
                 algorithms, statistics, params);
     }
 
-//    @Test
+    @Test
+    public void testPaperSimulationsAll() {
+        Parameters params = new Parameters();
+
+//        (20,30,40,50,60,70,80,90,100)-6-1000
+//        60-(2,3,4,5,6,7,8,9,10)-1000
+//        60-6-(200,500,1000,2000,5000,10000,20000,50000,100000)
+
+        String type;
+
+        type = "esp_varying_num_variables";
+        params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
+        params.set(Params.AVG_DEGREE, 6);
+        params.set(Params.SAMPLE_SIZE, 1000);
+
+        testPaperSimulationsVisit(params, type);
+
+        type = "esp_varying_avg_degree";
+        params.set(Params.NUM_MEASURES, 60);
+        params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        params.set(Params.SAMPLE_SIZE, 1000);
+
+        testPaperSimulationsVisit(params, type);
+
+        type = "esp_varying_sample_size";
+        params.set(Params.NUM_MEASURES, 60);
+        params.set(Params.AVG_DEGREE, 6);
+        params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
+        testPaperSimulationsVisit(params, type);
+    }
+
+    private void testPaperSimulationsVisit(Parameters params, String type) {
+        RandomUtil.getInstance().setSeed(492939494L);
+
+        NumberFormatUtil.getInstance().setNumberFormat(new DecimalFormat("0.000000"));
+
+        params.set(Params.COEF_LOW, 0);
+        params.set(Params.COEF_HIGH, 1);
+        params.set(Params.COV_LOW, 0);
+        params.set(Params.COV_HIGH, 0);
+        params.set(Params.VAR_LOW, 1);
+        params.set(Params.VAR_HIGH, 1);
+        params.set(Params.NUM_RUNS, 20);
+        params.set(Params.VERBOSE, false);
+        params.set(Params.NUM_STARTS, 1);
+
+        params.set(Params.PENALTY_DISCOUNT, 2.0);
+        params.set(Params.EBIC_GAMMA, 0.8);
+        params.set(Params.ALPHA, 0.001);
+
+        params.set(Params.GRASP_DEPTH, 3);
+        params.set(Params.GRASP_UNCOVERED_DEPTH, 0);//1);
+        params.set(Params.GRASP_NONSINGULAR_DEPTH, 0);//1);
+        params.set(Params.GRASP_ORDERED_ALG, true);
+        params.set(Params.GRASP_USE_VERMA_PEARL, false);
+        params.set(Params.GRASP_USE_DATA_ORDER, false);
+        params.set(Params.CACHE_SCORES, true);
+
+
+        Algorithms algorithms = new Algorithms();
+        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc(new FisherZ()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.LinearGaussianBicScore()));
+
+        Simulations simulations = new Simulations();
+        simulations.add(new SemSimulation(new RandomForward()));
+
+        Statistics statistics = new Statistics();
+        statistics.add(new ParameterColumn(Params.NUM_MEASURES));
+        statistics.add(new ParameterColumn(Params.AVG_DEGREE));
+        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new F1Adj());
+        statistics.add(new ElapsedTime());
+
+        Comparison comparison = new Comparison();
+        comparison.setSaveData(false);
+        comparison.setShowAlgorithmIndices(true);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+
+        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/varying_final2/testPaperSimulations_"
+                        + type, simulations,
+                algorithms, statistics, params);
+    }
+
+
+    //    @Test
     public void testGraspForClark() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 10);
@@ -790,93 +879,6 @@ public final class TestGrasp {
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testPaperSimulations_"
                         + numMeasures + "_" + avgDegree, simulations,
-                algorithms, statistics, params);
-    }
-
-//    @Test
-    public void testPaperSimulationsAll() {
-        Parameters params = new Parameters();
-
-//        (20,30,40,50,60,70,80,90,100)-6-1000
-//        60-(2,3,4,5,6,7,8,9,10)-1000
-//        60-6-(200,500,1000,2000,5000,10000,20000,50000,100000)
-
-        String type;
-
-        type = "esp_varying_num_variables";
-        params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
-        params.set(Params.AVG_DEGREE, 6);
-        params.set(Params.SAMPLE_SIZE, 1000);
-
-        testPaperSimulationsVisit(params, type);
-
-        type = "esp_varying_avg_degree";
-        params.set(Params.NUM_MEASURES, 60);
-        params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        params.set(Params.SAMPLE_SIZE, 1000);
-
-        testPaperSimulationsVisit(params, type);
-
-        type = "esp_varying_sample_size";
-        params.set(Params.NUM_MEASURES, 60);
-        params.set(Params.AVG_DEGREE, 6);
-        params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
-        testPaperSimulationsVisit(params, type);
-    }
-
-    private void testPaperSimulationsVisit(Parameters params, String type) {
-        RandomUtil.getInstance().setSeed(492939494L);
-
-        NumberFormatUtil.getInstance().setNumberFormat(new DecimalFormat("0.000000"));
-
-        params.set(Params.COEF_LOW, 0);
-        params.set(Params.COEF_HIGH, 1);
-        params.set(Params.COV_LOW, 0);
-        params.set(Params.COV_HIGH, 0);
-        params.set(Params.VAR_LOW, 1);
-        params.set(Params.VAR_HIGH, 1);
-        params.set(Params.NUM_RUNS, 20);
-        params.set(Params.VERBOSE, false);
-        params.set(Params.NUM_STARTS, 1);
-
-        params.set(Params.PENALTY_DISCOUNT, 2.0);
-        params.set(Params.EBIC_GAMMA, 0.8);
-        params.set(Params.ALPHA, 0.001);
-
-        params.set(Params.GRASP_DEPTH, 3);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 0);//1);
-        params.set(Params.GRASP_NONSINGULAR_DEPTH, 0);//1);
-        params.set(Params.GRASP_ORDERED_ALG, true);
-        params.set(Params.GRASP_USE_VERMA_PEARL, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
-        params.set(Params.CACHE_SCORES, true);
-
-
-        Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc(new FisherZ()));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.LinearGaussianBicScore()));
-
-        Simulations simulations = new Simulations();
-        simulations.add(new SemSimulation(new RandomForward()));
-
-        Statistics statistics = new Statistics();
-        statistics.add(new ParameterColumn(Params.NUM_MEASURES));
-        statistics.add(new ParameterColumn(Params.AVG_DEGREE));
-        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-        statistics.add(new AdjacencyPrecision());
-        statistics.add(new AdjacencyRecall());
-        statistics.add(new ArrowheadPrecision());
-        statistics.add(new ArrowheadRecall());
-        statistics.add(new F1Adj());
-        statistics.add(new ElapsedTime());
-
-        Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
-
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/varying_final2/testPaperSimulations_"
-                        + type, simulations,
                 algorithms, statistics, params);
     }
 
