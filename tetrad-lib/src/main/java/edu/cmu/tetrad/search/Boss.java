@@ -12,7 +12,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.util.Collections.*;
+import static java.util.Collections.shuffle;
 
 
 /**
@@ -21,7 +21,7 @@ import static java.util.Collections.*;
  * @author bryanandrews
  * @author josephramsey
  */
-public class Grasp {
+public class Boss {
     private final List<Node> variables;
     private Score score;
     private IndependenceTest test;
@@ -31,31 +31,28 @@ public class Grasp {
     // flags
     private boolean useScore = true;
     private boolean usePearl;
-    private boolean ordered;
-    private boolean verbose;
     private boolean cachingScores = true;
-    private int uncoveredDepth = 1;
-    private int nonSingularDepth = 1;
-//    private int toleranceDepth;
     private boolean useDataOrder = true;
+
+    private boolean verbose = true;
 
     // other params
     private int depth = 4;
     private int numStarts = 1;
 
-    public Grasp(@NotNull Score score) {
+    public Boss(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
     }
 
-    public Grasp(@NotNull IndependenceTest test) {
+    public Boss(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
     }
 
-    public Grasp(@NotNull IndependenceTest test, Score score) {
+    public Boss(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
@@ -82,7 +79,7 @@ public class Grasp {
         List<Node> bestPerm = null;
         double best = NEGATIVE_INFINITY;
 
-//        this.scorer.score(order);
+        this.scorer.score(order);
 
         for (int r = 0; r < this.numStarts; r++) {
             if (Thread.interrupted()) break;
@@ -97,10 +94,10 @@ public class Grasp {
 
             this.scorer.score(order);
 
-//            betterMutation(scorer);
-//            List<Node> perm  = scorer.getPi();
+            betterMutation(scorer);
+            List<Node> perm  = scorer.getPi();
 
-            List<Node> perm = grasp(this.scorer);
+//            List<Node> perm = grasp(this.scorer);
 
             this.scorer.score(perm);
 
@@ -172,39 +169,7 @@ public class Grasp {
                 scorer.goToBookmark();
             }
         } while (sp > s);
-   }
-
-    private void tuck(Node k, int j, TeyssierScorer scorer) {
-        if (j >= scorer.index(k)) return;
-        List<Node> d2 = new ArrayList<>();
-        for (int i = j + 1; i < scorer.index(k); i++) {
-            d2.add(scorer.get(i));
-        }
-
-        List<Node> gammac = new ArrayList<>(d2);
-        gammac.removeAll(scorer.getAncestors(k));
-
-        Node first = null;
-
-        if (!gammac.isEmpty()) {
-            first = gammac.get(0);
-
-            for (Node n : gammac) {
-                if (scorer.index(n) < scorer.index(first)) {
-                    first = n;
-                }
-            }
-        }
-
-        if (scorer.getParents(k).contains(scorer.get(j))) {
-            if (first != null) {
-                scorer.moveTo(scorer.get(j), scorer.index(first));
-            }
-//            scorer.moveTo(j, scorer.index(first));
-            scorer.moveTo(k, j);
-        }
     }
-
 
     public int getNumEdges() {
         return this.scorer.getNumEdges();
@@ -227,126 +192,6 @@ public class Grasp {
                     return 1;
                 }
             });
-        }
-    }
-
-    public List<Node> grasp(@NotNull TeyssierScorer scorer) {
-        scorer.clearBookmarks();
-        List<int[]> depths = new ArrayList<>();
-
-        // GRaSP-TSP
-        if (this.ordered && this.uncoveredDepth != 0 && this.nonSingularDepth != 0) {
-            depths.add(new int[]{this.depth < 1 ? Integer.MAX_VALUE : this.depth, 0, 0});
-        }
-
-        // GRaSP-ESP
-        if (this.ordered && this.nonSingularDepth != 0) {
-            depths.add(new int[]{this.depth < 1 ? Integer.MAX_VALUE : this.depth,
-                    this.uncoveredDepth < 0 ? Integer.MAX_VALUE : this.uncoveredDepth, 0});
-        }
-
-        // GRaSP
-        depths.add(new int[]{this.depth < 1 ? Integer.MAX_VALUE : this.depth,
-                this.uncoveredDepth < 0 ? Integer.MAX_VALUE : this.uncoveredDepth,
-                this.nonSingularDepth < 0 ? Integer.MAX_VALUE : this.nonSingularDepth});
-
-        double sNew = scorer.score();
-        double sOld;
-
-        for (int[] depth : depths) {
-            do {
-                sOld = sNew;
-                graspDfs(scorer, sOld, depth, 1, new HashSet<>(), new HashSet<>());
-//                graspDfsTol(scorer, sOld, depth, 1, this.toleranceDepth, 0, new HashSet<>(), new HashSet<>());
-                sNew = scorer.score();
-            } while (sNew > sOld);
-        }
-
-        if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
-                    + " Score = " + scorer.score()
-                    + " (GRaSP)"
-                    + " Elapsed " + ((System.currentTimeMillis() - this.start) / 1000.0 + " s"));
-        }
-
-        return scorer.getPi();
-    }
-
-    private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
-                          Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
-        for (Node y : scorer.getShuffledVariables()) {
-            Set<Node> ancestors = scorer.getAncestors(y);
-            List<Node> parents = new ArrayList<>(scorer.getParents(y));
-            shuffle(parents);
-            for (Node x : parents) {
-
-                boolean covered = scorer.coveredEdge(x, y);
-                boolean singular = true;
-                Set<Node> tuck = new HashSet<>();
-                tuck.add(x);
-                tuck.add(y);
-
-                if (covered && tucks.contains(tuck)) continue;
-                if (currentDepth > depth[1] && !covered) continue;
-
-                int[] idcs = new int[] {scorer.index(x), scorer.index(y)};
-
-                int i = idcs[0];
-                scorer.bookmark(currentDepth);
-
-                boolean first = true;
-                List<Node> Z = new ArrayList<>(scorer.getOrderShallow().subList(i + 1, idcs[1]));
-                Iterator<Node> zItr = Z.iterator();
-                do {
-                    if (first) {
-                        scorer.moveToNoUpdate(y, i);
-                        first = false;
-                    } else {
-                        Node z = zItr.next();
-                        if (ancestors.contains(z)) {
-                            if (scorer.getParents(z).contains(x)) {
-                                singular = false;
-                            }
-                            scorer.moveToNoUpdate(z, i++);
-                        }
-                    }
-                } while (zItr.hasNext());
-                scorer.updateScores(idcs[0], idcs[1]);
-
-
-                if (currentDepth > depth[2] && !singular) {
-                    scorer.goToBookmark(currentDepth);
-                    continue;
-                }
-
-                if (violatesKnowledge(scorer.getPi())) continue;
-
-                double sNew = scorer.score();
-                if (sNew > sOld) {
-                    if (verbose) {
-                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
-                                scorer.getNumEdges(), sNew - sOld, tucks, tuck);
-                    }
-                    return;
-                }
-
-                if (sNew == sOld && currentDepth < depth[0]) {
-                    tucks.add(tuck);
-                    if (currentDepth > depth[1]) {
-                        if (!dfsHistory.contains(tucks)) {
-                            dfsHistory.add(new HashSet<>(tucks));
-                            graspDfs(scorer, sOld, depth, currentDepth + 1, tucks, dfsHistory);
-                        }
-                    } else {
-                        graspDfs(scorer, sOld, depth, currentDepth + 1, tucks, dfsHistory);
-                    }
-                    tucks.remove(tuck);
-                }
-
-                if (scorer.score() > sOld) return;
-
-                scorer.goToBookmark(currentDepth);
-            }
         }
     }
 
@@ -390,16 +235,6 @@ public class Grasp {
         this.depth = depth;
     }
 
-    public void setUncoveredDepth(int uncoveredDepth) {
-        if (this.depth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
-        this.uncoveredDepth = uncoveredDepth;
-    }
-
-    public void setNonSingularDepth(int nonSingularDepth) {
-        if (this.depth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
-        this.nonSingularDepth = nonSingularDepth;
-    }
-
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;
     }
@@ -416,10 +251,6 @@ public class Grasp {
         }
 
         return false;
-    }
-
-    public void setOrdered(boolean ordered) {
-        this.ordered = ordered;
     }
 
     public void setUseRaskuttiUhler(boolean usePearl) {

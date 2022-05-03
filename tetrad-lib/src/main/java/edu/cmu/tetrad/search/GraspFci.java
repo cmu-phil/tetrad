@@ -115,7 +115,6 @@ public final class GraspFci implements GraphSearch {
         grasp.setUseScore(this.useScore);
         grasp.setUseRaskuttiUhler(this.useRaskuttiUhler);
         grasp.setUseDataOrder(this.useDataOrder);
-        grasp.setAllowRandomnessInsideAlgorithm(this.allowRandomnessInsideAlgorithm);
         grasp.setVerbose(this.verbose);
         grasp.setCacheScores(this.cacheScores);
 

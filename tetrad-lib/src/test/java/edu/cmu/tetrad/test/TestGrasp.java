@@ -124,7 +124,7 @@ public final class TestGrasp {
 
     }
 
-//    @Test
+    //    @Test
     public void testGrasp1() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 20);
@@ -215,8 +215,8 @@ public final class TestGrasp {
         params.set(Params.PRECOMPUTE_COVARIANCES, true);
 
         {
-            params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
-            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+//            params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+//            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
 
 //            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
 //            params.set(Params.AVG_DEGREE, 6);
@@ -238,51 +238,51 @@ public final class TestGrasp {
 //
 //            doPaperRun(params, dataPath, resultsPath, true);
 //
-            params.set(Params.NUM_MEASURES, 60);
-            params.set(Params.AVG_DEGREE, 6);
-            params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
-
-            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_sample_size";
-            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_1";
-
-            doPaperRun(params, dataPath, resultsPath, true);
-
-        }
-
-//        {
-//            params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
-//            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
-//
-//            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
-//            params.set(Params.AVG_DEGREE, 6);
-//            params.set(Params.SAMPLE_SIZE, 1000);
-//
-//            String dataPath, resultsPath;
-//
-//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
-//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_2";
-//
-//            doPaperRun(params, dataPath, resultsPath, false);
-//
-//            params.set(Params.NUM_MEASURES, 60);
-//            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-//            params.set(Params.STANDARDIZE, 1000);
-//
-//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
-//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_2";
-//
-//            doPaperRun(params, dataPath, resultsPath, false);
-//
 //            params.set(Params.NUM_MEASURES, 60);
 //            params.set(Params.AVG_DEGREE, 6);
 //            params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
 //
 //            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_sample_size";
-//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_2";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_1";
 //
-//            doPaperRun(params, dataPath, resultsPath, false);
-//
-//        }
+//            doPaperRun(params, dataPath, resultsPath, true);
+
+        }
+
+        {
+            String dataPath, resultsPath;
+
+            params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
+            params.set(Params.GRASP_NONSINGULAR_DEPTH, 0);
+
+            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
+            params.set(Params.AVG_DEGREE, 6);
+            params.set(Params.SAMPLE_SIZE, 1000);
+
+            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
+            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_2";
+
+            doPaperRun(params, dataPath, resultsPath, false);
+
+            params.set(Params.NUM_MEASURES, 60);
+            params.set(Params.AVG_DEGREE, 2,  3, 4, 5, 6, 7, 8, 9, 10);
+            params.set(Params.STANDARDIZE, 1000);
+
+            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
+            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_2";
+
+            doPaperRun(params, dataPath, resultsPath, false);
+
+            params.set(Params.NUM_MEASURES, 60);
+            params.set(Params.AVG_DEGREE, 6);
+            params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
+
+            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_sample_size";
+            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_2";
+
+            doPaperRun(params, dataPath, resultsPath, false);
+
+        }
     }
 
     public void doPaperRun(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
@@ -483,7 +483,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testGrasp1Bryan() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 100);
@@ -548,7 +548,7 @@ public final class TestGrasp {
     }
 
 
-//    @Test
+    //    @Test
     public void testComparePearlGrowShrink() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 20);
@@ -595,7 +595,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testCompareGrasp1Grasp2() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 10, 20, 40);
@@ -646,7 +646,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testGrasp2() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 7);
@@ -704,7 +704,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void tesLuFigure3() {
         RandomUtil.getInstance().setSeed(492939494L);
 
@@ -764,7 +764,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testLuFigure6() {
         RandomUtil.getInstance().setSeed(492939494L);
 
@@ -820,7 +820,7 @@ public final class TestGrasp {
     }
 
 
-//    @Test
+    //    @Test
     public void testPaperSimulations() {
         RandomUtil.getInstance().setSeed(492939494L);
 
@@ -882,7 +882,7 @@ public final class TestGrasp {
                 algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void wayneCheckDensityClaim1() {
         int count1 = 0;
 
@@ -924,7 +924,7 @@ public final class TestGrasp {
         System.out.println(count1);
     }
 
-//    @Test
+    //    @Test
     public void wayneCheckDensityClaim2() {
         List<Ret> allFacts = new ArrayList<>();
 
@@ -1003,7 +1003,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void bryanCheckDensityClaims() {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
@@ -1325,7 +1325,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void simulateDataForPaper() {
         NumberFormatUtil.getInstance().setNumberFormat(new DecimalFormat("0.000000"));
 
@@ -1415,7 +1415,7 @@ public final class TestGrasp {
         return new GraphoidAxioms(facts, nodes, textSpecs);
     }
 
-//    @Test
+    //    @Test
     public void testLuFigure3() {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);//, 200000);
@@ -1464,7 +1464,7 @@ public final class TestGrasp {
                 algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testClark() {
 
         // Special graph that fans from one node to 5 then back to one.
@@ -1560,7 +1560,7 @@ public final class TestGrasp {
         return prefix;
     }
 
-//    @Test
+    //    @Test
     public void testRaskutti() {
         Ret facts = getFactsRaskutti();
 
@@ -1585,7 +1585,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void testManyVarManyDegreeTest() {
         Parameters params = new Parameters();
 
@@ -2002,7 +2002,7 @@ public final class TestGrasp {
         return list;
     }
 
-//    @Test
+    //    @Test
     public void testPfci() {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 1000);
@@ -2061,7 +2061,7 @@ public final class TestGrasp {
                 algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void test6Examples() {
         List<Ret> allFacts = new ArrayList<>();
 
@@ -2132,7 +2132,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void test7Examples() {
         List<Ret> allFacts = new ArrayList<>();
 
@@ -2207,7 +2207,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void testWorstCaseExamples() {
         List<Ret> allFacts = new ArrayList<>();
 
@@ -2274,7 +2274,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void testWayne2() {
 //        int[] numNodes = new int[]{30};//4, 5, 6, 7};
 //        int[] avgDegree = new int[]{8};//1, 2, 3, 4};
@@ -2403,7 +2403,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void testFgesCondition1() {
 
         // This just checks to make sure the causalOrdering method is behaving correctly.
@@ -2431,7 +2431,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void testFgesCondition2() {
 
         // This just checks to make sure the causalOrdering method is behaving correctly.
@@ -2480,7 +2480,7 @@ public final class TestGrasp {
         System.out.println(count / (float) all);
     }
 
-//    @Test
+    //    @Test
     public void testAddUnfaithfulIndependencies() {
         Graph graph = GraphUtils.randomGraph(7, 0, 15, 100, 100,
                 100, false);

@@ -31,6 +31,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.text.NumberFormat;
 
 /**
  * Puts up a panel showing some graph properties, e.g., number of nodes and
@@ -107,6 +108,15 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         textArea.append("\nMax degree: " + getGraph().getConnectivity());
         textArea.append("\nMax indegree: " + maxIndegree);
         textArea.append("\nMax outdegree: " + maxOutdegree);
+
+        int numEdges = getGraph().getNumEdges();
+        int numVars = getGraph().getNumNodes();
+        double avgDegree = 2 * numEdges / ((double) (numVars));
+        double density = avgDegree / (numVars - 1);
+
+        textArea.append("\nAverage degree: " + NumberFormat.getInstance().format(avgDegree));
+        textArea.append("\nDensity: " + NumberFormat.getInstance().format(density));
+
         textArea.append("\nNumber of latents: " + numLatents);
         textArea.append("\n" + (cyclic ? "Cyclic" : "Acyclic"));
 
