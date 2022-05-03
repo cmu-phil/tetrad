@@ -182,7 +182,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-    @Test
+//    @Test
     public void allPaperRuns() {
         Parameters params = new Parameters();
 
@@ -332,7 +332,7 @@ public final class TestGrasp {
                 algorithms, statistics, params);
     }
 
-    @Test
+//    @Test
     public void testPaperSimulationsAll() {
         Parameters params = new Parameters();
 
