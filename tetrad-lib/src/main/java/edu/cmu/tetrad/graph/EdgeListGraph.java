@@ -413,22 +413,18 @@ public class EdgeListGraph implements Graph {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
 
-        Q.add(node1);
-        V.add(node1);
-
-        boolean started = false;
+        for (Node c : getChildren(node1)) {
+            Q.add(c);
+            V.add(c);
+        }
 
         while (!Q.isEmpty()) {
             Node t = Q.remove();
 
-            if (started && t == node2) {
-                return true;
-            }
-
-            started = true;
+            if (t == node2) return true;
 
             for (Node c : getChildren(t)) {
-                if (c == node1 || !V.contains(c)) {
+                if (c == node2 || !V.contains(c)) {
                     V.add(c);
                     Q.offer(c);
                 }
