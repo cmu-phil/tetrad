@@ -531,7 +531,7 @@ public final class Cfci implements GraphSearch {
                 continue;
             }
 
-            // Orient to*->from
+            // Orient to*-&gt;from
             graph.setEndpoint(to, from, Endpoint.ARROW);
 
             if (this.verbose) {
@@ -555,7 +555,7 @@ public final class Cfci implements GraphSearch {
                 continue;
             }
 
-            // Orient from*->to (?)
+            // Orient from*-&gt;to (?)
             // Orient from-->to
 
             if (this.verbose) {

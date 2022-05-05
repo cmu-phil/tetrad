@@ -79,7 +79,7 @@ public final class SimulationStudy {
      * executed each time it is encountered in a depth first traversal of the
      * tree.
      *
-     * @param repetition the repetition, an integer > 0.
+     * @param repetition the repetition, an integer &gt; 0.
      */
     public void setRepetition(SessionNode node, int repetition) {
         if (node == null) {

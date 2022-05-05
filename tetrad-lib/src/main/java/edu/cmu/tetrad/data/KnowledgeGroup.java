@@ -28,7 +28,7 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Represents a "Other Group" in Knowledge, which can be understood as: Group1 -> Group2 where there are
+ * Represents a "Other Group" in Knowledge, which can be understood as: Group1 -&gt; Group2 where there are
  * edges between all members of Group1 to Group2.
  * <p>
  * Immutable.

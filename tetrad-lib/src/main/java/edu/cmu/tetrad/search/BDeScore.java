@@ -46,6 +46,9 @@ public class BDeScore implements LocalDiscreteScore {
         this.dataSet = dataSet;
     }
 
+    /**
+     * @return the score, or NaN if the score can't be calculated.
+     */
     public double localScore(int i, int[] parents) {
 
         // Number of categories for i.
@@ -120,7 +123,11 @@ public class BDeScore implements LocalDiscreteScore {
             score -= ProbUtils.lngamma(n_ij[j] + nPrimeij);
         }
 
-        return score;
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
     @Override

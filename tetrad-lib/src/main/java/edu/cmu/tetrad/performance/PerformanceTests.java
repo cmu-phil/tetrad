@@ -241,8 +241,6 @@ public class PerformanceTests {
 
         SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, this.out);
 
-        this.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
-
         this.out.close();
     }
 
@@ -311,8 +309,6 @@ public class PerformanceTests {
 
         SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, this.out);
 
-        this.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
-
         this.out.close();
     }
 
@@ -375,8 +371,6 @@ public class PerformanceTests {
         System.out.println("# edges in est CPDAG = " + estCPDAG.getNumEdges());
 
         SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, this.out);
-
-        this.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
 
         this.out.close();
     }
@@ -618,10 +612,6 @@ public class PerformanceTests {
     }
 
     public void testGfci(int numVars, double edgeFactor) {
-        System.out.println("Seed = " + RandomUtil.getInstance().getSeed());
-
-//        RandomUtil.getInstance().setSeed(1460491316813L);
-
         final double alpha = .1;
         final int depth = -1;
         final double penaltyDiscount = 4.0;
@@ -1423,8 +1413,6 @@ public class PerformanceTests {
         Set<Edge> topEdges = top.getEdges();
         topEdges.removeAll(left.getEdges());
         System.out.println("DAGTOPAG but not FCI " + topEdges);
-
-        System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }
 
     // Fas is calibrated; we need to calibrate other FAS versions to it.
@@ -1476,8 +1464,6 @@ public class PerformanceTests {
         Set<Edge> topEdges = top.getEdges();
         topEdges.removeAll(left.getEdges());
         System.out.println("Fas but not FAS1 " + topEdges);
-
-        System.out.println("seed = " + RandomUtil.getInstance().getSeed() + "L");
     }
 
     private void init(File file, String x) {

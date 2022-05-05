@@ -48,7 +48,7 @@ public class VarianceVectorForkJoin implements Variance {
     public float[] compute(boolean biasCorrected) {
         float[] means = new float[this.numOfCols];
 
-        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        ForkJoinPool pool = ForkJoinPool.commonPool();
         pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));
         pool.invoke(new VarianceAction(this.data, means, biasCorrected, 0, this.numOfCols - 1));
         pool.shutdown();

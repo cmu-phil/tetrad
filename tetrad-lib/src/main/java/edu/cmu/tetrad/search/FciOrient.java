@@ -237,7 +237,7 @@ public final class FciOrient {
 
     private void printWrongColliderMessage(Node a, Node b, Node c, Graph graph) {
         if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
-            this.out.println("R0" + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
+            this.out.println("R0" + ": Orienting collider by mistake: " + a + "*-&gt;" + b + "&lt;-*" + c);
         }
     }
 
@@ -357,7 +357,7 @@ public final class FciOrient {
     }
 
     /// R1, away from collider
-    // If a*->bo-*c and a, c not adjacent then a*->b->c
+    // If a*-&gt;bo-*c and a, c not adjacent then a*-&gt;b->c
     private void ruleR1(Node a, Node b, Node c, Graph graph) {
         if (graph.isAdjacentTo(a, c)) {
             return;
@@ -379,7 +379,7 @@ public final class FciOrient {
         }
     }
 
-    //if a*-oc and either a-->b*->c or a*->b-->c, then a*->c
+    //if a*-oc and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
     // This is Zhang's rule R2.
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c))
@@ -407,8 +407,8 @@ public final class FciOrient {
 
     /**
      * Implements the double-triangle orientation rule, which states that if
-     * D*-oB, A*->B<-*C and A*-oDo-*C, then
-     * D*->B.
+     * D*-oB, A*-&gt;B&lt;-*C and A*-oDo-*C, then
+     * D*-&gt;B.
      * <p>
      * This is Zhang's rule R3.
      */
@@ -486,7 +486,7 @@ public final class FciOrient {
      *         xo           x is either an arrowhead or a circle
      *        /  \
      *       v    v
-     * L....A --> C
+     * L....A --&gt; C
      * </pre>
      * <p>
      * This is Zhang's rule R4, discriminating undirectedPaths.
@@ -504,7 +504,7 @@ public final class FciOrient {
             }
 
             //potential A and C candidate pairs are only those
-            // that look like this:   A<-*Bo-*C
+            // that look like this:   A&lt;-*Bo-*C
             List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
             List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
 
@@ -535,7 +535,7 @@ public final class FciOrient {
     /**
      * a method to search "back from a" to find a DDP. It is called with a
      * reachability list (first consisting only of a). This is breadth-first,
-     * utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p>
+     * utilizing "reachability" concept from Geiger, Verma, and Pearl 1990.
      * The body of a DDP consists of colliders that are parents of c.
      */
     public void ddpOrient(Node a, Node b, Node c, Graph graph) {
@@ -708,7 +708,7 @@ public final class FciOrient {
     /**
      * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB,
      * if there is an uncovered circle path u =
-     * <A,C,...,D,B> such that A,D nonadjacent and B,C nonadjacent, then A---B
+     * [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B
      * and orient every edge on u undirected.
      */
     public void ruleR5(Graph graph) {
@@ -828,7 +828,7 @@ public final class FciOrient {
     /**
      * Implements Zhang's rules R8, R9, R10, applies them over the graph once.
      * Orient arrow tails. I.e., tries R8, R9, and R10 in that sequence on each
-     * Ao->C in the graph.
+     * Ao-&gt;C in the graph.
      */
     public void rulesR8R9R10(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -1010,7 +1010,7 @@ public final class FciOrient {
         List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
         for (Node b : intoCArrows) {
-            // We have B*->C.
+            // We have B*-&gt;C.
             if (!graph.isAdjacentTo(a, b)) {
                 continue;
             }
@@ -1018,7 +1018,7 @@ public final class FciOrient {
                 continue;
             }
 
-            // We have A*-*B*->C.
+            // We have A*-*B*-&gt;C.
             if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) {
                 continue;
             }
@@ -1084,7 +1084,7 @@ public final class FciOrient {
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
      * <p>
-     * R10: If Ao->C, B-->C<--D, there is an uncovered p.d. path u1=<A,M,...,B>
+     * R10: If Ao->C, B-->C&lt;--D, there is an uncovered p.d. path u1=<A,M,...,B>
      * and an uncovered p.d. path u2=
      * <A,N,...,D> with M != N and M,N nonadjacent then A-->C.
      *
@@ -1120,7 +1120,7 @@ public final class FciOrient {
                 if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) {
                     continue;
                 }
-                // We know Ao->C and B-->C<--D.
+                // We know Ao->C and B-->C&lt;--D.
 
                 List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
                 List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
@@ -1183,7 +1183,7 @@ public final class FciOrient {
                 continue;
             }
 
-            // Orient to*->from
+            // Orient to*-&gt;from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
             this.changeFlag = true;

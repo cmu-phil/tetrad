@@ -1,16 +1,13 @@
 package edu.cmu.tetrad.util;
 
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class ConcurrencyUtils {
-    public static void runCallables(List<Callable<Boolean>> tasks, int parallelism) {
+    public static void runCallables(List<Callable<Boolean>> tasks, boolean parallelized) {
         if (tasks.isEmpty()) return;
 
-        if (parallelism == 1) {
+        if (parallelized) {
             for (Callable<Boolean> task : tasks) {
                 try {
                     task.call();
@@ -19,24 +16,8 @@ public class ConcurrencyUtils {
                 }
             }
         } else {
-
-            ExecutorService executorService = Executors.newWorkStealingPool();
-
-            try {
-                executorService.invokeAll(tasks);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            executorService.shutdown();
-
-            try {
-                if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                    executorService.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                executorService.shutdownNow();
-            }
+            ForkJoinPool pool = ForkJoinPool.commonPool();
+            pool.invokeAll(tasks);
         }
     }
 }

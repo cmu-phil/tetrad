@@ -4,8 +4,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,12 +16,12 @@ import java.util.*;
  * that go into the interface need to be described here.
  *
  * @author jdramsey
- * @author Zhou Yuan <zhy19@pitt.edu>
+ * @author Zhou Yuan zhy19@pitt.edu
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public final class ParamDescriptions {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ParamDescriptions.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(ParamDescriptions.class);
 
     private static final ParamDescriptions INSTANCE = new ParamDescriptions();
 
@@ -52,7 +52,8 @@ public final class ParamDescriptions {
                 doc = Jsoup.parse(inputStream, "UTF-8", "");
             }
         } catch (IOException ex) {
-            ParamDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
+            TetradLogger.getInstance().forceLogMessage("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.");
+//            ParamDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
 
         // Get the description of each parameter

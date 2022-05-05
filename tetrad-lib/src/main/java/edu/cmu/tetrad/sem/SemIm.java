@@ -51,9 +51,9 @@ import static java.lang.Math.sqrt;
  * is considerably faster for large data sets.
  * <p>
  * Let V be the set of variables in the model. The freeParameters of the model
- * are as follows: (a) the list of linear coefficients for all edges u-->v in
+ * are as follows: (a) the list of linear coefficients for all edges u--&gt;v in
  * the model, where u, v are in V, (b) the list of variances for all variables
- * in V, (c) the list of all error covariances d<-->e, where d an e are
+ * in V, (c) the list of all error covariances d&lt;-&gt;e, where d an e are
  * exogenous terms in the model (either exogenous variables or error terms for
  * endogenous variables), and (d) the list of means for all variables in V.
  * <p>
@@ -63,7 +63,7 @@ import static java.lang.Math.sqrt;
  * coefficients and error covariances in the model.
  * <p>
  * Reference: Bollen, K. A. (1989). Structural Equations with Latent Variables.
- * New York: John Wiley & Sons.
+ * New York: John Wiley and Sons.
  *
  * @author Frank Wimberly
  * @author Ricardo Silva
@@ -157,7 +157,7 @@ public final class SemIm implements IM, ISemIm {
     /**
      * The sample size.
      *
-     * @serial Range >= 0.
+     * @serial Range &gt;= 0.
      */
     private int sampleSize;
     /**
@@ -1230,11 +1230,8 @@ public final class SemIm implements IM, ISemIm {
     @Override
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
-        long _seed = random.getSeed();
         random.setSeed(seed);
-        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
-        random.revertSeed(_seed);
-        return dataSet;
+        return simulateData(sampleSize, latentDataSaved);
     }
 
     /**
@@ -1490,6 +1487,8 @@ public final class SemIm implements IM, ISemIm {
 
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
+        double errorParam1 = params.getDouble(Params.SIMULATION_PARAM1);
+        double errorParam2 = params.getDouble(Params.SIMULATION_PARAM2);
 
         int numVars = getVariableNodes().size();
 
@@ -1513,11 +1512,11 @@ public final class SemIm implements IM, ISemIm {
                     e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(this.errCovar.get(i, i))));
 //                    e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errorParam2)));
                 } else if (errorType == 2) {
-                    e.set(i, RandomUtil.getInstance().nextUniform(this.errorParam1, this.errorParam2));
+                    e.set(i, RandomUtil.getInstance().nextUniform(errorParam1, errorParam2));
                 } else if (errorType == 3) {
-                    e.set(i, RandomUtil.getInstance().nextExponential(this.errorParam1));
+                    e.set(i, RandomUtil.getInstance().nextExponential(errorParam1));
                 } else if (errorType == 4) {
-                    e.set(i, RandomUtil.getInstance().nextGumbel(this.errorParam1, this.errorParam2));
+                    e.set(i, RandomUtil.getInstance().nextGumbel(errorParam1, errorParam2));
                 }
             }
 

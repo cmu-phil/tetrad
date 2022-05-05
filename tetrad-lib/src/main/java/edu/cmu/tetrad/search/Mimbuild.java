@@ -42,7 +42,7 @@ import java.util.List;
  * throws and exception then a CPC search. The penalty penaltyDiscount parameter is for the GES search; the alpha
  * value is for the CPC search. Or you can just grab the latent covariance matrix and run whatever search you
  * want to. (I don't know why GES sometimes fails, it is a mystery.)
- * </p>
+ *
  * Uses a different (better) algorithm from Mimbuild. Preferable.
  *
  * @author Joseph Ramsey
@@ -305,9 +305,12 @@ public class Mimbuild {
         int df = (p) * (p + 1) / 2 - (this.numParams);
         double x = (N - 1) * this.minimum;
 
+        System.out.println("p = " + p);
+
         if (df < 1) throw new IllegalStateException(
-                "The degrees of freedom for this model was calculated to be less than 1. Perhaps the model is " +
-                        "\nnot a multiple indicator model or doesn't have enough pure measurments.");
+                "Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)" +
+                        "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
+                        "\nor doesn't have enough pure nmeasurments to do a proper estimation.");
 
         this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
 
@@ -381,42 +384,51 @@ public class Mimbuild {
     private double[] getAllParams(Node[][] indicators, Matrix latentscov, double[][] loadings, double[] delta) {
         int count = 0;
 
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = i; j < indicators.length; j++) {
+        // Non-redundant elements of cov(latents)
+        for (int i = 0; i < latentscov.rows(); i++) {
+            for (int j = i; j < latentscov.columns(); j++) {
                 count++;
             }
         }
 
+        System.out.println("# nnonredundant elemnts of cov(error) = " + latentscov.rows() * (latentscov.rows() + 1) / 2);
+
+        int _loadings = 0;
+
+        // Loadings
         for (Node[] indicator : indicators) {
             for (int j = 0; j < indicator.length; j++) {
                 count++;
+                _loadings++;
             }
         }
 
+        System.out.println("# loadings = " + _loadings);
+
+        // Variance of measures
         for (int i = 0; i < delta.length; i++) {
             count++;
         }
 
+        System.out.println("# measure variances = " + delta.length);
+
         double[] values = new double[count];
         count = 0;
 
-        for (int i = 0; i < indicators.length; i++) {
-            for (int j = i; j < indicators.length; j++) {
-                values[count] = latentscov.get(i, j);
-                count++;
+        for (int i = 0; i < latentscov.rows(); i++) {
+            for (int j = i; j < latentscov.rows(); j++) {
+                values[count++] = latentscov.get(i, j);
             }
         }
 
         for (int i = 0; i < indicators.length; i++) {
             for (int j = 0; j < indicators[i].length; j++) {
-                values[count] = loadings[i][j];
-                count++;
+                values[count++] = loadings[i][j];
             }
         }
 
         for (double v : delta) {
-            values[count] = v;
-            count++;
+            values[count++] = v;
         }
 
         return values;

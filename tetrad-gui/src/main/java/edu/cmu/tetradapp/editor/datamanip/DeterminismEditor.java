@@ -22,7 +22,7 @@ import java.util.*;
 /**
  * Feb 11, 2019 4:17:17 PM
  *
- * @author Zhou Yuan <zhy19@pitt.edu>
+ * @author Zhou Yuan zhy19@pitt.edu
  */
 public class DeterminismEditor extends JPanel implements FinalizingParameterEditor {
 

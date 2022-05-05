@@ -64,7 +64,7 @@ public final class CptInvariantMarginalCalculator
      * Constructs a new marginal calculator for the given updated Bayes IM. It
      * is assumed that the first BayesIm encountered on calling the
      * getParentIm() method recursively is the Bayes IM with respect to which
-     * conjunctions of the form P(V1=v1' & V2=v2' & ... & Vn=vn') should be
+     * conjunctions of the form P(V1=v1' and V2=v2' and ... and Vn=vn') should be
      * calculated.
      */
     public CptInvariantMarginalCalculator(BayesIm bayesIm, Evidence evidence) {
@@ -99,7 +99,7 @@ public final class CptInvariantMarginalCalculator
     //=============================PUBLIC METHODS========================//
 
     /**
-     * @return P&lpar;variable &equals; category&rpar;.
+     * @return P(variable = category).
      */
     public double getMarginal(int variable, int category) {
         if (this.storedMarginals[variable][category] != -99.0) {

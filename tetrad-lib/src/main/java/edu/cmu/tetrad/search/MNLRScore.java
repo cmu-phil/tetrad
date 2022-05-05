@@ -62,7 +62,13 @@ public class MNLRScore implements Score {
         double dof = this.likelihood.getDoF(i, parents);
         double sp = this.likelihood.getStructurePrior(parents.length);
 
-        return 2.0 * lik - dof * this.logn + sp;
+        double score = 2.0 * lik - dof * this.logn + sp;
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
     public double localScoreDiff(int x, int y, int[] z) {

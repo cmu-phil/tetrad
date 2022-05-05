@@ -217,7 +217,7 @@ public final class TsDagToPag {
                     if (found) {
 
                         if (this.verbose) {
-                            System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
+                            System.out.println("Orienting collider " + a + "*-&gt;" + b + "&lt;-*" + c);
                         }
 
                         graph.setEndpoint(a, b, Endpoint.ARROW);

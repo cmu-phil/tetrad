@@ -62,10 +62,10 @@ import java.util.List;
  * use the method <ul> <li> getParents(int nodeIndex) </ul> To determine the
  * index of a category, use the method <ul> <li> getCategoryIndex(Node node)
  * </ul> in BayesPm. The rest of the methods in this class are easily understood
- * as variants of the methods above. </p>
+ * as variants of the methods above.
  * <p>
  * Thanks to Pucktada Treeratpituk, Frank Wimberly, and Willie Wheeler for
- * advise and earlier versions.</p>
+ * advise and earlier versions.&gt; 0
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -754,11 +754,8 @@ public final class MlBayesImObs implements BayesIm {
      */
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
-        long _seed = random.getSeed();
         random.setSeed(seed);
-        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
-        random.revertSeed(_seed);
-        return dataSet;
+        return simulateData(sampleSize, latentDataSaved);
     }
 
     public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {

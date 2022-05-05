@@ -253,7 +253,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 if (scoreWrapper instanceof DSeparationScore) {
                     ((DSeparationScore) scoreWrapper).setGraph(getSourceGraph());
                 }
-            } else if (algo instanceof TakesIndependenceWrapper) {
+            }
+
+            if (algo instanceof TakesIndependenceWrapper) {
                 IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
                 if (wrapper instanceof DSeparationTest) {
                     ((DSeparationTest) wrapper).setGraph(getSourceGraph());
@@ -265,7 +267,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
 
             if (this.algorithm instanceof HasKnowledge) {
-                ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                IKnowledge knowledge1 = TimeSeriesUtils.getKnowledge(getSourceGraph());
+
+                if (this.knowledge.isEmpty() && !knowledge1.isEmpty()) {
+                    ((HasKnowledge) algo).setKnowledge(knowledge1);
+                } else {
+                    ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                }
             }
 
             graphList.add(algo.search(null, this.parameters));

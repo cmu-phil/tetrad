@@ -23,8 +23,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,12 +35,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * @author Zhou Yuan <zhy19@pitt.edu>
+ * @author Zhou Yuan zhy19@pitt.edu
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class AlgorithmDescriptions {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmDescriptions.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmDescriptions.class);
 
     private static final AlgorithmDescriptions INSTANCE = new AlgorithmDescriptions();
 
@@ -60,7 +60,7 @@ public class AlgorithmDescriptions {
                 }
             });
         } catch (IOException ex) {
-            AlgorithmDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
+            TetradLogger.getInstance().forceLogMessage("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.");
         }
     }
 

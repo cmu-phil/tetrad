@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 /**
- * Implements a knowledge edge X-->Y as a simple ordered pair of strings.
+ * Implements a knowledge edge X--&gt;Y as a simple ordered pair of strings.
  *
  * @author Joseph Ramsey
  */
@@ -47,7 +47,7 @@ public final class KnowledgeEdge implements TetradSerializable {
     //===============================CONSTRUCTORS=======================//
 
     /**
-     * Constructs a knowledge edge for from-->to.
+     * Constructs a knowledge edge for from--&gt;to.
      */
     public KnowledgeEdge(String from, String to) {
         if (from == null || to == null) {

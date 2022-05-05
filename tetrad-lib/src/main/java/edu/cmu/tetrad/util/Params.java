@@ -142,7 +142,7 @@ public final class Params {
     public static final String ORIENT_TOWARD_DCONNECTIONS = "orientTowardDConnections";
     public static final String ORIENT_VISIBLE_FEEDBACK_LOOPS = "orientVisibleFeedbackLoops";
     public static final String OUTPUT_RBD = "outputRBD";
-    public static final String PARALLELISM = "parallelism";
+    public static final String PARALLELIZED = "parallelized";
     public static final String PENALTY_DISCOUNT = "penaltyDiscount";
     public static final String EBIC_GAMMA = "ebicGamma";
     public static final String PERCENT_DISCRETE = "percentDiscrete";
@@ -223,6 +223,7 @@ public final class Params {
     public static final String TARGET_NAMES = "targetNames";
     public static final String CSTAR_Q = "cstarQ";
     public static final String TIME_LAG = "timeLag";
+    public static final String PRECOMPUTE_COVARIANCES = "precomputeCovariances";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

@@ -44,12 +44,12 @@ public abstract class BasicLTMatrix extends BasicMatrix {
      * Creates a lower triangular matrix reading it from file
      * <code>fname</code>. The file has to be an ascii one and follow a
      * particular format:<p> *LtMatrix* [name] [n]<br> [0,0]<br> [1,0] [1,1]<br>
-     * [2,0] [2,1] [2,2]<br> :<br> [n-1,0] [n-1,1] ...  [n-1,n-1]<p> </p> Where
+     * [2,0] [2,1] [2,2]<br> :<br> [n-1,0] [n-1,1] ...  [n-1,n-1]<p> Where
      * [n] is the number of rows and columns in the matrix, and [i,j] is element
      * at position i,j in the matrix.<br> For example, a 3x3 identity matrix
-     * could be represented as follows:<p> </p> LtMatrix Identity3x3<br> <br> 3
+     * could be represented as follows:<p> LtMatrix Identity3x3<br> <br> 3
      * // # rows and columns<br> <br> // Matrix elements:<br> 1<br> 0 1<br> 0 0
-     * 1<p> </p> Notice there can be slash-slash (and also slash-star) style
+     * 1<p> Notice there can be slash-slash (and also slash-star) style
      * comments anywhere in the file.  Numbers can be separated by any number of
      * blank delimiters: tabs, spaces, carriage returns.  In the examples above
      * they appear in different lines for more readability of the file. The file

@@ -55,10 +55,6 @@ public class SemSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-
-        // This should always create new data
-//        if (!newModel && !dataSets.isEmpty()) return;
-
         Graph graph = this.randomGraph.createGraph(parameters);
 
         this.dataSets = new ArrayList<>();
@@ -163,8 +159,13 @@ public class SemSimulation implements Simulation {
             if (pm == null) {
                 pm = new SemPm(graph);
             }
+
             im = new SemIm(pm, parameters);
         }
+
+        // Need this in case the SEM IM is given externally.
+        im.setParams(parameters);
+
         this.ims.add(im);
         return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
     }

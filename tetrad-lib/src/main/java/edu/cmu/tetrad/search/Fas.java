@@ -40,7 +40,7 @@ import java.util.*;
  * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
  * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
- * </p>
+ *
  * Optionally uses Heuristic 3 from Causation, Prediction and Search, which (like FAS-Stable) renders the output
  * invariant to the order of the input variables (See Tsagris).
  *

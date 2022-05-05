@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
@@ -45,29 +42,21 @@ import static java.lang.Math.log;
  */
 public class SemBicScore implements Score {
 
-    private boolean calculateRowSubsets;
-
-    // The dataset.
-    private DataModel dataModel;
-
-    // .. as matrix
-    private Matrix data;
-
-    // The correlation matrix.
-    private ICovarianceMatrix covariances;
-
-    // The variables of the covariance matrix.
-    private List<Node> variables;
-
     // The sample size of the covariance matrix.
     private final int sampleSize;
-
-    // True if verbose output should be sent to out.
-    private boolean verbose;
-
     // A  map from variable names to their indices.
     private final Map<Node, Integer> indexMap;
-
+    private boolean calculateRowSubsets;
+    // The dataset.
+    private DataModel dataModel;
+    // .. as matrix
+    private Matrix data;
+    // The correlation matrix.
+    private ICovarianceMatrix covariances;
+    // The variables of the covariance matrix.
+    private List<Node> variables;
+    // True if verbose output should be sent to out.
+    private boolean verbose;
     // The penalty penaltyDiscount, 1 for standard BIC.
     private double penaltyDiscount = 1.0;
 
@@ -79,6 +68,7 @@ public class SemBicScore implements Score {
 
     // The rule type to use.
     private RuleType ruleType = RuleType.CHICKERING;
+    private boolean precomputeCovariances = true;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -94,10 +84,16 @@ public class SemBicScore implements Score {
         this.indexMap = indexMap(this.variables);
     }
 
+    public SemBicScore(DataSet dataSet) {
+        this(dataSet, true);
+    }
+
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore(DataSet dataSet) {
+    public SemBicScore(DataSet dataSet, boolean precomputeCovariances) {
+        this.precomputeCovariances = precomputeCovariances;
+
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -106,7 +102,11 @@ public class SemBicScore implements Score {
         this.data = dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            setCovariances(new CovarianceMatrix(dataSet, false));
+            if (!precomputeCovariances) {
+                setCovariances(new CovarianceMatrixOnTheFly(dataSet));
+            } else {
+                setCovariances(new CovarianceMatrix(dataSet));
+            }
             this.variables = this.covariances.getVariables();
             this.sampleSize = this.covariances.getSampleSize();
             this.indexMap = indexMap(this.variables);
@@ -122,18 +122,14 @@ public class SemBicScore implements Score {
 
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)
             throws SingularMatrixException {
-//        try {
-            int[] all = SemBicScore.concat(i, parents);
-            Matrix cov = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
-            int[] pp = SemBicScore.indexedParents(parents);
-            Matrix covxx = cov.getSelection(pp, pp);
-            Matrix covxy = cov.getSelection(pp, new int[]{0});
-            Matrix b = (covxx.inverse().times(covxy));
-            Matrix bStar = SemBicScore.bStar(b);
-            return (bStar.transpose().times(cov).times(bStar).get(0, 0));
-//        } catch (SingularMatrixException e) {
-//            throw new RuntimeException("Singularity");
-//        }
+        int[] all = SemBicScore.concat(i, parents);
+        Matrix cov = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
+        int[] pp = SemBicScore.indexedParents(parents);
+        Matrix covxx = cov.getSelection(pp, pp);
+        Matrix covxy = cov.getSelection(pp, new int[]{0});
+        Matrix b = (covxx.inverse().times(covxy));
+        Matrix bStar = SemBicScore.bStar(b);
+        return (bStar.transpose().times(cov).times(bStar).get(0, 0));
     }
 
     @NotNull
@@ -212,6 +208,12 @@ public class SemBicScore implements Score {
         return rows;
     }
 
+    private static int[] append(int[] z, int x) {
+        int[] _z = Arrays.copyOf(z, z.length + 1);
+        _z[z.length] = x;
+        return _z;
+    }
+
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         if (this.ruleType == RuleType.NANDY) {
@@ -248,6 +250,11 @@ public class SemBicScore implements Score {
         return localScoreDiff(x, y, new int[0]);
     }
 
+    /**
+     * @param i The index of the node.
+     * @param parents The indices of the node's parents.
+     * @return The score, or NaN if the score cannot be calculated.
+     */
     public double localScore(int i, int... parents) {
         int k = parents.length;
 
@@ -259,7 +266,7 @@ public class SemBicScore implements Score {
         try {
             varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
         } catch (SingularMatrixException e) {
-            return Double.NEGATIVE_INFINITY;
+            return Double.NaN;
         }
 
         double c = getPenaltyDiscount();
@@ -270,7 +277,7 @@ public class SemBicScore implements Score {
             double _score = -c * k * log(n) - n * log(varey); // - 2 * getStructurePrior(k);
 
             if (Double.isNaN(_score) || Double.isInfinite(_score)) {
-                return Double.NEGATIVE_INFINITY;
+                return Double.NaN;
             } else {
                 return _score;
             }
@@ -278,7 +285,6 @@ public class SemBicScore implements Score {
             throw new IllegalStateException("That rule type is not implemented: " + this.ruleType);
         }
     }
-
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
@@ -298,12 +304,28 @@ public class SemBicScore implements Score {
         return this.penaltyDiscount;
     }
 
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
     public double getStructurePrior() {
         return this.structurePrior;
     }
 
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
+    }
+
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
+    }
+
+    private void setCovariances(ICovarianceMatrix covariances) {
+        this.covariances = covariances;
+        this.matrix = this.covariances.getMatrix();
+
+        this.dataModel = covariances;
+
     }
 
     public int getSampleSize() {
@@ -317,14 +339,6 @@ public class SemBicScore implements Score {
 
     public DataModel getDataModel() {
         return this.dataModel;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
     }
 
     public boolean isVerbose() {
@@ -382,20 +396,6 @@ public class SemBicScore implements Score {
     //    @Override
     public DataModel getData() {
         return this.dataModel;
-    }
-
-    private void setCovariances(ICovarianceMatrix covariances) {
-        this.covariances = covariances;
-        this.matrix = this.covariances.getMatrix();
-
-        this.dataModel = covariances;
-
-    }
-
-    private static int[] append(int[] z, int x) {
-        int[] _z = Arrays.copyOf(z, z.length + 1);
-        _z[z.length] = x;
-        return _z;
     }
 
     private double getStructurePrior(int parents) {
@@ -525,6 +525,7 @@ public class SemBicScore implements Score {
     }
 
     public enum RuleType {CHICKERING, NANDY}
+
 }
 
 

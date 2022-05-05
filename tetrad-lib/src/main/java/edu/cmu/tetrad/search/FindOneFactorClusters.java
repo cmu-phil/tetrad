@@ -196,6 +196,12 @@ public class FindOneFactorClusters {
             throw new IllegalStateException("Expected SAG or GAP: " + this.testType);
         }
         this.clusters = variablesForIndices2(allClusters);
+
+        System.out.println("allClusters = " + allClusters);
+        System.out.println("this.clusters = " + this.clusters);
+
+//        if (allClusters.isEmpty()) return new EdgeListGraph();
+
         return convertToGraph(allClusters);
     }
 
@@ -1054,19 +1060,17 @@ public class FindOneFactorClusters {
     }
 
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
-        Graph graph = new EdgeListGraph(this.variables);
+        Graph graph = new EdgeListGraph();
 
         List<Node> latents = new ArrayList<>();
-        for (int i = 0; i < clusters.size(); i++) {
+        List<Set<Node>> _clusters = new ArrayList<>(clusters);
+
+        for (int i = 0; i < _clusters.size(); i++) {
             Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
             latent.setNodeType(NodeType.LATENT);
             latents.add(latent);
             graph.addNode(latent);
-        }
 
-        List<Set<Node>> _clusters = new ArrayList<>(clusters);
-
-        for (int i = 0; i < latents.size(); i++) {
             for (Node node : _clusters.get(i)) {
                 if (!graph.containsNode(node)) graph.addNode(node);
                 graph.addDirectedEdge(latents.get(i), node);

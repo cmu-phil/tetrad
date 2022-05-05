@@ -489,7 +489,7 @@ public class DMSearch {
 
         //Sober's step.
         for (Node latent : structure.getLatents()) {
-            if (structure.latentEffects.keySet().contains(latent)) {
+            if (structure.latentEffects.containsKey(latent)) {
                 for (Node latentEffect : structure.getLatentEffects(latent)) {
                     applySobersStep(structure.getInputs(latent), structure.getInputs(latentEffect),
                             structure.getOutputs(latent), structure.getOutputs(latentEffect),

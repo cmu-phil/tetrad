@@ -32,11 +32,11 @@ import java.util.StringTokenizer;
 public final class GraphConverter {
 
     /**
-     * Converts a string spec of a graph--for example, "X1-->X2, X1---X3,
-     * X2o->X4, X3<->X4" to a Graph. The spec consists of a comma separated list
+     * Converts a string spec of a graph--for example, "X1--&gt;X2, X1---X3,
+     * X2o-&gt;X4, X3&lt;-&gt;X4" to a Graph. The spec consists of a comma separated list
      * of edge specs of the forms just used in the previous sentence.
-     * Unconnected nodes may be listed separately--example: "X,Y->Z". To specify
-     * a node as latent, use "Latent()." Example: "Latent(L1),Y->L1".
+     * Unconnected nodes may be listed separately--example: "X,Y-&gt;Z". To specify
+     * a node as latent, use "Latent()." Example: "Latent(L1),Y-&gt;L1".
      */
     public static Graph convert(String spec) {
         Graph graph = new EdgeListGraph();

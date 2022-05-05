@@ -435,7 +435,7 @@ public final class SvarGFci implements GraphSearch {
                 continue;
             }
 
-            // Orient to*->from
+            // Orient to*-&gt;from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
             this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));

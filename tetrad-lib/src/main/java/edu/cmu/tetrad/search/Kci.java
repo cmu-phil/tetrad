@@ -25,14 +25,14 @@ import static java.lang.Math.*;
 /***
  * Kernal Independence Test (KCI).
  *
- * Zhang, K., Peters, J., Janzing, D., & Schölkopf, B. (2012). Kernel-based conditional independence
+ * Zhang, K., Peters, J., Janzing, D., and Schölkopf, B. (2012). Kernel-based conditional independence
  * test and application in causal discovery. arXiv preprint arXiv:1202.3775.
  *
  * Please see that paper, especially Theorem 4 and Proposition 5.
  *
  * Using optimal kernel bandwidths suggested by Bowman and Azzalini (1997):
  *
- * Bowman, A. W., & Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel
+ * Bowman, A. W., and Azzalini, A. (1997). Applied smoothing techniques for data analysis: the kernel
  * approach with S-Plus illustrations (Vol. 18). OUP Oxford.
  *
  * @author Vineet Raghu on 7/3/2016
@@ -48,9 +48,6 @@ public class Kci implements IndependenceTest {
 
     // The alpha level of the test.
     private double alpha;
-
-    // P value used to judge independence. This is the last p value calculated.
-    private double p;
 
     // A normal distribution with 1 degree of freedom.
     private final NormalDistribution normal = new NormalDistribution(new SynchronizedRandomGenerator(
@@ -81,6 +78,7 @@ public class Kci implements IndependenceTest {
     private double epsilon = 0.001;
 
     private boolean verbose;
+    private IndependenceFact latestFact = null;
 
     /**
      * Constructor.
@@ -97,7 +95,6 @@ public class Kci implements IndependenceTest {
         for (int j = 0; j < n; j++) Ones.set(j, 0, 1);
 
         this.alpha = alpha;
-        this.p = -1;
 
         this.hash = new HashMap<>();
 
@@ -117,7 +114,7 @@ public class Kci implements IndependenceTest {
 
     /**
      * Returns true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
@@ -177,30 +174,26 @@ public class Kci implements IndependenceTest {
         }
 
         IndependenceFact fact = new IndependenceFact(x, y, z);
+        this.latestFact = fact;
 
         if (this.facts.get(fact) != null) {
-            independent = this.facts.get(fact);
-            this.p = this.pValues.get(fact);
+            return facts.get(fact);
         } else {
             if (z.isEmpty()) {
                 independent = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
             } else {
                 independent = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
             }
-
-            this.facts.put(fact, independent);
         }
 
-        if (this.verbose) {
+        if (verbose) {
             double p = getPValue();
 
             if (independent) {
-                System.out.println(fact + " INDEPENDENT p = " + p);
-                TetradLogger.getInstance().log("info", fact + " Independent");
+                TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
 
             } else {
-                System.out.println(fact + " dependent p = " + p);
-                TetradLogger.getInstance().log("info", fact.toString());
+                TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
             }
         }
 
@@ -209,7 +202,7 @@ public class Kci implements IndependenceTest {
 
     /**
      * Returns true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, Node... z) {
@@ -220,7 +213,7 @@ public class Kci implements IndependenceTest {
 
     /**
      * Returns true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     public boolean isDependent(Node x, Node y, List<Node> z) {
@@ -229,7 +222,7 @@ public class Kci implements IndependenceTest {
 
     /**
      * Returns true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
     public boolean isDependent(Node x, Node y, Node... z) {
@@ -243,7 +236,7 @@ public class Kci implements IndependenceTest {
      * not meaningful for tis test.
      */
     public double getPValue() {
-        return this.p;
+        return pValues.get(latestFact);
     }
 
     /**
@@ -387,9 +380,10 @@ public class Kci implements IndependenceTest {
                 double k_appr = mean_appr * mean_appr / var_appr;
                 double theta_appr = var_appr / mean_appr;
                 double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
+                boolean indep = p > getAlpha();
+                this.facts.put(fact, indep);
                 this.pValues.put(fact, p);
-                this.p = p;
-                return p > this.alpha;
+                return indep;
             } else {
                 return theorem4(kx, ky, fact, N);
             }
@@ -424,9 +418,10 @@ public class Kci implements IndependenceTest {
             return proposition5(kx, ky, fact, N);
         } catch (Exception e) {
             e.printStackTrace();
+            boolean indep = false;
+            this.facts.put(fact, indep);
             this.pValues.put(fact, 0.0);
-            this.facts.put(fact, false);
-            return false;
+            return indep;
         }
     }
 
@@ -460,20 +455,10 @@ public class Kci implements IndependenceTest {
 
         // Calculate p.
         double p = sum / (double) getNumBootstraps();
+        boolean indep = p > getAlpha();
+        this.facts.put(fact, indep);
         this.pValues.put(fact, p);
-
-        boolean independent = p > this.alpha;
-
-        if (independent) {
-            System.out.println(fact + " INDEPENDENT p = " + p);
-            TetradLogger.getInstance().log("info", fact + " Independent");
-
-        } else {
-            System.out.println(fact + " dependent p = " + p);
-            TetradLogger.getInstance().log("info", fact.toString());
-        }
-
-        return independent;
+        return indep;
     }
 
     private boolean proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
@@ -512,8 +497,10 @@ public class Kci implements IndependenceTest {
             double k_appr = mean_appr * mean_appr / var_appr;
             double theta_appr = var_appr / mean_appr;
             double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
+            boolean indep = p > getAlpha();
+            this.facts.put(fact, indep);
             this.pValues.put(fact, p);
-            return p > getAlpha();
+            return indep;
         } else {
 
             // Get top eigenvalues of that.
@@ -536,21 +523,10 @@ public class Kci implements IndependenceTest {
             }
 
             double p = sum / (double) getNumBootstraps();
+            boolean indep = p > getAlpha();
+            this.facts.put(fact, indep);
             this.pValues.put(fact, p);
-            this.p = p;
-
-            boolean independent = p > this.alpha;
-
-            if (independent) {
-                System.out.println(fact + " INDEPENDENT p = " + p);
-                TetradLogger.getInstance().log("info", fact + " Independent");
-
-            } else {
-                System.out.println(fact + " dependent p = " + p);
-                TetradLogger.getInstance().log("info", fact.toString());
-            }
-
-            return independent;
+            return indep;
         }
     }
 

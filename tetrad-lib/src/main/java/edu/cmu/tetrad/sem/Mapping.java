@@ -31,7 +31,7 @@ import java.io.ObjectInputStream;
 
 /**
  * <p>Maps a parameter to the matrix element where its value is stored in the
- * model.</p>
+ * model.
  *
  * @author Frank Wimberly
  * @author Joe Ramsey

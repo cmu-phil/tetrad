@@ -62,7 +62,7 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
 
             DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
 
-            Fask fask = new Fask(dataSet, new SemBicScore(dataSet), new IndTestFisherZ(dataSet, 0.01));
+            Fask fask = new Fask(dataSet, new SemBicScore(dataSet, true), new IndTestFisherZ(dataSet, 0.01));
             fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
             fask.setExternalGraph(graph);
             fask.setSkewEdgeThreshold(Double.POSITIVE_INFINITY);

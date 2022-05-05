@@ -64,10 +64,10 @@ import static java.lang.Math.pow;
  * use the method <ul> <li> getParents(int nodeIndex) </ul> To determine the
  * index of a category, use the method <ul> <li> getCategoryIndex(Node node)
  * </ul> in BayesPm. The rest of the methods in this class are easily understood
- * as variants of the methods above. </p>
+ * as variants of the methods above.
  * <p>
  * Thanks to Pucktada Treeratpituk, Frank Wimberly, and Willie Wheeler for
- * advice and earlier versions.</p>
+ * advice and earlier versions.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -603,8 +603,7 @@ public final class MlBayesIm implements BayesIm {
         double sum = 0.0;
 
         for (int i = 0; i < size; i++) {
-            double v = RandomUtil.getInstance().nextBeta(1, size - 1);
-            row[i] = v;// > 0.5 ? 2 * v : 0.5 * v;
+            row[i] = RandomUtil.getInstance().nextBeta(size / 4d, size);
             sum += row[i];
         }
 
@@ -928,11 +927,8 @@ public final class MlBayesIm implements BayesIm {
      */
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
-        long _seed = random.getSeed();
         random.setSeed(seed);
-        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
-        random.revertSeed(_seed);
-        return dataSet;
+        return simulateData(sampleSize, latentDataSaved);
     }
 
     public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {

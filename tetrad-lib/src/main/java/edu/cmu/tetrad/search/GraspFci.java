@@ -110,12 +110,11 @@ public final class GraspFci implements GraphSearch {
         grasp.setDepth(this.depth);
         grasp.setUncoveredDepth(this.uncoveredDepth);
         grasp.setNonSingularDepth(this.nonsingularDepth);
-        grasp.setToleranceDepth(this.toleranceDepth);
+//        grasp.setToleranceDepth(this.toleranceDepth);
         grasp.setOrdered(this.ordered);
         grasp.setUseScore(this.useScore);
         grasp.setUseRaskuttiUhler(this.useRaskuttiUhler);
         grasp.setUseDataOrder(this.useDataOrder);
-        grasp.setAllowRandomnessInsideAlgorithm(this.allowRandomnessInsideAlgorithm);
         grasp.setVerbose(this.verbose);
         grasp.setCacheScores(this.cacheScores);
 
@@ -362,7 +361,7 @@ public final class GraspFci implements GraphSearch {
                 continue;
             }
 
-            // Orient to*->from
+            // Orient to*-&gt;from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             graph.setEndpoint(from, to, Endpoint.CIRCLE);
             this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));

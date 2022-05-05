@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -53,10 +52,6 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     * <p>
-     * //     * @see edu.cmu.TestSerialization
-     *
-     * @see TetradSerializableUtils
      */
     public static IKnowledge serializableInstance() {
         return new Knowledge2();
@@ -122,6 +117,7 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
     }
 
     public void setFacts(IndependenceFacts facts) {
+        if (facts == null) throw new NullPointerException("FActs is null.");
         this.facts = facts;
     }
 

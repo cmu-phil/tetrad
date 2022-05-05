@@ -47,7 +47,7 @@ import static java.lang.Math.tanh;
  * Description:
  * <p>
  * This is an R and C code implementation of the FastICA algorithm of Aapo
- * Hyvarinen et al. (<URL: http://www.cis.hut.fi/aapo/>) to perform Independent
+ * Hyvarinen et al. (URL: http://www.cis.hut.fi/aapo/) to perform Independent
  * Component Analysis (ICA) and Projection Pursuit.
  * <p>
  * Usage:
@@ -112,7 +112,7 @@ import static java.lang.Math.tanh;
  * data matrix X.
  * <p>
  * The data matrix is then `whitened' by projecting the data onto it's principle
- * component directions i.e. X -> XK where K is a pre-whitening matrix. The
+ * component directions i.e. X -&gt; XK where K is a pre-whitening matrix. The
  * number of components can be specified by the user.
  * <p>
  * The ICA algorithm then estimates a matrix W s.t XKW = S . W is chosen to
@@ -139,7 +139,7 @@ import static java.lang.Math.tanh;
  * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and
  * Applications, _Neural Networks_, *13(4-5)*:411-430
  * <p>
- * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015</p>
+ * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015&gt; 0
  *
  * @author Joseph Ramsey (of the translation, that is)
  */

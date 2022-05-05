@@ -29,7 +29,7 @@ import java.util.concurrent.ForkJoinPool;
  */
 public class ForkJoinPoolInstance {
     private static final ForkJoinPoolInstance INSTANCE = new ForkJoinPoolInstance();
-    private final ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+    private final ForkJoinPool pool = ForkJoinPool.commonPool();
 
     private ForkJoinPoolInstance() {
 

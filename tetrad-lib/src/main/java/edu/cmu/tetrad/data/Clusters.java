@@ -94,15 +94,15 @@ public final class Clusters implements TetradSerializable {
      * Adds the given variable to the given index.  If a variable which is being
      * added is already in a index, it is moved to the new index. This
      * information is used specifically by algorithm such as Purify and MIM
-     * Build. </p> The first variation only put an Integer associated with the
+     * Build. The first variation only put an Integer associated with the
      * index, i.e., the clusterings forms a partition where the integer
-     * represents the index id for the corresponding variable. </p> The second
+     * represents the index id for the corresponding variable. The second
      * variation associates a list of Integers with each observed variable. When
      * reading clustering information, one has to pay attention if the object
      * retrieved is an Integer or a list of Integers.
      *
      * @param index the index.
-     * @param var   the variable (a String name). </p> R. Silva (04/2003)
+     * @param var   the variable (a String name). R. Silva (04/2003)
      */
     public void addToCluster(int index, String var) {
         if (isClustersBounded() && index >= getNumClusters()) {
@@ -123,7 +123,7 @@ public final class Clusters implements TetradSerializable {
 
     /**
      * @return the number of measurement clusters for use in Purify and MIM
-     * Build. </p> R. Silva (04/2003)
+     * Build. R. Silva (04/2003)
      */
     public int getNumClusters() {
         if (!isClustersBounded()) {

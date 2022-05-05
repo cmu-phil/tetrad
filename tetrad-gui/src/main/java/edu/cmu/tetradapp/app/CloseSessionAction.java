@@ -77,6 +77,10 @@ final class CloseSessionAction extends AbstractAction {
         }
 
         DesktopController.getInstance().closeFrontmostSession();
+
+        if (DesktopController.getInstance().getFrontmostSessionEditor() == null) {
+            new NewSessionAction().actionPerformed(null);
+        }
     }
 
     /**

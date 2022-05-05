@@ -50,9 +50,9 @@ import java.util.Arrays;
  * data sets, especially for the raw data set. A simulation with 1,000,000 cells
  * where each cell has 1000 genes, for instance, can take quite a long time and
  * can easily overflow RAM in Java if all of the raw expression levels are saved
- * out.</p> </p> <p>For examples of how to use the measurement simulator code,
+ * out.&gt; 0 <p>For examples of how to use the measurement simulator code,
  * see the TestMeasurementSimulator class. This is a JUnit test class that
- * contains several examples of code use.</p>
+ * contains several examples of code use.&gt; 0
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  * @see TestMeasurementSimulator
@@ -565,8 +565,8 @@ public class MeasurementSimulator implements TetradSerializable {
      * cell. To determine which factor is the i'th factor, look at
      * getHistory().getFactor(). To determine which time step is the j'th time
      * step, look at getTimeSteps(). The k'th individual is in dish (k /
-     * numCellsPerDish).</p> </p> <p>If raw data is not saved out, this method
-     * returns null.</p>
+     * numCellsPerDish).&gt; 0 <p>If raw data is not saved out, this method
+     * returns null.&gt; 0
      *
      * @return the three dimensional double array of raw data, if raw data is
      * saved, or null, if raw data is not saved.
@@ -583,8 +583,8 @@ public class MeasurementSimulator implements TetradSerializable {
      * the k'th sample. To determine which factor is the i'th factor, look at
      * getHistory().getFactor(). To determine which time step is the j'th time
      * step, look at getTimeSteps(). The k'th sample is drawn from dish (k /
-     * numSamplesPerDish).</p> </p> <p>If measured data is not saved out, this
-     * method returns null.</p>
+     * numSamplesPerDish).&gt; 0 <p>If measured data is not saved out, this
+     * method returns null.&gt; 0
      *
      * @return the three dimensional double array of measured data, if measured
      * data is saved, or null, if measured data is not saved.
@@ -627,7 +627,7 @@ public class MeasurementSimulator implements TetradSerializable {
      * allow only subsets of the time steps that are themselves equally spaced.
      * (This is not necessary; it's just how the getModel parameters
      * work--<code>firstStepStored</code>, <code>stepsGenerated</code>,
-     * <code>interval</code>. Note that the the time steps in this array are >=
+     * <code>interval</code>. Note that the the time steps in this array are &gt;=
      * 1, are in increasing order, and (as explained above) are equally spaced.
      */
     public int[] getTimeSteps() {

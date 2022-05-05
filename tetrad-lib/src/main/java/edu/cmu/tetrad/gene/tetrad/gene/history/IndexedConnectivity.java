@@ -34,7 +34,7 @@ import java.util.SortedSet;
  * indices rather than Strings to refer to factors. Since lag graphs are
  * dynamic, they can't do this directly, as the indices might change from one
  * time to the next. However, for certain uses of lag graphs, the graph itself
- * may be assumed to be static, so this optimization is useful.</p>
+ * may be assumed to be static, so this optimization is useful.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -111,9 +111,6 @@ public class IndexedConnectivity implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static IndexedConnectivity serializableInstance() {
         return new IndexedConnectivity(BasicLagGraph.serializableInstance());

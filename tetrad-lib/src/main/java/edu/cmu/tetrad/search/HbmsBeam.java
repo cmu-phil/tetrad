@@ -38,7 +38,7 @@ import java.util.*;
 
 /**
  * Best Fit Finder using a beam search.
- * </p>
+ *
  * Improves the P value of a SEM IM by adding, removing, or reversing single edges.
  *
  * @author Joseph Ramsey

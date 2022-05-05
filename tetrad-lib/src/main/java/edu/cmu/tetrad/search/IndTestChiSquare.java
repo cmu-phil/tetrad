@@ -145,7 +145,6 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     /**
      * @return degrees of freedom associated with the most recent call of isIndependent
-     * @ return degrees of freedom
      */
     public int getDf() {
         return this.df;

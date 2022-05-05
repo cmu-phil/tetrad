@@ -174,7 +174,7 @@ public class DataGraphUtils {
 //            System.out.println("Measure to  measure: " + graph.getEdge(measure1,  measure2));
         }
 
-        // Measured<->measured.
+        // Measured&lt;-&gt;measured.
         misses = 0;
 
         for (int i = 0; i < numMeasuredMeasuredImpureAssociations; i++) {

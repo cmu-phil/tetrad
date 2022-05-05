@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.JsonUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.editor.search.AlgorithmCard;
 import edu.cmu.tetradapp.editor.search.GraphCard;
@@ -32,8 +33,8 @@ import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.WatchedProcess;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,7 +54,7 @@ import java.util.List;
  */
 public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeListener, ActionListener, FinalizingEditor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GeneralAlgorithmEditor.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(GeneralAlgorithmEditor.class);
 
     private static final long serialVersionUID = -5719467682865706447L;
 
@@ -147,7 +148,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         this.algorithmRunner.getGraphs().clear();
         this.algorithmRunner.getGraphs().add(graph);
 
-        GeneralAlgorithmEditor.LOGGER.info("Remote graph result assigned to algorithmRunner!");
+        TetradLogger.getInstance().forceLogMessage("Remote graph result assigned to algorithmRunner!");
         firePropertyChange("modelChanged", null, null);
 
         this.graphCard.refresh();

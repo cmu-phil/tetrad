@@ -652,7 +652,7 @@ public class TestFges {
 
     @Test
     public void testFromGraph() {
-        final int numNodes = 10;
+        final int numNodes = 15;
         final int aveDegree = 4;
         final int numIterations = 1;
 
@@ -661,8 +661,9 @@ public class TestFges {
             Fges fges = new Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
             fges.setVerbose(true);
+            fges.setParallelized(true);
             Graph CPDAG1 = fges.search();
-            Graph CPDAG2 = new Pc(new IndTestDSep(dag)).search();
+            Graph CPDAG2 = SearchGraphUtils.cpdagFromDag(dag);
             assertEquals(CPDAG2, CPDAG1);
         }
     }
@@ -732,7 +733,7 @@ public class TestFges {
     @Test
     public void testFromGraphWithForbiddenKnowledge() {
         final int numNodes = 20;
-        final int numIterations = 20;
+        final int numIterations = 5;
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));

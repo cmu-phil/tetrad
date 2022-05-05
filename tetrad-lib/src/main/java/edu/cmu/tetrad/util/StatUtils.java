@@ -38,13 +38,13 @@ import static java.lang.Math.*;
 
 /**
  * Contains a number of basic statistical functions. Most methods are overloaded
- * for either long or double arrays. </p> </p> NOTE: </p> Some methods in this
+ * for either long or double arrays. NOTE: Some methods in this
  * class have been adapted from class DStat written by Michael Fanelli, and the
  * routines have been included here by permission. The methods which were
  * adapted are: <ul> <li>gamma <li>internalGamma <li>beta <li>igamma <li>erf
- * <li>poisson <li>chidist <li>contTable1 </ul> </p> These methods are protected
+ * <li>poisson <li>chidist <li>contTable1 </ul> These methods are protected
  * under copyright by the author. Here is the text of his copyright notice for
- * DSTAT.java: </p> "Copyright 1997 by Michael Fanelli. All Rights Reserved.
+ * DSTAT.java: "Copyright 1997 by Michael Fanelli. All Rights Reserved.
  * Unlimited use of this beta code granted for non-commercial use only subject
  * to the the expiration date. Commercial (for profit) use requires written
  * permission."
@@ -1600,7 +1600,7 @@ public final class StatUtils {
     }
 
     /**
-     * @return the index, >=, in the sorted list of p values of which all p values are rejected. It
+     * @return the index, &gt;=, in the sorted list of p values of which all p values are rejected. It
      * the index is -1, all p values are rejected.
      */
     public static int fdr(double alpha, List<Double> pValues) {

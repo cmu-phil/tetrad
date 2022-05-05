@@ -267,7 +267,13 @@ public class MagSemBicScore implements Score {
         if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
             // Standard BIC, with penalty discount and structure prior.
-            return -c * k * log(n) - n * log(varey);// - 2 * getStructurePrior(k);
+            double score = -c * k * log(n) - n * log(varey);// - 2 * getStructurePrior(k);
+
+            if (Double.isNaN(score) || Double.isInfinite(score)) {
+                return Double.NaN;
+            } else {
+                return score;
+            }
         } else {
             throw new IllegalStateException("That rule type is not implemented: " + this.ruleType);
         }

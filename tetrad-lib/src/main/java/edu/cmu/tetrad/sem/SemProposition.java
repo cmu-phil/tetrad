@@ -33,7 +33,7 @@ import java.util.List;
  * Represents propositions over the variables of a particular BayesIm describing
  * and event of a fairly general sort--namely, conjunctions of propositions that
  * particular variables take on values from a particular disjunctive list of
- * categories. For example, X1 = 1 or 2 & X2 = 3 & X3 = 1 or 3 & X4 = 2 or 3 or
+ * categories. For example, X1 = 1 or 2 and X2 = 3 and X3 = 1 or 3 and X4 = 2 or 3 or
  * 5. The proposition is created by allowing or disallowing particular
  * categories. Notice that "knowing nothing" about a variable is the same as
  * saying that all categories for that variable are allowed, so the proposition

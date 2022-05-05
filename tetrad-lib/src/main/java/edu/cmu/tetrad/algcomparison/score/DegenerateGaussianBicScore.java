@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.DegenerateGaussianScore;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.SemBicScoreDGWrapper;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -31,7 +32,8 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(DataUtils.getMixedDataSet(dataSet));
+//        DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(DataUtils.getMixedDataSet(dataSet));
+        SemBicScoreDGWrapper degenerateGaussianScore = new SemBicScoreDGWrapper(DataUtils.getMixedDataSet(dataSet));
         degenerateGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         degenerateGaussianScore.setStructurePrior(parameters.getDouble("structurePrior"));
         return degenerateGaussianScore;

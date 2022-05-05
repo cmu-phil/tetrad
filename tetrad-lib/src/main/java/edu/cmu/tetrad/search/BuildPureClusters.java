@@ -569,7 +569,7 @@ public final class BuildPureClusters {
     /*
      * Find all maximal cliques of a graph. However, it can generate an exponential number of
      * cliques as a function of the number of impurities in the true graph. Therefore, we also
-     * use a counter to stop the computation after a given number of calls. </p> This is an
+     * use a counter to stop the computation after a given number of calls. This is an
      * implementation of Algorithm 2 from Bron and Kerbosch (1973).
      */
     private List<int[]> findMaximalCliques(int[] elements, int[][] ng) {
@@ -761,7 +761,7 @@ public final class BuildPureClusters {
      * Transforms clusterings (each "clustering" is a set of "clusters"), remove overlapping indicators for each
      * clustering, and order clusterings according to the number of nonoverlapping indicators, throwing away any latent
      * with zero indicators. Also, for each pair of indicators such that they are linked in ng, one of them is chosen to
-     * be removed (the heuristic is, choose the one that belongs to the largest cluster). </p> The list that is returned
+     * be removed (the heuristic is, choose the one that belongs to the largest cluster). The list that is returned
      * is a list of lists. Each element in the big list is a list of integer arrays, where each integer array represents
      * one cluster.
      */

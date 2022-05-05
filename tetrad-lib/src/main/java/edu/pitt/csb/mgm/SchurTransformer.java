@@ -12,15 +12,15 @@ import org.apache.commons.math3.util.Precision;
  * Class transforming a general real matrix to Schur form.
  * <p>A m &times; m matrix A can be written as the product of three matrices: A = P
  * &times; T &times; P<sup>T</sup> with P an orthogonal matrix and T an quasi-triangular
- * matrix. Both P and T are m &times; m matrices.</p>
+ * matrix. Both P and T are m &times; m matrices.&gt; 0
  * <p>Transformation to Schur form is often not a goal by itself, but it is an
  * intermediate step in more general decomposition algorithms like
  * {@link EigenDecomposition eigen decomposition}. This class is therefore
  * intended for internal use by the library and is not public. As a consequence
  * of this explicitly limited scope, many methods directly returns references to
- * internal arrays, not copies.</p>
+ * internal arrays, not copies.&gt; 0
  * <p>This class is based on the method hqr2 in class EigenvalueDecomposition
- * from the <a href="http://math.nist.gov/javanumerics/jama/">JAMA</a> library.</p>
+ * from the <a href="http://math.nist.gov/javanumerics/jama/">JAMA</a> library.&gt; 0
  *
  * @see <a href="http://mathworld.wolfram.com/SchurDecomposition.html">Schur Decomposition - MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/Schur_decomposition">Schur Decomposition - Wikipedia</a>
@@ -84,7 +84,7 @@ class SchurTransformer {
 
     /**
      * Returns the matrix P of the transform.
-     * <p>P is an orthogonal matrix, i.e. its inverse is also its transpose.</p>
+     * <p>P is an orthogonal matrix, i.e. its inverse is also its transpose.&gt; 0
      *
      * @return the P matrix
      */
@@ -97,7 +97,7 @@ class SchurTransformer {
 
     /**
      * Returns the transpose of the matrix P of the transform.
-     * <p>P is an orthogonal matrix, i.e. its inverse is also its transpose.</p>
+     * <p>P is an orthogonal matrix, i.e. its inverse is also its transpose.&gt; 0
      *
      * @return the transpose of the P matrix
      */

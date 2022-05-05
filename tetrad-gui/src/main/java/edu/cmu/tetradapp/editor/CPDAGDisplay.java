@@ -71,7 +71,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
 
         JSpinner spinner = new JSpinner();
         JComboBox<String> orient = new JComboBox<>(
-                new String[]{"Orient --- only", "Orient ---, <->"});
+                new String[]{"Orient --- only", "Orient ---, &lt;->"});
         spinner.setModel(model);
         JLabel totalLabel = new JLabel(" of " + dags.size());
 
@@ -96,7 +96,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
                 spinner.setModel(model1);
                 totalLabel.setText(" of " + dags.size());
                 CPDAGDisplay.this.workbench.setGraph(dags.get(0));
-            } else if ("Orient ---, <->".equals(option)) {
+            } else if ("Orient ---, &lt;->".equals(option)) {
                 List _dags = SearchGraphUtils.generateCpdagDags(graph, true);
                 dags.clear();
                 dags.addAll(_dags);

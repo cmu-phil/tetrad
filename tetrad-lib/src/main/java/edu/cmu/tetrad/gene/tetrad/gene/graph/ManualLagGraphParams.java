@@ -59,9 +59,6 @@ public class ManualLagGraphParams implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static ManualLagGraphParams serializableInstance() {
         return new ManualLagGraphParams();

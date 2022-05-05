@@ -165,7 +165,11 @@ public class DirichletScore implements LocalDiscreteScore {
 
         this.lastBumpThreshold = 0.01;//((r - 1) * q * FastMath.log(getStructurePrior()));
 
-        return score;
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
     @Override

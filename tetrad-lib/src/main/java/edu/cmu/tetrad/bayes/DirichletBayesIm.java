@@ -72,9 +72,9 @@ import java.util.*;
  * method <ul> <li> getParents(int nodeIndex) </ul> To determine the index of a
  * value, use the method <ul> <li> getCategoryIndex(Node node) </ul> in BayesPm.
  * The rest of the methods in this class are easily understood as variants of
- * the methods above. </p>
+ * the methods above.
  * <p>
- * Thanks to Bill Taysom for an earlier version.</p>
+ * Thanks to Bill Taysom for an earlier version.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -806,11 +806,8 @@ public final class DirichletBayesIm implements BayesIm {
     public DataSet simulateData(int sampleSize, long seed,
                                 boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
-        long _seed = random.getSeed();
         random.setSeed(seed);
-        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
-        random.revertSeed(_seed);
-        return dataSet;
+        return simulateData(sampleSize, latentDataSaved);
     }
 
     /**

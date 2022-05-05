@@ -56,7 +56,7 @@ import static java.lang.Math.*;
  * The code used within this class is largely Gustave Lacerda's, which corresponds to his essay, Discovering Cyclic
  * Causal Models by Independent Components Analysis. The code models the LiNG algorithm.
  * <p>
- * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015</p>
+ * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015&gt; 0
  */
 public class Ling {
 

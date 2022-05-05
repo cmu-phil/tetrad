@@ -1065,6 +1065,13 @@
         terms are not considered parameters and cannot be edited, but you can
         view them by clicking Parameters: Show Error Terms. </p>
 
+    <p>It is possible to make a SEM IM with a time lag graph, even with latent
+        variables. This does not work for other types of models, such as
+        Bayes IM's or for mixed data (for which no IM is currently available--
+        though mixed data can be simulated in the Simulate box with an appropriate
+        choice of simulation model). Standardization for time lag model
+        is not currently avialable.</p>
+
     <p>The Implied Matrices tab works in the same way that it does in a
         normal SEM IM.</p>
 
@@ -2619,14 +2626,14 @@ tabs will not appear.</p> -->
             testing. (For PC, CPC, JPC, JCPC, FCI, all testing searches.) </p>
 
         <p>The PC algorithm as given in Causation, Prediction and Search (Spirtes,
-        Glymour, and Scheines, 2000) comes with three heuristics designed
-        to reduce dependence on the order of the variables. The heuristic PC-1
-        simple sorts the variables in alphabetical order. The heuristic PC-2
-        and PC-3 sort edges by their p-values in the search. PP-3 further sorts
-        parents of nodes in reverse order by the p-values of the conditional
-        independence facts used to removed edges in the search. Please see
-        Causation, Prediction, and Search for more details for these
-        heuristics.</p>
+            Glymour, and Scheines, 2000) comes with three heuristics designed
+            to reduce dependence on the order of the variables. The heuristic PC-1
+            simple sorts the variables in alphabetical order. The heuristic PC-2
+            and PC-3 sort edges by their p-values in the search. PP-3 further sorts
+            parents of nodes in reverse order by the p-values of the conditional
+            independence facts used to removed edges in the search. Please see
+            Causation, Prediction, and Search for more details for these
+            heuristics.</p>
 
         <p>Note: If one wants to analyze time series data using this algorithms,
             one may set the time lag parameter to a value greater than 0, which
@@ -2833,7 +2840,7 @@ tabs will not appear.</p> -->
             href="#penaltyDiscount">penaltyDiscount</a>, <a
             href="#symmetricFirstStep">symmetricFirstStep</a>, <a
             href="#faithfulnessAssumed">faithfulnessAssumed</a>, <a
-            href="#maxDegree">maxDegree</a>, <a href="#parallalism">parallelism</a>,
+            href="#parallelized">maxDegree</a>, <a href="#parallalism">parallelized</a>,
         <a href="#verbose">verbose</a> <a href="#meekVerbose">meekVerbose</a></p>
 
 
@@ -3155,6 +3162,43 @@ tabs will not appear.</p> -->
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
         GRaSP.</p>
 
+    <h3>The SP-FCI Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="spfci">
+
+        <p>SP-FCI is wrapper around the SP algorithm that replaces
+            the FGES step in GFCI with the more accurate SP algrorithm, which
+            reasons by considering permutations of variables. This uses the
+            same method for wrapping SP with an FCI method similar to GFCI
+            as GRaSP-FCI. The difference is that SP considers every permutation
+            of the variables and so necessarily return a frugal DAG. This
+            can only be used for very small models, of up to about 8 or 9
+            variables, because of the super-exponential step of considering
+            every permutation of the variables. The second collider
+            orienatation step in GFCI is done using permutation reasoning,
+            leaving the discriminating path rule as the only rule that requires a
+            "raw" conditional independence judgment. Ultimately this independence
+            judgment can be decided using the same scoring apparatus as the other
+            permutation steps, so ultimately GRaSP-FCI can be treated as a scoring
+            algorithm.</p>
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
+        SP.</p>
+
+
     <h3>The SvarFCI Algorithm</h3>
 
     <h4>Description</h4>
@@ -3288,8 +3332,8 @@ tabs will not appear.</p> -->
     <h4>Parameters</h4>
 
     <p>Cutoff for alpha, maximum size of conditioning set,
-    Yes if orient away from arrow rule should be applied,
-    Yes if verbose output should be printed.</p>
+        Yes if orient away from arrow rule should be applied,
+        Yes if verbose output should be printed.</p>
 
 
     <h3>The FGES-MB Algorithm</h3>
@@ -3412,6 +3456,48 @@ tabs will not appear.</p> -->
     <p><a href="#mgmParam1">mgmParam1</a>, <a
             href="#mgmParam2">mgmParam2</a>, <a href="#mgmParam3">mgmParam3</a></p>
 
+    <h3>The SP Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="sp">
+
+        <p> SP (Sparsest Permutation, Raskutti, G., & Uhler, C. (2018). Learning
+            directed acyclic graph models based on sparsest permutations.
+            Stat, 7(1), e183) searches for model satisfying the SMR (frugality)
+            assumption for small models of up to about 9 variables.
+
+        <p> The algorithms works searching over all possible permutations
+            of the variables and building DAGs for them in the same way as the
+            GRaSP algorithm. Two ways of building DAGs are considered, one
+            independence-based, due to Raskutti and Uhler and a score-based
+            method, using the Grow-Shrink (GS) method (Margaritis and Thrun, 1999).
+            If the Pearl method is selected, an independence test will be used;
+            if the GS method is selected, a score will be used, so both a test
+            and a score need to be supplied so that this choice can be made.
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Causal sufficiency</p>
+
+    <h4>Output Format</h4>
+
+    <p>The CPDAG equivalence class of DAGs representing estimated
+        possible causal structures over the set of variables.</p>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#graspDepth">graspDepth</a>, <a
+            href="#graspNonSingularDepth">graspNonSingularDepth</a> <a
+            href="#graspUncoveredDepth">graspUncoveredDepth</a> <a
+            href="#graspOrderedAlg">graspOrderedAlg</a> <a
+            href="#graspUseVermaPearl">graspUseVermaPearl</a> <a
+            href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
+
+    </p>
+
     <h3>The GRaSP Algorithm</h3>
 
     <h4>Description</h4>
@@ -3423,7 +3509,7 @@ tabs will not appear.</p> -->
             Permutation) algorithm. Is generalizes specifically the algorithms
             TSP (or which GSP is a bounded and iterated version) and ESP (Solus
             et al., 2017) by allowing those algorithms to equivalently be run by
-            selecting particular parameterizations of GrASP, where ESP enlarges
+            selecting particular parameterizations of GRaSP, where ESP enlarges
             the search space of GSP. The implementation given for ESP renders
             that algorithm tractable. By choosing other parameterizations of
             GRaSP, it is possible to further enlarge the search space even over
@@ -3454,11 +3540,11 @@ tabs will not appear.</p> -->
         <p> The algorithms works by building DAGs given
             permutations in ways similar to those described in Raskutti and Uhler
             (ref?) and Solus et al. Two ways of building DAGs are considered, one
-            due to Verma and Pearl and another novel method, using the
-            Grow-Shrink (GS) method (Margaritis and Thrun, 1999). If the Pearl
-            method is selected, an independence test will be used; if the GS
-            method is selected, a score will be used, so both a test and a score
-            need to be supplied so that this choice can be made.
+            independence-based, due to Raskutti and Uhler and a score-based
+            method, using the Grow-Shrink (GS) method (Margaritis and Thrun, 1999).
+            If the Pearl method is selected, an independence test will be used;
+            if the GS method is selected, a score will be used, so both a test
+            and a score need to be supplied so that this choice can be made.
         <p> We recommend
             that the user turn on logging to watch the progress of the algorithm;
             this helps with larger searches especially.
@@ -3497,9 +3583,6 @@ tabs will not appear.</p> -->
             href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
 
     </p>
-
-    // Parameters
-    params.add(Params.NUM_STARTS); params.add(Params.GRASP_DEPTH);
 
     <!--    <h3>The GLASSO Algorithm</h3>-->
 
@@ -5892,9 +5975,9 @@ tabs will not appear.</p> -->
         node in the graph. If no limit is to be placed on the maximum degree,
         use the value -1.</span></li>
             <li>Default Value: <span
-                    id="maxDegree_default_value">100</span></li>
+                    id="maxDegree_default_value">1000</span></li>
             <li>Lower Bound: <span
-                    id="maxDegree_lower_bound">-1</span></li>
+                    id="maxDegree_lower_bound">1</span></li>
             <li>Upper Bound: <span
                     id="maxDegree_upper_bound">2147483647</span></li>
             <li>Value Type:
@@ -5936,7 +6019,7 @@ tabs will not appear.</p> -->
         any node in the graph. If no limit is to be placed on the maximum
         degree, use the value -1.</span></li>
             <li>Default Value: <span
-                    id="maxIndegree_default_value">100</span></li>
+                    id="maxIndegree_default_value">1000</span></li>
             <li>Lower Bound: <span
                     id="maxIndegree_lower_bound">1</span></li>
             <li>Upper Bound: <span
@@ -5999,7 +6082,7 @@ tabs will not appear.</p> -->
         of any node in the graph. If no limit is to be placed on the maximum
         degree, use the value -1.</span></li>
             <li>Default Value: <span
-                    id="maxOutdegree_default_value">100</span></li>
+                    id="maxOutdegree_default_value">1000</span></li>
             <li>Lower Bound:
                 <span id="maxOutdegree_lower_bound">1</span></li>
             <li>Upper Bound:
@@ -6992,7 +7075,7 @@ tabs will not appear.</p> -->
                     id="orientVisibleFeedbackLoops_long_desc"> Please see the description
         of this algorithm in Thomas Richardson and Peter Spirtes in Chapter 7
         of Computation, Causation, & Discovery by Glymour and Cooper
-        eds.</span> </li>
+        eds.</span></li>
             <li>Default Value: <span
                     id="orientVisibleFeedbackLoops_default_value">true</span></li>
             <li>Lower Bound: <span
@@ -7019,6 +7102,26 @@ tabs will not appear.</p> -->
                     id="outputRBD_upper_bound"></span></li>
             <li>Value Type: <span
                     id="outputRBD_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="precomputeCovariances">precomputeCovariances</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="precomputeCovariances_short_desc">True if covariance matrix should
+                	be precomputed for tubular continuous data</span></li>
+            <li>Long Description:
+                <span id="precomputeCovariances_long_desc">
+                For more than 5000 variables or so, set this to false to calculate covariances
+                on the fly from data.
+        </span></li>
+            <li>Default Value:
+                <span id="precomputeCovariances_default_value">true</span></li>
+            <li>Lower Bound:
+                <span id="precomputeCovariances_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="precomputeCovariances_upper_bound"></span></li>
+            <li>Value Type: <span
+                    id="precomputeCovariances_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7161,24 +7264,24 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="parallelism">parallelism</h3>
+            id="parallelized">parallelized</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="parallelism_short_desc">The number of threads to use in the
-        search</span></li>
+                    id="parallelized_short_desc">
+                    Yes if the search should be parallelized</span></li>
             <li>Long Description: <span
-                    id="parallelism_long_desc"> If this parameter is offered, it will
-        control the number of threads used in the search for the sections of
-        the search that can be parallelized.</span></li>
+                    id="parallelized_long_desc">This search is capable of being
+                    parallelized; select yes if the search should be parallelized,
+                    not if it should be run in a single thread</span></li>
             <li>Default Value:
-                <span id="parallelism_default_value">1</span></li>
+                <span id="parallelized_default_value">false</span></li>
             <li>Lower Bound:
-                <span id="parallelism_lower_bound">1</span></li>
+                <span id="parallelized_lower_bound"></span></li>
             <li>Upper Bound:
-                <span id="parallelism_upper_bound">2147483647</span></li>
+                <span id="parallelized_upper_bound"></span></li>
             <li>Value
-                Type: <span id="parallelism_value_type">Integer</span></li>
+                Type: <span id="parallelized_value_type">Boolean</span></li>
         </ul>
 
 
@@ -7375,19 +7478,19 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="resamplingEnsemble_short_desc">Ensemble method: Preserved (0),
-        Highest (1), Majority (2)</span></li>
+                    id="resamplingEnsemble_short_desc">Ensemble method: Preserved (1),
+        Highest (2), Majority (3)</span></li>
             <li>Long Description: <span
                     id="resamplingEnsemble_long_desc"> Preserved = keep highest frequency
         edges; Highest = keep highest frequency edges but ignore the no edge
         case if maximal; Majority = keep edges only if their frequency is
         greater than 0.5. </span></li>
             <li>Default Value: <span
-                    id="resamplingEnsemble_default_value">0</span></li>
+                    id="resamplingEnsemble_default_value">1</span></li>
             <li>Lower Bound:
-                <span id="resamplingEnsemble_lower_bound">0</span></li>
+                <span id="resamplingEnsemble_lower_bound">1</span></li>
             <li>Upper
-                Bound: <span id="resamplingEnsemble_upper_bound">2</span></li>
+                Bound: <span id="resamplingEnsemble_upper_bound">3</span></li>
             <li>Value Type: <span
                     id="resamplingEnsemble_value_type">Integer</span></li>
         </ul>
@@ -8686,56 +8789,13 @@ tabs will not appear.</p> -->
 </div>
 
 <!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
-<script> window.ga=function(){ga.q.push(arguments)};ga.q=[];ga.l=+new Date;
-ga('create','UA-XXXXX-Y','auto');ga('send','pageview')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<script> window.ga = function () {
+    ga.q.push(arguments)
+};
+ga.q = [];
+ga.l = +new Date;
+ga('create', 'UA-XXXXX-Y', 'auto');
+ga('send', 'pageview')
 
 
 </script>

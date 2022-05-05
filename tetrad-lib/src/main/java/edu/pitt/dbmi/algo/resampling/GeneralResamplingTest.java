@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -20,35 +21,23 @@ import java.util.*;
  * Updated: Chirayu Kong Wongchokprasitti, PhD on 9/13/2018
  */
 public class GeneralResamplingTest {
-
-    private PrintStream out = System.out;
-
     private final GeneralResamplingSearch resamplingSearch;
-
+    private final ResamplingEdgeEnsemble edgeEnsemble;
+    private PrintStream out = System.out;
     private Parameters parameters;
-
-    private boolean runParallel = true;
-
     private Algorithm algorithm;
-
     private MultiDataSetAlgorithm multiDataSetAlgorithm;
-
-    private List<Graph> PAGs;
-
+    private List<Graph> graphs;
     private boolean verbose;
-
     /**
      * Specification of forbidden and required edges.
      */
     private IKnowledge knowledge = new Knowledge2();
-
-    private final ResamplingEdgeEnsemble edgeEnsemble;
-
     /**
      * An initial graph to start from.
      */
     private Graph externalGraph;
-
+    private int numNoGraphs = 0;
 
     public GeneralResamplingTest(
             DataSet data,
@@ -63,17 +52,17 @@ public class GeneralResamplingTest {
         this.resamplingSearch.setAddOriginalDataset(addOriginalDataset);
 
         switch (edgeEnsemble) {
-            case 0:
+            case 1:
                 this.edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                 break;
-            case 1:
+            case 2:
                 this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                 break;
-            case 2:
+            case 3:
                 this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
                 break;
             default:
-                throw new IllegalArgumentException("Expecting 0, 2, or 3.");
+                throw new IllegalArgumentException("Expecting 1, 2, or 3.");
         }
     }
 
@@ -90,375 +79,18 @@ public class GeneralResamplingTest {
         this.resamplingSearch.setAddOriginalDataset(addOriginalDataset);
 
         switch (edgeEnsemble) {
-            case 0:
+            case 1:
                 this.edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
                 break;
-            case 1:
+            case 2:
                 this.edgeEnsemble = ResamplingEdgeEnsemble.Highest;
                 break;
-            case 2:
+            case 3:
                 this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
                 break;
             default:
-                throw new IllegalArgumentException("Expecting 0, 1, or 2.");
+                throw new IllegalArgumentException("Expecting 1, 2, or 3.");
         }
-    }
-
-    public void setParallelMode(boolean runParallel) {
-        this.runParallel = runParallel;
-    }
-
-    /**
-     * Sets whether verbose output should be produced.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * Sets the output stream that output (except for log output) should be sent
-     * to. By detault System.out.
-     */
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    /**
-     * @return the output stream that output (except for log output) should be
-     * sent to.
-     */
-    public PrintStream getOut() {
-        return this.out;
-    }
-
-    public void setParameters(Parameters parameters) {
-        this.parameters = parameters;
-        Object obj = parameters.get(Params.PRINT_STREAM);
-        if (obj instanceof PrintStream) {
-            setOut((PrintStream) obj);
-        }
-    }
-
-    /**
-     * Sets the background knowledge.
-     *
-     * @param knowledge the knowledge object, specifying forbidden and required edges.
-     */
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null)
-            throw new NullPointerException();
-        this.knowledge = knowledge;
-    }
-
-    /**
-     * Sets the initial graph.
-     */
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
-    }
-
-    public void setSeed(long seed) {
-        RandomUtil.getInstance().setSeed(seed);
-    }
-
-
-    public Graph search() {
-        long start, stop;
-
-        start = System.currentTimeMillis();
-
-        if (this.algorithm != null) {
-            this.resamplingSearch.setAlgorithm(this.algorithm);
-        } else {
-            this.resamplingSearch.setMultiDataSetAlgorithm(this.multiDataSetAlgorithm);
-        }
-        this.resamplingSearch.setRunParallel(this.runParallel);
-        this.resamplingSearch.setVerbose(this.verbose);
-        this.resamplingSearch.setParameters(this.parameters);
-
-        if (!this.knowledge.isEmpty()) {
-            this.resamplingSearch.setKnowledge(this.knowledge);
-        }
-
-        if (this.externalGraph != null) {
-            this.resamplingSearch.setExternalGraph(this.externalGraph);
-        }
-
-        if (this.verbose) {
-            if (this.algorithm != null) {
-                this.out.println("Resampling on the " + this.algorithm.getDescription());
-            } else if (this.multiDataSetAlgorithm != null) {
-                this.out.println("Resampling on the " + this.multiDataSetAlgorithm.getDescription());
-            }
-        }
-
-        this.PAGs = this.resamplingSearch.search();
-
-        if (this.verbose) {
-            this.out.println("Resampling number is : " + this.PAGs.size());
-        }
-        stop = System.currentTimeMillis();
-        if (this.verbose) {
-            this.out.println("Processing time of total resamplings : " + (stop - start) / 1000.0 + " sec");
-        }
-
-        start = System.currentTimeMillis();
-        Graph graph = generateSamplingGraph();
-        stop = System.currentTimeMillis();
-        if (this.verbose) {
-            this.out.println("Final Resampling Search Result:");
-            this.out.println(GraphUtils.graphToText(graph));
-            this.out.println();
-            this.out.println("probDistribution finished in " + (stop - start) + " ms");
-        }
-
-        return graph;
-    }
-
-    private static void addNodeToGraph(Graph graph, List<Node> nodes, int start, int end) {
-        if (start == end) {
-            graph.addNode(nodes.get(start));
-        } else if (start < end) {
-            int mid = (start + end) / 2;
-            GeneralResamplingTest.addNodeToGraph(graph, nodes, start, mid);
-            GeneralResamplingTest.addNodeToGraph(graph, nodes, mid + 1, end);
-        }
-    }
-
-    private Graph generateSamplingGraph() {
-        Graph pag = null;
-        if (this.verbose) {
-            this.out.println("PAGs: " + this.PAGs.size());
-            this.out.println("Ensemble: " + this.edgeEnsemble);
-            this.out.println();
-        }
-        if (this.PAGs == null || this.PAGs.size() == 0) return new EdgeListGraph();
-
-        int i = 0;
-        for (Graph g : this.PAGs) {
-            if (g != null) {
-                if (pag == null) {
-                    pag = g;
-                }
-                if (this.verbose) {
-                    this.out.println("Resampling Search Result (" + i + "):");
-                    this.out.println(GraphUtils.graphToText(g));
-                    this.out.println();
-                    i++;
-                }
-            }
-        }
-        if (pag == null) return new EdgeListGraph();
-
-        // Sort nodes by its name for fixing the edge orientation
-        List<Node> nodes = pag.getNodes();
-        Collections.sort(nodes);
-
-        Graph complete = new EdgeListGraph(nodes);
-        complete.fullyConnect(Endpoint.TAIL);
-
-        Graph graph = new EdgeListGraph();
-        GeneralResamplingTest.addNodeToGraph(graph, complete.getNodes(), 0, complete.getNodes().size() - 1);
-
-        for (Edge e : complete.getEdges()) {
-
-            Node n1 = e.getNode1();
-            Node n2 = e.getNode2();
-
-            // Test new probability method
-            List<EdgeTypeProbability> edgeTypeProbabilities = getProbability(n1, n2);
-            EdgeTypeProbability chosen_edge_type = null;
-            double max_edge_prob = 0;
-            double no_edge_prob = 0;
-            if (edgeTypeProbabilities != null) {
-                for (EdgeTypeProbability etp : edgeTypeProbabilities) {
-                    EdgeType edgeType = etp.getEdgeType();
-                    double prob = etp.getProbability();
-                    //out.println(edgeType + ": " + prob);
-                    if (edgeType != EdgeType.nil) {
-                        if (prob > max_edge_prob) {
-                            chosen_edge_type = etp;
-                            max_edge_prob = prob;
-                        }
-                    } else {
-                        no_edge_prob = prob;
-                    }
-                }
-            }
-
-            if (chosen_edge_type != null) {
-                Edge edge = null;
-                EdgeType edgeType = chosen_edge_type.getEdgeType();
-                switch (edgeType) {
-                    case ta:
-                        edge = new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
-                        break;
-                    case at:
-                        edge = new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
-                        break;
-                    case ca:
-                        edge = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
-                        break;
-                    case ac:
-                        edge = new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
-                        break;
-                    case cc:
-                        edge = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
-                        break;
-                    case aa:
-                        edge = new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
-                        break;
-                    case tt:
-                        edge = new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
-                        break;
-                    default:
-                        // Do nothing
-                }
-
-                for (Edge.Property property : chosen_edge_type.getProperties()) {
-                    edge.addProperty(property);
-                }
-
-                switch (this.edgeEnsemble) {
-                    case Highest:
-                        if (no_edge_prob > max_edge_prob) {
-                            edge = null;
-                        }
-                        break;
-                    case Majority:
-                        if (no_edge_prob > max_edge_prob || max_edge_prob < .5) {
-                            edge = null;
-                        }
-                        break;
-                    default:
-                        // Do nothing
-                }
-
-                if (edge != null) {
-                    if (this.verbose) {
-                        this.out.println("Final result: " + edge + " : " + max_edge_prob);
-                    }
-
-                    for (EdgeTypeProbability etp : edgeTypeProbabilities) {
-                        edge.addEdgeTypeProbability(etp);
-                    }
-
-                    graph.addEdge(edge);
-                }
-            }
-
-        }
-
-        return graph;
-    }
-
-    private List<EdgeTypeProbability> getProbability(Node node1, Node node2) {
-        Map<String, Integer> edgeDist = new HashMap<>();
-        int no_edge_num = 0;
-        for (Graph g : this.PAGs) {
-            Edge e = g.getEdge(node1, node2);
-            if (e != null) {
-                String edgeString = e.toString();
-                if (e.getEndpoint1() == e.getEndpoint2() && node1.compareTo(e.getNode1()) != 0) {
-                    Edge edge = new Edge(node1, node2, e.getEndpoint1(), e.getEndpoint2());
-                    for (Edge.Property property : e.getProperties()) {
-                        edge.addProperty(property);
-                    }
-                    edgeString = edge.toString();
-                }
-                Integer num_edge = edgeDist.get(edgeString);
-                if (num_edge == null) {
-                    num_edge = 0;
-                }
-                num_edge = num_edge + 1;
-                edgeDist.put(edgeString, num_edge);
-            } else {
-                no_edge_num++;
-            }
-        }
-        int n = PAGs.size();
-        // Normalization
-        List<EdgeTypeProbability> edgeTypeProbabilities = edgeDist.size() == 0 ? null : new ArrayList<>();
-        for (String edgeString : edgeDist.keySet()) {
-            int edge_num = edgeDist.get(edgeString);
-            double probability = (double) edge_num / n;
-
-            String[] token = edgeString.split("\\s+");
-            String n1 = token[0];
-            String arc = token[1];
-            String n2 = token[2];
-
-            char end1 = arc.charAt(0);
-            char end2 = arc.charAt(2);
-
-            Endpoint _end1, _end2;
-
-            if (end1 == '<') {
-                _end1 = Endpoint.ARROW;
-            } else if (end1 == 'o') {
-                _end1 = Endpoint.CIRCLE;
-            } else if (end1 == '-') {
-                _end1 = Endpoint.TAIL;
-            } else {
-                throw new IllegalArgumentException();
-            }
-
-            if (end2 == '>') {
-                _end2 = Endpoint.ARROW;
-            } else if (end2 == 'o') {
-                _end2 = Endpoint.CIRCLE;
-            } else if (end2 == '-') {
-                _end2 = Endpoint.TAIL;
-            } else {
-                throw new IllegalArgumentException();
-            }
-
-            if (node1.getName().equalsIgnoreCase(n2) && node2.getName().equalsIgnoreCase(n1)) {
-                Endpoint tmp = _end1;
-                _end1 = _end2;
-                _end2 = tmp;
-            }
-
-            EdgeType edgeType = EdgeType.nil;
-
-            if (_end1 == Endpoint.TAIL && _end2 == Endpoint.ARROW) {
-                edgeType = EdgeType.ta;
-            }
-            if (_end1 == Endpoint.ARROW && _end2 == Endpoint.TAIL) {
-                edgeType = EdgeType.at;
-            }
-            if (_end1 == Endpoint.CIRCLE && _end2 == Endpoint.ARROW) {
-                edgeType = EdgeType.ca;
-            }
-            if (_end1 == Endpoint.ARROW && _end2 == Endpoint.CIRCLE) {
-                edgeType = EdgeType.ac;
-            }
-            if (_end1 == Endpoint.CIRCLE && _end2 == Endpoint.CIRCLE) {
-                edgeType = EdgeType.cc;
-            }
-            if (_end1 == Endpoint.ARROW && _end2 == Endpoint.ARROW) {
-                edgeType = EdgeType.aa;
-            }
-            if (_end1 == Endpoint.TAIL && _end2 == Endpoint.TAIL) {
-                edgeType = EdgeType.tt;
-            }
-
-            EdgeTypeProbability etp = new EdgeTypeProbability(edgeType, probability);
-
-            // Edge's properties
-            if (token.length > 3) {
-                for (int i = 3; i < token.length; i++) {
-                    etp.addProperty(Edge.Property.valueOf(token[i]));
-                }
-            }
-            edgeTypeProbabilities.add(etp);
-        }
-
-        if (no_edge_num < n && edgeTypeProbabilities != null) {
-            edgeTypeProbabilities.add(new EdgeTypeProbability(EdgeType.nil, (double) no_edge_num / n));
-        }
-
-        return edgeTypeProbabilities;
     }
 
     public static int[][] getAdjConfusionMatrix(Graph truth, Graph estimate) {
@@ -587,4 +219,312 @@ public class GeneralResamplingTest {
         }
     }
 
+    /**
+     * Sets whether verbose output should be produced.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * @return the output stream that output (except for log output) should be
+     * sent to.
+     */
+    public PrintStream getOut() {
+        return this.out;
+    }
+
+    /**
+     * Sets the output stream that output (except for log output) should be sent
+     * to. By default System.out.
+     */
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
+
+    public void setParameters(Parameters parameters) {
+        this.parameters = parameters;
+        Object obj = parameters.get(Params.PRINT_STREAM);
+        if (obj instanceof PrintStream) {
+            setOut((PrintStream) obj);
+        }
+    }
+
+    /**
+     * Sets the background knowledge.
+     *
+     * @param knowledge the knowledge object, specifying forbidden and required edges.
+     */
+    public void setKnowledge(IKnowledge knowledge) {
+        if (knowledge == null)
+            throw new NullPointerException();
+        this.knowledge = knowledge;
+    }
+
+    /**
+     * Sets the initial graph.
+     */
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
+    }
+
+    public Graph search() {
+        long start, stop;
+
+        start = System.currentTimeMillis();
+
+        if (this.algorithm != null) {
+            this.resamplingSearch.setAlgorithm(this.algorithm);
+        } else {
+            this.resamplingSearch.setMultiDataSetAlgorithm(this.multiDataSetAlgorithm);
+        }
+        boolean runParallel = true;
+        this.resamplingSearch.setRunParallel(runParallel);
+        this.resamplingSearch.setVerbose(this.verbose);
+        this.resamplingSearch.setParameters(this.parameters);
+
+        if (!this.knowledge.isEmpty()) {
+            this.resamplingSearch.setKnowledge(this.knowledge);
+        }
+
+        if (this.externalGraph != null) {
+            this.resamplingSearch.setExternalGraph(this.externalGraph);
+        }
+
+        if (this.verbose) {
+            if (this.algorithm != null) {
+                this.out.println("Resampling on the " + this.algorithm.getDescription());
+            } else if (this.multiDataSetAlgorithm != null) {
+                this.out.println("Resampling on the " + this.multiDataSetAlgorithm.getDescription());
+            }
+        }
+
+        this.graphs = this.resamplingSearch.search();
+        this.numNoGraphs = this.resamplingSearch.getNumNograph();
+
+        TetradLogger.getInstance().forceLogMessage(
+                "Bootstrappiung: Number of searches that didn't return a graph = " + this.numNoGraphs);
+
+        if (this.verbose) {
+            this.out.println("Resampling number is : " + this.graphs.size());
+        }
+        stop = System.currentTimeMillis();
+        if (this.verbose) {
+            this.out.println("Processing time of total resamplings : " + (stop - start) / 1000.0 + " sec");
+        }
+
+        start = System.currentTimeMillis();
+        Graph graph = generateSamplingGraph();
+        stop = System.currentTimeMillis();
+        if (this.verbose) {
+            this.out.println("Final Resampling Search Result:");
+            this.out.println(GraphUtils.graphToText(graph));
+            this.out.println();
+            this.out.println("probDistribution finished in " + (stop - start) + " ms");
+        }
+
+        return graph;
+    }
+
+    private Graph generateSamplingGraph() {
+        Graph _graph = null;
+        if (this.verbose) {
+            this.out.println("Graphs: " + this.graphs.size());
+            this.out.println("Ensemble: " + this.edgeEnsemble);
+            this.out.println();
+        }
+
+        if (this.graphs == null || this.graphs.size() == 0) return new EdgeListGraph();
+
+        int i = 1;
+
+        for (Graph g : this.graphs) {
+            if (g != null) {
+                if (_graph == null) {
+                    _graph = g;
+                }
+                if (this.verbose) {
+                    this.out.println("Resampling Search Result (" + i + "):");
+                    this.out.println(GraphUtils.graphToText(g));
+                    this.out.println();
+                    i++;
+                }
+            }
+        }
+
+        if (_graph == null) return new EdgeListGraph();
+
+        // Sort nodes by its name for fixing the edge orientation
+        List<Node> nodes = _graph.getNodes();
+        Collections.sort(nodes);
+
+        Graph complete = new EdgeListGraph(nodes);
+        complete.fullyConnect(Endpoint.TAIL);
+
+        Graph graph = new EdgeListGraph(nodes);
+
+        for (Edge e : complete.getEdges()) {
+            Node n1 = e.getNode1();
+            Node n2 = e.getNode2();
+
+            // Test new probability method
+            List<EdgeTypeProbability> edgeTypeProbabilities = getProbabilities(n1, n2);
+            EdgeTypeProbability chosen_edge_type = null;
+            double max_edge_prob = 0;
+            double no_edge_prob = 0;
+            if (edgeTypeProbabilities != null) {
+                for (EdgeTypeProbability etp : edgeTypeProbabilities) {
+                    EdgeType edgeType = etp.getEdgeType();
+                    double prob = etp.getProbability();
+                    if (edgeType != EdgeType.nil) {
+
+                        if (prob > max_edge_prob) {
+                            chosen_edge_type = etp;
+                            max_edge_prob = prob;
+                        }
+                    } else {
+                        no_edge_prob = prob;
+                    }
+                }
+            }
+
+            if (chosen_edge_type != null) {
+                Edge edge = null;
+                EdgeType edgeType = chosen_edge_type.getEdgeType();
+                switch (edgeType) {
+                    case ta:
+                        edge = new Edge(n1, n2, Endpoint.TAIL, Endpoint.ARROW);
+                        break;
+                    case at:
+                        edge = new Edge(n1, n2, Endpoint.ARROW, Endpoint.TAIL);
+                        break;
+                    case ca:
+                        edge = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.ARROW);
+                        break;
+                    case ac:
+                        edge = new Edge(n1, n2, Endpoint.ARROW, Endpoint.CIRCLE);
+                        break;
+                    case cc:
+                        edge = new Edge(n1, n2, Endpoint.CIRCLE, Endpoint.CIRCLE);
+                        break;
+                    case aa:
+                        edge = new Edge(n1, n2, Endpoint.ARROW, Endpoint.ARROW);
+                        break;
+                    case tt:
+                        edge = new Edge(n1, n2, Endpoint.TAIL, Endpoint.TAIL);
+                        break;
+                    default:
+                        // Do nothing
+                }
+
+                for (Edge.Property property : chosen_edge_type.getProperties()) {
+                    if (edge != null) {
+                        edge.addProperty(property);
+                    }
+                }
+
+                switch (this.edgeEnsemble) {
+                    case Highest:
+                        if (no_edge_prob > max_edge_prob) {
+                            edge = null;
+                        }
+                        break;
+                    case Majority:
+                        if (no_edge_prob > max_edge_prob || max_edge_prob < .5) {
+                            edge = null;
+                        }
+                        break;
+                    default:
+                        // Do nothing
+                }
+
+                if (edge != null) {
+                    List<EdgeTypeProbability> probs = getProbabilities(edge.getNode1(), edge.getNode2());
+
+                    for (EdgeTypeProbability etp : probs) {
+                        edge.addEdgeTypeProbability(etp);
+                    }
+
+                    graph.addEdge(edge);
+                }
+            }
+
+        }
+
+        return graph;
+    }
+
+    private List<EdgeTypeProbability> getProbabilities(Node node1, Node node2) {
+        Map<Edge, Integer> edgeDist = new HashMap<>();
+
+        int no_edge_num = 0;
+
+        for (Graph g : this.graphs) {
+            if (g == null) continue;
+
+            Edge e = g.getEdge(node1, node2);
+
+            if (e != null) {
+                Integer num_edge = edgeDist.get(e);
+
+                if (num_edge == null) {
+                    num_edge = 0;
+                }
+
+                num_edge = num_edge + 1;
+                edgeDist.put(e, num_edge);
+            } else {
+                no_edge_num++;
+            }
+        }
+        int n = graphs.size();
+        // Normalization
+        List<EdgeTypeProbability> edgeTypeProbabilities = edgeDist.size() == 0 ? null : new ArrayList<>();
+
+        for (Edge edge : edgeDist.keySet()) {
+            int edge_num = edgeDist.get(edge);
+            double probability = (double) edge_num / n;
+
+            Endpoint end1 = edge.getProximalEndpoint(node1);
+            Endpoint end2 = edge.getProximalEndpoint(node2);
+
+            EdgeType edgeType = EdgeType.nil;
+
+            if (end1 == Endpoint.TAIL && end2 == Endpoint.ARROW) {
+                edgeType = EdgeType.ta;
+            }
+            if (end1 == Endpoint.ARROW && end2 == Endpoint.TAIL) {
+                edgeType = EdgeType.at;
+            }
+            if (end1 == Endpoint.CIRCLE && end2 == Endpoint.ARROW) {
+                edgeType = EdgeType.ca;
+            }
+            if (end1 == Endpoint.ARROW && end2 == Endpoint.CIRCLE) {
+                edgeType = EdgeType.ac;
+            }
+            if (end1 == Endpoint.CIRCLE && end2 == Endpoint.CIRCLE) {
+                edgeType = EdgeType.cc;
+            }
+            if (end1 == Endpoint.ARROW && end2 == Endpoint.ARROW) {
+                edgeType = EdgeType.aa;
+            }
+            if (end1 == Endpoint.TAIL && end2 == Endpoint.TAIL) {
+                edgeType = EdgeType.tt;
+            }
+
+            EdgeTypeProbability etp = new EdgeTypeProbability(edgeType, probability);
+
+            edgeTypeProbabilities.add(etp);
+        }
+
+        if (no_edge_num < n && edgeTypeProbabilities != null) {
+            edgeTypeProbabilities.add(new EdgeTypeProbability(EdgeType.nil, (double) no_edge_num / n));
+        }
+
+        return edgeTypeProbabilities;
+    }
+
+    public int getNumNoGraphs() {
+        return numNoGraphs;
+    }
 }

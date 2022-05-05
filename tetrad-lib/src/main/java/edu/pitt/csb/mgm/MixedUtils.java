@@ -409,11 +409,6 @@ public class MixedUtils {
 
     /**
      * Set all existing parameters that begins with sta to template and also set template for any new parameters
-     *
-     * @param sta
-     * @param template
-     * @param pm
-     * @return
      */
     public static void setStartsWith(String sta, String template, GeneralizedSemPm pm) {
         try {

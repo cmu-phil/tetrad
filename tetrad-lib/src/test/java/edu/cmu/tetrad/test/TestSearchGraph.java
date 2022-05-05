@@ -144,16 +144,16 @@ public final class TestSearchGraph {
 
     // Trying to trip up the breadth first algorithm.
     public void testDSeparation3() {
-        Graph graph = GraphConverter.convert("x-->s1,x-->s2,s1-->s3,s3-->s2,s3<--y");
+        Graph graph = GraphConverter.convert("x-->s1,x-->s2,s1-->s3,s3-->s2,s3&lt;--y");
         assertTrue(graph.isDSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new ArrayList<>()));
 
-        graph = GraphConverter.convert("1-->2,2<--4,2-->7,2-->3");
+        graph = GraphConverter.convert("1-->2,2&lt;--4,2-->7,2-->3");
         assertTrue(graph.isDSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new ArrayList<>()));
 
         graph = GraphConverter.convert("X1-->X5,X1-->X6,X2-->X3,X4-->X6,X5-->X3,X6-->X5,X7-->X3");
         assertTrue(dConnected(graph, "X2", "X4", "X3", "X6"));
 
-        graph = GraphConverter.convert("X1<--X2,X1<--X3,X2-->X3,X3<--X4");
+        graph = GraphConverter.convert("X1&lt;--X2,X1&lt;--X3,X2-->X3,X3&lt;--X4");
         assertTrue(dConnected(graph, "X1", "X4", "X3"));
 
         graph = GraphConverter.convert("X2-->X7,X3-->X2,X5-->X1,X5-->X2,X6-->X1,X7-->X6,X2->X4");

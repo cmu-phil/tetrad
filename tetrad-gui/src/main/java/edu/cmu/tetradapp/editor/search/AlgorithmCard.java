@@ -25,13 +25,14 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.*;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -50,7 +51,7 @@ public class AlgorithmCard extends JPanel {
 
     private static final long serialVersionUID = -7552068626783685630L;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCard.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCard.class);
 
     private final String ALGO_PARAM = "algo";
     private final String IND_TEST_PARAM = "ind_test";
@@ -278,7 +279,7 @@ public class AlgorithmCard extends JPanel {
      * button), because a new algo algorithmRunner is created and we lose the
      * stored models from the old algorithmRunner - Zhou
      *
-     * @param models
+//     * @param models
      */
     private void restoreUserAlgoSelections(Map<String, Object> userAlgoSelections) {
         Object obj = userAlgoSelections.get(this.DATASET_FILTER);
@@ -387,7 +388,7 @@ public class AlgorithmCard extends JPanel {
         try {
             algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         } catch (IllegalAccessException | InstantiationException exception) {
-            AlgorithmCard.LOGGER.error("", exception);
+            TetradLogger.getInstance().forceLogMessage(exception.toString());
         }
 
         // Those pairwise algos (R3, RShew, Skew..) require source graph to initialize - Zhou
@@ -450,7 +451,7 @@ public class AlgorithmCard extends JPanel {
                 }
 
             } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
-                AlgorithmCard.LOGGER.error("", exception);
+                TetradLogger.getInstance().forceLogMessage(exception.toString());
                 msg = "";
             }
 
@@ -472,7 +473,7 @@ public class AlgorithmCard extends JPanel {
                             JOptionPane.showMessageDialog(this.desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
                         }
                     } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
-                        AlgorithmCard.LOGGER.error("", exception);
+                        TetradLogger.getInstance().forceLogMessage(exception.toString());
                     }
                 }
             }

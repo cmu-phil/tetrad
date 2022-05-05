@@ -5,6 +5,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -84,6 +85,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 }
 
                 List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataSet.getVariables());
+
                 List<String> latentNames = new ArrayList<>();
 
                 for (int i = 0; i < clusters.getNumClusters(); i++) {

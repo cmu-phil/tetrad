@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -308,6 +309,10 @@ public final class BayesProperties {
         int dof = 0;
 
         for (int rowIndex = 0; rowIndex < r; rowIndex++) {
+            if (rowIndex == 0) continue;
+
+            if (Thread.interrupted()) break;
+
             int d = 0;
 
             for (int childValue = 0; childValue < c; childValue++) {

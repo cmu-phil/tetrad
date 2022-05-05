@@ -64,8 +64,8 @@ public class TetradSerializableUtils {
      * are in no danger of storing any objects in fields whose serializability
      * can't be vouched for. When adding classes to this list, please use
      * similar reasoning to vouch for their safety. Unfortunately, such safety
-     * cannot be automatically checked. Class, for instance, </p> <p>We will
-     * move to JDK 1.5 as soon as it becomes available for Macs.</p>
+     * cannot be automatically checked. Class, for instance, <p>We will
+     * move to JDK 1.5 as soon as it becomes available for Macs.&gt; 0
      */
     private static final Class[] safelySerializableTypes = {
             String.class, Class.class, Date.class, Collection.class, Map.class,
@@ -384,7 +384,7 @@ public class TetradSerializableUtils {
                 try {
                     method = clazz.getMethod("serializableInstance");
                 } catch (NoSuchMethodException e) {
-                    System.out.println("\nThis class does not have the expected 'serializableInstance' method: " + clazz);
+//                    System.out.println("\nThis class does not have the expected 'serializableInstance' method: " + clazz);
                 } catch (SecurityException e) {
                     e.printStackTrace();
                 }

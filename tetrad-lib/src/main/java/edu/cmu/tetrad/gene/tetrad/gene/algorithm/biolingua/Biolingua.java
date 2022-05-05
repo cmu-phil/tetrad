@@ -26,7 +26,7 @@ import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.SymMatrixF;
 /**
  * Implements an algorithm for revising regulatory models with expression data.
  * This implementation is based on the description of the "BioLingua" tools
- * in:<p> </p> <a href="http://www.smi.stanford.edu/projects/helix/psb02/shrager.pdf"
+ * in:<p> <a href="http://www.smi.stanford.edu/projects/helix/psb02/shrager.pdf"
  * target="_TOP"> <i>"Guiding Revision of Regulatory Models with Expression
  * Data"</i></a><br> by J.Shrager, P.Langley, A. Pohorille, published in
  * PSB-2002
@@ -248,12 +248,12 @@ public class Biolingua {
      * connect them and predict the sign of the correlation.  Each path is just
      * transformed into a sign by multiplying the signs on its links.  When the
      * predictions of all undirectedPaths between two nodes agree (sign-wise) then choose
-     * that sign as the predicted correlation.<p> </p> When the signs predicted
+     * that sign as the predicted correlation.<p> When the signs predicted
      * by two or more undirectedPaths disagree, then find out which sign is "dominant"
      * (checking whether there are more + than - undirectedPaths, or the other way
-     * around), and predict accordingly.<p> </p> Count the # of predictions that
+     * around), and predict accordingly.<p> Count the # of predictions that
      * agree with the input correlation matrix given to Biolingua, as well as
-     * the # of errors (erroneous predictions) </p> After checking all undirectedPaths,
+     * the # of errors (erroneous predictions) After checking all undirectedPaths,
      * compute the evaluation metric
      */
     private static float evalCurrentModel() {

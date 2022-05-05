@@ -198,7 +198,7 @@ public class MeekRulesCpdag implements ImpliedOrientation {
     }
 
     /**
-     * Meek's rule R3. If a--b, a--c, a--d, c-->b, d-->b, then orient a-->b.
+     * Meek's rule R3. If a--b, a--c, a--d, c--&gt;b, d--&gt;b, then orient a--&gt;b.
      */
     public boolean meekR3(Graph graph, IKnowledge IKnowledge) {
 

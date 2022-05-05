@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -56,123 +55,91 @@ import java.util.concurrent.*;
  */
 public final class FgesMb {
 
-    /**
-     * Internal.
-     */
-    private enum Mode {
-        allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
-    }
+    final int[] count = new int[1];
 
+    /**
+     * The logger for this class. The config needs to be set.
+     */
+    private final TetradLogger logger = TetradLogger.getInstance();
+    /**
+     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
+     */
+    private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
+    // The static ForkJoinPool instance.
+    private final ForkJoinPool pool = ForkJoinPool.commonPool();
+    // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
+    // The ordering doesn't matter; it just have to be transitive.
+    int arrowIndex;
+    Set<Edge> removedEdges = new HashSet<>();
     /**
      * Specification of forbidden and required edges.
      */
     private IKnowledge knowledge = new Knowledge2();
-
     /**
      * List of variables in the data set, in order.
      */
     private List<Node> variables;
-
     /**
      * The true graph, if known. If this is provided, asterisks will be printed
      * out next to false positive added edges (that is, edges added that aren't
      * adjacencies in the true graph).
      */
     private Graph trueGraph;
-
     /**
      * An initial graph to start from.
      */
     private Graph externalGraph;
-
-    /**
-     * If non-null, edges not adjacent in this graph will not be added.
-     */
-    private final Graph boundGraph = null;
-
     /**
      * Elapsed time of the most recent search.
      */
     private long elapsedTime;
-
     /**
      * A bound on cycle length.
      */
     private int cycleBound = -1;
-
     /**
      * The totalScore for discrete searches.
      */
     private Score fgesScore;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
-     */
-    private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
-
     /**
      * The number of top CPDAGs to store.
      */
     private int numCPDAGsToStore;
-
     /**
      * True if verbose output should be printed.
      */
     private boolean verbose;
-
     // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
     private SortedSet<Arrow> sortedArrows;
-
     // Arrows added to sortedArrows for each <i, j>.
     private Map<OrderedPair<Node>, Set<Arrow>> lookupArrows;
-
     // A utility map to help with orientation.
     private Map<Node, Set<Node>> neighbors;
-
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
-
-    // The static ForkJoinPool instance.
-    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
-
     // A running tally of the total BIC totalScore.
     private double totalScore;
-
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
-
     // Where printed output is sent.
     private PrintStream out = System.out;
-
     // A initial adjacencies graph.
     private Graph adjacencies;
-
     // The graph being constructed.
     private Graph graph;
-
-    // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
-    // The ordering doesn't matter; it just have to be transitive.
-    int arrowIndex;
-
     // Internal.
     private Mode mode = Mode.heuristicSpeedup;
-
     // Bounds the degree of the graph.
     private int maxDegree = -1;
-
     /**
      * True if one-edge faithfulness is assumed. Speeds the algorithm up.
      */
     private boolean faithfulnessAssumed = true;
 
-    final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
-
     //===========================CONSTRUCTORS=============================//
+    private boolean parallelized = false;
+
+    //==========================PUBLIC METHODS==========================//
 
     /**
      * Construct a Score and pass it in here. The totalScore should return a
@@ -188,14 +155,18 @@ public final class FgesMb {
         this.graph = new EdgeListGraph(getVariables());
     }
 
-    //==========================PUBLIC METHODS==========================//
-
-    /**
-     * Set to true if it is assumed that all path pairs with one length 1 path
-     * do not cancel.
-     */
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+        return null;
     }
 
     /**
@@ -204,6 +175,14 @@ public final class FgesMb {
      */
     public boolean isFaithfulnessAssumed() {
         return this.faithfulnessAssumed;
+    }
+
+    /**
+     * Set to true if it is assumed that all path pairs with one length 1 path
+     * do not cancel.
+     */
+    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
+        this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
     /**
@@ -342,7 +321,7 @@ public final class FgesMb {
                                     }
                                 }
 
-                                while (tasks.size() > FgesMb.this.maxThreads) {
+                                while (tasks.size() > Runtime.getRuntime().availableProcessors()) {
                                     if (Thread.currentThread().isInterrupted()) {
                                         break;
                                     }
@@ -371,37 +350,6 @@ public final class FgesMb {
         }
     }
 
-    class MbTask extends RecursiveTask<Boolean> {
-
-        Node x;
-        Node y;
-        Node target;
-        Set<Node> emptySet = new HashSet<>();
-
-        public MbTask(Node x, Node y, Node target) {
-            this.x = x;
-            this.y = y;
-            this.target = target;
-        }
-
-        @Override
-        protected Boolean compute() {
-            if (!FgesMb.this.effectEdgesGraph.isAdjacentTo(this.x, this.y) && !FgesMb.this.effectEdgesGraph.isAdjacentTo(this.y, this.target)) {
-                int child2 = FgesMb.this.hashIndices.get(this.x);
-                int parent2 = FgesMb.this.hashIndices.get(this.y);
-
-                double bump2 = FgesMb.this.fgesScore.localScoreDiff(parent2, child2);
-
-                if (bump2 > 0) {
-                    FgesMb.this.effectEdgesGraph.addNode(this.y);
-                    addUnconditionalArrows(this.x, this.y, this.emptySet);
-                }
-            }
-
-            return true;
-        }
-    }
-
     private void addUnconditionalArrows(Node x, Node y, Set<Node> emptySet) {
         if (existsKnowledge()) {
             if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
@@ -420,10 +368,6 @@ public final class FgesMb {
         int child = this.hashIndices.get(y);
         int parent = this.hashIndices.get(x);
         double bump = this.fgesScore.localScoreDiff(parent, child);
-
-        if (this.boundGraph != null && !this.boundGraph.isAdjacentTo(x, y)) {
-            return;
-        }
 
         Edge edge = Edges.undirectedEdge(x, y);
         this.effectEdgesGraph.addEdge(edge);
@@ -535,19 +479,19 @@ public final class FgesMb {
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent
-     * to. By detault System.out.
-     */
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    /**
      * @return the output stream that output (except for log output) should be
      * sent to.
      */
     public PrintStream getOut() {
         return this.out;
+    }
+
+    /**
+     * Sets the output stream that output (except for log output) should be sent
+     * to. By detault System.out.
+     */
+    public void setOut(PrintStream out) {
+        this.out = out;
     }
 
     /**
@@ -569,7 +513,7 @@ public final class FgesMb {
     /**
      * A bound on cycle length.
      *
-     * @param cycleBound The bound, >= 1, or -1 for unlimited.
+     * @param cycleBound The bound, &gt;= 1, or -1 for unlimited.
      */
     public void setCycleBound(int cycleBound) {
         if (!(cycleBound == -1 || cycleBound >= 1)) {
@@ -581,8 +525,8 @@ public final class FgesMb {
     /**
      * Creates a new processors pool with the specified number of threads.
      */
-    public void setParallelism(int numProcessors) {
-        this.pool = new ForkJoinPool(numProcessors);
+    public void setParallelized(boolean parallelized) {
+        this.parallelized = parallelized;
     }
 
     /**
@@ -596,6 +540,18 @@ public final class FgesMb {
             return ((ISemBicScore) this.fgesScore).getPenaltyDiscount();
         } else {
             return 2.0;
+        }
+    }
+
+    /**
+     * For BIC totalScore, a multiplier on the penalty term. For continuous
+     * searches.
+     *
+     * @deprecated Use the setters on the individual scores instead.
+     */
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        if (this.fgesScore instanceof ISemBicScore) {
+            ((ISemBicScore) this.fgesScore).setPenaltyDiscount(penaltyDiscount);
         }
     }
 
@@ -614,18 +570,6 @@ public final class FgesMb {
     public void setStructurePrior(double expectedNumParents) {
         if (this.fgesScore instanceof LocalDiscreteScore) {
             ((LocalDiscreteScore) this.fgesScore).setStructurePrior(expectedNumParents);
-        }
-    }
-
-    /**
-     * For BIC totalScore, a multiplier on the penalty term. For continuous
-     * searches.
-     *
-     * @deprecated Use the setters on the individual scores instead.
-     */
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        if (this.fgesScore instanceof ISemBicScore) {
-            ((ISemBicScore) this.fgesScore).setPenaltyDiscount(penaltyDiscount);
         }
     }
 
@@ -666,82 +610,10 @@ public final class FgesMb {
         buildIndexing(totalScore.getVariables());
     }
 
-    final int[] count = new int[1];
-
     public int getMinChunk(int n) {
         // The minimum number of operations to do before parallelizing.
         int minChunk = 100;
-        return Math.max(n / this.maxThreads, minChunk);
-    }
-
-    class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
-
-        private final int from;
-        private final int to;
-        private final List<Node> nodes;
-        private final Set<Node> emptySet;
-
-        public NodeTaskEmptyGraph(int from, int to, List<Node> nodes, Set<Node> emptySet) {
-            this.from = from;
-            this.to = to;
-            this.nodes = nodes;
-            this.emptySet = emptySet;
-        }
-
-        @Override
-        protected Boolean compute() {
-            for (int i = this.from; i < this.to; i++) {
-                if ((i + 1) % 1000 == 0) {
-                    FgesMb.this.count[0] += 1000;
-                    FgesMb.this.out.println("Initializing effect edges: " + (FgesMb.this.count[0]));
-                }
-
-                Node y = this.nodes.get(i);
-                FgesMb.this.neighbors.put(y, this.emptySet);
-
-                for (int j = i + 1; j < this.nodes.size(); j++) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    Node x = this.nodes.get(j);
-
-                    if (existsKnowledge()) {
-                        if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
-                            continue;
-                        }
-
-                        if (invalidSetByKnowledge(y, this.emptySet)) {
-                            continue;
-                        }
-                    }
-
-                    if (FgesMb.this.adjacencies != null && !FgesMb.this.adjacencies.isAdjacentTo(x, y)) {
-                        continue;
-                    }
-
-                    int child = FgesMb.this.hashIndices.get(y);
-                    int parent = FgesMb.this.hashIndices.get(x);
-                    double bump = FgesMb.this.fgesScore.localScoreDiff(parent, child);
-
-                    if (FgesMb.this.boundGraph != null && !FgesMb.this.boundGraph.isAdjacentTo(x, y)) {
-                        continue;
-                    }
-
-                    if (bump > 0) {
-                        Edge edge = Edges.undirectedEdge(x, y);
-                        FgesMb.this.effectEdgesGraph.addEdge(edge);
-                    }
-
-                    if (bump > 0.0) {
-                        addArrow(x, y, this.emptySet, this.emptySet, bump);
-                        addArrow(y, x, this.emptySet, this.emptySet, bump);
-                    }
-                }
-            }
-
-            return true;
-        }
+        return Math.max(n / Runtime.getRuntime().availableProcessors(), minChunk);
     }
 
     private void initializeTwoStepEdges(List<Node> nodes) {
@@ -1339,74 +1211,6 @@ public final class FgesMb {
         }
     }
 
-    // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with
-    // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
-    // For the forward direction, T neighbors are needed; for the backward direction, H neighbors are needed.
-    // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
-    // as the "bump".
-    private static class Arrow implements Comparable<Arrow> {
-
-        private final double bump;
-        private final Node a;
-        private final Node b;
-        private final Set<Node> hOrT;
-        private final Set<Node> naYX;
-        private final int index;
-
-        public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX, int index) {
-            this.bump = bump;
-            this.a = a;
-            this.b = b;
-            this.hOrT = hOrT;
-            this.naYX = naYX;
-            this.index = index;
-        }
-
-        public double getBump() {
-            return this.bump;
-        }
-
-        public Node getA() {
-            return this.a;
-        }
-
-        public Node getB() {
-            return this.b;
-        }
-
-        public Set<Node> getHOrT() {
-            return this.hOrT;
-        }
-
-        public Set<Node> getNaYX() {
-            return this.naYX;
-        }
-
-        // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
-        // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
-        // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
-        // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
-        // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
-        // not equal to zero by keeping a list. This last part is commened out by default.
-        public int compareTo(@NotNull Arrow arrow) {
-            int compare = Double.compare(arrow.getBump(), getBump());
-
-            if (compare == 0) {
-                return Integer.compare(getIndex(), arrow.getIndex());
-            }
-
-            return compare;
-        }
-
-        public String toString() {
-            return "Arrow<" + this.a + "->" + this.b + " bump = " + this.bump + " t/h = " + this.hOrT + " naYX = " + this.naYX + ">";
-        }
-
-        public int getIndex() {
-            return this.index;
-        }
-    }
-
     // Get all adj that are connected to Y by an undirected edge and not adjacent to X.
     private List<Node> getTNeighbors(Node x, Node y) {
         List<Edge> yEdges = this.graph.getEdges(y);
@@ -1479,10 +1283,6 @@ public final class FgesMb {
             trueEdge = this.trueGraph.getEdge(_x, _y);
         }
 
-        if (this.boundGraph != null && !this.boundGraph.isAdjacentTo(x, y)) {
-            return false;
-        }
-
         this.graph.addDirectedEdge(x, y);
 
         if (this.verbose) {
@@ -1509,9 +1309,6 @@ public final class FgesMb {
 
         for (Node _t : T) {
             this.graph.removeEdge(_t, y);
-            if (this.boundGraph != null && !this.boundGraph.isAdjacentTo(_t, y)) {
-                continue;
-            }
 
             this.graph.addDirectedEdge(_t, y);
 
@@ -1524,8 +1321,6 @@ public final class FgesMb {
 
         return true;
     }
-
-    Set<Edge> removedEdges = new HashSet<>();
 
     // Do an actual deletion (Definition 13 from Chickering, 2002).
     private boolean delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX) {
@@ -1734,20 +1529,6 @@ public final class FgesMb {
         return false;
     }
 
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-        return null;
-    }
-
     // Runs Meek rules on just the changed adj.
     private Set<Node> meekOrientRestricted(IKnowledge knowledge) {
         MeekRules rules = new MeekRules();
@@ -1791,8 +1572,6 @@ public final class FgesMb {
 
         arrows.add(arrow);
     }
-
-    //===========================SCORING METHODS===================//
 
     /**
      * Scores the given DAG, up to a constant.
@@ -1854,6 +1633,180 @@ public final class FgesMb {
 
         if (this.topGraphs.size() == getnumCPDAGsToStore() + 1) {
             this.topGraphs.removeFirst();
+        }
+    }
+
+    //===========================SCORING METHODS===================//
+
+    /**
+     * Internal.
+     */
+    private enum Mode {
+        allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
+    }
+
+    // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with
+    // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
+    // For the forward direction, T neighbors are needed; for the backward direction, H neighbors are needed.
+    // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
+    // as the "bump".
+    private static class Arrow implements Comparable<Arrow> {
+
+        private final double bump;
+        private final Node a;
+        private final Node b;
+        private final Set<Node> hOrT;
+        private final Set<Node> naYX;
+        private final int index;
+
+        public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX, int index) {
+            this.bump = bump;
+            this.a = a;
+            this.b = b;
+            this.hOrT = hOrT;
+            this.naYX = naYX;
+            this.index = index;
+        }
+
+        public double getBump() {
+            return this.bump;
+        }
+
+        public Node getA() {
+            return this.a;
+        }
+
+        public Node getB() {
+            return this.b;
+        }
+
+        public Set<Node> getHOrT() {
+            return this.hOrT;
+        }
+
+        public Set<Node> getNaYX() {
+            return this.naYX;
+        }
+
+        // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
+        // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
+        // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
+        // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
+        // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
+        // not equal to zero by keeping a list. This last part is commened out by default.
+        public int compareTo(@NotNull Arrow arrow) {
+            int compare = Double.compare(arrow.getBump(), getBump());
+
+            if (compare == 0) {
+                return Integer.compare(getIndex(), arrow.getIndex());
+            }
+
+            return compare;
+        }
+
+        public String toString() {
+            return "Arrow<" + this.a + "->" + this.b + " bump = " + this.bump + " t/h = " + this.hOrT + " naYX = " + this.naYX + ">";
+        }
+
+        public int getIndex() {
+            return this.index;
+        }
+    }
+
+    class MbTask extends RecursiveTask<Boolean> {
+
+        Node x;
+        Node y;
+        Node target;
+        Set<Node> emptySet = new HashSet<>();
+
+        public MbTask(Node x, Node y, Node target) {
+            this.x = x;
+            this.y = y;
+            this.target = target;
+        }
+
+        @Override
+        protected Boolean compute() {
+            if (!FgesMb.this.effectEdgesGraph.isAdjacentTo(this.x, this.y) && !FgesMb.this.effectEdgesGraph.isAdjacentTo(this.y, this.target)) {
+                int child2 = FgesMb.this.hashIndices.get(this.x);
+                int parent2 = FgesMb.this.hashIndices.get(this.y);
+
+                double bump2 = FgesMb.this.fgesScore.localScoreDiff(parent2, child2);
+
+                if (bump2 > 0) {
+                    FgesMb.this.effectEdgesGraph.addNode(this.y);
+                    addUnconditionalArrows(this.x, this.y, this.emptySet);
+                }
+            }
+
+            return true;
+        }
+    }
+
+    class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
+
+        private final int from;
+        private final int to;
+        private final List<Node> nodes;
+        private final Set<Node> emptySet;
+
+        public NodeTaskEmptyGraph(int from, int to, List<Node> nodes, Set<Node> emptySet) {
+            this.from = from;
+            this.to = to;
+            this.nodes = nodes;
+            this.emptySet = emptySet;
+        }
+
+        @Override
+        protected Boolean compute() {
+            for (int i = this.from; i < this.to; i++) {
+                if ((i + 1) % 1000 == 0) {
+                    FgesMb.this.count[0] += 1000;
+                    FgesMb.this.out.println("Initializing effect edges: " + (FgesMb.this.count[0]));
+                }
+
+                Node y = this.nodes.get(i);
+                FgesMb.this.neighbors.put(y, this.emptySet);
+
+                for (int j = i + 1; j < this.nodes.size(); j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
+                    Node x = this.nodes.get(j);
+
+                    if (existsKnowledge()) {
+                        if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
+                            continue;
+                        }
+
+                        if (invalidSetByKnowledge(y, this.emptySet)) {
+                            continue;
+                        }
+                    }
+
+                    if (FgesMb.this.adjacencies != null && !FgesMb.this.adjacencies.isAdjacentTo(x, y)) {
+                        continue;
+                    }
+
+                    int child = FgesMb.this.hashIndices.get(y);
+                    int parent = FgesMb.this.hashIndices.get(x);
+                    double bump = FgesMb.this.fgesScore.localScoreDiff(parent, child);
+
+                    if (bump > 0) {
+                        Edge edge = Edges.undirectedEdge(x, y);
+                        FgesMb.this.effectEdgesGraph.addEdge(edge);
+                    }
+
+                    if (bump > 0.0) {
+                        addArrow(x, y, this.emptySet, this.emptySet, bump);
+                        addArrow(y, x, this.emptySet, this.emptySet, bump);
+                    }
+                }
+            }
+
+            return true;
         }
     }
 

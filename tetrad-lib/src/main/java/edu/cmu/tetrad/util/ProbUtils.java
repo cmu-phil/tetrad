@@ -25,8 +25,8 @@ import cern.jet.stat.Probability;
 
 /**
  * <p>Implements a number of important functions from probability and
- * statistics.</p> <p>We don't know who wrote this class; we didn't.  All we
- * added was the documentation. -Joe Ramsey, jdramsey@andrew.cmu.edu</p>
+ * statistics.&gt; 0 <p>We don't know who wrote this class; we didn't.  All we
+ * added was the documentation. -Joe Ramsey, jdramsey@andrew.cmu.edu&gt; 0
  *
  * @author Unknown, but thanks
  */
@@ -234,10 +234,10 @@ public class ProbUtils {
      * This is a more literal (that is, exact) copy of the log gamma method from
      * Numerical Recipes than the following one.  It was created by cutting and
      * pasting from the PDF version of the book and then converting C syntax to
-     * Java. </p> The static double array above goes with this. </p> Converted
+     * Java. The static double array above goes with this. Converted
      * to Java by Frank Wimberly
      *
-     * @return the value ln[?(xx)] for xx > 0
+     * @return the value ln[?(xx)] for xx &gt; 0
      */
     public static double lngamma(double xx) {
         //Returns the value ln[?(xx)] for xx > 0.
@@ -270,7 +270,7 @@ public class ProbUtils {
     }
 
     /**
-     * Incomplete Beta function. </p> Translated from FORTRAN july 1977 edition.
+     * Incomplete Beta function. Translated from FORTRAN july 1977 edition.
      * w. fullerton, c3, los alamos scientific lab. based on bosten and
      * battiste, remark on algorithm 179, comm. acm, v 17, p 153, (1974).
      *
@@ -1709,7 +1709,7 @@ public class ProbUtils {
      * @param ah upper bound 1
      * @param ak upper bound 1
      * @param r  correlation
-     * @return Prob&lpar;x1 &le; ah, x2 &le; ak&rpar;
+     * @return Prob(x1 &le; ah, x2 &le; ak)
      */
 
     public static double biNormalCdf(double ah, double ak, double r) {
@@ -1872,11 +1872,11 @@ public class ProbUtils {
 
     /**
      * Compute the probability over a rectangular region with correlation matrix
-     * c. Algorithm extracted from </p> Alan Genz: Numerical Computation of
+     * c. Algorithm extracted from Alan Genz: Numerical Computation of
      * Multivariate Normal Probabilities; revised version published in J. Comp.
      * Graph Stat. 1 (1992), pp. 141-149. http://www.math.wsu.edu/faculty/genz/homepage
-     * </p> Warning: this method has the side effect of changing the order of
-     * the elements in the arrays given as input. </p> --November 3st 2003,
+     * Warning: this method has the side effect of changing the order of
+     * the elements in the arrays given as input. --November 3st 2003,
      * Ricardo Silva
      *
      * @param a lower bounds (use Double.NEGATIVE_INFINITY if necessary)

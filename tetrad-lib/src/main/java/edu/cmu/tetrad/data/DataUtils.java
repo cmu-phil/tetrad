@@ -123,9 +123,9 @@ public final class DataUtils {
      * specified in a double array which has as many elements as there are
      * columns in the input dataset.  Hence, if the first element of the array of
      * probabilities is alpha, then the first column will contain a -99 (or
-     * other missing value code) in a given case with probability alpha. </p>
+     * other missing value code) in a given case with probability alpha.
      * This method will be useful in generating datasets which can be used to
-     * test algorithm that handle missing data and/or latent variables. </p>
+     * test algorithm that handle missing data and/or latent variables.
      * Author:  Frank Wimberly
      *
      * @param inData The data to which random missing data is to be added.
@@ -1931,7 +1931,7 @@ public final class DataUtils {
 
 
     /**
-     * Reads in a covariance matrix. The format is as follows. </p>
+     * Reads in a covariance matrix. The format is as follows.
      * <pre>
      * /covariance
      * 100

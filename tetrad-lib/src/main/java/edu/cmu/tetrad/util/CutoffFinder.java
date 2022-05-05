@@ -34,8 +34,9 @@ public class CutoffFinder {
      * Assumes f is a positive symmetric function between x1 and x2 about 0.
      * Integrates from 0 in the direction of x2 in intervals of deltaX until an
      * area of .5 * (1 - alpha) has been accumulated. Returns the x value at
-     * the iteration where this amount of area has been accumulated.</p> </p>
-     * <p>This is helpful for finding cutoff levels for normal curves,
+     * the iteration where this amount of area has been accumulated.
+     * <p>
+     * This is helpful for finding cutoff levels for normal curves,
      * distributions of correlation coefficients, Student's t, etc. It returns
      * significance level cutoffs.
      *

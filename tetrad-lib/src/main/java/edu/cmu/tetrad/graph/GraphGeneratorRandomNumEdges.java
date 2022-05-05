@@ -32,19 +32,19 @@ import java.util.List;
  * Modifies the UniformGraphGenerator to generate random DAGs (not assuming
  * connectivity) with number of edges in given range, min to max. Constraints on
  * connectivity are removed. Original docs follow.
- * <p/>
+ *
  * Generates random DAGs uniformly with certain classes of DAGs using variants
  * of Markov chain algorithm by Malancon, Dutour, and Philippe. Pieces of the
  * infrastructure of the algorithm are adapted from the the BNGenerator class by
  * Jaime Shinsuke Ide jaime.ide@poli.usp.br, released under the GNU General
  * Public License, for which the following statement is being included as part
  * of the license agreement:
- * <p/>
+ *
  * "The BNGenerator distribution is free software; you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation (either version 2 of the License
  * or, at your option, any later version), provided that this notice and the
- * name of the author appear in all copies. </p> "If you're using the software,
+ * name of the author appear in all copies. "If you're using the software,
  * please notify jaime.ide@poli.usp.br so that you can receive updates and
  * patches. BNGenerator is distributed "as is", in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -142,7 +142,7 @@ public final class GraphGeneratorRandomNumEdges {
      * Sets the number of nodes and resets all of the other parameters to
      * default values accordingly.
      *
-     * @param numNodes Must be an integer >= 4.
+     * @param numNodes Must be an integer greater than or equal to 4.
      */
     public void setNumNodes(int numNodes) {
         if (numNodes < 4) {

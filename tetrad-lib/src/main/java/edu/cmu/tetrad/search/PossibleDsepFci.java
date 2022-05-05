@@ -35,7 +35,7 @@ import java.util.List;
 
 /**
  * This class implements the Possible-D-Sep search step of Spirtes, et al's (1993) FCI algorithm (pp 144-145).
- * Specifically, the methods in this class perform step D. of the algorithm. </p> The algorithm implemented by this
+ * Specifically, the methods in this class perform step D. of the algorithm. The algorithm implemented by this
  * class is a bit broader, however, because it allows for the possibility that some pairs of variables have already been
  * compared by a different algorithm. Specifically, if the <code>prevCheck</code> variable is provided in the
  * constructor, then the algorithm pairwise checks every variable in the graph with every variable in v \

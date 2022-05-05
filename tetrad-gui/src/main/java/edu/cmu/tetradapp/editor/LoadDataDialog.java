@@ -682,7 +682,7 @@ public final class LoadDataDialog extends JPanel {
                 StringBuilder strBuilder = new StringBuilder();
                 strBuilder.append("<p>Validation result of ");
                 strBuilder.append(loadedFile.getName());
-                strBuilder.append(":</p>");
+                strBuilder.append(":&gt; 0");
 
                 List<ValidationResult> results = this.loadDataSettings.validateDataWithSettings(loadedFile);
 
@@ -709,7 +709,7 @@ public final class LoadDataDialog extends JPanel {
                         strBuilder.append(e.getMessage());
                         strBuilder.append("<br />");
                     });
-                    strBuilder.append("</p>");
+                    strBuilder.append("&gt; 0");
                 }
 
                 // Show warning messages
@@ -738,7 +738,7 @@ public final class LoadDataDialog extends JPanel {
                         });
                     }
 
-                    strBuilder.append("</p>");
+                    strBuilder.append("&gt; 0");
                 }
 
                 // Show errors if found
@@ -773,19 +773,19 @@ public final class LoadDataDialog extends JPanel {
                         });
                     }
 
-                    strBuilder.append("</p>");
+                    strBuilder.append("&gt; 0");
 
                     // Also add the file name to failed list
                     // this determines if to show the Load button
                     this.failedFiles.add(loadedFile.getName());
                 } else if (loadedFile.length() == 0) {
                     // We don't allow users to load empty file
-                    strBuilder.append("<p style=\"color: red;\"><b>This is an empty data file!</b></p>");
+                    strBuilder.append("<p style=\"color: red;\"><b>This is an empty data file!</b>&gt; 0");
                     // Also add the file name to failed list
                     // this determines if to show the Load button
                     this.failedFiles.add(loadedFile.getName());
                 } else {
-                    strBuilder.append("<p style=\"color: green;\"><b>Validation passed with no error!</b></p>");
+                    strBuilder.append("<p style=\"color: green;\"><b>Validation passed with no error!</b>&gt; 0");
                 }
 
                 this.validationResults.add(strBuilder.toString());

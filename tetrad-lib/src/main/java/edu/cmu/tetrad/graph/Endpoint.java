@@ -27,7 +27,7 @@ import java.io.ObjectStreamException;
 
 /**
  * A typesafe enumeration of the types of endpoints that are permitted in
- * Tetrad-style graphs: null (-), arrow (->), and circle (-o).
+ * Tetrad-style graphs: null (-), arrow (-&gt;), and circle (-o).
  *
  * @author Joseph Ramsey
  */

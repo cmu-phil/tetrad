@@ -35,12 +35,12 @@ import java.util.List;
  * Jaime Shinsuke Ide jaime.ide@poli.usp.br, released under the GNU General
  * Public License, for which the following statement is being included as part
  * of the license agreement:
- * <p/>
+ *
  * "The BNGenerator distribution is free software; you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation (either version 2 of the License
  * or, at your option, any later version), provided that this notice and the
- * name of the author appear in all copies. </p> "If you're using the software,
+ * name of the author appear in all copies. "If you're using the software,
  * please notify jaime.ide@poli.usp.br so that you can receive updates and
  * patches. BNGenerator is distributed "as is", in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -162,7 +162,7 @@ public final class UniformGraphGenerator {
      * Sets the number of nodes and resets all of the other parameters to
      * default values accordingly.
      *
-     * @param numNodes Must be an integer >= 4.
+     * @param numNodes Must be an integer &gt;= 4.
      */
     public void setNumNodes(int numNodes) {
         if (numNodes < 1) {

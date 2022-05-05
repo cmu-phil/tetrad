@@ -36,17 +36,17 @@ import java.util.*;
  * ..., m - 1, where m is the number of categories for the variable. These
  * integer-valued categories may be associated with categories that may be
  * explicitly set. Categories that are not explicitly set take the are set to
- * DataUtils.defaultCategory(i) for category i.</p> </p>
+ * DataUtils.defaultCategory(i) for category i.
  * <p>
  * Instances of this class may currently be used only to represent nominal
  * discrete variables. Support for ordinal discrete variables may be added in
- * the future.</p> </p>
+ * the future.
  * <p>
  * Like other variable classes, DiscreteVariable implements the Node interface.
- * The purpose of this is to allow variables to serve as nodes in graphs.</p>
- * </p>
+ * The purpose of this is to allow variables to serve as nodes in graphs.
+ *
  * <p>
- * The index value used to indicate missing data is -99.</p>
+ * The index value used to indicate missing data is -99.
  *
  * @author Joseph Ramsey
  */

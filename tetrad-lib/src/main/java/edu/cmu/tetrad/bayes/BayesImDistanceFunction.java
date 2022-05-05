@@ -27,8 +27,8 @@ import edu.cmu.tetrad.graph.Graph;
  * <p>Provides a static method for finding the Euclidean distance between a pair
  * of BayesIm's.  That is, it computes the square root of the sum of the squares
  * of the differences between corresponding parameters of the two Bayes
- * nets.</p> <p>The BayesPm's should be equal in the sense of the "equals"
- * method of that class.</p>
+ * nets.&gt; 0 <p>The BayesPm's should be equal in the sense of the "equals"
+ * method of that class.&gt; 0
  *
  * @author Frank Wimberly
  */

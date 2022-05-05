@@ -12,14 +12,14 @@ import java.util.Arrays;
  * Class transforming a symmetrical matrix to tridiagonal shape.
  * <p>A symmetrical m &times; m matrix A can be written as the product of three matrices:
  * A = Q &times; T &times; Q<sup>T</sup> with Q an orthogonal matrix and T a symmetrical
- * tridiagonal matrix. Both Q and T are m &times; m matrices.</p>
+ * tridiagonal matrix. Both Q and T are m &times; m matrices.&gt; 0
  * <p>This implementation only uses the upper part of the matrix, the part below the
- * diagonal is not accessed at all.</p>
+ * diagonal is not accessed at all.&gt; 0
  * <p>Transformation to tridiagonal shape is often not a goal by itself, but it is
  * an intermediate step in more general decomposition algorithms like {@link
  * EigenDecomposition eigen decomposition}. This class is therefore intended for internal
  * use by the library and is not public. As a consequence of this explicitly limited scope,
- * many methods directly returns references to internal arrays, not copies.</p>
+ * many methods directly returns references to internal arrays, not copies.&gt; 0
  *
  * @since 2.0
  */
@@ -52,7 +52,7 @@ class TriDiagonalTransformer {
     /**
      * Build the transformation to tridiagonal shape of a symmetrical matrix.
      * <p>The specified matrix is assumed to be symmetrical without any check.
-     * Only the upper triangular part of the matrix is used.</p>
+     * Only the upper triangular part of the matrix is used.&gt; 0
      *
      * @param matrix Symmetrical matrix to transform.
      * @throws NonSquareMatrixException if the matrix is not square.
@@ -77,7 +77,7 @@ class TriDiagonalTransformer {
 
     /**
      * Returns the matrix Q of the transform.
-     * <p>Q is an orthogonal matrix, i.e. its transpose is also its inverse.</p>
+     * <p>Q is an orthogonal matrix, i.e. its transpose is also its inverse.&gt; 0
      *
      * @return the Q matrix
      */
@@ -90,7 +90,7 @@ class TriDiagonalTransformer {
 
     /**
      * Returns the transpose of the matrix Q of the transform.
-     * <p>Q is an orthogonal matrix, i.e. its transpose is also its inverse.</p>
+     * <p>Q is an orthogonal matrix, i.e. its transpose is also its inverse.&gt; 0
      *
      * @return the Q matrix
      */
@@ -159,7 +159,7 @@ class TriDiagonalTransformer {
     /**
      * Get the Householder vectors of the transform.
      * <p>Note that since this class is only intended for internal use,
-     * it returns directly a reference to its internal arrays, not a copy.</p>
+     * it returns directly a reference to its internal arrays, not a copy.&gt; 0
      *
      * @return the main diagonal elements of the B matrix
      */
@@ -170,7 +170,7 @@ class TriDiagonalTransformer {
     /**
      * Get the main diagonal elements of the matrix T of the transform.
      * <p>Note that since this class is only intended for internal use,
-     * it returns directly a reference to its internal arrays, not a copy.</p>
+     * it returns directly a reference to its internal arrays, not a copy.&gt; 0
      *
      * @return the main diagonal elements of the T matrix
      */
@@ -181,7 +181,7 @@ class TriDiagonalTransformer {
     /**
      * Get the secondary diagonal elements of the matrix T of the transform.
      * <p>Note that since this class is only intended for internal use,
-     * it returns directly a reference to its internal arrays, not a copy.</p>
+     * it returns directly a reference to its internal arrays, not a copy.&gt; 0
      *
      * @return the secondary diagonal elements of the T matrix
      */
@@ -191,7 +191,7 @@ class TriDiagonalTransformer {
 
     /**
      * Transform original matrix to tridiagonal form.
-     * <p>Transformation is done using Householder transforms.</p>
+     * <p>Transformation is done using Householder transforms.&gt; 0
      */
     private void transform() {
         int m = this.householderVectors.length;

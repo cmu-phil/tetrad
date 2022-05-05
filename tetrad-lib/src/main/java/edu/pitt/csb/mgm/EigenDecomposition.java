@@ -14,10 +14,10 @@ import org.apache.commons.math3.util.Precision;
  * Calculates the eigen decomposition of a real matrix.
  * <p>The eigen decomposition of matrix A is a set of two matrices:
  * V and D such that A = V &times; D &times; V<sup>T</sup>.
- * A, V and D are all m &times; m matrices.</p>
+ * A, V and D are all m &times; m matrices.&gt; 0
  * <p>This class is similar in spirit to the <code>EigenvalueDecomposition</code>
  * class from the <a href="http://math.nist.gov/javanumerics/jama/">JAMA</a>
- * library, with the following changes:</p>
+ * library, with the following changes:&gt; 0
  * <ul>
  *   <li>a {@link #getVT() getVt} method has been added,</li>
  *   <li>two {@link #getRealEigenvalue(int) getRealEigenvalue} and {@link #getImagEigenvalue(int)
@@ -29,12 +29,12 @@ import org.apache.commons.math3.util.Precision;
  * </ul>
  * <p>
  * As of 3.1, this class supports general real matrices (both symmetric and non-symmetric):
- * </p>
+ *
  * <p>
  * If A is symmetric, then A = V*D*V' where the eigenvalue matrix D is diagonal and the eigenvector
  * matrix V is orthogonal, i.e. A = V.multiply(D.multiply(V.transpose())) and
  * V.multiply(V.transpose()) equals the identity matrix.
- * </p>
+ *
  * <p>
  * If A is not symmetric, then the eigenvalue matrix D is block diagonal with the real eigenvalues
  * in 1-by-1 blocks and any complex eigenvalues, lambda + i*mu, in 2-by-2 blocks:
@@ -46,13 +46,13 @@ import org.apache.commons.math3.util.Precision;
  * i.e. A.multiply(V) equals V.multiply(D).
  * The matrix V may be badly conditioned, or even singular, so the validity of the equation
  * A = V*D*inverse(V) depends upon the condition of V.
- * </p>
+ *
  * <p>
  * This implementation is based on the paper by A. Drubrulle, R.S. Martin and
  * J.H. Wilkinson "The Implicit QL Algorithm" in Wilksinson and Reinsch (1971)
  * Handbook for automatic computation, vol. 2, Linear algebra, Springer-Verlag,
  * New-York
- * </p>
+ *
  * @see <a href="http://mathworld.wolfram.com/EigenDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/Eigendecomposition_of_a_matrix">Wikipedia</a>
  * @since 2.0 (changed to concrete class in 3.0)
@@ -444,7 +444,7 @@ public class EigenDecomposition {
          * <p>
          * This method only finds exact linear solutions, i.e. solutions for
          * which ||A &times; X - B|| is exactly 0.
-         * </p>
+         *
          *
          * @param b Right-hand side of the equation A &times; X = B.
          * @return a Vector X that minimizes the two norm of A &times; X - B.

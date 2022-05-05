@@ -40,18 +40,18 @@ public class SearchLogUtils {
     }
 
     public static String colliderOrientedMsg(String note, Node x, Node y, Node z) {
-        return "Orienting collider (" + note + "): " + x.getName() + " *-> " +
-                y.getName() + " <-* " + z.getName();
+        return "Orienting collider (" + note + "): " + x.getName() + " *-&gt; " +
+                y.getName() + " &lt;-* " + z.getName();
     }
 
     public static String colliderOrientedMsg(Node x, Node y, Node z) {
-        return "Orienting collider: " + x.getName() + " *-> " +
-                y.getName() + " <-* " + z.getName();
+        return "Orienting collider: " + x.getName() + " *-&gt; " +
+                y.getName() + " &lt;-* " + z.getName();
     }
 
     public static String colliderOrientedMsg(Node x, Node y, Node z, List<Node> sepset) {
-        return "Orienting collider: " + x.getName() + " *-> " +
-                y.getName() + " <-* " + z.getName() + "\t(Sepset = " + sepset +
+        return "Orienting collider: " + x.getName() + " *-&gt; " +
+                y.getName() + " &lt;-* " + z.getName() + "\t(Sepset = " + sepset +
                 ")";
     }
 

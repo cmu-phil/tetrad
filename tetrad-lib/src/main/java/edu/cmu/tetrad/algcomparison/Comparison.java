@@ -76,12 +76,13 @@ public class Comparison {
     private boolean sortByUtility;
     private String dataPath;
     private String resultsPath;
+    private boolean saveData = true;
     private boolean saveCPDAGs;
     private boolean savePags;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
-    public void compareFromFiles(String filePath, Algorithms algorithms) {
-        compareFromFiles(filePath, filePath, algorithms);
+    public void compareFromFiles(String filePath, Algorithms algorithms, Statistics statistics, Parameters parameters) {
+        compareFromFiles(filePath, filePath, algorithms, statistics, parameters);
     }
 
     /**
@@ -92,7 +93,8 @@ public class Comparison {
      * @param resultsPath Path to the file where the results should be stored.
      * @param algorithms  The list of algorithms to be compared.
      */
-    public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms) {
+    public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
+                                 Statistics statistics, Parameters parameters) {
         for (Algorithm algorithm : algorithms.getAlgorithms()) {
             if (algorithm instanceof ExternalAlgorithm) {
                 throw new IllegalArgumentException("Not expecting any implementations of ExternalAlgorithm here.");
@@ -125,6 +127,7 @@ public class Comparison {
             simulations.add(new LoadDataAndGraphs(_dir.getAbsolutePath()));
         }
 
+        compareFromSimulations(resultsPath, simulations, algorithms, statistics, parameters);
     }
 
     public void generateReportFromExternalAlgorithms(String dataPath, String resultsPath, Algorithms algorithms,
@@ -964,10 +967,17 @@ public class Comparison {
     }
 
     /**
+     * @return True if cpdags should be saved out.
+     */
+    public void setSaveData(boolean saveData) {
+        this.saveData = saveData;
+    }
+
+    /**
      * @return True if CPDAGs should be saved out.
      */
     public boolean isSaveData() {
-        return true;
+        return saveData;
     }
 
     /**

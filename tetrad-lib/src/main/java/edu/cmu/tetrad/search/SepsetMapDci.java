@@ -29,16 +29,16 @@ import java.util.*;
 
 /**
  * This is the same as the usual SepsetMap described below, but also keeps up with the individual sets of conditioning
- * nodes for d-separation relations for use with the Distributed Causal Inference (DCI) algorithm. <p/> <p>Stores a map
+ * nodes for d-separation relations for use with the Distributed Causal Inference (DCI) algorithm.  <p>Stores a map
  * from pairs of nodes to separating sets--that is, for each unordered pair of nodes {node1, node2} in a graph, stores a
  * set of nodes conditional on which node1 and node2 are independent (where the nodes are considered as variables) or
  * stores null if the pair was not judged to be independent. (Note that if a sepset is non-null and empty, that should
  * means that the compared nodes were found to be independent conditional on the empty set, whereas if a sepset is null,
  * that should mean that no set was found yet conditional on which the compared nodes are independent. So at the end of
- * the search, a null sepset carries different information from an empty sepset.)</p> <p>We cast the variable-like
+ * the search, a null sepset carries different information from an empty sepset.)&gt; 0 <p>We cast the variable-like
  * objects to Node to allow them either to be variables explicitly or else to be graph nodes that in some model could be
  * considered as variables. This allows us to use d-separation as a graphical indicator of what independendence in
- * models ideally should be.</p>
+ * models ideally should be.&gt; 0
  *
  * @author Robert Tillman
  */

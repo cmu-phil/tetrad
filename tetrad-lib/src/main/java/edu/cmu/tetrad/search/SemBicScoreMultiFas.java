@@ -160,7 +160,13 @@ public class SemBicScoreMultiFas implements ISemBicScore {
             }
         }
 
-        return sum / count;
+        double score = sum / count;
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
     public double localScore(int i, int[] parents, int index) {

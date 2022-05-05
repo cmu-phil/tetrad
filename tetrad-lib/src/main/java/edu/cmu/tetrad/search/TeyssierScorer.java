@@ -13,7 +13,7 @@ import static java.util.Collections.sort;
 
 
 /**
- * Implements a scorer extending Teyssier, M., & Koller, D. (2012). Ordering-based search: A simple and effective
+ * Implements a scorer extending Teyssier, M., and Koller, D. (2012). Ordering-based search: A simple and effective
  * algorithm for learning Bayesian networks. arXiv preprint arXiv:1207.1429. You give it a score function
  * and a variable ordering, and it computes the score. You can move any variable left or right, and it will
  * keep track of the score using the Teyssier and Kohler method. You can move a variable to a new position,
@@ -145,7 +145,7 @@ public class TeyssierScorer {
     }
 
     /**
-     * Performs a tuck operation. If pi[x] < pi[y], moves y to index of x; otherwise moves x to index of y.
+     * Performs a tuck operation. If pi[x] &lt; pi[y], moves y to index of x; otherwise moves x to index of y.
      *
      * @param x The first variable.
      * @param y The second variable.
@@ -213,12 +213,12 @@ public class TeyssierScorer {
     }
 
     /**
-     * Returns true iff x->y or y->x is a covered edge. x->y is a covered edge if
+     * Returns true iff x-&gt;y or y-&gt;x is a covered edge. x-&gt;y is a covered edge if
      * parents(x) = parents(y) \ {x}
      *
      * @param x The first variable.
      * @param y The second variable.
-     * @return True iff x->y or y->x is a covered edge.
+     * @return True iff x-&gt;y or y-&gt;x is a covered edge.
      */
     public boolean coveredEdge(Node x, Node y) {
         if (!adjacent(x, y)) return false;
@@ -535,7 +535,7 @@ public class TeyssierScorer {
      * @param a The first node.
      * @param b The second node.
      * @param c The third node.
-     * @return True iff a->b<-c in the current DAG.
+     * @return True iff a-&gt;b&lt;-c in the current DAG.
      */
     public boolean collider(Node a, Node b, Node c) {
         return getParents(b).contains(a) && getParents(b).contains(c);
@@ -547,7 +547,7 @@ public class TeyssierScorer {
      * @param a The first node.
      * @param b The second node.
      * @param c The third node.
-     * @return True iff adj(a, b) & adj(b, c) & adj(a, c).
+     * @return True iff adj(a, b) and adj(b, c) and adj(a, c).
      */
     public boolean triangle(Node a, Node b, Node c) {
         return adjacent(a, b) && adjacent(b, c) && adjacent(a, c);

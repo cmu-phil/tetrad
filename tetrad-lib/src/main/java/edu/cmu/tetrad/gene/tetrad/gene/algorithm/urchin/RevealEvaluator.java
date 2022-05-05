@@ -25,7 +25,7 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 /**
  * Provides the methods for computing mutual information between expression
  * levels between genes and, for a given gene, between points in time determined
- * by a lag value. </p> The methods implemented here follow the definitions
+ * by a lag value. The methods implemented here follow the definitions
  * given in the paper "Reveal, a  General Reverse Engineering Algorithm for
  * Inference of Genetic Network Architectures" by Liang, Fuhrman and Somogyi,
  * Pacific Symposium on Biocomputing 3:18-29 (1998).

@@ -1056,8 +1056,8 @@ public class Ion2 {
     }
 
     /**
-     * Implements the double-triangle orientation rule, which states that if D*-oB, A*->B<-*C and A*-*D*-*C is a
-     * noncollider, then D*->B.
+     * Implements the double-triangle orientation rule, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-*D*-*C is a
+     * noncollider, then D*-&gt;B.
      */
     private void doubleTriangle(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -1090,7 +1090,7 @@ public class Ion2 {
                             continue;
                         }
 
-                        //if all of the previous tests pass, orient D*-oB as D*->B
+                        //if all of the previous tests pass, orient D*-oB as D*-&gt;B
                         if (!isArrowpointAllowed(graph, D, B)) {
                             continue;
                         }
@@ -1224,7 +1224,7 @@ public class Ion2 {
         return true;
     }
 
-    // if a*->Bo-oC and not a*-*c, then a*->b-->c
+    // if a*-&gt;Bo-oC and not a*-*c, then a*-&gt;b-->c
     // (orient either circle if present, don't need both)
 
     private void awayFromCollider(Graph graph, Node a, Node b, Node c) {
@@ -1253,7 +1253,7 @@ public class Ion2 {
         }
     }
 
-    //if a*-oC and either a-->b*->c or a*->b-->c, then a*->c
+    //if a*-oC and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
 
     private void awayFromAncestor(Graph graph, Node a, Node b, Node c) {
         if ((graph.isAdjacentTo(a, c)) &&
@@ -1304,7 +1304,7 @@ public class Ion2 {
         for (Node b : nodes) {
 
             //potential A and C candidate pairs are only those
-            // that look like this:   A<-oBo->C  or  A<->Bo->C
+            // that look like this:   A&lt;-oBo->C  or  A&lt;-&gt;Bo->C
             List<Node> possAandC = graph.getNodesOutTo(b, Endpoint.ARROW);
 
             //keep arrows and circles
@@ -1334,7 +1334,7 @@ public class Ion2 {
 
     /**
      * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. </p> The body of
+     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of
      * a DDP consists of colliders that are parents of c.
      */
     private boolean reachablePathFindOrient(Graph graph, Node a, Node b, Node c,
@@ -1360,7 +1360,7 @@ public class Ion2 {
             for (Node l : pathExtensions) {
 
                 // If l is reachable and not adjacent to c, its a DDP
-                // endpoint, so do DDP orientation. Otherwise, if l <-> c,
+                // endpoint, so do DDP orientation. Otherwise, if l &lt;-&gt; c,
                 // add l to the list of reachable nodes.
                 if (!graph.isAdjacentTo(l, c)) {
 

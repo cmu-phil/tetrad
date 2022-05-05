@@ -35,7 +35,7 @@ import java.util.List;
  * Gi.1), lowerBound), as described in Edwards and Glass, (2000), "Combinatorial
  * explosion in model gene networks", American Institute of Physics. F is a
  * function from R^n to R, where each input to the function is sent to -1.0 if
- * it is < 0.0 and +1.0 if is it >= 0.0 and the combination of -1.0's and +1.0's
+ * it is &lt; 0.0 and +1.0 if is it &gt;= 0.0 and the combination of -1.0's and +1.0's
  * is then used to look up a value in a boolean table.  The output of the
  * function is -1.0 or 1.0. A random boolean Glass fuction is a boolean Glass
  * function in which the boolean lookup table is chosen randomly.  The procedure
@@ -46,7 +46,7 @@ import java.util.List;
  * causal parents (with 2^n rows) for which each causal parent is
  * "effective"--that is, for which there is some combination of the other causal
  * parents for which the lookup table maps either to true or to false depending
- * on the value of the given causal parent.</p> </p> <p>The basal expression
+ * on the value of the given causal parent. <p>The basal expression
  * level is used in these functions as a threshold, above which a lookup
  * value of <code>true</code> is used for the boolean tables and below which
  * a lookup value of <code>false</code> is used. A return value of
@@ -58,7 +58,7 @@ import java.util.List;
  * the true value. Generalizing, we include a constructor to allow the
  * basalExpression, true value and false value to be set by the user, with
  * the only condition being that the false value must be less than the true
- * value.</p>
+ * value.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -214,9 +214,6 @@ public class BooleanGlassFunction implements UpdateFunction {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static BooleanGlassFunction serializableInstance() {
         return new BooleanGlassFunction(BasicLagGraph.serializableInstance());
@@ -343,7 +340,7 @@ public class BooleanGlassFunction implements UpdateFunction {
 
     /**
      * Sets the rate at which expression levels tend to return to equilibrium.
-     * Must be > 0.0 and <= 1.0.
+     * Must be &gt; 0.0 and &lt;= 1.0.
      */
     public void setDecayRate(double decayRate) {
 
@@ -358,7 +355,7 @@ public class BooleanGlassFunction implements UpdateFunction {
 
     /**
      * Sets the rate at which the output of the Glass function influences the
-     * change in expression level of a gene. Must be > 0.0.
+     * change in expression level of a gene. Must be &gt; 0.0.
      */
     public void setBooleanInfluenceRate(double booleanInfluenceRate) {
 

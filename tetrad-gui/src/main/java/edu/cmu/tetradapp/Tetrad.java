@@ -38,16 +38,15 @@ import java.beans.PropertyChangeListener;
 import java.util.Locale;
 
 /**
- * <p>
  * Launches Tetrad as an application. The intended class path in either case is
  * "edu.cmu.tetradapp.Tetrad", so care should be taken not to move this class
  * out of the "INSTANCE" package. The launch itself is carried out by the method
- * "launchFrame()", which generates a new frame for the application.</p>
+ * "launchFrame()", which generates a new frame for the application.
  * <p>
  * Note to programmers: <b>Please don't make any changes to this class.</b>
  * If you need another way of launching Tetrad for special purposes, it's easy
  * enough to create a copy of this class with a different name and modify
- * it.</p>
+ * it.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -95,13 +94,13 @@ public final class Tetrad implements PropertyChangeListener {
     /**
      * <p>
      * Launches Tetrad as an application. One way to launch Tetrad IV as an
-     * application is the following:</p>
+     * application is the following:&gt; 0
      * <pre>java -cp jarname.jar INSTANCE.Tetrad</pre>
      * <p>
      * where "jarname.jar" is a jar containing all of the classes of Tetrad IV,
      * properly compiled, along with all of the auxiliary jar contents and all
      * of the images which Tetrad IV uses, all in their proper relative
-     * directories.</p>
+     * directories.&gt; 0
      *
      * @param argv --skip-latest argument will skip checking for latest version.
      */

@@ -111,7 +111,13 @@ public class BdeuScoreImages implements IBDeuScore {
             sum += score.localScore(i, parents);
         }
 
-        return sum / this.scores.size();
+        double score = sum / this.scores.size();
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
     public double localScore(int i, int[] parents, int index) {
@@ -134,6 +140,8 @@ public class BdeuScoreImages implements IBDeuScore {
         }
 
         return sum / this.scores.size();
+
+
     }
 
     /**

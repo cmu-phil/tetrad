@@ -10,15 +10,15 @@ import org.apache.commons.math3.util.Precision;
  * Class transforming a general real matrix to Hessenberg form.
  * <p>A m &times; m matrix A can be written as the product of three matrices: A = P
  * &times; H &times; P<sup>T</sup> with P an orthogonal matrix and H a Hessenberg
- * matrix. Both P and H are m &times; m matrices.</p>
+ * matrix. Both P and H are m &times; m matrices.&gt; 0
  * <p>Transformation to Hessenberg form is often not a goal by itself, but it is an
  * intermediate step in more general decomposition algorithms like
  * {@link EigenDecomposition eigen decomposition}. This class is therefore
  * intended for internal use by the library and is not public. As a consequence
  * of this explicitly limited scope, many methods directly returns references to
- * internal arrays, not copies.</p>
+ * internal arrays, not copies.&gt; 0
  * <p>This class is based on the method orthes in class EigenvalueDecomposition
- * from the <a href="http://math.nist.gov/javanumerics/jama/">JAMA</a> library.</p>
+ * from the <a href="http://math.nist.gov/javanumerics/jama/">JAMA</a> library.&gt; 0
  *
  * @see <a href="http://mathworld.wolfram.com/HessenbergDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/Householder_transformation">Householder Transformations</a>
@@ -71,7 +71,7 @@ class HessenbergTransformer {
 
     /**
      * Returns the matrix P of the transform.
-     * <p>P is an orthogonal matrix, i.e. its inverse is also its transpose.</p>
+     * <p>P is an orthogonal matrix, i.e. its inverse is also its transpose.&gt; 0
      *
      * @return the P matrix
      */
@@ -117,7 +117,7 @@ class HessenbergTransformer {
 
     /**
      * Returns the transpose of the matrix P of the transform.
-     * <p>P is an orthogonal matrix, i.e. its inverse is also its transpose.</p>
+     * <p>P is an orthogonal matrix, i.e. its inverse is also its transpose.&gt; 0
      *
      * @return the transpose of the P matrix
      */
@@ -158,7 +158,7 @@ class HessenbergTransformer {
     /**
      * Get the Householder vectors of the transform.
      * <p>Note that since this class is only intended for internal use, it returns
-     * directly a reference to its internal arrays, not a copy.</p>
+     * directly a reference to its internal arrays, not a copy.&gt; 0
      *
      * @return the main diagonal elements of the B matrix
      */
@@ -168,7 +168,7 @@ class HessenbergTransformer {
 
     /**
      * Transform original matrix to Hessenberg form.
-     * <p>Transformation is done using Householder transforms.</p>
+     * <p>Transformation is done using Householder transforms.&gt; 0
      */
     private void transform() {
         int n = this.householderVectors.length;

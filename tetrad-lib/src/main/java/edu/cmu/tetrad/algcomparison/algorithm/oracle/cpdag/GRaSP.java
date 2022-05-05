@@ -71,12 +71,10 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             grasp.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             grasp.setUncoveredDepth(parameters.getInt(Params.GRASP_UNCOVERED_DEPTH));
             grasp.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
-            grasp.setToleranceDepth(parameters.getInt(Params.GRASP_TOLERANCE_DEPTH));
             grasp.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             grasp.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             grasp.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
             grasp.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
-            grasp.setAllowRandomnessInsideAlgorithm(parameters.getBoolean(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM));
             grasp.setVerbose(parameters.getBoolean(Params.VERBOSE));
             grasp.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
@@ -122,12 +120,10 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         params.add(Params.GRASP_DEPTH);
         params.add(Params.GRASP_UNCOVERED_DEPTH);
         params.add(Params.GRASP_NONSINGULAR_DEPTH);
-        params.add(Params.GRASP_TOLERANCE_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
-//        params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_VERMA_PEARL);
         params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
+        params.add(Params.CACHE_SCORES);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 

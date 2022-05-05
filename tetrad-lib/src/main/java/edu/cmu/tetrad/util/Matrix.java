@@ -94,12 +94,22 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix getSelection(int[] rows, int[] cols) {
-        if (rows.length == 0 || cols.length == 0) {
-            return new Matrix(rows.length, cols.length);
+        Matrix m = new Matrix(rows.length, cols.length);
+
+        for (int i = 0; i < rows.length; i++) {
+            for (int j = 0; j < cols.length; j++) {
+                m.set(i, j, this.apacheData.getEntry(rows[i], cols[j]));
+            }
         }
 
-        RealMatrix subMatrix = this.apacheData.getSubMatrix(rows, cols);
-        return new Matrix(subMatrix.getData());
+        return m;
+
+//        if (rows.length == 0 || cols.length == 0) {
+//            return new Matrix(rows.length, cols.length);
+//        }
+//
+//        RealMatrix subMatrix = this.apacheData.getSubMatrix(rows, cols);
+//        return new Matrix(subMatrix.getData());
     }
 
     public Matrix copy() {

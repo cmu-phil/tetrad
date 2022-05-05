@@ -23,14 +23,17 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Checks independence facts for variables associated with the nodes in a given graph by checking d-separation facts on
@@ -40,6 +43,8 @@ import java.util.*;
  */
 public class IndTestDSep implements IndependenceTest {
 
+    private IndependenceFacts independenceFacts;
+
     /**
      * The graph for which this is a variable map.
      */
@@ -48,14 +53,23 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * The list of observed variables (i.e. variables for observed nodes).
      */
-    private Set<Node> observedVars;
+    private List<Node> observedVars;
     private List<Node> _observedVars;
-    private HashSet<IndependenceFact> facts;
-    private boolean verbose;
-    private double pvalue;
+    private List<IndependenceFact> facts;
+    private boolean verbose = false;
+    private double pvalue = 0;
 
     public IndTestDSep(Graph graph) {
         this(graph, false);
+    }
+
+    public IndTestDSep(IndependenceFacts facts, List<Node> variables) {
+        this(facts, false);
+        facts.setNodes(variables);
+    }
+
+    public IndTestDSep(IndependenceFacts facts) {
+        this(facts, false);
     }
 
     /**
@@ -68,8 +82,19 @@ public class IndTestDSep implements IndependenceTest {
 
         this.graph = graph;
 
-        this._observedVars = calcVars(graph, keepLatents);
-        this.observedVars = new HashSet<>(this._observedVars);
+        this._observedVars = calcVars(graph.getNodes(), keepLatents);
+        this.observedVars = new ArrayList<>(_observedVars);
+    }
+
+    public IndTestDSep(IndependenceFacts facts, boolean keepLatents) {
+        if (facts == null) {
+            throw new NullPointerException();
+        }
+
+        this.independenceFacts = facts;
+
+        this._observedVars = calcVars(facts.getVariables(), keepLatents);
+        this.observedVars = new ArrayList<>(_observedVars);
     }
 
     /**
@@ -94,9 +119,9 @@ public class IndTestDSep implements IndependenceTest {
         }
 
         this._observedVars = _vars;
-        this.observedVars = new HashSet<>(this._observedVars);
+        this.observedVars = new ArrayList<>(_observedVars);
 
-        this.facts = new HashSet<>();
+        facts = new ArrayList<>();
 
         return this;
     }
@@ -104,13 +129,13 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * @return the list of observed nodes in the given graph.
      */
-    private List<Node> calcVars(Graph graph, boolean keepLatents) {
+    private List<Node> calcVars(List<Node> nodes, boolean keepLatents) {
         if (keepLatents) {
-            return graph.getNodes();
+            return nodes;
         } else {
             List<Node> observedVars = new ArrayList<>();
 
-            for (Node node : graph.getNodes()) {
+            for (Node node : nodes) {
                 if (node.getNodeType() == NodeType.MEASURED) {
                     observedVars.add(node);
                 }
@@ -139,49 +164,48 @@ public class IndTestDSep implements IndependenceTest {
             }
         }
 
-        if (!this.observedVars.contains(x)) {
+        if (!observedVars.contains(x)) {
             throw new IllegalArgumentException("Not an observed variable: " + x);
         }
 
-        if (!this.observedVars.contains(y)) {
+        if (!observedVars.contains(y)) {
             throw new IllegalArgumentException("Not an observed variable: " + y);
         }
 
         for (Node _z : z) {
-            if (!this.observedVars.contains(_z)) {
+            if (!observedVars.contains(_z)) {
                 throw new IllegalArgumentException("Not an observed variable: " + _z);
             }
         }
 
-        boolean dSeparated = !getGraph().isDConnectedTo(x, y, z);
+        boolean dSeparated;
 
-        if (this.verbose) {
-            if (dSeparated) {
-                final double pValue = 1.0;
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
-                System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, pValue));
-            } else {
-                final double pValue = 0.0;
-                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
-                System.out.println(SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
-            }
+        if (graph != null) {
+            dSeparated = !getGraph().isDConnectedTo(x, y, z);
+        } else {
+            dSeparated = independenceFacts.isIndependent(x, y, z);
         }
+
+//        if (verbose) {
+//            if (dSeparated) {
+//                double pValue = 1.0;
+//                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+//                System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+//            } else {
+//                double pValue = 0.0;
+//                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+//                System.out.println(SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+//            }
+//        }
 
         if (dSeparated) {
             if (this.facts != null) {
                 this.facts.add(new IndependenceFact(x, y, z));
             }
 
-            this.pvalue = 1.0;
+            pvalue = 1.0;
         } else {
-            this.pvalue = 0.0;
-        }
-
-        if (this.verbose) {
-            if (dSeparated) {
-                TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, this.pvalue));
-            }
+            pvalue = 0.0;
         }
 
         return dSeparated;
@@ -230,14 +254,14 @@ public class IndTestDSep implements IndependenceTest {
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
-        return Collections.unmodifiableList(this._observedVars);
+        return Collections.unmodifiableList(_observedVars);
     }
 
     /**
      * @return the list of variable varNames.
      */
     public List<String> getVariableNames() {
-        List<Node> nodes = this._observedVars;
+        List<Node> nodes = _observedVars;
         List<String> nodeNames = new ArrayList<>();
         for (Node var : nodes) {
             nodeNames.add(var.getName());
@@ -246,7 +270,7 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     public boolean determines(List<Node> z, Node x1) {
-        return false; //z.contains(x1);
+        return false;
     }
 
     public double getAlpha() {
@@ -258,7 +282,7 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     public Node getVariable(String name) {
-        for (Node variable : this.observedVars) {
+        for (Node variable : observedVars) {
             if (variable.getName().equals(name)) {
                 return variable;
             }
@@ -311,16 +335,12 @@ public class IndTestDSep implements IndependenceTest {
         return getPValue() == 1 ? -1 : 1;
     }
 
-    public void startRecordingFacts() {
-        this.facts = new HashSet<>();
-    }
-
-    public HashSet<IndependenceFact> getFacts() {
-        return this.facts;
+    public List<IndependenceFact> getFacts() {
+        return facts;
     }
 
     public boolean isVerbose() {
-        return this.verbose;
+        return verbose;
     }
 
     public void setVerbose(boolean verbose) {

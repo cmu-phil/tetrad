@@ -33,13 +33,13 @@ import java.util.List;
 
 /**
  * Implementation of a test of tetrad constraints with discrete variables. We are assuming that variables are ordinal or
- * binary. Such tests are a core statistical procedure in algorithm BuildPureClusters and Purify. </p> An "underlying
+ * binary. Such tests are a core statistical procedure in algorithm BuildPureClusters and Purify. An "underlying
  * latent variable" approach is used to test tetrads indirectly by fitting discrete one-factor and two-factor models.
  * See Bartholomew and Knott (1999) for details. A two-stage procedure for fitting polychorics correlations (Olsson,
- * 1979) and a chi-square test of tetrad constraints over those correlations is the key for this method. </p>
- * References: </p> Bartholomew, D. and Knott, M. (1999). Latent Variable Models and Factor Analysis, 2nd edition.
- * Arnold. </p> Olsson, Ulf (1979). "Maximum likelihood estimation of the polychoric correlation coefficient".
- * Psychometrika 44, 443-460. </p> Stroud, A. and Secrest D. (1966) Gaussian Quadrature Formulas. Prentice Hall.
+ * 1979) and a chi-square test of tetrad constraints over those correlations is the key for this method.
+ * References: Bartholomew, D. and Knott, M. (1999). Latent Variable Models and Factor Analysis, 2nd edition.
+ * Arnold. Olsson, Ulf (1979). "Maximum likelihood estimation of the polychoric correlation coefficient".
+ * Psychometrika 44, 443-460. Stroud, A. and Secrest D. (1966) Gaussian Quadrature Formulas. Prentice Hall.
  *
  * @author Ricardo Silva
  */

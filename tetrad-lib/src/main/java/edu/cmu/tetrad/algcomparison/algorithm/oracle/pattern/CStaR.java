@@ -39,11 +39,11 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
-        System.out.println("Parallelism = " + parameters.getInt("parallelism"));
+        System.out.println("Parallelized = " + parameters.getBoolean("parallelized"));
 
         Cstar cStaR = new Cstar();
 
-        cStaR.setParallelism(parameters.getInt(Params.PARALLELISM));
+        cStaR.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         cStaR.setNumSubsamples(parameters.getInt(Params.NUM_SUBSAMPLES));
         cStaR.setqFrom(parameters.getInt(Params.CSTAR_Q));
         cStaR.setqTo(parameters.getInt(Params.CSTAR_Q));
@@ -115,7 +115,7 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
         parameters.add(Params.NUM_SUBSAMPLES);
         parameters.add(Params.TARGET_NAMES);
         parameters.add(Params.CSTAR_Q);
-        parameters.add(Params.PARALLELISM);
+        parameters.add(Params.PARALLELIZED);
         parameters.add(Params.VERBOSE);
         return parameters;
     }

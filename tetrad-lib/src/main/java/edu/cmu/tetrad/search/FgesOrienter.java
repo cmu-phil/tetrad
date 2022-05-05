@@ -474,7 +474,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     /**
-     * -1 for unlimited depth, otherwise a number >= 0. In the forward reevaluation step, subsets of neighbors up to
+     * -1 for unlimited depth, otherwise a number &gt;= 0. In the forward reevaluation step, subsets of neighbors up to
      * depth in size are considered. Limiting depth can speed up the algorithm.
      */
     public void setDepth(int depth) {

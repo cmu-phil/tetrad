@@ -80,7 +80,8 @@ public class EbicScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public EbicScore(DataSet dataSet) {
+    public EbicScore(DataSet dataSet, boolean precomputeCovariances) {
+
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -94,7 +95,11 @@ public class EbicScore implements Score {
         this.data = _dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            setCovariances(new CovarianceMatrix(dataSet));
+            if (!precomputeCovariances) {
+                setCovariances(new CovarianceMatrixOnTheFly(dataSet));
+            } else {
+                setCovariances(new CovarianceMatrix(dataSet));
+            }
             this.calculateRowSubsets = false;
         } else {
             this.calculateRowSubsets = true;
@@ -118,6 +123,11 @@ public class EbicScore implements Score {
         return localScoreDiff(x, y, new int[0]);
     }
 
+    /**
+     * @param i The index of the node.
+     * @param parents The indices of the node's parents.
+     * @return The score, or NaN if the score cannot be calculated.
+     */
     public double localScore(int i, int... parents) throws RuntimeException {
         int pi = parents.length + 1;
         double varRy;
@@ -125,18 +135,18 @@ public class EbicScore implements Score {
         try {
             varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
         } catch (SingularMatrixException e){
-            return Double.NEGATIVE_INFINITY;
+            return Double.NaN;
         }
 
         double gamma = this.gamma;//  1.0 - riskBound;
 
-        double _score = -(this.N * log(varRy) + (pi * log(this.N)
+        double score = -(this.N * log(varRy) + (pi * log(this.N)
                 + 2 * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
 
-        if (Double.isNaN(_score) || Double.isInfinite(_score)) {
-            return Double.NEGATIVE_INFINITY;
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
         } else {
-            return _score;
+            return score;
         }
     }
 
@@ -211,13 +221,12 @@ public class EbicScore implements Score {
         return Double.isNaN(v);
     }
 
-    //    @Override
     public DataModel getData() {
         return this.dataSet;
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {
-        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
+        CorrelationMatrixOnTheFly correlations = new CorrelationMatrixOnTheFly(covariances);
         this.covariances = covariances;
 
         boolean exists = false;

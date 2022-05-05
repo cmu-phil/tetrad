@@ -42,13 +42,8 @@ import static java.lang.Math.log;
 
 /**
  * Implements a conditional Gaussian likelihood. Please note that this this likelihood will be maximal only if the
- * <<<<<<< HEAD
  * the continuous mixedVariables are jointly Gaussian conditional on the discrete mixedVariables; in all other cases, it will
  * be less than maximal. For an algorithm like FGS this is fine.
- * =======
- * the continuous variables are jointly Gaussian conditional on the discrete variables; in all other cases, it will
- * be less than maximal. For an algorithm like FGES this is fine.
- * >>>>>>> 0031bda0387f30996b1180ba17a0aeee69ad44f7
  *
  * @author Joseph Ramsey
  */

@@ -57,8 +57,8 @@ public class TestMarkovBlanketSearches {
     @Test
     public void testSubgraph2() {
         Graph graph = GraphConverter.convert("P1-->T,P2-->T,T-->C1,T-->C2," +
-                "T-->C3,PC1a-->C1,PC1b-->C1,PC2a-->C2,PC2b<--C2,PC3a-->C3," +
-                "PC3b-->C3,PC1b-->PC2a,PC1a<--PC3b,U,V");
+                "T-->C3,PC1a-->C1,PC1b-->C1,PC2a-->C2,PC2b&lt;--C2,PC3a-->C3," +
+                "PC3b-->C3,PC1b-->PC2a,PC1a&lt;--PC3b,U,V");
 
         IndTestDSep test = new IndTestDSep(graph);
         MbSearch mbSearch = new GrowShrink(test);

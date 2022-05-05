@@ -64,6 +64,7 @@ public class ConditionalGaussianOtherScore implements Score {
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     * @return the score, or NaN if the score can't be calculated.
      */
     public double localScore(int i, int... parents) {
         this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
@@ -81,7 +82,13 @@ public class ConditionalGaussianOtherScore implements Score {
             strucPrior = -2 * k * strucPrior;
         }
 
-        return 2.0 * lik - /*getPenaltyDiscount() **/ k * Math.log(N) + strucPrior;
+        double score = 2.0 * lik - getPenaltyDiscount() * k * Math.log(N) + strucPrior;
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
     private double getStructurePrior(int[] parents) {

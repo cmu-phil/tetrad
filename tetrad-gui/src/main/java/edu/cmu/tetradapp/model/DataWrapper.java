@@ -280,10 +280,6 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     * <p>
-     * // * @see edu.cmu.TestSerialization
-     *
-     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();

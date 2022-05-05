@@ -42,7 +42,7 @@ import java.util.*;
 /**
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
  * This test is valid for both ordinal and non-ordinal discrete searchVariables.
- * <p/>
+ *
  * This logisticRegression makes multiple assumptions: 1. IIA 2. Large sample size (multiple regressions needed on subsets of
  * sample)
  *
@@ -93,7 +93,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
     /**
      * @return true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
+     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
@@ -353,7 +353,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
     /**
      * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
+     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
     public boolean isDependent(Node x, Node y, List<Node> z) {

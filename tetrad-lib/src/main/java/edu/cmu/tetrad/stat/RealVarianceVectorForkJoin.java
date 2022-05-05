@@ -48,7 +48,7 @@ public class RealVarianceVectorForkJoin implements RealVariance {
     public double[] compute(boolean biasCorrected) {
         double[] means = new double[this.numOfCols];
 
-        ForkJoinPool pool = new ForkJoinPool(this.numOfThreads);
+        ForkJoinPool pool = ForkJoinPool.commonPool();
         pool.invoke(new MeanAction(this.data, means, 0, this.numOfCols - 1));
         pool.invoke(new VarianceAction(this.data, means, biasCorrected, 0, this.numOfCols - 1));
         pool.shutdown();

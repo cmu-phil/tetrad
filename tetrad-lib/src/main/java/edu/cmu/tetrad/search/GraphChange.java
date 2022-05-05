@@ -35,7 +35,7 @@ import java.util.*;
  * concept: storage for a variety of seperate changes one could possibly apply to a PAG.
  * <p>
  * By convention, the NodePairs in the orients ArrayList are ordered such that Node1 is the "from" node and Node2 is the
- * "to" node (ie 1 o-> 2)
+ * "to" node (ie 1 o-&gt; 2)
  */
 public class GraphChange {
     private final List<Edge> removes;

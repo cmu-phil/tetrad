@@ -275,9 +275,6 @@ public class GeneralizedSemIm implements IM, Simulator {
     }
 
     public synchronized DataSet simulateData(int sampleSize, boolean latentDataSaved) {
-        long seed = RandomUtil.getInstance().getSeed();
-        TetradLogger.getInstance().log("info", "Seed = " + seed);
-
         if (this.pm.getGraph().isTimeLagModel()) {
             return simulateTimeSeries(sampleSize);
         }
@@ -288,11 +285,8 @@ public class GeneralizedSemIm implements IM, Simulator {
     @Override
     public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
-        long _seed = random.getSeed();
         random.setSeed(seed);
-        DataSet dataSet = simulateData(sampleSize, latentDataSaved);
-        random.revertSeed(_seed);
-        return dataSet;
+        return simulateData(sampleSize, latentDataSaved);
     }
 
     private DataSet simulateTimeSeries(int sampleSize) {
@@ -380,7 +374,7 @@ public class GeneralizedSemIm implements IM, Simulator {
      * percolating this information down through the SEM, assuming it is
      * acyclic. Fast for large simulations but hangs for cyclic models.
      *
-     * @param sampleSize > 0.
+     * @param sampleSize &gt; 0.
      * @return the simulated data set.
      */
     public DataSet simulateDataRecursive(int sampleSize, boolean latentDataSaved) {
@@ -765,7 +759,7 @@ public class GeneralizedSemIm implements IM, Simulator {
      * @param sampleSize            The number of samples to be drawn.
      * @param intervalBetweenShocks External shock is applied every this many steps.
      *                              Must be positive integer.
-     * @param epsilon               The convergence criterion; |xi.t - xi.t-1| < epsilon.
+     * @param epsilon               The convergence criterion; |xi.t - xi.t-1| &lt; epsilon.
      */
     public synchronized DataSet simulateDataFisher(int sampleSize, int intervalBetweenShocks,
                                                    double epsilon) {

@@ -97,13 +97,13 @@ public abstract class AbstractVariable implements Variable {
     /**
      * Checks to see whether the passed value is an acceptable value for
      * <tt>this</tt> variable. For <tt>AbstractVariable</tt>, this method always
-     * returns <tt>true</tt>. </p> Subclasses should override
+     * returns <tt>true</tt>. Subclasses should override
      * <tt>checkValue()</tt> in order to provide for subclass-specific value
      * checking. The value should pass the test if it can be converted into an
      * equivalent object of the correct class type (see
      * <tt>getValueClass()</tt>) for this variable; otherwise, it should fail. In
      * general, <tt>checkValue()</tt> should not fail a value for simply not
-     * being an instance of a particular class. </p> Since this method is not
+     * being an instance of a particular class. Since this method is not
      * <tt>static</tt>, subclasses may (but need not) provide for
      * instance-specific value checking.
      *

@@ -21,13 +21,14 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndTestDSep;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.PermutationGenerator;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Stores a list of independence facts.
@@ -36,24 +37,59 @@ import java.util.Set;
  */
 public class IndependenceFacts implements DataModel {
     static final long serialVersionUID = 23L;
+    private List<Node> nodes = new ArrayList<>();
 
-    private Set<IndependenceFact> unsortedFacts = new HashSet<>();
+    private Set<IndependenceFact> unsortedFacts = new LinkedHashSet<>();
     private String name = "";
     private IKnowledge knowledge = new Knowledge2();
 
     public IndependenceFacts() {
-        // blank
+        // blank, used in reflection so don't delete.
     }
 
-    public void add(IndependenceFact fact) {
-        this.unsortedFacts.add(fact);
+    public IndependenceFacts(Graph graph) {
+        IndTestDSep dsep = new IndTestDSep(graph);
+
+        Set<IndependenceFact> facts = new HashSet<>();
+
+        nodes = graph.getNodes();
+
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(nodes.size(), nodes.size());
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            if (choice.length < 2) continue;
+
+            PermutationGenerator permGen = new PermutationGenerator(choice.length);
+            int[] perm;
+
+            while (((perm = permGen.next()) != null)) {
+                Node x = nodes.get(choice[perm[0]]);
+                Node y = nodes.get(choice[perm[1]]);
+
+                List<Node> Z = new ArrayList<>();
+
+                for (int i = 2; i < perm.length; i++) {
+                    Z.add(nodes.get(choice[perm[i]]));
+                }
+
+                if (dsep.isIndependent(x, y, Z)) {
+                    facts.add(new IndependenceFact(x, y, Z));
+                }
+            }
+
+            this.unsortedFacts = facts;
+        }
     }
 
     public IndependenceFacts(IndependenceFacts facts) {
         this();
+        if (facts == null) throw new NullPointerException("Facts is null.");
+        if (facts.nodes == null) throw new NullPointerException("Facts nodes is null.");
         this.unsortedFacts = new HashSet<>(facts.unsortedFacts);
         this.name = facts.name;
         this.knowledge = facts.knowledge.copy();
+        this.nodes = new ArrayList<>(facts.nodes);
     }
 
     /**
@@ -63,10 +99,15 @@ public class IndependenceFacts implements DataModel {
         return new IndependenceFacts();
     }
 
+    public void add(IndependenceFact fact) {
+        this.unsortedFacts.add(fact);
+    }
+
     public String toString() {
         StringBuilder builder = new StringBuilder();
+        builder.append("\n");
 
-        for (IndependenceFact fact : this.unsortedFacts) {
+        for (IndependenceFact fact : unsortedFacts) {
             builder.append(fact).append("\n");
         }
 
@@ -103,23 +144,57 @@ public class IndependenceFacts implements DataModel {
         this.unsortedFacts.remove(fact);
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getName() {
         return this.name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public boolean isIndependent(Node x, Node y, Node... z) {
-        IndependenceFact fact = new IndependenceFact(x, y, z);
-        return this.unsortedFacts.contains(fact);
+        for (IndependenceFact fact : unsortedFacts) {
+            if ((fact.getX().equals(x) && fact.getY().equals(y)) || (fact.getX().equals(y) && fact.getY().equals(x))) {
+                Set<Node> cond = new HashSet<>();
+                Collections.addAll(cond, z);
+
+                if (cond.equals(new HashSet<>(fact.getZ()))) {
+                    return true;
+                }
+
+//                && fact.getZ().equals(z)) {
+//
+//                return true;
+            }
+        }
+
+        return false;
+
+
+//        IndependenceFact fact = new IndependenceFact(x, y, z);
+//        return unsortedFacts.contains(fact);
     }
 
     public boolean isIndependent(Node x, Node y, List<Node> z) {
-        IndependenceFact fact = new IndependenceFact(x, y, z);
-        System.out.println("Looking up " + fact + " in " + this.unsortedFacts);
-        return this.unsortedFacts.contains(fact);
+        boolean found = false;
+
+        for (IndependenceFact fact : unsortedFacts) {
+            if (((fact.getX().equals(x) && fact.getY().equals(y))
+                    || (fact.getX().equals(y) && fact.getY().equals(x)))
+                    &&  new HashSet<>(fact.getZ()).equals(new HashSet<>(z))) {
+                found = true;
+                break;
+            }
+        }
+
+//        IndependenceFact fact = new IndependenceFact(x, y, z);
+//        boolean found2 = unsortedFacts.contains(fact);
+
+//        if (found != found2) {
+//            System.out.println("Not the same.");
+//        }
+
+        return found;
     }
 
     public IKnowledge getKnowledge() {
@@ -132,13 +207,24 @@ public class IndependenceFacts implements DataModel {
     }
 
     public List<Node> getVariables() {
+        if (nodes != null) {
+            return nodes;
+        }
+
         Set<Node> variables = new HashSet<>();
 
-        for (IndependenceFact fact : this.unsortedFacts) {
+        for (IndependenceFact fact : unsortedFacts) {
             variables.add(fact.getX());
             variables.add(fact.getY());
-
             variables.addAll(fact.getZ());
+        }
+
+        if (nodes != null) {
+            if (new HashSet<>(variables).equals(new HashSet<>(nodes))) {
+                return nodes;
+            } else {
+                throw new IllegalArgumentException("The supplied order is not precisely for the variables in the facts.");
+            }
         }
 
         return new ArrayList<>(variables);
@@ -153,6 +239,18 @@ public class IndependenceFacts implements DataModel {
         }
 
         return names;
+    }
+
+    public void setNodes(List<Node> nodes) {
+        this.nodes = Collections.unmodifiableList(nodes);
+    }
+
+    public int size() {
+        return unsortedFacts.size();
+    }
+
+    public List<IndependenceFact> getFacts() {
+        return new ArrayList<>(unsortedFacts);
     }
 }
 

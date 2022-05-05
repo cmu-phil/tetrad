@@ -36,9 +36,9 @@ import static jgpml.covariancefunctions.MatrixOperations.exp;
 /**
  * Squared Exponential covariance function with isotropic distance measure. The
  * covariance function is parameterized as:
- * <P><DD>
+ * <P>
  * k(x^p,x^q) = sf2 * exp(-(x^p - x^q)'*inv(P)*(x^p - x^q)/2)
- * </DD>
+ *
  * where the P matrix is ell^2 times the unit matrix and sf2 is the signal
  * variance. The hyperparameters are:
  * <p>

@@ -27,26 +27,26 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * </p> Represents the graphical structure of a structural equation model. The
+ * Represents the graphical structure of a structural equation model. The
  * linear structure of the structural equation model is constructed by adding
  * non-error nodes to the graph and connecting them with directed edges. As this
  * is done, the graph automatically maintains the invariant that endogenous
  * non-error nodes are associated with explicit error nodes in the graph and
  * exogenous non-error nodes are not. An associated error node for a node N is
- * an error node that has N as its only child, E-->N. Error nodes for exogenous
+ * an error node that has N as its only child, E--&gt;N. Error nodes for exogenous
  * nodes are always implicit in the graph. So as nodes become endogenous, error
  * nodes are added for them, and as they become exogenous, error nodes are
  * removed for them. Correlated errors are represented using directed edges
  * among exogenous nodes. Directed edges may therefore be added among any
  * exogenous nodes in the graph, though the easiest way to add (or remove)
  * exogenous nodes is to determine which non-exogenous nodes N1, N2 they are
- * representing correlated errors for and then to use this formulation:</p>
+ * representing correlated errors for and then to use this formulation:
  * <pre>
  *     addBidirectedEdge(getExogenous(node1), getExogenous(node2));
  *     removeEdge(getExogenous(node1), getExogenous(node2));
  * </pre>
- * </p> This avoids the problem of not knowing whether the exogenous node for a
- * node is itself or its associated error node.</p>
+ * This avoids the problem of not knowing whether the exogenous node for a
+ * node is itself or its associated error node.
  *
  * @author Joseph Ramsey
  */

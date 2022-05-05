@@ -10,6 +10,7 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
 
 import java.io.FileWriter;
@@ -93,7 +94,7 @@ public class HsimAutoRun {
             //select a random node as the centroid
             List<Node> allNodes = estGraph.getNodes();
             int size = allNodes.size();
-            int randIndex = new Random().nextInt(size);
+            int randIndex = RandomUtil.getInstance().nextInt(size);
             Node centroid = allNodes.get(randIndex);
             if (this.verbose) {
                 System.out.println("the centroid is " + centroid);
@@ -116,7 +117,7 @@ public class HsimAutoRun {
 
                     ////**** If queueAdd is empty at this stage, randomly select a node to add
                     while (queueAdd.size() < 1) {
-                        queueAdd.add(allNodes.get(new Random().nextInt(size)));
+                        queueAdd.add(allNodes.get(RandomUtil.getInstance().nextInt(size)));
                     }
 
                     //add remaining nodes to queue

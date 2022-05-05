@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * Wraps the IMaGES algorithm for discrete variables.
- * </p>
+ *
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
  * datasets should be taken at a time (randomly). This cannot given multiple
  * values.

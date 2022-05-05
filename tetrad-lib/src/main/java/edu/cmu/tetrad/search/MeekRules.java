@@ -278,7 +278,7 @@ public class MeekRules implements ImpliedOrientation {
         Edge before = graph.getEdge(a, c);
         Edge after = Edges.directedEdge(a, c);
 
-        visited.add(a);
+//        visited.add(a);
         visited.add(c);
 
         graph.removeEdge(before);

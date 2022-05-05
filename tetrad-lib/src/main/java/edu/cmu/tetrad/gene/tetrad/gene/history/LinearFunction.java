@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * <p>Implements a linear update function, Gi.0 = L(Parents(G0.0)) + ei, where P
- * is a polynomial function and ei is a random noise term.</p>
+ * is a polynomial function and ei is a random noise term.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -77,9 +77,6 @@ public class LinearFunction implements UpdateFunction {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static LinearFunction serializableInstance() {
         return new LinearFunction(BasicLagGraph.serializableInstance());

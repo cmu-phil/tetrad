@@ -345,7 +345,7 @@ public class TestSemIm {
         SemIm modifiedSemIm = new SemIm(semIm);
         SemGraph graph = new SemGraph(modifiedSemIm.getSemPm().getGraph());
 
-        // remove <--> arrows from a copy of the graph so we can use the getParents function to get Nodes with edges into target
+        // remove &lt;-&gt; arrows from a copy of the graph so we can use the getParents function to get Nodes with edges into target
         SemGraph removedDoubleArrowEdges = new SemGraph(graph);
         ArrayList<Edge> edgesToRemove = new ArrayList<>();
         for (Edge e : removedDoubleArrowEdges.getEdges()) {

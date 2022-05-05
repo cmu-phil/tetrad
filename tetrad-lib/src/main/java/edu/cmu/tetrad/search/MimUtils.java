@@ -69,7 +69,7 @@ public final class MimUtils {
     /**
      * Converts a disconnected multiple indicator model into a set of clusters. Assumes the given graph contains a
      * number of latents Li, i = 0,...,n-1, for each of which there is a list of indicators Wj, j = 0,...,m_i-1, such
-     * that , Li-->Wj. Returns a Clusters object mapping i to Wj. The name for cluster i is set to Li.
+     * that , Li--&gt;Wj. Returns a Clusters object mapping i to Wj. The name for cluster i is set to Li.
      */
     public static Clusters convertToClusters(Graph clusterGraph, List<Node> measuredVariables) {
         List<String> latents = new ArrayList<>();

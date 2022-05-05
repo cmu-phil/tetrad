@@ -649,7 +649,7 @@
                                    onfocus="if(this.value==this.defaultValue){this.value='';}else{this.select();}"
                                    onblur="if(this.value=='')this.value=this.defaultValue"/>
                             <a href="#" title="Search in icon pack"
-                               onclick="javascript:document.icon_pack_search.submit()"><span>Search</span></a>
+                               onclick="document.icon_pack_search.submit()"><span>Search</span></a>
                             <div class="hidden"><input type="submit" value="Submit"/></div>
                         </label>
                     </form>
@@ -2012,7 +2012,7 @@
 
         function hide_adhere(){
             $("a.adhere").hide();
-        };
+        }
         timer = setTimeout(hide_adhere, 100);
 
         var tracking_data = {};

@@ -41,7 +41,7 @@ import java.util.List;
  * distributions of all the variables.  It then computes an estimated value for the target variable by selecting the
  * value with the greatest probability in the updated distribution.  The method returns a crosstabulation table in the
  * form of a two-dimensional integer array in which coefs of observed versus estimated values of the target variable
- * are stored. </p> Note that the variables must be the same in the dataset and the Bayes net.
+ * are stored. Note that the variables must be the same in the dataset and the Bayes net.
  *
  * @author Frank Wimberly based on a specification by Clark Glymour
  */
