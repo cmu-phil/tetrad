@@ -12,7 +12,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.util.Collections.*;
+import static java.util.Collections.shuffle;
 
 
 /**
@@ -21,7 +21,7 @@ import static java.util.Collections.*;
  * @author bryanandrews
  * @author josephramsey
  */
-public class Grasp {
+public class GraspTol {
     private final List<Node> variables;
     private Score score;
     private IndependenceTest test;
@@ -36,25 +36,27 @@ public class Grasp {
     private boolean cachingScores = true;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
+    private int toleranceDepth;
     private boolean useDataOrder = true;
+    private boolean allowRandomnessInsideAlgorithm;
 
     // other params
     private int depth = 4;
     private int numStarts = 1;
 
-    public Grasp(@NotNull Score score) {
+    public GraspTol(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
     }
 
-    public Grasp(@NotNull IndependenceTest test) {
+    public GraspTol(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
     }
 
-    public Grasp(@NotNull IndependenceTest test, Score score) {
+    public GraspTol(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
@@ -96,6 +98,9 @@ public class Grasp {
 
             this.scorer.score(order);
 
+//            betterMutation(scorer);
+//            List<Node> perm  = scorer.getPi();
+
             List<Node> perm = grasp(this.scorer);
 
             this.scorer.score(perm);
@@ -117,6 +122,90 @@ public class Grasp {
 
         return bestPerm;
     }
+
+    public void betterMutation(@NotNull TeyssierScorer scorer) {
+        List<Node> pi = scorer.getPi();
+        double s;
+        double sp = scorer.score(pi);
+        scorer.bookmark();
+
+        do {
+            s = sp;
+
+            for (Node k : scorer.getPi()) {
+                sp = NEGATIVE_INFINITY;
+                int index = scorer.index(k);
+
+                for (int j = index; j >= 0; j--) {
+                    scorer.moveTo(k, j);
+//                    tuck(k, j, scorer);
+
+                    if (scorer.score() > sp) {
+                        if (!violatesKnowledge(scorer.getPi())) {
+                            sp = scorer.score();
+                            scorer.bookmark();
+                        }
+                    }
+                }
+
+                scorer.goToBookmark();
+                scorer.bookmark();
+
+                for (int j = index; j < scorer.size(); j++) {
+                    scorer.moveTo(k, j);
+//                    tuck(k, j, scorer);
+
+                    if (scorer.score() > sp) {
+                        if (!violatesKnowledge(scorer.getPi())) {
+                            sp = scorer.score();
+                            scorer.bookmark();
+
+                            if (verbose) {
+                                System.out.println("# Edges = " + scorer.getNumEdges()
+                                        + " Score = " + scorer.score()
+                                        + " (betterMutation)"
+                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
+                            }
+                        }
+                    }
+                }
+
+                scorer.goToBookmark();
+            }
+        } while (sp > s);
+    }
+
+    private void tuck(Node k, int j, TeyssierScorer scorer) {
+        if (j >= scorer.index(k)) return;
+        List<Node> d2 = new ArrayList<>();
+        for (int i = j + 1; i < scorer.index(k); i++) {
+            d2.add(scorer.get(i));
+        }
+
+        List<Node> gammac = new ArrayList<>(d2);
+        gammac.removeAll(scorer.getAncestors(k));
+
+        Node first = null;
+
+        if (!gammac.isEmpty()) {
+            first = gammac.get(0);
+
+            for (Node n : gammac) {
+                if (scorer.index(n) < scorer.index(first)) {
+                    first = n;
+                }
+            }
+        }
+
+        if (scorer.getParents(k).contains(scorer.get(j))) {
+            if (first != null) {
+                scorer.moveTo(scorer.get(j), scorer.index(first));
+            }
+//            scorer.moveTo(j, scorer.index(first));
+            scorer.moveTo(k, j);
+        }
+    }
+
 
     public int getNumEdges() {
         return this.scorer.getNumEdges();
@@ -168,7 +257,7 @@ public class Grasp {
         for (int[] depth : depths) {
             do {
                 sOld = sNew;
-                graspDfs(scorer, sOld, depth, 1, new HashSet<>(), new HashSet<>());
+                graspDfsTol(scorer, sOld, depth, 1, this.toleranceDepth, 0, new HashSet<>(), new HashSet<>());
                 sNew = scorer.score();
             } while (sNew > sOld);
         }
@@ -183,13 +272,30 @@ public class Grasp {
         return scorer.getPi();
     }
 
-    private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
-                          Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
-        for (Node y : scorer.getShuffledVariables()) {
+
+    private void graspDfsTol(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
+                             int tol, int tolCur,
+                             Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
+        List<Node> variables;
+
+        if (this.allowRandomnessInsideAlgorithm) {
+            variables = scorer.getShuffledVariables();
+        } else {
+            variables = scorer.getPi();
+        }
+
+        for (Node y : variables) {
+            if (Thread.interrupted()) break;
+
             Set<Node> ancestors = scorer.getAncestors(y);
             List<Node> parents = new ArrayList<>(scorer.getParents(y));
-            shuffle(parents);
+
+            if (this.allowRandomnessInsideAlgorithm) {
+                shuffle(parents);
+            }
+
             for (Node x : parents) {
+                if (Thread.interrupted()) break;
 
                 boolean covered = scorer.coveredEdge(x, y);
                 boolean singular = true;
@@ -200,7 +306,7 @@ public class Grasp {
                 if (covered && tucks.contains(tuck)) continue;
                 if (currentDepth > depth[1] && !covered) continue;
 
-                int[] idcs = new int[] {scorer.index(x), scorer.index(y)};
+                int[] idcs = {scorer.index(x), scorer.index(y)};
 
                 int i = idcs[0];
                 scorer.bookmark(currentDepth);
@@ -210,6 +316,7 @@ public class Grasp {
                 Iterator<Node> zItr = Z.iterator();
                 do {
                     if (first) {
+//                        scorer.moveTo(y, i);
                         scorer.moveToNoUpdate(y, i);
                         first = false;
                     } else {
@@ -218,6 +325,7 @@ public class Grasp {
                             if (scorer.getParents(z).contains(x)) {
                                 singular = false;
                             }
+//                            scorer.moveTo(z, i++);
                             scorer.moveToNoUpdate(z, i++);
                         }
                     }
@@ -233,24 +341,29 @@ public class Grasp {
                 if (violatesKnowledge(scorer.getPi())) continue;
 
                 double sNew = scorer.score();
+
                 if (sNew > sOld) {
-                    if (verbose) {
-                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
+                    if (this.verbose) {
+                        String s = String.format("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s",
                                 scorer.getNumEdges(), sNew - sOld, tucks, tuck);
+                        TetradLogger.getInstance().forceLogMessage(s);
+
+//                        System.out.printf("Edges: %d \t|\t Score Improvement: %f \t|\t Tucks Performed: %s %s \n",
+//                                scorer.getNumEdges(), sNew - sOld, tucks, tuck);
                     }
                     return;
-                }
-
-                if (sNew == sOld && currentDepth < depth[0]) {
+                } else if (sNew == sOld && currentDepth < depth[0]) {
                     tucks.add(tuck);
                     if (currentDepth > depth[1]) {
                         if (!dfsHistory.contains(tucks)) {
                             dfsHistory.add(new HashSet<>(tucks));
-                            graspDfs(scorer, sOld, depth, currentDepth + 1, tucks, dfsHistory);
+                            graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur, tucks, dfsHistory);
                         }
-                    } else {
-                        graspDfs(scorer, sOld, depth, currentDepth + 1, tucks, dfsHistory);
                     }
+                    tucks.remove(tuck);
+                } else if (sNew < sOld && currentDepth < depth[0] && tolCur < tol) {
+                    tucks.add(tuck);
+                    graspDfsTol(scorer, sOld, depth, currentDepth + 1, tol, tolCur + 1, tucks, dfsHistory);
                     tucks.remove(tuck);
                 }
 
@@ -339,5 +452,13 @@ public class Grasp {
 
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
+    }
+
+    public void setAllowRandomnessInsideAlgorithm(boolean allowRandomnessInsideAlgorithm) {
+        this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithm;
+    }
+
+    public void setToleranceDepth(int toleranceDepth) {
+        this.toleranceDepth = toleranceDepth;
     }
 }
