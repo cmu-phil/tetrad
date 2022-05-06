@@ -4,10 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.cmu</groupId>
     <artifactId>tetrad</artifactId>
-    <version>7.1.0-SNAPSHOT</version>
+    <version>7.1.0</version>
     <packaging>pom</packaging>
 
     <name>Tetrad Project</name>
+    <description>The Tetrad causal inference project.</description>
+    <url>https://www.ccd.pitt.edu/tools/</url>
     <modules>
         <module>tetrad-gui</module>
         <module>tetrad-lib</module>
@@ -20,6 +22,21 @@
             <url>http://www.gnu.org/licenses/gpl.txt</url>
         </license>
     </licenses>
+
+    <developers>
+        <developer>
+            <name>Joseph Ramsey</name>
+            <email>jdramsey@andrew.cmu.edu</email>
+            <organization>Carnegie Mellon University</organization>
+            <organizationUrl>http://www.cmu.edu</organizationUrl>
+        </developer>
+        <developer>
+            <name>Kevin Bui</name>
+            <email>kvb2@pitt.edu</email>
+            <organization>University of Pittsburgh</organization>
+            <organizationUrl>http://www.pitt.edu</organizationUrl>
+        </developer>
+    </developers>
 
     <scm>
         <connection>scm:git:git@github.com:cmu-phil/tetrad.git</connection>
@@ -42,6 +59,20 @@
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <extensions>
