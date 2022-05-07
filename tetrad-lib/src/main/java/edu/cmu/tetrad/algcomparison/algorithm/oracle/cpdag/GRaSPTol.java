@@ -27,7 +27,7 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "GRaSPTol",
+        name = "GRaSP-Tol",
         command = "grasptol",
         algoType = AlgType.forbid_latent_common_causes
 )
