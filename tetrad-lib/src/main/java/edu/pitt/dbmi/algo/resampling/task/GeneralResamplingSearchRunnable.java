@@ -4,16 +4,15 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch;
-import edu.pitt.dbmi.data.reader.Data;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -26,8 +25,9 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     private final Parameters parameters;
     private final GeneralResamplingSearch resamplingAlgorithmSearch;
     private final boolean verbose;
-    private final DataModel dataModel;
-    private final Algorithm algorithm;
+    private DataModel dataModel;
+    private List<DataModel> dataModels = new ArrayList<>();
+    private Algorithm algorithm;
     private MultiDataSetAlgorithm multiDataSetAlgorithm;
     /**
      * An initial graph to start from.
@@ -50,6 +50,20 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
 
         this.dataModel = dataModel.copy();
         this.algorithm = algorithm;
+        this.parameters = parameters;
+        this.resamplingAlgorithmSearch = resamplingAlgorithmSearch;
+        this.verbose = verbose;
+    }
+
+    public GeneralResamplingSearchRunnable(List<DataModel> dataModel, MultiDataSetAlgorithm algorithm, Parameters parameters,
+                                           GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
+        if (dataModel == null) throw new NullPointerException("Data model null.");
+        if (algorithm == null) throw new NullPointerException("Algorithm null.");
+        if (parameters == null) throw new NullPointerException("Parameters null.");
+        if (resamplingAlgorithmSearch == null) throw new NullPointerException("Resampling algroithms search null.");
+
+        this.dataModels = dataModel;
+        this.multiDataSetAlgorithm = algorithm;
         this.parameters = parameters;
         this.resamplingAlgorithmSearch = resamplingAlgorithmSearch;
         this.verbose = verbose;
@@ -128,7 +142,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
                     }
                 }
 
-                graph = this.multiDataSetAlgorithm.search(this.dataModel, this.parameters);
+                graph = this.multiDataSetAlgorithm.search(this.dataModels, this.parameters);
             }
 
             stop = System.currentTimeMillis();

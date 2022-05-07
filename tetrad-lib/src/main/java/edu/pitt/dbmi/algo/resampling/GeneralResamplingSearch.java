@@ -9,7 +9,6 @@ import edu.pitt.dbmi.algo.resampling.task.GeneralResamplingSearchRunnable;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -171,24 +170,27 @@ public class GeneralResamplingSearch {
                 tasks.add(task);
             }
         } else {
-            for (DataSet data : this.dataSets) {
-                for (int i1 = 0; i1 < this.numberResampling; i1++) {
-                    DataModel dataModel;
+            for (int i1 = 0; i1 < this.numberResampling; i1++) {
+                List<DataModel> dataModels = new ArrayList<>();
+
+                for (DataSet data : this.dataSets) {
 
                     if (this.resamplingWithReplacement) {
-                        dataModel = DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
+                        dataModels.add(DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0)));
                     } else {
-                        dataModel = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
+                        dataModels.add(DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0)));
                     }
 
-                    GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataModel,
-                            this.multiDataSetAlgorithm, this.parameters, this,
-                            this.verbose);
-                    task.setExternalGraph(this.externalGraph);
-                    task.setKnowledge(this.knowledge);
 
-                    tasks.add(task);
                 }
+
+                GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataModels,
+                        this.multiDataSetAlgorithm, this.parameters, this,
+                        this.verbose);
+                task.setExternalGraph(this.externalGraph);
+                task.setKnowledge(this.knowledge);
+
+                tasks.add(task);
             }
         }
 
