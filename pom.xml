@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>edu.cmu</groupId>
+    <groupId>edu.cmu.phil</groupId>
     <artifactId>tetrad</artifactId>
     <version>7.1.0</version>
     <packaging>pom</packaging>
@@ -10,6 +10,7 @@
     <name>Tetrad Project</name>
     <description>The Tetrad causal inference project.</description>
     <url>https://www.ccd.pitt.edu/tools/</url>
+
     <modules>
         <module>tetrad-gui</module>
         <module>tetrad-lib</module>
