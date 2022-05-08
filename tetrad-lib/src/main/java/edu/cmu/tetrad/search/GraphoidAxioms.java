@@ -103,7 +103,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * X ⊥⊥ Y | Z ==> Y ⊥⊥ X | Z
+     * X ⊥⊥ Y | Z ==&gt; Y ⊥⊥ X | Z
      */
     public boolean symmetry() {
 
@@ -124,7 +124,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * X ⊥⊥ (Y ∪ W) |Z ==> (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z)
+     * X ⊥⊥ (Y ∪ W) |Z ==&gt; (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z)
      */
     public boolean decomposition() {
         boolean found0 = false;
@@ -200,7 +200,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * X _||_ Y U W | Z ==> X _||_ Y | Z U W
+     * X _||_ Y U W | Z ==&gt; X _||_ Y | Z U W
      */
     public boolean weakUnion() {
         boolean found0 = false;
@@ -255,7 +255,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z ∪ Y) ==> X ⊥⊥ (Y ∪ W) |Z
+     * (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z ∪ Y) ==&gt; X ⊥⊥ (Y ∪ W) |Z
      */
     public boolean contraction() {
         boolean found0 = false;
@@ -312,7 +312,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * (X ⊥⊥ Y | (Z ∪ W)) ∧ (X ⊥⊥ W | (Z ∪ Y)) ==> X ⊥⊥ (Y ∪ W) |Z
+     * (X ⊥⊥ Y | (Z ∪ W)) ∧ (X ⊥⊥ W | (Z ∪ Y)) ==&gt; X ⊥⊥ (Y ∪ W) |Z
      */
     public boolean intersection() {
         boolean found0 = false;
@@ -384,7 +384,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * (X ⊥⊥ Y | Z) ∧ (X ⊥⊥ W |Z) ==> X ⊥⊥ (Y ∪ W) |Z
+     * (X ⊥⊥ Y | Z) ∧ (X ⊥⊥ W |Z) ==&gt; X ⊥⊥ (Y ∪ W) |Z
      */
     public boolean composition() {
         boolean found0 = false;
@@ -438,7 +438,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * X ⊥⊥ Y | Z ==> Y ⊥⊥ X | Z
+     * X ⊥⊥ Y | Z ==&gt; Y ⊥⊥ X | Z
      */
     public void setSymmetryAssumed() {
         for (GraphoidIndFact fact : new HashSet<>(facts)) {

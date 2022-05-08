@@ -966,9 +966,6 @@ public class Comparison {
         this.savePags = savePags;
     }
 
-    /**
-     * @return True if cpdags should be saved out.
-     */
     public void setSaveData(boolean saveData) {
         this.saveData = saveData;
     }
