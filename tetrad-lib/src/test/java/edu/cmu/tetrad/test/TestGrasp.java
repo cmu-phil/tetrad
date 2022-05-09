@@ -52,7 +52,6 @@ import org.apache.commons.collections4.OrderedMap;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
-import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;

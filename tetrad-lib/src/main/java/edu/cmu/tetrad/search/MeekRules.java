@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -274,9 +271,17 @@ public class MeekRules implements ImpliedOrientation {
     private boolean direct(Node a, Node c, Graph graph, Set<Node> visited) {
         if (!MeekRules.isArrowpointAllowed(a, c, this.knowledge)) return false;
         if (!Edges.isUndirectedEdge(graph.getEdge(a, c))) return false;
-        if (aggressivelyPreventCycles && graph.existsDirectedPathFromTo(c, a)) return false;
 
         Edge before = graph.getEdge(a, c);
+        graph.removeEdge(before);
+
+        if (aggressivelyPreventCycles && GraphUtils.existsSemidirectedPath(c, a, graph)) {
+            graph.addEdge(before);
+            return false;
+        }
+
+//        if (aggressivelyPreventCycles && graph.existsDirectedPathFromTo(c, a)) return false;
+
         Edge after = Edges.directedEdge(a, c);
 
 //        visited.add(a);
