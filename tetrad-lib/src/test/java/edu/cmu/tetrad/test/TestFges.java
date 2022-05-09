@@ -760,6 +760,7 @@ public class TestFges {
                 assertFalse(CPDAG1.isParentOf(x, y));
             }
 
+            // This sometimes fails if the following cycle check is uncommented.
 //            assertFalse(CPDAG1.existsDirectedCycle());
         }
     }
