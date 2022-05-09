@@ -26,22 +26,22 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS",
-        command = "boss",
+        name = "BOSS2",
+        command = "boss2",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class BOSS2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BOSS() {
+    public BOSS2() {
         // Used in reflection; do not delete.
     }
 
-    public BOSS(ScoreWrapper score, IndependenceWrapper test) {
+    public BOSS2(ScoreWrapper score, IndependenceWrapper test) {
         this.score = score;
         this.test = test;
     }
@@ -63,21 +63,21 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
             IndependenceTest test = this.test.getTest(dataModel, parameters);
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Boss boss = new Boss(test, score);
+            Boss2 boss2 = new Boss2(test, score);
 
-            boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
-            boss.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
-            boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
-            boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            boss.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
+            boss2.setDepth(parameters.getInt(Params.GRASP_DEPTH));
+            boss2.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
+            boss2.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
+            boss2.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
+            boss2.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            boss2.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
-            boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setKnowledge(this.knowledge);
-            boss.bestOrder(score.getVariables());
-            return boss.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
+            boss2.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+            boss2.setKnowledge(this.knowledge);
+            boss2.bestOrder(score.getVariables());
+            return boss2.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
         } else {
-            BOSS algorithm = new BOSS(this.score, this.test);
+            BOSS2 algorithm = new BOSS2(this.score, this.test);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -97,7 +97,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
     @Override
     public String getDescription() {
-        return "GRaSP (Greedy Relaxed Sparsest Permutation) using " + this.test.getDescription()
+        return "BOSS2 (Better Order Score Search) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
@@ -112,15 +112,15 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
         // Flags
         params.add(Params.GRASP_DEPTH);
-        params.add(Params.GRASP_UNCOVERED_DEPTH);
-        params.add(Params.GRASP_NONSINGULAR_DEPTH);
-        params.add(Params.GRASP_TOLERANCE_DEPTH);
-        params.add(Params.GRASP_ORDERED_ALG);
-//        params.add(Params.GRASP_USE_SCORE);
+//        params.add(Params.GRASP_UNCOVERED_DEPTH);
+//        params.add(Params.GRASP_NONSINGULAR_DEPTH);
+//        params.add(Params.GRASP_TOLERANCE_DEPTH);
+//        params.add(Params.GRASP_ORDERED_ALG);
+        params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_VERMA_PEARL);
         params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
-        params.add(Params.TIME_LAG);
+//        params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
+//        params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 
         // Parameters
