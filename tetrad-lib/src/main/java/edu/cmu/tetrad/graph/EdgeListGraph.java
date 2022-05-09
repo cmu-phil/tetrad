@@ -421,10 +421,10 @@ public class EdgeListGraph implements Graph {
         while (!Q.isEmpty()) {
             Node t = Q.remove();
 
-            if (t == node2) return true;
-
             for (Node c : getChildren(t)) {
-                if (c == node2 || !V.contains(c)) {
+                if (c == node2) return true;
+
+                if (!V.contains(c)) {
                     V.add(c);
                     Q.offer(c);
                 }
