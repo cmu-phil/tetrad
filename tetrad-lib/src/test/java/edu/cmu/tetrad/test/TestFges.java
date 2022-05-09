@@ -747,7 +747,6 @@ public class TestFges {
             fges.setFaithfulnessAssumed(true);
             fges.setKnowledge(knowledge);
             Graph CPDAG1 = fges.search();
-            Graph g2 = new EdgeListGraph(dag.getNodes());
 
             for (Edge edge : knowledgeGraph.getEdges()) {
                 Node x = Edges.getDirectedEdgeTail(edge);
