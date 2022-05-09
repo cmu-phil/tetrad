@@ -733,7 +733,7 @@ public class TestFges {
     @Test
     public void testFromGraphWithForbiddenKnowledge() {
         final int numNodes = 20;
-        final int numIterations = 5;
+        final int numIterations = 20;
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
@@ -758,10 +758,12 @@ public class TestFges {
 
                 assertFalse(CPDAG1.isParentOf(x, y));
             }
+
+            assertFalse(CPDAG1.existsDirectedCycle());
         }
     }
 
-    //    @Test
+    @Test
     public void testFromGraphWithRequiredKnowledge() {
         final int numNodes = 20;
         final int numIterations = 20;
