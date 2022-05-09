@@ -274,6 +274,7 @@ public class MeekRules implements ImpliedOrientation {
     private boolean direct(Node a, Node c, Graph graph, Set<Node> visited) {
         if (!MeekRules.isArrowpointAllowed(a, c, this.knowledge)) return false;
         if (!Edges.isUndirectedEdge(graph.getEdge(a, c))) return false;
+        if (aggressivelyPreventCycles && graph.existsDirectedPathFromTo(c, a)) return false;
 
         Edge before = graph.getEdge(a, c);
         Edge after = Edges.directedEdge(a, c);
