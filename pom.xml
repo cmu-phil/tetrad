@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.cmu.phil.www</groupId>
     <artifactId>tetrad</artifactId>
-    <version>7.2.0-SNAPSHOT</version>
+    <version>7.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Tetrad Project</name>
@@ -47,10 +47,10 @@
     </scm>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
+<!--        <snapshotRepository>-->
+<!--            <id>ossrh</id>-->
+<!--            <url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
+<!--        </snapshotRepository>-->
         <repository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
