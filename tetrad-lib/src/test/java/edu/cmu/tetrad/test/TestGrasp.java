@@ -143,8 +143,7 @@ public final class TestGrasp {
         params.set(Params.NUM_STARTS, 1);
 
         params.set(Params.PENALTY_DISCOUNT, 2);
-//        params.set(Params.ZS_RISK_BOUND, 0.001); //, 0.01, 0.1);
-//        params.set(Params.EBIC_GAMMA, 0.8);
+        params.set(Params.EBIC_GAMMA, 0.8);
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 3);
@@ -166,9 +165,13 @@ public final class TestGrasp {
         params.set(Params.VERBOSE, false);
 
         Algorithms algorithms = new Algorithms();
-//        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new rGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+
+//        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.EbicScore(), new FisherZ()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.EbicScore()));
+//        algorithms.add(new rGES(new edu.cmu.tetrad.algcomparison.score.EbicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));

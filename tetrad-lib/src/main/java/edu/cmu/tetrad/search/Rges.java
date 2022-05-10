@@ -57,6 +57,7 @@ public class Rges {
                     // node into parents of the proximal node
 
                     for (Node c : g.getAdjacentNodes(b)) {
+                        if (g.isParentOf(c, b)) continue;
                         if (existsSemidirectedPath(c, a, g)) {
                             g.removeEdge(g.getEdge(b, c));
                             g.addDirectedEdge(c, b);
