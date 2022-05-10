@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.cmu-phil</groupId>
     <artifactId>tetrad</artifactId>
-    <version>7.1.0</version>
+    <version>7.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Tetrad Project</name>
