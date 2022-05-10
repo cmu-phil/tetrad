@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.cmu-phil</groupId>
         <artifactId>tetrad</artifactId>
-        <version>7.1.0-SNAPSHOT</version>
+        <version>7.1.0</version>
     </parent>
 
     <artifactId>tetrad-gui</artifactId>
@@ -102,6 +102,33 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
         <extensions>
             <extension>
@@ -110,6 +137,8 @@
                 <version>2.10</version>
             </extension>
         </extensions>
+
+
     </build>
 
     <dependencies>
