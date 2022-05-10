@@ -9,7 +9,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.util.Collections.shuffle;
@@ -21,7 +22,7 @@ import static java.util.Collections.shuffle;
  * @author bryanandrews
  * @author josephramsey
  */
-public class Boss2 {
+public class Boss {
     private final List<Node> variables;
     private Score score;
     private IndependenceTest test;
@@ -40,19 +41,19 @@ public class Boss2 {
     private int depth = 4;
     private int numStarts = 1;
 
-    public Boss2(@NotNull Score score) {
+    public Boss(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
     }
 
-    public Boss2(@NotNull IndependenceTest test) {
+    public Boss(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
     }
 
-    public Boss2(@NotNull IndependenceTest test, Score score) {
+    public Boss(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
