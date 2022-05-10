@@ -64,6 +64,7 @@ import java.util.*;
 import static edu.cmu.tetrad.search.OtherPermAlgs.Method.SP;
 import static java.util.Collections.shuffle;
 
+
 /**
  * Tests to make sure the DelimiterType enumeration hasn't been tampered with.
  *
@@ -71,6 +72,10 @@ import static java.util.Collections.shuffle;
  */
 @SuppressWarnings("ALL")
 public final class TestGrasp {
+
+    public static void main(String[] args) {
+        new TestGrasp().testGrasp1();
+    }
 
     @NotNull
     private static Grasp getGrasp(Score score, IndependenceTest test) {
@@ -181,7 +186,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void allPaperRuns() {
         Parameters params = new Parameters();
 
@@ -264,7 +269,7 @@ public final class TestGrasp {
             doPaperRun(params, dataPath, resultsPath, false);
 
             params.set(Params.NUM_MEASURES, 60);
-            params.set(Params.AVG_DEGREE, 2,  3, 4, 5, 6, 7, 8, 9, 10);
+            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
             params.set(Params.STANDARDIZE, 1000);
 
             dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
@@ -331,7 +336,7 @@ public final class TestGrasp {
                 algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testPaperSimulationsAll() {
         Parameters params = new Parameters();
 
