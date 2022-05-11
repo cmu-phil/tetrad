@@ -43,8 +43,7 @@ The issue tracker is here:
 
 https://github.com/cmu-phil/tetrad/issues
 
-For instructions on how to set this project up in 
-IntelliJ IDEA, see:
+For instructions on how to set this project up in IntelliJ IDEA, see:
 
 https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA
 
@@ -55,8 +54,7 @@ java -Xmx[g]G -jar *-launch.jar
 
 where g is the number of gigabytes allocated for heap.
 
-The project contains fairly well-developed code in these 
-packages:
+The project contains fairly well-developed code in these packages:
 
 tetrad
 pitt
