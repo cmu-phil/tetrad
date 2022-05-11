@@ -2,6 +2,10 @@ NEWS: 7.1.0 RELEASED 2022-05-10 TO THE MAVEN CENTRAL REPOSITORY! HERE:
 
 https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.1.0/
 
+FIXES FOR THIS RELEASE:
+
+https://github.com/cmu-phil/tetrad/wiki/Fixes-for-version-7.1.0
+
 This is the code for the Tetrad project. Please, if you are a user of Tetrad, or even 
 a novice, if you are willing, would you please consider giving us feedback on what you 
 like about it or don't like about it? It would be most appreciated. Just open up an 
