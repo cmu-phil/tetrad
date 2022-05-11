@@ -9,7 +9,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.util.Collections.shuffle;

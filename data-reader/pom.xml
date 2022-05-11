@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>edu.cmu</groupId>
+        <groupId>io.github.cmu-phil</groupId>
         <artifactId>tetrad</artifactId>
-        <version>7.1.0-SNAPSHOT</version>
+        <version>7.1.1-SNAPSHOT</version>
     </parent>
-    <groupId>edu.pitt.dbmi</groupId>
+<!--    <groupId>io.github.cmu-phil</groupId>-->
     <artifactId>data-reader</artifactId>
     <packaging>jar</packaging>
 

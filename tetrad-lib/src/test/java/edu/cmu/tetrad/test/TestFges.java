@@ -733,7 +733,7 @@ public class TestFges {
     @Test
     public void testFromGraphWithForbiddenKnowledge() {
         final int numNodes = 20;
-        final int numIterations = 5;
+        final int numIterations = 20;
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
@@ -758,10 +758,13 @@ public class TestFges {
 
                 assertFalse(CPDAG1.isParentOf(x, y));
             }
+
+            // This sometimes fails if the following cycle check is uncommented.
+//            assertFalse(CPDAG1.existsDirectedCycle());
         }
     }
 
-    //    @Test
+    @Test
     public void testFromGraphWithRequiredKnowledge() {
         final int numNodes = 20;
         final int numIterations = 20;
@@ -796,8 +799,6 @@ public class TestFges {
     private IKnowledge forbiddenKnowledge(Graph graph) {
         IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
 
-        List<Node> nodes = graph.getNodes();
-
         for (Edge edge : graph.getEdges()) {
             Node n1 = Edges.getDirectedEdgeTail(edge);
             Node n2 = Edges.getDirectedEdgeHead(edge);
@@ -809,7 +810,7 @@ public class TestFges {
             knowledge.setForbidden(n1.getName(), n2.getName());
         }
 
-        return knowledge;
+        return knowledge ;
     }
 
     private IKnowledge requiredKnowledge(Graph graph) {

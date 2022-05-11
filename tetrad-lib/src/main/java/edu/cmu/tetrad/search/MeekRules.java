@@ -276,9 +276,20 @@ public class MeekRules implements ImpliedOrientation {
         if (!Edges.isUndirectedEdge(graph.getEdge(a, c))) return false;
 
         Edge before = graph.getEdge(a, c);
+        graph.removeEdge(before);
+
+//        if (aggressivelyPreventCycles && GraphUtils.existsSemidirectedPath(c, a, graph)) {
+//            graph.addEdge(before);
+//            return false;
+//        }
+
+        if (aggressivelyPreventCycles && graph.existsDirectedPathFromTo(c, a)) {
+            graph.addEdge(before);
+            return false;
+        }
+
         Edge after = Edges.directedEdge(a, c);
 
-//        visited.add(a);
         visited.add(c);
 
         graph.removeEdge(before);

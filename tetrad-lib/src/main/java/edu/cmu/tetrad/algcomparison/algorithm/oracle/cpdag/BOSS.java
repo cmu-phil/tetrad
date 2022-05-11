@@ -8,10 +8,14 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -31,6 +35,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
+@Experimental
 public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
@@ -97,7 +102,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
     @Override
     public String getDescription() {
-        return "GRaSP (Greedy Relaxed Sparsest Permutation) using " + this.test.getDescription()
+        return "BOSS (Better Order Score Search) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
@@ -112,15 +117,9 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
         // Flags
         params.add(Params.GRASP_DEPTH);
-        params.add(Params.GRASP_UNCOVERED_DEPTH);
-        params.add(Params.GRASP_NONSINGULAR_DEPTH);
-        params.add(Params.GRASP_TOLERANCE_DEPTH);
-        params.add(Params.GRASP_ORDERED_ALG);
-//        params.add(Params.GRASP_USE_SCORE);
+        params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_VERMA_PEARL);
         params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
-        params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 
         // Parameters
