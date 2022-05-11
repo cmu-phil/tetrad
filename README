@@ -6,10 +6,14 @@ FIXES FOR THIS RELEASE:
 
 https://github.com/cmu-phil/tetrad/wiki/Fixes-for-version-7.1.0
 
-This is the code for the Tetrad project. Please, if you are a user of Tetrad, or even 
-a novice, if you are willing, would you please consider giving us feedback on what you 
-like about it or don't like about it? It would be most appreciated. Just open up an 
-issue (click on the Issues tab, above).
+This is the code for the Tetrad project. The purpose of Tetrad is to make 
+algorithms for inferring causal relationships in data; it is a Java project
+of many years now.
+
+Please, if you are a user of Tetrad, or even a novice, if you are willing, 
+would you please consider giving us feedback on what you like about it or 
+don't like about it? It would be most appreciated. Just open up an issue 
+(click on the Issues tab, above).
 
 Our project URl is:
 
