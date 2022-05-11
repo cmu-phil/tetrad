@@ -44,9 +44,12 @@ The issue tracker is here:
 https://github.com/cmu-phil/tetrad/issues
 
 For instructions on how to set this project up in 
-IntelliJ IDEA, see the Wiki. Alternatively, you can 
-run the lifecycle package target and launch the ejar 
-that is  built in the target directory, using the call
+IntelliJ IDEA, see:
+
+https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA
+
+Alternatively, you can run the lifecycle package target and launch the ejar that is  
+built in the target directory, using the call
 
 java -Xmx[g]G -jar *-launch.jar
 
