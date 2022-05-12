@@ -86,7 +86,7 @@ public class Iamb implements MbSearch {
                 break;
             }
 
-            if (!this.independenceTest.isIndependent(f, target, cmb).independent()) {
+            if (!this.independenceTest.checkIndependence(f, target, cmb).independent()) {
                 cmb.add(f);
                 cont = true;
             }
@@ -97,7 +97,7 @@ public class Iamb implements MbSearch {
         for (Node f : new LinkedList<>(cmb)) {
             cmb.remove(f);
 
-            if (this.independenceTest.isIndependent(f, target, cmb).independent()) {
+            if (this.independenceTest.checkIndependence(f, target, cmb).independent()) {
                 continue;
             }
 
@@ -108,7 +108,7 @@ public class Iamb implements MbSearch {
     }
 
     private double associationStrength(Node v, Node target, List<Node> cmb) {
-        this.independenceTest.isIndependent(v, target, cmb);
+        this.independenceTest.checkIndependence(v, target, cmb);
         return 1.0 - this.independenceTest.getPValue();
     }
 

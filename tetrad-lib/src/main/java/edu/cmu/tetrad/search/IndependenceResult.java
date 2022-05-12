@@ -42,4 +42,8 @@ public final class IndependenceResult implements TetradSerializable {
         return "Result: " + getFact() + "\t" + independent() + "\t" +
                 NumberFormatUtil.getInstance().getNumberFormat().format(getpValue());
     }
+
+    public boolean dependent() {
+        return !independent();
+    }
 }

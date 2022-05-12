@@ -76,7 +76,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
 
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return this.independenceTest.isIndependent(a, b, c).independent();
+        return this.independenceTest.checkIndependence(a, b, c).independent();
     }
 
     private List<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
@@ -109,7 +109,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
                     }
                     if (flagForbid) continue;
                 }
-                boolean independent = this.independenceTest.isIndependent(node1, node2, condSet).independent();
+                boolean independent = this.independenceTest.checkIndependence(node1, node2, condSet).independent();
 
                 if (independent && noEdgeRequired) {
                     return condSet;

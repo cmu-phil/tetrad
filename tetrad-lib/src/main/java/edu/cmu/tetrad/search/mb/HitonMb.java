@@ -167,7 +167,7 @@ public class HitonMb implements MbSearch {
                 }
 
                 this.numIndTests++;
-                if (this.independenceTest.isIndependent(t, x, _s).independent()) {
+                if (this.independenceTest.checkIndependence(t, x, _s).independent()) {
                     s = _s;
                     break;
                 }
@@ -196,7 +196,7 @@ public class HitonMb implements MbSearch {
 
                 // If x NOT _||_ t | S U {y}
                 this.numIndTests++;
-                if (!this.independenceTest.isIndependent(t, x, _s).independent()) {
+                if (!this.independenceTest.checkIndependence(t, x, _s).independent()) {
                     mb.add(x);
                     break;
                 }
@@ -242,7 +242,7 @@ public class HitonMb implements MbSearch {
                         // If it's independent of the target given this
                         // subset...
                         this.numIndTests++;
-                        if (this.independenceTest.isIndependent(x, t, s).independent()) {
+                        if (this.independenceTest.checkIndependence(x, t, s).independent()) {
 
                             // Leave it removed.
                             continue VARS;
@@ -295,7 +295,7 @@ public class HitonMb implements MbSearch {
      */
     private double association(Node x, Node y) {
         this.numIndTests++;
-        this.independenceTest.isIndependent(x, y, new LinkedList<>());
+        this.independenceTest.checkIndependence(x, y, new LinkedList<>());
         return 1.0 - this.independenceTest.getPValue();
     }
 

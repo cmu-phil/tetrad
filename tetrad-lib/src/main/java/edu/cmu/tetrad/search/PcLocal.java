@@ -228,7 +228,7 @@ public class PcLocal implements GraphSearch {
             while ((choice = gen.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, adj);
 
-                if (getIndependenceTest().isIndependent(x, y, cond).independent()) {
+                if (getIndependenceTest().checkIndependence(x, y, cond).independent()) {
                     this.sepsetMap.set(x, y, cond);
                     return cond;
                 }
@@ -245,7 +245,7 @@ public class PcLocal implements GraphSearch {
             while ((choice = gen.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, adj);
 
-                if (getIndependenceTest().isIndependent(x, y, cond).independent()) {
+                if (getIndependenceTest().checkIndependence(x, y, cond).independent()) {
                     this.sepsetMap.set(x, y, cond);
                     return cond;
                 }

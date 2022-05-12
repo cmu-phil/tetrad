@@ -127,7 +127,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult isIndependent(Node x0, Node y0, List<Node> z0) {
+    public IndependenceResult checkIndependence(Node x0, Node y0, List<Node> z0) {
 
         System.out.println(SearchLogUtils.independenceFact(x0, y0, z0));
 

@@ -112,14 +112,14 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
     }
 
     @Override
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         Node[] nodes = new Node[z.size()];
         for (int i = 0; i < z.size(); i++) nodes[i] = z.get(i);
-        return isIndependent(x, y, nodes);
+        return checkIndependence(x, y, nodes);
     }
 
     @Override
-    public IndependenceResult isIndependent(Node x, Node y, Node... z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Node... z) {
         double pInd = probConstraint(BCInference.OP.independent, x, y, z);
         double p = this.probOp(pInd);
         posterior = p;

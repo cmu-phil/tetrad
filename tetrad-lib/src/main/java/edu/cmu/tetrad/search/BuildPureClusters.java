@@ -429,11 +429,11 @@ public final class BuildPureClusters {
 
         if (getCovarianceMatrix() != null) {
             List<Node> variables = getCovarianceMatrix().getVariables();
-            return getIndependenceTest().isIndependent(variables.get(v1),
+            return getIndependenceTest().checkIndependence(variables.get(v1),
                     variables.get(v2)).independent();
 
         } else {
-            return getIndependenceTest().isIndependent(this.dataSet.getVariable(v1),
+            return getIndependenceTest().checkIndependence(this.dataSet.getVariable(v1),
                     this.dataSet.getVariable(v2)).independent();
 
         }

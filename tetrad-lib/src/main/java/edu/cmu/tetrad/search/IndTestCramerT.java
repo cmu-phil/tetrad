@@ -166,7 +166,7 @@ public final class IndTestCramerT implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }

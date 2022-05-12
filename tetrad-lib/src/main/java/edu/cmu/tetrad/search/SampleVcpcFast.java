@@ -412,14 +412,14 @@ public final class SampleVcpcFast implements GraphSearch {
                 IndependenceTest test = this.independenceTest;
 
                 if (!futureX.contains(y)) {
-                    if (!test.isIndependent(x, y, boundaryX).independent()) {
+                    if (!test.checkIndependence(x, y, boundaryX).independent()) {
                         continue MARKOV;
                     }
 
                 }
 
                 if (!futureY.contains(x)) {
-                    if (!test.isIndependent(y, x, boundaryY).independent()) {
+                    if (!test.checkIndependence(y, x, boundaryY).independent()) {
                         continue MARKOV;
                     }
                 }

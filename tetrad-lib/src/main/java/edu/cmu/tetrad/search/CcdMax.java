@@ -321,7 +321,7 @@ public final class CcdMax implements GraphSearch {
                 if (sepsetay.contains(b)) continue;
 
                 if (!sepsetay.containsAll(sepsetax)) {
-                    if (!this.independenceTest.isIndependent(a, b, sepsetay).independent()) {
+                    if (!this.independenceTest.checkIndependence(a, b, sepsetay).independent()) {
                         addDirectedEdge(graph, c, b);
                         continue EDGE;
                     }
@@ -454,7 +454,7 @@ public final class CcdMax implements GraphSearch {
                     if (isForbidden(i, k, v2)) continue;
 
                     try {
-                        getIndependenceTest().isIndependent(i, k, v2);
+                        getIndependenceTest().checkIndependence(i, k, v2);
                         double p2 = getIndependenceTest().getScore();
 
                         if (p2 < _p) {
@@ -476,7 +476,7 @@ public final class CcdMax implements GraphSearch {
                     List<Node> v2 = GraphUtils.asList(choice, adjk);
 
                     try {
-                        getIndependenceTest().isIndependent(i, k, v2);
+                        getIndependenceTest().checkIndependence(i, k, v2);
                         double p2 = getIndependenceTest().getScore();
 
                         if (p2 < _p) {
@@ -528,7 +528,7 @@ public final class CcdMax implements GraphSearch {
                 v2.remove(c);
 
                 if (!isForbidden(a, c, new ArrayList<>(v2))) {
-                    getIndependenceTest().isIndependent(a, c, new ArrayList<>(v2));
+                    getIndependenceTest().checkIndependence(a, c, new ArrayList<>(v2));
                     double p2 = getIndependenceTest().getScore();
 
                     if (p2 < 0) {

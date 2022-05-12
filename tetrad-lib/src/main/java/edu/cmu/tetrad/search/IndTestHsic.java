@@ -163,7 +163,7 @@ public final class IndTestHsic implements IndependenceTest {
      * @param z the list of conditioning variables.
      * @return true iff x _||_ y | z.
      */
-    public IndependenceResult isIndependent(Node y, Node x, List<Node> z) {
+    public IndependenceResult checkIndependence(Node y, Node x, List<Node> z) {
 
         int m = sampleSize();
 

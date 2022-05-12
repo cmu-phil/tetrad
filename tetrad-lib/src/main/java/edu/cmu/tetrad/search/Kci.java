@@ -130,7 +130,7 @@ public class Kci implements IndependenceTest {
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         if (Thread.currentThread().isInterrupted()) {
             return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
                     true, Double.NaN);

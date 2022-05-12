@@ -109,11 +109,11 @@ public final class ResolveSepsets {
                 for (int k = 0; k < testsWithSet.size(); k++) {
                     IndependenceTest testWithSet = testsWithSet.get(k);
                     if (k == 0) {
-                        separated = testWithSet.isIndependent(pair.getFirst(), pair.getSecond(), conditioningSet).independent();
+                        separated = testWithSet.checkIndependence(pair.getFirst(), pair.getSecond(), conditioningSet).independent();
                         continue;
                     }
                     // checks to see if inconsistent
-                    if (separated != testWithSet.isIndependent(pair.getFirst(), pair.getSecond(), conditioningSet).independent()) {
+                    if (separated != testWithSet.checkIndependence(pair.getFirst(), pair.getSecond(), conditioningSet).independent()) {
                         inconsistent = true;
                         break;
                     }
@@ -264,7 +264,7 @@ public final class ResolveSepsets {
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
-            independenceTest.isIndependent(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
+            independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
             tf += -2.0 * Math.log(independenceTest.getPValue());
         }
         double p = 1.0 - ProbUtils.chisqCdf(tf, 2 * independenceTests.size());
@@ -307,7 +307,7 @@ public final class ResolveSepsets {
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
-            independenceTest.isIndependent(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
+            independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
             if (p == -1.0) {
                 p = independenceTest.getPValue();
                 continue;
@@ -352,7 +352,7 @@ public final class ResolveSepsets {
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
-            independenceTest.isIndependent(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
+            independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
             if (p == -1.0) {
                 p = independenceTest.getPValue();
                 continue;
@@ -379,7 +379,7 @@ public final class ResolveSepsets {
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
-            independenceTest.isIndependent(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
+            independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
             ts += ProbUtils.normalQuantile(independenceTest.getPValue()) / Math.sqrt(independenceTests.size());
         }
         double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(ts)));
@@ -401,7 +401,7 @@ public final class ResolveSepsets {
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
-            independenceTest.isIndependent(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
+            independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
             double pk = independenceTest.getPValue();
             if (pk != 0 && pk != 1) {
                 tm += -c * Math.log(pk / (1 - pk));
@@ -442,7 +442,7 @@ public final class ResolveSepsets {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
 
-            independenceTest.isIndependent(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
+            independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
             double p = independenceTest.getPValue();
 
             if (Double.isNaN(p)) continue;
@@ -504,7 +504,7 @@ public final class ResolveSepsets {
             for (Node node : condSet) {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
-            independenceTest.isIndependent(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
+            independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
             ts += ((IndTestChiSquare) independenceTest).getXSquare() / independenceTests.size();
             df += ((IndTestChiSquare) independenceTest).getDf();
         }
@@ -524,7 +524,7 @@ public final class ResolveSepsets {
         for (Node node : condSet) {
             localCondSet.add(independenceTest.getVariable(node.getName()));
         }
-        independenceTest.isIndependent(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
+        independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
         double p = independenceTest.getPValue();
         return (p > alpha);
     }
@@ -583,7 +583,7 @@ public final class ResolveSepsets {
             }
 
             try {
-                test.isIndependent(test.getVariable(x.getName()), test.getVariable(y.getName()), localCondSet);
+                test.checkIndependence(test.getVariable(x.getName()), test.getVariable(y.getName()), localCondSet);
                 allPValues.add(test.getPValue());
             } catch (Exception e) {
                 // Skip that test.

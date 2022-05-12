@@ -293,7 +293,7 @@ public class FasStableConcurrentFdr implements IFas {
                             }
 
                             try {
-                                test.isIndependent(x, y, empty);
+                                test.checkIndependence(x, y, empty);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -359,7 +359,7 @@ public class FasStableConcurrentFdr implements IFas {
                             }
 
                             try {
-                                test.isIndependent(x, y, empty);
+                                test.checkIndependence(x, y, empty);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -502,7 +502,7 @@ public class FasStableConcurrentFdr implements IFas {
 
                                     try {
                                         FasStableConcurrentFdr.this.numIndependenceTests++;
-                                        independent = test.isIndependent(x, y, condSet).independent();
+                                        independent = test.checkIndependence(x, y, condSet).independent();
                                     } catch (Exception e) {
                                         independent = false;
                                     }
@@ -579,7 +579,7 @@ public class FasStableConcurrentFdr implements IFas {
 
                                     try {
                                         FasStableConcurrentFdr.this.numIndependenceTests++;
-                                        test.isIndependent(x, y, condSet);
+                                        test.checkIndependence(x, y, condSet);
 
                                         if (test.getPValue() > cutoff) {
                                             adjacencies.get(x).remove(y);

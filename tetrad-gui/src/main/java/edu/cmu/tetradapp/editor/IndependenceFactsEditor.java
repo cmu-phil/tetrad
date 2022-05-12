@@ -636,7 +636,7 @@ public class IndependenceFactsEditor extends JPanel {
                         double pValue;
 
                         try {
-                            indep = independenceTest.isIndependent(x, y, z).independent()
+                            indep = independenceTest.checkIndependence(x, y, z).independent()
                                     ? IndependenceResultIndFacts.Type.INDEPENDENT : IndependenceResultIndFacts.Type.DEPENDENT;
                             pValue = independenceTest.getPValue();
                         } catch (Exception e) {

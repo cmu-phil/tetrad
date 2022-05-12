@@ -140,7 +140,7 @@ public class PossibleDsepFci {
 
             while ((choice = cg.next()) != null) {
                 List<Node> condSet = GraphUtils.asList(choice, possParents);
-                boolean independent = test.isIndependent(node1, node2, condSet).independent();
+                boolean independent = test.checkIndependence(node1, node2, condSet).independent();
 
                 if (independent && noEdgeRequired) {
                     return condSet;

@@ -55,7 +55,7 @@ public class SepsetsConservative implements SepsetProducer {
         if (this.extraSepsets != null) {
             List<Node> possibleDsep = this.extraSepsets.get(i, k);
             if (possibleDsep != null) {
-                this.independenceTest.isIndependent(i, k, possibleDsep);
+                this.independenceTest.checkIndependence(i, k, possibleDsep);
                 _p = this.independenceTest.getPValue();
                 _v = possibleDsep;
             }
@@ -74,7 +74,7 @@ public class SepsetsConservative implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adji);
 
-                    if (getIndependenceTest().isIndependent(i, k, v).independent()) {
+                    if (getIndependenceTest().checkIndependence(i, k, v).independent()) {
                         double pValue = getIndependenceTest().getPValue();
                         if (pValue > _p) {
                             _p = pValue;
@@ -90,7 +90,7 @@ public class SepsetsConservative implements SepsetProducer {
 
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adjk);
-                    if (getIndependenceTest().isIndependent(i, k, v).independent()) {
+                    if (getIndependenceTest().checkIndependence(i, k, v).independent()) {
                         double pValue = getIndependenceTest().getPValue();
                         if (pValue > _p) {
                             _p = pValue;
@@ -138,7 +138,7 @@ public class SepsetsConservative implements SepsetProducer {
             while ((choice = cg.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, cond).independent()) {
+                if (test.checkIndependence(x, z, cond).independent()) {
                     if (verbose) {
                         System.out.println("Indep: " + x + " _||_ " + z + " | " + cond);
                     }
@@ -168,7 +168,7 @@ public class SepsetsConservative implements SepsetProducer {
             while ((choice = cg.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, cond).independent()) {
+                if (test.checkIndependence(x, z, cond).independent()) {
                     if (cond.contains(y)) {
                         sepsetsContainingY.add(cond);
                     } else {
@@ -188,7 +188,7 @@ public class SepsetsConservative implements SepsetProducer {
 
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return this.independenceTest.isIndependent(a, b, c).independent();
+        return this.independenceTest.checkIndependence(a, b, c).independent();
     }
 
     @Override

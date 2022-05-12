@@ -390,7 +390,7 @@ public class FasFdr implements IFas {
                         boolean independent;
 
                         try {
-                            independent = test.isIndependent(x, y, condSet).independent();
+                            independent = test.checkIndependence(x, y, condSet).independent();
                             this.pValueList.add(test.getPValue());
                         } catch (Exception e) {
                             independent = false;

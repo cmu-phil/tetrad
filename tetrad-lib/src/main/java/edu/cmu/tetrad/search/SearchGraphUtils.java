@@ -197,7 +197,7 @@ public final class SearchGraphUtils {
                 v2.remove(c);
 
 //                    if (isForbidden(a, c, new ArrayList<>(v2)))
-                independenceTest.isIndependent(a, c, new ArrayList<>(v2));
+                independenceTest.checkIndependence(a, c, new ArrayList<>(v2));
                 double p2 = independenceTest.getScore();
 
                 if (p2 < 0) {
@@ -314,7 +314,7 @@ public final class SearchGraphUtils {
                     }
 
                     //            LogUtils.getInstance().finest("Trying " + condSet);
-                    if (test.isIndependent(x, z, condSet).independent()) {
+                    if (test.checkIndependence(x, z, condSet).independent()) {
                         return true;
                     }
                 }
@@ -1051,7 +1051,7 @@ public final class SearchGraphUtils {
             while ((choice = cg.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, cond).independent()) {
+                if (test.checkIndependence(x, z, cond).independent()) {
                     if (cond.contains(y)) {
                         numSepsetsContainingY++;
                     } else {
@@ -1078,7 +1078,7 @@ public final class SearchGraphUtils {
             while ((choice = cg.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, cond).independent()) {
+                if (test.checkIndependence(x, z, cond).independent()) {
                     if (cond.contains(y)) {
                         numSepsetsContainingY++;
                     } else {

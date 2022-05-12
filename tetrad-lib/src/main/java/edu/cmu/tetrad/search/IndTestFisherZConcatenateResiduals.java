@@ -114,7 +114,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
 
         x = getVariable(this.variables, x.getName());
         z = GraphUtils.replaceNodes(z, this.variables);

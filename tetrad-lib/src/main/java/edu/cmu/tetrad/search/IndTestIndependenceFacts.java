@@ -54,7 +54,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         Node[] _z = new Node[z.size()];
 
         for (int i = 0; i < z.size(); i++) {

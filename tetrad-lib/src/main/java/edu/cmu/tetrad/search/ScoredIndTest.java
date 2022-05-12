@@ -76,7 +76,7 @@ public class ScoredIndTest implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        this.test.isIndependent(this.variables.get(x), this.variables.get(y), getVariableList(z));
+        this.test.checkIndependence(this.variables.get(x), this.variables.get(y), getVariableList(z));
         return this.test.getScore();
     }
 

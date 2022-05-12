@@ -168,7 +168,7 @@ public final class Mmmb implements MbSearch {
                 }
 
                 this.numIndTests++;
-                if (this.independenceTest.isIndependent(t, x, _s).independent()) {
+                if (this.independenceTest.checkIndependence(t, x, _s).independent()) {
                     s = _s;
                     break;
                 }
@@ -197,7 +197,7 @@ public final class Mmmb implements MbSearch {
 
                 // If x NOT _||_ t | S U {y}
                 this.numIndTests++;
-                if (!this.independenceTest.isIndependent(t, x, _s).independent()) {
+                if (!this.independenceTest.checkIndependence(t, x, _s).independent()) {
                     mb.add(x);
                     break;
                 }
@@ -230,7 +230,7 @@ public final class Mmmb implements MbSearch {
 
             this.numIndTests++;
 
-            if (!this.independenceTest.isIndependent(f, t, assocSet).independent()) {
+            if (!this.independenceTest.checkIndependence(f, t, assocSet).independent()) {
                 pcIncreased = true;
                 pc.add(f);
             }
@@ -356,7 +356,7 @@ public final class Mmmb implements MbSearch {
 
             this.numIndTests++;
 
-            if (this.independenceTest.isIndependent(x, target, minAssoc).independent()) {
+            if (this.independenceTest.checkIndependence(x, target, minAssoc).independent()) {
                 pc.remove(x);
             }
         }
@@ -365,7 +365,7 @@ public final class Mmmb implements MbSearch {
     private double association(Node x, Node target, List<Node> s) {
         this.numIndTests++;
 
-        this.independenceTest.isIndependent(x, target, s);
+        this.independenceTest.checkIndependence(x, target, s);
         return 1.0 - this.independenceTest.getPValue();
     }
 

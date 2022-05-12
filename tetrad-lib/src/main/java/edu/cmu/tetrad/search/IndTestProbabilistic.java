@@ -140,14 +140,14 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     @Override
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         Node[] nodes = new Node[z.size()];
         for (int i = 0; i < z.size(); i++) nodes[i] = z.get(i);
-        return isIndependent(x, y, nodes);
+        return checkIndependence(x, y, nodes);
     }
 
     @Override
-    public IndependenceResult isIndependent(Node x, Node y, Node... z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Node... z) {
         IndependenceFact key = new IndependenceFact(x, y, z);
 
         List<Node> allVars = new ArrayList<>();

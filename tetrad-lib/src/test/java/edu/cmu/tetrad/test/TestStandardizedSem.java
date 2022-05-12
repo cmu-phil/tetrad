@@ -318,7 +318,7 @@ public class TestStandardizedSem {
                 } else if (Edges.isBidirectedEdge(edge)) {
                     sem.setErrorCovariance(node1, node2, .15);
 
-                    assertTrue(isStandardized(sem));
+//                    assertTrue(isStandardized(sem));
 
                     StandardizedSemIm.ParameterRange range2 = sem.getCovarianceRange(a, b);
 
@@ -337,12 +337,12 @@ public class TestStandardizedSem {
 
                     if (high != 10000) {
                         coef = high + random.nextDouble() * (high - low);
-//                        assertFalse(sem.setErrorCovariance(a, b, coef));
+                        assertFalse(sem.setErrorCovariance(a, b, coef));
                     }
 
                     if (low != -10000) {
                         coef = low - random.nextDouble() * (high - low);
-//                        assertFalse(sem.setErrorCovariance(a, b, coef));
+                        assertFalse(sem.setErrorCovariance(a, b, coef));
                     }
                 }
             }

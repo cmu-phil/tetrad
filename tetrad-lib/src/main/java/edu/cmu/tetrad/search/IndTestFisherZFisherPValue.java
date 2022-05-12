@@ -90,7 +90,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         int[] all = new int[z.size() + 2];
         all[0] = this.variablesMap.get(x);
         all[1] = this.variablesMap.get(y);

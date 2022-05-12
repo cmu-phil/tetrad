@@ -622,7 +622,7 @@ public class RBExperiments {
             IndTestProbabilistic bsTest = new IndTestProbabilistic(bsData);
             bsTest.setThreshold(threshold);
             for (IndependenceFact f : HCopy.keySet()) {
-                boolean ind = bsTest.isIndependent(f.getX(), f.getY(), f.getZ()).independent();
+                boolean ind = bsTest.checkIndependence(f.getX(), f.getY(), f.getZ()).independent();
                 int value = ind ? 1 : 0;
                 depData.setInt(b, depData.getColumn(depData.getVariable(f.toString())), value);
             }

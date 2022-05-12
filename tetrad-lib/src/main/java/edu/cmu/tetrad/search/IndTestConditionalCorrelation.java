@@ -110,7 +110,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
 
         double score = this.cci.isIndependent(x, y, z);
         this.score = score;

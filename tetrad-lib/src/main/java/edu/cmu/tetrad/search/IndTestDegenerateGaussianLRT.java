@@ -228,7 +228,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
 
         List<Node> allNodes = new ArrayList<>();
         allNodes.add(x);

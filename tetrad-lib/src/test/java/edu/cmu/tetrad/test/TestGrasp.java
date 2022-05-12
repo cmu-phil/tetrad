@@ -2535,7 +2535,7 @@ public final class TestGrasp {
                             }
                         }
 
-                        if (dsep.isIndependent(x, y, new ArrayList<>(pathColliders))) {
+                        if (dsep.checkIndependence(x, y, new ArrayList<>(pathColliders)).independent()) {
                             IndependenceFact fact = new IndependenceFact(x, y, new ArrayList<>(pathColliders));
                             facts.add(fact);
                             System.out.println("Added " + fact);

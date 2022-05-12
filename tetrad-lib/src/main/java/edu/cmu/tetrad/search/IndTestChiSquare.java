@@ -165,7 +165,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @param z the list of conditioning varNames.
      * @return true iff x _||_ y | z.
      */
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         if (z == null) {

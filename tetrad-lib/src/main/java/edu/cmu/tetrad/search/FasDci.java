@@ -312,7 +312,7 @@ public class FasDci {
                             }
                         }
                         if (!known) {
-                            independent = independenceTest.isIndependent(x, y, condSet).independent();
+                            independent = independenceTest.checkIndependence(x, y, condSet).independent();
                             if (this.method != null) {
                                 List<IndependenceTest> testsWithVars = new ArrayList<>();
                                 for (int k = 0; k < this.marginalVars.size(); k++) {
@@ -324,7 +324,7 @@ public class FasDci {
                                 }
                                 boolean inconsistency = false;
                                 for (IndependenceTest testWithVars : testsWithVars) {
-                                    if (testWithVars.isIndependent(x, y, condSet) .independent()!= independent) {
+                                    if (testWithVars.checkIndependence(x, y, condSet) .independent()!= independent) {
                                         inconsistency = true;
                                         break;
                                     }

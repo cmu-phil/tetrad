@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -183,7 +182,7 @@ public class DMSearch {
 
 //                    System.out.println(i);
 //                    System.out.println(j);
-                        if (ind.isDependent(data.getVariable(i), data.getVariable(j)).independent()) {
+                        if (ind.checkIndependence(data.getVariable(i), data.getVariable(j)).dependent()) {
                             pattern.addDirectedEdge(data.getVariable(i), data.getVariable(j));
                         }
                     }
@@ -648,7 +647,7 @@ public class DMSearch {
         boolean testResult = false;
 
         try {
-            testResult = test.isIndependent(outputsLatent.first(), outputsLatentEffect.first(), latentList).independent();
+            testResult = test.checkIndependence(outputsLatent.first(), outputsLatentEffect.first(), latentList).independent();
         }
         catch(SingularMatrixException error){
             System.out.println(error);

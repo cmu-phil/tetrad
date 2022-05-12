@@ -77,7 +77,7 @@ public class IndTestScore implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         List<Node> z1 = new ArrayList<>(z);
 
         if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z).toString(), true, getPValue());;

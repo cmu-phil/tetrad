@@ -95,7 +95,7 @@ public class IambnPc implements MbSearch {
                 break;
             }
 
-            if (!this.independenceTest.isIndependent(f, target, cmb).independent()) {
+            if (!this.independenceTest.checkIndependence(f, target, cmb).independent()) {
                 cmb.add(f);
                 cont = true;
             }
@@ -114,7 +114,7 @@ public class IambnPc implements MbSearch {
     }
 
     private double associationStrength(Node v, Node target, List<Node> cmb) {
-        this.independenceTest.isIndependent(v, target, cmb);
+        this.independenceTest.checkIndependence(v, target, cmb);
         return 1.0 - this.independenceTest.getPValue();
     }
 

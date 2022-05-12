@@ -342,7 +342,7 @@ public final class FciMax implements GraphSearch {
 
             while ((comb2 = cg2.next()) != null) {
                 List<Node> s = GraphUtils.asList(comb2, adja);
-                this.independenceTest.isIndependent(a, c, s);
+                this.independenceTest.checkIndependence(a, c, s);
                 double _score = this.independenceTest.getScore();
 
                 if (_score < score) {
@@ -358,7 +358,7 @@ public final class FciMax implements GraphSearch {
 
             while ((comb3 = cg3.next()) != null) {
                 List<Node> s = GraphUtils.asList(comb3, adjc);
-                this.independenceTest.isIndependent(c, a, s);
+                this.independenceTest.checkIndependence(c, a, s);
                 double _score = this.independenceTest.getScore();
 
                 if (_score < score) {

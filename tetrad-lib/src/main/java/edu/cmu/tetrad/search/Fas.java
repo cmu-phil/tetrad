@@ -148,7 +148,7 @@ public class Fas implements IFas {
         }
 
         for (Edge edge : edges) {
-            this.test.isIndependent(edge.getNode1(), edge.getNode2(), new ArrayList<>());
+            this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new ArrayList<>());
             scores.put(edge, this.test.getScore());
         }
 
@@ -320,7 +320,7 @@ public class Fas implements IFas {
                 List<Node> Z = GraphUtils.asList(choice, ppx);
 
                 this.numIndependenceTests++;
-                boolean independent = test.isIndependent(x, y, Z).independent();
+                boolean independent = test.checkIndependence(x, y, Z).independent();
 
                 if (!independent) {
                     this.numDependenceJudgement++;

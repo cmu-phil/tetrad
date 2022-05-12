@@ -147,7 +147,7 @@ public class HitonVariant implements MbSearch {
                     _s.add(pcpc.get(index));
                 }
 
-                if (this.independenceTest.isIndependent(t, x, _s).independent()) {
+                if (this.independenceTest.checkIndependence(t, x, _s).independent()) {
                     s = _s;
                     break;
                 }
@@ -175,7 +175,7 @@ public class HitonVariant implements MbSearch {
                 _s.add(y);
 
                 // If x NOT _||_ t | S U {y}
-                if (!this.independenceTest.isIndependent(t, x, _s).independent()) {
+                if (!this.independenceTest.checkIndependence(t, x, _s).independent()) {
                     mb.add(x);
                     break;
                 }
@@ -220,7 +220,7 @@ public class HitonVariant implements MbSearch {
 
                         // If it's independent of the target given this
                         // subset...
-                        if (this.independenceTest.isIndependent(x, t, s).independent()) {
+                        if (this.independenceTest.checkIndependence(x, t, s).independent()) {
 
                             // Leave it removed.
                             continue VARS;
@@ -240,7 +240,7 @@ public class HitonVariant implements MbSearch {
      * A measure of strength of association.
      */
     private double association(Node x, Node y) {
-        this.independenceTest.isIndependent(x, y, new LinkedList<>());
+        this.independenceTest.checkIndependence(x, y, new LinkedList<>());
         return 1.0 - this.independenceTest.getPValue();
     }
 

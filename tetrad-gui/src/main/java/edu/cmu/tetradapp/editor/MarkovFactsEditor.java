@@ -379,7 +379,7 @@ public class MarkovFactsEditor extends JPanel {
                             IndependenceTest test = indTestProducers.get(0).getIndependenceTest();
                             boolean verbose = test.isVerbose();
                             test.setVerbose(true);
-                            boolean indep = test.isIndependent(x, y, z).independent();
+                            boolean indep = test.checkIndependence(x, y, z).independent();
                             double pValue = test.getPValue();
                             test.setVerbose(verbose);
 

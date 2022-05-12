@@ -98,7 +98,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
             return isIndependentMultinomialLogisticRegression(x, y, z);
         } else if (!this.preferLinear) {

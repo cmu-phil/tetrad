@@ -4747,7 +4747,7 @@ public final class GraphUtils {
         Map<Node, Double> scores = new HashMap<>();
 
         for (Node node : dsep) {
-            test.isIndependent(x, y, Collections.singletonList(node));
+            test.checkIndependence(x, y, Collections.singletonList(node));
             scores.put(node, test.getScore());
         }
 
