@@ -47,6 +47,12 @@ import java.awt.event.MouseEvent;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
+
+import static java.lang.Math.min;
 
 
 /**
@@ -63,6 +69,7 @@ public class MarkovFactsEditor extends JPanel {
     private int sortDir;
     private int lastSortCol;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private boolean parallelized = true;
 
     public MarkovFactsEditor(MarkovCheckIndTestModel model) {
         if (model == null) {
@@ -160,36 +167,36 @@ public class MarkovFactsEditor extends JPanel {
                 if (rowIndex > model.getResults().size()) return null;
 
                 if (columnIndex == 0) {
-                    return model.getResults().get(rowIndex).get(0).getIndex();
+                    return rowIndex + 1;
                 }
                 if (columnIndex == 1) {
-                    return model.getResults().get(rowIndex).get(0).getFact();
+                    return model.getResults().get(rowIndex).getFact();
                 }
 
-                IndependenceResult independenceResult = model.getResults().get(rowIndex).get(0);
+                MarkovCheckIndTestModel.IndependenceResult result = model.getResults().get(rowIndex);
 
                 if (columnIndex == 2) {
                     if (getIndependenceTest() instanceof IndTestDSep) {
-                        if (independenceResult.getType() == IndependenceResult.Type.INDEPENDENT) {
+                        if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.INDEPENDENT) {
                             return "D-SEPARATED";
-                        } else if (independenceResult.getType() == IndependenceResult.Type.DEPENDENT) {
+                        } else if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.DEPENDENT) {
                             return "d-connected";
-                        } else if (independenceResult.getType() == IndependenceResult.Type.UNDETERMINED) {
+                        } else if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.UNDETERMINED) {
                             return "*";
                         }
                     } else {
-                        if (independenceResult.getType() == IndependenceResult.Type.INDEPENDENT) {
+                        if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.INDEPENDENT) {
                             return "INDEPENDENT";
-                        } else if (independenceResult.getType() == IndependenceResult.Type.DEPENDENT) {
+                        } else if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.DEPENDENT) {
                             return "dependent";
-                        } else if (independenceResult.getType() == IndependenceResult.Type.UNDETERMINED) {
+                        } else if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.UNDETERMINED) {
                             return "*";
                         }
                     }
                 }
 
                 if (columnIndex == 3) {
-                    return nf.format(independenceResult.getpValue());
+                    return nf.format(result.getpValue());
                 }
 
                 return null;
@@ -281,36 +288,8 @@ public class MarkovFactsEditor extends JPanel {
         }
 
         this.setLastSortCol(sortCol);
-
-        model.getResults().sort((r1, r2) -> {
-            switch (sortCol) {
-                case 0:
-                case 1:
-                    return this.getSortDir() * (r1.get(0).getIndex() - r2.get(0).getIndex());
-                default:
-                    int ind1;
-                    int ind2;
-                    int col = sortCol - 2;
-
-                    if (r1.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
-                        ind1 = 0;
-                    } else if (r1.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
-                        ind1 = 1;
-                    } else {
-                        ind1 = 2;
-                    }
-
-                    if (r2.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
-                        ind2 = 0;
-                    } else if (r2.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
-                        ind2 = 1;
-                    } else {
-                        ind2 = 2;
-                    }
-
-                    return this.getSortDir() * (ind1 - ind2);
-            }
-        });
+        model.getResults().sort(Comparator.comparing(
+                MarkovCheckIndTestModel.IndependenceResult::getFact));
 
         tableModel.fireTableDataChanged();
     }
@@ -374,31 +353,109 @@ public class MarkovFactsEditor extends JPanel {
                     }
                 }
 
-                for (IndependenceFact fact : facts) {
-                    Node x = fact.getX();
-                    Node y = fact.getY();
-                    List<Node> z = fact.getZ();
+                final int[] index = {0};
 
-                    for (IndTestProducer indTestProducer : indTestProducers) {
-                        IndependenceTest test = indTestProducer.getIndependenceTest();
-                        boolean verbose = test.isVerbose();
-                        test.setVerbose(true);
-                        IndependenceResult.Type indep = test.isIndependent(x, y, z) ? IndependenceResult.Type.INDEPENDENT : IndependenceResult.Type.DEPENDENT;
-                        double pValue = test.getPValue();
-                        test.setVerbose(verbose);
+                class IndCheckTask implements Callable<List<MarkovCheckIndTestModel.IndependenceResult>> {
 
-                        model.getpValues().add(pValue);
+                    private final int from;
+                    private final int to;
+                    private final List<IndependenceFact> facts;
+                    private final Set<Node> emptySet;
 
-                        model.getResults().get(model.getResults().size() - 1).add(
-                                new IndependenceResult(model.getResults().size(),
-                                        MarkovFactsEditor.factString(x, y, z), indep, pValue));
+                    IndCheckTask(int from, int to, List<IndependenceFact> facts, Set<Node> emptySet) {
+                        this.from = from;
+                        this.to = to;
+                        this.facts = facts;
+                        this.emptySet = emptySet;
+                    }
 
+                    @Override
+                    public List<MarkovCheckIndTestModel.IndependenceResult> call() {
+                        List<MarkovCheckIndTestModel.IndependenceResult> results = new ArrayList<>();
+
+                        for (int i = from; i < to; i++) {
+                            if (Thread.interrupted()) break;
+                            IndependenceFact fact = facts.get(i);
+
+                            Node x = fact.getX();
+                            Node y = fact.getY();
+                            List<Node> z = fact.getZ();
+                            IndependenceTest test = indTestProducers.get(0).getIndependenceTest();
+                            boolean verbose = test.isVerbose();
+                            test.setVerbose(true);
+                            MarkovCheckIndTestModel.IndependenceResult.Type indep = test.isIndependent(x, y, z)
+                                    ? MarkovCheckIndTestModel.IndependenceResult.Type.INDEPENDENT
+                                    : MarkovCheckIndTestModel.IndependenceResult.Type.DEPENDENT;
+                            double pValue = test.getPValue();
+                            test.setVerbose(verbose);
+
+                            results.add(new MarkovCheckIndTestModel.IndependenceResult(fact.toString(), indep, pValue));
+                        }
+
+                        return results;
                     }
                 }
+
+                List<Callable<List<MarkovCheckIndTestModel.IndependenceResult>>> tasks = new ArrayList<>();
+
+                int chunkSize = getChunkSize(facts.size());
+                Set<Node> emptySet = new HashSet<>();
+
+                for (int i = 0; i < facts.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+                    IndCheckTask task = new IndCheckTask(i, min(facts.size(), i + chunkSize),
+                            facts, emptySet);
+
+                    if (!parallelized) {
+                        List<MarkovCheckIndTestModel.IndependenceResult> _results = task.call();
+                        model.getResults().addAll(_results);
+                    } else {
+                        tasks.add(task);
+                    }
+                }
+
+                if (parallelized) {
+                    List<Future<List<MarkovCheckIndTestModel.IndependenceResult>>> theseResults = ForkJoinPool.commonPool().invokeAll(tasks);
+
+                    for (Future<List<MarkovCheckIndTestModel.IndependenceResult>> future : theseResults) {
+                        try {
+                            model.getResults().addAll(future.get());
+                        } catch (InterruptedException | ExecutionException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+
+//                for (IndependenceFact fact : facts) {
+//                    Node x = fact.getX();
+//                    Node y = fact.getY();
+//                    List<Node> z = fact.getZ();
+//
+//                    for (IndTestProducer indTestProducer : indTestProducers) {
+//                        IndependenceTest test = indTestProducer.getIndependenceTest();
+//                        boolean verbose = test.isVerbose();
+//                        test.setVerbose(true);
+//                        IndependenceResult.Type indep = test.isIndependent(x, y, z) ? IndependenceResult.Type.INDEPENDENT : IndependenceResult.Type.DEPENDENT;
+//                        double pValue = test.getPValue();
+//                        test.setVerbose(verbose);
+//
+//                        model.getpValues().add(pValue);
+//
+//                        model.getResults().get(model.getResults().size() - 1).add(
+//                                new IndependenceResult(model.getResults().size(),
+//                                        MarkovFactsEditor.factString(x, y, z), indep, pValue));
+//
+//                    }
+//                }
 
                 tableModel.fireTableDataChanged();
             }
         };
+    }
+
+    private int getChunkSize(int n) {
+        int chunk = n / Runtime.getRuntime().availableProcessors();
+        if (chunk < 1) chunk = 1;
+        return chunk;
     }
 
     private List<String> getVars() {
@@ -460,11 +517,11 @@ public class MarkovFactsEditor extends JPanel {
     }
 
     private JPanel createHistogramPanel() {
-        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(model.getpValues().size(), 1),
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(model.getResults().size(), 1),
                 Collections.singletonList(new ContinuousVariable("P-Values")));
 
-        for (int i = 0; i < model.getpValues().size(); i++) {
-            dataSet.setDouble(i, 0, model.getpValues().get(i));
+        for (int i = 0; i < model.getResults().size(); i++) {
+            dataSet.setDouble(i, 0, model.getResults().get(i).getpValue());
         }
 
         Histogram histogram = new Histogram(dataSet);

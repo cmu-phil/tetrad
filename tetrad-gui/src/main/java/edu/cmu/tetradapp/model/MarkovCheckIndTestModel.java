@@ -25,6 +25,8 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -42,9 +44,8 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
     private final List<IndTestProducer> indTestProducers;
     private String name = "";
     private List<String> vars = new LinkedList<>();
-    private List<List<IndependenceResult>> results = new ArrayList<>();
+    private List<IndependenceResult> results = new ArrayList<>();
     private final Graph graph;
-    private final List<Double> pValues = new ArrayList<>();
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -89,16 +90,56 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
         return this.vars;
     }
 
-    public List<List<IndependenceResult>> getResults() {
+    public List<IndependenceResult> getResults() {
         return this.results;
     }
 
-    public void setResults(List<List<IndependenceResult>> results) {
+    public void setResults(List<IndependenceResult> results) {
         this.results = results;
     }
 
-    public List<Double> getpValues() {
-        return pValues;
+    public final static class IndependenceResult implements TetradSerializable {
+        static final long serialVersionUID = 23L;
+
+        public enum Type {
+            INDEPENDENT, DEPENDENT, UNDETERMINED
+        }
+
+        private final String fact;
+        private final Type indep;
+        private final double pValue;
+
+        public IndependenceResult(String fact, Type indep, double pValue) {
+            this.fact = fact;
+            this.indep = indep;
+            this.pValue = pValue;
+        }
+
+        /**
+         * Generates a simple exemplar of this class to test serialization.
+         *
+         * @see TetradSerializableUtils
+         */
+        public static edu.cmu.tetradapp.model.IndependenceResult serializableInstance() {
+            return new edu.cmu.tetradapp.model.IndependenceResult(1, "X _||_ Y", edu.cmu.tetradapp.model.IndependenceResult.Type.DEPENDENT, 0.0001);
+        }
+
+        public String getFact() {
+            return this.fact;
+        }
+
+        public Type getType() {
+            return this.indep;
+        }
+
+        public double getpValue() {
+            return this.pValue;
+        }
+
+        public String toString() {
+            return "Result: " + getFact() + "\t" + getType() + "\t" +
+                    NumberFormatUtil.getInstance().getNumberFormat().format(getpValue());
+        }
     }
 }
 
