@@ -1080,6 +1080,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.IndependenceFactsEditor</editor-class>
             </model>
+            <model name="Markov Check" acronym="Markov Check"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.MarkovCheckIndTestModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.MarkovFactsEditor</editor-class>
+            </model>
             <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
                    help="tabular_comparison" category="SEM IM-SEM IM Comparisons">
                 <logger>

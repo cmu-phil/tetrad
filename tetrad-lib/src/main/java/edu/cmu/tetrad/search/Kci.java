@@ -17,6 +17,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
@@ -45,6 +46,8 @@ public class Kci implements IndependenceTest {
 
     // Variables in data
     private final List<Node> variables;
+    private final double[][] dataCols;
+    private final double[] h;
 
     // The alpha level of the test.
     private double alpha;
@@ -91,16 +94,26 @@ public class Kci implements IndependenceTest {
         this.variables = data.getVariables();
         int n = this.data.getNumRows();
 
+        List<Node> variables = getVariables();
+
+        this.hash = new HashMap<>();
+
+        for (int i = 0; i < variables.size(); i++) {
+            this.hash.put(variables.get(i), i);
+        }
+
+        this.dataCols = this.data.getDoubleData().transpose().toArray();
+        this.h = new double[variables.size()];
+
+        for (int i = 0; i < this.data.getNumColumns(); i++) {
+            this.h[i] = h(variables.get(i), this.dataCols, hash);
+        }
+
         Matrix Ones = new Matrix(n, 1);
         for (int j = 0; j < n; j++) Ones.set(j, 0, 1);
 
         this.alpha = alpha;
 
-        this.hash = new HashMap<>();
-
-        for (int i = 0; i < getVariables().size(); i++) {
-            this.hash.put(getVariables().get(i), i);
-        }
     }
 
     //====================================PUBLIC METHODS==================================//
@@ -140,19 +153,19 @@ public class Kci implements IndependenceTest {
 
         int N = data.getNumRows();
 
-        Matrix Ones = new Matrix(N, 1);
-        for (int j = 0; j < N; j++) Ones.set(j, 0, 1);
+        Matrix ones = new Matrix(N, 1);
+        for (int j = 0; j < N; j++) ones.set(j, 0, 1);
 
         Matrix I = Matrix.identity(N);
 
-        Matrix H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
+        Matrix H = I.minus(ones.times(ones.transpose()).scalarMult(1.0 / N));
 
-        double[] h = new double[data.getNumColumns()];
+        double[] h = new double[_data.length];
         int count = 0;
 
         double sum = 0.0;
         for (int i = 0; i < data.getNumColumns(); i++) {
-            h[i] = h(allVars.get(i), _data, hash);
+            h[i] = this.h[this.hash.get(allVars.get(i))];
 
             if (h[i] != 0) {
                 sum += h[i];
@@ -283,6 +296,14 @@ public class Kci implements IndependenceTest {
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
+
+    /**
+     * @return a string representation of this test.
+     */
+    public String toString() {
+        return "KCI, alpha = " + new DecimalFormat("0.0###").format(getAlpha());
+    }
+
 
     /**
      * @return The data model for the independence test.
@@ -753,9 +774,9 @@ public class Kci implements IndependenceTest {
 
         K:
         for (int k = 0; k < dataSet.getNumRows(); k++) {
-            for (Node node : allVars) {
-                if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
-            }
+//            for (Node node : allVars) {
+//                if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
+//            }
 
             rows.add(k);
         }

@@ -1,0 +1,479 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
+//                                                                           //
+// This program is free software; you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation; either version 2 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program; if not, write to the Free Software               //
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+///////////////////////////////////////////////////////////////////////////////
+
+package edu.cmu.tetradapp.editor;
+
+import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndTestDSep;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetradapp.model.IndTestProducer;
+import edu.cmu.tetradapp.model.IndependenceResult;
+import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
+import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.WatchedProcess;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.*;
+
+
+/**
+ * Lists independence facts specified by user and allows the list to be sorted by independence fact or by p value.
+ *
+ * @author Joseph Ramsey
+ */
+public class MarkovFactsEditor extends JPanel {
+    private Graph dag;
+    private MarkovCheckIndTestModel model;
+    private List<String> vars;
+    private List<IndTestProducer> indTestProducers;
+    private AbstractTableModel tableModel;
+    private int sortDir;
+    private int lastSortCol;
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+    public MarkovFactsEditor(MarkovCheckIndTestModel model) {
+        if (model == null) {
+            throw new NullPointerException("Expecting a model");
+        }
+
+        this.indTestProducers = model.getIndTestProducers();
+        this.model = model;
+        Graph sourceGraph = model.getGraph();
+
+        try {
+            new Dag(sourceGraph);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("That source graph wa s not a DAG.");
+        }
+
+        this.dag = sourceGraph;
+        this.vars = new LinkedList<>(dag.getNodeNames());
+        this.vars = dag.getNodeNames();
+
+        if (this.indTestProducers.isEmpty()) {
+            throw new IllegalArgumentException("At least one source must be specified");
+        }
+
+        List<String> names = this.indTestProducers.get(0).getIndependenceTest().getVariableNames();
+
+        for (int i = 1; i < this.indTestProducers.size(); i++) {
+            List<String> _names = this.indTestProducers.get(i).getIndependenceTest().getVariableNames();
+
+            if (!new HashSet<>(names).equals(new HashSet<>(_names))) {
+                throw new IllegalArgumentException("All sources must have the same variable names.");
+            }
+        }
+
+        buildGui();
+    }
+
+    //========================PUBLIC METHODS==========================//
+
+    /**
+     * Performs the action of opening a session from a file.
+     */
+    private void buildGui() {
+        JButton list = new JButton("CHECK");
+        list.setFont(new Font("Dialog", Font.BOLD, 14));
+
+        list.addActionListener(e -> generateResults());
+
+        JButton clear = new JButton("Clear");
+        clear.setFont(new Font("Dialog", Font.PLAIN, 14));
+        clear.addActionListener(e -> {
+            model.getResults().clear();
+            revalidate();
+            repaint();
+        });
+
+
+        Box b1 = Box.createVerticalBox();
+
+        Box b2 = Box.createHorizontalBox();
+        b2.add(new JLabel("Checks whether X _||_ Y | (parents(x) for y not in (desc(x) U parentx(x)), for "));
+        b2.add(new JLabel(getIndependenceTest().toString()));
+        b2.add(Box.createHorizontalGlue());
+        b1.add(b2);
+
+        b1.add(Box.createVerticalStrut(5));
+
+        this.tableModel = new AbstractTableModel() {
+            public String getColumnName(int column) {
+                if (column == 0) {
+                    return "Index";
+                } else if (column == 1) {
+                    return "Fact";
+                } else if (column == 2) {
+                    return "Result";
+                } else if (column == 3) {
+                    return "P-value";
+                }
+
+                return null;
+            }
+
+            public int getColumnCount() {
+                return 4;//2 + MarkovFactsEditor.this.indTestProducers.size();
+            }
+
+            public int getRowCount() {
+                return model.getResults().size();
+            }
+
+            public Object getValueAt(int rowIndex, int columnIndex) {
+                if (rowIndex > model.getResults().size()) return null;
+
+                if (columnIndex == 0) {
+                    return model.getResults().get(rowIndex).get(0).getIndex();
+                }
+                if (columnIndex == 1) {
+                    return model.getResults().get(rowIndex).get(0).getFact();
+                }
+
+                IndependenceResult independenceResult = model.getResults().get(rowIndex).get(0);
+
+                if (columnIndex == 2) {
+                    if (getIndependenceTest() instanceof IndTestDSep) {
+                        if (independenceResult.getType() == IndependenceResult.Type.INDEPENDENT) {
+                            return "D-SEPARATED";
+                        } else if (independenceResult.getType() == IndependenceResult.Type.DEPENDENT) {
+                            return "d-connected";
+                        } else if (independenceResult.getType() == IndependenceResult.Type.UNDETERMINED) {
+                            return "*";
+                        }
+                    } else {
+                        if (independenceResult.getType() == IndependenceResult.Type.INDEPENDENT) {
+                            return "INDEPENDENT";
+                        } else if (independenceResult.getType() == IndependenceResult.Type.DEPENDENT) {
+                            return "dependent";
+                        } else if (independenceResult.getType() == IndependenceResult.Type.UNDETERMINED) {
+                            return "*";
+                        }
+                    }
+                }
+
+                if (columnIndex == 3) {
+                    return nf.format(independenceResult.getpValue());
+                }
+
+                return null;
+            }
+
+            public Class getColumnClass(int columnIndex) {
+                if (columnIndex == 0) {
+                    return Number.class;
+                }
+                if (columnIndex == 1) {
+                    return String.class;
+                } else {
+                    return Number.class;
+                }
+            }
+        };
+
+        JTable table = new JTable(tableModel);
+
+        table.getColumnModel().getColumn(0).setMinWidth(40);
+        table.getColumnModel().getColumn(0).setMaxWidth(40);
+        table.getColumnModel().getColumn(1).setMinWidth(200);
+        table.getColumnModel().getColumn(1).setCellRenderer(new Renderer());
+        table.getColumnModel().getColumn(2).setMinWidth(100);
+        table.getColumnModel().getColumn(2).setMaxWidth(100);
+        table.getColumnModel().getColumn(3).setMinWidth(100);
+        table.getColumnModel().getColumn(3).setMaxWidth(100);
+
+        table.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
+        table.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
+
+
+        JTableHeader header = table.getTableHeader();
+
+        header.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTableHeader header = (JTableHeader) e.getSource();
+                Point point = e.getPoint();
+                int col = header.columnAtPoint(point);
+                int sortCol = header.getTable().convertColumnIndexToModel(col);
+
+                MarkovFactsEditor.this.sortByColumn(sortCol);
+            }
+        });
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setPreferredSize(new Dimension(400, 400));
+        b1.add(scroll);
+
+        Box b4 = Box.createHorizontalBox();
+        b4.add(Box.createGlue());
+        b4.add(Box.createHorizontalStrut(10));
+
+        JButton showHistogram = new JButton("Show P-Value Histogram");
+        showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
+        showHistogram.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JPanel component = createHistogramPanel();
+                EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, MarkovFactsEditor.this);
+                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+                editorWindow.pack();
+                editorWindow.setVisible(true);
+
+            }
+        });
+
+        b4.add(Box.createHorizontalGlue());
+        b4.add(clear);
+        b4.add(list);
+        b4.add(showHistogram);
+
+        b1.add(b4);
+        b1.add(Box.createVerticalStrut(10));
+
+        JPanel panel = this;
+        panel.setLayout(new BorderLayout());
+        panel.add(b1, BorderLayout.CENTER);
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+    }
+
+    //=============================PRIVATE METHODS=======================//
+
+    private void sortByColumn(int sortCol) {
+        if (sortCol == this.getLastSortCol()) {
+            this.setSortDir(-1 * this.getSortDir());
+        } else {
+            this.setSortDir(1);
+        }
+
+        this.setLastSortCol(sortCol);
+
+        model.getResults().sort((r1, r2) -> {
+            switch (sortCol) {
+                case 0:
+                case 1:
+                    return this.getSortDir() * (r1.get(0).getIndex() - r2.get(0).getIndex());
+                default:
+                    int ind1;
+                    int ind2;
+                    int col = sortCol - 2;
+
+                    if (r1.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
+                        ind1 = 0;
+                    } else if (r1.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
+                        ind1 = 1;
+                    } else {
+                        ind1 = 2;
+                    }
+
+                    if (r2.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
+                        ind2 = 0;
+                    } else if (r2.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
+                        ind2 = 1;
+                    } else {
+                        ind2 = 2;
+                    }
+
+                    return this.getSortDir() * (ind1 - ind2);
+            }
+        });
+
+        tableModel.fireTableDataChanged();
+    }
+
+    static class Renderer extends DefaultTableCellRenderer {
+        private JTable table;
+        private boolean selected;
+
+        public Renderer() {
+        }
+
+        public void setValue(Object value) {
+            if (selected) {
+                setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
+            } else {
+                this.setForeground(table.getForeground());
+                this.setBackground(table.getBackground());
+            }
+
+            this.setText((String) value);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            this.table = table;
+            selected = isSelected;
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
+    }
+
+    private void generateResults() {
+        Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
+
+        new WatchedProcess(owner) {
+            public void watch() {
+
+                if (getVars().size() < 2) {
+                    tableModel.fireTableDataChanged();
+                    return;
+                }
+
+                dag = edu.cmu.tetrad.graph.GraphUtils.replaceNodes(dag, indTestProducers.get(0).getIndependenceTest().getVariables());
+
+                for (Node x : dag.getNodes()) {
+                    List<Node> desc = dag.getDescendants(Collections.singletonList(x));
+                    List<Node> nondesc = dag.getNodes();
+                    nondesc.removeAll(desc);
+                    nondesc.removeAll(dag.getParents(x));
+                    nondesc.remove(x);
+
+                    List<Node> z = dag.getParents(x);
+
+                    System.out.println("Node " + x + " parents = " + z
+                            + " non-descendants = " + nondesc);
+
+                    for (Node y : nondesc) {
+                        model.getResults().add(new ArrayList<>());
+
+                        for (IndTestProducer indTestProducer : indTestProducers) {
+                            IndependenceTest test = indTestProducer.getIndependenceTest();
+                            IndependenceResult.Type indep = test.isIndependent(x, y, z) ? IndependenceResult.Type.INDEPENDENT : IndependenceResult.Type.DEPENDENT;
+                            double pValue = test.getPValue();
+
+                            model.getpValues().add(pValue);
+
+                            model.getResults().get(model.getResults().size() - 1).add(
+                                    new IndependenceResult(model.getResults().size(),
+                                            MarkovFactsEditor.factString(x, y, z), indep, pValue));
+
+                        }
+                    }
+                }
+
+                tableModel.fireTableDataChanged();
+            }
+        };
+    }
+
+    private List<String> getVars() {
+        return this.vars;
+    }
+
+    public MarkovFactsEditor(LayoutManager layout, boolean isDoubleBuffered) {
+        super(layout, isDoubleBuffered);
+    }
+
+    private static String factString(Node x, Node y, List<Node> condSet) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(x.getName());
+        sb.append(" _||_ ");
+        sb.append(y.getName());
+
+        Iterator<Node> it = condSet.iterator();
+
+        if (it.hasNext()) {
+            sb.append(" | ");
+            sb.append(it.next());
+        }
+
+        while (it.hasNext()) {
+            sb.append(", ");
+            sb.append(it.next());
+        }
+
+        return sb.toString();
+    }
+
+    private IndependenceTest getIndependenceTest() {
+        return this.indTestProducers.get(0).getIndependenceTest();
+    }
+
+    private int getLastSortCol() {
+        return this.lastSortCol;
+    }
+
+    private void setLastSortCol(int lastSortCol) {
+        if (lastSortCol < 0 || lastSortCol > 4) {
+            throw new IllegalArgumentException();
+        }
+
+        this.lastSortCol = lastSortCol;
+    }
+
+    private int getSortDir() {
+        return this.sortDir;
+    }
+
+    private void setSortDir(int sortDir) {
+        if (!(sortDir == 1 || sortDir == -1)) {
+            throw new IllegalArgumentException();
+        }
+
+        this.sortDir = sortDir;
+    }
+
+    private JPanel createHistogramPanel() {
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(model.getpValues().size(), 1),
+                Collections.singletonList(new ContinuousVariable("P-Values")));
+
+        for (int i = 0; i < model.getpValues().size(); i++) {
+            dataSet.setDouble(i, 0, model.getpValues().get(i));
+        }
+
+        Histogram histogram = new Histogram(dataSet);
+        histogram.setTarget("P-Values");
+        HistogramView view = new HistogramView(histogram);
+
+        Box box = Box.createHorizontalBox();
+        box.add(view);
+        box.add(Box.createHorizontalStrut(5));
+        box.add(Box.createHorizontalGlue());
+
+        Box vBox = Box.createVerticalBox();
+        vBox.add(Box.createVerticalStrut(15));
+        vBox.add(box);
+        vBox.add(Box.createVerticalStrut(5));
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.add(vBox, BorderLayout.CENTER);
+        return panel;
+    }
+}
+
+
+
+
+

@@ -49,7 +49,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     private final Map<Node, Integer> indexMap;
     private final Map<String, Node> nameMap;
-    private final NormalDistribution normal = new NormalDistribution();
+    private final NormalDistribution normal = new NormalDistribution(0, 1, 1e-15);
     private final Map<Node, Integer> nodesHash;
     /**
      * The correlation matrix.
