@@ -57,9 +57,9 @@ import static java.lang.Math.min;
  *
  * @author Joseph Ramsey
  */
-public class MarkovFactsEditor extends JPanel {
+public class MarkovCheckEditor extends JPanel {
     private Graph dag;
-    private MarkovCheckIndTestModel model;
+    private final MarkovCheckIndTestModel model;
     private List<String> vars;
     private AbstractTableModel tableModel;
     private int sortDir;
@@ -68,7 +68,7 @@ public class MarkovFactsEditor extends JPanel {
     private boolean parallelized = true;
     private final IndependenceTest test;
 
-    public MarkovFactsEditor(MarkovCheckIndTestModel model) {
+    public MarkovCheckEditor(MarkovCheckIndTestModel model) {
         if (model == null) {
             throw new NullPointerException("Expecting a model");
         }
@@ -241,7 +241,7 @@ public class MarkovFactsEditor extends JPanel {
                 int col = header.columnAtPoint(point);
                 int sortCol = header.getTable().convertColumnIndexToModel(col);
 
-                MarkovFactsEditor.this.sortByColumn(sortCol);
+                MarkovCheckEditor.this.sortByColumn(sortCol);
             }
         });
 
@@ -259,7 +259,7 @@ public class MarkovFactsEditor extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 JPanel component = createHistogramPanel();
-                EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, MarkovFactsEditor.this);
+                EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, MarkovCheckEditor.this);
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
                 editorWindow.setVisible(true);

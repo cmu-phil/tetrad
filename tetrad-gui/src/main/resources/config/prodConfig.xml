@@ -1088,7 +1088,7 @@
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.MarkovCheckIndTestModel
                 </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.MarkovFactsEditor</editor-class>
+                <editor-class>edu.cmu.tetradapp.editor.MarkovCheckEditor</editor-class>
             </model>
             <model name="Edge Weight Similarity Comparison" acronym="EdgeWeightSim"
                    help="tabular_comparison" category="SEM IM-SEM IM Comparisons">
