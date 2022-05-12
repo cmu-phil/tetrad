@@ -204,22 +204,22 @@ public class Kci implements IndependenceTest {
                 if (h[i] == 0) h[i] = avg;
             }
 
-            boolean independent;
+            IndependenceResult result;
 
             if (this.facts.get(fact) != null) {
                 return new IndependenceResult(fact, facts.get(fact), pValues.get(fact));
             } else {
                 if (z.isEmpty()) {
-                    independent = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
+                    result = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
                 } else {
-                    independent = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
+                    result = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
                 }
             }
 
             if (verbose) {
-                double p = getPValue();
+                double p = result.getPValue();
 
-                if (independent) {
+                if (result.independent()) {
                     TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
 
                 } else {
@@ -369,7 +369,7 @@ public class Kci implements IndependenceTest {
      *
      * @return true just in case independence holds.
      */
-    private boolean isIndependentUnconditional(Node x, Node y, IndependenceFact fact, double[][] _data,
+    private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, double[][] _data,
                                                double[] _h, int N,
                                                Map<Node, Integer> hash) {
         Matrix Ones = new Matrix(N, 1);
@@ -391,7 +391,7 @@ public class Kci implements IndependenceTest {
                 boolean indep = p > getAlpha();
                 this.facts.put(fact, indep);
                 this.pValues.put(fact, p);
-                return indep;
+                return new IndependenceResult(fact, indep, p);
             } else {
                 return theorem4(kx, ky, fact, N);
             }
@@ -399,7 +399,7 @@ public class Kci implements IndependenceTest {
             e.printStackTrace();
             this.pValues.put(fact, 0.0);
             this.facts.put(fact, false);
-            return false;
+            return new IndependenceResult(fact, false, 0.0);
         }
     }
 
@@ -408,7 +408,7 @@ public class Kci implements IndependenceTest {
      *
      * @return true just in case independence holds.
      */
-    private boolean isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact, double[][] _data,
+    private IndependenceResult isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact, double[][] _data,
                                              int N, Matrix H, Matrix I, double[] _h, Map<Node, Integer> hash) {
         Matrix kx;
         Matrix ky;
@@ -429,11 +429,11 @@ public class Kci implements IndependenceTest {
             boolean indep = false;
             this.facts.put(fact, indep);
             this.pValues.put(fact, 0.0);
-            return indep;
+            return new IndependenceResult(fact, indep, 0.0);
         }
     }
 
-    private boolean theorem4(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
+    private IndependenceResult theorem4(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
 
         double T = (1.0 / N) * (kx.times(ky).trace());
 
@@ -466,10 +466,10 @@ public class Kci implements IndependenceTest {
         boolean indep = p > getAlpha();
         this.facts.put(fact, indep);
         this.pValues.put(fact, p);
-        return indep;
+        return new IndependenceResult(fact, indep, p);
     }
 
-    private boolean proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
+    private IndependenceResult proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
         double T = (1.0 / N) * kx.times(ky).trace();
 
         Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
@@ -508,7 +508,7 @@ public class Kci implements IndependenceTest {
             boolean indep = p > getAlpha();
             this.facts.put(fact, indep);
             this.pValues.put(fact, p);
-            return indep;
+            return new IndependenceResult(fact, indep, p);
         } else {
 
             // Get top eigenvalues of that.
@@ -534,7 +534,7 @@ public class Kci implements IndependenceTest {
             boolean indep = p > getAlpha();
             this.facts.put(fact, indep);
             this.pValues.put(fact, p);
-            return indep;
+            return new IndependenceResult(fact, indep, p);
         }
     }
 

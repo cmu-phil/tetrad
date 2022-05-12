@@ -64,19 +64,25 @@ public class MarkovFactsEditor extends JPanel {
     private Graph dag;
     private MarkovCheckIndTestModel model;
     private List<String> vars;
-    private List<IndTestProducer> indTestProducers;
     private AbstractTableModel tableModel;
     private int sortDir;
     private int lastSortCol;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private boolean parallelized = true;
+    private final IndependenceTest test;
 
     public MarkovFactsEditor(MarkovCheckIndTestModel model) {
         if (model == null) {
             throw new NullPointerException("Expecting a model");
         }
 
-        this.indTestProducers = model.getIndTestProducers();
+        List<IndTestProducer> indTestProducers = model.getIndTestProducers();
+
+        if (indTestProducers.isEmpty()) {
+            throw new IllegalArgumentException("At least one source must be specified");
+        }
+
+        this.test = indTestProducers.get(0).getIndependenceTest();
         this.model = model;
         Graph sourceGraph = model.getGraph();
 
@@ -92,20 +98,6 @@ public class MarkovFactsEditor extends JPanel {
         this.dag = sourceGraph;
         this.vars = new LinkedList<>(dag.getNodeNames());
         this.vars = dag.getNodeNames();
-
-        if (this.indTestProducers.isEmpty()) {
-            throw new IllegalArgumentException("At least one source must be specified");
-        }
-
-        List<String> names = this.indTestProducers.get(0).getIndependenceTest().getVariableNames();
-
-        for (int i = 1; i < this.indTestProducers.size(); i++) {
-            List<String> _names = this.indTestProducers.get(i).getIndependenceTest().getVariableNames();
-
-            if (!new HashSet<>(names).equals(new HashSet<>(_names))) {
-                throw new IllegalArgumentException("All sources must have the same variable names.");
-            }
-        }
 
         buildGui();
     }
@@ -328,7 +320,7 @@ public class MarkovFactsEditor extends JPanel {
                     return;
                 }
 
-                dag = edu.cmu.tetrad.graph.GraphUtils.replaceNodes(dag, indTestProducers.get(0).getIndependenceTest().getVariables());
+                dag = edu.cmu.tetrad.graph.GraphUtils.replaceNodes(dag, test.getVariables());
                 List<IndependenceFact> facts = new ArrayList<>();
 
                 // Listing all facts before checking any (in preparation for parallelization).
@@ -376,7 +368,6 @@ public class MarkovFactsEditor extends JPanel {
                             Node x = fact.getX();
                             Node y = fact.getY();
                             List<Node> z = fact.getZ();
-                            IndependenceTest test = indTestProducers.get(0).getIndependenceTest();
                             boolean verbose = test.isVerbose();
                             test.setVerbose(true);
                             IndependenceResult result = test.checkIndependence(x, y, z);
@@ -448,7 +439,7 @@ public class MarkovFactsEditor extends JPanel {
     }
 
     private int getChunkSize(int n) {
-        int chunk = n / Runtime.getRuntime().availableProcessors();
+        int chunk = (int) Math.ceil((n / (5 * (double) Runtime.getRuntime().availableProcessors())));
         if (chunk < 1) chunk = 1;
         return chunk;
     }
@@ -457,34 +448,8 @@ public class MarkovFactsEditor extends JPanel {
         return this.vars;
     }
 
-    public MarkovFactsEditor(LayoutManager layout, boolean isDoubleBuffered) {
-        super(layout, isDoubleBuffered);
-    }
-
-    private static String factString(Node x, Node y, List<Node> condSet) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(x.getName());
-        sb.append(" _||_ ");
-        sb.append(y.getName());
-
-        Iterator<Node> it = condSet.iterator();
-
-        if (it.hasNext()) {
-            sb.append(" | ");
-            sb.append(it.next());
-        }
-
-        while (it.hasNext()) {
-            sb.append(", ");
-            sb.append(it.next());
-        }
-
-        return sb.toString();
-    }
-
     private IndependenceTest getIndependenceTest() {
-        return this.indTestProducers.get(0).getIndependenceTest();
+        return this.test;
     }
 
     private int getLastSortCol() {
