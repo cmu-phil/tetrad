@@ -22,16 +22,13 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.IndependenceFact;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
+import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.IndTestProducer;
-import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -86,12 +83,30 @@ public class MarkovFactsEditor extends JPanel {
         this.model = model;
         Graph sourceGraph = model.getGraph();
 
-        try {
-            new Dag(sourceGraph);
-        } catch (Exception e) {
+        for (Edge e : sourceGraph.getEdges()) {
+            if (!e.isDirected()) {
+                throw new IllegalArgumentException("At least this edge in the source graph is not directed: " + e);
+            }
+        }
+
+        List<Node> missingVars = new ArrayList<>();
+
+        for (Node w : sourceGraph.getNodes()) {
+            if (test.getVariable(w.getName()) == null) {
+                missingVars.add(w);
+                if (missingVars.size() > 5) break;
+            }
+        }
+
+        if (!missingVars.isEmpty()) {
+            throw new IllegalArgumentException("At least these variables in the DAG are missing from the data:" +
+                    "\n    " + missingVars);
+        }
+
+        if (sourceGraph.existsDirectedCycle()) {
             JOptionPane.showMessageDialog(
                     JOptionUtils.centeringComp().getTopLevelAncestor(),
-                    "That graph is cyclic. For linear models, this is OK, but for nonlinear models," +
+                    "That graph is not a DAG. For linear models, this is OK, but for nonlinear models," +
                             "\nyou would either have to form the “collapsed graph” or use sigma-separation.");
         }
 
@@ -410,28 +425,6 @@ public class MarkovFactsEditor extends JPanel {
                         }
                     }
                 }
-
-//                for (IndependenceFact fact : facts) {
-//                    Node x = fact.getX();
-//                    Node y = fact.getY();
-//                    List<Node> z = fact.getZ();
-//
-//                    for (IndTestProducer indTestProducer : indTestProducers) {
-//                        IndependenceTest test = indTestProducer.getIndependenceTest();
-//                        boolean verbose = test.isVerbose();
-//                        test.setVerbose(true);
-//                        IndependenceResult.Type indep = test.isIndependent(x, y, z) ? IndependenceResult.Type.INDEPENDENT : IndependenceResult.Type.DEPENDENT;
-//                        double pValue = test.getPValue();
-//                        test.setVerbose(verbose);
-//
-//                        model.getpValues().add(pValue);
-//
-//                        model.getResults().get(model.getResults().size() - 1).add(
-//                                new IndependenceResult(model.getResults().size(),
-//                                        MarkovFactsEditor.factString(x, y, z), indep, pValue));
-//
-//                    }
-//                }
 
                 tableModel.fireTableDataChanged();
             }

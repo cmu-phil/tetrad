@@ -126,7 +126,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
         if (numZeros >= pValues.size() / 2)
-            return new IndependenceResult(new IndependenceFact(x, y, z), true, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
 
         if (tf == 0) throw new IllegalArgumentException(
                 "For the Fisher method, all component p values in the calculation may not be zero, " +

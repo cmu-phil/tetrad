@@ -242,7 +242,7 @@ public class FasDeterministic implements IFas {
                     result = test.checkIndependence(x, y, empty);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    result = new IndependenceResult(new IndependenceFact(x, y, empty), true, Double.NaN);
+                    result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN);
                 }
 
                 if (!result.independent()) {

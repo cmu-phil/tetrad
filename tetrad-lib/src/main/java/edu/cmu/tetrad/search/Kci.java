@@ -72,10 +72,7 @@ public class Kci implements IndependenceTest {
     private double widthMultiplier = 1.0;
 
     // Record of independence facts
-    private final Map<IndependenceFact, Boolean> facts = new HashMap<>();
-
-    // Record of independence pValues
-    private final Map<IndependenceFact, Double> pValues = new HashMap<>();
+    private final Map<IndependenceFact, IndependenceResult> facts = new HashMap<>();
 
     // Epsilon for Propositio 5.
     private double epsilon = 0.001;
@@ -93,8 +90,6 @@ public class Kci implements IndependenceTest {
         this.data = data;
         this.variables = data.getVariables();
         int n = this.data.getNumRows();
-
-        List<Node> variables = getVariables();
 
         this.hash = new HashMap<>();
 
@@ -136,35 +131,60 @@ public class Kci implements IndependenceTest {
                     true, Double.NaN);
         }
 
+        Node _x = data.getVariable(x.getName());
+
+        if (_x == null) {
+            throw new NullPointerException("The x variable, " + x + " was not in the data.");
+        }
+
+        Node _y = data.getVariable(y.getName());
+
+        if (_y == null) {
+            throw new NullPointerException("The y variable, " + y + " was not in the data.");
+        }
+
+        List<Node> _z = new ArrayList<>();
+        for (Node v : z) {
+            Node variable = data.getVariable(v.getName());
+
+            if (variable == null) {
+                throw new NullPointerException("A z variable, " + v + " was not in the data.");
+            }
+
+            _z.add(variable);
+        }
+
         List<Node> allVars = new ArrayList<>();
-        allVars.add(x);
-        allVars.add(y);
-        allVars.addAll(z);
+        allVars.add(_x);
+        allVars.add(_y);
+        allVars.addAll(_z);
 
         IndependenceFact fact = new IndependenceFact(x, y, z);
         this.latestFact = fact;
 
         if (facts.containsKey(fact)) {
-            boolean independent = facts.get(fact);
+            IndependenceResult result = facts.get(fact);
 
             if (verbose) {
-                double p = getPValue();
+                double p = result.getPValue();
 
-                if (independent) {
+                if (result.independent()) {
                     TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
-
                 } else {
                     TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
                 }
             }
 
-            return new IndependenceResult(new IndependenceFact(x, y, z),
-                    facts.get(fact), pValues.get(fact));
+            return new IndependenceResult(fact, result.independent(), result.getPValue());
         } else {
-            List<Integer> rows = getRows(allVars, this.hash, this.data);
+            List<Integer> rows = getRows(this.data);
 
             int[] _cols = new int[allVars.size()];
-            for (int i = 0; i < _cols.length; i++) _cols[i] = this.hash.get(allVars.get(i));
+
+            for (int i = 0; i < allVars.size(); i++) {
+                Node key = allVars.get(i);
+                _cols[i] = this.hash.get(key);
+            }
 
             int[] _rows = new int[rows.size()];
             for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
@@ -204,15 +224,15 @@ public class Kci implements IndependenceTest {
                 if (h[i] == 0) h[i] = avg;
             }
 
-            IndependenceResult result;
+            IndependenceResult result = facts.get(fact);
 
             if (this.facts.get(fact) != null) {
-                return new IndependenceResult(fact, facts.get(fact), pValues.get(fact));
+                return new IndependenceResult(fact, result.independent(), result.getPValue());
             } else {
                 if (z.isEmpty()) {
-                    result = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
+                    result = isIndependentUnconditional(_x, _y, fact, _data, h, N, hash);
                 } else {
-                    result = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
+                    result = isIndependentConditional(_x, _y, _z, fact, _data, N, H, I, h, hash);
                 }
             }
 
@@ -227,16 +247,8 @@ public class Kci implements IndependenceTest {
                 }
             }
 
-            return new IndependenceResult(fact, facts.get(fact), pValues.get(fact));
+            return new IndependenceResult(fact, result.independent(), result.getPValue());
         }
-    }
-
-    /**
-     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
-     */
-    public double getPValue() {
-        return pValues.get(latestFact);
     }
 
     /**
@@ -319,7 +331,7 @@ public class Kci implements IndependenceTest {
     }
 
     public double getScore() {
-        return getAlpha() - getPValue();
+        return getAlpha() - facts.get(latestFact).getPValue();
     }
 
     public boolean isApproximate() {
@@ -389,17 +401,17 @@ public class Kci implements IndependenceTest {
                 double theta_appr = var_appr / mean_appr;
                 double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
                 boolean indep = p > getAlpha();
-                this.facts.put(fact, indep);
-                this.pValues.put(fact, p);
-                return new IndependenceResult(fact, indep, p);
+                IndependenceResult result = new IndependenceResult(fact, indep, p);
+                this.facts.put(fact, result);
+                return result;
             } else {
                 return theorem4(kx, ky, fact, N);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            this.pValues.put(fact, 0.0);
-            this.facts.put(fact, false);
-            return new IndependenceResult(fact, false, 0.0);
+            IndependenceResult result = new IndependenceResult(fact, false, 0.0);
+            this.facts.put(fact, result);
+            return result;
         }
     }
 
@@ -427,9 +439,9 @@ public class Kci implements IndependenceTest {
         } catch (Exception e) {
             e.printStackTrace();
             boolean indep = false;
-            this.facts.put(fact, indep);
-            this.pValues.put(fact, 0.0);
-            return new IndependenceResult(fact, indep, 0.0);
+            IndependenceResult result = new IndependenceResult(fact, indep, 0.0);
+            this.facts.put(fact, result);
+            return result;
         }
     }
 
@@ -464,9 +476,9 @@ public class Kci implements IndependenceTest {
         // Calculate p.
         double p = sum / (double) getNumBootstraps();
         boolean indep = p > getAlpha();
-        this.facts.put(fact, indep);
-        this.pValues.put(fact, p);
-        return new IndependenceResult(fact, indep, p);
+        IndependenceResult result = new IndependenceResult(fact, indep, p);
+        this.facts.put(fact, result);
+        return result;
     }
 
     private IndependenceResult proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
@@ -506,9 +518,9 @@ public class Kci implements IndependenceTest {
             double theta_appr = var_appr / mean_appr;
             double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
             boolean indep = p > getAlpha();
-            this.facts.put(fact, indep);
-            this.pValues.put(fact, p);
-            return new IndependenceResult(fact, indep, p);
+            IndependenceResult result = new IndependenceResult(fact, indep, p);
+            this.facts.put(fact, result);
+            return result;
         } else {
 
             // Get top eigenvalues of that.
@@ -532,9 +544,9 @@ public class Kci implements IndependenceTest {
 
             double p = sum / (double) getNumBootstraps();
             boolean indep = p > getAlpha();
-            this.facts.put(fact, indep);
-            this.pValues.put(fact, p);
-            return new IndependenceResult(fact, indep, p);
+            IndependenceResult result = new IndependenceResult(fact, indep, p);
+            this.facts.put(fact, result);
+            return result;
         }
     }
 
@@ -756,15 +768,10 @@ public class Kci implements IndependenceTest {
     }
 
 
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash, DataSet dataSet) {
+    private List<Integer> getRows(DataSet dataSet) {
         List<Integer> rows = new ArrayList<>();
 
-        K:
         for (int k = 0; k < dataSet.getNumRows(); k++) {
-//            for (Node node : allVars) {
-//                if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
-//            }
-
             rows.add(k);
         }
 

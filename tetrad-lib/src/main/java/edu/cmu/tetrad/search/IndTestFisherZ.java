@@ -223,7 +223,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         if (Double.isNaN(p)) {
             return new IndependenceResult(new IndependenceFact(x, y, z),
-                    true, p);
+                    false, p);
         } else {
             return new IndependenceResult(new IndependenceFact(x, y, z),
                     independent, p);

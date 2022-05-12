@@ -261,9 +261,9 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         double dof0 = ret1.getDof() - ret2.getDof();
 
         if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, z),
-                true, Double.NaN);
+                false, Double.NaN);
         if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, z),
-                true, Double.NaN);
+                false, Double.NaN);
         if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, z),
                 false, Double.NaN);
         if (lik0 == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, z),

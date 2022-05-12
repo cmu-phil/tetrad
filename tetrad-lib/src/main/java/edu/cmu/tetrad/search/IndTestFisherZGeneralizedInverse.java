@@ -177,7 +177,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             if (this.verbose) {
                 TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
             }
-            return new IndependenceResult(new IndependenceFact(xVar, yVar, z), true, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(xVar, yVar, z), false, Double.NaN);
         }
 
         if (r > 1) r = 1;
