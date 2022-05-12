@@ -159,7 +159,7 @@ public class IndTestSepset implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
     }
 
     /**

@@ -209,9 +209,10 @@ public final class IndTestChiSquare implements IndependenceTest {
             }
         }
 
-        this.facts.add(new IndependenceFact(x, y, z));
+        IndependenceFact fact = new IndependenceFact(x, y, z);
+        this.facts.add(fact);
 
-        return new IndependenceResult(facts.toString(), result.isIndep(), result.getPValue());
+        return new IndependenceResult(fact, result.isIndep(), result.getPValue());
     }
 
     /**

@@ -177,7 +177,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             if (this.verbose) {
                 TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
             }
-            return new IndependenceResult(new IndependenceFact(xVar, yVar, z).toString(), true, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(xVar, yVar, z), true, Double.NaN);
         }
 
         if (r > 1) r = 1;
@@ -209,7 +209,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(xVar, yVar, z).toString(), indFisher, getPValue());
+        return new IndependenceResult(new IndependenceFact(xVar, yVar, z), indFisher, getPValue());
     }
 
     /**

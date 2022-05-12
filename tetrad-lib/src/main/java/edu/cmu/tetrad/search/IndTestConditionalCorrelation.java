@@ -124,7 +124,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
     }
 
     public double getPValue() {

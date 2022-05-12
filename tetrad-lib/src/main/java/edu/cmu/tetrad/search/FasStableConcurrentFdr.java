@@ -293,7 +293,7 @@ public class FasStableConcurrentFdr implements IFas {
                             }
 
                             IndependenceResult result = new IndependenceResult(
-                                    new IndependenceFact(x, y, empty).toString(), true, Double.NaN);
+                                    new IndependenceFact(x, y, empty), true, Double.NaN);
 
                             try {
                                 result = test.checkIndependence(x, y, empty);
@@ -362,7 +362,7 @@ public class FasStableConcurrentFdr implements IFas {
                             }
 
                             IndependenceResult result = new IndependenceResult(
-                                    new IndependenceFact(x, y, empty).toString(), true, Double.NaN);
+                                    new IndependenceFact(x, y, empty), true, Double.NaN);
 
                             try {
                                 result = test.checkIndependence(x, y, empty);
@@ -511,7 +511,7 @@ public class FasStableConcurrentFdr implements IFas {
                                         result = test.checkIndependence(x, y, condSet);
                                     } catch (Exception e) {
                                         result = new IndependenceResult(
-                                                new IndependenceFact(x, y, condSet).toString(),
+                                                new IndependenceFact(x, y, condSet),
                                                 true, Double.NaN);
                                     }
 

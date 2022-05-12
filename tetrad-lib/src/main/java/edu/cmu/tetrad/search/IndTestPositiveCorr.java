@@ -178,7 +178,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
         System.out.println(possibleEdge);
 
-        return new IndependenceResult(new IndependenceFact(x0, y0, z0).toString(), !possibleEdge, getPValue());
+        return new IndependenceResult(new IndependenceFact(x0, y0, z0), !possibleEdge, getPValue());
     }
 
     /**

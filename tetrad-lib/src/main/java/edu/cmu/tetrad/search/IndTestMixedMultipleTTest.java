@@ -242,7 +242,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
     }
 
     int[] _rows;
@@ -339,7 +339,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
     }
 
     /**

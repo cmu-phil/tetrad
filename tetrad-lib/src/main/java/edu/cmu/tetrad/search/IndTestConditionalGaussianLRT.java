@@ -115,10 +115,10 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
 
-        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, z).toString(), true, Double.NaN);
-        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, z).toString(), true, Double.NaN);
-        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, z).toString(), false, Double.NaN);
-        if (lik0 == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, z).toString(), false, Double.NaN);
+        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, z), true, Double.NaN);
+        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, z), true, Double.NaN);
+        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+        if (lik0 == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
 
         double pValue;
 
@@ -139,7 +139,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
     }
 
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {

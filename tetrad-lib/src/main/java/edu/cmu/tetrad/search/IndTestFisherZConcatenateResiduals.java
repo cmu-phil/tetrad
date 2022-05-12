@@ -157,7 +157,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
                 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
 
         if (Double.isNaN(fisherZ)) {
-            return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+            return new IndependenceResult(new IndependenceFact(x, y, z),
                     true, Double.NaN);
         }
 
@@ -172,8 +172,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
-                independent, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
 
     }
 

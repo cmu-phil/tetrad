@@ -384,7 +384,7 @@ public class MarkovFactsEditor extends JPanel {
                             double pValue = result.getPValue();
                             test.setVerbose(verbose);
 
-                            results.add(new IndependenceResult(fact.toString(), indep, pValue));
+                            results.add(new IndependenceResult(fact, indep, pValue));
                         }
 
                         return results;

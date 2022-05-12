@@ -214,7 +214,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
     }
 
     int[] _rows;
@@ -258,7 +258,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         try {
             result = this.regression.regress(x, regressors);
         } catch (Exception e) {
-            return new IndependenceResult(new IndependenceFact(x, y, z).toString(), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
         }
 
         double p = result.getP()[1];
@@ -274,7 +274,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), indep, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), indep, p);
     }
 
     /**

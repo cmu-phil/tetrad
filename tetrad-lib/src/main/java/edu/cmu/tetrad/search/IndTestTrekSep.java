@@ -180,7 +180,7 @@ public final class IndTestTrekSep implements IndependenceTest {
 //        return rank <= z.size();
 
         boolean independent = rank <= z.size();
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, this.pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, this.pValue);
 
     }
 

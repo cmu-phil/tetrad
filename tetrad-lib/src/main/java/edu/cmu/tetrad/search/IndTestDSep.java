@@ -212,7 +212,7 @@ public class IndTestDSep implements IndependenceTest {
 
         this.pvalue = pValue;
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), dSeparated, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, z), dSeparated, pValue);
     }
 
     /**

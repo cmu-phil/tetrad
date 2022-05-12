@@ -143,7 +143,7 @@ public final class IndTestRegression implements IndependenceTest {
         try {
             result = regression.regress(xVar, regressors);
         } catch (Exception e) {
-            return new IndependenceResult(new IndependenceFact(xVar, yVar, zList).toString(),
+            return new IndependenceResult(new IndependenceFact(xVar, yVar, zList),
                     false, Double.NaN);
         }
 
@@ -166,7 +166,7 @@ public final class IndTestRegression implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(xVar, yVar, zList).toString(),
+        return new IndependenceResult(new IndependenceFact(xVar, yVar, zList),
                 independent, p);
     }
 

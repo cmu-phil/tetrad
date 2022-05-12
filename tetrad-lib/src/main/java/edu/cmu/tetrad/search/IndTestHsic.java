@@ -324,7 +324,7 @@ public final class IndTestHsic implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, this.pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, this.pValue);
     }
 
     /**

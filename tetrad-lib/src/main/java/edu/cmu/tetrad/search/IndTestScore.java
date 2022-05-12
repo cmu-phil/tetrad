@@ -80,8 +80,8 @@ public class IndTestScore implements IndependenceTest {
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         List<Node> z1 = new ArrayList<>(z);
 
-        if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z).toString(), true, getPValue());;
-        if (determines(z1, y)) new IndependenceResult(new IndependenceFact(x, y, z).toString(), true, getPValue());;
+        if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z), true, getPValue());;
+        if (determines(z1, y)) new IndependenceResult(new IndependenceFact(x, y, z), true, getPValue());;
 
         double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y), varIndices(z));
         this.bump = v;
@@ -96,7 +96,7 @@ public class IndTestScore implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
     }
 
     private int[] varIndices(List<Node> z) {

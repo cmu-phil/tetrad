@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -7,11 +9,11 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 public final class IndependenceResult implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private final String fact;
+    private final IndependenceFact fact;
     private final boolean indep;
     private final double pValue;
 
-    public IndependenceResult(String fact, boolean indep, double pValue) {
+    public IndependenceResult(IndependenceFact fact, boolean indep, double pValue) {
         this.fact = fact;
         this.indep = indep;
         this.pValue = pValue;
@@ -23,10 +25,12 @@ public final class IndependenceResult implements TetradSerializable {
      * @see TetradSerializableUtils
      */
     public static IndependenceResult serializableInstance() {
-        return new IndependenceResult("X _||_ Y", true, 0.0001);
+        return new IndependenceResult(new IndependenceFact(
+                new ContinuousVariable("X"), new ContinuousVariable("Y")),
+                true, 0.0001);
     }
 
-    public String getFact() {
+    public IndependenceFact getFact() {
         return this.fact;
     }
 

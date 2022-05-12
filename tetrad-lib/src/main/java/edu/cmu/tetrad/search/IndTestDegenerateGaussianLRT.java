@@ -237,7 +237,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
 
         List<Integer> rows = getRows(allNodes, this.nodesHash);
 
-        if (rows.isEmpty()) return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+        if (rows.isEmpty()) return new IndependenceResult(new IndependenceFact(x, y, z),
                 true, Double.NaN);
 
         int _x = this.nodesHash.get(x);
@@ -260,13 +260,13 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
 
-        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, z),
                 true, Double.NaN);
-        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, z),
                 true, Double.NaN);
-        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, z),
                 false, Double.NaN);
-        if (lik0 == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+        if (lik0 == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, z),
                 false, Double.NaN);
 
         double pValue;
@@ -288,7 +288,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+        return new IndependenceResult(new IndependenceFact(x, y, z),
                 independent, pValue);
     }
 

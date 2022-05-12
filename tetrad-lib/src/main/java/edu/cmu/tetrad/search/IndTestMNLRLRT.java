@@ -138,7 +138,7 @@ public class IndTestMNLRLRT implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+        return new IndependenceResult(new IndependenceFact(x, y, z),
                 independent, this.pValue);
     }
 

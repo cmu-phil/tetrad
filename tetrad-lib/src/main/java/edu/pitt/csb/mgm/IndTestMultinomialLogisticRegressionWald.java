@@ -234,7 +234,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
                         TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
                     }
 
-                    return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
+                    return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
                 }
             }
 
@@ -254,7 +254,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
     }
 
     // This takes an inordinate amount of time. -jdramsey 20150929
@@ -320,7 +320,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         try {
             result = this.regression.regress(x, regressors);
         } catch (Exception e) {
-            return new IndependenceResult(new IndependenceFact(x, y, z).toString(), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
         }
 
         double p = 1;
@@ -344,7 +344,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
     }
 
     /**

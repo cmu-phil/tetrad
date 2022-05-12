@@ -187,7 +187,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         } catch (SingularMatrixException e) {
             System.out.println(SearchLogUtils.determinismDetected(z, x));
             this.fisherZ = Double.POSITIVE_INFINITY;
-            return new IndependenceResult(new IndependenceFact(x, y, z).toString(), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
         }
 
         double q = 0.5 * (log(1.0 + r) - Math.log(1.0 - r));
@@ -203,7 +203,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {

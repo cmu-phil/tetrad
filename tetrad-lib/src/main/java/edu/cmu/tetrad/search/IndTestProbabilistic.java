@@ -157,7 +157,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         List<Integer> rows = getRows(this.data, allVars, this.indices);
         if (rows.isEmpty())
-            return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+            return new IndependenceResult(new IndependenceFact(x, y, z),
                     true, Double.NaN);
 
         BCInference bci;
@@ -214,7 +214,7 @@ public class IndTestProbabilistic implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), ind, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), ind, p);
     }
 
 

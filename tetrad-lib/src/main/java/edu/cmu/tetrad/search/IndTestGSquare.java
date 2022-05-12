@@ -200,7 +200,7 @@ public final class IndTestGSquare implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+        return new IndependenceResult(new IndependenceFact(x, y, z),
                 result.isIndep(), result.getPValue());
     }
 

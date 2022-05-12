@@ -132,7 +132,7 @@ public class Kci implements IndependenceTest {
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         if (Thread.currentThread().isInterrupted()) {
-            return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+            return new IndependenceResult(new IndependenceFact(x, y, z),
                     true, Double.NaN);
         }
 
@@ -158,7 +158,7 @@ public class Kci implements IndependenceTest {
                 }
             }
 
-            return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+            return new IndependenceResult(new IndependenceFact(x, y, z),
                     facts.get(fact), pValues.get(fact));
         } else {
             List<Integer> rows = getRows(allVars, this.hash, this.data);
@@ -207,7 +207,7 @@ public class Kci implements IndependenceTest {
             boolean independent;
 
             if (this.facts.get(fact) != null) {
-                return new IndependenceResult(fact.toString(), facts.get(fact), pValues.get(fact));
+                return new IndependenceResult(fact, facts.get(fact), pValues.get(fact));
             } else {
                 if (z.isEmpty()) {
                     independent = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
@@ -227,7 +227,7 @@ public class Kci implements IndependenceTest {
                 }
             }
 
-            return new IndependenceResult(fact.toString(), facts.get(fact), pValues.get(fact));
+            return new IndependenceResult(fact, facts.get(fact), pValues.get(fact));
         }
     }
 

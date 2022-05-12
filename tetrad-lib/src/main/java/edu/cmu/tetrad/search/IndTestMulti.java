@@ -95,7 +95,7 @@ public final class IndTestMulti implements IndependenceTest {
             TetradLogger.getInstance().log("dependencies", "In aggregate dependent: " + SearchLogUtils.independenceFact(x, y, z));
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
     }
 
     public double getPValue() {

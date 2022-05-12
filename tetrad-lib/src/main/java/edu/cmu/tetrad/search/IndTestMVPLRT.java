@@ -138,7 +138,7 @@ public class IndTestMVPLRT implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
     }
 
     /**

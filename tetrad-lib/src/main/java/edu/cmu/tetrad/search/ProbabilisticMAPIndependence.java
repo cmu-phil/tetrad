@@ -132,7 +132,7 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, pInd);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pInd);
     }
 
     public double probConstraint(BCInference.OP op, Node x, Node y, Node[] z) {
