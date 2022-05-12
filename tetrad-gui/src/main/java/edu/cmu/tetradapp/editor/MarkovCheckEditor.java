@@ -356,20 +356,16 @@ public class MarkovCheckEditor extends JPanel {
                     }
                 }
 
-                final int[] index = {0};
-
                 class IndCheckTask implements Callable<List<IndependenceResult>> {
 
                     private final int from;
                     private final int to;
                     private final List<IndependenceFact> facts;
-                    private final Set<Node> emptySet;
 
-                    IndCheckTask(int from, int to, List<IndependenceFact> facts, Set<Node> emptySet) {
+                    IndCheckTask(int from, int to, List<IndependenceFact> facts) {
                         this.from = from;
                         this.to = to;
                         this.facts = facts;
-                        this.emptySet = emptySet;
                     }
 
                     @Override
@@ -400,11 +396,10 @@ public class MarkovCheckEditor extends JPanel {
                 List<Callable<List<IndependenceResult>>> tasks = new ArrayList<>();
 
                 int chunkSize = getChunkSize(facts.size());
-                Set<Node> emptySet = new HashSet<>();
 
                 for (int i = 0; i < facts.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
                     IndCheckTask task = new IndCheckTask(i, min(facts.size(), i + chunkSize),
-                            facts, emptySet);
+                            facts);
 
                     if (!parallelized) {
                         List<IndependenceResult> _results = task.call();
