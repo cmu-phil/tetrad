@@ -439,7 +439,7 @@ public class MarkovFactsEditor extends JPanel {
     }
 
     private int getChunkSize(int n) {
-        int chunk = (int) Math.ceil((n / (5 * (double) Runtime.getRuntime().availableProcessors())));
+        int chunk = (int) Math.ceil((n / ((double) (5 * Runtime.getRuntime().availableProcessors()))));
         if (chunk < 1) chunk = 1;
         return chunk;
     }
