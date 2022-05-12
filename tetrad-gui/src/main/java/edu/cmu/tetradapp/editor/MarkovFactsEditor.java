@@ -306,7 +306,7 @@ public class MarkovFactsEditor extends JPanel {
                 this.setBackground(table.getBackground());
             }
 
-            this.setText((String) value);
+            this.setText(value.toString());
         }
 
         @Override
