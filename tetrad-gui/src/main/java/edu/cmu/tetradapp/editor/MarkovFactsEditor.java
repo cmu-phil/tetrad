@@ -356,6 +356,7 @@ public class MarkovFactsEditor extends JPanel {
                 dag = edu.cmu.tetrad.graph.GraphUtils.replaceNodes(dag, indTestProducers.get(0).getIndependenceTest().getVariables());
                 List<IndependenceFact> facts = new ArrayList<>();
 
+                // Listing all facts before checking any (in preparation for parallelization).
                 for (Node x : dag.getNodes()) {
                     List<Node> desc = dag.getDescendants(Collections.singletonList(x));
                     List<Node> nondesc = dag.getNodes();
@@ -398,7 +399,6 @@ public class MarkovFactsEditor extends JPanel {
                 tableModel.fireTableDataChanged();
             }
         };
-
     }
 
     private List<String> getVars() {
