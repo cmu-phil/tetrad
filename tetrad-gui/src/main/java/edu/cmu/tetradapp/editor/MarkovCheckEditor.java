@@ -94,7 +94,7 @@ public class MarkovCheckEditor extends JPanel {
         for (Node w : sourceGraph.getNodes()) {
             if (test.getVariable(w.getName()) == null) {
                 missingVars.add(w);
-                if (missingVars.size() > 5) break;
+                if (missingVars.size() >= 5) break;
             }
         }
 
