@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -75,7 +76,10 @@ public class MarkovFactsEditor extends JPanel {
         try {
             new Dag(sourceGraph);
         } catch (Exception e) {
-            throw new IllegalArgumentException("That source graph wa s not a DAG.");
+            JOptionPane.showMessageDialog(
+                    JOptionUtils.centeringComp().getTopLevelAncestor(),
+                    "That graph is cyclic. For linear models, this is OK, but for nonlinear models," +
+                            "\nyou would either have to form the “collapsed graph” or use sigma-separation.");
         }
 
         this.dag = sourceGraph;
@@ -350,6 +354,7 @@ public class MarkovFactsEditor extends JPanel {
                 }
 
                 dag = edu.cmu.tetrad.graph.GraphUtils.replaceNodes(dag, indTestProducers.get(0).getIndependenceTest().getVariables());
+                List<IndependenceFact> facts = new ArrayList<>();
 
                 for (Node x : dag.getNodes()) {
                     List<Node> desc = dag.getDescendants(Collections.singletonList(x));
@@ -364,26 +369,36 @@ public class MarkovFactsEditor extends JPanel {
                             + " non-descendants = " + nondesc);
 
                     for (Node y : nondesc) {
-                        model.getResults().add(new ArrayList<>());
+                        facts.add(new IndependenceFact(x, y, z));
+                    }
+                }
 
-                        for (IndTestProducer indTestProducer : indTestProducers) {
-                            IndependenceTest test = indTestProducer.getIndependenceTest();
-                            IndependenceResult.Type indep = test.isIndependent(x, y, z) ? IndependenceResult.Type.INDEPENDENT : IndependenceResult.Type.DEPENDENT;
-                            double pValue = test.getPValue();
+                for (IndependenceFact fact : facts) {
+                    Node x = fact.getX();
+                    Node y = fact.getY();
+                    List<Node> z = fact.getZ();
 
-                            model.getpValues().add(pValue);
+                    for (IndTestProducer indTestProducer : indTestProducers) {
+                        IndependenceTest test = indTestProducer.getIndependenceTest();
+                        boolean verbose = test.isVerbose();
+                        test.setVerbose(true);
+                        IndependenceResult.Type indep = test.isIndependent(x, y, z) ? IndependenceResult.Type.INDEPENDENT : IndependenceResult.Type.DEPENDENT;
+                        double pValue = test.getPValue();
+                        test.setVerbose(verbose);
 
-                            model.getResults().get(model.getResults().size() - 1).add(
-                                    new IndependenceResult(model.getResults().size(),
-                                            MarkovFactsEditor.factString(x, y, z), indep, pValue));
+                        model.getpValues().add(pValue);
 
-                        }
+                        model.getResults().get(model.getResults().size() - 1).add(
+                                new IndependenceResult(model.getResults().size(),
+                                        MarkovFactsEditor.factString(x, y, z), indep, pValue));
+
                     }
                 }
 
                 tableModel.fireTableDataChanged();
             }
         };
+
     }
 
     private List<String> getVars() {

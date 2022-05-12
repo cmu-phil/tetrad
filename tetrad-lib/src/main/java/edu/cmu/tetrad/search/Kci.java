@@ -131,86 +131,102 @@ public class Kci implements IndependenceTest {
      * getVariableNames().
      */
     public boolean isIndependent(Node x, Node y, List<Node> z) {
+        if (Thread.currentThread().isInterrupted()) {
+            return false;
+        }
+
         List<Node> allVars = new ArrayList<>();
         allVars.add(x);
         allVars.add(y);
         allVars.addAll(z);
 
-        List<Integer> rows = getRows(allVars, this.hash, this.data);
-
-        int[] _cols = new int[allVars.size()];
-        for (int i = 0; i < _cols.length; i++) _cols[i] = this.hash.get(allVars.get(i));
-
-        int[] _rows = new int[rows.size()];
-        for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
-
-        DataSet data = this.data.subsetRowsColumns(_rows, _cols);
-        data = DataUtils.standardizeData(data);
-        double[][] _data = data.getDoubleData().transpose().toArray();
-
-        Map<Node, Integer> hash = new HashMap<>();
-        for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
-
-        int N = data.getNumRows();
-
-        Matrix ones = new Matrix(N, 1);
-        for (int j = 0; j < N; j++) ones.set(j, 0, 1);
-
-        Matrix I = Matrix.identity(N);
-
-        Matrix H = I.minus(ones.times(ones.transpose()).scalarMult(1.0 / N));
-
-        double[] h = new double[_data.length];
-        int count = 0;
-
-        double sum = 0.0;
-        for (int i = 0; i < data.getNumColumns(); i++) {
-            h[i] = this.h[this.hash.get(allVars.get(i))];
-
-            if (h[i] != 0) {
-                sum += h[i];
-                count++;
-            }
-        }
-
-        double avg = sum / count;
-
-        for (int i = 0; i < h.length; i++) {
-            if (h[i] == 0) h[i] = avg;
-        }
-
-
-        boolean independent;
-
-        if (Thread.currentThread().isInterrupted()) {
-            return false;
-        }
-
         IndependenceFact fact = new IndependenceFact(x, y, z);
         this.latestFact = fact;
 
-        if (this.facts.get(fact) != null) {
-            return facts.get(fact);
+        if (facts.containsKey(fact)) {
+            boolean independent = facts.get(fact);
+
+            if (verbose) {
+                double p = getPValue();
+
+                if (independent) {
+                    TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
+
+                } else {
+                    TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+                }
+            }
+
+            return independent;
         } else {
-            if (z.isEmpty()) {
-                independent = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
-            } else {
-                independent = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
+            List<Integer> rows = getRows(allVars, this.hash, this.data);
+
+            int[] _cols = new int[allVars.size()];
+            for (int i = 0; i < _cols.length; i++) _cols[i] = this.hash.get(allVars.get(i));
+
+            int[] _rows = new int[rows.size()];
+            for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
+
+            DataSet data = this.data.subsetRowsColumns(_rows, _cols);
+            data = DataUtils.standardizeData(data);
+            double[][] _data = data.getDoubleData().transpose().toArray();
+
+            Map<Node, Integer> hash = new HashMap<>();
+            for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
+
+            int N = data.getNumRows();
+
+            Matrix ones = new Matrix(N, 1);
+            for (int j = 0; j < N; j++) ones.set(j, 0, 1);
+
+            Matrix I = Matrix.identity(N);
+
+            Matrix H = I.minus(ones.times(ones.transpose()).scalarMult(1.0 / N));
+
+            double[] h = new double[_data.length];
+            int count = 0;
+
+            double sum = 0.0;
+            for (int i = 0; i < data.getNumColumns(); i++) {
+                h[i] = this.h[this.hash.get(allVars.get(i))];
+
+                if (h[i] != 0) {
+                    sum += h[i];
+                    count++;
+                }
             }
-        }
 
-        if (verbose) {
-            double p = getPValue();
+            double avg = sum / count;
 
-            if (independent) {
-                TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
-
-            } else {
-                TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+            for (int i = 0; i < h.length; i++) {
+                if (h[i] == 0) h[i] = avg;
             }
-        }
 
-        return independent;
+            boolean independent;
+
+            if (this.facts.get(fact) != null) {
+                return facts.get(fact);
+            } else {
+                if (z.isEmpty()) {
+                    independent = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
+                } else {
+                    independent = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
+                }
+            }
+
+            if (verbose) {
+                double p = getPValue();
+
+                if (independent) {
+                    TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
+
+                } else {
+                    TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+                }
+            }
+
+            return independent;
+        }
     }
 
     /**
