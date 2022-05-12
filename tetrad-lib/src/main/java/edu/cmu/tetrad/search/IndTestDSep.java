@@ -153,7 +153,7 @@ public class IndTestDSep implements IndependenceTest {
      * @param z a List of nodes (conditioning variables)
      * @return true iff x _||_ y | z
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
@@ -198,31 +198,21 @@ public class IndTestDSep implements IndependenceTest {
 //            }
 //        }
 
+        double pValue;
+
         if (dSeparated) {
             if (this.facts != null) {
                 this.facts.add(new IndependenceFact(x, y, z));
             }
 
-            pvalue = 1.0;
+            pValue = 1.0;
         } else {
-            pvalue = 0.0;
+            pValue = 0.0;
         }
 
-        return dSeparated;
-    }
+        this.pvalue = pValue;
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), dSeparated, pValue);
     }
 
     /**

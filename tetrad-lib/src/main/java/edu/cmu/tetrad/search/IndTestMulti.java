@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -85,7 +86,7 @@ public final class IndTestMulti implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         boolean independent = ResolveSepsets.isIndependentPooled(this.method, this.independenceTests, x, y, z);
 
         if (independent) {
@@ -94,21 +95,7 @@ public final class IndTestMulti implements IndependenceTest {
             TetradLogger.getInstance().log("dependencies", "In aggregate dependent: " + SearchLogUtils.independenceFact(x, y, z));
         }
 
-        return independent;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, getPValue());
     }
 
     public double getPValue() {

@@ -183,7 +183,7 @@ public class DMSearch {
 
 //                    System.out.println(i);
 //                    System.out.println(j);
-                        if (ind.isDependent(data.getVariable(i), data.getVariable(j))) {
+                        if (ind.isDependent(data.getVariable(i), data.getVariable(j)).independent()) {
                             pattern.addDirectedEdge(data.getVariable(i), data.getVariable(j));
                         }
                     }
@@ -648,7 +648,7 @@ public class DMSearch {
         boolean testResult = false;
 
         try {
-            testResult = test.isIndependent(outputsLatent.first(), outputsLatentEffect.first(), latentList);
+            testResult = test.isIndependent(outputsLatent.first(), outputsLatentEffect.first(), latentList).independent();
         }
         catch(SingularMatrixException error){
             System.out.println(error);

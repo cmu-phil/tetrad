@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetradapp.model.IndTestModel;
 import edu.cmu.tetradapp.model.IndTestProducer;
-import edu.cmu.tetradapp.model.IndependenceResult;
+import edu.cmu.tetradapp.model.IndependenceResultIndFacts;
 import edu.cmu.tetradapp.util.IntTextField;
 
 import javax.swing.*;
@@ -58,7 +58,7 @@ public class IndependenceFactsEditor extends JPanel {
     private LinkedList<String> vars;
     private JTextField textField;
     private List<IndTestProducer> indTestProducers;
-    private List<List<IndependenceResult>> results = new ArrayList<>();
+    private List<List<IndependenceResultIndFacts>> results = new ArrayList<>();
     private AbstractTableModel tableModel;
     private int sortDir;
     private int lastSortCol;
@@ -261,27 +261,27 @@ public class IndependenceFactsEditor extends JPanel {
                     return IndependenceFactsEditor.this.results.get(rowIndex).get(0).getFact();
                 }
 
-                IndependenceResult independenceResult = IndependenceFactsEditor.this.results.get(rowIndex).get(columnIndex - 2);
+                IndependenceResultIndFacts independenceResult = IndependenceFactsEditor.this.results.get(rowIndex).get(columnIndex - 2);
 
                 for (int i = 0; i < IndependenceFactsEditor.this.indTestProducers.size(); i++) {
                     if (columnIndex == i + 2) {
                         if (getIndependenceTest(i) instanceof IndTestDSep) {
-                            if (independenceResult.getType() == IndependenceResult.Type.INDEPENDENT) {
+                            if (independenceResult.getType() == IndependenceResultIndFacts.Type.INDEPENDENT) {
                                 return "D-SEPARATED";
-                            } else if (independenceResult.getType() == IndependenceResult.Type.DEPENDENT) {
+                            } else if (independenceResult.getType() == IndependenceResultIndFacts.Type.DEPENDENT) {
                                 return "d-connected";
-                            } else if (independenceResult.getType() == IndependenceResult.Type.UNDETERMINED) {
+                            } else if (independenceResult.getType() == IndependenceResultIndFacts.Type.UNDETERMINED) {
                                 return "*";
                             }
                         } else {
                             if (IndependenceFactsEditor.this.isShowPs()) {
                                 return nf.format(independenceResult.getpValue());
                             } else {
-                                if (independenceResult.getType() == IndependenceResult.Type.INDEPENDENT) {
+                                if (independenceResult.getType() == IndependenceResultIndFacts.Type.INDEPENDENT) {
                                     return "INDEPENDENT";
-                                } else if (independenceResult.getType() == IndependenceResult.Type.DEPENDENT) {
+                                } else if (independenceResult.getType() == IndependenceResultIndFacts.Type.DEPENDENT) {
                                     return "dependent";
-                                } else if (independenceResult.getType() == IndependenceResult.Type.UNDETERMINED) {
+                                } else if (independenceResult.getType() == IndependenceResultIndFacts.Type.UNDETERMINED) {
                                     return "*";
                                 }
                             }
@@ -405,17 +405,17 @@ public class IndependenceFactsEditor extends JPanel {
                     int ind2;
                     int col = sortCol - 2;
 
-                    if (r1.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
+                    if (r1.get(col).getType() == IndependenceResultIndFacts.Type.UNDETERMINED) {
                         ind1 = 0;
-                    } else if (r1.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
+                    } else if (r1.get(col).getType() == IndependenceResultIndFacts.Type.DEPENDENT) {
                         ind1 = 1;
                     } else {
                         ind1 = 2;
                     }
 
-                    if (r2.get(col).getType() == IndependenceResult.Type.UNDETERMINED) {
+                    if (r2.get(col).getType() == IndependenceResultIndFacts.Type.UNDETERMINED) {
                         ind2 = 0;
-                    } else if (r2.get(col).getType() == IndependenceResult.Type.DEPENDENT) {
+                    } else if (r2.get(col).getType() == IndependenceResultIndFacts.Type.DEPENDENT) {
                         ind2 = 1;
                     } else {
                         ind2 = 2;
@@ -632,18 +632,19 @@ public class IndependenceFactsEditor extends JPanel {
                             z.add(independenceTest.getVariable(vars4[i]));
                         }
 
-                        IndependenceResult.Type indep;
+                        IndependenceResultIndFacts.Type indep;
                         double pValue;
 
                         try {
-                            indep = independenceTest.isIndependent(x, y, z) ? IndependenceResult.Type.INDEPENDENT : IndependenceResult.Type.DEPENDENT;
+                            indep = independenceTest.isIndependent(x, y, z).independent()
+                                    ? IndependenceResultIndFacts.Type.INDEPENDENT : IndependenceResultIndFacts.Type.DEPENDENT;
                             pValue = independenceTest.getPValue();
                         } catch (Exception e) {
-                            indep = IndependenceResult.Type.UNDETERMINED;
+                            indep = IndependenceResultIndFacts.Type.UNDETERMINED;
                             pValue = Double.NaN;
                         }
 
-                        this.results.get(this.results.size() - 1).add(new IndependenceResult(this.results.size(),
+                        this.results.get(this.results.size() - 1).add(new IndependenceResultIndFacts(this.results.size(),
                                 IndependenceFactsEditor.factString(x, y, z), indep, pValue));
                     }
 

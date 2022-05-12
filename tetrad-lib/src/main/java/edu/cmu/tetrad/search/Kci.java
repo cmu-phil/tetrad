@@ -130,9 +130,10 @@ public class Kci implements IndependenceTest {
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         if (Thread.currentThread().isInterrupted()) {
-            return false;
+            return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                    true, Double.NaN);
         }
 
         List<Node> allVars = new ArrayList<>();
@@ -157,7 +158,8 @@ public class Kci implements IndependenceTest {
                 }
             }
 
-            return independent;
+            return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                    facts.get(fact), pValues.get(fact));
         } else {
             List<Integer> rows = getRows(allVars, this.hash, this.data);
 
@@ -205,7 +207,7 @@ public class Kci implements IndependenceTest {
             boolean independent;
 
             if (this.facts.get(fact) != null) {
-                return facts.get(fact);
+                return new IndependenceResult(fact.toString(), facts.get(fact), pValues.get(fact));
             } else {
                 if (z.isEmpty()) {
                     independent = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
@@ -225,39 +227,8 @@ public class Kci implements IndependenceTest {
                 }
             }
 
-            return independent;
+            return new IndependenceResult(fact.toString(), facts.get(fact), pValues.get(fact));
         }
-    }
-
-    /**
-     * Returns true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        LinkedList<Node> thez = new LinkedList<>();
-        Collections.addAll(thez, z);
-        return isIndependent(x, y, thez);
-    }
-
-    /**
-     * Returns true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    /**
-     * Returns true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, Node... z) {
-        LinkedList<Node> thez = new LinkedList<>();
-        Collections.addAll(thez, z);
-        return isDependent(x, y, thez);
     }
 
     /**

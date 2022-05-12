@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -149,7 +150,7 @@ public final class IndTestGSquare implements IndependenceTest {
      * @param z the list of conditioning varNames.
      * @return true iff x _||_ y | z.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         if (x == null) {
             throw new NullPointerException();
         }
@@ -199,21 +200,8 @@ public final class IndTestGSquare implements IndependenceTest {
             }
         }
 
-        return result.isIndep();
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                result.isIndep(), result.getPValue());
     }
 
     /**

@@ -281,7 +281,7 @@ public final class Rfci implements GraphSearch {
             if (this.knowledge.noEdgeRequired(i.getName(), j.getName()))  // if BK allows
             {
                 try {
-                    independent1 = this.independenceTest.isIndependent(i, j, sepSet);
+                    independent1 = this.independenceTest.isIndependent(i, j, sepSet).independent();
                 } catch (Exception e) {
                     independent1 = true;
                 }
@@ -291,7 +291,7 @@ public final class Rfci implements GraphSearch {
             if (this.knowledge.noEdgeRequired(j.getName(), k.getName()))  // if BK allows
             {
                 try {
-                    independent2 = this.independenceTest.isIndependent(j, k, sepSet);
+                    independent2 = this.independenceTest.isIndependent(j, k, sepSet).independent();
                 } catch (Exception e) {
                     independent2 = true;
                 }
@@ -444,7 +444,7 @@ public final class Rfci implements GraphSearch {
         boolean indep;
 
         try {
-            indep = this.independenceTest.isIndependent(x, y, empty);
+            indep = this.independenceTest.isIndependent(x, y, empty).independent();
         } catch (Exception e) {
             indep = false;
         }
@@ -462,7 +462,7 @@ public final class Rfci implements GraphSearch {
             while ((combination = cg.next()) != null) {
                 List<Node> condSet = GraphUtils.asList(combination, sepSet);
 
-                indep = this.independenceTest.isIndependent(x, y, condSet);
+                indep = this.independenceTest.isIndependent(x, y, condSet).independent();
 
                 if (indep) {
                     getSepsets().set(x, y, condSet);

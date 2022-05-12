@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
@@ -126,7 +127,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x0, Node y0, List<Node> z0) {
+    public IndependenceResult isIndependent(Node x0, Node y0, List<Node> z0) {
 
         System.out.println(SearchLogUtils.independenceFact(x0, y0, z0));
 
@@ -177,20 +178,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
         System.out.println(possibleEdge);
 
-        return !possibleEdge;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        return isIndependent(x, y, Arrays.asList(z));
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x0, y0, z0).toString(), !possibleEdge, getPValue());
     }
 
     /**

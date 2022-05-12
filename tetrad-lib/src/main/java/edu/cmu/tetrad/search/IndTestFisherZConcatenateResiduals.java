@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
@@ -113,7 +114,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
 
         x = getVariable(this.variables, x.getName());
         z = GraphUtils.replaceNodes(z, this.variables);
@@ -156,12 +157,13 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
                 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
 
         if (Double.isNaN(fisherZ)) {
-            return false;
+            return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                    true, Double.NaN);
         }
 
-        double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
-        this.pValue = pvalue;
-        boolean independent = pvalue > this.alpha;
+        double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
+        this.pValue = pValue;
+        boolean independent = pValue > this.alpha;
 
         if (this.verbose) {
             if (independent) {
@@ -170,7 +172,8 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
             }
         }
 
-        return independent;
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                independent, pValue);
 
     }
 
@@ -220,20 +223,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         }
 
         return null;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
     }
 
     /**

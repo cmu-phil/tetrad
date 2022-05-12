@@ -239,7 +239,7 @@ public class FasDeterministic implements IFas {
 
                 try {
                     this.numIndependenceTests++;
-                    independent = test.isIndependent(x, y, empty);
+                    independent = test.isIndependent(x, y, empty).independent();
                 } catch (Exception e) {
                     e.printStackTrace();
                     independent = false;
@@ -349,7 +349,7 @@ public class FasDeterministic implements IFas {
 
                         try {
                             this.numIndependenceTests++;
-                            independent = test.isIndependent(x, y, condSet);
+                            independent = test.isIndependent(x, y, condSet).independent();
 
                         } catch (Exception e) {
                             independent = false;

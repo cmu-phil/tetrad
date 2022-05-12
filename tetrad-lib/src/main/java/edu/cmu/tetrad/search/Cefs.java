@@ -457,7 +457,7 @@ public final class Cefs {
     }
 
     private boolean independent(Node v, Node w, List<Node> z) {
-        boolean independent = getTest().isIndependent(v, w, z);
+        boolean independent = getTest().isIndependent(v, w, z).independent();
 
         if (independent) {
             if (getTrueMb() != null) {
@@ -597,7 +597,7 @@ public final class Cefs {
             while ((choice = cg.next()) != null) {
                 List<Node> condSet = Cefs.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, condSet)) {
+                if (test.isIndependent(x, z, condSet).independent()) {
                     if (condSet.contains(y)) {
                         existsSepsetContainingY = true;
                     } else {
@@ -626,7 +626,7 @@ public final class Cefs {
             while ((choice = cg.next()) != null) {
                 List<Node> condSet = Cefs.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, condSet)) {
+                if (test.isIndependent(x, z, condSet).independent()) {
                     if (condSet.contains(y)) {
                         existsSepsetContainingY = true;
                     } else {

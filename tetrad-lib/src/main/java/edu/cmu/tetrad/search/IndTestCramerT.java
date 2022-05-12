@@ -25,12 +25,12 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -166,7 +166,7 @@ public final class IndTestCramerT implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
@@ -254,21 +254,7 @@ public final class IndTestCramerT implements IndependenceTest {
             }
         }
 
-        return independent;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, pValue);
     }
 
     /**

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
@@ -89,7 +90,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         int[] all = new int[z.size() + 2];
         all[0] = this.variablesMap.get(x);
         all[1] = this.variablesMap.get(y);
@@ -124,7 +125,8 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
             n++;
         }
 
-        if (numZeros >= pValues.size() / 2) return false;
+        if (numZeros >= pValues.size() / 2)
+            return new IndependenceResult(new IndependenceFact(x, y, z).toString(), true, Double.NaN);
 
         if (tf == 0) throw new IllegalArgumentException(
                 "For the Fisher method, all component p values in the calculation may not be zero, " +
@@ -141,21 +143,8 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
             }
         }
 
-        return independent;
-    }
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
     }
 
     /**

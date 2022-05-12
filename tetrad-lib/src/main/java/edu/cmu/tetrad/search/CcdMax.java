@@ -321,7 +321,7 @@ public final class CcdMax implements GraphSearch {
                 if (sepsetay.contains(b)) continue;
 
                 if (!sepsetay.containsAll(sepsetax)) {
-                    if (!this.independenceTest.isIndependent(a, b, sepsetay)) {
+                    if (!this.independenceTest.isIndependent(a, b, sepsetay).independent()) {
                         addDirectedEdge(graph, c, b);
                         continue EDGE;
                     }

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.kernel.Kernel;
 import edu.cmu.tetrad.search.kernel.KernelGaussian;
@@ -162,7 +163,7 @@ public final class IndTestHsic implements IndependenceTest {
      * @param z the list of conditioning variables.
      * @return true iff x _||_ y | z.
      */
-    public boolean isIndependent(Node y, Node x, List<Node> z) {
+    public IndependenceResult isIndependent(Node y, Node x, List<Node> z) {
 
         int m = sampleSize();
 
@@ -323,7 +324,7 @@ public final class IndTestHsic implements IndependenceTest {
             }
         }
 
-        return true;
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, this.pValue);
     }
 
     /**
@@ -500,19 +501,6 @@ public final class IndTestHsic implements IndependenceTest {
         empHSIC *= (m / (betaz * (m - 1)));
 
         return empHSIC;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        return isIndependent(x, y, Arrays.asList(z));
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
     }
 
     public double getThreshold() {

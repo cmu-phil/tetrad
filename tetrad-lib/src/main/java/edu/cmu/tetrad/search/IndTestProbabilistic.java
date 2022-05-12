@@ -140,13 +140,14 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     @Override
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[0]);
-        return isIndependent(x, y, _z);
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+        Node[] nodes = new Node[z.size()];
+        for (int i = 0; i < z.size(); i++) nodes[i] = z.get(i);
+        return isIndependent(x, y, nodes);
     }
 
     @Override
-    public boolean isIndependent(Node x, Node y, Node... z) {
+    public IndependenceResult isIndependent(Node x, Node y, Node... z) {
         IndependenceFact key = new IndependenceFact(x, y, z);
 
         List<Node> allVars = new ArrayList<>();
@@ -155,7 +156,9 @@ public class IndTestProbabilistic implements IndependenceTest {
         Collections.addAll(allVars, z);
 
         List<Integer> rows = getRows(this.data, allVars, this.indices);
-        if (rows.isEmpty()) return true;
+        if (rows.isEmpty())
+            return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                    true, Double.NaN);
 
         BCInference bci;
         Map<Node, Integer> indices;
@@ -211,7 +214,7 @@ public class IndTestProbabilistic implements IndependenceTest {
             }
         }
 
-        return ind;
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), ind, p);
     }
 
 
@@ -227,17 +230,6 @@ public class IndTestProbabilistic implements IndependenceTest {
         }
 
         return bci.probConstraint(op, _x, _y, _z);
-    }
-
-    @Override
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[0]);
-        return !isIndependent(x, y, _z);
-    }
-
-    @Override
-    public boolean isDependent(Node x, Node y, Node... z) {
-        return !isIndependent(x, y, z);
     }
 
     @Override

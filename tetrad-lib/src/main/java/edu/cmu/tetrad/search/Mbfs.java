@@ -623,7 +623,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     }
 
     private boolean independent(Node v, Node w, List<Node> z) {
-        boolean independent = getTest().isIndependent(v, w, z);
+        boolean independent = getTest().isIndependent(v, w, z).independent();
 
         this.numIndependenceTests++;
         return independent;

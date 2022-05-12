@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IndependenceFacts;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -53,7 +54,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         Node[] _z = new Node[z.size()];
 
         for (int i = 0; i < z.size(); i++) {
@@ -69,22 +70,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
             }
         }
 
-        return independent;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-
-        List<Node> zz = new ArrayList<>(Arrays.asList(z));
-
-        return isIndependent(x, y, zz);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        return !isIndependent(x, y, z);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, getPValue());
     }
 
     public double getPValue() {

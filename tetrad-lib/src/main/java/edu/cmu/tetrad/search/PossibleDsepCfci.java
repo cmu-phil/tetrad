@@ -152,7 +152,7 @@ final class PossibleDsepCfci {
                 List<Node> condSet = GraphUtils.asList(indSet, possibleParents);
 
                 boolean independent =
-                        this.test.isIndependent(node1, node2, condSet);
+                        this.test.isIndependent(node1, node2, condSet).independent();
 
                 if (independent && noEdgeRequired) {
                     System.out.println("*** DSEP removed " + this.graph.getEdge(node1, node2));

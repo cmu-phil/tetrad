@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
@@ -177,7 +178,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         int n = sampleSize();
         double r;
 
@@ -186,7 +187,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         } catch (SingularMatrixException e) {
             System.out.println(SearchLogUtils.determinismDetected(z, x));
             this.fisherZ = Double.POSITIVE_INFINITY;
-            return false;
+            return new IndependenceResult(new IndependenceFact(x, y, z).toString(), false, Double.NaN);
         }
 
         double q = 0.5 * (log(1.0 + r) - Math.log(1.0 - r));
@@ -202,25 +203,12 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
             }
         }
 
-        return independent;
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, getPValue());
     }
 
     private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
         return this.recursivePartialCorrelation.corr(x, y, z);
 
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        return isIndependent(x, y, Arrays.asList(z));
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
     }
 
     /**

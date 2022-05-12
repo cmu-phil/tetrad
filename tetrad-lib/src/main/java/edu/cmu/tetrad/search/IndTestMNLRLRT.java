@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -80,7 +81,7 @@ public class IndTestMNLRLRT implements IndependenceTest {
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
 
         int _x = this.nodesHash.get(x);
         int _y = this.nodesHash.get(y);
@@ -137,26 +138,8 @@ public class IndTestMNLRLRT implements IndependenceTest {
             }
         }
 
-        return independent;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    /**
-     * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !this.isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                independent, this.pValue);
     }
 
     /**

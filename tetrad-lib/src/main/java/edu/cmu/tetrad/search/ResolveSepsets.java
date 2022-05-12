@@ -109,11 +109,11 @@ public final class ResolveSepsets {
                 for (int k = 0; k < testsWithSet.size(); k++) {
                     IndependenceTest testWithSet = testsWithSet.get(k);
                     if (k == 0) {
-                        separated = testWithSet.isIndependent(pair.getFirst(), pair.getSecond(), conditioningSet);
+                        separated = testWithSet.isIndependent(pair.getFirst(), pair.getSecond(), conditioningSet).independent();
                         continue;
                     }
                     // checks to see if inconsistent
-                    if (separated != testWithSet.isIndependent(pair.getFirst(), pair.getSecond(), conditioningSet)) {
+                    if (separated != testWithSet.isIndependent(pair.getFirst(), pair.getSecond(), conditioningSet).independent()) {
                         inconsistent = true;
                         break;
                     }

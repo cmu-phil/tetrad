@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
@@ -94,7 +95,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
             return isIndependentMultinomialLogisticRegression(x, y, z);
         } else if (x instanceof DiscreteVariable) {
@@ -228,7 +229,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return pVec;
     }
 
-    private boolean isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
         double p = dependencePvalsLogit(x, y, z)[0];
         boolean independent = p > this.alpha;
         //0 corresponds to y
@@ -241,7 +242,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        return independent;
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
     }
 
     int[] _rows;
@@ -324,7 +325,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         return pVec;
     }
 
-    private boolean isIndependentRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentRegression(Node x, Node y, List<Node> z) {
         double p = Objects.requireNonNull(dependencePvalsLinear(x, y, z))[0];
         //result.getP()[1];
         this.lastP = p;
@@ -338,27 +339,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        return independent;
-    }
-
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    /**
-     * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !this.isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
     }
 
     /**

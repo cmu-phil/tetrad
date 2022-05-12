@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -135,7 +136,7 @@ public final class IndTestTrekSep implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         int n = sampleSize();
         int xi = this.latents.indexOf(x);
         int yi = this.latents.indexOf(y);
@@ -176,20 +177,11 @@ public final class IndTestTrekSep implements IndependenceTest {
         double[][] CovMatrix = this.covMatrix.getMatrix().toArray();
 
         int rank = new EstimateRank().Estimate(A, B, CovMatrix, n, this.alpha);
-        return rank <= z.size();
-    }
+//        return rank <= z.size();
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        return isIndependent(x, y, Arrays.asList(z));
-    }
+        boolean independent = rank <= z.size();
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, this.pValue);
 
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
     }
 
     /**

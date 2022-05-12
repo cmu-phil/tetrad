@@ -165,7 +165,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @param z the list of conditioning varNames.
      * @return true iff x _||_ y | z.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         if (z == null) {
@@ -211,21 +211,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
         this.facts.add(new IndependenceFact(x, y, z));
 
-        return result.isIndep();
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(facts.toString(), result.isIndep(), result.getPValue());
     }
 
     /**

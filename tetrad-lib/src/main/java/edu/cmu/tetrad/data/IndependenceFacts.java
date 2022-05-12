@@ -73,7 +73,7 @@ public class IndependenceFacts implements DataModel {
                     Z.add(nodes.get(choice[perm[i]]));
                 }
 
-                if (dsep.isIndependent(x, y, Z)) {
+                if (dsep.isIndependent(x, y, Z).independent()) {
                     facts.add(new IndependenceFact(x, y, Z));
                 }
             }

@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -76,11 +77,11 @@ public class IndTestScore implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         List<Node> z1 = new ArrayList<>(z);
 
-        if (determines(z1, x)) return false;
-        if (determines(z1, y)) return false;
+        if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z).toString(), true, getPValue());;
+        if (determines(z1, y)) new IndependenceResult(new IndependenceFact(x, y, z).toString(), true, getPValue());;
 
         double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y), varIndices(z));
         this.bump = v;
@@ -95,7 +96,7 @@ public class IndTestScore implements IndependenceTest {
             }
         }
 
-        return independent;
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, getPValue());
     }
 
     private int[] varIndices(List<Node> z) {
@@ -106,24 +107,6 @@ public class IndTestScore implements IndependenceTest {
         }
 
         return indices;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        return isIndependent(x, y, Arrays.asList(z));
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
-    }
-
-    /**
-     * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
     }
 
     /**

@@ -420,7 +420,7 @@ public final class Cpc implements GraphSearch {
 
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adji);
-                    if (getIndependenceTest().isIndependent(i, k, v)) sepsets.add(v);
+                    if (getIndependenceTest().isIndependent(i, k, v).independent()) sepsets.add(v);
                 }
             }
 
@@ -430,7 +430,7 @@ public final class Cpc implements GraphSearch {
 
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adjk);
-                    if (getIndependenceTest().isIndependent(i, k, v)) sepsets.add(v);
+                    if (getIndependenceTest().isIndependent(i, k, v).independent()) sepsets.add(v);
                 }
             }
         }

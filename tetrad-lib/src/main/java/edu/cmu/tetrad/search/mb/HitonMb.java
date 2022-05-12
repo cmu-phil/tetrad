@@ -167,7 +167,7 @@ public class HitonMb implements MbSearch {
                 }
 
                 this.numIndTests++;
-                if (this.independenceTest.isIndependent(t, x, _s)) {
+                if (this.independenceTest.isIndependent(t, x, _s).independent()) {
                     s = _s;
                     break;
                 }
@@ -196,7 +196,7 @@ public class HitonMb implements MbSearch {
 
                 // If x NOT _||_ t | S U {y}
                 this.numIndTests++;
-                if (!this.independenceTest.isIndependent(t, x, _s)) {
+                if (!this.independenceTest.isIndependent(t, x, _s).independent()) {
                     mb.add(x);
                     break;
                 }
@@ -242,7 +242,7 @@ public class HitonMb implements MbSearch {
                         // If it's independent of the target given this
                         // subset...
                         this.numIndTests++;
-                        if (this.independenceTest.isIndependent(x, t, s)) {
+                        if (this.independenceTest.isIndependent(x, t, s).independent()) {
 
                             // Leave it removed.
                             continue VARS;

@@ -31,7 +31,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.IndTestProducer;
-import edu.cmu.tetradapp.model.IndependenceResult;
+import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -173,24 +173,20 @@ public class MarkovFactsEditor extends JPanel {
                     return model.getResults().get(rowIndex).getFact();
                 }
 
-                MarkovCheckIndTestModel.IndependenceResult result = model.getResults().get(rowIndex);
+                IndependenceResult result = model.getResults().get(rowIndex);
 
                 if (columnIndex == 2) {
                     if (getIndependenceTest() instanceof IndTestDSep) {
-                        if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.INDEPENDENT) {
+                        if (result.independent()) {
                             return "D-SEPARATED";
-                        } else if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.DEPENDENT) {
+                        } else {
                             return "d-connected";
-                        } else if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.UNDETERMINED) {
-                            return "*";
                         }
                     } else {
-                        if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.INDEPENDENT) {
+                        if (result.independent()) {
                             return "INDEPENDENT";
-                        } else if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.DEPENDENT) {
+                        } else {
                             return "dependent";
-                        } else if (result.getType() == MarkovCheckIndTestModel.IndependenceResult.Type.UNDETERMINED) {
-                            return "*";
                         }
                     }
                 }
@@ -289,7 +285,7 @@ public class MarkovFactsEditor extends JPanel {
 
         this.setLastSortCol(sortCol);
         model.getResults().sort(Comparator.comparing(
-                MarkovCheckIndTestModel.IndependenceResult::getFact));
+                IndependenceResult::getFact));
 
         tableModel.fireTableDataChanged();
     }
@@ -355,7 +351,7 @@ public class MarkovFactsEditor extends JPanel {
 
                 final int[] index = {0};
 
-                class IndCheckTask implements Callable<List<MarkovCheckIndTestModel.IndependenceResult>> {
+                class IndCheckTask implements Callable<List<IndependenceResult>> {
 
                     private final int from;
                     private final int to;
@@ -370,8 +366,8 @@ public class MarkovFactsEditor extends JPanel {
                     }
 
                     @Override
-                    public List<MarkovCheckIndTestModel.IndependenceResult> call() {
-                        List<MarkovCheckIndTestModel.IndependenceResult> results = new ArrayList<>();
+                    public List<IndependenceResult> call() {
+                        List<IndependenceResult> results = new ArrayList<>();
 
                         for (int i = from; i < to; i++) {
                             if (Thread.interrupted()) break;
@@ -383,20 +379,18 @@ public class MarkovFactsEditor extends JPanel {
                             IndependenceTest test = indTestProducers.get(0).getIndependenceTest();
                             boolean verbose = test.isVerbose();
                             test.setVerbose(true);
-                            MarkovCheckIndTestModel.IndependenceResult.Type indep = test.isIndependent(x, y, z)
-                                    ? MarkovCheckIndTestModel.IndependenceResult.Type.INDEPENDENT
-                                    : MarkovCheckIndTestModel.IndependenceResult.Type.DEPENDENT;
+                            boolean indep = test.isIndependent(x, y, z).independent();
                             double pValue = test.getPValue();
                             test.setVerbose(verbose);
 
-                            results.add(new MarkovCheckIndTestModel.IndependenceResult(fact.toString(), indep, pValue));
+                            results.add(new IndependenceResult(fact.toString(), indep, pValue));
                         }
 
                         return results;
                     }
                 }
 
-                List<Callable<List<MarkovCheckIndTestModel.IndependenceResult>>> tasks = new ArrayList<>();
+                List<Callable<List<IndependenceResult>>> tasks = new ArrayList<>();
 
                 int chunkSize = getChunkSize(facts.size());
                 Set<Node> emptySet = new HashSet<>();
@@ -406,7 +400,7 @@ public class MarkovFactsEditor extends JPanel {
                             facts, emptySet);
 
                     if (!parallelized) {
-                        List<MarkovCheckIndTestModel.IndependenceResult> _results = task.call();
+                        List<IndependenceResult> _results = task.call();
                         model.getResults().addAll(_results);
                     } else {
                         tasks.add(task);
@@ -414,9 +408,9 @@ public class MarkovFactsEditor extends JPanel {
                 }
 
                 if (parallelized) {
-                    List<Future<List<MarkovCheckIndTestModel.IndependenceResult>>> theseResults = ForkJoinPool.commonPool().invokeAll(tasks);
+                    List<Future<List<IndependenceResult>>> theseResults = ForkJoinPool.commonPool().invokeAll(tasks);
 
-                    for (Future<List<MarkovCheckIndTestModel.IndependenceResult>> future : theseResults) {
+                    for (Future<List<IndependenceResult>> future : theseResults) {
                         try {
                             model.getResults().addAll(future.get());
                         } catch (InterruptedException | ExecutionException e) {

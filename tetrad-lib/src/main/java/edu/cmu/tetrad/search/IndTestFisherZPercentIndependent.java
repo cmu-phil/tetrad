@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -96,7 +97,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         int[] all = new int[z.size() + 2];
         all[0] = this.variablesMap.get(x);
         all[1] = this.variablesMap.get(y);
@@ -147,21 +148,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             }
         }
 
-        return independent;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, getPValue());
     }
 
     /**

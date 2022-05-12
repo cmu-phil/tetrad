@@ -320,7 +320,7 @@ public class Fas implements IFas {
                 List<Node> Z = GraphUtils.asList(choice, ppx);
 
                 this.numIndependenceTests++;
-                boolean independent = test.isIndependent(x, y, Z);
+                boolean independent = test.isIndependent(x, y, Z).independent();
 
                 if (!independent) {
                     this.numDependenceJudgement++;

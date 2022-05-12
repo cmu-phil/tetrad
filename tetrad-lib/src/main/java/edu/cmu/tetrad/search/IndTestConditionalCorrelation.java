@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -109,7 +110,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
 
         double score = this.cci.isIndependent(x, y, z);
         this.score = score;
@@ -123,22 +124,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
             }
         }
 
-        return independent;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        return isIndependent(x, y, Arrays.asList(z));
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        double score = this.cci.isIndependent(x, y, z);
-        double p = this.cci.getPValue(score);
-        return p < this.alpha;
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
     }
 
     public double getPValue() {

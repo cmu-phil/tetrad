@@ -28,6 +28,7 @@ import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
@@ -118,7 +119,7 @@ public final class IndTestRegression implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node xVar, Node yVar, List<Node> zList) {
+    public IndependenceResult isIndependent(Node xVar, Node yVar, List<Node> zList) {
         if (zList == null) {
             throw new NullPointerException();
         }
@@ -142,7 +143,8 @@ public final class IndTestRegression implements IndependenceTest {
         try {
             result = regression.regress(xVar, regressors);
         } catch (Exception e) {
-            return false;
+            return new IndependenceResult(new IndependenceFact(xVar, yVar, zList).toString(),
+                    false, Double.NaN);
         }
 
         double p = result.getP()[1];
@@ -164,21 +166,8 @@ public final class IndTestRegression implements IndependenceTest {
             }
         }
 
-        return independent;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(xVar, yVar, zList).toString(),
+                independent, p);
     }
 
     /**

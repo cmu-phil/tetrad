@@ -310,7 +310,7 @@ public class Fasts implements IFas {
 
                 try {
                     this.numIndependenceTests++;
-                    independent = test.isIndependent(x, y, empty);
+                    independent = test.isIndependent(x, y, empty).independent();
                     System.out.println("############# independence given empty set: x,y " + x + ", " +
                             y + " independence = " + independent);
                 } catch (Exception e) {
@@ -450,7 +450,7 @@ public class Fasts implements IFas {
 
                         try {
                             this.numIndependenceTests++;
-                            independent = test.isIndependent(x, y, condSet);
+                            independent = test.isIndependent(x, y, condSet).independent();
                         } catch (Exception e) {
                             independent = false;
                         }

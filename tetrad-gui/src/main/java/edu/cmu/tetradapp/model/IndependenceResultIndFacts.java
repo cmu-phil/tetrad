@@ -30,7 +30,7 @@ import java.text.NumberFormat;
 /**
  * Stores the result of an independence test.
  */
-public final class IndependenceResult implements TetradSerializable {
+public final class IndependenceResultIndFacts implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
     public enum Type {
@@ -44,7 +44,7 @@ public final class IndependenceResult implements TetradSerializable {
     private final Type indep;
     private final double pValue;
 
-    public IndependenceResult(int index, String fact, Type indep, double pValue) {
+    public IndependenceResultIndFacts(int index, String fact, Type indep, double pValue) {
         this.index = index;
         this.fact = fact;
         this.indep = indep;
@@ -56,8 +56,8 @@ public final class IndependenceResult implements TetradSerializable {
      *
      * @see TetradSerializableUtils
      */
-    public static IndependenceResult serializableInstance() {
-        return new IndependenceResult(1, "X _||_ Y", Type.DEPENDENT, 0.0001);
+    public static IndependenceResultIndFacts serializableInstance() {
+        return new IndependenceResultIndFacts(1, "X _||_ Y", Type.DEPENDENT, 0.0001);
     }
 
     public int getIndex() {
@@ -77,7 +77,7 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     public String toString() {
-        return "Result: " + getFact() + "\t" + getType() + "\t" + IndependenceResult.nf.format(getpValue());
+        return "Result: " + getFact() + "\t" + getType() + "\t" + IndependenceResultIndFacts.nf.format(getpValue());
     }
 }
 

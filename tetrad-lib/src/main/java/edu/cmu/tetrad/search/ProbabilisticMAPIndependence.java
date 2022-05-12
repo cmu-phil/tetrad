@@ -112,13 +112,14 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
     }
 
     @Override
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[0]);
-        return isIndependent(x, y, _z);
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
+        Node[] nodes = new Node[z.size()];
+        for (int i = 0; i < z.size(); i++) nodes[i] = z.get(i);
+        return isIndependent(x, y, nodes);
     }
 
     @Override
-    public boolean isIndependent(Node x, Node y, Node... z) {
+    public IndependenceResult isIndependent(Node x, Node y, Node... z) {
         double pInd = probConstraint(BCInference.OP.independent, x, y, z);
         double p = this.probOp(pInd);
         posterior = p;
@@ -131,7 +132,7 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
             }
         }
 
-        return independent;
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, pInd);
     }
 
     public double probConstraint(BCInference.OP op, Node x, Node y, Node[] z) {
@@ -144,17 +145,6 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
         for (int i = 0; i < z.length; i++) _z[i + 1] = indices.get(z[i]) + 1;
 
         return bci.probConstraint(op, _x, _y, _z);
-    }
-
-    @Override
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        Node[] _z = z.toArray(new Node[0]);
-        return !this.isIndependent(x, y, _z);
-    }
-
-    @Override
-    public boolean isDependent(Node x, Node y, Node... z) {
-        return !this.isIndependent(x, y, z);
     }
 
     @Override

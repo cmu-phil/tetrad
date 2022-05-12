@@ -25,10 +25,12 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.Matrix;
@@ -96,7 +98,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
      * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
         if (x instanceof DiscreteVariable && y instanceof DiscreteVariable) {
             return isIndependentMultinomialLogisticRegression(x, y, z);
         } else if (!this.preferLinear) {
@@ -161,7 +163,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         return variables;
     }
 
-    private boolean isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
         if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
@@ -232,7 +234,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
                         TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
                     }
 
-                    return independent;
+                    return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
                 }
             }
 
@@ -252,7 +254,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             }
         }
 
-        return independent;
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
     }
 
     // This takes an inordinate amount of time. -jdramsey 20150929
@@ -284,7 +286,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         return false;
     }
 
-    private boolean isIndependentRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentRegression(Node x, Node y, List<Node> z) {
         if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
@@ -318,7 +320,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         try {
             result = this.regression.regress(x, regressors);
         } catch (Exception e) {
-            return false;
+            return new IndependenceResult(new IndependenceFact(x, y, z).toString(), false, Double.NaN);
         }
 
         double p = 1;
@@ -342,27 +344,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
             }
         }
 
-        return independent;
-    }
-
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    /**
-     * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !this.isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(), independent, p);
     }
 
     /**

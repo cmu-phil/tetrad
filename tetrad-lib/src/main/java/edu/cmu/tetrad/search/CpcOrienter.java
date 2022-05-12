@@ -292,7 +292,7 @@ public final class CpcOrienter implements Reorienter {
             while ((choice = cg.next()) != null) {
                 List<Node> condSet = CpcOrienter.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, condSet)) {
+                if (test.isIndependent(x, z, condSet).independent()) {
                     if (condSet.contains(y)) {
                         existsSepsetContainingY = true;
                     } else {
@@ -322,7 +322,7 @@ public final class CpcOrienter implements Reorienter {
             while ((choice = cg.next()) != null) {
                 List<Node> condSet = CpcOrienter.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, condSet)) {
+                if (test.isIndependent(x, z, condSet).independent()) {
                     if (condSet.contains(y)) {
                         existsSepsetContainingY = true;
                     } else {

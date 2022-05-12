@@ -502,7 +502,7 @@ public class FasStableConcurrentFdr implements IFas {
 
                                     try {
                                         FasStableConcurrentFdr.this.numIndependenceTests++;
-                                        independent = test.isIndependent(x, y, condSet);
+                                        independent = test.isIndependent(x, y, condSet).independent();
                                     } catch (Exception e) {
                                         independent = false;
                                     }

@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -227,7 +228,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult isIndependent(Node x, Node y, List<Node> z) {
 
         List<Node> allNodes = new ArrayList<>();
         allNodes.add(x);
@@ -236,7 +237,8 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
 
         List<Integer> rows = getRows(allNodes, this.nodesHash);
 
-        if (rows.isEmpty()) return true;
+        if (rows.isEmpty()) return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                true, Double.NaN);
 
         int _x = this.nodesHash.get(x);
         int _y = this.nodesHash.get(y);
@@ -258,16 +260,24 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
 
-        if (dof0 <= 0) return true;
-        if (this.alpha == 0) return true;
-        if (this.alpha == 1) return false;
-        if (lik0 == Double.POSITIVE_INFINITY) return false;
+        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                true, Double.NaN);
+        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                true, Double.NaN);
+        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                false, Double.NaN);
+        if (lik0 == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                false, Double.NaN);
+
+        double pValue;
 
         if (Double.isNaN(lik0)) {
-            this.pValue = Double.NaN;
+            pValue = Double.NaN;
         } else {
-            this.pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
+            pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         }
+
+        this.pValue = pValue;
 
         boolean independent = this.pValue > this.alpha;
 
@@ -278,26 +288,8 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
             }
         }
 
-        return independent;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    /**
-     * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !this.isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z).toString(),
+                independent, pValue);
     }
 
     /**

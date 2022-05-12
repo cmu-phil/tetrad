@@ -370,9 +370,9 @@ public final class VcpcAlt implements GraphSearch {
                 IndependenceTest test = this.independenceTest;
 
                 if (!futureX.contains(y)) {
-                    if (test.isIndependent(x, y, boundaryX)) {
+                    if (test.isIndependent(x, y, boundaryX).independent()) {
                         if (!futureY.contains(x)) {
-                            if (test.isIndependent(y, x, boundaryY)) {
+                            if (test.isIndependent(y, x, boundaryY).independent()) {
                                 this.definitelyNonadjacencies.add(edge);
                                 continue MARKOV;
                             }
