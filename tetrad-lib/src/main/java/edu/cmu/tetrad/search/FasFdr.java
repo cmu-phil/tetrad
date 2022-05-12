@@ -319,8 +319,9 @@ public class FasFdr implements IFas {
                         getSepsets().set(x, y, theRest);
 
                         if (this.verbose) {
+                            IndependenceResult result = this.test.checkIndependence(x, y, theRest);
                             this.out.println(x + " _||_ " + y + " | the rest" + " p = " +
-                                    this.nf.format(test.getPValue()));
+                                    this.nf.format(result.getPValue()));
                         }
 
                         removed = true;
@@ -386,27 +387,27 @@ public class FasFdr implements IFas {
 
                     while ((choice = cg.next()) != null) {
                         List<Node> condSet = GraphUtils.asList(choice, ppx);
-
-                        boolean independent;
+                        IndependenceResult result;
 
                         try {
-                            independent = test.checkIndependence(x, y, condSet).independent();
-                            this.pValueList.add(test.getPValue());
+                            result = test.checkIndependence(x, y, condSet);
+                            this.pValueList.add(result.getPValue());
                         } catch (Exception e) {
-                            independent = false;
+                            result = new IndependenceResult(new IndependenceFact(x, y, condSet).toString(),
+                                    false, Double.NaN);
                         }
 
                         boolean noEdgeRequired =
                                 this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
-                        if (independent && noEdgeRequired) {
+                        if (result.independent() && noEdgeRequired) {
                             adjacencies.get(x).remove(y);
                             adjacencies.get(y).remove(x);
                             getSepsets().set(x, y, condSet);
 
                             if (this.verbose) {
                                 this.out.println(SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
-                                        this.nf.format(test.getPValue()));
+                                        this.nf.format(result.getPValue()));
                             }
                             continue EDGE;
                         }

@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search.mb;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MbSearch;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -295,8 +296,8 @@ public class HitonMb implements MbSearch {
      */
     private double association(Node x, Node y) {
         this.numIndTests++;
-        this.independenceTest.checkIndependence(x, y, new LinkedList<>());
-        return 1.0 - this.independenceTest.getPValue();
+        IndependenceResult result = this.independenceTest.checkIndependence(x, y, new LinkedList<>());
+        return 1.0 - result.getPValue();
     }
 
     public String getAlgorithmName() {

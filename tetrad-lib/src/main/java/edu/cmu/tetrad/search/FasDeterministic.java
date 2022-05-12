@@ -235,17 +235,17 @@ public class FasDeterministic implements IFas {
                 }
 
 
-                boolean independent;
+                IndependenceResult result;
 
                 try {
                     this.numIndependenceTests++;
-                    independent = test.checkIndependence(x, y, empty).independent();
+                    result = test.checkIndependence(x, y, empty);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    independent = false;
+                    result = new IndependenceResult(new IndependenceFact(x, y, empty).toString(), true, Double.NaN);
                 }
 
-                if (!independent) {
+                if (!result.independent()) {
                     this.numDependenceJudgement++;
                 }
 
@@ -253,15 +253,15 @@ public class FasDeterministic implements IFas {
                         this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
 
-                if (independent && noEdgeRequired) {
+                if (result.independent() && noEdgeRequired) {
                     getSepsets().set(x, y, empty);
 
                     TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                            this.nf.format(test.getPValue()));
+                            this.nf.format(result.getPValue()));
 
                     if (this.verbose) {
                         this.out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                                this.nf.format(test.getPValue()));
+                                this.nf.format(result.getPValue()));
                     }
 
                 } else if (!forbiddenEdge(x, y)) {
@@ -269,7 +269,7 @@ public class FasDeterministic implements IFas {
                     adjacencies.get(y).add(x);
 
                     TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                            this.nf.format(test.getPValue()));
+                            this.nf.format(result.getPValue()));
 
                 }
             }

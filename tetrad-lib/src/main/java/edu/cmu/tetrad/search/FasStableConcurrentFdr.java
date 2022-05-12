@@ -45,7 +45,7 @@ import java.util.concurrent.RecursiveTask;
  * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
  * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
- *
+ * <p>
  * This variant uses the PC-Stable modification, calculating independencies in parallel within each depth.
  * It uses a slightly different algorithm from FasStableConcurrent, probably better.
  *
@@ -292,15 +292,18 @@ public class FasStableConcurrentFdr implements IFas {
                                 }
                             }
 
+                            IndependenceResult result = new IndependenceResult(
+                                    new IndependenceFact(x, y, empty).toString(), true, Double.NaN);
+
                             try {
-                                test.checkIndependence(x, y, empty);
+                                result = test.checkIndependence(x, y, empty);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
 
                             FasStableConcurrentFdr.this.numIndependenceTests++;
 
-                            double pValue = test.getPValue();
+                            double pValue = result.getPValue();
 
                             sorted.add(pValue);
                         }
@@ -358,8 +361,11 @@ public class FasStableConcurrentFdr implements IFas {
                                 }
                             }
 
+                            IndependenceResult result = new IndependenceResult(
+                                    new IndependenceFact(x, y, empty).toString(), true, Double.NaN);
+
                             try {
-                                test.checkIndependence(x, y, empty);
+                                result = test.checkIndependence(x, y, empty);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -369,7 +375,7 @@ public class FasStableConcurrentFdr implements IFas {
                             boolean noEdgeRequired =
                                     FasStableConcurrentFdr.this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
-                            if (test.getPValue() > cutoff && noEdgeRequired) {
+                            if (result.getPValue() > cutoff && noEdgeRequired) {
                                 if (FasStableConcurrentFdr.this.recordSepsets /*&& !sepsets.isReturnEmptyIfNotSet()*/) {
                                     getSepsets().set(x, y, empty);
                                 }
@@ -379,7 +385,7 @@ public class FasStableConcurrentFdr implements IFas {
 
                                 if (FasStableConcurrentFdr.this.verbose) {
                                     TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
-                                            FasStableConcurrentFdr.this.nf.format(test.getPValue()));
+                                            FasStableConcurrentFdr.this.nf.format(result.getPValue()));
                                 }
                             }
                         }
@@ -498,20 +504,22 @@ public class FasStableConcurrentFdr implements IFas {
                                 while ((choice = cg.next()) != null) {
                                     List<Node> condSet = GraphUtils.asList(choice, ppx);
 
-                                    boolean independent;
+                                    IndependenceResult result;
 
                                     try {
                                         FasStableConcurrentFdr.this.numIndependenceTests++;
-                                        independent = test.checkIndependence(x, y, condSet).independent();
+                                        result = test.checkIndependence(x, y, condSet);
                                     } catch (Exception e) {
-                                        independent = false;
+                                        result = new IndependenceResult(
+                                                new IndependenceFact(x, y, condSet).toString(),
+                                                true, Double.NaN);
                                     }
 
                                     boolean noEdgeRequired =
                                             FasStableConcurrentFdr.this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
-                                    if (independent && noEdgeRequired) {
-                                        sorted.add(test.getPValue());
+                                    if (result.independent() && noEdgeRequired) {
+                                        sorted.add(result.getPValue());
                                         continue EDGE;
                                     }
                                 }
@@ -579,9 +587,9 @@ public class FasStableConcurrentFdr implements IFas {
 
                                     try {
                                         FasStableConcurrentFdr.this.numIndependenceTests++;
-                                        test.checkIndependence(x, y, condSet);
+                                        IndependenceResult result = test.checkIndependence(x, y, condSet);
 
-                                        if (test.getPValue() > cutoff) {
+                                        if (result.getPValue() > cutoff) {
                                             adjacencies.get(x).remove(y);
                                             adjacencies.get(y).remove(x);
 
@@ -598,7 +606,6 @@ public class FasStableConcurrentFdr implements IFas {
                             }
                         }
                     }
-
                 } else {
                     int mid = (this.to + this.from) / 2;
 

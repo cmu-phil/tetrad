@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestDSep;
+import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
@@ -636,9 +637,11 @@ public class IndependenceFactsEditor extends JPanel {
                         double pValue;
 
                         try {
-                            indep = independenceTest.checkIndependence(x, y, z).independent()
-                                    ? IndependenceResultIndFacts.Type.INDEPENDENT : IndependenceResultIndFacts.Type.DEPENDENT;
-                            pValue = independenceTest.getPValue();
+                            IndependenceResult result = independenceTest.checkIndependence(x, y, z);
+                            indep = result.independent()
+                                    ? IndependenceResultIndFacts.Type.INDEPENDENT
+                                    : IndependenceResultIndFacts.Type.DEPENDENT;
+                            pValue = result.getPValue();
                         } catch (Exception e) {
                             indep = IndependenceResultIndFacts.Type.UNDETERMINED;
                             pValue = Double.NaN;

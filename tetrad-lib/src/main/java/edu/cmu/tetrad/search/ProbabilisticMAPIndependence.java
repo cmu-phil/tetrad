@@ -148,11 +148,6 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
     }
 
     @Override
-    public double getPValue() {
-        return posterior;
-    }
-
-    @Override
     public List<Node> getVariables() {
         return nodes;
     }
@@ -218,7 +213,7 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return this.getPValue();
+        return posterior;
     }
 
     public Map<IndependenceFact, Double> getH() {

@@ -63,11 +63,11 @@ public interface IndependenceTest {
         return checkIndependence(x, y, zList);
     }
 
-    /**
-     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
-     */
-    double getPValue();
+//    /**
+//     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
+//     * not meaningful for tis test.
+//     */
+//    double getPValue();
 
 //    double getPValue(Node x, Node y, List<Node> z);
 

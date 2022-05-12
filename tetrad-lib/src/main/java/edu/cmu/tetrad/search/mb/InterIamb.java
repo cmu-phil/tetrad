@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search.mb;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MbSearch;
 
@@ -112,8 +113,8 @@ public class InterIamb implements MbSearch {
     }
 
     private double associationStrength(Node v, Node target, List<Node> cmb) {
-        this.independenceTest.checkIndependence(v, target, cmb);
-        return 1.0 - this.independenceTest.getPValue();
+        IndependenceResult result = this.independenceTest.checkIndependence(v, target, cmb);
+        return 1.0 - result.getPValue();
     }
 
     public String getAlgorithmName() {

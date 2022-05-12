@@ -468,6 +468,8 @@ public final class Cefs {
                     Edge edge = getTrueMb().getEdge(node1, node2);
 
                     if (edge != null) {
+                        IndependenceResult result = getTest().checkIndependence(v, w, z);
+
                         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
                         System.out.println(
                                 "Edge removed that was in the true MB:");
@@ -475,7 +477,7 @@ public final class Cefs {
                         System.out.println("\t" +
                                 SearchLogUtils.independenceFact(v, w, z) +
                                 "\tp = " +
-                                nf.format(getTest().getPValue()));
+                                nf.format(result.getPValue()));
                     }
                 }
             }

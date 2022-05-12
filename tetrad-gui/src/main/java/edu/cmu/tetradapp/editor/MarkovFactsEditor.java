@@ -192,7 +192,7 @@ public class MarkovFactsEditor extends JPanel {
                 }
 
                 if (columnIndex == 3) {
-                    return nf.format(result.getpValue());
+                    return nf.format(result.getPValue());
                 }
 
                 return null;
@@ -379,8 +379,9 @@ public class MarkovFactsEditor extends JPanel {
                             IndependenceTest test = indTestProducers.get(0).getIndependenceTest();
                             boolean verbose = test.isVerbose();
                             test.setVerbose(true);
-                            boolean indep = test.checkIndependence(x, y, z).independent();
-                            double pValue = test.getPValue();
+                            IndependenceResult result = test.checkIndependence(x, y, z);
+                            boolean indep = result.independent();
+                            double pValue = result.getPValue();
                             test.setVerbose(verbose);
 
                             results.add(new IndependenceResult(fact.toString(), indep, pValue));
@@ -515,7 +516,7 @@ public class MarkovFactsEditor extends JPanel {
                 Collections.singletonList(new ContinuousVariable("P-Values")));
 
         for (int i = 0; i < model.getResults().size(); i++) {
-            dataSet.setDouble(i, 0, model.getResults().get(i).getpValue());
+            dataSet.setDouble(i, 0, model.getResults().get(i).getPValue());
         }
 
         Histogram histogram = new Histogram(dataSet);

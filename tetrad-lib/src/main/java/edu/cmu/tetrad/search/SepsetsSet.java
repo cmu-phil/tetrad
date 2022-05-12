@@ -33,6 +33,7 @@ public class SepsetsSet implements SepsetProducer {
     private final IndependenceTest test;
     private double p;
     private boolean verbose;
+    private IndependenceResult result;
 
     public SepsetsSet(SepsetMap sepsets, IndependenceTest test) {
         this.sepsets = sepsets;
@@ -61,17 +62,14 @@ public class SepsetsSet implements SepsetProducer {
 
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return this.test.checkIndependence(a, b, c).independent();
-    }
-
-    @Override
-    public double getPValue() {
-        return this.test.getPValue();
+        IndependenceResult result = this.test.checkIndependence(a, b, c);
+        this.result = result;
+        return result.independent();
     }
 
     @Override
     public double getScore() {
-        return -(this.test.getPValue() - this.test.getAlpha());
+        return -(this.result.getPValue() - this.test.getAlpha());
     }
 
     @Override

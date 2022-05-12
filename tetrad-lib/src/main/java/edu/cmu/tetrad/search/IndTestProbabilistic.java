@@ -233,11 +233,6 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     @Override
-    public double getPValue() {
-        return this.posterior;
-    }
-
-    @Override
     public List<Node> getVariables() {
         return this.nodes;
     }
@@ -303,7 +298,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
     @Override
     public double getScore() {
-        return getPValue();
+        return this.posterior;
     }
 
     public Map<IndependenceFact, Double> getH() {

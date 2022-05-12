@@ -34,13 +34,13 @@ public final class IndependenceResult implements TetradSerializable {
         return this.indep;
     }
 
-    public double getpValue() {
+    public double getPValue() {
         return this.pValue;
     }
 
     public String toString() {
         return "Result: " + getFact() + "\t" + independent() + "\t" +
-                NumberFormatUtil.getInstance().getNumberFormat().format(getpValue());
+                NumberFormatUtil.getInstance().getNumberFormat().format(getPValue());
     }
 
     public boolean dependent() {

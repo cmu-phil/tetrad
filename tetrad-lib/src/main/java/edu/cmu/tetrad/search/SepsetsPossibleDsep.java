@@ -34,21 +34,20 @@ import java.util.List;
 
 public class SepsetsPossibleDsep implements SepsetProducer {
     private final Graph graph;
-    private final IndependenceTest independenceTest;
-    private int maxPathLength = 100;
-    private IKnowledge knowledge = new Knowledge2();
+    private final int maxPathLength;
+    private IKnowledge knowledge;
     private int depth = -1;
     private boolean verbose;
-    private final IndependenceTest test;
+    private IndependenceTest test;
+    private IndependenceResult result;
 
-    public SepsetsPossibleDsep(Graph graph, IndependenceTest independenceTest, IKnowledge knowledge,
+    public SepsetsPossibleDsep(Graph graph, IndependenceTest test, IKnowledge knowledge,
                                int depth, int maxPathLength) {
         this.graph = graph;
-        this.independenceTest = independenceTest;
+        this.test = test;
         this.maxPathLength = maxPathLength;
         this.knowledge = knowledge;
         this.depth = depth;
-        this.test = independenceTest;
     }
 
     /**
@@ -74,10 +73,12 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         return sepset != null && sepset.contains(j);
     }
 
-    @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return this.independenceTest.checkIndependence(a, b, c).independent();
-    }
+//    @Override
+//    public IndependenceResult isIndependent(Node a, Node b, List<Node> c) {
+//        Node[] nodes = new Node[c.size()];
+//        for (int i = 0; i < c.size(); i++) nodes[i] = c.get(i);
+//        return isIndependent(a, b, nodes);
+//    }
 
     private List<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
         List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
@@ -109,9 +110,11 @@ public class SepsetsPossibleDsep implements SepsetProducer {
                     }
                     if (flagForbid) continue;
                 }
-                boolean independent = this.independenceTest.checkIndependence(node1, node2, condSet).independent();
 
-                if (independent && noEdgeRequired) {
+                IndependenceResult result = this.test.checkIndependence(node1, node2, condSet);
+                this.result = result;
+
+                if (result.independent() && noEdgeRequired) {
                     return condSet;
                 }
             }
@@ -155,18 +158,13 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     }
 
     @Override
-    public double getPValue() {
-        return this.independenceTest.getPValue();
-    }
-
-    @Override
     public double getScore() {
-        return -(this.independenceTest.getPValue() - this.independenceTest.getAlpha());
+        return -(this.result.getPValue() - this.test.getAlpha());
     }
 
     @Override
     public List<Node> getVariables() {
-        return this.independenceTest.getVariables();
+        return this.test.getVariables();
     }
 
     public boolean isVerbose() {
@@ -175,6 +173,12 @@ public class SepsetsPossibleDsep implements SepsetProducer {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    @Override
+    public boolean isIndependent(Node d, Node c, List<Node> path) {
+        IndependenceResult result = this.test.checkIndependence(d, c, path);
+        return result.independent();
     }
 
 }
