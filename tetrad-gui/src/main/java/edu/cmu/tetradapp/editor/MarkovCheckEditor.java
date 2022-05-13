@@ -144,7 +144,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Checks whether X _||_ Y | parents(x) for y not in (desc(x) U parentx(x)), for "));
-        b2.add(new JLabel(getIndependenceTest().toString()));
+        b2.add(new JLabel(getIndependenceTest().toString()) );
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
