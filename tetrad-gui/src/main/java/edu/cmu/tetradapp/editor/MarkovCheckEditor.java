@@ -22,7 +22,10 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.IndependenceFact;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -48,7 +51,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
-import java.util.function.BinaryOperator;
 
 import static java.lang.Math.min;
 
@@ -144,7 +146,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Checks whether X _||_ Y | parents(x) for y not in (desc(x) U parentx(x)), for "));
-        b2.add(new JLabel(getIndependenceTest().toString()) );
+        b2.add(new JLabel(getIndependenceTest().toString()));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
