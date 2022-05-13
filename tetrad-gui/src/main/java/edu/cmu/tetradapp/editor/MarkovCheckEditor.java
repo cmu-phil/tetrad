@@ -286,7 +286,7 @@ public class MarkovCheckEditor extends JPanel {
         int dependent = 0;
 
         for (IndependenceResult result : model.getResults()) {
-            if (result.dependent()) dependent++;
+            if (result.dependent() && !Double.isNaN(result.getPValue())) dependent++;
         }
 
         fractionDependent = dependent / (double) model.getResults().size();
@@ -447,7 +447,7 @@ public class MarkovCheckEditor extends JPanel {
                 int dependent = 0;
 
                 for (IndependenceResult result : model.getResults()) {
-                    if (result.dependent()) dependent++;
+                    if (result.dependent() && !Double.isNaN(result.getPValue())) dependent++;
                 }
 
                 fractionDependent = dependent / (double) model.getResults().size();
