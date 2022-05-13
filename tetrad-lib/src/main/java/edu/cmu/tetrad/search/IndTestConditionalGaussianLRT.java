@@ -256,7 +256,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      */
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.0000");
-        return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
+        return "Conditional Gaussian LRT, alpha = " + nf.format(getAlpha());
     }
 
     @Override

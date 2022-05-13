@@ -133,33 +133,33 @@ public class Kci implements IndependenceTest {
                     true, Double.NaN);
         }
 
-        Node _x = data.getVariable(x.getName());
-
-        if (_x == null) {
-            throw new NullPointerException("The x variable, " + x + " was not in the data.");
-        }
-
-        Node _y = data.getVariable(y.getName());
-
-        if (_y == null) {
-            throw new NullPointerException("The y variable, " + y + " was not in the data.");
-        }
-
-        List<Node> _z = new ArrayList<>();
-        for (Node v : z) {
-            Node variable = data.getVariable(v.getName());
-
-            if (variable == null) {
-                throw new NullPointerException("A z variable, " + v + " was not in the data.");
-            }
-
-            _z.add(variable);
-        }
+//        Node _x = data.getVariable(x.getName());
+//
+//        if (_x == null) {
+//            throw new NullPointerException("The x variable, " + x + " was not in the data.");
+//        }
+//
+//        Node _y = data.getVariable(y.getName());
+//
+//        if (_y == null) {
+//            throw new NullPointerException("The y variable, " + y + " was not in the data.");
+//        }
+//
+//        List<Node> _z = new ArrayList<>();
+//        for (Node v : z) {
+//            Node variable = data.getVariable(v.getName());
+//
+//            if (variable == null) {
+//                throw new NullPointerException("A conditioning variable, " + v + " was not in the data.");
+//            }
+//
+//            _z.add(variable);
+//        }
 
         List<Node> allVars = new ArrayList<>();
-        allVars.add(_x);
-        allVars.add(_y);
-        allVars.addAll(_z);
+        allVars.add(x);
+        allVars.add(y);
+        allVars.addAll(z);
 
         IndependenceFact fact = new IndependenceFact(x, y, z);
         this.latestFact = fact;
@@ -231,9 +231,9 @@ public class Kci implements IndependenceTest {
                 return new IndependenceResult(fact, result.independent(), result.getPValue());
             } else {
                 if (z.isEmpty()) {
-                    result = isIndependentUnconditional(_x, _y, fact, _data, h, N, hash);
+                    result = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
                 } else {
-                    result = isIndependentConditional(_x, _y, _z, fact, _data, N, H, I, h, hash);
+                    result = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
                 }
             }
 
