@@ -46,8 +46,8 @@ public class Kci implements IndependenceTest {
 
     // Variables in data
     private final List<Node> variables;
-    private final double[][] dataCols;
     private final double[] h;
+    private final double[][] _data;
 
     // The alpha level of the test.
     private double alpha;
@@ -87,7 +87,9 @@ public class Kci implements IndependenceTest {
      * @param alpha The alpha value of the test.
      */
     public Kci(DataSet data, double alpha) {
-        this.data = data;
+        this.data = DataUtils.standardizeData(data);
+        _data = data.getDoubleData().transpose().toArray();
+
         this.variables = data.getVariables();
         int n = this.data.getNumRows();
 
@@ -97,11 +99,11 @@ public class Kci implements IndependenceTest {
             this.hash.put(variables.get(i), i);
         }
 
-        this.dataCols = this.data.getDoubleData().transpose().toArray();
+        double[][] dataCols = this.data.getDoubleData().transpose().toArray();
         this.h = new double[variables.size()];
 
         for (int i = 0; i < this.data.getNumColumns(); i++) {
-            this.h[i] = h(variables.get(i), this.dataCols, hash);
+            this.h[i] = h(variables.get(i), dataCols, hash);
         }
 
         Matrix Ones = new Matrix(n, 1);
@@ -190,7 +192,7 @@ public class Kci implements IndependenceTest {
             for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
 
             DataSet data = this.data.subsetRowsColumns(_rows, _cols);
-            data = DataUtils.standardizeData(data);
+//            data = DataUtils.standardizeData(data);
             double[][] _data = data.getDoubleData().transpose().toArray();
 
             Map<Node, Integer> hash = new HashMap<>();
@@ -202,14 +204,13 @@ public class Kci implements IndependenceTest {
             for (int j = 0; j < N; j++) ones.set(j, 0, 1);
 
             Matrix I = Matrix.identity(N);
-
             Matrix H = I.minus(ones.times(ones.transpose()).scalarMult(1.0 / N));
 
-            double[] h = new double[_data.length];
+            double[] h = new double[allVars.size()];
             int count = 0;
 
             double sum = 0.0;
-            for (int i = 0; i < data.getNumColumns(); i++) {
+            for (int i = 0; i < allVars.size(); i++) {
                 h[i] = this.h[this.hash.get(allVars.get(i))];
 
                 if (h[i] != 0) {
