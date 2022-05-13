@@ -48,6 +48,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import java.util.function.BinaryOperator;
 
 import static java.lang.Math.min;
 
@@ -67,6 +68,8 @@ public class MarkovCheckEditor extends JPanel {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private boolean parallelized = true;
     private final IndependenceTest test;
+    private double fractionDependent = Double.NaN;
+    private JLabel fractionDepLabel;
 
     public MarkovCheckEditor(MarkovCheckIndTestModel model) {
         if (model == null) {
@@ -140,7 +143,7 @@ public class MarkovCheckEditor extends JPanel {
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Checks whether X _||_ Y | (parents(x) for y not in (desc(x) U parentx(x)), for "));
+        b2.add(new JLabel("Checks whether X _||_ Y | parents(x) for y not in (desc(x) U parentx(x)), for "));
         b2.add(new JLabel(getIndependenceTest().toString()));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
@@ -274,6 +277,24 @@ public class MarkovCheckEditor extends JPanel {
 
         b1.add(b4);
         b1.add(Box.createVerticalStrut(10));
+
+        Box b5 = Box.createHorizontalBox();
+        b5.add(Box.createGlue());
+
+        int dependent = 0;
+
+        for (IndependenceResult result : model.getResults()) {
+            if (result.dependent()) dependent++;
+        }
+
+        fractionDependent = dependent / (double) model.getResults().size();
+
+        fractionDepLabel = new JLabel("% dependent = "
+                + ((Double.isNaN(fractionDependent)
+                ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependent))));
+
+        b5.add(fractionDepLabel);
+        b1.add(b5);
 
         JPanel panel = this;
         panel.setLayout(new BorderLayout());
@@ -420,6 +441,18 @@ public class MarkovCheckEditor extends JPanel {
                         }
                     }
                 }
+
+                int dependent = 0;
+
+                for (IndependenceResult result : model.getResults()) {
+                    if (result.dependent()) dependent++;
+                }
+
+                fractionDependent = dependent / (double) model.getResults().size();
+
+                fractionDepLabel.setText("% dependent = "
+                        + ((Double.isNaN(fractionDependent)
+                        ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependent))));
 
                 tableModel.fireTableDataChanged();
             }
