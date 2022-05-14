@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.Kci;
 import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.sem.SemIm;
@@ -59,16 +60,16 @@ public class TestCheckMarkov {
             for (Node y : nondesc) {
                 System.out.print("\t" + SearchLogUtils.independenceFact(x, y, cond));
 
-                boolean indep = test.checkIndependence(x, y, cond).independent();
+                IndependenceResult result = test.checkIndependence(x, y, cond);
 
-                if (indep) {
+                if (result.independent()) {
                     numIndep++;
                 }
 
                 total++;
 
-                System.out.print(" " + (indep ? "Independent" : "Dependent"));
-                System.out.print(" p = " + test.getPValue());
+                System.out.print(" " + (result.independent() ? "Independent" : "Dependent"));
+                System.out.print(" p = " + result.getPValue());
                 System.out.println();
             }
 
