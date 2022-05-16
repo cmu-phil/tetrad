@@ -59,8 +59,6 @@ final class ContributorsAction extends AbstractAction {
                 "Biwei Huang, Juan Miguel Ogarrio, David Danks, Kevin Kelly, Eric Strobl, Shyam Visweswaran, " +
                 "Shuyan Wang, Madelyn Glymour, Frank Wimberly, Matt Easterday, and Tyler Gibson.";
 
-//        int index = msg.indexOf("Grateful");
-
         JTextArea textArea = new JTextArea(msg);
         textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         textArea.setLineWrap(true);
@@ -68,7 +66,6 @@ final class ContributorsAction extends AbstractAction {
         textArea.setEditable(false);
         JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(400, 250));
-//        textArea.setCaretPosition(index);
 
         Box b = Box.createVerticalBox();
         b.add(scroll);
