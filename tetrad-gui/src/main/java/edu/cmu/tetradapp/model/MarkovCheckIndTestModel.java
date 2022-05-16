@@ -40,7 +40,7 @@ import java.util.List;
 public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;
 
-    private final List<IndTestProducer> indTestProducers;
+    private final IndTestProducer indTestProducer;
     private String name = "";
     private List<String> vars = new LinkedList<>();
     private List<IndependenceResult> results = new ArrayList<>();
@@ -56,14 +56,13 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
     }
 
 
-    public MarkovCheckIndTestModel(IndTestProducer producers, GraphWrapper graphWrapper) {
-        this.indTestProducers = new ArrayList<>();
-        this.indTestProducers.add(producers);
+    public MarkovCheckIndTestModel(IndTestProducer producer, GraphWrapper graphWrapper) {
+        this.indTestProducer = producer;
         this.graph = graphWrapper.getGraph();
     }
 
-    public List<IndTestProducer> getIndTestProducers() {
-        return this.indTestProducers;
+    public IndTestProducer getIndTestProducer() {
+        return this.indTestProducer;
     }
 
     @Override

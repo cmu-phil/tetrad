@@ -63,7 +63,6 @@ import static java.lang.Math.min;
 public class MarkovCheckEditor extends JPanel {
     private Graph dag;
     private final MarkovCheckIndTestModel model;
-    private List<String> vars;
     private AbstractTableModel tableModel;
     private int sortDir;
     private int lastSortCol;
@@ -78,15 +77,22 @@ public class MarkovCheckEditor extends JPanel {
             throw new NullPointerException("Expecting a model");
         }
 
-        List<IndTestProducer> indTestProducers = model.getIndTestProducers();
+        IndTestProducer indTestProducer = model.getIndTestProducer();
 
-        if (indTestProducers.isEmpty()) {
-            throw new IllegalArgumentException("At least one source must be specified");
-        }
-
-        this.test = indTestProducers.get(0).getIndependenceTest();
+        this.test = indTestProducer.getIndependenceTest();
         this.model = model;
         Graph sourceGraph = model.getGraph();
+        List<Node> variables = test.getVariables();
+
+        List<Node> newVars = new ArrayList<>();
+
+        for (Node node : variables) {
+            if (sourceGraph.getNode(node.getName()) != null) {
+                newVars.add(node);
+            }
+        }
+
+        sourceGraph = edu.cmu.tetrad.graph.GraphUtils.replaceNodes(sourceGraph, newVars);
 
         for (Edge e : sourceGraph.getEdges()) {
             if (!e.isDirected()) {
@@ -116,8 +122,7 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         this.dag = sourceGraph;
-        this.vars = new LinkedList<>(dag.getNodeNames());
-        this.vars = dag.getNodeNames();
+        model.setVars(dag.getNodeNames());
 
         buildGui();
     }
@@ -140,7 +145,6 @@ public class MarkovCheckEditor extends JPanel {
             revalidate();
             repaint();
         });
-
 
         Box b1 = Box.createVerticalBox();
 
@@ -268,7 +272,6 @@ public class MarkovCheckEditor extends JPanel {
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
                 editorWindow.setVisible(true);
-
             }
         });
 
@@ -353,12 +356,11 @@ public class MarkovCheckEditor extends JPanel {
         new WatchedProcess(owner) {
             public void watch() {
 
-                if (getVars().size() < 2) {
+                if (model.getVars().size() < 2) {
                     tableModel.fireTableDataChanged();
                     return;
                 }
 
-                dag = edu.cmu.tetrad.graph.GraphUtils.replaceNodes(dag, test.getVariables());
                 List<IndependenceFact> facts = new ArrayList<>();
 
                 // Listing all facts before checking any (in preparation for parallelization).
@@ -465,10 +467,6 @@ public class MarkovCheckEditor extends JPanel {
         int chunk = (int) Math.ceil((n / ((double) (5 * Runtime.getRuntime().availableProcessors()))));
         if (chunk < 1) chunk = 1;
         return chunk;
-    }
-
-    private List<String> getVars() {
-        return this.vars;
     }
 
     private IndependenceTest getIndependenceTest() {

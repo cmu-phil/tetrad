@@ -45,18 +45,21 @@ final class ContributorsAction extends AbstractAction {
      * Closes the frontmost session of this action's desktop.
      */
     public void actionPerformed(ActionEvent e) {
-        String msg = "Grateful thanks to many who have contributed to this project--most " +
-                "recently under guidance from the Center for Causal Discovery (Carnegie " +
-                "Mellon University, Department of Philosophy, and University of Pittsburgh, " +
-                "Department of Bioinformatics). Contributors include (but are not limited " +
-                "to): Clark Glymour, Peter Spirtes, Richard Scheines, Greg Cooper, Kun Zhang, " +
-                "Joe Ramsey, J Espino, Kevin Bui, Zhou Yuan, Kong Wongchakprasitti, " +
-                "Harry Hochheiser, Bryan Andrews, Ruben Sanchez, Fattaneh Jabbari, Ricardo Silva, " +
-                "Dan Malinsky, Erich Kummerfeld, Juan Miguel Ogarrio, David Danks, Kevin Kelly, " +
-                "Eric Strobl, Shyam Visweswaran, Shuyan Wang, Madelyn Glymour, Frank Wimberly, " +
-                "Matt Easterday, Tyler Gibson.";
+        String msg = "This project has been worked on for many years under the generous " +
+                "auspices of the Philosophy Department at Carnegie Mellon University, under " +
+                "the direction of Clark Glymour (Philosophy, CMU), Peter Spirtes (Philosophy, " +
+                "CMU) and Richard Scheines (Philosophy, CMU, now Dean of the College of Humanities " +
+                "and Social Sciences at CMU). The lead developer has been Joseph Ramsey (Philosophy, " +
+                "CMU). Recent work has been done under the direction of Greg Cooper (Bioinformatics, " +
+                "University of Pittsburgh) in conjunction with a grant from NSF establishing the " +
+                "Center for Causal Discovery, with additional advice from Kun Zhang (Philosophy, " +
+                "CMU), The team under the NSF grant consisted of J Espino, Kevin Bui, Zhou Yuan, " +
+                "Kong Wongchakprasitti, and Harry Hochheiser. Additional work has been done by Bryan " +
+                "Andrews, Ruben Sanchez, Fattaneh Jabbari, Ricardo Silva, Dan Malinsky, Erich Kummerfeld, " +
+                "Biwei Huang, Juan Miguel Ogarrio, David Danks, Kevin Kelly, Eric Strobl, Shyam Visweswaran, " +
+                "Shuyan Wang, Madelyn Glymour, Frank Wimberly, Matt Easterday, and Tyler Gibson.";
 
-        int index = msg.indexOf("Grateful");
+//        int index = msg.indexOf("Grateful");
 
         JTextArea textArea = new JTextArea(msg);
         textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -65,7 +68,7 @@ final class ContributorsAction extends AbstractAction {
         textArea.setEditable(false);
         JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(400, 250));
-        textArea.setCaretPosition(index);
+//        textArea.setCaretPosition(index);
 
         Box b = Box.createVerticalBox();
         b.add(scroll);

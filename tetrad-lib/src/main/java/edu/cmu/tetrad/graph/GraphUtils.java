@@ -1638,14 +1638,6 @@ public final class GraphUtils {
                 convertedGraph.addNode(node2);
             }
 
-            if (node1 == null) {
-                throw new IllegalArgumentException("Couldn't find a node by the name " + edge.getNode1().getName() + " among the new variables for the converted graph (" + newVariables + ").");
-            }
-
-            if (node2 == null) {
-                throw new IllegalArgumentException("Couldn't find a node by the name " + edge.getNode2().getName() + " among the new variables for the converted graph (" + newVariables + ").");
-            }
-
             Endpoint endpoint1 = edge.getEndpoint1();
             Endpoint endpoint2 = edge.getEndpoint2();
             Edge newEdge = new Edge(node1, node2, endpoint1, endpoint2);
