@@ -62,7 +62,7 @@ public class PasteLayoutAction extends AbstractAction
      * session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
-        Transferable transferable = InternalClipboard.getInstance()
+        Transferable transferable = InternalClipboard.getLayoutInstance()
                 .getContents(null);
 
         if (!(transferable instanceof LayoutSelection)) {

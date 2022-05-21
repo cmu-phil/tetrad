@@ -2602,7 +2602,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
 
             // Copy the laid out graph to the clipboard.
-            new CopyLayoutAction(getWorkbench()).actionPerformed(null);
+//            new CopyLayoutAction(getWorkbench()).actionPerformed(null);
         }
 
         @Override
