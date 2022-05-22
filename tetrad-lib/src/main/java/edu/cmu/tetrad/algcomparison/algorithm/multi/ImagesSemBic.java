@@ -46,11 +46,18 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+//            DataSet timeSeries = TimeSeriesUtils.createLagData(dataSets, parameters.getInt(Params.TIME_LAG));
+//            if (dataSets.getName() != null) {
+//                timeSeries.setName(dataSets.getName());
+//            }
+//            dataSets = timeSeries;
+
             SemBicScoreImages score = new SemBicScoreImages(dataSets);
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+//            search.setTimeLag(parameters.getInt(Params.TIME_LAG));
             return search.search();
         } else {
             ImagesSemBic imagesSemBic = new ImagesSemBic();
@@ -90,7 +97,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
             search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+           search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }
@@ -119,6 +126,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
         parameters.add(Params.PENALTY_DISCOUNT);
 //        parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
+        parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
 
