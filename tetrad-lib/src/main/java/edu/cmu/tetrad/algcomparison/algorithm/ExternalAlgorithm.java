@@ -48,7 +48,7 @@ public abstract class ExternalAlgorithm implements Algorithm {
         int index = -1;
 
         for (int i = 0; i < getNumDataModels(); i++) {
-            if (dataSet == this.simulation.getDataModel(i)) {
+            if (dataSet.equals(this.simulation.getDataModel(i))) {
                 index = i + 1;
                 break;
             }

@@ -23,6 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
@@ -52,7 +53,6 @@ import org.apache.commons.collections4.OrderedMap;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
-import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -72,6 +72,10 @@ import static java.util.Collections.shuffle;
  */
 @SuppressWarnings("ALL")
 public final class TestGrasp {
+
+    public static void main(String...args) {
+        new TestGrasp().copyExternalAlgsMethod();
+    }
 
     @NotNull
     private static Grasp getGrasp(Score score, IndependenceTest test) {
@@ -418,6 +422,184 @@ public final class TestGrasp {
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/varying_final2/testPaperSimulations_"
                         + type, simulations,
                 algorithms, statistics, params);
+    }
+
+    public void copyExternalAlgsMethod() {
+        Parameters params = new Parameters();
+
+        params.set(Params.RANDOMIZE_COLUMNS, true);
+        params.set(Params.DIFFERENT_GRAPHS, true);
+        params.set(Params.NUM_RUNS, 20);
+        params.set(Params.COEF_LOW, 0);
+        params.set(Params.COEF_HIGH, 1);
+        params.set(Params.NUM_STARTS, 1);
+        params.set(Params.VAR_LOW, 1.0);
+        params.set(Params.VAR_HIGH, 1.0);
+        params.set(Params.STANDARDIZE, true);
+
+        params.set(Params.PENALTY_DISCOUNT, 2);
+        params.set(Params.ALPHA, 0.001);
+
+        params.set(Params.GRASP_DEPTH, 3);
+        params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+        params.set(Params.GRASP_TOLERANCE_DEPTH, 0);
+
+        params.set(Params.GRASP_ORDERED_ALG, true);
+        params.set(Params.GRASP_USE_SCORE, true);
+        params.set(Params.GRASP_USE_VERMA_PEARL, false);
+        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM, false);
+        params.set(Params.CACHE_SCORES, true);
+        params.set(Params.VERBOSE, true);
+
+        params.set(Params.PRECOMPUTE_COVARIANCES, true);
+
+//        params.set(Params.NUM_MEASURES, 60);
+//        params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+//        params.set(Params.SAMPLE_SIZE, 1000);
+
+
+        Statistics statistics = new Statistics();
+
+        statistics.add(new ParameterColumn("numMeasures"));
+        statistics.add(new ParameterColumn("avgDegree"));
+        statistics.add(new ParameterColumn("sampleSize"));
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new F1Adj());
+        statistics.add(new F1Arrow());
+        statistics.add(new F1All());
+        statistics.add(new ElapsedTime());
+
+        statistics.setWeight("AP", 1.0);
+        statistics.setWeight("AR", 0.5);
+        statistics.setWeight("AHP", 1.0);
+        statistics.setWeight("AHR", 0.5);
+
+        Algorithms algorithms = new Algorithms();
+
+//        algorithms.add(new ExternalAlgorithmTetrad("FGES_(Fast_Greedy_Equivalence_Search)_using_Sem_BIC_Score"));
+//        algorithms.add(new ExternalAlgorithmTetrad("PC_using_Fisher_Z_test"));
+//        algorithms.add(new ExternalAlgorithmTetrad("GRaSP_(Greedy_Relaxed_Sparsest_Permutation)_using_Fisher_Z_test_or_Sem_BIC_Score"));
+
+        algorithms.add(new ExternalAlgorithmTetrad("GRaSP_(Greedy_Relaxed_Sparsest_Permutation)_using_Fisher_Z_test_or_Sem_BIC_Score,_graspUncoveredDepth_=_0"));
+        algorithms.add(new ExternalAlgorithmTetrad("GRaSP_(Greedy_Relaxed_Sparsest_Permutation)_using_Fisher_Z_test_or_Sem_BIC_Score,_graspUncoveredDepth_=_1"));
+
+        Comparison comparison = new Comparison();
+        comparison.setShowAlgorithmIndices(true);
+        comparison.setShowSimulationIndices(true);
+        comparison.setSortByUtility(false);
+        comparison.setShowUtilities(false);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
+
+        comparison.generateReportFromExternalAlgorithms("/Users/josephramsey/grasp-data/vary_sample_size/",
+                "/Users/josephramsey/grasp_results/vary_sample_size_2/",
+                algorithms, statistics, params);
+    }
+
+    public void allPaperRunsComparingCPDAGs() {
+        Parameters params = new Parameters();
+
+        params.set(Params.RANDOMIZE_COLUMNS, true);
+        params.set(Params.DIFFERENT_GRAPHS, true);
+        params.set(Params.NUM_RUNS, 20);
+        params.set(Params.COEF_LOW, 0);
+        params.set(Params.COEF_HIGH, 1);
+        params.set(Params.NUM_STARTS, 1);
+        params.set(Params.VAR_LOW, 1.0);
+        params.set(Params.VAR_HIGH, 1.0);
+        params.set(Params.STANDARDIZE, true);
+
+        params.set(Params.PENALTY_DISCOUNT, 2);
+        params.set(Params.ALPHA, 0.001);
+
+        params.set(Params.GRASP_DEPTH, 3);
+        params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+        params.set(Params.GRASP_TOLERANCE_DEPTH, 0);
+
+        params.set(Params.GRASP_ORDERED_ALG, true);
+        params.set(Params.GRASP_USE_SCORE, true);
+        params.set(Params.GRASP_USE_VERMA_PEARL, false);
+        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM, false);
+        params.set(Params.CACHE_SCORES, true);
+        params.set(Params.VERBOSE, true);
+
+        params.set(Params.PRECOMPUTE_COVARIANCES, true);
+
+        {
+//            params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+//            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+
+//            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
+//            params.set(Params.AVG_DEGREE, 6);
+//            params.set(Params.SAMPLE_SIZE, 1000);
+//
+            String dataPath, resultsPath;
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_1";
+
+//            doPaperRun(params, dataPath, resultsPath, true);
+
+//            params.set(Params.NUM_MEASURES, 60);
+//            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+//            params.set(Params.STANDARDIZE, 1000);
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_1";
+//
+//            doPaperRun(params, dataPath, resultsPath, true);
+//
+//            params.set(Params.NUM_MEASURES, 60);
+//            params.set(Params.AVG_DEGREE, 6);
+//            params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_sample_size";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_1";
+//
+//            doPaperRun(params, dataPath, resultsPath, true);
+
+        }
+
+        {
+            String dataPath, resultsPath;
+
+            params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
+            params.set(Params.GRASP_NONSINGULAR_DEPTH, 0);
+
+            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
+            params.set(Params.AVG_DEGREE, 6);
+            params.set(Params.SAMPLE_SIZE, 1000);
+
+            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
+            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_2";
+
+            doPaperRun(params, dataPath, resultsPath, false);
+
+            params.set(Params.NUM_MEASURES, 60);
+            params.set(Params.AVG_DEGREE, 2,  3, 4, 5, 6, 7, 8, 9, 10);
+            params.set(Params.STANDARDIZE, 1000);
+
+            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
+            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_2";
+
+            doPaperRun(params, dataPath, resultsPath, false);
+
+            params.set(Params.NUM_MEASURES, 60);
+            params.set(Params.AVG_DEGREE, 6);
+            params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
+
+            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_sample_size";
+            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_2";
+
+            doPaperRun(params, dataPath, resultsPath, false);
+
+        }
     }
 
 

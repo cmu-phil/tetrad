@@ -2319,6 +2319,7 @@ public final class GraphUtils {
             return readerToGraphTxt(in1);
 
         } catch (Exception e) {
+            System.out.println("Tried to load " + file.getAbsolutePath());
             e.printStackTrace();
             throw new IllegalStateException();
         }
@@ -2441,6 +2442,9 @@ public final class GraphUtils {
             tokens = line.split("\\s+");
 
             String to = tokens[0];
+
+            if ("Attributes:".equals(tokens[0])) break;
+
             line = line.substring(line.indexOf(to) + to.length()).trim();
 
             Node _from = graph.getNode(from);
