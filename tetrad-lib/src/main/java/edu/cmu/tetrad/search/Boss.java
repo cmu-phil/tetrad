@@ -124,7 +124,8 @@ public class Boss {
         List<Node> pi = scorer.getPi();
         double s;
         double sp = scorer.score(pi);
-        scorer.bookmark();
+        scorer.bookmark(0);
+        scorer.bookmark(1);
 
         do {
             s = sp;
@@ -134,28 +135,32 @@ public class Boss {
                 int index = scorer.index(k);
 
                 for (int j = index; j >= 0; j--) {
-                    scorer.moveTo(k, j);
-//                    tuck(k, j, scorer);
+//                    scorer.moveTo(k, j);
+                    tuck(k, j, scorer);
 
                     if (scorer.score() > sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
-                            scorer.bookmark();
+                            scorer.bookmark(0);
                         }
                     }
+
+                    scorer.goToBookmark(1);
+                    scorer.bookmark(1);
                 }
 
-                scorer.goToBookmark();
-                scorer.bookmark();
+                scorer.goToBookmark(0);
+                scorer.bookmark(0);
+                scorer.bookmark(1);
 
                 for (int j = index; j < scorer.size(); j++) {
-                    scorer.moveTo(k, j);
-//                    tuck(k, j, scorer);
+//                    scorer.moveTo(k, j);
+                    tuck(k, j, scorer);
 
                     if (scorer.score() > sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
-                            scorer.bookmark();
+                            scorer.bookmark(0);
 
                             if (verbose) {
                                 System.out.println("# Edges = " + scorer.getNumEdges()
@@ -164,12 +169,47 @@ public class Boss {
                                         + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
                             }
                         }
+
+                        scorer.goToBookmark(1);
+                        scorer.bookmark(1);
                     }
                 }
 
-                scorer.goToBookmark();
+                scorer.goToBookmark(0);
             }
         } while (sp > s);
+    }
+
+    private void tuck(Node k, int j, TeyssierScorer scorer) {
+        if (!scorer.adjacent(k, scorer.get(j))) return;
+        if (j >= scorer.index(k)) return;
+        List<Node> d2 = new ArrayList<>();
+        for (int i = j; i < scorer.index(k); i++) {
+            d2.add(scorer.get(i));
+        }
+
+        List<Node> gammac = new ArrayList<>(d2);
+        gammac.removeAll(scorer.getAncestors(k));
+
+        Node first = null;
+
+        if (!gammac.isEmpty()) {
+            first = gammac.get(0);
+
+            for (Node n : gammac) {
+                if (scorer.index(n) < scorer.index(first)) {
+                    first = n;
+                }
+            }
+        }
+
+        if (scorer.getParents(k).contains(scorer.get(j))) {
+            if (first != null) {
+                scorer.moveTo(scorer.get(j), scorer.index(first));
+            }
+//            scorer.moveTo(j, scorer.index(first));
+            scorer.moveTo(k, j);
+        }
     }
 
     public int getNumEdges() {
