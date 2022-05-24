@@ -12,10 +12,7 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -68,7 +65,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
             IndependenceTest test = this.test.getTest(dataModel, parameters);
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Boss boss = new Boss(test, score);
+            Boss3 boss = new Boss3(test, score);
 
             boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             boss.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
