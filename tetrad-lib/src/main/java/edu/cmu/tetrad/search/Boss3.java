@@ -103,6 +103,7 @@ public class Boss3 {
                 Graph _graph;
 
                 do {
+                    System.out.println(graph.getNumEdges());
                     _graph = graph;
                     bes();
                     scorer.score(graph.getCausalOrdering());
@@ -138,30 +139,25 @@ public class Boss3 {
     public void betterMutation(@NotNull TeyssierScorer scorer) {
         double s;
         double sp;
-        sp = NEGATIVE_INFINITY;
 
+        sp = scorer.score();
         do {
             s = sp;
             scorer.bookmark();
 
             for (int j = scorer.size() - 1; j >= 0; j--) {
+                Node _j = scorer.get(j);
                 for (int k = j - 1; k >= 0; k--) {
-                    Node _k = scorer.get(k);
 
-                    tuck(scorer.get(j), k, scorer);
+                    tuck(_j, k, scorer);
 
                     if (scorer.score() > sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
                             scorer.bookmark();
-                            scorer.moveTo(scorer.get(k), j);
-                            k = scorer.index(_k) - 1;
-                            continue;
+                            scorer.moveTo(_j, scorer.index(_j) + 1);
                         }
                     }
-
-                    scorer.goToBookmark();
-                    scorer.bookmark();
                 }
 
                 scorer.goToBookmark();
@@ -172,35 +168,16 @@ public class Boss3 {
 
     private void tuck(Node k, int j, TeyssierScorer scorer) {
         if (!scorer.adjacent(k, scorer.get(j))) return;
-//        if (scorer.coveredEdge(k, scorer.get(j))) return;
+        if (scorer.coveredEdge(k, scorer.get(j))) return;
         if (j >= scorer.index(k)) return;
-        List<Node> d2 = new ArrayList<>();
-        for (int i = j; i < scorer.index(k); i++) {
-            d2.add(scorer.get(i));
-        }
 
-        List<Node> gammac = new ArrayList<>(d2);
-        gammac.removeAll(scorer.getAncestors(k));
-
-        Node first = null;
-
-        if (!gammac.isEmpty()) {
-            first = gammac.get(0);
-
-            for (Node n : gammac) {
-                if (scorer.index(n) < scorer.index(first)) {
-                    first = n;
-                }
+        Set<Node> ancestors = scorer.getAncestors(k);
+        for (int i = j+1; i < scorer.index(k); i++) {
+            if (ancestors.contains(scorer.get(i))) {
+                scorer.moveTo(scorer.get(i), j);
             }
         }
-
-        if (scorer.getParents(k).contains(scorer.get(j))) {
-            if (first != null) {
-                scorer.moveTo(scorer.get(j), scorer.index(first));
-            }
-//            scorer.moveTo(j, scorer.index(first));
-            scorer.moveTo(k, j);
-        }
+        scorer.moveTo(k, j);
     }
 
     public int getNumEdges() {
