@@ -75,7 +75,8 @@ import static java.util.Collections.shuffle;
 public final class TestGrasp {
 
     public static void main(String[] args) {
-        new TestGrasp().testGrasp1();
+//        new TestGrasp().testLuFigure3();
+//        new TestGrasp().testLuFigure6();
     }
 
     @NotNull
@@ -706,13 +707,14 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setSaveData(false);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testGrasp2",
                 simulations, algorithms, statistics, params);
     }
 
     //    @Test
-    public void tesLuFigure3() {
+    public void testLuFigure3() {
         RandomUtil.getInstance().setSeed(492939494L);
 
         Parameters params = new Parameters();
@@ -734,14 +736,13 @@ public final class TestGrasp {
         params.set(Params.EBIC_GAMMA, 0.8);
         params.set(Params.ALPHA, 0.001);
 
-        params.set(Params.GRASP_DEPTH, 2);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
-        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+        params.set(Params.GRASP_DEPTH, 3);
+        params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
+        params.set(Params.GRASP_NONSINGULAR_DEPTH, 0, 1);
         params.set(Params.GRASP_ORDERED_ALG, false);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
         params.set(Params.GRASP_USE_DATA_ORDER, false);
         params.set(Params.CACHE_SCORES, true);
-
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
@@ -754,6 +755,8 @@ public final class TestGrasp {
         Statistics statistics = new Statistics();
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
+        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
+        statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
         statistics.add(new CorrectSkeleton());
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
@@ -761,11 +764,13 @@ public final class TestGrasp {
         statistics.add(new ArrowheadRecall());
         statistics.add(new SHD());
         statistics.add(new F1Adj());
+        statistics.add(new F1Arrow());
         statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
+        comparison.setSaveData(false);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testLuFigure3",
                 simulations, algorithms, statistics, params);
@@ -793,36 +798,41 @@ public final class TestGrasp {
         params.set(Params.EBIC_GAMMA, 0.8);
         params.set(Params.ALPHA, 0.001);
 
-        params.set(Params.GRASP_DEPTH, 5);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
-        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+        params.set(Params.GRASP_DEPTH, 3);
+        params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
+        params.set(Params.GRASP_NONSINGULAR_DEPTH, 0, 1);
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc(new FisherZ()));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
-//                new edu.cmu.tetrad.algcomparison.score.LinearGaussianBicScore()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(new FisherZ()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
 
         Statistics statistics = new Statistics();
-        statistics.add(new ParameterColumn(Params.AVG_DEGREE));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+        statistics.add(new ParameterColumn(Params.AVG_DEGREE));
+        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
+        statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
+        statistics.add(new CorrectSkeleton());
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
+        statistics.add(new SHD());
         statistics.add(new F1Adj());
+        statistics.add(new F1Arrow());
         statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
+        comparison.setSaveData(false);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/Lu.figure.6.grasp2.fges.pc.b", simulations,
+        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/Lu.figure.6", simulations,
                 algorithms, statistics, params);
     }
 
@@ -1423,53 +1433,53 @@ public final class TestGrasp {
     }
 
     //    @Test
-    public void testLuFigure3() {
-        Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);//, 200000);
-        params.set(Params.NUM_MEASURES, 20);
-        params.set(Params.AVG_DEGREE, 4);
-        params.set(Params.COEF_LOW, 0.2);
-        params.set(Params.COEF_HIGH, 0.8);
-        params.set(Params.COV_LOW, 0);
-        params.set(Params.COV_HIGH, 0);
-        params.set(Params.VAR_LOW, 1);
-        params.set(Params.VAR_HIGH, 1);
-        params.set(Params.VERBOSE, true);
-        params.set(Params.NUM_RUNS, 30);
-        params.set(Params.NUM_STARTS, 1);
-
-        params.set(Params.GRASP_DEPTH, 3);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
-        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
-        params.set(Params.GRASP_ORDERED_ALG, true);
-        params.set(Params.GRASP_USE_VERMA_PEARL, false);
-
-        params.set(Params.PENALTY_DISCOUNT, 2.0);
-        params.set(Params.ALPHA, 0.001);
+//    public void testLuFigure6gure3() {
+//        Parameters params = new Parameters();
+//        params.set(Params.SAMPLE_SIZE, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);//, 200000);
+//        params.set(Params.NUM_MEASURES, 20);
+//        params.set(Params.AVG_DEGREE, 4);
+//        params.set(Params.COEF_LOW, 0.2);
+//        params.set(Params.COEF_HIGH, 0.8);
+//        params.set(Params.COV_LOW, 0);
+//        params.set(Params.COV_HIGH, 0);
+//        params.set(Params.VAR_LOW, 1);
+//        params.set(Params.VAR_HIGH, 1);
+//        params.set(Params.VERBOSE, true);
+//        params.set(Params.NUM_RUNS, 30);
+//        params.set(Params.NUM_STARTS, 1);
 //
-        Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc(new FisherZ()));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.LinearGaussianBicScore()));
-
-        Simulations simulations = new Simulations();
-        simulations.add(new SemSimulation(new RandomForward()));
-
-        Statistics statistics = new Statistics();
-        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-        statistics.add(new AdjacencyPrecision());
-        statistics.add(new AdjacencyRecall());
-        statistics.add(new ArrowheadPrecision());
-        statistics.add(new ArrowheadRecall());
-        statistics.add(new F1Adj());
-        statistics.add(new ElapsedTime());
-
-        Comparison comparison = new Comparison();
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
-
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/Lu.figure.3.grasp2.fges.pc", simulations,
-                algorithms, statistics, params);
-    }
+//        params.set(Params.GRASP_DEPTH, 3);
+//        params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
+//        params.set(Params.GRASP_NONSINGULAR_DEPTH, 0, 1);
+//        params.set(Params.GRASP_ORDERED_ALG, true);
+//        params.set(Params.GRASP_USE_VERMA_PEARL, false);
+//
+//        params.set(Params.PENALTY_DISCOUNT, 2.0);
+//        params.set(Params.ALPHA, 0.001);
+////
+//        Algorithms algorithms = new Algorithms();
+//        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(new FisherZ()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//
+//        Simulations simulations = new Simulations();
+//        simulations.add(new SemSimulation(new RandomForward()));
+//
+//        Statistics statistics = new Statistics();
+//        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+//        statistics.add(new AdjacencyPrecision());
+//        statistics.add(new AdjacencyRecall());
+//        statistics.add(new ArrowheadPrecision());
+//        statistics.add(new ArrowheadRecall());
+//        statistics.add(new F1Adj());
+//        statistics.add(new ElapsedTime());
+//
+//        Comparison comparison = new Comparison();
+//        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+//
+//        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/Lu.figure.3", simulations,
+//                algorithms, statistics, params);
+//    }
 
     //    @Test
     public void testClark() {
