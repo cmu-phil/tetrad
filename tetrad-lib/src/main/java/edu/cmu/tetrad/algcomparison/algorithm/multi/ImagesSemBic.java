@@ -10,6 +10,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SemBicScoreImages;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -46,18 +47,26 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-//            DataSet timeSeries = TimeSeriesUtils.createLagData(dataSets, parameters.getInt(Params.TIME_LAG));
-//            if (dataSets.getName() != null) {
-//                timeSeries.setName(dataSets.getName());
-//            }
-//            dataSets = timeSeries;
+            List<DataModel> _dataSets = new ArrayList<>();
+
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                for (DataModel dataSet : dataSets) {
+                    DataSet timeSeries = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                    if (dataSet.getName() != null) {
+                        timeSeries.setName(dataSet.getName());
+                    }
+                    _dataSets.add(timeSeries);
+                }
+
+                dataSets = _dataSets;
+                this.knowledge = _dataSets.get(0).getKnowledge();
+            }
 
             SemBicScoreImages score = new SemBicScoreImages(dataSets);
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-//            search.setTimeLag(parameters.getInt(Params.TIME_LAG));
             return search.search();
         } else {
             ImagesSemBic imagesSemBic = new ImagesSemBic();
@@ -124,7 +133,6 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
         parameters.addAll((new Fges()).getParameters());
         parameters.add(Params.PENALTY_DISCOUNT);
-//        parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
         parameters.add(Params.TIME_LAG);
 

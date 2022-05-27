@@ -176,9 +176,13 @@ public class GeneralResamplingSearch {
                 for (DataSet data : this.dataSets) {
 
                     if (this.resamplingWithReplacement) {
-                        dataModels.add(DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0)));
+                        DataSet bootstrapSample = DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
+                        bootstrapSample.setKnowledge(data.getKnowledge());
+                        dataModels.add(bootstrapSample);
                     } else {
-                        dataModels.add(DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0)));
+                        DataSet resamplingDataset = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
+                        resamplingDataset.setKnowledge(data.getKnowledge());
+                        dataModels.add(resamplingDataset);
                     }
 
 
@@ -188,7 +192,7 @@ public class GeneralResamplingSearch {
                         this.multiDataSetAlgorithm, this.parameters, this,
                         this.verbose);
                 task.setExternalGraph(this.externalGraph);
-                task.setKnowledge(this.knowledge);
+                task.setKnowledge(dataModels.get(0).getKnowledge());
 
                 tasks.add(task);
             }
