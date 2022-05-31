@@ -195,35 +195,6 @@ public class TestFci {
         assertEquals(graph, truePag);
     }
 
-    @Test
-    public void testSearch15() {
-        final int numVars = 80;
-        final int numEdges = 80;
-        final int sampleSize = 1000;
-        final boolean latentDataSaved = false;
-        final int numLatents = 40;
-
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < numVars; i++) {
-            nodes.add(new ContinuousVariable("X" + (i + 1)));
-        }
-
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, numLatents, numEdges,
-                7, 5, 5, false));
-
-        SemPm bayesPm = new SemPm(trueGraph);
-        SemIm bayesIm = new SemIm(bayesPm);
-        DataSet dataSet = bayesIm.simulateData(sampleSize, latentDataSaved);
-
-        IndependenceTest test = new IndTestFisherZ(dataSet, 0.05);
-
-        Cfci search = new Cfci(test);
-
-        // Run search
-        search.search();
-    }
-
     /**
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.

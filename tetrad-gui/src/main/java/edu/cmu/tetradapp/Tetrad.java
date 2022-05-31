@@ -36,6 +36,7 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Locale;
+import java.util.prefs.Preferences;
 
 /**
  * Launches Tetrad as an application. The intended class path in either case is
@@ -120,6 +121,9 @@ public final class Tetrad implements PropertyChangeListener {
         // Check if we should skip checking for latest version
         SplashScreen.show("Loading Tetrad...", 1000);
         EventQueue.invokeLater(() -> new Tetrad().launchFrame());
+
+        boolean enableExperimental = Preferences.userRoot().getBoolean("enableExperimental", false);
+        Tetrad.enableExperimental = enableExperimental;
     }
 
     //===============================PRIVATE METHODS=======================//

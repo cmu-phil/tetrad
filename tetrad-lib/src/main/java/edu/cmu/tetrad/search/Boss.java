@@ -96,30 +96,27 @@ public class Boss {
             makeValidKnowledgeOrder(order);
 
             this.scorer.score(order);
+            betterMutation(scorer);
+            double s1, s2;
+            Graph g1;
 
-            {
-                betterMutation(scorer);
-                graph = getGraph(true);
-                Graph _graph;
+            do {
+                g1 = scorer.getGraph(true);
+                s1 = scorer.score();
+                this.graph = g1;
+                bes();
 
-                do {
-                    _graph = graph;
-                    bes();
-                    scorer.score(graph.getCausalOrdering());
+                if (!g1.equals(this.graph)) {
+                    scorer.score(g1.getCausalOrdering());
                     betterMutation(scorer);
-                    graph = getGraph(true);
-                } while (!graph.equals(_graph));
-            }
+                }
 
-            List<Node> perm = scorer.getPi();
-
-//            List<Node> perm = grasp(this.scorer);
-
-            this.scorer.score(perm);
+                s2 = scorer.score();
+            } while (s2 < s1);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
-                bestPerm = perm;
+                bestPerm = scorer.getPi();
             }
         }
 
@@ -139,33 +136,16 @@ public class Boss {
         List<Node> pi = scorer.getPi();
         double s;
         double sp = scorer.score(pi);
-        scorer.bookmark();
 
         do {
             s = sp;
+            scorer.bookmark();
 
             for (Node k : scorer.getPi()) {
                 sp = NEGATIVE_INFINITY;
-                int index = scorer.index(k);
 
-                for (int j = index; j >= 0; j--) {
+                for (int j = 0; j < scorer.size(); j++) {
                     scorer.moveTo(k, j);
-//                    tuck(k, j, scorer);
-
-                    if (scorer.score() > sp) {
-                        if (!violatesKnowledge(scorer.getPi())) {
-                            sp = scorer.score();
-                            scorer.bookmark();
-                        }
-                    }
-                }
-
-                scorer.goToBookmark();
-                scorer.bookmark();
-
-                for (int j = index; j < scorer.size(); j++) {
-                    scorer.moveTo(k, j);
-//                    tuck(k, j, scorer);
 
                     if (scorer.score() > sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
@@ -173,7 +153,7 @@ public class Boss {
                             scorer.bookmark();
 
                             if (verbose) {
-                                System.out.println("# Edges = " + scorer.getNumEdges()
+                                System.out.print("\r# Edges = " + scorer.getNumEdges()
                                         + " Score = " + scorer.score()
                                         + " (betterMutation)"
                                         + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
@@ -230,7 +210,7 @@ public class Boss {
                             scorer.bookmark(0);
 
                             if (verbose) {
-                                System.out.println("# Edges = " + scorer.getNumEdges()
+                                System.out.print("\r# Edges = " + scorer.getNumEdges()
                                         + " Score = " + scorer.score()
                                         + " (betterMutation)"
                                         + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
