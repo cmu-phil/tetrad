@@ -96,31 +96,33 @@ public class Boss3 {
             makeValidKnowledgeOrder(order);
 
             this.scorer.score(order);
+            betterMutation(scorer);
+            double s1, s2;
+            Graph g1;
 
-            {
-                betterMutation(scorer);
-                graph = getGraph(true);
-                Graph _graph;
+            do {
+                g1 = scorer.getGraph(true);
+                s1 = scorer.score();
+                this.graph = g1;
+                bes();
 
-                do {
-                    System.out.println(graph.getNumEdges());
-                    _graph = graph;
-                    bes();
-                    scorer.score(graph.getCausalOrdering());
+                if (!g1.equals(this.graph)) {
+                    scorer.score(g1.getCausalOrdering());
                     betterMutation(scorer);
-                    graph = getGraph(true);
-                } while (!graph.equals(_graph));
-            }
+                }
 
-            List<Node> perm = scorer.getPi();
-
-//            List<Node> perm = grasp(this.scorer);
-
-            this.scorer.score(perm);
+                s2 = scorer.score();
+            } while (s2 < s1);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
-                bestPerm = perm;
+                bestPerm = scorer.getPi();
+            }
+
+            this.scorer.score(bestPerm);
+
+            if (this.scorer.score() > best) {
+                best = this.scorer.score();
             }
         }
 
@@ -137,6 +139,10 @@ public class Boss3 {
     }
 
     public void betterMutation(@NotNull TeyssierScorer scorer) {
+        if (verbose) {
+            System.out.println();
+        }
+
         double s;
         double sp;
 
@@ -154,6 +160,14 @@ public class Boss3 {
                     if (scorer.score() > sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
+
+                            if (verbose) {
+                                System.out.print("\r# Edges = " + scorer.getNumEdges()
+                                        + " Score = " + scorer.score()
+                                        + " (betterMutation)"
+                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
+                            }
+
                             scorer.bookmark();
                             scorer.moveTo(_j, scorer.index(_j) + 1);
                         }

@@ -147,7 +147,7 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 3);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 1);
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
 
         params.set(Params.GRASP_ORDERED_ALG, false);
@@ -208,7 +208,7 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 3);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 1);
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
         params.set(Params.GRASP_TOLERANCE_DEPTH, 0);
 
@@ -260,7 +260,7 @@ public final class TestGrasp {
         {
             String dataPath, resultsPath;
 
-            params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
+            params.set(Params.GRASP_SINGULAR_DEPTH, 0, 1);
             params.set(Params.GRASP_NONSINGULAR_DEPTH, 0);
 
             params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
@@ -309,7 +309,7 @@ public final class TestGrasp {
 
         Statistics statistics = new Statistics();
         statistics.add(new ParameterColumn(Params.GRASP_DEPTH));
-        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
+        statistics.add(new ParameterColumn(Params.GRASP_SINGULAR_DEPTH));
         statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
         statistics.add(new ParameterColumn(Params.GRASP_ORDERED_ALG));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
@@ -391,7 +391,7 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 3);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 0);//1);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 0);//1);
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 0);//1);
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
@@ -446,7 +446,7 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 5);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 1);
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
 
         params.set(Params.GRASP_ORDERED_ALG, true);
@@ -508,7 +508,7 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 3);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 2);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 2);
         params.set(Params.NUM_ROUNDS, 50);
 
         params.set(Params.GRASP_CHECK_COVERING, false);
@@ -570,7 +570,7 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.001, 0.01);
         params.set(Params.PENALTY_DISCOUNT, 2.0);
         params.set(Params.GRASP_DEPTH, 5);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 2);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 2);
         params.set(Params.GRASP_FORWARD_TUCK_ONLY, false);
         params.set(Params.GRASP_USE_VERMA_PEARL, true, false);
         params.set(Params.TIMEOUT, -1);
@@ -617,7 +617,7 @@ public final class TestGrasp {
 //        params.set(Params.ALPHA, 0.001, 0.01);
         params.set(Params.PENALTY_DISCOUNT, 2.0);
         params.set(Params.GRASP_DEPTH, 10);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 2);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 2);
 //        params.set(Params.GRASP_FORWARD_TUCK_ONLY, false);
 //        params.set(Params.GRASP_USE_PEARL, false);
         params.set(Params.GRASP_ALG, true, false);
@@ -737,7 +737,7 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 3);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 0, 1);
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 0, 1);
         params.set(Params.GRASP_ORDERED_ALG, false);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
@@ -755,7 +755,7 @@ public final class TestGrasp {
         Statistics statistics = new Statistics();
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
-        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
+        statistics.add(new ParameterColumn(Params.GRASP_SINGULAR_DEPTH));
         statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
         statistics.add(new CorrectSkeleton());
         statistics.add(new AdjacencyPrecision());
@@ -799,7 +799,7 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 3);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 0, 1);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 0, 1);
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 0, 1);
         params.set(Params.GRASP_ORDERED_ALG, true);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
@@ -815,7 +815,7 @@ public final class TestGrasp {
         Statistics statistics = new Statistics();
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
-        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
+        statistics.add(new ParameterColumn(Params.GRASP_SINGULAR_DEPTH));
         statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
         statistics.add(new CorrectSkeleton());
         statistics.add(new AdjacencyPrecision());
@@ -864,7 +864,7 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 2);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 1);
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
         params.set(Params.GRASP_ORDERED_ALG, false);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
@@ -1273,7 +1273,7 @@ public final class TestGrasp {
                     Grasp grasp = new Grasp(test);
 
                     grasp.setDepth(3);
-                    grasp.setUncoveredDepth(1);
+                    grasp.setSingularDepth(1);
                     grasp.setNonSingularDepth(1);
                     grasp.setUseRaskuttiUhler(usePearl);
                     grasp.setOrdered(true);
@@ -2041,7 +2041,7 @@ public final class TestGrasp {
 
         // Flags
         params.set(Params.GRASP_DEPTH, 5);
-        params.set(Params.GRASP_UNCOVERED_DEPTH, 3);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 3);
         params.set(Params.GRASP_FORWARD_TUCK_ONLY, false);
         params.set(Params.GRASP_USE_VERMA_PEARL, false);
         params.set(Params.TIMEOUT, 30);
@@ -2207,7 +2207,7 @@ public final class TestGrasp {
 
                 Grasp search = new Grasp(new IndTestDSep(facts.getFacts()));
                 search.setDepth(depth);
-                search.setUncoveredDepth(depth);
+                search.setSingularDepth(depth);
                 search.setNonSingularDepth(depth);
                 search.setUseRaskuttiUhler(false);
                 List<Node> order = search.bestOrder(p);

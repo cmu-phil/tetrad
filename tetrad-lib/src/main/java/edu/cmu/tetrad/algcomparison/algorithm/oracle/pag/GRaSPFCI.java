@@ -74,7 +74,7 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
             search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
-            search.setUncoveredDepth(parameters.getInt(Params.GRASP_UNCOVERED_DEPTH));
+            search.setUncoveredDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
             search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
             search.setToleranceDepth(parameters.getInt(Params.GRASP_TOLERANCE_DEPTH));
             search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
@@ -131,7 +131,7 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.MAX_PATH_LENGTH);
 
         // Flags
-        params.add(Params.GRASP_UNCOVERED_DEPTH);
+        params.add(Params.GRASP_SINGULAR_DEPTH);
         params.add(Params.GRASP_NONSINGULAR_DEPTH);
         params.add(Params.GRASP_TOLERANCE_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);

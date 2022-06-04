@@ -3491,7 +3491,7 @@ tabs will not appear.</p> -->
 
     <p><a href="#graspDepth">graspDepth</a>, <a
             href="#graspNonSingularDepth">graspNonSingularDepth</a> <a
-            href="#graspUncoveredDepth">graspUncoveredDepth</a> <a
+            href="#graspSingularDepth">graspSingularDepth</a> <a
             href="#graspOrderedAlg">graspOrderedAlg</a> <a
             href="#graspUseVermaPearl">graspUseVermaPearl</a> <a
             href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
@@ -3521,19 +3521,16 @@ tabs will not appear.</p> -->
             follows:
         <p> graspDepth - This controls the overall recursion depth
             for a depth first search.
-        <p> graspUncoveredDepth - This controls the
-            depth to which uncovered edges (that is, edges X->Y such that
-            parents(X) != parents(Y) \ {X}) are explored.
+        <p> graspNonsingularDepth - This controls the
+            depth at which nonsingular tucks are explored.
         <p> graspSingularDepth
-            - This controls the depth at which single tucks sets only
-            (essentially changes of permutation where one variable is placed
-            before another in the permutation order) are considered.
+            - This controls the depth at which singlular tucks are considered.
         <p>
             numRestarts - By default 1; if > 1, additional random restarts are
             done, and the best of these results is returned.
         <p> TSP corresponds
-            to uncovered depth 0, singular depth 0. ESP corresponds to uncovered
-            depth > 0, singular depth = 0. GRaSP corresponds to uncovered depth >
+            to singular depth 0, singular depth 0. ESP corresponds to singular
+            depth > 0, singular depth = 0. GRaSP corresponds to singular depth >
             0, singular depth > 0. In each case, an ordering option is available
             to find best permutations from lower levels before proceeding to
             higher levels.
@@ -3577,7 +3574,7 @@ tabs will not appear.</p> -->
 
     <p><a href="#graspDepth">graspDepth</a>, <a
             href="#graspNonSingularDepth">graspNonSingularDepth</a> <a
-            href="#graspUncoveredDepth">graspUncoveredDepth</a> <a
+            href="#graspSingularDepth">graspSingularDepth</a> <a
             href="#graspOrderedAlg">graspOrderedAlg</a> <a
             href="#graspUseVermaPearl">graspUseVermaPearl</a> <a
             href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
@@ -6921,24 +6918,23 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="graspUncoveredDepth">graspUncoveredDepth</h3>
+            id="graspSingularDepth">graspSingularDepth</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="graspUncoveredDepth_short_desc">Recursion depth for uncovered
-        edges</span></li>
+                    id="graspSingularDepth_short_desc">Recursion depth for singular
+        tucks</span></li>
             <li>Long Description: <span
-                    id="graspUncoveredDepth_long_desc"> This is the depth of recursion
-        for the uncovered edges, past the point where there are not longer
-        any more covered edges to recurse on. </span></li>
+                    id="graspSingularDepth_long_desc"> This is the depth of recursion
+        for the singular tucks. </span></li>
             <li>Default
-                Value: <span id="graspUncoveredDepth_default_value">1</span></li>
+                Value: <span id="graspSingularDepth_default_value">1</span></li>
             <li>Lower Bound: <span
-                    id="graspUncoveredDepth_lower_bound">0</span></li>
+                    id="graspSingularDepth_lower_bound">0</span></li>
             <li>Upper Bound:
-                <span id="graspUncoveredDepth_upper_bound">2147483647</span></li>
+                <span id="graspSingularDepth_upper_bound">2147483647</span></li>
             <li>Value Type: <span
-                    id="graspUncoveredDepth_value_type">Integer</span></li>
+                    id="graspSingularDepth_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"

@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.Grasp;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
@@ -56,10 +57,13 @@ public class TestAnneAnalysis3 {
                 }
 
                 try {
-                    File filecor = new File("/Users/josephramsey/Downloads/sldisco_cormats_b5K/" +
+                    File filecor = new File("/Users/josephramsey/Downloads/sldisco/sldisco_cormats_b5K/" +
                             "cormats_p" + p + "_n" + nString + "_b5K.txt");
-                    File adjout = new File("/Users/josephramsey/Downloads/sldisco_adjout_b5K/" +
+                    File adjout = new File("/Users/josephramsey/Downloads/sldisco/sldisco_adjout_b5K/" +
                             "adjmatsout_p" + p + "_n" + nString + "_b5K.txt");
+
+                    filecor.mkdirs();
+                    adjout.getParentFile().mkdirs();
 
                     BufferedReader incor = new BufferedReader(new FileReader(filecor));
                     incor.readLine();
@@ -91,9 +95,10 @@ public class TestAnneAnalysis3 {
                         edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(cov);
                         score.setPenaltyDiscount(penalty);
 
-                        Fges fges = new Fges(score);
+                        Grasp alg = new Grasp(score);
 
-                        Graph estCpdag = fges.search();
+                        List<Node> nodes = alg.bestOrder(score.getVariables());
+                        Graph estCpdag = alg.getGraph(true);
 
                         for (int j = 0; j < vars.size(); j++) {
                             for (int i = 0; i < vars.size(); i++) {
