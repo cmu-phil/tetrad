@@ -160,6 +160,7 @@ public class Boss3 {
                     if (scorer.score() > sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
+                            scorer.bookmark();
 
                             if (verbose) {
                                 System.out.print("\r# Edges = " + scorer.getNumEdges()
@@ -168,7 +169,6 @@ public class Boss3 {
                                         + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
                             }
 
-                            scorer.bookmark();
                             scorer.moveTo(_j, scorer.index(_j) + 1);
                         }
                     }
