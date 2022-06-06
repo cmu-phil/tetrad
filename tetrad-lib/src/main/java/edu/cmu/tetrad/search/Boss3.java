@@ -139,6 +139,10 @@ public class Boss3 {
     }
 
     public void betterMutation(@NotNull TeyssierScorer scorer) {
+        if (verbose) {
+            System.out.println();
+        }
+
         double s;
         double sp;
 
@@ -156,6 +160,14 @@ public class Boss3 {
                     if (scorer.score() > sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
+
+                            if (verbose) {
+                                System.out.print("\r# Edges = " + scorer.getNumEdges()
+                                        + " Score = " + scorer.score()
+                                        + " (betterMutation)"
+                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
+                            }
+
                             scorer.bookmark();
                             scorer.moveTo(_j, scorer.index(_j) + 1);
                         }

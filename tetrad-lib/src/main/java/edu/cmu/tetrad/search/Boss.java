@@ -168,47 +168,95 @@ public class Boss {
     }
 
     public void betterMutation2(@NotNull TeyssierScorer scorer) {
+        List<Node> pi = scorer.getPi();
         double s;
-        double sp;
+        double sp = scorer.score(pi);
+        scorer.bookmark(0);
+        scorer.bookmark(1);
 
-        sp = scorer.score();
         do {
             s = sp;
-            scorer.bookmark();
 
-            for (int j = scorer.size() - 1; j >= 0; j--) {
-                Node _j = scorer.get(j);
-                for (int k = j - 1; k >= 0; k--) {
+            for (Node k : scorer.getPi()) {
+                sp = NEGATIVE_INFINITY;
+                int index = scorer.index(k);
 
-                    tuck(_j, k, scorer);
+                for (int j = index; j >= 0; j--) {
+//                    scorer.moveTo(k, j);
+                    tuck(k, j, scorer);
 
                     if (scorer.score() > sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
-                            scorer.bookmark();
-                            scorer.moveTo(_j, scorer.index(_j) + 1);
+                            scorer.bookmark(0);
                         }
+                    }
+
+                    scorer.goToBookmark(1);
+                    scorer.bookmark(1);
+                }
+
+                scorer.goToBookmark(0);
+                scorer.bookmark(0);
+                scorer.bookmark(1);
+
+                for (int j = index; j < scorer.size(); j++) {
+//                    scorer.moveTo(k, j);
+                    tuck(k, j, scorer);
+
+                    if (scorer.score() > sp) {
+                        if (!violatesKnowledge(scorer.getPi())) {
+                            sp = scorer.score();
+                            scorer.bookmark(0);
+
+                            if (verbose) {
+                                System.out.print("\r# Edges = " + scorer.getNumEdges()
+                                        + " Score = " + scorer.score()
+                                        + " (betterMutation)"
+                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
+                            }
+                        }
+
+                        scorer.goToBookmark(1);
+                        scorer.bookmark(1);
                     }
                 }
 
-                scorer.goToBookmark();
-                scorer.bookmark();
+                scorer.goToBookmark(0);
             }
         } while (sp > s);
     }
 
     private void tuck(Node k, int j, TeyssierScorer scorer) {
         if (!scorer.adjacent(k, scorer.get(j))) return;
-        if (scorer.coveredEdge(k, scorer.get(j))) return;
         if (j >= scorer.index(k)) return;
+        List<Node> d2 = new ArrayList<>();
+        for (int i = j; i < scorer.index(k); i++) {
+            d2.add(scorer.get(i));
+        }
 
-        Set<Node> ancestors = scorer.getAncestors(k);
-        for (int i = j+1; i < scorer.index(k); i++) {
-            if (ancestors.contains(scorer.get(i))) {
-                scorer.moveTo(scorer.get(i), j);
+        List<Node> gammac = new ArrayList<>(d2);
+        gammac.removeAll(scorer.getAncestors(k));
+
+        Node first = null;
+
+        if (!gammac.isEmpty()) {
+            first = gammac.get(0);
+
+            for (Node n : gammac) {
+                if (scorer.index(n) < scorer.index(first)) {
+                    first = n;
+                }
             }
         }
-        scorer.moveTo(k, j);
+
+        if (scorer.getParents(k).contains(scorer.get(j))) {
+            if (first != null) {
+                scorer.moveTo(scorer.get(j), scorer.index(first));
+            }
+//            scorer.moveTo(j, scorer.index(first));
+            scorer.moveTo(k, j);
+        }
     }
 
     public int getNumEdges() {
