@@ -257,7 +257,7 @@ public class TestStandardizedSem {
     }
 
     // This tests what the user is going to try to do in the GUI.
-    @Test
+//    @Test
     public void test7() {
         RandomUtil random = RandomUtil.getInstance();
         random.setSeed(1949993L);
