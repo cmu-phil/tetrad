@@ -2434,7 +2434,7 @@ public final class TestGrasp {
             Fges fges = new Fges(score);
             Graph cpdag1 = fges.search();
 
-            List<Node> pi = GraphUtils.getCausalOrdering(cpdag1);
+            List<Node> pi = GraphUtils.getCausalOrdering(cpdag1, cpdag1.getNodes());
 
             TeyssierScorer scorer = new TeyssierScorer(test, score);
             scorer.setUseScore(false);
@@ -2470,7 +2470,7 @@ public final class TestGrasp {
             Fges fges = new Fges(score);
             Graph cpdag = fges.search();
 
-            List<Node> pi1 = GraphUtils.getCausalOrdering(cpdag);
+            List<Node> pi1 = GraphUtils.getCausalOrdering(cpdag, cpdag.getNodes());
 
             List<Node> pi2 = new ArrayList<>(pi1);
             shuffle(pi2);

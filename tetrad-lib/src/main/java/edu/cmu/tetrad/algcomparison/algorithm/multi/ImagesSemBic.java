@@ -73,9 +73,13 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
             List<DataSet> datasets = new ArrayList<>();
 
+
+
             for (DataModel dataModel : dataSets) {
+                dataModel.setKnowledge(knowledge);
                 datasets.add((DataSet) dataModel);
             }
+
             GeneralResamplingTest search = new GeneralResamplingTest(
                     datasets,
                     imagesSemBic,
@@ -86,6 +90,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setKnowledge(knowledge);
             return search.search();
         }
     }
