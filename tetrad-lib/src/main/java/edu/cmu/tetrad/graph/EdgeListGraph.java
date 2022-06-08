@@ -1836,7 +1836,7 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public List<Node> getCausalOrdering() {
-        return GraphUtils.getCausalOrdering(this);
+        return GraphUtils.getCausalOrdering(this, this.getNodes());
     }
 
     @Override

@@ -3072,19 +3072,22 @@ public final class GraphUtils {
         return maxDegree;
     }
 
-    public static List<Node> getCausalOrdering(Graph graph) {
+    public static List<Node> getCausalOrdering(Graph graph, List<Node> pi) {
         if (graph.existsDirectedCycle()) {
             throw new IllegalArgumentException("Graph must be acyclic.");
         }
 
-        Graph copy = new EdgeListGraph(graph);
         List<Node> found = new ArrayList<>();
+        boolean _found = true;
 
-        while (copy.getNumNodes() > 0) {
-            for (Node node : copy.getNodes()) {
-                if (copy.getParents(node).isEmpty()) {
+        while (_found) {
+            _found = false;
+
+            for (Node node : pi) {
+                HashSet<Node> nodes = new HashSet<>(found);
+                if (!nodes.contains(node) && nodes.containsAll(graph.getParents(node))) {
                     found.add(node);
-                    copy.removeNode(node);
+                    _found = true;
                 }
             }
         }

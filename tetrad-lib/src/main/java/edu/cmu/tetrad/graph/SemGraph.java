@@ -206,7 +206,7 @@ public final class SemGraph implements Graph {
      * @throws IllegalStateException if the graph is cyclic.
      */
     public List<Node> getCausalOrdering() {
-        return GraphUtils.getCausalOrdering(this);
+        return GraphUtils.getCausalOrdering(this, this.getNodes());
     }
 
     public void setHighlighted(Edge edge, boolean highlighted) {

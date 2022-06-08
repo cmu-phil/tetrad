@@ -65,7 +65,7 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             IndependenceTest test = this.test.getTest(dataModel, parameters);
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Boss3 boss = new Boss3(test, score);
+            BossTuck boss = new BossTuck(test, score);
 
             boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             boss.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));

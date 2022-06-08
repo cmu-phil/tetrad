@@ -96,24 +96,15 @@ public class Boss {
             makeValidKnowledgeOrder(order);
 
             this.scorer.score(order);
-            betterMutation(scorer);
             double s1, s2;
-            Graph g1;
 
             do {
-                g1 = scorer.getGraph(true);
+                betterMutation(scorer);
                 s1 = scorer.score();
-                this.graph = g1;
+                this.graph = scorer.getGraph(true);
                 bes();
-                betterMutation2(scorer);
-
-                if (!g1.equals(this.graph)) {
-                    scorer.score(g1.getCausalOrdering());
-                    betterMutation(scorer);
-                }
-
-                s2 = scorer.score();
-            } while (s2 < s1);
+                s2 = scorer.score(this.graph.getCausalOrdering());
+            } while (s2 > s1);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -186,6 +177,14 @@ public class Boss {
                     if (scorer.score() > sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
+
+                            if (verbose) {
+                                System.out.print("\r# Edges = " + scorer.getNumEdges()
+                                        + " Score = " + scorer.score()
+                                        + " (betterMutation)"
+                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
+                            }
+
                             scorer.bookmark();
                             scorer.moveTo(_j, scorer.index(_j) + 1);
                         }

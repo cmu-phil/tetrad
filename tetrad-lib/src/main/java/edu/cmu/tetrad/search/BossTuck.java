@@ -24,7 +24,7 @@ import static java.util.Collections.shuffle;
  * @author bryanandrews
  * @author josephramsey
  */
-public class Boss3 {
+public class BossTuck {
     private final List<Node> variables;
     private Score score;
     private IndependenceTest test;
@@ -43,19 +43,19 @@ public class Boss3 {
     private int depth = 4;
     private int numStarts = 1;
 
-    public Boss3(@NotNull Score score) {
+    public BossTuck(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
     }
 
-    public Boss3(@NotNull IndependenceTest test) {
+    public BossTuck(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
     }
 
-    public Boss3(@NotNull IndependenceTest test, Score score) {
+    public BossTuck(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
@@ -96,33 +96,19 @@ public class Boss3 {
             makeValidKnowledgeOrder(order);
 
             this.scorer.score(order);
-            betterMutation(scorer);
             double s1, s2;
-            Graph g1;
 
             do {
-                g1 = scorer.getGraph(true);
+                betterMutation(scorer);
                 s1 = scorer.score();
-                this.graph = g1;
+                this.graph = scorer.getGraph(true);
                 bes();
-
-                if (!g1.equals(this.graph)) {
-                    scorer.score(g1.getCausalOrdering());
-                    betterMutation(scorer);
-                }
-
-                s2 = scorer.score();
-            } while (s2 < s1);
+                s2 = scorer.score(getCausalOrdering(graph, scorer.getPi()));
+            } while (s2 > s1);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
                 bestPerm = scorer.getPi();
-            }
-
-            this.scorer.score(bestPerm);
-
-            if (this.scorer.score() > best) {
-                best = this.scorer.score();
             }
         }
 
@@ -138,29 +124,48 @@ public class Boss3 {
         return bestPerm;
     }
 
-    public void betterMutation(@NotNull TeyssierScorer scorer) {
-        if (verbose) {
-            System.out.println();
+    public static List<Node> getCausalOrdering(Graph graph, List<Node> pi) {
+        if (graph.existsDirectedCycle()) {
+            throw new IllegalArgumentException("Graph must be acyclic.");
         }
 
-        double s;
-        double sp;
+        List<Node> found = new ArrayList<>();
+        boolean _found = true;
 
-        sp = scorer.score();
+        while (_found) {
+            _found = false;
+
+            for (Node node : pi) {
+                HashSet<Node> nodes = new HashSet<>(found);
+                if (!nodes.contains(node) && nodes.containsAll(graph.getParents(node))) {
+                    found.add(node);
+                    _found = true;
+                }
+            }
+        }
+
+        return found;
+    }
+
+
+    public void betterMutation(@NotNull TeyssierScorer scorer) {
+        double s;
+        double sp = scorer.score();
+        scorer.bookmark();
+
         do {
             s = sp;
-            scorer.bookmark();
 
-            for (int j = scorer.size() - 1; j >= 0; j--) {
-                Node _j = scorer.get(j);
-                for (int k = j - 1; k >= 0; k--) {
-
-                    tuck(_j, k, scorer);
-
-                    if (scorer.score() > sp) {
-                        if (!violatesKnowledge(scorer.getPi())) {
+            for (int i = 1; i < scorer.size(); i++) {
+                Node x = scorer.get(i);
+                for (int j = i - 1; j >= 0; j--) {
+                    if (tuck(x, j, scorer)) {
+                        if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
+                            scorer.goToBookmark();
+                        } else {
                             sp = scorer.score();
-                            scorer.bookmark();
+//                            i = scorer.size();
+//                            j = -1;
 
                             if (verbose) {
                                 System.out.print("\r# Edges = " + scorer.getNumEdges()
@@ -168,31 +173,86 @@ public class Boss3 {
                                         + " (betterMutation)"
                                         + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
                             }
-
-                            scorer.moveTo(_j, scorer.index(_j) + 1);
                         }
+                        scorer.bookmark();
                     }
                 }
-
-                scorer.goToBookmark();
-                scorer.bookmark();
             }
         } while (sp > s);
+
+        System.out.println();
     }
 
-    private void tuck(Node k, int j, TeyssierScorer scorer) {
-        if (!scorer.adjacent(k, scorer.get(j))) return;
-        if (scorer.coveredEdge(k, scorer.get(j))) return;
-        if (j >= scorer.index(k)) return;
+    private boolean tuck(Node k, int j, TeyssierScorer scorer) {
+        if (!scorer.adjacent(k, scorer.get(j))) return false;
+        if (scorer.coveredEdge(k, scorer.get(j))) return false;
+        if (j >= scorer.index(k)) return false;
 
         Set<Node> ancestors = scorer.getAncestors(k);
-        for (int i = j+1; i < scorer.index(k); i++) {
+        for (int i = j + 1; i <= scorer.index(k); i++) {
             if (ancestors.contains(scorer.get(i))) {
-                scorer.moveTo(scorer.get(i), j);
+                scorer.moveTo(scorer.get(i), j++);
             }
         }
-        scorer.moveTo(k, j);
+
+        return true;
     }
+
+//    public void betterMutation(@NotNull TeyssierScorer scorer) {
+//        if (verbose) {
+//            System.out.println();
+//        }
+//
+//        double s;
+//        double sp;
+//
+//        sp = scorer.score();
+//        do {
+//            s = sp;
+//            scorer.bookmark();
+//
+//            for (int j = scorer.size() - 1; j >= 0; j--) {
+//                Node _j = scorer.get(j);
+//                for (int k = j - 1; k >= 0; k--) {
+//
+//                    tuck(_j, k, scorer);
+//
+//                    if (scorer.score() > sp) {
+//                        if (!violatesKnowledge(scorer.getPi())) {
+//                            sp = scorer.score();
+//                            scorer.bookmark();
+//
+//                            if (verbose) {
+//                                System.out.print("\r# Edges = " + scorer.getNumEdges()
+//                                        + " Score = " + scorer.score()
+//                                        + " (betterMutation)"
+//                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
+//                            }
+//
+//                            scorer.moveTo(_j, scorer.index(_j) + 1);
+//                        }
+//                    }
+//                }
+//
+//                scorer.goToBookmark();
+//                scorer.bookmark();
+//            }
+//        } while (sp > s);
+//    }
+
+//    private void tuck(Node k, int j, TeyssierScorer scorer) {
+//        if (!scorer.adjacent(k, scorer.get(j))) return;
+//        if (scorer.coveredEdge(k, scorer.get(j))) return;
+//        if (j >= scorer.index(k)) return;
+//
+//        Set<Node> ancestors = scorer.getAncestors(k);
+//        for (int i = j+1; i < scorer.index(k); i++) {
+//            if (ancestors.contains(scorer.get(i))) {
+//                scorer.moveTo(scorer.get(i), j);
+//            }
+//        }
+//        scorer.moveTo(k, j);
+//    }
 
     public int getNumEdges() {
         return this.scorer.getNumEdges();
