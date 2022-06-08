@@ -3072,7 +3072,15 @@ public final class GraphUtils {
         return maxDegree;
     }
 
-    public static List<Node> getCausalOrdering(Graph graph, List<Node> pi) {
+    /**
+     * Finds a causal order for the given graph that is follows the order
+     * of the given initialorder as possible.
+     * @param graph The graph to find a causal order for. Must be acyclic, though
+     *              it need not be a DAG.
+     * @param initialorder The order to try to get as close to as possible.
+     * @return Such a causal order.
+     */
+    public static List<Node> getCausalOrdering(Graph graph, List<Node> initialorder) {
         if (graph.existsDirectedCycle()) {
             throw new IllegalArgumentException("Graph must be acyclic.");
         }
@@ -3083,7 +3091,7 @@ public final class GraphUtils {
         while (_found) {
             _found = false;
 
-            for (Node node : pi) {
+            for (Node node : initialorder) {
                 HashSet<Node> nodes = new HashSet<>(found);
                 if (!nodes.contains(node) && nodes.containsAll(graph.getParents(node))) {
                     found.add(node);
