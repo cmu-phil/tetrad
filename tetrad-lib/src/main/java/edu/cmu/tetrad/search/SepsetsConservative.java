@@ -37,6 +37,7 @@ public class SepsetsConservative implements SepsetProducer {
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
     private final int depth;
+    private IndependenceResult lastResult;
 
     public SepsetsConservative(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -55,8 +56,8 @@ public class SepsetsConservative implements SepsetProducer {
         if (this.extraSepsets != null) {
             List<Node> possibleDsep = this.extraSepsets.get(i, k);
             if (possibleDsep != null) {
-                this.independenceTest.isIndependent(i, k, possibleDsep);
-                _p = this.independenceTest.getPValue();
+                IndependenceResult result = this.independenceTest.checkIndependence(i, k, possibleDsep);
+                _p = result.getPValue();
                 _v = possibleDsep;
             }
         }
@@ -74,8 +75,10 @@ public class SepsetsConservative implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adji);
 
-                    if (getIndependenceTest().isIndependent(i, k, v)) {
-                        double pValue = getIndependenceTest().getPValue();
+                    IndependenceResult result = getIndependenceTest().checkIndependence(i, k, v);
+
+                    if (result.independent()) {
+                        double pValue = result.getPValue();
                         if (pValue > _p) {
                             _p = pValue;
                             _v = v;
@@ -90,8 +93,10 @@ public class SepsetsConservative implements SepsetProducer {
 
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adjk);
-                    if (getIndependenceTest().isIndependent(i, k, v)) {
-                        double pValue = getIndependenceTest().getPValue();
+                    IndependenceResult result = getIndependenceTest().checkIndependence(i, k, v);
+
+                    if (result.independent()) {
+                        double pValue = result.getPValue();
                         if (pValue > _p) {
                             _p = pValue;
                             _v = v;
@@ -138,7 +143,7 @@ public class SepsetsConservative implements SepsetProducer {
             while ((choice = cg.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, cond)) {
+                if (test.checkIndependence(x, z, cond).independent()) {
                     if (verbose) {
                         System.out.println("Indep: " + x + " _||_ " + z + " | " + cond);
                     }
@@ -168,7 +173,7 @@ public class SepsetsConservative implements SepsetProducer {
             while ((choice = cg.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, cond)) {
+                if (test.checkIndependence(x, z, cond).independent()) {
                     if (cond.contains(y)) {
                         sepsetsContainingY.add(cond);
                     } else {
@@ -188,17 +193,14 @@ public class SepsetsConservative implements SepsetProducer {
 
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return this.independenceTest.isIndependent(a, b, c);
-    }
-
-    @Override
-    public double getPValue() {
-        return this.independenceTest.getPValue();
+        IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
+        this.lastResult = result;
+        return result.independent();
     }
 
     @Override
     public double getScore() {
-        return -(this.independenceTest.getPValue() - this.independenceTest.getAlpha());
+        return -(this.lastResult.getPValue() - this.independenceTest.getAlpha());
     }
 
     @Override

@@ -119,11 +119,6 @@ public class SepsetsTeyssier implements SepsetProducer {
     }
 
     @Override
-    public double getPValue() {
-        return 0;
-    }
-
-    @Override
     public double getScore() {
         return 0;
     }

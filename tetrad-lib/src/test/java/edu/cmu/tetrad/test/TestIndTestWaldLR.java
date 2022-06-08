@@ -99,7 +99,7 @@ public class TestIndTestWaldLR {
             IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(data, 0.05, false);
             IndTestDSep dsep = new IndTestDSep(graph);
 
-            boolean correct = test.isIndependent(x2, x1, cond) == dsep.isIndependent(x2Graph, x1Graph, condGraph);
+            boolean correct = test.checkIndependence(x2, x1, cond) == dsep.checkIndependence(x2Graph, x1Graph, condGraph);
 
             if (correct) {
                 numPassed++;

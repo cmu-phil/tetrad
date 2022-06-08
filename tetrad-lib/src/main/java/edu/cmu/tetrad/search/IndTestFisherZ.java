@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
@@ -49,7 +50,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     private final Map<Node, Integer> indexMap;
     private final Map<String, Node> nameMap;
-    private final NormalDistribution normal = new NormalDistribution();
+    private final NormalDistribution normal = new NormalDistribution(0, 1, 1e-15);
     private final Map<Node, Integer> nodesHash;
     /**
      * The correlation matrix.
@@ -208,7 +209,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public synchronized boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         double p = getPValue(x, y, z);
 
         boolean independent = p > this.alpha;
@@ -221,23 +222,12 @@ public final class IndTestFisherZ implements IndependenceTest {
         }
 
         if (Double.isNaN(p)) {
-            return true;
+            return new IndependenceResult(new IndependenceFact(x, y, z),
+                    false, p);
         } else {
-            return independent;
+            return new IndependenceResult(new IndependenceFact(x, y, z),
+                    independent, p);
         }
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        return isIndependent(x, y, Arrays.asList(z));
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
     }
 
     /**

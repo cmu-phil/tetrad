@@ -280,9 +280,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         } else {
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
                 for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
+                    IKnowledge knowledge1 = getDataModelList().get(0).getKnowledge();
                     List<DataSet> dataSets = getDataModelList().stream()
                             .map(e -> (DataSet) e)
                             .collect(Collectors.toCollection(ArrayList::new));
+                    for (DataSet dataSet : dataSets) dataSet.setKnowledge(knowledge1);
                     int randomSelectionSize = this.parameters.getInt("randomSelectionSize");
                     if (randomSelectionSize == 0) {
                         randomSelectionSize = dataSets.size();

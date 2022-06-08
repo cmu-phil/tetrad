@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search.mb;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.MbSearch;
-import edu.cmu.tetrad.search.MbUtils;
-import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -95,7 +92,7 @@ public class IambnPc implements MbSearch {
                 break;
             }
 
-            if (!this.independenceTest.isIndependent(f, target, cmb)) {
+            if (!this.independenceTest.checkIndependence(f, target, cmb).independent()) {
                 cmb.add(f);
                 cont = true;
             }
@@ -114,8 +111,8 @@ public class IambnPc implements MbSearch {
     }
 
     private double associationStrength(Node v, Node target, List<Node> cmb) {
-        this.independenceTest.isIndependent(v, target, cmb);
-        return 1.0 - this.independenceTest.getPValue();
+        IndependenceResult result = this.independenceTest.checkIndependence(v, target, cmb);
+        return 1.0 - result.getPValue();
     }
 
     public String getAlgorithmName() {

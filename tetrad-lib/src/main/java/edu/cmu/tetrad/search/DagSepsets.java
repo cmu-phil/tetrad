@@ -60,11 +60,6 @@ public class DagSepsets implements SepsetProducer {
     }
 
     @Override
-    public double getPValue() {
-        return Double.NaN;
-    }
-
-    @Override
     public double getScore() {
         throw new UnsupportedOperationException();
     }

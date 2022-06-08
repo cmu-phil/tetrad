@@ -43,7 +43,7 @@ public class IndTestModel implements SessionModel {
     private final List<IndTestProducer> indTestProducers;
     private String name = "";
     private LinkedList<String> vars = new LinkedList<>();
-    private List<List<IndependenceResult>> results;
+    private List<List<IndependenceResultIndFacts>> results;
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -83,11 +83,11 @@ public class IndTestModel implements SessionModel {
         return this.vars;
     }
 
-    public List<List<IndependenceResult>> getResults() {
+    public List<List<IndependenceResultIndFacts>> getResults() {
         return this.results;
     }
 
-    public void setResults(List<List<IndependenceResult>> results) {
+    public void setResults(List<List<IndependenceResultIndFacts>> results) {
         this.results = results;
     }
 }

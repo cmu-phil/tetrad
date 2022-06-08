@@ -29,6 +29,7 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr;
 import static java.lang.Double.NaN;
@@ -250,6 +251,8 @@ public class SemBicScore implements Score {
         return localScoreDiff(x, y, new int[0]);
     }
 
+    private final Map<int[], Double> cache = new ConcurrentHashMap<>();
+
     /**
      * @param i The index of the node.
      * @param parents The indices of the node's parents.
@@ -263,10 +266,22 @@ public class SemBicScore implements Score {
 
         double varey;
 
-        try {
-            varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
-        } catch (SingularMatrixException e) {
-            return Double.NaN;
+        Arrays.sort(parents);
+        int[] all = new int[parents.length + 1];
+        all[0] = i;
+        System.arraycopy(parents, 0, all, 1, parents.length);
+
+        if (cache.containsKey(all)) {
+            varey = cache.get(all);
+        } else {
+            try {
+                varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+                cache.put(all, varey);
+            } catch (SingularMatrixException e) {
+                varey = NaN;
+            }
+
+            cache.put(all, varey);
         }
 
         double c = getPenaltyDiscount();
@@ -274,7 +289,7 @@ public class SemBicScore implements Score {
         if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
             // Standard BIC, with penalty discount and structure prior.
-            double _score = -c * k * log(n) - n * log(varey); // - 2 * getStructurePrior(k);
+            double _score = -n * log(varey) - c * k * log(n) ; // - 2 * getStructurePrior(k);
 
             if (Double.isNaN(_score) || Double.isInfinite(_score)) {
                 return Double.NaN;

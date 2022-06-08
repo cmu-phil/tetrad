@@ -63,7 +63,7 @@ public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
     public void actionPerformed(ActionEvent e) {
         Graph layoutGraph = this.layoutEditable.getGraph();
         LayoutSelection selection = new LayoutSelection(layoutGraph);
-        InternalClipboard.getInstance().setContents(selection, this);
+        InternalClipboard.getLayoutInstance().setContents(selection, this);
     }
 
     /**

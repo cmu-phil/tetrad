@@ -58,7 +58,7 @@ public class TestIndTestGSquare {
             Node y = v.get(1);
             ArrayList<Node> z = new ArrayList<>();
             z.add(v.get(2));
-            assertTrue(test.isIndependent(x, y, z));
+            assertTrue(test.checkIndependence(x, y, z).independent());
 
             test.setDeterminationP(0.99);
             assertFalse(test.determines(z, x));

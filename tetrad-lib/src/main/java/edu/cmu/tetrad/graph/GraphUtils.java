@@ -1638,14 +1638,6 @@ public final class GraphUtils {
                 convertedGraph.addNode(node2);
             }
 
-            if (node1 == null) {
-                throw new IllegalArgumentException("Couldn't find a node by the name " + edge.getNode1().getName() + " among the new variables for the converted graph (" + newVariables + ").");
-            }
-
-            if (node2 == null) {
-                throw new IllegalArgumentException("Couldn't find a node by the name " + edge.getNode2().getName() + " among the new variables for the converted graph (" + newVariables + ").");
-            }
-
             Endpoint endpoint1 = edge.getEndpoint1();
             Endpoint endpoint2 = edge.getEndpoint2();
             Edge newEdge = new Edge(node1, node2, endpoint1, endpoint2);
@@ -3080,19 +3072,30 @@ public final class GraphUtils {
         return maxDegree;
     }
 
-    public static List<Node> getCausalOrdering(Graph graph) {
+    /**
+     * Finds a causal order for the given graph that is follows the order
+     * of the given initialorder as possible.
+     * @param graph The graph to find a causal order for. Must be acyclic, though
+     *              it need not be a DAG.
+     * @param initialorder The order to try to get as close to as possible.
+     * @return Such a causal order.
+     */
+    public static List<Node> getCausalOrdering(Graph graph, List<Node> initialorder) {
         if (graph.existsDirectedCycle()) {
             throw new IllegalArgumentException("Graph must be acyclic.");
         }
 
-        Graph copy = new EdgeListGraph(graph);
         List<Node> found = new ArrayList<>();
+        boolean _found = true;
 
-        while (copy.getNumNodes() > 0) {
-            for (Node node : copy.getNodes()) {
-                if (copy.getParents(node).isEmpty()) {
+        while (_found) {
+            _found = false;
+
+            for (Node node : initialorder) {
+                HashSet<Node> nodes = new HashSet<>(found);
+                if (!nodes.contains(node) && nodes.containsAll(graph.getParents(node))) {
                     found.add(node);
-                    copy.removeNode(node);
+                    _found = true;
                 }
             }
         }
@@ -4747,7 +4750,7 @@ public final class GraphUtils {
         Map<Node, Double> scores = new HashMap<>();
 
         for (Node node : dsep) {
-            test.isIndependent(x, y, Collections.singletonList(node));
+            test.checkIndependence(x, y, Collections.singletonList(node));
             scores.put(node, test.getScore());
         }
 

@@ -32,6 +32,7 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.prefs.Preferences;
 
 /**
  * The main menubar for Tetrad.
@@ -122,9 +123,15 @@ final class TetradMenuBar extends JMenuBar {
         JMenuItem loggingSettingMenuItem = new JMenuItem(new SetupLoggingAction());
 
         JCheckBox showExperimentalBox = new JCheckBox(" Enable Experimental");
+
+        boolean enableExperimental = Preferences.userRoot().getBoolean("enableExperimental", false);
         showExperimentalBox.setSelected(Tetrad.enableExperimental);
+        Tetrad.enableExperimental = enableExperimental;
+
+        showExperimentalBox.setSelected(enableExperimental);
         showExperimentalBox.addActionListener(e -> {
             JCheckBox box = (JCheckBox) e.getSource();
+            Preferences.userRoot().putBoolean("enableExperimental", box.isSelected());
             Tetrad.enableExperimental = box.isSelected();
         });
 

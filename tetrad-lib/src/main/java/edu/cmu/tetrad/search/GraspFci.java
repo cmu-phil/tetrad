@@ -108,7 +108,7 @@ public final class GraspFci implements GraphSearch {
         Grasp grasp = new Grasp(this.test, this.score);
 
         grasp.setDepth(this.depth);
-        grasp.setUncoveredDepth(this.uncoveredDepth);
+        grasp.setSingularDepth(this.uncoveredDepth);
         grasp.setNonSingularDepth(this.nonsingularDepth);
 //        grasp.setToleranceDepth(this.toleranceDepth);
         grasp.setOrdered(this.ordered);

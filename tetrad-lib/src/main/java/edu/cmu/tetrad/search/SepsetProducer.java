@@ -35,14 +35,12 @@ public interface SepsetProducer {
 
     boolean isNoncollider(Node a, Node b, Node c);
 
-    boolean isIndependent(Node a, Node b, List<Node> c);
-
-    double getPValue();
-
     double getScore();
 
     List<Node> getVariables();
 
     void setVerbose(boolean verbose);
+
+    boolean isIndependent(Node d, Node c, List<Node> path);
 }
 

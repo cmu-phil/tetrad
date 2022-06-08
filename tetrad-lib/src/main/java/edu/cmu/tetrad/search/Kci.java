@@ -17,6 +17,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
@@ -45,6 +46,8 @@ public class Kci implements IndependenceTest {
 
     // Variables in data
     private final List<Node> variables;
+    private final double[] h;
+    private final double[][] _data;
 
     // The alpha level of the test.
     private double alpha;
@@ -69,10 +72,7 @@ public class Kci implements IndependenceTest {
     private double widthMultiplier = 1.0;
 
     // Record of independence facts
-    private final Map<IndependenceFact, Boolean> facts = new HashMap<>();
-
-    // Record of independence pValues
-    private final Map<IndependenceFact, Double> pValues = new HashMap<>();
+    private final Map<IndependenceFact, IndependenceResult> facts = new HashMap<>();
 
     // Epsilon for Propositio 5.
     private double epsilon = 0.001;
@@ -87,20 +87,30 @@ public class Kci implements IndependenceTest {
      * @param alpha The alpha value of the test.
      */
     public Kci(DataSet data, double alpha) {
-        this.data = data;
+        this.data = DataUtils.standardizeData(data);
+        _data = data.getDoubleData().transpose().toArray();
+
         this.variables = data.getVariables();
         int n = this.data.getNumRows();
+
+        this.hash = new HashMap<>();
+
+        for (int i = 0; i < variables.size(); i++) {
+            this.hash.put(variables.get(i), i);
+        }
+
+        double[][] dataCols = this.data.getDoubleData().transpose().toArray();
+        this.h = new double[variables.size()];
+
+        for (int i = 0; i < this.data.getNumColumns(); i++) {
+            this.h[i] = h(variables.get(i), dataCols, hash);
+        }
 
         Matrix Ones = new Matrix(n, 1);
         for (int j = 0; j < n; j++) Ones.set(j, 0, 1);
 
         this.alpha = alpha;
 
-        this.hash = new HashMap<>();
-
-        for (int i = 0; i < getVariables().size(); i++) {
-            this.hash.put(getVariables().get(i), i);
-        }
     }
 
     //====================================PUBLIC METHODS==================================//
@@ -117,126 +127,129 @@ public class Kci implements IndependenceTest {
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+        if (Thread.currentThread().isInterrupted()) {
+            return new IndependenceResult(new IndependenceFact(x, y, z),
+                    true, Double.NaN);
+        }
+
+//        Node _x = data.getVariable(x.getName());
+//
+//        if (_x == null) {
+//            throw new NullPointerException("The x variable, " + x + " was not in the data.");
+//        }
+//
+//        Node _y = data.getVariable(y.getName());
+//
+//        if (_y == null) {
+//            throw new NullPointerException("The y variable, " + y + " was not in the data.");
+//        }
+//
+//        List<Node> _z = new ArrayList<>();
+//        for (Node v : z) {
+//            Node variable = data.getVariable(v.getName());
+//
+//            if (variable == null) {
+//                throw new NullPointerException("A conditioning variable, " + v + " was not in the data.");
+//            }
+//
+//            _z.add(variable);
+//        }
+
         List<Node> allVars = new ArrayList<>();
         allVars.add(x);
         allVars.add(y);
         allVars.addAll(z);
 
-        List<Integer> rows = getRows(allVars, this.hash, this.data);
-
-        int[] _cols = new int[allVars.size()];
-        for (int i = 0; i < _cols.length; i++) _cols[i] = this.hash.get(allVars.get(i));
-
-        int[] _rows = new int[rows.size()];
-        for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
-
-        DataSet data = this.data.subsetRowsColumns(_rows, _cols);
-        data = DataUtils.standardizeData(data);
-        double[][] _data = data.getDoubleData().transpose().toArray();
-
-        Map<Node, Integer> hash = new HashMap<>();
-        for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
-
-        int N = data.getNumRows();
-
-        Matrix Ones = new Matrix(N, 1);
-        for (int j = 0; j < N; j++) Ones.set(j, 0, 1);
-
-        Matrix I = Matrix.identity(N);
-
-        Matrix H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
-
-        double[] h = new double[data.getNumColumns()];
-        int count = 0;
-
-        double sum = 0.0;
-        for (int i = 0; i < data.getNumColumns(); i++) {
-            h[i] = h(allVars.get(i), _data, hash);
-
-            if (h[i] != 0) {
-                sum += h[i];
-                count++;
-            }
-        }
-
-        double avg = sum / count;
-
-        for (int i = 0; i < h.length; i++) {
-            if (h[i] == 0) h[i] = avg;
-        }
-
-
-        boolean independent;
-
-        if (Thread.currentThread().isInterrupted()) {
-            return false;
-        }
-
         IndependenceFact fact = new IndependenceFact(x, y, z);
         this.latestFact = fact;
 
-        if (this.facts.get(fact) != null) {
-            return facts.get(fact);
+        if (facts.containsKey(fact)) {
+            IndependenceResult result = facts.get(fact);
+
+            if (verbose) {
+                double p = result.getPValue();
+
+                if (result.independent()) {
+                    TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
+                } else {
+                    TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+                }
+            }
+
+            return new IndependenceResult(fact, result.independent(), result.getPValue());
         } else {
-            if (z.isEmpty()) {
-                independent = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
-            } else {
-                independent = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
+            List<Integer> rows = getRows(this.data);
+
+            int[] _cols = new int[allVars.size()];
+
+            for (int i = 0; i < allVars.size(); i++) {
+                Node key = allVars.get(i);
+                _cols[i] = this.hash.get(key);
             }
-        }
 
-        if (verbose) {
-            double p = getPValue();
+            int[] _rows = new int[rows.size()];
+            for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
 
-            if (independent) {
-                TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
+            DataSet data = this.data.subsetRowsColumns(_rows, _cols);
+//            data = DataUtils.standardizeData(data);
+            double[][] _data = data.getDoubleData().transpose().toArray();
 
-            } else {
-                TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+            Map<Node, Integer> hash = new HashMap<>();
+            for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
+
+            int N = data.getNumRows();
+
+            Matrix ones = new Matrix(N, 1);
+            for (int j = 0; j < N; j++) ones.set(j, 0, 1);
+
+            Matrix I = Matrix.identity(N);
+            Matrix H = I.minus(ones.times(ones.transpose()).scalarMult(1.0 / N));
+
+            double[] h = new double[allVars.size()];
+            int count = 0;
+
+            double sum = 0.0;
+            for (int i = 0; i < allVars.size(); i++) {
+                h[i] = this.h[this.hash.get(allVars.get(i))];
+
+                if (h[i] != 0) {
+                    sum += h[i];
+                    count++;
+                }
             }
+
+            double avg = sum / count;
+
+            for (int i = 0; i < h.length; i++) {
+                if (h[i] == 0) h[i] = avg;
+            }
+
+            IndependenceResult result = facts.get(fact);
+
+            if (this.facts.get(fact) != null) {
+                return new IndependenceResult(fact, result.independent(), result.getPValue());
+            } else {
+                if (z.isEmpty()) {
+                    result = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
+                } else {
+                    result = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
+                }
+            }
+
+            if (verbose) {
+                double p = result.getPValue();
+
+                if (result.independent()) {
+                    TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
+
+                } else {
+                    TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+                }
+            }
+
+            return new IndependenceResult(fact, result.independent(), result.getPValue());
         }
-
-        return independent;
-    }
-
-    /**
-     * Returns true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        LinkedList<Node> thez = new LinkedList<>();
-        Collections.addAll(thez, z);
-        return isIndependent(x, y, thez);
-    }
-
-    /**
-     * Returns true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    /**
-     * Returns true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, Node... z) {
-        LinkedList<Node> thez = new LinkedList<>();
-        Collections.addAll(thez, z);
-        return isDependent(x, y, thez);
-    }
-
-    /**
-     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
-     */
-    public double getPValue() {
-        return pValues.get(latestFact);
     }
 
     /**
@@ -285,6 +298,14 @@ public class Kci implements IndependenceTest {
     }
 
     /**
+     * @return a string representation of this test.
+     */
+    public String toString() {
+        return "KCI, alpha = " + new DecimalFormat("0.0###").format(getAlpha());
+    }
+
+
+    /**
      * @return The data model for the independence test.
      */
     public DataModel getData() {
@@ -311,7 +332,7 @@ public class Kci implements IndependenceTest {
     }
 
     public double getScore() {
-        return getAlpha() - getPValue();
+        return getAlpha() - facts.get(latestFact).getPValue();
     }
 
     public boolean isApproximate() {
@@ -361,7 +382,7 @@ public class Kci implements IndependenceTest {
      *
      * @return true just in case independence holds.
      */
-    private boolean isIndependentUnconditional(Node x, Node y, IndependenceFact fact, double[][] _data,
+    private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, double[][] _data,
                                                double[] _h, int N,
                                                Map<Node, Integer> hash) {
         Matrix Ones = new Matrix(N, 1);
@@ -381,17 +402,17 @@ public class Kci implements IndependenceTest {
                 double theta_appr = var_appr / mean_appr;
                 double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
                 boolean indep = p > getAlpha();
-                this.facts.put(fact, indep);
-                this.pValues.put(fact, p);
-                return indep;
+                IndependenceResult result = new IndependenceResult(fact, indep, p);
+                this.facts.put(fact, result);
+                return result;
             } else {
                 return theorem4(kx, ky, fact, N);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            this.pValues.put(fact, 0.0);
-            this.facts.put(fact, false);
-            return false;
+            IndependenceResult result = new IndependenceResult(fact, false, 0.0);
+            this.facts.put(fact, result);
+            return result;
         }
     }
 
@@ -400,7 +421,7 @@ public class Kci implements IndependenceTest {
      *
      * @return true just in case independence holds.
      */
-    private boolean isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact, double[][] _data,
+    private IndependenceResult isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact, double[][] _data,
                                              int N, Matrix H, Matrix I, double[] _h, Map<Node, Integer> hash) {
         Matrix kx;
         Matrix ky;
@@ -419,13 +440,13 @@ public class Kci implements IndependenceTest {
         } catch (Exception e) {
             e.printStackTrace();
             boolean indep = false;
-            this.facts.put(fact, indep);
-            this.pValues.put(fact, 0.0);
-            return indep;
+            IndependenceResult result = new IndependenceResult(fact, indep, 0.0);
+            this.facts.put(fact, result);
+            return result;
         }
     }
 
-    private boolean theorem4(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
+    private IndependenceResult theorem4(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
 
         double T = (1.0 / N) * (kx.times(ky).trace());
 
@@ -456,12 +477,12 @@ public class Kci implements IndependenceTest {
         // Calculate p.
         double p = sum / (double) getNumBootstraps();
         boolean indep = p > getAlpha();
-        this.facts.put(fact, indep);
-        this.pValues.put(fact, p);
-        return indep;
+        IndependenceResult result = new IndependenceResult(fact, indep, p);
+        this.facts.put(fact, result);
+        return result;
     }
 
-    private boolean proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
+    private IndependenceResult proposition5(Matrix kx, Matrix ky, IndependenceFact fact, int N) {
         double T = (1.0 / N) * kx.times(ky).trace();
 
         Eigendecomposition eigendecompositionx = new Eigendecomposition(kx).invoke();
@@ -498,9 +519,9 @@ public class Kci implements IndependenceTest {
             double theta_appr = var_appr / mean_appr;
             double p = 1.0 - new GammaDistribution(k_appr, theta_appr).cumulativeProbability(sta);
             boolean indep = p > getAlpha();
-            this.facts.put(fact, indep);
-            this.pValues.put(fact, p);
-            return indep;
+            IndependenceResult result = new IndependenceResult(fact, indep, p);
+            this.facts.put(fact, result);
+            return result;
         } else {
 
             // Get top eigenvalues of that.
@@ -524,9 +545,9 @@ public class Kci implements IndependenceTest {
 
             double p = sum / (double) getNumBootstraps();
             boolean indep = p > getAlpha();
-            this.facts.put(fact, indep);
-            this.pValues.put(fact, p);
-            return indep;
+            IndependenceResult result = new IndependenceResult(fact, indep, p);
+            this.facts.put(fact, result);
+            return result;
         }
     }
 
@@ -748,15 +769,10 @@ public class Kci implements IndependenceTest {
     }
 
 
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash, DataSet dataSet) {
+    private List<Integer> getRows(DataSet dataSet) {
         List<Integer> rows = new ArrayList<>();
 
-        K:
         for (int k = 0; k < dataSet.getNumRows(); k++) {
-            for (Node node : allVars) {
-                if (Double.isNaN(dataSet.getDouble(k, nodesHash.get(node)))) continue K;
-            }
-
             rows.add(k);
         }
 

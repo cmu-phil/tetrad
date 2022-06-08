@@ -457,7 +457,7 @@ public final class Cefs {
     }
 
     private boolean independent(Node v, Node w, List<Node> z) {
-        boolean independent = getTest().isIndependent(v, w, z);
+        boolean independent = getTest().checkIndependence(v, w, z).independent();
 
         if (independent) {
             if (getTrueMb() != null) {
@@ -468,6 +468,8 @@ public final class Cefs {
                     Edge edge = getTrueMb().getEdge(node1, node2);
 
                     if (edge != null) {
+                        IndependenceResult result = getTest().checkIndependence(v, w, z);
+
                         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
                         System.out.println(
                                 "Edge removed that was in the true MB:");
@@ -475,7 +477,7 @@ public final class Cefs {
                         System.out.println("\t" +
                                 SearchLogUtils.independenceFact(v, w, z) +
                                 "\tp = " +
-                                nf.format(getTest().getPValue()));
+                                nf.format(result.getPValue()));
                     }
                 }
             }
@@ -597,7 +599,7 @@ public final class Cefs {
             while ((choice = cg.next()) != null) {
                 List<Node> condSet = Cefs.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, condSet)) {
+                if (test.checkIndependence(x, z, condSet).independent()) {
                     if (condSet.contains(y)) {
                         existsSepsetContainingY = true;
                     } else {
@@ -626,7 +628,7 @@ public final class Cefs {
             while ((choice = cg.next()) != null) {
                 List<Node> condSet = Cefs.asList(choice, _nodes);
 
-                if (test.isIndependent(x, z, condSet)) {
+                if (test.checkIndependence(x, z, condSet).independent()) {
                     if (condSet.contains(y)) {
                         existsSepsetContainingY = true;
                     } else {
