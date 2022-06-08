@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,8 +29,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.session.SessionModel;
-import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,7 +40,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
+public class IndependenceFactsModel implements KnowledgeBoxInput {
     static final long serialVersionUID = 23L;
 
     private IndependenceFacts facts = new IndependenceFacts();
@@ -54,9 +52,6 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-//     * @see edu.cmu.TestSerialization
-     * @see TetradSerializableUtils
      */
     public static IKnowledge serializableInstance() {
         return new Knowledge2();
@@ -67,7 +62,7 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
     }
 
     public String toString() {
-        return facts.toString();
+        return this.facts.toString();
     }
 
     public void remove(IndependenceFact fact) {
@@ -83,7 +78,7 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
     }
 
     public IndependenceFacts getFacts() {
-        return facts;
+        return this.facts;
     }
 
     public static IndependenceFactsModel loadFacts(Reader reader) throws IOException {
@@ -122,6 +117,7 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
     }
 
     public void setFacts(IndependenceFacts facts) {
+        if (facts == null) throw new NullPointerException("FActs is null.");
         this.facts = facts;
     }
 
@@ -134,11 +130,11 @@ public class IndependenceFactsModel implements SessionModel, KnowledgeBoxInput {
     }
 
     public List<Node> getVariables() {
-        return facts.getVariables();
+        return this.facts.getVariables();
     }
 
     public List<String> getVariableNames() {
-        return facts.getVariableNames();
+        return this.facts.getVariableNames();
     }
 }
 

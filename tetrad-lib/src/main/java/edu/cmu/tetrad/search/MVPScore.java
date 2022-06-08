@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,10 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Implements a mixed variable polynomial BIC score for fGES.
@@ -33,20 +33,20 @@ import java.util.*;
  */
 public class MVPScore implements Score {
 
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     // The variables of the continuousData set.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // Likelihood function
-    private MVPLikelihood likelihood;
+    private final MVPLikelihood likelihood;
 
     // Log number of instances
-    private double logn;
+    private final double logn;
 
     public MVPScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
-            if (dataSet == null) {
+        if (dataSet == null) {
             throw new NullPointerException();
         }
 
@@ -58,15 +58,21 @@ public class MVPScore implements Score {
 
     public double localScore(int i, int... parents) {
 
-        double lik = likelihood.getLik(i, parents);
-        double dof = likelihood.getDoF(i, parents);
-        double sp = likelihood.getStructurePrior(parents.length);
+        double lik = this.likelihood.getLik(i, parents);
+        double dof = this.likelihood.getDoF(i, parents);
+        double sp = this.likelihood.getStructurePrior(parents.length);
 
         if (sp > 0) {
             sp = -2 * dof * sp;
         }
 
-        return 2.0 * lik - dof * logn + sp;
+        double score = 2.0 * lik - dof * this.logn + sp;
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
     }
 
     public double localScoreDiff(int x, int y, int[] z) {
@@ -100,7 +106,7 @@ public class MVPScore implements Score {
     }
 
     public int getSampleSize() {
-        return dataSet.getNumRows();
+        return this.dataSet.getNumRows();
     }
 
     @Override
@@ -110,13 +116,13 @@ public class MVPScore implements Score {
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     @Override
     public Node getVariable(String targetName) {
 
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -127,7 +133,7 @@ public class MVPScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(dataSet.getNumRows()));
+        return (int) Math.ceil(Math.log(this.dataSet.getNumRows()));
     }
 
     @Override

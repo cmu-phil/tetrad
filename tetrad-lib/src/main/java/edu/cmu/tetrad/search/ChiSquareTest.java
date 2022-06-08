@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -90,7 +90,7 @@ public class ChiSquareTest {
      * by summing up chi square and degrees of freedom for each conditional table in turn, where rows or columns that
      * consist entirely of zeros have been removed.
      */
-    public synchronized ChiSquareTest.Result calcChiSquare(int[] testIndices) {
+    public synchronized Result calcChiSquare(int[] testIndices) {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
@@ -100,9 +100,9 @@ public class ChiSquareTest {
         // to calculate. For x _||_ y | z1, z2, ..., we want to
         // calculate the margin for x, the margin for y, and the
         // margin for x and y. (These will be used later.)
-        int[] firstVar = new int[]{0};
-        int[] secondVar = new int[]{1};
-        int[] bothVars = new int[]{0, 1};
+        int[] firstVar = {0};
+        int[] secondVar = {1};
+        int[] bothVars = {0, 1};
 
         double xSquare = 0.0;
         int df = 0;
@@ -184,13 +184,13 @@ public class ChiSquareTest {
 
         // If df == 0, this is definitely an indepedent table.
         if (df == 0) {
-            double pValue = 1.0;
-            return new ChiSquareTest.Result(xSquare, pValue, df, true);
+            final double pValue = 1.0;
+            return new Result(xSquare, pValue, 0, true);
         }
 
         double pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(xSquare);
         boolean indep = (pValue > getAlpha());
-        return new ChiSquareTest.Result(xSquare, pValue, df, indep);
+        return new Result(xSquare, pValue, df, indep);
     }
 
     /**
@@ -208,7 +208,7 @@ public class ChiSquareTest {
         // to calculate. For x _||_ y | z1, z2, ..., we want to
         // calculate the margin for x, the margin for y, and the
         // margin for x and y. (These will be used later.)
-        int[] firstVar = new int[]{0};
+        int[] firstVar = {0};
 
         int[] condDims = new int[testIndices.length - 1];
         System.arraycopy(selectFromArray(getDims(), testIndices), 1, condDims, 0,
@@ -282,15 +282,15 @@ public class ChiSquareTest {
     }
 
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     public int[] getDims() {
-        return dims;
+        return this.dims;
     }
 
     public CellTable getCellTable() {
-        return cellTable;
+        return this.cellTable;
     }
 
     //===============================CLASSES==============================//
@@ -333,19 +333,19 @@ public class ChiSquareTest {
         }
 
         public double getXSquare() {
-            return chiSquare;
+            return this.chiSquare;
         }
 
         public double getPValue() {
-            return pValue;
+            return this.pValue;
         }
 
         public int getDf() {
-            return df;
+            return this.df;
         }
 
         public boolean isIndep() {
-            return isIndep;
+            return this.isIndep;
         }
     }
 }

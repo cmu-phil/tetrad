@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -37,11 +36,11 @@ import java.util.List;
  * @author Joe Ramsey
  */
 public class PurifyTetradBased implements IPurify {
-    private boolean outputMessage = true;
-    private TetradTest tetradTest;
-    private int numVars;
-    boolean doFdr = false;
-    boolean listTetrads = false;
+    private final boolean outputMessage = true;
+    private final TetradTest tetradTest;
+    private final int numVars;
+    boolean doFdr;
+    boolean listTetrads;
 
     public PurifyTetradBased(TetradTest tetradTest) {
         this.tetradTest = tetradTest;
@@ -71,8 +70,8 @@ public class PurifyTetradBased implements IPurify {
         for (int i = 0; i < clustering.size(); i++) {
             int[] cluster = clustering.get(i);
             System.out.print(i + ": ");
-            for (int j = 0; j < cluster.length; j++) {
-                System.out.print(cluster[j] + " ");
+            for (int k : cluster) {
+                System.out.print(k + " ");
             }
 
             System.out.println();
@@ -82,11 +81,10 @@ public class PurifyTetradBased implements IPurify {
     }
 
     private List<int[]> convertListToInt(List<List<Node>> clustering) {
-        List<Node> nodes = tetradTest.getVariables();
+        List<Node> nodes = this.tetradTest.getVariables();
         List<int[]> _clustering = new ArrayList<>();
 
-        for (int i = 0; i < clustering.size(); i++) {
-            List<Node> cluster = clustering.get(i);
+        for (List<Node> cluster : clustering) {
             int[] _cluster = new int[cluster.size()];
 
             for (int j = 0; j < cluster.size(); j++) {
@@ -104,15 +102,14 @@ public class PurifyTetradBased implements IPurify {
     }
 
     private List<List<Node>> convertIntToList(List<int[]> clustering) {
-        List<Node> nodes = tetradTest.getVariables();
+        List<Node> nodes = this.tetradTest.getVariables();
         List<List<Node>> _clustering = new ArrayList<>();
 
-        for (int i = 0; i < clustering.size(); i++) {
-            int[] cluster = clustering.get(i);
+        for (int[] cluster : clustering) {
             List<Node> _cluster = new ArrayList<>();
 
-            for (int j = 0; j < cluster.length; j++) {
-                _cluster.add(nodes.get(cluster[j]));
+            for (int k : cluster) {
+                _cluster.add(nodes.get(k));
             }
 
             _clustering.add(_cluster);
@@ -128,8 +125,8 @@ public class PurifyTetradBased implements IPurify {
 
 
     private List tetradBasedPurify(List clustering) {
-        boolean eliminated[] = new boolean[numVars];
-        for (int i = 0; i < numVars; i++) {
+        boolean[] eliminated = new boolean[this.numVars];
+        for (int i = 0; i < this.numVars; i++) {
             eliminated[i] = false;
         }
 
@@ -144,8 +141,8 @@ public class PurifyTetradBased implements IPurify {
         printlnMessage("INTRA-CONSTRUCT PHASE.");
         printlnMessage("----------------------");
         printlnMessage();
-        for (Iterator it = clustering.iterator(); it.hasNext(); ) {
-            intraConstructPhase2((int[]) it.next(), eliminated);
+        for (Object o : clustering) {
+            intraConstructPhase2((int[]) o, eliminated);
         }
         printlnMessage();
 
@@ -165,12 +162,12 @@ public class PurifyTetradBased implements IPurify {
         return output;
     }
 
-    private void intraConstructPhase2(int _cluster[], boolean eliminated[]) {
+    private void intraConstructPhase2(int[] _cluster, boolean[] eliminated) {
         List<Integer> cluster = new ArrayList<>();
         for (int i : _cluster) cluster.add(i);
-        double cutoff = tetradTest.getSignificance();
+        double cutoff = this.tetradTest.getSignificance();
 
-        if (doFdr) {
+        if (this.doFdr) {
             List<Double> allPValues = new ArrayList<>(listPValues(cluster, eliminated, Double.MAX_VALUE));
             System.out.println("# p values for this cluster: " + allPValues.size());
             Collections.sort(allPValues);
@@ -178,7 +175,7 @@ public class PurifyTetradBased implements IPurify {
             cutoff = 1.;
 
             for (int c = 0; c < allPValues.size(); c++) {
-                if (allPValues.get(c) >= tetradTest.getSignificance() * (c + 1.) / allPValues.size()) {
+                if (allPValues.get(c) >= this.tetradTest.getSignificance() * (c + 1.) / allPValues.size()) {
                     cutoff = allPValues.get(c);
                     break;
                 }
@@ -198,7 +195,7 @@ public class PurifyTetradBased implements IPurify {
 
         System.out.println("Num impurities going in = " + numImpurities);
 
-        int minImpurities = 0;
+        final int minImpurities = 0;
 
         while (numImpurities > 0) {
             System.out.println("Num impurities this round = " + numImpurities);
@@ -218,7 +215,7 @@ public class PurifyTetradBased implements IPurify {
                     continue;
                 }
 
-                System.out.println("Tried dropping " + tetradTest.getVarNames()[i] + " (" + pValues.size()
+                System.out.println("Tried dropping " + this.tetradTest.getVarNames()[i] + " (" + pValues.size()
                         + " impurities)");
 
                 eliminated[i] = false;
@@ -243,23 +240,19 @@ public class PurifyTetradBased implements IPurify {
 
                 int index = minList.get(RandomUtil.getInstance().nextInt(minList.size()));
 
-//                eliminated[index] = true;
-//                numImpurities = min;
-//                System.out.println("Dropped " + tetradTest.getVarNames()[index]);
-
                 for (int m = 0; m < minList.size(); m++) {
                     eliminated[index] = true;
                     numImpurities = min;
-                    System.out.println("Dropped " + tetradTest.getVarNames()[index]);
+                    System.out.println("Dropped " + this.tetradTest.getVarNames()[index]);
                 }
             }
         }
     }
 
-    private void crossConstructPhase2(List<int[]> clustering, boolean eliminated[]) {
-        double cutoff = tetradTest.getSignificance();
+    private void crossConstructPhase2(List<int[]> clustering, boolean[] eliminated) {
+        double cutoff = this.tetradTest.getSignificance();
 
-        if (doFdr) {
+        if (this.doFdr) {
             List<Double> allPValues = new ArrayList<>(listCrossConstructPValues(clustering, eliminated, Double.MAX_VALUE));
             System.out.println("Num p values cross clusters: " + allPValues.size());
 
@@ -269,10 +262,10 @@ public class PurifyTetradBased implements IPurify {
             System.out.println("# p values = " + allPValues.size());
             cutoff = 1.;
 
-            System.out.println("significance = " + tetradTest.getSignificance());
+            System.out.println("significance = " + this.tetradTest.getSignificance());
 
             for (int c = 0; c < allPValues.size(); c++) {
-                if (allPValues.get(c) >= tetradTest.getSignificance() * (c + 1.) / allPValues.size()) {
+                if (allPValues.get(c) >= this.tetradTest.getSignificance() * (c + 1.) / allPValues.size()) {
                     cutoff = allPValues.get(c);
                     break;
                 }
@@ -287,7 +280,7 @@ public class PurifyTetradBased implements IPurify {
         }
 
         int numImpurities = pValues.size();
-        int minImpurities = 0;
+        final int minImpurities = 0;
 
         while (numImpurities > 0) {
             System.out.println("Num impurities this round = " + numImpurities);
@@ -307,7 +300,7 @@ public class PurifyTetradBased implements IPurify {
                     continue;
                 }
 
-                System.out.println("Tried dropping " + tetradTest.getVarNames()[i] + " (" + pValuesCrossConstruct.size()
+                System.out.println("Tried dropping " + this.tetradTest.getVarNames()[i] + " (" + pValuesCrossConstruct.size()
                         + " impurities)");
                 eliminated[i] = false;
 
@@ -333,7 +326,7 @@ public class PurifyTetradBased implements IPurify {
 
                 eliminated[index] = true;
                 numImpurities = min;
-                System.out.println("Dropped " + tetradTest.getVarNames()[index]);
+                System.out.println("Dropped " + this.tetradTest.getVarNames()[index]);
             }
         }
 
@@ -346,8 +339,8 @@ public class PurifyTetradBased implements IPurify {
 
         for (int p1 = 0; p1 < clustering.size(); p1++) {
             for (int p2 = p1 + 1; p2 < clustering.size(); p2++) {
-                int cluster1[] = clustering.get(p1);
-                int cluster2[] = clustering.get(p2);
+                int[] cluster1 = clustering.get(p1);
+                int[] cluster2 = clustering.get(p2);
 
                 if (cluster1.length >= 3 && cluster2.length >= 1) {
                     ChoiceGenerator gen1 = new ChoiceGenerator(cluster1.length, 3);
@@ -447,9 +440,9 @@ public class PurifyTetradBased implements IPurify {
 
             countable = true;
 
-            double p1 = tetradTest.tetradPValue(ci, cj, ck, cl);
-            double p2 = tetradTest.tetradPValue(ci, cl, cj, ck);
-            double p3 = tetradTest.tetradPValue(ci, ck, cj, cl);
+            double p1 = this.tetradTest.tetradPValue(ci, cj, ck, cl);
+            double p2 = this.tetradTest.tetradPValue(ci, cl, cj, ck);
+            double p3 = this.tetradTest.tetradPValue(ci, ck, cj, cl);
 
             if (p1 < cutoff) {
                 printTetrad(ci, cj, ck, cl, p1);
@@ -471,8 +464,8 @@ public class PurifyTetradBased implements IPurify {
     }
 
     private void printTetrad(int ci, int cj, int ck, int cl, double p1) {
-        if (listTetrads) {
-            String[] varNames = tetradTest.getVarNames();
+        if (this.listTetrads) {
+            String[] varNames = this.tetradTest.getVarNames();
             System.out.println("Tetrad <" + varNames[ci] + ", " + varNames[cj] + ", " + varNames[ck] + ", " + varNames[cl] + "> p = " + p1);
         }
     }
@@ -491,7 +484,7 @@ public class PurifyTetradBased implements IPurify {
             return null;
         }
 
-        double p1 = tetradTest.tetradPValue(x, y, w, z);
+        double p1 = this.tetradTest.tetradPValue(x, y, w, z);
 
         if (p1 < cutoff) {
             printTetrad(x, y, w, z, p1);
@@ -504,35 +497,34 @@ public class PurifyTetradBased implements IPurify {
 
 
     private void printMessage(String message) {
-        if (outputMessage) {
+        if (this.outputMessage) {
             System.out.print(message);
         }
     }
 
     private void printlnMessage(String message) {
-        if (outputMessage) {
+        if (this.outputMessage) {
             System.out.println(message);
         }
     }
 
     private void printlnMessage() {
-        if (outputMessage) {
+        if (this.outputMessage) {
             System.out.println();
         }
     }
 
     private void printClustering(List clustering, boolean[] eliminated) {
-        Iterator it = clustering.iterator();
-        while (it.hasNext()) {
-            int c[] = (int[]) it.next();
+        for (Object o : clustering) {
+            int[] c = (int[]) o;
             printCluster(c, eliminated);
         }
     }
 
-    private void printCluster(int c[], boolean[] eliminated) {
-        String sorted[] = new String[c.length];
+    private void printCluster(int[] c, boolean[] eliminated) {
+        String[] sorted = new String[c.length];
         for (int i = 0; i < c.length; i++) {
-            sorted[i] = tetradTest.getVarNames()[c[i]];
+            sorted[i] = this.tetradTest.getVarNames()[c[i]];
             if (eliminated[c[i]]) sorted[i] = sorted[i] + "X";
         }
         for (int i = 0; i < sorted.length - 1; i++) {
@@ -548,25 +540,24 @@ public class PurifyTetradBased implements IPurify {
             sorted[i] = min;
             sorted[min_idx] = temp;
         }
-        for (int i = 0; i < sorted.length; i++) {
-            printMessage(sorted[i] + " ");
+        for (String s : sorted) {
+            printMessage(s + " ");
         }
         printlnMessage();
     }
 
-    private List buildSolution(List clustering, boolean eliminated[]) {
+    private List buildSolution(List clustering, boolean[] eliminated) {
         List solution = new ArrayList();
-        Iterator it = clustering.iterator();
-        while (it.hasNext()) {
-            int next[] = (int[]) it.next();
-            int draftArea[] = new int[next.length];
+        for (Object o : clustering) {
+            int[] next = (int[]) o;
+            int[] draftArea = new int[next.length];
             int draftCount = 0;
-            for (int i = 0; i < next.length; i++) {
-                if (!eliminated[next[i]]) {
-                    draftArea[draftCount++] = next[i];
+            for (int j : next) {
+                if (!eliminated[j]) {
+                    draftArea[draftCount++] = j;
                 }
             }
-            int realCluster[] = new int[draftCount];
+            int[] realCluster = new int[draftCount];
             System.arraycopy(draftArea, 0, realCluster, 0, draftCount);
             solution.add(realCluster);
         }

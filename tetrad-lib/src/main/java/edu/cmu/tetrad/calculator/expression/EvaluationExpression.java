@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -38,13 +38,13 @@ public class EvaluationExpression implements Expression {
     /**
      * The variable part of the expression.
      */
-    private VariableExpression variable;
+    private final VariableExpression variable;
 
 
     /**
      * The string you are testing the variable against.
      */
-    private String string;
+    private final String string;
 
 
     public EvaluationExpression(VariableExpression exp, String s) {
@@ -62,13 +62,9 @@ public class EvaluationExpression implements Expression {
         return new EvaluationExpression(VariableExpression.serializableInstance(), "a");
     }
 
-    public String toString() {
-        return super.toString();
-    }
-
     public double evaluate(Context context) {
-        Object o = variable.evaluateGeneric(context);
-        if (o != null && string.equals(o.toString())) {
+        Object o = this.variable.evaluateGeneric(context);
+        if (o != null && this.string.equals(o.toString())) {
             return 1.0;
         }
         return 0.0;
@@ -83,7 +79,7 @@ public class EvaluationExpression implements Expression {
     }
 
     public List<Expression> getExpressions() {
-        return Collections.singletonList((Expression) variable);
+        return Collections.singletonList(this.variable);
     }
 
     @Override

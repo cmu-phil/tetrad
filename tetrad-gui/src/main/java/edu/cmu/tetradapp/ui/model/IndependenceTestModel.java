@@ -21,10 +21,10 @@ package edu.cmu.tetradapp.ui.model;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.util.IndependenceTestDescriptions;
+
 import java.io.Serializable;
 
 /**
- *
  * Dec 1, 2017 11:46:06 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -45,7 +45,7 @@ public class IndependenceTestModel implements Serializable, Comparable<Independe
 
     @Override
     public int compareTo(IndependenceTestModel other) {
-        return independenceTest.getAnnotation().name().compareTo(other.independenceTest.getAnnotation().name());
+        return this.independenceTest.getAnnotation().name().compareTo(other.independenceTest.getAnnotation().name());
     }
 
     @Override
@@ -54,15 +54,15 @@ public class IndependenceTestModel implements Serializable, Comparable<Independe
     }
 
     public AnnotatedClass<TestOfIndependence> getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
 }

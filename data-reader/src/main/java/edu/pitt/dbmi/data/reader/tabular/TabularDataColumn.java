@@ -21,7 +21,6 @@ package edu.pitt.dbmi.data.reader.tabular;
 import edu.pitt.dbmi.data.reader.DataColumn;
 
 /**
- *
  * Dec 29, 2018 12:44:43 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -48,27 +47,27 @@ public class TabularDataColumn implements DataColumn {
 
     @Override
     public String toString() {
-        return "TabularDataColumn{" + "name=" + name + ", columnNumber=" + columnNumber + ", generated=" + generated + ", discrete=" + discrete + '}';
+        return "TabularDataColumn{" + "name=" + this.name + ", columnNumber=" + this.columnNumber + ", generated=" + this.generated + ", discrete=" + this.discrete + '}';
     }
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     @Override
     public int getColumnNumber() {
-        return columnNumber;
+        return this.columnNumber;
     }
 
     @Override
     public boolean isGenerated() {
-        return generated;
+        return this.generated;
     }
 
     @Override
     public boolean isDiscrete() {
-        return discrete;
+        return this.discrete;
     }
 
     @Override

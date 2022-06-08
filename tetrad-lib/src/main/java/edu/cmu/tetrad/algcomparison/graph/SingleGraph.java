@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
 public class SingleGraph implements RandomGraph {
     static final long serialVersionUID = 23L;
 
-    private Graph graph;
+    private final Graph graph;
 
     public SingleGraph(Graph graph) {
         this.graph = graph;
@@ -22,7 +22,7 @@ public class SingleGraph implements RandomGraph {
 
     @Override
     public Graph createGraph(Parameters parameters) {
-        return graph;
+        return this.graph;
     }
 
     @Override

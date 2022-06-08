@@ -1,21 +1,15 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.TabularComparison;
-import java.awt.Dimension;
-import java.awt.Font;
+
+import javax.swing.*;
+import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Map;
-import javax.swing.Box;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 
 public class TabularComparisonEditor extends JPanel {
 
@@ -29,26 +23,23 @@ public class TabularComparisonEditor extends JPanel {
     }
 
     private void setup() {
-        java.util.List<Graph> referenceGraphs = comparison.getReferenceGraphs();
-        JTabbedPane pane = new JTabbedPane(JTabbedPane.TOP);
+        JTabbedPane pane = new JTabbedPane(SwingConstants.TOP);
 
         pane.addTab("Comparison", getTableDisplay());
 
-        JTabbedPane pane2 = new JTabbedPane(JTabbedPane.LEFT);
+        JTabbedPane pane2 = new JTabbedPane(SwingConstants.LEFT);
 
-        for (int i = 0; i < referenceGraphs.size(); i++) {
-            JTabbedPane pane3 = new JTabbedPane(JTabbedPane.TOP);
+        JTabbedPane pane3 = new JTabbedPane(SwingConstants.TOP);
 
-            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(comparison.getTargetGraphs().get(i)));
-            graphEditor.enableEditing(false);
-            pane3.add("Target Graph", graphEditor.getWorkbench());
+        GraphEditor graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getTargetGraph()));
+        graphEditor.enableEditing(false);
+        pane3.add("Target Graph", graphEditor.getWorkbench());
 
-            graphEditor = new GraphEditor(new GraphWrapper(comparison.getReferenceGraphs().get(i)));
-            graphEditor.enableEditing(false);
-            pane3.add("True Graph", graphEditor.getWorkbench());
+        graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getReferenceGraph()));
+        graphEditor.enableEditing(false);
+        pane3.add("True Graph", graphEditor.getWorkbench());
 
-            pane2.add("" + (i + 1), pane3);
-        }
+        pane2.add("Reference Graph", pane3);
 
         pane.addTab("Graphs", pane2);
 
@@ -57,17 +48,17 @@ public class TabularComparisonEditor extends JPanel {
 
     private Box getTableDisplay() {
 
-        DataSet dataSet = comparison.getDataSet();
+        DataSet dataSet = this.comparison.getDataSet();
 
         TextTable table = getTextTable(dataSet, new DecimalFormat("0.00"));
 
         StringBuilder b0 = new StringBuilder();
-        String trueGraphAndTarget = "Target graphs from " + comparison.getTargetName()
-                + "\nTrue graphs from " + comparison.getReferenceName();
-        b0.append(trueGraphAndTarget + "\n\n");
-        b0.append(table.toString());
+        String trueGraphAndTarget = "Target graphs from " + this.comparison.getTargetName()
+                + "\nTrue graphs from " + this.comparison.getReferenceName();
+        b0.append(trueGraphAndTarget).append("\n\n");
+        b0.append(table);
 
-        Map<String, String> allParamsSettings = comparison.getAllParamSettings();
+        Map<String, String> allParamsSettings = this.comparison.getAllParamSettings();
 
         if (allParamsSettings != null) {
             for (String key : allParamsSettings.keySet()) {

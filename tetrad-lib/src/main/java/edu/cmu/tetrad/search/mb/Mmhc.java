@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -45,13 +45,13 @@ public class Mmhc implements GraphSearch {
     /**
      * The independence test used for the PC search.
      */
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
     /**
      * The maximum number of nodes conditioned on in the search.
      */
-    private int depth = Integer.MAX_VALUE;
-    private DataSet data;
+    private int depth;
+    private final DataSet data;
     private IKnowledge knowledge = new Knowledge2();
 
     //=============================CONSTRUCTORS==========================//
@@ -66,11 +66,11 @@ public class Mmhc implements GraphSearch {
 
 
     public IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     public int getDepth() {
-        return depth;
+        return this.depth;
     }
 
     public long getElapsedTime() {
@@ -82,8 +82,8 @@ public class Mmhc implements GraphSearch {
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      */
     public Graph search() {
-        List<Node> variables = independenceTest.getVariables();
-        Mmmb mmmb = new Mmmb(independenceTest, getDepth(), true);
+        List<Node> variables = this.independenceTest.getVariables();
+        Mmmb mmmb = new Mmmb(this.independenceTest, getDepth(), true);
         Map<Node, List<Node>> pc = new HashMap<>();
 
         for (Node x : variables) {
@@ -104,13 +104,13 @@ public class Mmhc implements GraphSearch {
             }
         }
 
-        FgesOrienter orienter = new FgesOrienter(data);
+        FgesOrienter orienter = new FgesOrienter(this.data);
         orienter.orient(graph);
         return graph;
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     public void setKnowledge(IKnowledge knowledge) {

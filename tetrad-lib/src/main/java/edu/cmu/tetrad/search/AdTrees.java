@@ -7,17 +7,18 @@ import java.util.Map;
 
 /**
  * Stores AD trees for data sets for reuse.
+ *
  * @author jdramsey
  */
 public class AdTrees {
-    private static Map<DataSet, AdLeafTree> adTrees = new HashMap<>();
+    private static final Map<DataSet, AdLeafTree> adTrees = new HashMap<>();
 
     public static AdLeafTree getAdLeafTree(DataSet dataSet) {
-        AdLeafTree tree = adTrees.get(dataSet);
+        AdLeafTree tree = AdTrees.adTrees.get(dataSet);
 
         if (tree == null) {
             tree = new AdLeafTree(dataSet);
-            adTrees.put(dataSet, tree);
+            AdTrees.adTrees.put(dataSet, tree);
         }
 
         return tree;

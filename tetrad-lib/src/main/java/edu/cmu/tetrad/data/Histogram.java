@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,7 +40,7 @@ import static java.lang.Math.log;
 public class Histogram {
     private Node target;
     private int numBins = 8;
-    private DataSet dataSet;
+    private final DataSet dataSet;
     private Map<Node, double[]> continuousIntervals;
     private Map<Node, Integer> discreteValues;
 
@@ -70,15 +70,15 @@ public class Histogram {
         Node _target;
 
         if (target == null) {
-            _target = dataSet.getVariable(0);
+            _target = this.dataSet.getVariable(0);
         } else {
-            _target = dataSet.getVariable(target);
+            _target = this.dataSet.getVariable(target);
         }
 
         this.target = _target;
         this.continuousIntervals = new HashMap<>();
         this.discreteValues = new HashMap<>();
-        numBins = (int) ceil(log(dataSet.getNumRows()) / log(2) + 1);
+        this.numBins = (int) ceil(log(this.dataSet.getNumRows()) / log(2) + 1);
     }
 
     /**
@@ -91,13 +91,13 @@ public class Histogram {
     public void addConditioningVariable(String variable, double low, double high) {
         if (!(low < high)) throw new IllegalArgumentException("Low must be less than high: " + low + " >= " + high);
 
-        Node node = dataSet.getVariable(variable);
-        if (node == target) throw new IllegalArgumentException("Conditioning node may not be the target.");
+        Node node = this.dataSet.getVariable(variable);
+        if (node == this.target) throw new IllegalArgumentException("Conditioning node may not be the target.");
         if (!(node instanceof ContinuousVariable)) throw new IllegalArgumentException("Variable must be continuous.");
-        if (continuousIntervals.containsKey(node))
+        if (this.continuousIntervals.containsKey(node))
             throw new IllegalArgumentException("Please remove conditioning variable first.");
 
-        continuousIntervals.put(node, new double[]{low, high});
+        this.continuousIntervals.put(node, new double[]{low, high});
     }
 
     /**
@@ -107,10 +107,10 @@ public class Histogram {
      * @param value    The value to condition on.
      */
     public void addConditioningVariable(String variable, int value) {
-        Node node = dataSet.getVariable(variable);
-        if (node == target) throw new IllegalArgumentException("Conditioning node may not be the target.");
+        Node node = this.dataSet.getVariable(variable);
+        if (node == this.target) throw new IllegalArgumentException("Conditioning node may not be the target.");
         if (!(node instanceof DiscreteVariable)) throw new IllegalArgumentException("Variable must be discrete.");
-        discreteValues.put(node, value);
+        this.discreteValues.put(node, value);
     }
 
     /**
@@ -119,13 +119,13 @@ public class Histogram {
      * @param variable The name of the conditioning variable to remove.
      */
     public void removeConditioningVariable(String variable) {
-        Node node = dataSet.getVariable(variable);
-        if (node == target) throw new IllegalArgumentException("The target cannot be a conditioning node.");
-        if (!(continuousIntervals.containsKey(node) || discreteValues.containsKey(node))) {
+        Node node = this.dataSet.getVariable(variable);
+        if (node == this.target) throw new IllegalArgumentException("The target cannot be a conditioning node.");
+        if (!(this.continuousIntervals.containsKey(node) || this.discreteValues.containsKey(node))) {
             throw new IllegalArgumentException("Not a conditioning node: " + variable);
         }
-        continuousIntervals.remove(node);
-        discreteValues.remove(node);
+        this.continuousIntervals.remove(node);
+        this.discreteValues.remove(node);
     }
 
     public void removeConditioningVariables() {
@@ -139,7 +139,7 @@ public class Histogram {
      * @param numBins The number of bins.
      */
     public void setNumBins(int numBins) {
-        if (target instanceof DiscreteVariable) {
+        if (this.target instanceof DiscreteVariable) {
             throw new IllegalArgumentException("Can't set number of bins for a discrete target.");
         }
 
@@ -150,11 +150,11 @@ public class Histogram {
      * @return the counts for the histogram, one count for each target, in an integer array.
      */
     public int[] getFrequencies() {
-        if (target instanceof ContinuousVariable) {
+        if (this.target instanceof ContinuousVariable) {
             List<Double> _data = getConditionedDataContinuous();
-            double[] breakpoints = getBreakpoints(_data, numBins);
+            double[] breakpoints = getBreakpoints(_data, this.numBins);
 
-            int[] counts = new int[numBins];
+            int[] counts = new int[this.numBins];
 
             for (Double d : _data) {
                 boolean sorted = false;
@@ -175,8 +175,8 @@ public class Histogram {
             }
 
             return counts;
-        } else if (target instanceof DiscreteVariable) {
-            DiscreteVariable _var = (DiscreteVariable) target;
+        } else if (this.target instanceof DiscreteVariable) {
+            DiscreteVariable _var = (DiscreteVariable) this.target;
             List<Integer> _data = getConditionedDataDiscrete();
 
             int[] counts = new int[_var.getNumCategories()];
@@ -227,11 +227,11 @@ public class Histogram {
      * @param variable The name of the variable.
      */
     public double[] getContinuousData(String variable) {
-        int index = dataSet.getColumn(dataSet.getVariable(variable));
+        int index = this.dataSet.getColumn(this.dataSet.getVariable(variable));
         List<Double> _data = new ArrayList<>();
 
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            _data.add(dataSet.getDouble(i, index));
+        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+            _data.add(this.dataSet.getDouble(i, index));
         }
 
         return asDoubleArray(_data);
@@ -241,24 +241,24 @@ public class Histogram {
      * @return the data set for this histogram.
      */
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     /**
      * @return the target node being histogrammed. Could be continuous or discrete.
      */
     public String getTarget() {
-        return target.getName();
+        return this.target.getName();
     }
 
     /**
      * @return the number of bins for a continuous target.
      */
     public int getNumBins() {
-        if (target instanceof DiscreteVariable) {
-            return ((DiscreteVariable) target).getNumCategories();
+        if (this.target instanceof DiscreteVariable) {
+            return ((DiscreteVariable) this.target).getNumCategories();
         } else {
-            return numBins;
+            return this.numBins;
         }
     }
 
@@ -288,12 +288,12 @@ public class Histogram {
     }
 
     private List<Double> getUnconditionedDataContinuous() {
-        int index = dataSet.getColumn(target);
+        int index = this.dataSet.getColumn(this.target);
 
         List<Double> _data = new ArrayList<>();
 
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            _data.add(dataSet.getDouble(i, index));
+        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+            _data.add(this.dataSet.getDouble(i, index));
         }
 
         return _data;
@@ -302,12 +302,12 @@ public class Histogram {
     private List<Double> getConditionedDataContinuous() {
         List<Integer> rows = getConditionedRows();
 
-        int index = dataSet.getColumn(target);
+        int index = this.dataSet.getColumn(this.target);
 
         List<Double> _data = new ArrayList<>();
 
         for (Integer row : rows) {
-            _data.add(dataSet.getDouble(row, index));
+            _data.add(this.dataSet.getDouble(row, index));
         }
 
         return _data;
@@ -316,12 +316,12 @@ public class Histogram {
     private List<Integer> getConditionedDataDiscrete() {
         List<Integer> rows = getConditionedRows();
 
-        int index = dataSet.getColumn(target);
+        int index = this.dataSet.getColumn(this.target);
 
         List<Integer> _data = new ArrayList<>();
 
         for (Integer row : rows) {
-            _data.add(dataSet.getInt(row, index));
+            _data.add(this.dataSet.getInt(row, index));
         }
 
         return _data;
@@ -332,20 +332,20 @@ public class Histogram {
         List<Integer> rows = new ArrayList<>();
 
         I:
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (Node node : continuousIntervals.keySet()) {
-                double[] range = continuousIntervals.get(node);
-                int index = dataSet.getColumn(node);
-                double value = dataSet.getDouble(i, index);
+        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+            for (Node node : this.continuousIntervals.keySet()) {
+                double[] range = this.continuousIntervals.get(node);
+                int index = this.dataSet.getColumn(node);
+                double value = this.dataSet.getDouble(i, index);
                 if (!(value > range[0] && value < range[1])) {
                     continue I;
                 }
             }
 
-            for (Node node : discreteValues.keySet()) {
-                int value = discreteValues.get(node);
-                int index = dataSet.getColumn(node);
-                int _value = dataSet.getInt(i, index);
+            for (Node node : this.discreteValues.keySet()) {
+                int value = this.discreteValues.get(node);
+                int index = this.dataSet.getColumn(node);
+                int _value = this.dataSet.getInt(i, index);
                 if (!(value == _value)) {
                     continue I;
                 }
@@ -358,7 +358,7 @@ public class Histogram {
     }
 
     public Node getTargetNode() {
-        return target;
+        return this.target;
     }
 
 }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -90,10 +90,10 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         params.set("clusters", mmWrapper.getClusters());
     }
 
-     public MimBuildTrekRunner(MimBuildTrekRunner runner, Parameters params) {
+    public MimBuildTrekRunner(MimBuildTrekRunner runner, Parameters params) {
         super(runner, params);
         this.dataSet = (DataSet) getData();
-         setClusters((Clusters) params.get("clusters", null));
+        setClusters((Clusters) params.get("clusters", null));
     }
 
     public MimBuildTrekRunner(MimBuildTrekRunner runner, KnowledgeBoxModel knowledgeBox, Parameters params) {
@@ -131,8 +131,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
         if (getParams().getBoolean("includeThreeClusters", true)) {
             mimbuild.setMinClusterSize(3);
-        }
-        else {
+        } else {
             mimbuild.setMinClusterSize(4);
         }
 
@@ -211,10 +210,10 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
             children.removeAll(latents);
             Collections.sort(children);
 
-            builder.append(latent.getName() + ": ");
+            builder.append(latent.getName()).append(": ");
 
-            for (int j = 0; j < children.size(); j++) {
-                builder.append(children.get(j) + " ");
+            for (Node child : children) {
+                builder.append(child + " ");
             }
 
             builder.append("\n");
@@ -239,7 +238,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
     }
 
     public Graph getFullGraph() {
-        return fullGraph;
+        return this.fullGraph;
     }
 }
 

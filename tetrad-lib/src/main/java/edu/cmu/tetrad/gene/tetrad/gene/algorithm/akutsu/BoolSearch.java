@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -35,9 +35,9 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.akutsu;
  * @author Frank Wimberly
  */
 public class BoolSearch {
-    private int[][] cases;
-    private int ngenes;
-    private int ntimes;
+    private final int[][] cases;
+    private final int ngenes;
+    private final int ntimes;
     String[] names;
 
     public BoolSearch(int[][] cases, String[] names) {
@@ -50,17 +50,17 @@ public class BoolSearch {
     /**
      * Implements the BOOL-2 algorithm of Akutsu, et al, found in section 2.2 of
      * their paper "Algorithms for Inferring Qualitative Models of Biological
-     * Networks". </p> The int k is the number of number of regulators of a
+     * Networks". The int k is the number of number of regulators of a
      * given gene and corresponds to K in the paper.
      */
     public RevealOutputGraph bool2(int k) {
 
-        int[][] parents = new int[ngenes][];
-        int[][] lags = new int[ngenes][];
-        int[] f = new int[ngenes];
+        int[][] parents = new int[this.ngenes][];
+        int[][] lags = new int[this.ngenes][];
+        int[] f = new int[this.ngenes];
 
         int numberTotalInputs = 1;
-        for (int i = 0; i < ngenes; i++) {
+        for (int i = 0; i < this.ngenes; i++) {
             numberTotalInputs *= 2;
         }
 
@@ -84,7 +84,7 @@ public class BoolSearch {
                 " number functions = " + numberBooleanFunctions);
 
         //for i = 1 to n do...
-        for (int gchild = 0; gchild < ngenes; gchild++) {
+        for (int gchild = 0; gchild < this.ngenes; gchild++) {
             System.out.println("Child gene " + gchild);
             TH:
             for (int m = 1; m <= 20; m++) {
@@ -99,20 +99,17 @@ public class BoolSearch {
                 //For all combinations of k nodes do...
                 //The array inputs has a 1 in position i if inputs[i] is a parent
                 for (int input = 0; input < numberTotalInputs; input++) {
-                    byte[] inputs = booleanRepresentation(input, ngenes);
+                    byte[] inputs = booleanRepresentation(input, this.ngenes);
                     if (sumBits(inputs) == k) {
                         int j = 0;
-                        for (int i = 0; i < ngenes; i++) {
+                        for (int i = 0; i < this.ngenes; i++) {
                             if (inputs[i] == 1) {
                                 pars[j] = i;
                                 j++;
                             }
                         }
 
-                        //for(int parent = 0; parent < k; parent++)
-                        //  System.out.println("Parent " + parent + " = " + pars[parent]);
-                    }
-                    else {
+                    } else {
                         //System.out.println("Not k bits for " + input);
                         continue;
                     }
@@ -120,29 +117,29 @@ public class BoolSearch {
                     //System.out.println("pars " + pars[0] + " " + pars[1] + " " + pars[2]);
                     //For every boolean function with k inputs do...
                     for (int function = 0;
-                            function < numberBooleanFunctions; function++) {
+                         function < numberBooleanFunctions; function++) {
                         byte[] fi = booleanRepresentation(function,
                                 numberInputCombinations);
                         int mismatch = 0;
                         //for j = 1 to m do ...
-                        for (int j = 0; j < ntimes - 1; j++) {
+                        for (int j = 0; j < this.ntimes - 1; j++) {
                             //input = values of k genes at time j - 1
                             //                            boolean match = true;      // Unused JR
                             int argument = 0;
                             int power = 1;
                             for (int i = 0; i < k; i++) {
-                                argument += power * cases[j][pars[k - i - 1]];
+                                argument += power * this.cases[j][pars[k - i - 1]];
                                 //argument += power*cases[j][pars[i]];
                                 power *= 2;
                             }
                             int finput = fi[argument];
                             //if Oj(vi) != f(Ij(vi1),...,Ij(vik)) then...
-                            if (finput != cases[j + 1][gchild]) {
+                            if (finput != this.cases[j + 1][gchild]) {
                                 mismatch++;
                             }
                         }
 
-                        if (mismatch < theta * ntimes) {
+                        if (mismatch < theta * this.ntimes) {
                             System.out.println("update parents");
                             parents[gchild] = new int[k];
                             lags[gchild] = new int[k];
@@ -163,8 +160,7 @@ public class BoolSearch {
                             "Regulators not identified count = " + count);
                     parents[gchild] = new int[0];
                     lags[gchild] = new int[0];
-                }
-                else {
+                } else {
                     System.out.println("Regulators are:  ");
                     for (int i = 0; i < parents[gchild].length; i++) {
                         System.out.println(

@@ -18,19 +18,14 @@
  */
 package edu.cmu.tetrad.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
- *
  * Oct 17, 2017 11:40:50 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Target({ElementType.TYPE})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Experimental {

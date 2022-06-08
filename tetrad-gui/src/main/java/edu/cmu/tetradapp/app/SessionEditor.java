@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,14 +29,12 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 /**
  * Displays a toolbar and workbench for editing Session's.
@@ -82,15 +80,6 @@ public final class SessionEditor extends JComponent
 
         workbench.setName(name);
 
-//        int initialHelpMessageCount = Preferences.userRoot().getInt("initialHelpMessageCount", 1);
-//
-//        if (initialHelpMessageCount <= 3) {
-//            workbench.setBorder(new TitledBorder(" To put a box on the workbench, click on " +
-//                    "a button to the left and then click on this workbench. Right click or double click boxes to edit. "));
-//        }
-//
-//        Preferences.userRoot().putInt("initialHelpMessageCount", initialHelpMessageCount + 1);
-
         setWorkbench(workbench);
         setToolbar(new SessionEditorToolbar(workbench));
         JScrollPane workbenchScroll = new JScrollPane(workbench);
@@ -134,8 +123,7 @@ public final class SessionEditor extends JComponent
                 SessionEditorNode editorNode = (SessionEditorNode) comp;
                 Node modelNode = editorNode.getModelNode();
                 selectedModelComponents.add(modelNode);
-            }
-            else if (comp instanceof SessionEditorEdge) {
+            } else if (comp instanceof SessionEditorEdge) {
                 SessionEditorEdge editorEdge = (SessionEditorEdge) comp;
                 Edge modelEdge = getWorkbench().getModelEdge(editorEdge);
                 selectedModelComponents.add(modelEdge);
@@ -149,8 +137,9 @@ public final class SessionEditor extends JComponent
      * Pastes a consistent list of model nodes into the workbench. Note that the
      * responsivity of the toolbar to events needs to be turned off during this
      * operation.
+     *
      * @param sessionElements the list of model nodes.
-     * @param point the upper left corner of the first node.
+     * @param point           the upper left corner of the first node.
      */
     public void pasteSubsession(List sessionElements, Point point) {
         getToolbar().setRespondingToEvents(false);
@@ -161,7 +150,7 @@ public final class SessionEditor extends JComponent
     /**
      * Sets the name of the session editor.
      */
-    public final void setName(String name) {
+    public void setName(String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -170,7 +159,7 @@ public final class SessionEditor extends JComponent
     }
 
     private SessionEditorToolbar getToolbar() {
-        return toolbar;
+        return this.toolbar;
     }
 
     private void setToolbar(SessionEditorToolbar toolbar) {
@@ -178,7 +167,7 @@ public final class SessionEditor extends JComponent
     }
 
     private SessionEditorWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     private void setWorkbench(SessionEditorWorkbench workbench) {
@@ -186,7 +175,7 @@ public final class SessionEditor extends JComponent
     }
 
     public void saveSessionImage() {
-        Action action = new SaveComponentImage(workbench, "Save Session Image...");
+        Action action = new SaveComponentImage(this.workbench, "Save Session Image...");
         action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "Save"));
     }
 

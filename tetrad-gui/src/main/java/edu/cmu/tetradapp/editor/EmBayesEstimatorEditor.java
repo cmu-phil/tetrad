@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,18 +27,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.EmBayesEstimatorWrapper;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+
+import javax.swing.*;
+import java.awt.*;
 import java.text.NumberFormat;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 
 /**
  * An editor for Bayes net instantiated models. Assumes that the workbench and
@@ -59,21 +51,21 @@ public class EmBayesEstimatorEditor extends JPanel {
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
-    private EMBayesEstimatorEditorWizard wizard;
+    private final EMBayesEstimatorEditorWizard wizard;
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
     private EmBayesEstimatorEditor(BayesIm bayesIm,
-            DataSet dataSet) {
+                                   DataSet dataSet) {
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
 
         Graph graph = bayesIm.getBayesPm().getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
-        wizard = new EMBayesEstimatorEditorWizard(bayesIm, workbench);
-        wizard.enableEditing(false);
+        this.wizard = new EMBayesEstimatorEditorWizard(bayesIm, workbench);
+        this.wizard.enableEditing(false);
 
         // Add a menu item to allow the BayesIm to be saved out in
         // causality lab format.
@@ -89,11 +81,9 @@ public class EmBayesEstimatorEditor extends JPanel {
         add(menuBar, BorderLayout.NORTH);
 
         // Rest of setup.
-        wizard.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorValueChanged".equals(evt.getPropertyName())) {
-                    firePropertyChange("modelChanged", null, null);
-                }
+        this.wizard.addPropertyChangeListener(evt -> {
+            if ("editorValueChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
             }
         });
 
@@ -131,16 +121,14 @@ public class EmBayesEstimatorEditor extends JPanel {
         add(splitPane, BorderLayout.CENTER);
 
         setName("Bayes IM Editor");
-        getWizard().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("editorClosing".equals(evt.getPropertyName())) {
-                    firePropertyChange("editorClosing", null, getName());
-                }
+        getWizard().addPropertyChangeListener(evt -> {
+            if ("editorClosing".equals(evt.getPropertyName())) {
+                firePropertyChange("editorClosing", null, getName());
+            }
 
-                if ("closeFrame".equals(evt.getPropertyName())) {
-                    firePropertyChange("closeFrame", null, null);
-                    firePropertyChange("editorClosing", true, true);
-                }
+            if ("closeFrame".equals(evt.getPropertyName())) {
+                firePropertyChange("closeFrame", null, null);
+                firePropertyChange("editorClosing", true, true);
             }
         });
     }
@@ -167,6 +155,6 @@ public class EmBayesEstimatorEditor extends JPanel {
      * @return a reference to this editor.
      */
     private EMBayesEstimatorEditorWizard getWizard() {
-        return wizard;
+        return this.wizard;
     }
 }

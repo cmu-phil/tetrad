@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,8 +23,8 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.PcAll;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcAll;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.independence.GSquare;
@@ -44,7 +44,7 @@ import edu.cmu.tetrad.util.Parameters;
 public class ExampleCompareSimulationDiscrete {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        int sampleSize = 5000;
+        final int sampleSize = 5000;
 
         parameters.set("numRuns", 10);
         parameters.set("numMeasures", 10, 20);
@@ -56,10 +56,10 @@ public class ExampleCompareSimulationDiscrete {
 
         parameters.set("alpha", 0.05, 0.01, 0.001);
         parameters.set("colliderDiscoveryRule", 1, 2, 3);
-        parameters.set("conflictRule", 3);;
+        parameters.set("conflictRule", 3);
 
         parameters.set("maxDegree", 100);
-        parameters.set("samplePrior",  1, 5, 10, 15, 20, 25, 30, 50, 80, 100);
+        parameters.set("samplePrior", 1, 5, 10, 15, 20, 25, 30, 50, 80, 100);
         parameters.set("structurePrior", 1, 2, 3, 4, 5);
 
 //        parameters.set("penaltyDiscount", 1, 2, 3, 4);
@@ -82,17 +82,8 @@ public class ExampleCompareSimulationDiscrete {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecall());
-//        statistics.add(new MathewsCorrAdj());
-//        statistics.add(new MathewsCorrArrow());
-//        statistics.add(new F1Adj());
-//        statistics.add(new F1Arrow());
         statistics.add(new SHD());
-//        statistics.add(new ElapsedTime());
 
-//        statistics.setWeight("AP", 1.0);
-//        statistics.setWeight("AR", 1.0);
-//        statistics.setWeight("AHP", 1.0);
-//        statistics.setWeight("AHR", 1.0);
         statistics.setWeight("SHD", 1.0);
 
         Algorithms algorithms = new Algorithms();
@@ -115,7 +106,7 @@ public class ExampleCompareSimulationDiscrete {
         comparison.setSortByUtility(true);
 //        comparison.setShowUtilities(true);
 
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.Pattern_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
         comparison.compareFromSimulations("comparison.discrete.study", simulations, "comparison_all_" + sampleSize, algorithms, statistics, parameters);
     }

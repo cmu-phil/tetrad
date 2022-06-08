@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,7 +41,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      *
      * @serial
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * An array whose length is the number of dimensions of the cell and whose
@@ -51,7 +51,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      *
      * @serial
      */
-    private int[] dims;
+    private final int[] dims;
 
     /**
      * Indicates whether bounds on coordinate values are explicitly enforced.
@@ -66,12 +66,12 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      *
      * @serial
      */
-    private int numRows;
+    private final int numRows;
 
     /**
      * @serial
      */
-    private double symmValue;
+    private final double symmValue;
 
     //============================CONSTRUCTORS===========================//
 
@@ -89,15 +89,15 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
 
         this.dataSet = dataSet;
         this.symmValue = symmValue;
-        dims = new int[dataSet.getNumColumns()];
+        this.dims = new int[dataSet.getNumColumns()];
 
-        for (int i = 0; i < dims.length; i++) {
+        for (int i = 0; i < this.dims.length; i++) {
             DiscreteVariable variable =
                     (DiscreteVariable) dataSet.getVariable(i);
-            dims[i] = variable.getNumCategories();
+            this.dims[i] = variable.getNumCategories();
         }
 
-        numRows = dataSet.getNumRows();
+        this.numRows = dataSet.getNumRows();
     }
 
     //===========================PUBLIC METHODS=========================//
@@ -107,12 +107,12 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      * variable values is the order of the variables in getVariable().
      */
     public double getCellProb(int[] variableValues) {
-        int[] point = new int[dims.length];
+        int[] point = new int[this.dims.length];
         int count = 0;
 
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < dims.length; j++) {
-                point[j] = dataSet.getInt(i, j);
+        for (int i = 0; i < this.numRows; i++) {
+            for (int j = 0; j < this.dims[i]; j++) {
+                point[j] = this.dataSet.getInt(i, j);
             }
 
             if (Arrays.equals(point, variableValues)) {
@@ -127,12 +127,12 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      * @return the estimated probability of the given proposition.
      */
     public double getProb(Proposition assertion) {
-        int[] point = new int[dims.length];
+        int[] point = new int[this.dims.length];
         int count = 0;
 
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < dims.length; j++) {
-                point[j] = dataSet.getInt(i, j);
+        for (int i = 0; i < this.numRows; i++) {
+            for (int j = 0; j < this.dims[i]; j++) {
+                point[j] = this.dataSet.getInt(i, j);
             }
 
             if (assertion.isPermissibleCombination(point)) {
@@ -156,7 +156,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
         }
 
         List<Node> assertionVars = assertion.getVariableSource().getVariables();
-        List<Node> dataVars = dataSet.getVariables();
+        List<Node> dataVars = this.dataSet.getVariables();
 
         if (!assertionVars.equals(dataVars)) {
             throw new IllegalArgumentException(
@@ -166,24 +166,24 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
                             "\n\tData vars: " + dataVars);
         }
 
-        int[] point = new int[dims.length];
+        int[] point = new int[this.dims.length];
 
         double count1 = 1.0;
         double count2 = 1.0;
 
-        for (int i = 0; i < dims.length; i++) {
+        for (int i = 0; i < this.dims.length; i++) {
             if (condition.isConditioned(i) || assertion.isConditioned(i)) {
-                count2 *= condition.getNumAllowedCategories(i) * symmValue;
+                count2 *= condition.getNumAllowedCategories(i) * this.symmValue;
 
                 if (assertion.isConditioned(i)) {
-                    count1 *= assertion.getNumAllowedCategories(i) * symmValue;
+                    count1 *= assertion.getNumAllowedCategories(i) * this.symmValue;
                 }
             }
         }
 
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < dims.length; j++) {
-                point[j] = dataSet.getInt(i, j);
+        for (int i = 0; i < this.numRows; i++) {
+            for (int j = 0; j < this.dims.length; j++) {
+                point[j] = this.dataSet.getInt(i, j);
             }
 
             if (condition.isPermissibleCombination(point)) {
@@ -198,15 +198,11 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
         return count2 / count1;
     }
 
-    public boolean isMissingValueCaseFound() {
-        return false;
-    }
-
     /**
      * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     /**
@@ -221,7 +217,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      * True iff bounds checking is performed on variable values indices.
      */
     public boolean isBoundsEnforced() {
-        return boundsEnforced;
+        return this.boundsEnforced;
     }
 
     /**

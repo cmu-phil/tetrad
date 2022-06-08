@@ -23,14 +23,14 @@ import edu.pitt.dbmi.data.reader.metadata.MetadataFileReader;
 import edu.pitt.dbmi.data.reader.metadata.MetadataReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 /**
- *
  * Jan 2, 2019 10:49:19 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -52,14 +52,14 @@ public class DataColumnsTest {
      */
     @Test
     public void testUpdate() throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
+        TabularColumnReader columnReader = new TabularColumnFileReader(this.dataFile, this.delimiter);
         DataColumn[] dataColumns = columnReader.readInDataColumns(true);
 
         long expected = 10;
         long actual = dataColumns.length;
         Assert.assertEquals(expected, actual);
 
-        MetadataReader metadataReader = new MetadataFileReader(metadataFile);
+        MetadataReader metadataReader = new MetadataFileReader(this.metadataFile);
         Metadata metadata = metadataReader.read();
         dataColumns = DataColumns.update(dataColumns, metadata);
 

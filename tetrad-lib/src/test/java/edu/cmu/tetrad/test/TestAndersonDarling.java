@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,8 +41,8 @@ public final class TestAndersonDarling {
     public void test1() {
         RandomUtil.getInstance().setSeed(384829384L);
 
-        double[] x = rand1(100);
-        double[] y = rand2(100);
+        double[] x = rand1();
+        double[] y = rand2();
 
         x = standardize(x);
         y = standardize(y);
@@ -55,14 +55,14 @@ public final class TestAndersonDarling {
         z = sort(z);
         z = standardize(z);
 
-        assertEquals(-100, getS(z), 1.0);
+        assertEquals(-100, getS(z), 5.0);
     }
 
     @Test
     public void test2() {
         RandomUtil.getInstance().setSeed(4838582394L);
 
-        double[] x = rand1(100);
+        double[] x = rand1();
 
         double aa = new AndersonDarlingTest(x).getASquared();
 
@@ -75,8 +75,8 @@ public final class TestAndersonDarling {
         return z;
     }
 
-    private double[] rand1(int n) {
-        double[] x = new double[n];
+    private double[] rand1() {
+        double[] x = new double[100];
 
         for (int i = 0; i < x.length; i++) {
             x[i] = RandomUtil.getInstance().nextUniform(0, 1);
@@ -84,11 +84,11 @@ public final class TestAndersonDarling {
         return x;
     }
 
-    private double[] rand2(int n) {
-        double[] x = new double[n];
+    private double[] rand2() {
+        double[] x = new double[100];
 
         for (int i = 0; i < x.length; i++) {
-            x[i] = RandomUtil.getInstance().nextBeta(2,5);
+            x[i] = RandomUtil.getInstance().nextBeta(2, 5);
         }
         return x;
     }
@@ -109,7 +109,7 @@ public final class TestAndersonDarling {
             h += k;
         }
 
-        h /= (double) n;
+        h /= n;
 
         return h;
 

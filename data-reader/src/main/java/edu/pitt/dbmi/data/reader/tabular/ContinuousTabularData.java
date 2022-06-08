@@ -22,7 +22,6 @@ import edu.pitt.dbmi.data.reader.ContinuousData;
 import edu.pitt.dbmi.data.reader.DataColumn;
 
 /**
- *
  * Dec 29, 2018 5:18:32 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -39,12 +38,12 @@ public class ContinuousTabularData implements ContinuousData {
 
     @Override
     public DataColumn[] getDataColumns() {
-        return dataColumns;
+        return this.dataColumns;
     }
 
     @Override
     public double[][] getData() {
-        return data;
+        return this.data;
     }
 
 }

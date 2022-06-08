@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,7 +46,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      *
      * @serial
      */
-    private int lag;
+    private final int lag;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -80,9 +80,6 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static LaggedFactor serializableInstance() {
         return new LaggedFactor("X", 1);
@@ -96,7 +93,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      *
      * @param o an Object, which should be a LaggedFactor.
      * @return this lag minus the given lag, if the lagged factors have the same
-     *         name; otherwise, 0.
+     * name; otherwise, 0.
      */
     public int compareTo(Object o) {
 
@@ -106,12 +103,10 @@ public class LaggedFactor implements Comparable, TetradSerializable {
 
             if (n != 0) {
                 return n;
-            }
-            else {
+            } else {
                 return this.lag - f.getLag();
             }
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -122,7 +117,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * @return this name.
      */
     public String getFactor() {
-        return factor;
+        return this.factor;
     }
 
     /**
@@ -131,7 +126,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * @return the lag.
      */
     public int getLag() {
-        return lag;
+        return this.lag;
     }
 
     /**
@@ -145,7 +140,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * Probably should recheck this later.
      */
     public int hashCode() {
-        return 127 * factor.hashCode() + lag;
+        return 127 * this.factor.hashCode() + this.lag;
     }
 
     /**
@@ -170,7 +165,7 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * @return this string.
      */
     public String toString() {
-        return factor + ":" + lag;
+        return this.factor + ":" + this.lag;
     }
 
     /**
@@ -182,19 +177,16 @@ public class LaggedFactor implements Comparable, TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (factor == null) {
+        if (this.factor == null) {
             throw new NullPointerException();
         }
 
-        if (lag < 0) {
+        if (this.lag < 0) {
             throw new IllegalStateException();
         }
 

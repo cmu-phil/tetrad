@@ -19,13 +19,12 @@
 package edu.pitt.dbmi.data.reader.validation;
 
 /**
- *
  * Dec 12, 2018 3:08:46 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface Validation {
 
-    public void setMaximumNumberOfMessages(int maxNumOfMsg);
+    void setMaximumNumberOfMessages(int maxNumOfMsg);
 
 }

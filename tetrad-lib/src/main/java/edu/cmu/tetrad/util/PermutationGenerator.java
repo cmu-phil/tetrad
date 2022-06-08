@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -44,12 +44,12 @@ public final class PermutationGenerator {
     /**
      * The number of objects being permuted.
      */
-    private int numObjects;
+    private final int numObjects;
 
     /**
      * The internally stored choice.
      */
-    private int[] choiceLocal;
+    private final int[] choiceLocal;
 
     /**
      * The choice that is returned. Used, since the returned array can be
@@ -77,17 +77,17 @@ public final class PermutationGenerator {
         }
 
         this.numObjects = a;
-        choiceLocal = new int[a];
+        this.choiceLocal = new int[a];
 
         // Initialize the choice array with successive integers [0 1 2 ...].
         // Set the value at the last index one less than it would be in such
         // numObjects series, ([0 1 2 ... b - 2]) so that on the first call to next()
         // the first combination ([0 1 2 ... b - 1]) is returned correctly.
         for (int i = 0; i < a; i++) {
-            choiceLocal[i] = i;
+            this.choiceLocal[i] = i;
         }
 
-        begun = false;
+        this.begun = false;
     }
 
     /**
@@ -95,11 +95,11 @@ public final class PermutationGenerator {
      * finished.
      */
     public int[] next() {
-        if (choiceReturned == null) {
-            choiceReturned = new int[getNumObjects()];
-            System.arraycopy(choiceLocal, 0, choiceReturned, 0, numObjects);
-            begun = true;
-            return choiceReturned;
+        if (this.choiceReturned == null) {
+            this.choiceReturned = new int[getNumObjects()];
+            System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.numObjects);
+            this.begun = true;
+            return this.choiceReturned;
         }
 
         int i = getNumObjects() - 1;
@@ -110,26 +110,26 @@ public final class PermutationGenerator {
         while (--i > -1) {
             LinkedList<Integer> h = new LinkedList<>();
 
-            for (int j = i; j < choiceLocal.length; j++) {
-                h.add(choiceLocal[j]);
+            for (int j = i; j < this.choiceLocal.length; j++) {
+                h.add(this.choiceLocal[j]);
             }
 
             Collections.sort(h);
 
             if (this.choiceLocal[i] < h.getLast()) {
                 fill(i, h);
-                begun = true;
-                System.arraycopy(choiceLocal, 0, choiceReturned, 0, numObjects);
-                return choiceReturned;
+                this.begun = true;
+                System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.numObjects);
+                return this.choiceReturned;
             }
         }
 
         if (this.begun) {
             return null;
         } else {
-            begun = true;
-            System.arraycopy(choiceLocal, 0, choiceReturned, 0, numObjects);
-            return choiceReturned;
+            this.begun = true;
+            System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.numObjects);
+            return this.choiceReturned;
         }
     }
 
@@ -139,7 +139,7 @@ public final class PermutationGenerator {
      *
      * @param a the number of objects being selected from.
      */
-    @SuppressWarnings({"SameParameterValue"})
+    @SuppressWarnings("SameParameterValue")
     public static void testPrint(int a) {
         PermutationGenerator cg = new PermutationGenerator(a);
         int[] choice;

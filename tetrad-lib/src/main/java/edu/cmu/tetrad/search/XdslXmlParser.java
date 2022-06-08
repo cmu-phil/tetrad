@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
-import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
@@ -45,9 +44,10 @@ import java.util.Map;
  */
 public class XdslXmlParser {
 
-    private HashMap<String, Variable> namesToVars;
+    private boolean useDisplayNames;
 
-    private boolean useDisplayNames = false;
+    public XdslXmlParser() {
+    }
 
     /**
      * Takes an xml representation of a Bayes IM and reinstantiates the IM
@@ -77,11 +77,10 @@ public class XdslXmlParser {
             }
         }
 
-        Map<String, String> displayNames = mapDisplayNames(element1, useDisplayNames);
+        Map<String, String> displayNames = mapDisplayNames(element1, this.useDisplayNames);
 
-        BayesIm bayesIm = buildIM(element0, displayNames);
-
-        return bayesIm;
+        assert element0 != null;
+        return buildIM(element0, displayNames);
     }
 
     private BayesIm buildIM(Element element0, Map<String, String> displayNames) {
@@ -122,15 +121,16 @@ public class XdslXmlParser {
                     String[] parentNames = list.split(" ");
 
                     for (String name : parentNames) {
+                        Node parent;
+                        Node child;
                         if (displayNames == null) {
-                            edu.cmu.tetrad.graph.Node parent = dag.getNode(name);
-                            edu.cmu.tetrad.graph.Node child = dag.getNode(cpt.getAttribute(0).getValue());
-                            dag.addDirectedEdge(parent, child);
+                            parent = dag.getNode(name);
+                            child = dag.getNode(cpt.getAttribute(0).getValue());
                         } else {
-                            edu.cmu.tetrad.graph.Node parent = dag.getNode(displayNames.get(name));
-                            edu.cmu.tetrad.graph.Node child = dag.getNode(displayNames.get(cpt.getAttribute(0).getValue()));
-                            dag.addDirectedEdge(parent, child);
+                            parent = dag.getNode(displayNames.get(name));
+                            child = dag.getNode(displayNames.get(cpt.getAttribute(0).getValue()));
                         }
+                        dag.addDirectedEdge(parent, child);
                     }
                 }
             }
@@ -248,10 +248,6 @@ public class XdslXmlParser {
         } else {
             return null;
         }
-    }
-
-    public boolean isUseDisplayNames() {
-        return useDisplayNames;
     }
 
     public void setUseDisplayNames(boolean useDisplayNames) {

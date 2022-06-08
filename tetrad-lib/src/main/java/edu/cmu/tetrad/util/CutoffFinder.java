@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,8 +34,9 @@ public class CutoffFinder {
      * Assumes f is a positive symmetric function between x1 and x2 about 0.
      * Integrates from 0 in the direction of x2 in intervals of deltaX until an
      * area of .5 * (1 - alpha) has been accumulated. Returns the x value at
-     * the iteration where this amount of area has been accumulated.</p> </p>
-     * <p>This is helpful for finding cutoff levels for normal curves,
+     * the iteration where this amount of area has been accumulated.
+     * <p>
+     * This is helpful for finding cutoff levels for normal curves,
      * distributions of correlation coefficients, Student's t, etc. It returns
      * significance level cutoffs.
      *

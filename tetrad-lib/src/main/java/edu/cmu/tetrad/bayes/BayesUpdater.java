@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,7 +41,7 @@ public interface BayesUpdater extends TetradSerializable {
     long serialVersionUID = 23L;
 
     /**
-     * @return P&lpar;variable &equals; value &vert; evidence&rpar;, where evidence is
+     * @return P(variable = value | evidence), where evidence is
      * getEvidence().
      */
     double getMarginal(int variable, int category);
@@ -52,7 +52,7 @@ public interface BayesUpdater extends TetradSerializable {
     boolean isJointMarginalSupported();
 
     /**
-     * @return P&lpar;variables[i] &equals; values[i] &vert; evidence&rpar;, where evidence is
+     * @return P(variables[i] = values[i] | evidence), where evidence is
      * getEvidence().
      */
     double getJointMarginal(int[] variables, int[] values);

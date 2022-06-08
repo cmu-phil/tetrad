@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,7 +27,10 @@ import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Implements a test for simultaneously zero sextads in the style of Bollen, K. (1990).
@@ -40,9 +43,9 @@ public class DeltaSextadTest {
     static final long serialVersionUID = 23L;
 
     private double[][] data;
-    private int N;
-    private ICovarianceMatrix cov;
-    private List<Node> variables;
+    private final int N;
+    private final ICovarianceMatrix cov;
+    private final List<Node> variables;
 
     // As input we require a data set and a list of non-redundant Tetrads.
 
@@ -122,12 +125,6 @@ public class DeltaSextadTest {
         for (IntSextad sextad : sextads) {
             List<Integer> _nodes = sextad.getNodes();
 
-//            for (int i = 0; i < _nodes.size(); i++) {
-//                for (int j = i; j < _nodes.size(); j++) {
-//                    boldSigmaSet.add(new Sigma(_nodes.get(i), _nodes.get(j)));
-//                }
-//            }
-//
             for (int k1 = 0; k1 < 3; k1++) {
                 for (int k2 = 0; k2 < 3; k2++) {
                     boldSigmaSet.add(new Sigma(_nodes.get(k1), _nodes.get(3 + k2)));
@@ -150,7 +147,7 @@ public class DeltaSextadTest {
                 int g = sigmagh.getA();
                 int h = sigmagh.getB();
 
-                if (cov != null && cov instanceof CorrelationMatrix) {
+                if (this.cov != null && this.cov instanceof CorrelationMatrix) {
 
 //                Assumes multinormality. Using formula 23. (Not implementing formula 22 because that case
 //                does not come up.)
@@ -162,13 +159,13 @@ public class DeltaSextadTest {
 
                     // General.
                     double rr2 = r(e, f, g, h) + 0.25 * r(e, f) * r(g, h) *
-                            (r(e, e, g, g) * r(f, f, g, g) + r(e                        , e, h, h) + r(f, f, h, h))
+                            (r(e, e, g, g) * r(f, f, g, g) + r(e, e, h, h) + r(f, f, h, h))
                             - 0.5 * r(e, f) * (r(e, e, g, h) + r(f, f, g, h))
                             - 0.5 * r(g, h) * (r(e, f, g, g) + r(e, f, h, h));
 
                     sigma_ss.set(i, j, rr);
                     sigma_ss.set(j, i, rr);
-                } else if (cov != null && data == null) {
+                } else if (this.cov != null && this.data == null) {
 
                     // Assumes multinormality--see p. 160.
 //                    double _ss = r(e, g) * r(f, h) + r(e, h) * r(f, g); // + or -? Different advise. + in the code.
@@ -218,23 +215,23 @@ public class DeltaSextadTest {
         Matrix sigma_tt = del.transpose().times(sigma_ss).times(del);
         double chisq;
         try {
-            chisq = N * t.transpose().times(sigma_tt.inverse()).times(t).get(0, 0);
+            chisq = this.N * t.transpose().times(sigma_tt.inverse()).times(t).get(0, 0);
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity problem.", e);
         }
         return chisq;
     }
 
-     /**
+    /**
      * If using a covariance matrix or a correlation matrix, just returns the lookups. Otherwise calculates the
      * covariance.
      */
     private double r(int i, int j) {
-        if (cov != null) {
-            return cov.getValue(i, j);
+        if (this.cov != null) {
+            return this.cov.getValue(i, j);
         } else {
-            double[] arr1 = data[i];
-            double[] arr2 = data[j];
+            double[] arr1 = this.data[i];
+            double[] arr2 = this.data[j];
             return r(arr1, arr2, arr1.length);
         }
     }
@@ -293,13 +290,13 @@ public class DeltaSextadTest {
     }
 
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     // Represents a single covariance symbolically.
     private static class Sigma {
-        private int a;
-        private int b;
+        private final int a;
+        private final int b;
 
         public Sigma(int a, int b) {
             this.a = a;
@@ -307,11 +304,11 @@ public class DeltaSextadTest {
         }
 
         public int getA() {
-            return a;
+            return this.a;
         }
 
         public int getB() {
-            return b;
+            return this.b;
         }
 
         public boolean equals(Object o) {
@@ -324,7 +321,7 @@ public class DeltaSextadTest {
         }
 
         public int hashCode() {
-            return a + b;
+            return this.a + this.b;
         }
 
         public String toString() {
@@ -336,10 +333,10 @@ public class DeltaSextadTest {
     private double r(int x, int y, int z, int w) {
         double sxyzw = 0.0;
 
-        double[] _x = data[x];
-        double[] _y = data[y];
-        double[] _z = data[z];
-        double[] _w = data[w];
+        double[] _x = this.data[x];
+        double[] _y = this.data[y];
+        double[] _z = this.data[z];
+        double[] _w = this.data[w];
 
         int N = _x.length;
 
@@ -351,7 +348,7 @@ public class DeltaSextadTest {
     }
 
     // Assumes data are mean-centered.
-    private double r(double array1[], double array2[], int N) {
+    private double r(double[] array1, double[] array2, int N) {
         int i;
         double sum = 0.0;
 

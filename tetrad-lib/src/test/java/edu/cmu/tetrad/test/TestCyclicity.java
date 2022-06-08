@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,7 +23,6 @@ package edu.cmu.tetrad.test;
 
 import jdepend.framework.JDepend;
 import jdepend.framework.JavaPackage;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -43,13 +42,12 @@ public class TestCyclicity {
     private JDepend jdepend;
 
     private void setUp() {
-        jdepend = new JDepend();
+        this.jdepend = new JDepend();
 
         try {
-            jdepend.addDirectory(new File("target/classes/edu/cmu/tetrad").getAbsolutePath());
+            this.jdepend.addDirectory(new File("target/classes/edu/cmu/tetrad").getAbsolutePath());
 //            jdepend.addDirectory(new File("../../../tetrad/target/classes/edu/cmu/tetradapp").getAbsolutePath());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             fail(e.getMessage());
         }
     }
@@ -62,7 +60,7 @@ public class TestCyclicity {
     public void testAllPackagesCycle() {
         setUp();
 
-        Collection packages = jdepend.analyze();
+        Collection packages = this.jdepend.analyze();
 
         for (Object aPackage : packages) {
             JavaPackage p = (JavaPackage) aPackage;
@@ -88,7 +86,7 @@ public class TestCyclicity {
             }
         }
 
-        if (jdepend.containsCycles()) {
+        if (this.jdepend.containsCycles()) {
             fail("Package cycle(s) found!");
         }
     }

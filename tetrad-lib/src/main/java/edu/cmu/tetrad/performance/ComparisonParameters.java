@@ -6,25 +6,25 @@ import edu.cmu.tetrad.sem.ScoreType;
  * Created by jdramsey on 3/24/16. Edited by dmalinsky 5/20/16.
  */
 public class ComparisonParameters {
-    private DataType dataType = null;
-    private ResultType resultType = null;
+    private DataType dataType;
+    private ResultType resultType;
     private int numVars = 100;
     private int numEdges = 100;
     private int sampleSize = 1000;
-    private IndependenceTestType independenceTest = null;
+    private IndependenceTestType independenceTest;
     private double alpha = 0.001;
     private double penaltyDiscount = 4;
-    private ScoreType score = null;
+    private ScoreType score;
     private double samplePrior = 1;
     private double structurePrior = 1;
-    private Algorithm algorithm = null;
-    private String dataFile = null;
+    private Algorithm algorithm;
+    private String dataFile;
     private String graphFile;
-    private boolean oneEdgeFaithfulnessAssumed = false;
-    private boolean noData = false;
-    private boolean dataFromFile = false;
-    private int graphNum = 0;
-    private int trial = 0;
+    private boolean oneEdgeFaithfulnessAssumed;
+    private boolean noData;
+    private boolean dataFromFile;
+    private int graphNum;
+    private int trial;
 
     public ComparisonParameters() {
 
@@ -130,22 +130,22 @@ public class ComparisonParameters {
         ResultType resultType = null;
 
         if (algorithm == Algorithm.PC) {
-            resultType = ResultType.Pattern;
+            resultType = ResultType.CPDAG;
         } else if (algorithm == Algorithm.CPC) {
-            resultType = ResultType.Pattern;
+            resultType = ResultType.CPDAG;
         } else if (algorithm == Algorithm.FGES) {
-            resultType = ResultType.Pattern;
+            resultType = ResultType.CPDAG;
         } else if (algorithm == Algorithm.FGES2) {
-            resultType = ResultType.Pattern;
+            resultType = ResultType.CPDAG;
         } else if (algorithm == Algorithm.PCLocal) {
-            resultType = ResultType.Pattern;
+            resultType = ResultType.CPDAG;
         } else if (algorithm == Algorithm.PCStableMax) {
-            resultType = ResultType.Pattern;
+            resultType = ResultType.CPDAG;
         } else if (algorithm == Algorithm.FCI) {
             resultType = ResultType.PAG;
         } else if (algorithm == Algorithm.GFCI) {
             resultType = ResultType.PAG;
-        } else if (algorithm == Algorithm.TsFCI) {
+        } else if (algorithm == Algorithm.SVARFCI) {
             resultType = ResultType.PAG;
         } else {
             throw new IllegalArgumentException("Result type of algorithm not set.");
@@ -157,47 +157,47 @@ public class ComparisonParameters {
     }
 
     public DataType getDataType() {
-        return dataType;
+        return this.dataType;
     }
 
     public ResultType getResultType() {
-        return resultType;
+        return this.resultType;
     }
 
     public int getNumVars() {
-        return numVars;
+        return this.numVars;
     }
 
     public int getNumEdges() {
-        return numEdges;
+        return this.numEdges;
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 
     public IndependenceTestType getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     public ScoreType getScore() {
-        return score;
+        return this.score;
     }
 
     public Algorithm getAlgorithm() {
-        return algorithm;
+        return this.algorithm;
     }
 
     public String getDataFile() {
-        return dataFile;
+        return this.dataFile;
     }
 
     public void setDataFile(String dataFile) {
@@ -205,59 +205,50 @@ public class ComparisonParameters {
     }
 
     public String getGraphFile() {
-        return graphFile;
+        return this.graphFile;
     }
 
     public String toString() {
         StringBuilder b = new StringBuilder();
 
-        if (dataType != null) {
-            b.append("\nData Type = " + dataType);
+        if (this.dataType != null) {
+            b.append("\nData Type = ").append(this.dataType);
         }
 
-        if (resultType != null) {
-            b.append("\nResult Type = " + resultType);
+        if (this.resultType != null) {
+            b.append("\nResult Type = ").append(this.resultType);
         }
 
-        if (numVars != -1) {
-            b.append("\nNum Vars = " + numVars);
+        if (this.numVars != -1) {
+            b.append("\nNum Vars = ").append(this.numVars);
         }
 
-        if (numEdges != -1) {
-            b.append("\nNum Edges = " + numEdges);
+        if (this.numEdges != -1) {
+            b.append("\nNum Edges = ").append(this.numEdges);
         }
 
-        if (numEdges != -1) {
-            b.append("\nSample Size = " + sampleSize);
+        if (this.numEdges != -1) {
+            b.append("\nSample Size = ").append(this.sampleSize);
         }
 
-        if (independenceTest != null) {
-            b.append("\nIndependence Test = " + independenceTest);
+        if (this.independenceTest != null) {
+            b.append("\nIndependence Test = ").append(this.independenceTest);
         }
 
-        if (!Double.isNaN(alpha)) {
-            b.append("\nAlpha = " + alpha);
+        if (!Double.isNaN(this.alpha)) {
+            b.append("\nAlpha = ").append(this.alpha);
         }
 
-        if (score != null) {
-            b.append("\nScore = " + score);
+        if (this.score != null) {
+            b.append("\nScore = ").append(this.score);
         }
 
-        if (algorithm != null) {
-            b.append("\nAlgorithm = " + algorithm);
+        if (this.algorithm != null) {
+            b.append("\nAlgorithm = ").append(this.algorithm);
         }
 
 
-//        if (dataFile != null) {
-//            b.append("\nData File = " + dataFile);
-//        }
-//
-//
-//        if (graphFile != null) {
-//            b.append("\nGraph File = " + graphFile);
-//        }
-
-        if (oneEdgeFaithfulnessAssumed) {
+        if (this.oneEdgeFaithfulnessAssumed) {
             b.append("\nOne Edge Faithfulnes = true");
         }
 
@@ -265,7 +256,7 @@ public class ComparisonParameters {
     }
 
     public double getSamplePrior() {
-        return samplePrior;
+        return this.samplePrior;
     }
 
     public void setSamplePrior(double samplePrior) {
@@ -273,7 +264,7 @@ public class ComparisonParameters {
     }
 
     public double getStructurePrior() {
-        return structurePrior;
+        return this.structurePrior;
     }
 
     public void setStructurePrior(double structurePrior) {
@@ -285,7 +276,7 @@ public class ComparisonParameters {
     }
 
     public boolean isOneEdgeFaithfulnessAssumed() {
-        return oneEdgeFaithfulnessAssumed;
+        return this.oneEdgeFaithfulnessAssumed;
     }
 
 
@@ -293,9 +284,13 @@ public class ComparisonParameters {
         this.noData = noData;
     }
 
-    public boolean isNoData() { return noData; }
+    public boolean isNoData() {
+        return this.noData;
+    }
 
-    public boolean isDataFromFile() { return dataFromFile; }
+    public boolean isDataFromFile() {
+        return this.dataFromFile;
+    }
 
     public void setDataFromFile(boolean dataFromFile) {
         this.dataFromFile = dataFromFile;
@@ -310,7 +305,7 @@ public class ComparisonParameters {
     }
 
     public int getGraphNum() {
-        return graphNum;
+        return this.graphNum;
     }
 
     public void setTrial(int trial) {
@@ -318,11 +313,14 @@ public class ComparisonParameters {
     }
 
     public int getTrial() {
-        return trial;
+        return this.trial;
     }
 
     public enum DataType {Continuous, Discrete}
-    public enum ResultType {Pattern, PAG}
+
+    public enum ResultType {CPDAG, PAG}
+
     public enum IndependenceTestType {FisherZ, ChiSquare}
-    public enum Algorithm {PC, CPC, FGES, FGES2, PCLocal, PCStableMax, FCI, GFCI, TsFCI}
+
+    public enum Algorithm {PC, CPC, FGES, FGES2, PCLocal, PCStableMax, FCI, GFCI, SVARFCI}
 }

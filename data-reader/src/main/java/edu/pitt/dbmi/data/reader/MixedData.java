@@ -19,19 +19,18 @@
 package edu.pitt.dbmi.data.reader;
 
 /**
- *
  * Dec 10, 2018 3:57:59 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface MixedData extends Data {
 
-    public int getNumOfRows();
+    int getNumOfRows();
 
-    public DiscreteDataColumn[] getDataColumns();
+    DiscreteDataColumn[] getDataColumns();
 
-    public double[][] getContinuousData();
+    double[][] getContinuousData();
 
-    public int[][] getDiscreteData();
+    int[][] getDiscreteData();
 
 }

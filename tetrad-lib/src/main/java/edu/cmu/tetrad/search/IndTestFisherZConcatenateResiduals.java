@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,14 +23,15 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetrad.util.Matrix;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,9 +48,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
-    private ArrayList<Regression> regressions;
+    private final ArrayList<Regression> regressions;
 
     private List<DataSet> dataSets;
 
@@ -63,7 +64,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 //    private double fisherZ;
 
     private double pValue = Double.NaN;
-    private boolean verbose = false;
+    private boolean verbose;
 
 //    private DataSet concatenatedData;
 
@@ -73,13 +74,13 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         System.out.println("# data sets = " + dataSets.size());
         this.dataSets = dataSets;
 
-        regressions = new ArrayList<>();
+        this.regressions = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
             DataSet _dataSet = new BoxDataSet(new DoubleDataBox(dataSet.getDoubleData().toArray()),
                     dataSets.get(0).getVariables());
 
-            regressions.add(new RegressionDataset(_dataSet));
+            this.regressions.add(new RegressionDataset(_dataSet));
         }
 
         setAlpha(alpha);
@@ -90,8 +91,8 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
         List<DataSet> dataSets2 = new ArrayList<>();
 
-        for (int i = 0; i < dataSets.size(); i++) {
-            DataSet dataSet = new BoxDataSet(new DoubleDataBox(dataSets.get(i).getDoubleData().toArray()), variables);
+        for (DataSet set : dataSets) {
+            DataSet dataSet = new BoxDataSet(new DoubleDataBox(set.getDoubleData().toArray()), this.variables);
             dataSets2.add(dataSet);
         }
 
@@ -113,10 +114,10 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
 
-        x = getVariable(variables, x.getName());
-        z = GraphUtils.replaceNodes(z, variables);
+        x = getVariable(this.variables, x.getName());
+        z = GraphUtils.replaceNodes(z, this.variables);
 
         // Calculate the residual of x and y conditional on z for each data set and concatenate them.
         double[] residualsX = residuals(x, z);
@@ -156,28 +157,22 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
                 0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
 
         if (Double.isNaN(fisherZ)) {
-            return false;
-//            throw new IllegalArgumentException("The Fisher's Z " +
-//                    "score for independence fact " + x + " _||_ " + y + " | " +
-//                    z + " is undefined. r = " + r);
+            return new IndependenceResult(new IndependenceFact(x, y, z),
+                    true, Double.NaN);
         }
 
-        double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
-        this.pValue = pvalue;
-        boolean independent = pvalue > alpha;
+        double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
+        this.pValue = pValue;
+        boolean independent = pValue > this.alpha;
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies",
-                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-                System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
-            } else {
-                TetradLogger.getInstance().log("dependencies",
-                        SearchLogUtils.dependenceFactMsg(x, y, z, getPValue()));
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, this.pValue));
             }
         }
 
-        return independent;
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
 
     }
 
@@ -185,18 +180,18 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     private double[] residuals(Node node, List<Node> parents) {
         List<Double> _residuals = new ArrayList<>();
 
-        Node target = dataSets.get(0).getVariable(node.getName());
+        Node target = this.dataSets.get(0).getVariable(node.getName());
 
         List<Node> regressors = new ArrayList<>();
 
         for (Node _regressor : parents) {
-            Node variable = dataSets.get(0).getVariable(_regressor.getName());
+            Node variable = this.dataSets.get(0).getVariable(_regressor.getName());
             regressors.add(variable);
         }
 
 
-        for (int m = 0; m < dataSets.size(); m++) {
-            RegressionResult result = regressions.get(m).regress(target, regressors);
+        for (int m = 0; m < this.dataSets.size(); m++) {
+            RegressionResult result = this.regressions.get(m).regress(target, regressors);
             double[] residualsSingleDataset = result.getResiduals().toArray();
 
             double mean = StatUtils.mean(residualsSingleDataset);
@@ -227,20 +222,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         }
 
         return null;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
     }
 
     /**
@@ -305,25 +286,19 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         return variableNames;
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
     public boolean determines(List z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * @throws UnsupportedOperationException
-     */
     public DataSet getData() {
-        return DataUtils.concatenate(dataSets);
+        return DataUtils.concatenate(this.dataSets);
     }
 
     @Override
     public ICovarianceMatrix getCov() {
         List<DataSet> _dataSets = new ArrayList<>();
 
-        for (DataSet d : dataSets) {
+        for (DataSet d : this.dataSets) {
             _dataSets.add(DataUtils.standardizeData(d));
         }
 
@@ -359,7 +334,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {

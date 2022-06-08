@@ -2,7 +2,7 @@ package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
@@ -30,13 +30,13 @@ public class FgsApiExample {
 
         // Read in the data
         // set path to data
-        Path dataFile = Paths.get("./tetrad-lib/src/test/resources/","iq_brain_size.tetrad.txt");
+        Path dataFile = Paths.get("./tetrad-lib/src/test/resources/", "iq_brain_size.tetrad.txt");
 
         // data file settings
-        Delimiter delimiter = Delimiter.WHITESPACE;
-        int numberOfCategories = 2;
-        boolean hasHeader = true;
-        boolean isDiscrete = false;
+        final Delimiter delimiter = Delimiter.WHITESPACE;
+        final int numberOfCategories = 2;
+        final boolean hasHeader = true;
+        final boolean isDiscrete = false;
 
         // tabular data is our input (can also use covariance)
         TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, delimiter);
@@ -56,9 +56,8 @@ public class FgsApiExample {
         dataReader.determineDiscreteDataColumns(dataColumns, numberOfCategories, hasHeader);
 
         // actually read in the data
-        Data data = dataReader.read(dataColumns, hasHeader, null)  ;
+        Data data = dataReader.read(dataColumns, hasHeader, null);
         DataModel dataModel = DataConvertUtils.toDataModel(data);
-
 
 
         // Select search algorithm
@@ -72,9 +71,7 @@ public class FgsApiExample {
         //Algorithm fges = AlgorithmFactory.create(Fges.class, null, BdeuScore.class);
 
         // for mixed data can use Conditional Gaussian
-        Algorithm fges = AlgorithmFactory.create(Fges.class, null , ConditionalGaussianBicScore.class);
-
-
+        Algorithm fges = AlgorithmFactory.create(Fges.class, null, ConditionalGaussianBicScore.class);
 
 
         // Set algorithm parameters

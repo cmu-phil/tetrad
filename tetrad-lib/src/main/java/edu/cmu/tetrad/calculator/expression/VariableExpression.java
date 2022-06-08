@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -38,7 +38,7 @@ public class VariableExpression implements Expression {
     /**
      * The variable that is being evaluated.
      */
-    private String variable;
+    private final String variable;
 
 
     public VariableExpression(String variable) {
@@ -63,15 +63,15 @@ public class VariableExpression implements Expression {
 
 
     public Double evaluateGeneric(Context context) {
-        return context.getValue(variable);
+        return context.getValue(this.variable);
     }
 
 
     public double evaluate(Context context) {
-        Double value = context.getValue(variable);
+        Double value = context.getValue(this.variable);
 
         if (value == null) {
-            throw new IllegalArgumentException(variable + " was not assigned a value.");
+            throw new IllegalArgumentException(this.variable + " was not assigned a value.");
         }
 
         return value;
@@ -91,7 +91,7 @@ public class VariableExpression implements Expression {
     }
 
     public String toString() {
-        return variable;
+        return this.variable;
     }
 
     @Override

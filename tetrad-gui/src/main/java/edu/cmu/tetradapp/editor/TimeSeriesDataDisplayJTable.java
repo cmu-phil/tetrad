@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,7 +46,7 @@ public class TimeSeriesDataDisplayJTable extends JTable
         setDefaultRenderer(Number.class, new NumberCellRenderer());
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        int rowCount = dataModel.getRowCount();
+        int rowCount = this.dataModel.getRowCount();
         int max = 0;
 
         while (rowCount > 0) {
@@ -102,14 +102,13 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      */
     public TimeSeriesDataDisplayTable(TimeSeriesData dataSet) {
         this.dataSet = dataSet;
-        colCount = dataSet.getNumVars();
-        maxRowCount = dataSet.getNumTimePoints();
+        this.colCount = dataSet.getNumVars();
+        this.maxRowCount = dataSet.getNumTimePoints();
     }
 
     /**
-     * @return the name of the column at position 'col'.
-     *
      * @param col the position of the column whose name is requested.
+     * @return the name of the column at position 'col'.
      */
     public String getColumnName(int col) {
 
@@ -117,10 +116,9 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
             return "";    // This column displays the row number.
         }
 
-        if (col < colCount + 1) {
-            return dataSet.getVariableNames().get(col - 1);
-        }
-        else {
+        if (col < this.colCount + 1) {
+            return this.dataSet.getVariableNames().get(col - 1);
+        } else {
             return null;
         }
     }
@@ -128,10 +126,9 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     /**
      * @return the number of rows in the wrapper table model. Guarantees that
      * this number will be at least 100.
-     *
      */
     public int getRowCount() {
-        return (maxRowCount < 100) ? 100 : maxRowCount;
+        return Math.max(this.maxRowCount, 100);
     }
 
     /**
@@ -139,7 +136,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      * this number will be at least 30.
      */
     public int getColumnCount() {
-        return (colCount < 30) ? 30 : colCount + 1;
+        return (this.colCount < 30) ? 30 : this.colCount + 1;
     }
 
     /**
@@ -153,12 +150,10 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
     public Object getValueAt(int row, int column) {
         if (column == 0) {
             return row + 1;    // present as 1-indexed.
-        }
-        else if (column < dataSet.getNumVars() + 1 &&
-                row < dataSet.getNumTimePoints()) {
+        } else if (column < this.dataSet.getNumVars() + 1 &&
+                row < this.dataSet.getNumTimePoints()) {
             return this.dataSet.getDatum(row, column - 1);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -174,7 +169,7 @@ class TimeSeriesDataDisplayTable extends AbstractTableModel {
      * @return the DataSet being presented.
      */
     public TimeSeriesData getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 }
 
@@ -187,7 +182,7 @@ class RowNumberRenderer2 implements TableCellRenderer {
      * @return a label stylized for presenting row numbers in the 0th column.
      */
     public Component getTableCellRendererComponent(JTable table, Object value,
-            boolean isSelected, boolean hasFocus, int row, int column) {
+                                                   boolean isSelected, boolean hasFocus, int row, int column) {
         JLabel label = new JLabel(Integer.toString(row + 1));
         label.setHorizontalAlignment(SwingConstants.RIGHT);
         return label;

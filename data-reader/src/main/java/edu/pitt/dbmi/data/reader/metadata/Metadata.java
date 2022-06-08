@@ -19,11 +19,11 @@
 package edu.pitt.dbmi.data.reader.metadata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- *
  * Dec 18, 2018 11:21:23 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -50,11 +50,11 @@ public class Metadata {
 
     @Override
     public String toString() {
-        return "Metadata{" + "domainColumnns=" + domainColumnns + ", interventionalColumns=" + interventionalColumns + '}';
+        return "Metadata{" + "domainColumnns=" + this.domainColumnns + ", interventionalColumns=" + this.interventionalColumns + '}';
     }
 
     public List<ColumnMetadata> getDomainColumnns() {
-        return domainColumnns;
+        return this.domainColumnns;
     }
 
     public void setDomainColumnns(List<ColumnMetadata> domainColumnns) {
@@ -62,7 +62,7 @@ public class Metadata {
     }
 
     public List<InterventionalColumn> getInterventionalColumns() {
-        return interventionalColumns;
+        return this.interventionalColumns;
     }
 
     public void setInterventionalColumns(List<InterventionalColumn> interventionalColumns) {

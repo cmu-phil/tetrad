@@ -28,8 +28,6 @@ public class AdjacencyPrecision implements Statistic {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
         int adjTp = adjConfusion.getAdjTp();
         int adjFp = adjConfusion.getAdjFp();
-//        int adjFn = adjConfusion.getAdjFn();
-//        int adjTn = adjConfusion.getAdjTn();
         return adjTp / (double) (adjTp + adjFp);
     }
 

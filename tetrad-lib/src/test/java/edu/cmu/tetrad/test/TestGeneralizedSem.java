@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,15 +21,14 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.Vector;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -46,7 +45,7 @@ import static org.junit.Assert.assertTrue;
 @Ignore
 public class TestGeneralizedSem {
 
-    private boolean printStuff = false;
+    private final boolean printStuff = false;
 
     @Test
     public void test1() {
@@ -73,9 +72,9 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(x1, "cos(B1) + E_X1");
             print(pm);
 
-            String b1 = "B1";
-            String b2 = "B2";
-            String b3 = "B3";
+            final String b1 = "B1";
+            final String b2 = "B2";
+            final String b3 = "B3";
 
             Set<Node> nodes = pm.getReferencingNodes(b1);
 
@@ -138,38 +137,38 @@ public class TestGeneralizedSem {
     }
 
     private void print(GeneralizedSemPm pm) {
-        if (printStuff) {
+        if (this.printStuff) {
             System.out.println(pm);
         }
     }
 
     private void print(List<Node> errorNodes) {
-        if (printStuff) {
+        if (this.printStuff) {
             System.out.println(errorNodes);
         }
     }
 
     private void print(GeneralizedSemIm im) {
-        if (printStuff) {
+        if (this.printStuff) {
             System.out.println(im);
         }
     }
 
     private void print(DataSet dataSet) {
-        if (printStuff) {
+        if (this.printStuff) {
             System.out.println(dataSet);
         }
     }
 
     private void print(String x) {
-        if (printStuff) {
+        if (this.printStuff) {
             System.out.println(x);
         }
     }
 
 
     private void print(SemPm semPm) {
-        if (printStuff) {
+        if (this.printStuff) {
             System.out.println(semPm);
         }
     }
@@ -178,7 +177,7 @@ public class TestGeneralizedSem {
     public void test2() {
         RandomUtil.getInstance().setSeed(2999983L);
 
-        int sampleSize = 1000;
+        final int sampleSize = 1000;
 
         List<Node> variableNodes = new ArrayList<>();
         ContinuousVariable x1 = new ContinuousVariable("X1");
@@ -435,7 +434,7 @@ public class TestGeneralizedSem {
     public void test6() {
         RandomUtil.getInstance().setSeed(29999483L);
 
-        int numVars = 5;
+        final int numVars = 5;
 
         List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < numVars; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
@@ -475,7 +474,7 @@ public class TestGeneralizedSem {
         RandomUtil.getInstance().setSeed(29999483L);
 
         List<Node> nodes = new ArrayList<>();
-        int numVars = 10;
+        final int numVars = 10;
 
         for (int i = 0; i < numVars; i++) nodes.add(new ContinuousVariable("X" + (i + 1)));
 
@@ -510,7 +509,7 @@ public class TestGeneralizedSem {
         nodes.add(x);
         nodes.add(y);
 
-        Graph graph = new EdgeListGraphSingleConnections(nodes);
+        Graph graph = new EdgeListGraph(nodes);
 
         graph.addDirectedEdge(x, y);
 
@@ -557,7 +556,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -575,11 +574,6 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(x3, "a2 * tan(X2) + E_X3");
             pm.setNodeExpression(x4, "a3 * tan(X1) + a4 * tan(X3) ^ 2 + E_X4");
 
-//            pm.setNodeExpression(x1, "E_X1");
-//            pm.setNodeExpression(x2, "a1 * X1^2 + E_X2");
-//            pm.setNodeExpression(x3, "a2 * X2^2 + E_X3");
-//            pm.setNodeExpression(x4, "a3 * X1^2 + a4 * X3 ^ 2 + E_X4");
-//
             pm.setNodeExpression(pm.getErrorNode(x1), "Beta(5, 2)");
             pm.setNodeExpression(pm.getErrorNode(x2), "Beta(2, 5)");
             pm.setNodeExpression(pm.getErrorNode(x3), "Beta(1, 3)");
@@ -632,7 +626,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -649,10 +643,6 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(x2, "a1 * tan(X1) + E_X2");
             pm.setNodeExpression(x3, "a2 * tan(X2) + E_X3");
             pm.setNodeExpression(x4, "a3 * tan(X1) * a4 * tan(X3) ^ 2 + E_X4");
-//
-//            pm.setNodeExpression(x2, "a1 * X1 + E_X2");
-//            pm.setNodeExpression(x3, "a2 * X2 + E_X3");
-//            pm.setNodeExpression(x4, "a3 * X1 + a4 * X3 + E_X4");
 
             pm.setNodeExpression(pm.getErrorNode(x1), "Gamma(5, 2)");
             pm.setNodeExpression(pm.getErrorNode(x2), "Gamma(5, 2)");
@@ -706,7 +696,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -772,7 +762,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -789,10 +779,6 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(x2, "a1 * tan(X1) + E_X2");
             pm.setNodeExpression(x3, "a2 * tan(X2) + E_X3");
             pm.setNodeExpression(x4, "a3 * tan(X1) + a4 * tan(X3) ^ 2 + E_X4");
-//
-//            pm.setNodeExpression(x2, "a1 * X1 + E_X1");
-//            pm.setNodeExpression(x3, "a2 * X2 + E_X1");
-//            pm.setNodeExpression(x4, "a3 * X1 + a4 * X3 + E_X1");
 
             pm.setNodeExpression(pm.getErrorNode(x1), "Normal(c1, c2)");
             pm.setNodeExpression(pm.getErrorNode(x2), "Normal(c3, c4)");
@@ -850,7 +836,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -867,21 +853,11 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(x2, "a1 * tan(X1) + E_X1");
             pm.setNodeExpression(x3, "a2 * tan(X2) + E_X1");
             pm.setNodeExpression(x4, "a3 * tan(X1) + a4 * tan(X3) + E_X1");
-//
-//            pm.setNodeExpression(x1, "E_X1");
-//            pm.setNodeExpression(x2, "a1 * X1 + E_X2");
-//            pm.setNodeExpression(x3, "a2 * X2 + E_X3");
-//            pm.setNodeExpression(x4, "a3 * X1 + a4 * X3 + E_X4");
 
             pm.setNodeExpression(pm.getErrorNode(x1), "StudentT(c2)");
             pm.setNodeExpression(pm.getErrorNode(x2), "StudentT(c4)");
             pm.setNodeExpression(pm.getErrorNode(x3), "StudentT(c6)");
             pm.setNodeExpression(pm.getErrorNode(x4), "StudentT(c8)");
-//
-//            pm.setNodeExpression(pm.getErrorNode(x1), "N(0, c2)");
-//            pm.setNodeExpression(pm.getErrorNode(x2), "N(0, c4)");
-//            pm.setNodeExpression(pm.getErrorNode(x3), "N(0, c6)");
-//            pm.setNodeExpression(pm.getErrorNode(x4), "N(0, c8)");
 
             pm.setParameterExpression("c2", "3");
             pm.setParameterExpression("c4", "3");
@@ -926,7 +902,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -996,7 +972,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -1063,7 +1039,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -1085,11 +1061,6 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(pm.getErrorNode(x2), "N(0, c2)");
             pm.setNodeExpression(pm.getErrorNode(x3), "N(0, c3)");
             pm.setNodeExpression(pm.getErrorNode(x4), "N(0, c4)");
-
-//            pm.setParameterExpression("c1", "1");
-//            pm.setParameterExpression("c2", "1");
-//            pm.setParameterExpression("c3", "1");
-//            pm.setParameterExpression("c4", "1");
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 
@@ -1143,7 +1114,7 @@ public class TestGeneralizedSem {
             Node x3 = new GraphNode("X3");
             Node x4 = new GraphNode("X4");
 
-            Graph g = new EdgeListGraphSingleConnections();
+            Graph g = new EdgeListGraph();
             g.addNode(x1);
             g.addNode(x2);
             g.addNode(x3);
@@ -1165,11 +1136,6 @@ public class TestGeneralizedSem {
             pm.setNodeExpression(pm.getErrorNode(x2), "N(0, c2)");
             pm.setNodeExpression(pm.getErrorNode(x3), "N(0, c3)");
             pm.setNodeExpression(pm.getErrorNode(x4), "N(0, c4)");
-
-//            pm.setParameterExpression("c1", "1");
-//            pm.setParameterExpression("c2", "1");
-//            pm.setParameterExpression("c3", "1");
-//            pm.setParameterExpression("c4", "1");
 
             GeneralizedSemIm im = new GeneralizedSemIm(pm);
 

@@ -19,13 +19,13 @@
 package edu.pitt.dbmi.data.reader.metadata;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- *
  * Dec 18, 2018 2:05:46 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -40,7 +40,7 @@ public class MetadataFileReader implements MetadataReader {
 
     @Override
     public Metadata read() throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(metadataFile)) {
+        try (BufferedReader reader = Files.newBufferedReader(this.metadataFile)) {
             return (new ObjectMapper()).readValue(reader, Metadata.class);
         }
     }

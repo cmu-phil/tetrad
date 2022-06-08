@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,17 +21,14 @@
 
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.util;
 
+import java.io.IOException;
+
 /**
  * Implements a Matrix of elements of type <code>short</code>
  *
- * @author
- * <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
+ * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 public class Matrix extends BasicMatrix {
     protected short[][] A;
 
@@ -47,13 +44,13 @@ public class Matrix extends BasicMatrix {
      * Creates a matrix reading it from a file <code>fname</code>. The file has
      * to be an ascii one and follow a particular format:<p> *MATRIX*  [matrix
      * name] <br> [n]<br> [0, 0 ] [ 0, 1] ...  [ 0, n-1]<br> [1, 0 ] [ 1, 1] ...
-     * [ 1, n-1]<br> :<br> [n-1,0] [n-1,1] ...  [n-1,n-1]<p> </p> First token
+     * [ 1, n-1]<br> :<br> [n-1,0] [n-1,1] ...  [n-1,n-1]<p> First token
      * should be a word with "MATRIX" as a substring (case insens.), followed by
      * the name of the matrix (one word). [n] is the number of rows and columns
      * in the matrix, and [i,j] is element at position i,j in the matrix.<br>
      * For example, a 3x3 identity matrix could be represented as follows:<p>
-     * </p> MATRIX Identity3x3<br> <br> 3  // # rows and columns<br> <br> //
-     * Matrix elements:<br> 1 0 0<br> 0 1 0<br> 0 0 1<p> </p> Notice there can
+     * MATRIX Identity3x3<br> <br> 3  // # rows and columns<br> <br> //
+     * Matrix elements:<br> 1 0 0<br> 0 1 0<br> 0 0 1<p> Notice there can
      * be slash-slash (and also slash-star) style comments anywhere in the file.
      * Numbers can be separated by any number of blank delimiters: tabs, spaces,
      * carriage returns.  In the examples above they appear in different lines
@@ -61,7 +58,7 @@ public class Matrix extends BasicMatrix {
      * the total needed to fill the matrix.  If it has more elements an illegal
      * argument exception will be generated.
      */
-    public Matrix(String fname) throws FileNotFoundException, IOException {
+    public Matrix(String fname) throws IOException {
         super(fname);
     }
 
@@ -79,7 +76,7 @@ public class Matrix extends BasicMatrix {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }
-        if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
+        if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Integer " + x + " cannot be stored as a short");
         }
@@ -93,7 +90,7 @@ public class Matrix extends BasicMatrix {
         if ((r >= this.n) || (c >= this.n) || (r < 0) || (c < 0)) {
             badIndexXcp(r, c);
         }
-        return (double) this.A[r][c];
+        return this.A[r][c];
     }
 
     /**
@@ -111,7 +108,7 @@ public class Matrix extends BasicMatrix {
      * the integer x can be converted to a short without causing overflow.
      */
     public void setValue(int r, int c, int x) {
-        if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
+        if ((x < BasicMatrix.MIN_SHORT) || (x > BasicMatrix.MAX_SHORT)) {
             throw new IllegalArgumentException(
                     "Integer " + x + " cannot be stored as a short");
         }
@@ -137,7 +134,7 @@ public class Matrix extends BasicMatrix {
     public void setAllValuesToZero() {
         for (int i = 0; i < this.n; i++) {
             for (int j = 0; j < this.n; j++) {
-                A[i][j] = 0;
+                this.A[i][j] = 0;
             }
         }
     }

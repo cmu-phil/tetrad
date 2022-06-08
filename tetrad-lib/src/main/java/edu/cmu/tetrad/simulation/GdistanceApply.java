@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Path;
@@ -18,9 +19,9 @@ import java.util.List;
 public class GdistanceApply {
 
     public static void main(String... args) {
-        double xdist = 2.4;
-        double ydist = 2.4;
-        double zdist = 2;
+        final double xdist = 2.4;
+        final double ydist = 2.4;
+        final double zdist = 2;
         long timestart = System.nanoTime();
         System.out.println("Loading first graph");
         Graph graph1 = GraphUtils.loadGraphTxt(new File("Motion_Corrected_Graphs/singlesub_motion_graph_025_04.txt"));

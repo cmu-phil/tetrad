@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,13 +21,18 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.IndependenceFacts;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implements Chickering and Meek's (2002) locally consistent score criterion.
@@ -36,10 +41,11 @@ import java.util.List;
  */
 public class GraphScore implements Score {
 
-    private final Graph dag;
+    private Graph dag;
+    private IndependenceFacts facts;
 
     // The variables of the covariance matrix.
-    private List<Node> variables;
+    private final List<Node> variables;
 
     // True if verbose output should be sent to out.
     private boolean verbose = false;
@@ -59,11 +65,41 @@ public class GraphScore implements Score {
         }
     }
 
+    public GraphScore(IndependenceFacts facts) {
+        this.facts = facts;
+
+        this.variables = new ArrayList<>();
+
+        for (Node node : facts.getVariables()) {
+            if (node.getNodeType() == NodeType.MEASURED) {
+                this.variables.add(node);
+            }
+        }
+    }
+
     /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     * Calculates the sample likelihood and BIC score for y given its z in a simple SEM model
      */
-    public double localScore(int i, int[] parents) {
-        throw new UnsupportedOperationException();
+    public double localScore(int y, int[] z) {
+        return  getPearlParentsTest().size();
+    }
+
+    private Node n = null;
+    private List<Node> prefix = null;
+
+    private Set<Node> getPearlParentsTest() {
+        Set<Node> mb = new HashSet<>();
+
+        for (Node z0 : prefix) {
+            List<Node> cond = new ArrayList<>(prefix);
+            cond.remove(z0);
+
+            if (dag.isDConnectedTo(n, z0, cond)) {
+                mb.add(z0);
+            }
+        }
+
+        return mb;
     }
 
     private List<Node> getVariableList(int[] indices) {
@@ -78,7 +114,6 @@ public class GraphScore implements Score {
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return locallyConsistentScoringCriterion(x, y, z);
-//        return aBetterScore(x, y, z);
     }
 
     @Override
@@ -91,49 +126,18 @@ public class GraphScore implements Score {
         Node _y = variables.get(y);
         Node _x = variables.get(x);
         List<Node> _z = getVariableList(z);
-        boolean dSeparatedFrom = dag.isDSeparatedFrom(_x, _y, _z);
 
-//        if (dSeparatedFrom) {
-//            System.out.println(SearchLogUtils.independenceFact(_x, _y, _z));
-//        } else {
-//            System.out.println("\t NOT " + SearchLogUtils.independenceFact(_x, _y, _z));
-//        }
+        boolean dSeparatedFrom;
 
-        return dSeparatedFrom ? -1.0 : 1.0;
-    }
-
-    private double aBetterScore(int x, int y, int[] z) {
-        Node _y = variables.get(y);
-        Node _x = variables.get(x);
-        List<Node> _z = getVariableList(z);
-        boolean dsep = dag.isDSeparatedFrom(_x, _y, _z);
-        int count = 0;
-
-        if (!dsep) count++;
-
-        for (Node z0 : _z) {
-            if (dag.isDSeparatedFrom(_x, z0, _z)) {
-                count += 1;
-            }
+        if (dag != null) {
+            dSeparatedFrom = dag.isDSeparatedFrom(_x, _y, _z);
+        } else if (facts != null) {
+            dSeparatedFrom = facts.isIndependent(_x, _y, _z);
+        } else {
+            throw new IllegalStateException("Expecting either a graph or a IndependenceFacts object.");
         }
 
-        double score = dsep ? -1 - count : 1 + count;
-
-//        if (score == 1) score -= Math.tanh(z.length);
-        return score;
-    }
-
-    private List<Node> minus(List<Node> z, Node z0) {
-        List<Node> diff = new ArrayList<>(z);
-        diff.remove(z0);
-        return diff;
-    }
-
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
+        return dSeparatedFrom ? -1.0 : 1.0;
     }
 
     /**
@@ -193,6 +197,10 @@ public class GraphScore implements Score {
         return false;
     }
 
+    public DataModel getData() {
+        return null;
+    }
+
     public int getSampleSize() {
         return 0;
     }
@@ -201,12 +209,29 @@ public class GraphScore implements Score {
         return false;
     }
 
-    public void setAlternativePenalty(double alpha) {
-        throw new UnsupportedOperationException("No alpha can be set when searching usign d-separation.");
+    public Graph getDag() {
+        return new EdgeListGraph(dag);
     }
 
-    public Graph getDag() {
-        return dag;
+    public boolean isDSeparatedFrom(Node x, Node y, List<Node> z) {
+        if (dag != null) {
+            return dag.isDSeparatedFrom(x, y, z);
+        } else if (facts != null) {
+            return facts.isIndependent(x, y, z);
+        }
+
+        throw new IllegalArgumentException("Expecting either a DAG or an IndependenceFacts object.");
+    }
+    public boolean isDConnectedTo(Node x, Node y, List<Node> z) {
+        return !isDSeparatedFrom(x, y, z);
+    }
+
+    public void setPrefix(List<Node> prefix) {
+        this.prefix = prefix;
+    }
+
+    public void setN(Node n) {
+        this.n = n;
     }
 }
 

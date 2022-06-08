@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -33,6 +33,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -61,15 +62,15 @@ public class BayesEstimatorWrapper implements SessionModel {
      * @serial Cannot be null.
      */
     private DataSet dataSet;
-    private DataWrapper dataWrapper;
+    private final DataWrapper dataWrapper;
 
     private int numModels = 1;
-    private int modelIndex = 0;
-    private List<BayesIm> bayesIms = new ArrayList<>();
-    
+    private int modelIndex;
+    private final List<BayesIm> bayesIms = new ArrayList<>();
+
     //=================================CONSTRUCTORS========================//
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
-            BayesPmWrapper bayesPmWrapper) {
+                                 BayesPmWrapper bayesPmWrapper) {
 
         if (dataWrapper == null) {
             throw new NullPointerException(
@@ -77,44 +78,44 @@ public class BayesEstimatorWrapper implements SessionModel {
         }
 
         this.dataWrapper = dataWrapper;
-        
+
         if (bayesPmWrapper == null) {
             throw new NullPointerException("BayesPmWrapper must not be null");
         }
-        
+
         DataModelList dataModel = dataWrapper.getDataModelList();
-        
+
         if (dataModel != null) {
             for (int i = 0; i < dataWrapper.getDataModelList().size(); i++) {
                 DataModel model = dataWrapper.getDataModelList().get(i);
-            	DataSet dataSet = (DataSet) model;
-            	bayesPmWrapper.setModelIndex(i);
-            	BayesPm bayesPm = bayesPmWrapper.getBayesPm();
-            	
-            	estimate(dataSet, bayesPm);
-            	bayesIms.add(this.bayesIm);
+                DataSet dataSet = (DataSet) model;
+                bayesPmWrapper.setModelIndex(i);
+                BayesPm bayesPm = bayesPmWrapper.getBayesPm();
+
+                estimate(dataSet, bayesPm);
+                this.bayesIms.add(this.bayesIm);
             }
-            
-            this.bayesIm = bayesIms.get(0);
-            log(bayesIm);
+
+            this.bayesIm = this.bayesIms.get(0);
+            log(this.bayesIm);
 
         } else {
-            throw new IllegalArgumentException("Data must consist of discrete data sets.");       	
+            throw new IllegalArgumentException("Data must consist of discrete data sets.");
         }
 
         this.name = bayesPmWrapper.getName();
-        this.numModels = bayesIms.size();
+        this.numModels = this.bayesIms.size();
         this.modelIndex = 0;
-        this.bayesIm = bayesIms.get(modelIndex);
-        DataModel model = dataModel.get(modelIndex);
-        this.dataSet = (DataSet)model;
+        this.bayesIm = this.bayesIms.get(this.modelIndex);
+        DataModel model = dataModel.get(this.modelIndex);
+        this.dataSet = (DataSet) model;
     }
 
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
                                  BayesImWrapper bayesImWrapper) {
-    	this(dataWrapper, new BayesPmWrapper(bayesImWrapper));
+        this(dataWrapper, new BayesPmWrapper(bayesImWrapper));
     }
-    
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -126,53 +127,54 @@ public class BayesEstimatorWrapper implements SessionModel {
 
     //==============================PUBLIC METHODS========================//
     public BayesIm getEstimatedBayesIm() {
-    	return bayesIm;
+        return this.bayesIm;
     }
 
     public void setBayesIm(BayesIm bayesIm) {
-    	bayesIms.clear();
-        bayesIms.add(bayesIm);
+        this.bayesIms.clear();
+        this.bayesIms.add(bayesIm);
     }
 
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
-    
-	public Graph getGraph() {
-        return bayesIm.getBayesPm().getDag();
+
+    public Graph getGraph() {
+        return this.bayesIm.getBayesPm().getDag();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-	public int getNumModels() {
-		return numModels;
-	}
+    public int getNumModels() {
+        return this.numModels;
+    }
 
-	public void setNumModels(int numModels) {
-		this.numModels = numModels;
-	}
+    public void setNumModels(int numModels) {
+        this.numModels = numModels;
+    }
 
-	public int getModelIndex() {
-		return modelIndex;
-	}
+    public int getModelIndex() {
+        return this.modelIndex;
+    }
 
-	public void setModelIndex(int modelIndex) {
-		this.modelIndex = modelIndex;
-		this.bayesIm = bayesIms.get(modelIndex);
-		
-		DataModel dataModel = dataWrapper.getDataModelList();
+    public void setModelIndex(int modelIndex) {
+        this.modelIndex = modelIndex;
+        this.bayesIm = this.bayesIms.get(modelIndex);
 
-		this.dataSet = (DataSet) ((DataModelList)dataModel).get(modelIndex);
-		
-	}
+        DataModel dataModel = this.dataWrapper.getDataModelList();
+
+        this.dataSet = (DataSet) ((DataModelList) dataModel).get(modelIndex);
+
+    }
 
     //======================== Private Methods ======================//
+
     /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of
@@ -182,15 +184,12 @@ public class BayesEstimatorWrapper implements SessionModel {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (bayesIm == null) {
+        if (this.bayesIm == null) {
             throw new NullPointerException();
         }
     }

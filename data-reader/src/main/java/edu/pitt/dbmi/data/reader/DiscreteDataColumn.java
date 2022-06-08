@@ -21,21 +21,20 @@ package edu.pitt.dbmi.data.reader;
 import java.util.List;
 
 /**
- *
  * Dec 10, 2018 3:24:22 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface DiscreteDataColumn {
 
-    public Integer getEncodeValue(String value);
+    Integer getEncodeValue(String value);
 
-    public void recategorize();
+    void recategorize();
 
-    public List<String> getCategories();
+    List<String> getCategories();
 
-    public DataColumn getDataColumn();
+    DataColumn getDataColumn();
 
-    public void setValue(String value);
+    void setValue(String value);
 
 }

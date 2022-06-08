@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,12 +34,12 @@ import java.awt.*;
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  * @author Frank Wimberly based on similar classes by Joe Ramsey
  */
-public class MissingDataInjectorParamsEditor extends JPanel implements  ParameterEditor {
+public class MissingDataInjectorParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     //========================= Public Methods =======================================//
 
@@ -69,17 +69,14 @@ public class MissingDataInjectorParamsEditor extends JPanel implements  Paramete
     private void buildGui() {
         setLayout(new BorderLayout());
 
-        final DoubleTextField probField =
-                new DoubleTextField(params.getDouble("prob", 0.02), 6, NumberFormatUtil.getInstance().getNumberFormat());
-        probField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    params.set("prob", value);
-                    return value;
-                }
-                catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        DoubleTextField probField =
+                new DoubleTextField(this.params.getDouble("prob", 0.02), 6, NumberFormatUtil.getInstance().getNumberFormat());
+        probField.setFilter((value, oldValue) -> {
+            try {
+                MissingDataInjectorParamsEditor.this.params.set("prob", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 

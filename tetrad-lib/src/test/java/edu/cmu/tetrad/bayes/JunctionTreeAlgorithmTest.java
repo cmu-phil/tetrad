@@ -20,17 +20,16 @@ package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetReader;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.math.RoundingMode;
@@ -40,12 +39,8 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 
 /**
- *
  * Jan 16, 2020 4:59:57 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -53,14 +48,14 @@ import org.junit.Test;
 public class JunctionTreeAlgorithmTest {
 
     private static final int[][] THREE_NODE_VALUES = {
-        {0, 0, 0},
-        {0, 0, 1},
-        {0, 1, 0},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 1, 0},
-        {1, 1, 1}
+            {0, 0, 0},
+            {0, 0, 1},
+            {0, 1, 0},
+            {0, 1, 1},
+            {1, 0, 0},
+            {1, 0, 1},
+            {1, 1, 0},
+            {1, 1, 1}
     };
 
     @Ignore
@@ -97,8 +92,8 @@ public class JunctionTreeAlgorithmTest {
         String dataFile = this.getClass().getResource("/jta/data.txt").getFile();
         try {
             JunctionTreeAlgorithm jta = getJunctionTreeAlgorithm(graphFile, dataFile);
-            for (int[] values : THREE_NODE_VALUES) {
-                printExampleProof(jta, values);
+            for (int[] values : JunctionTreeAlgorithmTest.THREE_NODE_VALUES) {
+                JunctionTreeAlgorithmTest.printExampleProof(jta, values);
                 System.out.printf("JTA: %f%n", jta.getJointProbabilityAll(values));
                 System.out.println();
             }
@@ -117,7 +112,7 @@ public class JunctionTreeAlgorithmTest {
 
             DecimalFormat df = new DecimalFormat("#.######");
             df.setRoundingMode(RoundingMode.CEILING);
-            int multiplier = 1000000;
+            final int multiplier = 1000000;
 
             // P(v1=0|v2=0)
             int iNode = 0;
@@ -171,9 +166,9 @@ public class JunctionTreeAlgorithmTest {
     }
 
     private static void printExampleProof(JunctionTreeAlgorithm jta, int[] values) {
-        int v1 = 0;
-        int v2 = 1;
-        int v3 = 2;
+        final int v1 = 0;
+        final int v2 = 1;
+        final int v3 = 2;
 
         double v1GivenV2 = jta.getConditionalProbability(v1, values[v1], new int[]{v2}, new int[]{values[v2]});
         double v2Parent = jta.getMarginalProbability(v2, values[v2]);
@@ -233,11 +228,11 @@ public class JunctionTreeAlgorithmTest {
 
     private DataModel readInDiscreteData(Path file) throws IOException {
         // specify data properties
-        Delimiter delimiter = Delimiter.TAB;
-        char quoteCharacter = '"';
-        String commentMarker = "//";
-        String missingValueMarker = "*";
-        boolean hasHeader = true;
+        final Delimiter delimiter = Delimiter.TAB;
+        final char quoteCharacter = '"';
+        final String commentMarker = "//";
+        final String missingValueMarker = "*";
+        final boolean hasHeader = true;
 
         // create a data reader specifically for the data
         VerticalDiscreteTabularDatasetReader dataReader = new VerticalDiscreteTabularDatasetFileReader(file, delimiter);

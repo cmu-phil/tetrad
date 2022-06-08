@@ -19,20 +19,20 @@
 package edu.pitt.dbmi.data.reader.covariance;
 
 import edu.pitt.dbmi.data.reader.Data;
+
 import java.util.List;
 
 /**
- *
  * Nov 19, 2018 2:20:52 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface CovarianceData extends Data {
 
-    public int getNumberOfCases();
+    int getNumberOfCases();
 
-    public List<String> getVariables();
+    List<String> getVariables();
 
-    public double[][] getData();
+    double[][] getData();
 
 }

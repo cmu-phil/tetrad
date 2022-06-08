@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -33,9 +33,9 @@ import java.util.List;
  * Returns a sample empirical distribution for a particular expression.
  */
 public class EmpiricalDistributionForExpression {
-    private GeneralizedSemPm semPm;
-    private Node error;
-    private Context context;
+    private final GeneralizedSemPm semPm;
+    private final Node error;
+    private final Context context;
 
     public EmpiricalDistributionForExpression(GeneralizedSemPm semPm, Node error,
                                               Context context) {
@@ -46,10 +46,10 @@ public class EmpiricalDistributionForExpression {
 
     public RealDistribution getDist() {
         List<Double> drawFromDistribution = new ArrayList<>();
-        Expression expression = semPm.getNodeExpression(error);
+        Expression expression = this.semPm.getNodeExpression(this.error);
 
         for (int k = 0; k < 5000; k++) {
-            double evaluate = expression.evaluate(context);
+            double evaluate = expression.evaluate(this.context);
             drawFromDistribution.add(evaluate);
         }
 

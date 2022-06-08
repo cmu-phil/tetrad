@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,11 +37,10 @@ public class ParamConstraint implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
 
-    private double number;
-    private Parameter param1;
-    private Parameter param2;
+    private final double number;
+    private final Parameter param2;
     private ParamConstraintType type;
-    private SemIm semIm;
+    private final SemIm semIm;
 
     /**
      * The first constructor specifies the parameter and a number and the type
@@ -51,37 +50,21 @@ public class ParamConstraint implements TetradSerializable {
     public ParamConstraint(SemIm semIm, Parameter param1,
                            ParamConstraintType type, double number) {
         this.semIm = semIm;
-        this.param1 = param1;
         this.param2 = null;
         this.type = type;
         this.number = number;
     }
 
-//    /**
-//     * The second constructor specifies two freeParameters and the type of relation
-//     * between their values.
-//     */
-//    public ParamConstraint(SemIm semIm, Parameter param1, Parameter param2,
-//                           ParamConstraintType type) {
-//        this.semIm = semIm;
-//        this.param1 = param1;
-//        this.param2 = param2;
-//        this.type = type;
-//        this.number = 0.0;
-//    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static ParamConstraint serializableInstance() {
-        //return new ParamConstraint(SemIm.serializableInstance(), new Parameter("X", ParamType.COEF, new GraphNode("X"),
-        //        new GraphNode("Y")), ParamConstraintType.EQ, 1.0);
         return new ParamConstraint(SemIm.serializableInstance(),
                 Parameter.serializableInstance(), ParamConstraintType.EQ, 1.0);
     }
 
     public ParamConstraintType getType() {
-        return type;
+        return this.type;
     }
 
     public void setType(ParamConstraintType type) {
@@ -89,52 +72,12 @@ public class ParamConstraint implements TetradSerializable {
     }
 
     public double getNumber() {
-        return number;
+        return this.number;
     }
-
-//    public void setNumber(double number) {
-//        this.number = number;
-//    }
 
     public Parameter getParam2() {
-        return param2;
+        return this.param2;
     }
-
-//    public boolean isSatisfied() {
-//        if (type == ParamConstraintType.NONE) {
-//            return true;
-//        }
-//
-//        if (param2 == null) {
-//            if (type == ParamConstraintType.EQ &&
-//                    semIm.getParamValue(param1) == number) {
-//                return true;
-//            }
-//            if (type == ParamConstraintType.GT &&
-//                    semIm.getParamValue(param1) > number) {
-//                return true;
-//            }
-//            if (type == ParamConstraintType.LT &&
-//                    semIm.getParamValue(param1) < number) {
-//                return true;
-//            } else {
-//                if (type == ParamConstraintType.EQ && semIm.getParamValue(
-//                        param1) == semIm.getParamValue(param2)) {
-//                    return true;
-//                }
-//                if (type == ParamConstraintType.LT && semIm.getParamValue(
-//                        param1) < semIm.getParamValue(param2)) {
-//                    return true;
-//                }
-//                if (type == ParamConstraintType.GT && semIm.getParamValue(
-//                        param1) > semIm.getParamValue(param2)) {
-//                    return true;
-//                }
-//            }
-//        }
-//
-//        return false;
-//    }
 
     /**
      * This method is for testing whether a value that might be assigned to a
@@ -146,16 +89,12 @@ public class ParamConstraint implements TetradSerializable {
      * @return true if the value would satisfy the constraint.
      */
     public boolean wouldBeSatisfied(double testValue) {
-        return type == ParamConstraintType.NONE || param2 == null && (type == ParamConstraintType.EQ && testValue == number || type == ParamConstraintType.GT && testValue > number || type == ParamConstraintType.LT && testValue < number);
+        return this.type == ParamConstraintType.NONE || this.param2 == null && (this.type == ParamConstraintType.EQ && testValue == this.number || this.type == ParamConstraintType.GT && testValue > this.number || this.type == ParamConstraintType.LT && testValue < this.number);
 
-    }
-
-    public Parameter getParam1() {
-        return param1;
     }
 
     public SemIm getSemIm() {
-        return semIm;
+        return this.semIm;
     }
 }
 

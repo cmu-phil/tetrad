@@ -9,6 +9,7 @@ import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.ScoredIndTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,6 @@ public class FisherZScore implements ScoreWrapper {
 
     @Override
     public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+        return this.dataSet.getVariable(name);
     }
 }

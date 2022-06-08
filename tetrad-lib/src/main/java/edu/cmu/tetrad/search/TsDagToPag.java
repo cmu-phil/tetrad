@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,9 +27,9 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Collections;
 
 
 /**
@@ -65,12 +65,12 @@ public final class TsDagToPag {
     /**
      * The logger to use.
      */
-    private TetradLogger logger = TetradLogger.getInstance();
+    private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
      * True iff verbose output should be printed.
      */
-    private boolean verbose = false;
+    private boolean verbose;
     private int maxPathLength = -1;
     private Graph truePag;
 
@@ -89,27 +89,25 @@ public final class TsDagToPag {
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
         }
         numLags = Collections.max(laglist);
         for (Node node : variables) {
             String varName = node.getName();
             String tmp;
-            if(varName.indexOf(':')== -1){
+            if (varName.indexOf(':') == -1) {
                 lag = 0;
-                laglist.add(lag);
             } else {
-                tmp = varName.substring(varName.indexOf(':')+1,varName.length());
+                tmp = varName.substring(varName.indexOf(':') + 1);
                 lag = Integer.parseInt(tmp);
-                laglist.add(lag);
             }
+            laglist.add(lag);
             knowledge.addToTier(numLags - lag, node.getName());
         }
 
@@ -120,34 +118,34 @@ public final class TsDagToPag {
     //========================PUBLIC METHODS==========================//
 
     public Graph convert() {
-        logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
+        this.logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
 //        System.out.println("Knowledge is = " + knowledge);
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
         }
 
         Graph graph = calcAdjacencyGraph();
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting collider orientation");
         }
 
-        orientUnshieldedColliders(graph, dag);
+        orientUnshieldedColliders(graph, this.dag);
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
         }
 
-        final FciOrient fciOrient = new FciOrient(new DagSepsets(dag));
-        System.out.println("Complete rule set is used? " + completeRuleSetUsed);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
+        System.out.println("Complete rule set is used? " + this.completeRuleSetUsed);
+        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setChangeFlag(false);
-        fciOrient.setMaxPathLength(maxPathLength);
-        fciOrient.setKnowledge(knowledge);
+        fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(graph);
         fciOrient.doFinalOrientation(graph);
 
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("Finishing final orientation");
         }
 
@@ -155,7 +153,7 @@ public final class TsDagToPag {
     }
 
     private Graph calcAdjacencyGraph() {
-        List<Node> allNodes = dag.getNodes();
+        List<Node> allNodes = this.dag.getNodes();
         List<Node> measured = new ArrayList<>();
 
         for (Node node : allNodes) {
@@ -164,14 +162,14 @@ public final class TsDagToPag {
             }
         }
 
-        Graph graph = new EdgeListGraphSingleConnections(measured);
+        Graph graph = new EdgeListGraph(measured);
 
         for (int i = 0; i < measured.size(); i++) {
             for (int j = i + 1; j < measured.size(); j++) {
                 Node n1 = measured.get(i);
                 Node n2 = measured.get(j);
 
-                final List<Node> inducingPath = GraphUtils.getInducingPath(n1, n2, dag);
+                List<Node> inducingPath = GraphUtils.getInducingPath(n1, n2, this.dag);
 
                 boolean exists = inducingPath != null;
 
@@ -218,8 +216,8 @@ public final class TsDagToPag {
 
                     if (found) {
 
-                        if (verbose) {
-                            System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
+                        if (this.verbose) {
+                            System.out.println("Orienting collider " + a + "*-&gt;" + b + "&lt;-*" + c);
                         }
 
                         graph.setEndpoint(a, b, Endpoint.ARROW);
@@ -231,8 +229,8 @@ public final class TsDagToPag {
     }
 
     private boolean foundCollider(Graph dag, Node a, Node b, Node c) {
-        boolean ipba = existsInducingPathInto(b, a, dag, knowledge);
-        boolean ipbc = existsInducingPathInto(b, c, dag, knowledge);
+        boolean ipba = TsDagToPag.existsInducingPathInto(b, a, dag, this.knowledge);
+        boolean ipbc = TsDagToPag.existsInducingPathInto(b, c, dag, this.knowledge);
 
         if (!(ipba && ipbc)) {
             printTrueDefCollider(a, b, c, false);
@@ -245,10 +243,10 @@ public final class TsDagToPag {
     }
 
     private void printTrueDefCollider(Node a, Node b, Node c, boolean found) {
-        if (truePag != null) {
-            final boolean defCollider = truePag.isDefCollider(a, b, c);
+        if (this.truePag != null) {
+            boolean defCollider = this.truePag.isDefCollider(a, b, c);
 
-            if (verbose) {
+            if (this.verbose) {
                 if (!found && defCollider) {
                     System.out.println("FOUND COLLIDER FCI");
                 } else if (found && !defCollider) {
@@ -262,14 +260,14 @@ public final class TsDagToPag {
         if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
         if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
 
-        final LinkedList<Node> path = new LinkedList<>();
+        LinkedList<Node> path = new LinkedList<>();
         path.add(x);
 
         for (Node b : graph.getAdjacentNodes(x)) {
             Edge edge = graph.getEdge(x, b);
             if (!edge.pointsTowards(x)) continue;
 
-            if (existsInducingPathVisitts(graph, x, b, x, y, path, knowledge)) {
+            if (TsDagToPag.existsInducingPathVisitts(graph, x, b, x, y, path, knowledge)) {
                 return true;
             }
         }
@@ -277,42 +275,9 @@ public final class TsDagToPag {
         return false;
     }
 
-//    private static boolean existsInducingPathVisit(Graph graph, Node a, Node b, Node x, Node y,
-//                                                   LinkedList<Node> path) {
-//        if (b == y) {
-//            path.addLast(b);
-//            return true;
-//        }
-//
-//        if (path.contains(b)) {
-//            return false;
-//        }
-//
-//        path.addLast(b);
-//
-//        for (Node c : graph.getAdjacentNodes(b)) {
-//            if (c == a) continue;
-//
-//            if (b.getNodeType() == NodeType.MEASURED) {
-//                if (!graph.isDefCollider(a, b, c)) continue;
-//
-//                if (!(graph.isAncestorOf(b, x) || graph.isAncestorOf(b, y))) {
-//                    continue;
-//                }
-//            }
-//
-//            if (DataGraphUtils.existsInducingPathVisit(graph, b, c, x, y, path)) {
-//                return true;
-//            }
-//        }
-//
-//        path.removeLast();
-//        return false;
-//    }
-
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -328,7 +293,7 @@ public final class TsDagToPag {
      * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
-        return completeRuleSetUsed;
+        return this.completeRuleSetUsed;
     }
 
     /**
@@ -343,7 +308,7 @@ public final class TsDagToPag {
      * True iff verbose output should be printed.
      */
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {
@@ -351,7 +316,7 @@ public final class TsDagToPag {
     }
 
     public int getMaxPathLength() {
-        return maxPathLength;
+        return this.maxPathLength;
     }
 
     public void setMaxPathLength(int maxPathLength) {
@@ -359,7 +324,7 @@ public final class TsDagToPag {
     }
 
     public Graph getTruePag() {
-        return truePag;
+        return this.truePag;
     }
 
     public void setTruePag(Graph truePag) {
@@ -368,7 +333,7 @@ public final class TsDagToPag {
 
 
     public static boolean existsInducingPathVisitts(Graph graph, Node a, Node b, Node x, Node y,
-                                                  LinkedList<Node> path, IKnowledge knowledge) {
+                                                    LinkedList<Node> path, IKnowledge knowledge) {
         if (path.contains(b)) {
             return false;
         }
@@ -386,13 +351,13 @@ public final class TsDagToPag {
             }
 
             if (graph.isDefCollider(a, b, c)) {
-                if (!((graph.isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(),x.getName())) ||
-                        (graph.isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(),x.getName())))) {
+                if (!((graph.isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(), x.getName())) ||
+                        (graph.isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
                     continue;
                 }
             }
 
-            if (existsInducingPathVisitts(graph, b, c, x, y, path, knowledge)) {
+            if (TsDagToPag.existsInducingPathVisitts(graph, b, c, x, y, path, knowledge)) {
                 return true;
             }
         }

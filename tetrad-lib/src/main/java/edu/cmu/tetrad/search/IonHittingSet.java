@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -57,7 +57,7 @@ public class IonHittingSet {
         List<Set<GraphChange>> F;
 
         /* Enhancement Step 3 */
-        F = precompute(Forig);
+        F = IonHittingSet.precompute(Forig);
 
         /* Revised Step 1 */
         currentLevel.addFirst(new HsNode(new GraphChange(), 0));
@@ -69,10 +69,10 @@ public class IonHittingSet {
             HsNode n = currentLevel.removeFirst();
 
             /* check redundency here in case of new hitting sets since node creation */
-            if (nodeRedundant(n, hittingSets)) {
+            if (IonHittingSet.nodeRedundant(n, hittingSets)) {
             } // do nothing
             else {
-                int nextUCSigma = findNextUCSigma(F, n);
+                int nextUCSigma = IonHittingSet.findNextUCSigma(F, n);
 
                 /* Path intersects with all elements of F, add to hittingSets */
                 if (nextUCSigma == -1)
@@ -88,7 +88,7 @@ public class IonHittingSet {
 
                         if (newPath.isConsistent(nextLCSigma)) {
                             newPath.union(nextLCSigma);
-                            if (pathNecessary(newPath, nextLevel))
+                            if (IonHittingSet.pathNecessary(newPath, nextLevel))
                                 nextLevel.add(new HsNode(newPath, n.getLabel()));
                         }
                     }
@@ -207,7 +207,7 @@ public class IonHittingSet {
      * parent's label, to be used for a more efficient run of findNextUCSigma
      */
     private static class HsNode {
-        private GraphChange path;
+        private final GraphChange path;
         private int label;
 
         public HsNode(GraphChange path, int label) {
@@ -220,11 +220,11 @@ public class IonHittingSet {
         }
 
         public GraphChange getPath() {
-            return path;
+            return this.path;
         }
 
         public int getLabel() {
-            return label;
+            return this.label;
         }
     }
 }

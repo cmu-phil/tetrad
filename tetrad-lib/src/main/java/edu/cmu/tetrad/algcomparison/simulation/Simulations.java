@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class Simulations {
     static final long serialVersionUID = 23L;
-    private List<Simulation> simulations = new ArrayList<>();
+    private final List<Simulation> simulations = new ArrayList<>();
 
     public Simulations() {
     }
@@ -21,7 +21,7 @@ public class Simulations {
      * @param simulation The simulation to add.
      */
     public void add(Simulation simulation) {
-        simulations.add(simulation);
+        this.simulations.add(simulation);
     }
 
     /**
@@ -30,6 +30,6 @@ public class Simulations {
      * @return A copy of the list of simulations that have been added, in that order.
      */
     public List<Simulation> getSimulations() {
-        return new ArrayList<>(simulations);
+        return new ArrayList<>(this.simulations);
     }
 }

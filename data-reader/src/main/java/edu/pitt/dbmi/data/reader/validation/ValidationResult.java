@@ -22,7 +22,6 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /**
- *
  * Feb 16, 2017 11:33:31 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -50,19 +49,19 @@ public class ValidationResult {
 
     @Override
     public String toString() {
-        return "ValidationResult{" + "code=" + code + ", messageType=" + messageType + ", attributes=" + attributes + ", message=" + message + '}';
+        return "ValidationResult{" + "code=" + this.code + ", messageType=" + this.messageType + ", attributes=" + this.attributes + ", message=" + this.message + '}';
     }
 
     public ValidationCode getCode() {
-        return code;
+        return this.code;
     }
 
     public MessageType getMessageType() {
-        return messageType;
+        return this.messageType;
     }
 
     public Map<ValidationAttribute, Object> getAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     public void setAttribute(ValidationAttribute attribute, Object value) {
@@ -70,7 +69,7 @@ public class ValidationResult {
     }
 
     public String getMessage() {
-        return message;
+        return this.message;
     }
 
     public void setMessage(String message) {

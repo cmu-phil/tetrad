@@ -20,23 +20,23 @@ package edu.pitt.dbmi.data.reader.tabular;
 
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.DatasetReader;
+
 import java.io.IOException;
 import java.util.Set;
 
 /**
- *
  * Dec 14, 2018 10:58:01 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface TabularDatasetReader extends DatasetReader {
 
-    public Data readInData() throws IOException;
+    Data readInData() throws IOException;
 
-    public Data readInData(Set<String> namesOfColumnsToExclude) throws IOException;
+    Data readInData(Set<String> namesOfColumnsToExclude) throws IOException;
 
-    public Data readInData(int[] columnsToExclude) throws IOException;
+    Data readInData(int[] columnsToExclude) throws IOException;
 
-    public void setHasHeader(boolean hasHeader);
+    void setHasHeader(boolean hasHeader);
 
 }

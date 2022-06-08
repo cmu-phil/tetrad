@@ -26,7 +26,6 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- *
  * Mar 8, 2017 10:51:43 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -43,18 +42,18 @@ public class TextFileUtils {
 
     /**
      * Determine the delimiter for a text data file.
-     *
+     * <p>
      * Reads the first n lines of data in a text file and attempts to infer what
      * delimiter is used.
-     *
+     * <p>
      * Idea expanded from <a>https://rdrr.io/cran/reader/man/get.delim.html</a>.
      *
-     * @param file the file to examine
-     * @param n the number of lines to read to make the inference
-     * @param skip number of lines to skip at top of file before processing
-     * @param comment a comment symbol to ignore lines in files
+     * @param file           the file to examine
+     * @param n              the number of lines to read to make the inference
+     * @param skip           number of lines to skip at top of file before processing
+     * @param comment        a comment symbol to ignore lines in files
      * @param quoteCharacter used for grouping characters
-     * @param delims the set of delimiters to test for
+     * @param delims         the set of delimiters to test for
      * @return
      * @throws IOException
      */
@@ -84,7 +83,7 @@ public class TextFileUtils {
             boolean skipLine = false;
             int lineCount = 0;
             byte quoteChar = (byte) quoteCharacter;
-            byte prevNonBlankChar = SPACE_CHAR;
+            byte prevNonBlankChar = TextFileUtils.SPACE_CHAR;
             byte prevChar = -1;
             do {
                 MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, size);
@@ -93,29 +92,29 @@ public class TextFileUtils {
                     byte currChar = buffer.get();
 
                     if (skipLine) {
-                        if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
+                        if (currChar == TextFileUtils.CARRIAGE_RETURN || currChar == TextFileUtils.LINE_FEED) {
                             skipLine = false;
                         }
                     } else {
-                        if (currChar == CARRIAGE_RETURN || currChar == LINE_FEED) {
+                        if (currChar == TextFileUtils.CARRIAGE_RETURN || currChar == TextFileUtils.LINE_FEED) {
                             byteBuffer.clear();
                             reqCheck = prefix.length > 0;
 
-                            if (!(currChar == LINE_FEED && prevChar == CARRIAGE_RETURN)) {
+                            if (!(currChar == TextFileUtils.LINE_FEED && prevChar == TextFileUtils.CARRIAGE_RETURN)) {
                                 lineCount++;
                             }
                         } else {
-                            if (currChar > SPACE_CHAR) {
+                            if (currChar > TextFileUtils.SPACE_CHAR) {
                                 prevNonBlankChar = currChar;
                             }
 
-                            if (reqCheck && prevNonBlankChar > SPACE_CHAR) {
+                            if (reqCheck && prevNonBlankChar > TextFileUtils.SPACE_CHAR) {
                                 if (currChar == prefix[index]) {
                                     index++;
                                     if (index == prefix.length) {
                                         index = 0;
                                         skipLine = true;
-                                        prevNonBlankChar = SPACE_CHAR;
+                                        prevNonBlankChar = TextFileUtils.SPACE_CHAR;
                                         byteBuffer.clear();
 
                                         prevChar = currChar;

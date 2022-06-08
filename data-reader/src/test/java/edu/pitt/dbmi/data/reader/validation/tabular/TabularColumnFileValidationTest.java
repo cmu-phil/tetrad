@@ -20,18 +20,14 @@ package edu.pitt.dbmi.data.reader.validation.tabular;
 
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+
 /**
- *
  * Dec 12, 2018 4:16:55 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -52,9 +48,9 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidate() {
-        TabularColumnValidation validation = new TabularColumnFileValidation(dataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
+        TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
 
         List<ValidationResult> results = validation.validate();
         List<ValidationResult> infos = new LinkedList<>();
@@ -91,9 +87,9 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidateWithExcludedColumnSet() {
-        TabularColumnValidation validation = new TabularColumnFileValidation(dataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
+        TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
 
         Set<String> columnNames = new HashSet<>(Arrays.asList("\"X3\"", "X5", "X1", " ", "X7", "X9", "", "X10", "X11"));
 
@@ -132,9 +128,9 @@ public class TabularColumnFileValidationTest {
      */
     @Test
     public void testValidateWithExcludedColumnArray() {
-        TabularColumnValidation validation = new TabularColumnFileValidation(dataFile, delimiter);
-        validation.setCommentMarker(commentMarker);
-        validation.setQuoteCharacter(quoteCharacter);
+        TabularColumnValidation validation = new TabularColumnFileValidation(this.dataFile, this.delimiter);
+        validation.setCommentMarker(this.commentMarker);
+        validation.setQuoteCharacter(this.quoteCharacter);
 
         int[] excludedColumns = {7, 5};
 

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,6 +27,7 @@ import edu.cmu.tetrad.sem.Ricf;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Matrix;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -46,7 +47,7 @@ public class TestRicf {
      * <pre>
      * > ## A covariance matrix
      *
-     * > "S" <- structure(c(2.93, -1.7, 0.76, -0.06,
+     * > "S" &lt;- structure(c(2.93, -1.7, 0.76, -0.06,
      * +                   -1.7, 1.64, -0.78, 0.1,
      * +                    0.76, -0.78, 1.66, -0.78,
      * +                   -0.06, 0.1, -0.78, 0.81), .Dim = c(4,4),
@@ -55,9 +56,9 @@ public class TestRicf {
      *
      * > ## The following should give the same fit.
      *
-     * > ## Fit an ancestral graph y -> x <-> z <- u
+     * > ## Fit an ancestral graph y -> x &lt;-> z &lt;- u
      *
-     * > fitAncestralGraph(ag1 <- makeAG(dag=DAG(x~y,z~u), bg = UG(~x*z)), S,
+     * > fitAncestralGraph(ag1 &lt;- makeAG(dag=DAG(x~y,z~u), bg = UG(~x*z)), S,
      * n=100)
      * $Shat
      * y          x          z          u
@@ -102,7 +103,7 @@ public class TestRicf {
      */
     @Test
     public void testRicf1() {
-        String[] varNames = new String[]{"y", "x", "z", "u"};
+        String[] varNames = {"y", "x", "z", "u"};
         int numVars = varNames.length;
 
         double[] values = {2.93, -1.7, 0.76, -0.06, -1.7, 1.64, -0.78, 0.1,
@@ -127,7 +128,7 @@ public class TestRicf {
         mag.addDirectedEdge(u, z);
 
 //        int n = 100;
-        double tol = 1e-06;
+        final double tol = 1e-06;
 
         Ricf ricf = new Ricf();
         Ricf.RicfResult ricfResult = ricf.ricf(new SemGraph(mag), s, tol);
@@ -138,7 +139,7 @@ public class TestRicf {
                 0, -0.343037, 1.594307, -0.744252,
                 0, 0, -0.744252, 0.81};
 
-        double norm = normdiff(ricfResult, shatValues, numVars, numVars);
+        double norm = this.normdiff(ricfResult, shatValues, numVars, numVars);
         assertTrue(norm < 0.0001);
 
         // sHat should be the same for the bidirected model.
@@ -151,13 +152,13 @@ public class TestRicf {
 
         ricf.ricf(new SemGraph(mag), s, tol);
 
-        norm = normdiff(ricfResult, shatValues, numVars, numVars);
+        norm = this.normdiff(ricfResult, shatValues, numVars, numVars);
         assertTrue(norm < 0.0001);
     }
 
     private double normdiff(Ricf.RicfResult ricfResult, double[] shatValues,
                             int rows, int cols) {
-        Matrix shat = matrix(shatValues, rows, cols);
+        Matrix shat = this.matrix(shatValues, rows, cols);
         Matrix diff = shat.copy();
 //        diff.assign(ricfResult.getShat(), PlusMult.plusMult(-1));
         diff = diff.minus(new Matrix(ricfResult.getShat().toArray()));
@@ -280,10 +281,9 @@ public class TestRicf {
     @Ignore // File not found.
     public void test3() {
         try {
-            DataReader reader = new DataReader();
-            final File datapath = new File("/Users/josephramsey/Downloads/data6.txt");
-
-            DataSet dataSet = reader.parseTabular(datapath);
+            File datapath = new File("/Users/josephramsey/Downloads/data6.txt");
+            DataSet dataSet = DataUtils.loadContinuousData(datapath, "//", '\"',
+                    "*", true, Delimiter.TAB);
             Graph mag = GraphUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
 
             ICovarianceMatrix cov = new CovarianceMatrix(dataSet);

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -50,11 +50,11 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     /**
      * @serial
      */
-    private IKnowledge knowledge;
+    private final IKnowledge knowledge;
     private boolean pag;
-    private boolean pattern;
+    private boolean CPDAG;
 
-    private Map<String,Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS=============================//
 
@@ -196,12 +196,12 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     @Override
     public List<Node> getSepset(Node n1, Node n2) {
-        return graph.getSepset(n1, n2);
+        return this.graph.getSepset(n1, n2);
     }
 
     @Override
     public void setNodes(List<Node> nodes) {
-        graph.setNodes(nodes);
+        this.graph.setNodes(nodes);
     }
 
     public List<String> getNodeNames() {
@@ -257,6 +257,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     public boolean equals(Object o) {
+        if (!(o instanceof KnowledgeGraph)) return false;
         return getGraph().equals(o);
     }
 
@@ -277,7 +278,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().existsUndirectedPathFromTo(node1, node2);
     }
 
-    public boolean existsSemiDirectedPathFromTo(Node node1, Set node2) {
+    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> node2) {
         return getGraph().existsSemiDirectedPathFromTo(node1, node2);
     }
 
@@ -302,7 +303,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     public boolean addEdge(Edge edge) {
-        if(!(edge instanceof KnowledgeModelEdge)){
+        if (!(edge instanceof KnowledgeModelEdge)) {
             return false;
         }
         KnowledgeModelEdge _edge = (KnowledgeModelEdge) edge;
@@ -313,22 +314,20 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
         if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_EXPLICITLY) {
             this.knowledge.setForbidden(from, to);
-        }
-        else if (_edge.getType() == KnowledgeModelEdge.REQUIRED) {
-            knowledge.setRequired(from, to);
-        }
-        else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
-            if (!knowledge.isForbiddenByTiers(from, to)) {
+        } else if (_edge.getType() == KnowledgeModelEdge.REQUIRED) {
+            this.knowledge.setRequired(from, to);
+        } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
+            if (!this.knowledge.isForbiddenByTiers(from, to)) {
                 throw new IllegalArgumentException("Edge " + from + "-->" + to +
                         " is not forbidden by tiers.");
             }
-        } else if(_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS){
-            if(!this.knowledge.isForbiddenByGroups(from, to)){
+        } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS) {
+            if (!this.knowledge.isForbiddenByGroups(from, to)) {
                 throw new IllegalArgumentException("Edge " + from + "-->" + to +
                         " is not forbidden by groups.");
             }
-        } else if(_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS){
-            if(!this.knowledge.isRequiredByGroups(from, to)){
+        } else if (_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS) {
+            if (!this.knowledge.isRequiredByGroups(from, to)) {
                 throw new IllegalArgumentException("Edge " + from + "-->" + to +
                         " is not required by groups.");
             }
@@ -394,18 +393,16 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
         if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_EXPLICITLY) {
             getKnowledge().removeForbidden(from, to);
-        }
-        else if (_edge.getType() == KnowledgeModelEdge.REQUIRED) {
+        } else if (_edge.getType() == KnowledgeModelEdge.REQUIRED) {
             getKnowledge().removeRequired(from, to);
-        }
-        else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
+        } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_TIERS) {
             throw new IllegalArgumentException(
                     "Please use the tiers interface " +
                             "to remove edges forbidden by tiers.");
-        } else if(_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS){
+        } else if (_edge.getType() == KnowledgeModelEdge.FORBIDDEN_BY_GROUPS) {
             throw new IllegalArgumentException("Please use the Other Groups interface to " +
                     "remove edges forbidden by groups.");
-        } else if(_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS){
+        } else if (_edge.getType() == KnowledgeModelEdge.REQUIRED_BY_GROUPS) {
             throw new IllegalArgumentException("Please use the Other Groups interface to " +
                     "remove edges required by groups.");
         }
@@ -413,11 +410,10 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().removeEdge(edge);
     }
 
-    public boolean removeEdges(Collection edges) {
+    public boolean removeEdges(Collection<Edge> edges) {
         boolean removed = false;
 
-        for (Object edge1 : edges) {
-            Edge edge = (Edge) edge1;
+        for (Edge edge : edges) {
             removed = removed || removeEdge(edge);
         }
 
@@ -563,11 +559,11 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     private Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
     @Override
@@ -582,7 +578,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     @Override
     public boolean isPag() {
-        return pag;
+        return this.pag;
     }
 
     @Override
@@ -591,33 +587,33 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     @Override
-    public boolean isPattern() {
-        return pattern;
+    public boolean isCPDAG() {
+        return this.CPDAG;
     }
 
     @Override
-    public void setPattern(boolean pattern) {
-        this.pattern = pattern;
+    public void setCPDAG(boolean CPDAG) {
+        this.CPDAG = CPDAG;
     }
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
     public Object getAttribute(String key) {
-        return attributes.get(key);
+        return this.attributes.get(key);
     }
 
     @Override
     public void removeAttribute(String key) {
-        attributes.remove(key);
+        this.attributes.remove(key);
     }
 
     @Override
     public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+        this.attributes.put(key, value);
     }
 
 }

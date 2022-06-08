@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -22,6 +23,7 @@ import java.util.List;
         command = "ebic-score",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
+@LinearGaussian
 public class EbicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
@@ -34,7 +36,7 @@ public class EbicScore implements ScoreWrapper {
         edu.cmu.tetrad.search.EbicScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.EbicScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.EbicScore((DataSet) this.dataSet, parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
         } else if (dataSet instanceof ICovarianceMatrix) {
             score = new edu.cmu.tetrad.search.EbicScore((ICovarianceMatrix) this.dataSet);
         } else {
@@ -61,11 +63,12 @@ public class EbicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.EBIC_GAMMA);
 //        parameters.add(Params.CORRELATION_THRESHOLD);
+        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         return parameters;
     }
 
     @Override
     public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+        return this.dataSet.getVariable(name);
     }
 }

@@ -24,27 +24,18 @@ import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.net.URL;
+
 import javax.help.CSH;
 import javax.help.HelpBroker;
 import javax.help.HelpSet;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.URL;
 
 /**
- *
  * Apr 15, 2019 4:49:15 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -63,18 +54,20 @@ public class GraphCard extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(800, 506));
+        setPreferredSize(new Dimension(50, 406));
     }
 
     public void refresh() {
         removeAll();
 
-        setBorder(BorderFactory.createTitledBorder(algorithmRunner.getAlgorithm().getDescription()));
+        setBorder(BorderFactory.createTitledBorder(this.algorithmRunner.getAlgorithm().getDescription()));
 
-        Graph graph = algorithmRunner.getGraph();
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, createGraphPanel(graph), createEdgeTypeTable(graph));
-        splitPane.setDividerLocation(406);
-        add(new PaddingPanel(splitPane), BorderLayout.CENTER);
+        Graph graph = this.algorithmRunner.getGraph();
+
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
+        tabbedPane.addTab("Graph", new PaddingPanel(createGraphPanel(graph)));
+        tabbedPane.addTab("Edges", createEdgeTypeTable(graph));
+        add(tabbedPane, BorderLayout.CENTER);
 
         revalidate();
         repaint();
@@ -101,7 +94,7 @@ public class GraphCard extends JPanel {
     }
 
     private Box createInstructionBox() {
-        JLabel label = new JLabel("More information on graph edge types");
+        JLabel label = new JLabel("More information on graph edge types and colorings");
         label.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
         // Info button added by Zhou to show edge types
@@ -113,7 +106,7 @@ public class GraphCard extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Initialize helpSet
-                String helpHS = "/resources/javahelp/TetradHelp.hs";
+                final String helpHS = "/resources/javahelp/TetradHelp.hs";
 
                 try {
                     URL url = this.getClass().getResource(helpHS);

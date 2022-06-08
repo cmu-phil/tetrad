@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,23 +26,18 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.prefs.Preferences;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
+import java.util.Map;
+import java.util.prefs.Preferences;
 
 /**
  * Edits the parameters of the SemIm using a graph workbench.
@@ -65,7 +60,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
      * The set of launched editors--or rather, the nodes for the launched
      * editors.
      */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<>();
+    private final Map<Object, EditorWindow> launchedEditors;
 
     private boolean enableEditing = true;
 
@@ -96,38 +91,38 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     }
 
     public GraphWorkbench getWorkbench() {
-        return workbench;
+        return this.workbench;
     }
 
     //============================================PRIVATE=====================================================//
-    private void beginNodeEdit(final Node node) {
-        if (launchedEditors.keySet().contains(node)) {
-            launchedEditors.get(node).moveToFront();
+    private void beginNodeEdit(Node node) {
+        if (this.launchedEditors.containsKey(node)) {
+            this.launchedEditors.get(node).moveToFront();
             return;
         }
 
-        final GeneralizedExpressionParameterizer paramEditor = new GeneralizedExpressionParameterizer(semIm, node);
+        GeneralizedExpressionParameterizer paramEditor = new GeneralizedExpressionParameterizer(this.semIm, node);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(paramEditor, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        final EditorWindow editorWindow
+        EditorWindow editorWindow
                 = new EditorWindow(panel, "Parameter Properties", "OK", true, workbench());
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
         editorWindow.setVisible(true);
 
-        launchedEditors.put(node, editorWindow);
+        this.launchedEditors.put(node, editorWindow);
 
         editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
             public void internalFrameClosing(InternalFrameEvent internalFrameEvent) {
                 if (!editorWindow.isCanceled()) {
-                    semIm.setSubstitutions(paramEditor.getParameterValues());
+                    GeneralizedSemImGraphicalEditor.this.semIm.setSubstitutions(paramEditor.getParameterValues());
                     refreshLabels();
-                    launchedEditors.remove(node);
+                    GeneralizedSemImGraphicalEditor.this.launchedEditors.remove(node);
                     firePropertyChange("modelChanged", null, null);
                 }
             }
@@ -155,7 +150,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     private void resetNodeLabel(Node node) {
         int maxExpressionLength = Preferences.userRoot().getInt("maxExpressionLength", 25);
 
-        String expressionString = semIm.getNodeSubstitutedString(node);
+        String expressionString = this.semIm.getNodeSubstitutedString(node);
         if (expressionString == null) {
             workbench().setNodeLabel(node, null, 0, 0);
             firePropertyChange("modelChanged", null, null);
@@ -177,7 +172,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         if (node.getNodeType() == NodeType.ERROR) {
             label.setOpaque(false);
 
-            Node error = workbench.getGraph().getNode(node.getName());
+            Node error = this.workbench.getGraph().getNode(node.getName());
 
             if (error != null) {
                 workbench().setNodeLabel(error, label, -10, -10);
@@ -185,7 +180,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         } else {
             label.setOpaque(false);
 
-            if (workbench.getGraph().containsNode(node)) {
+            if (this.workbench.getGraph().containsNode(node)) {
                 workbench().setNodeLabel(node, label, 0, 0);
             }
         }
@@ -194,7 +189,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
     }
 
     public boolean isEnableEditing() {
-        return enableEditing;
+        return this.enableEditing;
     }
 
     public void enableEditing(boolean enableEditing) {
@@ -204,7 +199,7 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         }
     }
 
-    private final static class NodeMouseListener extends MouseAdapter {
+    private static final class NodeMouseListener extends MouseAdapter {
 
         private final Node node;
         private final GeneralizedSemImGraphicalEditor editor;
@@ -215,11 +210,11 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         }
 
         private Node getNode() {
-            return node;
+            return this.node;
         }
 
         private GeneralizedSemImGraphicalEditor getEditor() {
-            return editor;
+            return this.editor;
         }
 
         public void mouseClicked(MouseEvent e) {

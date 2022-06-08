@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,16 +40,16 @@ public class RemoveMissingValueCasesWrapper extends DataWrapper {
     /**
      * Constructs the missing value cases wrapper.
      */
-    public RemoveMissingValueCasesWrapper(DataWrapper data, Parameters params){
-        if(data == null){
+    public RemoveMissingValueCasesWrapper(DataWrapper data, Parameters params) {
+        if (data == null) {
             throw new NullPointerException("The givan data must not be null");
         }
         DataModel model = data.getSelectedDataModel();
-        if((!(model instanceof DataSet))){
+        if ((!(model instanceof DataSet))) {
             throw new IllegalArgumentException("Data must be tabular");
         }
         RemoveMissingCasesDataFilter filter = new RemoveMissingCasesDataFilter();
-        this.setDataModel(filter.filter((DataSet)model));
+        this.setDataModel(filter.filter((DataSet) model));
         this.setSourceGraph(data.getSourceGraph());
 
         LogDataUtils.logDataModelList("Parent data in which cases with missing values have been removed", getDataModelList());

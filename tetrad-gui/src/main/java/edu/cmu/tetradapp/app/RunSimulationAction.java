@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -54,22 +54,15 @@ class RunSimulationAction extends AbstractAction {
 
 
     private void executeNode() {
-        Set<SessionNode> children = sessionEditorNode.getChildren();
-        boolean noEmptyChildren = true;
+        Set<SessionNode> children = this.sessionEditorNode.getChildren();
 
         for (SessionNode child : children) {
             if (child.getModel() == null) {
-                noEmptyChildren = false;
                 break;
             }
         }
 
-        Component centeringComp = sessionEditorNode;
-
-//        if (!noEmptyChildren) {
-//            JOptionPane.showMessageDialog(centeringComp, "Nothing to run.");
-//            return;
-//        }
+        Component centeringComp = this.sessionEditorNode;
 
         Object[] options = {"Simulate", "Cancel"};
 
@@ -99,55 +92,27 @@ class RunSimulationAction extends AbstractAction {
         }
 
         if (selection == 0) {
-            executeSessionNode(sessionEditorNode.getSessionNode(), true);
+            executeSessionNode(this.sessionEditorNode.getSessionNode());
         }
     }
 
 
     private SessionEditorWorkbench getWorkbench() {
-        Class c = SessionEditorWorkbench.class;
-        Container container = SwingUtilities.getAncestorOfClass(c, sessionEditorNode);
+        final Class c = SessionEditorWorkbench.class;
+        Container container = SwingUtilities.getAncestorOfClass(c, this.sessionEditorNode);
         return (SessionEditorWorkbench) container;
     }
 
 
-    private void executeSessionNode(final SessionNode sessionNode, final boolean overwrite) {
-        Window owner = (Window) sessionEditorNode.getTopLevelAncestor();
+    private void executeSessionNode(SessionNode sessionNode) {
+        Window owner = (Window) this.sessionEditorNode.getTopLevelAncestor();
 
         new WatchedProcess(owner) {
             public void watch() {
                 SessionEditorWorkbench workbench = getWorkbench();
 
-//                {
-////                    int ret = JOptionPane.showConfirmDialog(sessionEditorNode, "Start a new log?");
-////
-////                    if (ret == JOptionPane.YES_OPTION) {
-//                        try {
-//                            TetradLogger.getInstance().setNextOutputStream();
-//                        } catch (IllegalStateException e) {
-////                    TetradLogger.getInstance().removeNextOutputStream();
-//                            e.printStackTrace();
-//                            return;
-//                        }
-////                    }
-//                }
+                workbench.getSimulationStudy().execute(sessionNode, true);
 
-                workbench.getSimulationStudy().execute(sessionNode, overwrite);
-
-//                {
-//                    // Start another log. Only stop when the log display is closed.
-////                    int ret = JOptionPane.showConfirmDialog(sessionEditorNode, "Finish this log and start another one?");
-////
-////                    if (ret == JOptionPane.YES_OPTION) {
-//                        try {
-//                            TetradLogger.getInstance().setNextOutputStream();
-//                        } catch (IllegalStateException e) {
-////                    TetradLogger.getInstance().removeNextOutputStream();
-//                            e.printStackTrace();
-//                            return;
-//                        }
-////                    }
-//                }
             }
         };
     }

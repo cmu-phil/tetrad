@@ -21,7 +21,6 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 
 /**
- *
  * Jun 4, 2019 5:21:45 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -37,8 +36,6 @@ public final class SimulationUtils {
                 return new BayesNetSimulation(randomGraph);
             case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                 return new SemSimulation(randomGraph);
-            case SimulationTypes.LINEAR_FISHER_MODEL:
-                return new LinearFisherModel(randomGraph);
             case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL:
                 return new GeneralSemSimulationSpecial1(randomGraph);
             case SimulationTypes.LEE_AND_HASTIE:

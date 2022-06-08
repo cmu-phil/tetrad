@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -31,7 +31,7 @@ import java.awt.geom.Ellipse2D;
  * @author Joseph Ramsey
  */
 public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp {
-    private boolean selected = false;
+    private boolean selected;
 
     public MeasuredDisplaySmallComp(String name) {
         setBackground(DisplayNodeUtils.getNodeFillColor());
@@ -58,8 +58,6 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
     private Shape getShape() {
         return new Ellipse2D.Double(0, 0, getPreferredSize().width - 1,
                 getPreferredSize().height - 1);
-//        return new RoundRectangle2D.Double(0, 0, getPreferredSize().width - 1,
-//                getPreferredSize().height - 1, 4, 3);
     }
 
     /**
@@ -70,13 +68,11 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         FontMetrics fm = getFontMetrics(new Font("Monospaced", Font.PLAIN, 3));
-        int width = getPreferredSize().width;
         String name = getName();
 
-        if (name.startsWith("X")) name = name.substring(1, name.length());
+        if (name.startsWith("X")) name = name.substring(1);
 
-        int stringWidth = fm.stringWidth(name);
-        int stringX = 2; //(width - stringWidth) / 2;
+        final int stringX = 2;
         int stringY = 4 * fm.getAscent() + DisplayNodeUtils.getPixelGap();
 
         g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() :
@@ -94,17 +90,11 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
      * Calculates the size of the component based on its name.
      */
     public Dimension getPreferredSize() {
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-//        int width = fm.stringWidth(getNode()) + fm.getMaxAdvance();
-//        int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent() + 3;
-//        width = (width < 60) ? 60 : width;
-//        return new Dimension(width, height);
-
         return new Dimension(30, 30);
     }
 
     private boolean isSelected() {
-        return selected;
+        return this.selected;
     }
 }
 

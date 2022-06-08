@@ -17,7 +17,7 @@ import edu.cmu.tetrad.util.Parameters;
 import java.util.*;
 
 /**
- * A version of the Lee & Hastic simulation which is guaranteed to generate a discrete
+ * A version of the Lee and Hastic simulation which is guaranteed to generate a discrete
  * data set.
  *
  * @author jdramsey
@@ -25,7 +25,7 @@ import java.util.*;
 @Experimental
 public class BooleanGlassSimulation implements Simulation {
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
     private Graph graph = new EdgeListGraph();
 
@@ -35,9 +35,9 @@ public class BooleanGlassSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (!newModel && !dataSets.isEmpty()) return;
+//        if (!newModel && !dataSets.isEmpty()) return;
 
-        this.graph = randomGraph.createGraph(parameters);
+        this.graph = this.randomGraph.createGraph(parameters);
 
         LagGraphParams params = new LagGraphParams(parameters);
 
@@ -83,24 +83,20 @@ public class BooleanGlassSimulation implements Simulation {
             }
         }
 
-        topToBottomLayout(graph);
+        BooleanGlassSimulation.topToBottomLayout(graph);
 
         this.graph = graph;
     }
 
     public static void topToBottomLayout(TimeLagGraph graph) {
 
-        int xStart = 65;
-        int yStart = 50;
-        int xSpace = 100;
-        int ySpace = 100;
+        final int xStart = 65;
+        final int yStart = 50;
+        final int xSpace = 100;
+        final int ySpace = 100;
         List<Node> lag0Nodes = graph.getLag0Nodes();
 
-        Collections.sort(lag0Nodes, new Comparator<Node>() {
-            public int compare(Node o1, Node o2) {
-                return o1.getCenterX() - o2.getCenterX();
-            }
-        });
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
 
         int x = xStart - xSpace;
 
@@ -114,7 +110,7 @@ public class BooleanGlassSimulation implements Simulation {
                 Node _node = graph.getNode(id.getName(), lag);
 
                 if (_node == null) {
-                    System.out.println("Couldn't find " + _node);
+                    System.out.println("Couldn't find " + null);
                     continue;
                 }
 
@@ -126,17 +122,17 @@ public class BooleanGlassSimulation implements Simulation {
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graph;
+        return this.graph;
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Boolean Glass Simulation " + randomGraph.getDescription();
+        return "Boolean Glass Simulation " + this.randomGraph.getDescription();
     }
 
     @Override
@@ -166,7 +162,7 @@ public class BooleanGlassSimulation implements Simulation {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override

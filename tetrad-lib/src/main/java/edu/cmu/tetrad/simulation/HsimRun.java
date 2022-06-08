@@ -1,11 +1,19 @@
 package edu.cmu.tetrad.simulation;
 
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataWriter;
+import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
+
 import java.io.FileWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,7 +42,7 @@ public class HsimRun {
             //apply Hsim to data, with whatever parameters
             //========first make the Dag for Hsim==========
             //ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
-            double penaltyDiscount = 2.0;
+            final double penaltyDiscount = 2.0;
             SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
             score.setPenaltyDiscount(penaltyDiscount);
             Fges fges = new Fges(score);
@@ -43,9 +51,8 @@ public class HsimRun {
             Graph estGraph = fges.search();
             System.out.println(estGraph);
 
-            Graph estPattern = new EdgeListGraphSingleConnections(estGraph);
-            PatternToDag patternToDag = new PatternToDag(estPattern);
-            Graph estGraphDAG = patternToDag.patternToDagMeek();
+            Graph estCPDAG = new EdgeListGraph(estGraph);
+            Graph estGraphDAG = SearchGraphUtils.dagFromCPDAG(estCPDAG);
             Dag estDAG = new Dag(estGraphDAG);
 
             //===========Identify the nodes to be resimulated===========
@@ -63,8 +70,8 @@ public class HsimRun {
             //use for loop through that collection, get each node from the names, add to the set
             Set<Node> simnodes = new HashSet<>();
 
-            for (int i = 0; i < resimNodeNames.length; i++) {
-                Node thisNode = estDAG.getNode(resimNodeNames[i]);
+            for (String resimNodeName : resimNodeNames) {
+                Node thisNode = estDAG.getNode(resimNodeName);
                 simnodes.add(thisNode);
             }
 
@@ -85,11 +92,6 @@ public class HsimRun {
             _score.setPenaltyDiscount(2.0);
             Fges fgesOut = new Fges(_score);
             fgesOut.setVerbose(false);
-//            fgesOut.setCorrErrorsAlpha(2.0);
-            //fgesOut.setOut(out);
-            //fgesOut.setFaithfulnessAssumed(true);
-            // fgesOut.setMaxIndegree(1);
-            // fgesOut.setCycleBound(5);
 
             Graph estGraphOut = fgesOut.search();
             System.out.println(estGraphOut);

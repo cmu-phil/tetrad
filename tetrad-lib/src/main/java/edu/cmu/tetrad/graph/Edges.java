@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,12 +21,9 @@
 
 package edu.cmu.tetrad.graph;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
+
+import java.util.List;
 
 
 /**
@@ -47,21 +44,21 @@ import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 public final class Edges {
 
     /**
-     * Constructs a new bidirected edge from nodeA to nodeB (<->).
+     * Constructs a new bidirected edge from nodeA to nodeB (&lt;-&gt;).
      */
     public static Edge bidirectedEdge(Node nodeA, Node nodeB) {
         return new Edge(nodeA, nodeB, Endpoint.ARROW, Endpoint.ARROW);
     }
 
     /**
-     * Constructs a new directed edge from nodeA to nodeB (-->).
+     * Constructs a new directed edge from nodeA to nodeB (--&gt;).
      */
     public static Edge directedEdge(Node nodeA, Node nodeB) {
         return new Edge(nodeA, nodeB, Endpoint.TAIL, Endpoint.ARROW);
     }
 
     /**
-     * Constructs a new partially oriented edge from nodeA to nodeB (o->).
+     * Constructs a new partially oriented edge from nodeA to nodeB (o-&gt;).
      */
     public static Edge partiallyOrientedEdge(Node nodeA, Node nodeB) {
         return new Edge(nodeA, nodeB, Endpoint.CIRCLE, Endpoint.ARROW);
@@ -82,7 +79,7 @@ public final class Edges {
     }
 
     /**
-     * @return true iff an edge is a bidirected edge (<->).
+     * @return true iff an edge is a bidirected edge (&lt;-&gt;).
      */
     public static boolean isBidirectedEdge(Edge edge) {
         return (edge.getEndpoint1() == Endpoint.ARROW) &&
@@ -90,34 +87,26 @@ public final class Edges {
     }
 
     /**
-     * @return true iff the given edge is a directed edge (-->).
+     * @return true iff the given edge is a directed edge (--&gt;).
      */
     public static boolean isDirectedEdge(Edge edge) {
         if (edge.getEndpoint1() == Endpoint.TAIL) {
-            if (edge.getEndpoint2() == Endpoint.ARROW) {
-                return true;
-            }
+            return edge.getEndpoint2() == Endpoint.ARROW;
         } else if (edge.getEndpoint2() == Endpoint.TAIL) {
-            if (edge.getEndpoint1() == Endpoint.ARROW) {
-                return true;
-            }
+            return edge.getEndpoint1() == Endpoint.ARROW;
         }
 
         return false;
     }
 
     /**
-     * @return true iff the given edge is a partially oriented edge (o->)
+     * @return true iff the given edge is a partially oriented edge (o-&gt;)
      */
     public static boolean isPartiallyOrientedEdge(Edge edge) {
         if (edge.getEndpoint1() == Endpoint.CIRCLE) {
-            if (edge.getEndpoint2() == Endpoint.ARROW) {
-                return true;
-            }
+            return edge.getEndpoint2() == Endpoint.ARROW;
         } else if (edge.getEndpoint2() == Endpoint.CIRCLE) {
-            if (edge.getEndpoint1() == Endpoint.ARROW) {
-                return true;
-            }
+            return edge.getEndpoint1() == Endpoint.ARROW;
         }
 
         return false;
@@ -157,7 +146,7 @@ public final class Edges {
     }
 
     /**
-     * For A -> B, given A, returns B; otherwise returns null.
+     * For A -&gt; B, given A, returns B; otherwise returns null.
      */
     public static Node traverseDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
@@ -176,7 +165,7 @@ public final class Edges {
     }
 
     /**
-     * For A -> B, given B, returns A; otherwise returns null.
+     * For A -&gt; B, given B, returns A; otherwise returns null.
      */
     public static Node traverseReverseDirected(Node node, Edge edge) {
         if (edge == null) {
@@ -198,26 +187,8 @@ public final class Edges {
         return null;
     }
 
-    public static Node traverseReverseSemiDirected(Node node, Edge edge) {
-        if (edge == null) {
-            return null;
-        }
-
-        if (node == edge.getNode1()) {
-            if ((edge.getEndpoint2() == Endpoint.TAIL || edge.getEndpoint2() == Endpoint.CIRCLE)) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if ((edge.getEndpoint1() == Endpoint.TAIL || edge.getEndpoint1() == Endpoint.CIRCLE)) {
-                return edge.getNode1();
-            }
-        }
-
-        return null;
-    }
-
     /**
-     * For A --* B or A o-* B, given A, returns B. For A <-* B, returns null.
+     * For A --* B or A o-* B, given A, returns B. For A &lt;-* B, returns null.
      * Added by ekorber, 2004/06/12.
      */
     public static Node traverseSemiDirected(Node node, Edge edge) {
@@ -232,17 +203,6 @@ public final class Edges {
         }
         return null;
     }
-
-    public static Node traverseUndirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            return edge.getNode2();
-        } else if (node == edge.getNode2()) {
-            return edge.getNode1();
-        } else {
-            return null;
-        }
-    }
-
 
     /**
      * For a directed edge, returns the node adjacent to the arrow endpoint.
@@ -281,91 +241,89 @@ public final class Edges {
     }
 
     public static void sortEdges(List<Edge> edges) {
-        Collections.sort(edges, new Comparator<Edge>() {
-            public int compare(Edge edge1, Edge edge2) {
-                if (edge1 == null || edge2 == null) {
-                    return 0;
+        edges.sort((edge1, edge2) -> {
+            if (edge1 == null || edge2 == null) {
+                return 0;
+            }
+
+            Node left1 = edge1.getNode1();
+            Node right1 = edge1.getNode2();
+
+            Node left2 = edge2.getNode1();
+            Node right2 = edge2.getNode2();
+
+            List<Property> propertiesLeft = edge1.getProperties();
+            List<EdgeTypeProbability> edgeTypePropertiesLeft = edge1.getEdgeTypeProbabilities();
+
+            List<Property> propertiesRight = edge2.getProperties();
+            List<EdgeTypeProbability> edgeTypePropertiesRight = edge2.getEdgeTypeProbabilities();
+
+            // Compare edgeTypeProperty first, if exists
+            int compareEdgeTypeProperty = 0;
+            if (!edgeTypePropertiesLeft.isEmpty() && !edgeTypePropertiesRight.isEmpty()) {
+                // Max probability on the left - excluding [no edge]
+                double probLeft = 0;
+                for (EdgeTypeProbability etp : edgeTypePropertiesLeft) {
+                    if (etp.getEdgeType() != EdgeTypeProbability.EdgeType.nil && etp.getProbability() > probLeft) {
+                        probLeft = etp.getProbability();
+                    }
                 }
 
-                Node left1 = edge1.getNode1();
-                Node right1 = edge1.getNode2();
+                // Max probability on the right - excluding [no edge]
+                double probRight = 0;
+                for (EdgeTypeProbability etp : edgeTypePropertiesRight) {
+                    if (etp.getEdgeType() != EdgeTypeProbability.EdgeType.nil && etp.getProbability() > probRight) {
+                        probRight = etp.getProbability();
+                    }
+                }
 
-                Node left2 = edge2.getNode1();
-                Node right2 = edge2.getNode2();
+                if (probLeft - probRight > 0) {
+                    compareEdgeTypeProperty = -1;
+                } else if (probLeft - probRight < 0) {
+                    compareEdgeTypeProperty = 1;
+                }
+            }
+            if (compareEdgeTypeProperty != 0) {
+                return compareEdgeTypeProperty;
+            }
 
-                List<Property> propertiesLeft = edge1.getProperties();
-                List<EdgeTypeProbability> edgeTypePropertiesLeft = edge1.getEdgeTypeProbabilities();
-                
-                List<Property> propertiesRight = edge2.getProperties();
-                List<EdgeTypeProbability> edgeTypePropertiesRight = edge2.getEdgeTypeProbabilities();
-                
-                // Compare edgeTypeProperty first, if exists
-                int compareEdgeTypeProperty = 0;
-                if(!edgeTypePropertiesLeft.isEmpty() && !edgeTypePropertiesRight.isEmpty()) {
-                	// Max probability on the left - excluding [no edge]
-                	double probLeft = 0;
-                	for(EdgeTypeProbability etp : edgeTypePropertiesLeft) {
-                		if(etp.getEdgeType() != EdgeType.nil && etp.getProbability() > probLeft) {
-                			probLeft = etp.getProbability();
-                		}
-                	}
-                	
-                	// Max probability on the right - excluding [no edge]
-                	double probRight = 0;
-                	for(EdgeTypeProbability etp : edgeTypePropertiesRight) {
-                		if(etp.getEdgeType() != EdgeType.nil && etp.getProbability() > probRight) {
-                			probRight = etp.getProbability();
-                		}
-                	}
-                	
-                	if(probLeft - probRight > 0) {
-                		compareEdgeTypeProperty = -1;
-                	}else if(probLeft - probRight < 0) {
-                		compareEdgeTypeProperty = 1;
-                	}            	
+            // Compare edge's properties
+            int compareProperty = 0;
+            int scorePropertyLeft = 0;
+            for (Property property : propertiesLeft) {
+                if (property == Property.dd || property == Property.nl) {
+                    scorePropertyLeft += 2;
                 }
-                if (compareEdgeTypeProperty != 0) {
-                	return compareEdgeTypeProperty;
+                if (property == Property.pd || property == Property.pl) {
+                    scorePropertyLeft += 1;
                 }
-                
-                // Compare edge's properties
-                int compareProperty = 0;
-                int scorePropertyLeft = 0;
-                for(Property property : propertiesLeft) {
-                	if(property == Property.dd || property == Property.nl) {
-                		scorePropertyLeft += 2;
-                	}
-                	if(property == Property.pd || property == Property.pl) {
-                		scorePropertyLeft += 1;
-                	}
+            }
+            int scorePropertyRight = 0;
+            for (Property property : propertiesRight) {
+                if (property == Property.dd || property == Property.nl) {
+                    scorePropertyRight += 2;
                 }
-                int scorePropertyRight = 0;
-                for(Property property : propertiesRight) {
-                	if(property == Property.dd || property == Property.nl) {
-                		scorePropertyRight += 2;
-                	}
-                	if(property == Property.pd || property == Property.pl) {
-                		scorePropertyRight += 1;
-                	}
+                if (property == Property.pd || property == Property.pl) {
+                    scorePropertyRight += 1;
                 }
-                
-                if(scorePropertyLeft - scorePropertyRight > 0) {
-                	compareProperty = -1;
-                }else if(scorePropertyLeft - scorePropertyRight < 0) {
-                	compareProperty = 1;
-                }
-                if(compareProperty != 0) {	
-                	return compareProperty;
-                }
-                
-                int compareLeft = left1.toString().compareTo(left2.toString());
-                int compareRight = right1.toString().compareTo(right2.toString());
+            }
 
-                if (compareLeft != 0) {
-                    return compareLeft;
-                } else {
-                    return compareRight;
-                }
+            if (scorePropertyLeft - scorePropertyRight > 0) {
+                compareProperty = -1;
+            } else if (scorePropertyLeft - scorePropertyRight < 0) {
+                compareProperty = 1;
+            }
+            if (compareProperty != 0) {
+                return compareProperty;
+            }
+
+            int compareLeft = left1.toString().compareTo(left2.toString());
+            int compareRight = right1.toString().compareTo(right2.toString());
+
+            if (compareLeft != 0) {
+                return compareLeft;
+            } else {
+                return compareRight;
             }
         });
     }

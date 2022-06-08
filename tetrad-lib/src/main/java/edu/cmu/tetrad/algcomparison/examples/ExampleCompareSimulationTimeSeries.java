@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,25 +23,20 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsFci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsGfci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsImages;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.SvarFci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.SvarGfci;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.search.IndTestScore;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.ScoredIndTest;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.simulation.TimeSeriesSemSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * An example script to simulate time series data and run a comparison analysis on it.
  *
- * @authors jdramsey, dmalinsky
+ * @author jdramsey, dmalinsky
  */
 public class ExampleCompareSimulationTimeSeries {
     public static void main(String... args) {
@@ -71,9 +66,8 @@ public class ExampleCompareSimulationTimeSeries {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new TsFci(new FisherZ()));
-        algorithms.add(new TsGfci(new FisherZ(), new SemBicScore()));
-        algorithms.add(new TsImages(new SemBicScore()));
+        algorithms.add(new SvarFci(new FisherZ()));
+        algorithms.add(new SvarGfci(new FisherZ(), new SemBicScore()));
 
         Simulations simulations = new Simulations();
 

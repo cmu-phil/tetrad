@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -56,9 +56,9 @@ public final class IntTextField extends JTextField {
      * Constructs a new int text field displaying the given default value,
      * restricting the value to [lowerBound, upperBound].
      *
-     * @param value      The initial value. Must be between lowerBound and
-     *                   upperBound.
-     * @param size       the number of columns in the textfield.
+     * @param value The initial value. Must be between lowerBound and
+     *              upperBound.
+     * @param size  the number of columns in the textfield.
      */
     public IntTextField(int value, int size) {
         super(size);
@@ -66,7 +66,7 @@ public final class IntTextField extends JTextField {
         setValue(value);
         setText(Integer.toString(value));
 
-        setHorizontalAlignment(JTextField.RIGHT);
+        setHorizontalAlignment(SwingConstants.RIGHT);
         addActionListener(new ActionListener() {
 
             /**
@@ -78,8 +78,7 @@ public final class IntTextField extends JTextField {
                 try {
                     int n = Integer.parseInt(e.getActionCommand());
                     setValue(n);
-                }
-                catch (NumberFormatException e1) {
+                } catch (NumberFormatException e1) {
                     setText(Integer.toString(getValue()));
                 }
             }
@@ -106,8 +105,7 @@ public final class IntTextField extends JTextField {
                 try {
                     int n = Integer.parseInt(getText());
                     setValue(n);
-                }
-                catch (NumberFormatException e1) {
+                } catch (NumberFormatException e1) {
                     setText(Integer.toString(getValue()));
                 }
             }
@@ -116,10 +114,9 @@ public final class IntTextField extends JTextField {
 
     //=============================PUBLIC METHODS=======================//
 
-    public void setUnfilteredValue(int value){
+    public void setUnfilteredValue(int value) {
         setText(String.valueOf(value));
     }
-
 
 
     /**
@@ -134,8 +131,7 @@ public final class IntTextField extends JTextField {
 
         if (newValue == this.value) {
             setText(Integer.toString(this.value));
-        }
-        else {
+        } else {
             this.value = newValue;
             setText(Integer.toString(this.value));
             firePropertyChange("newValue", null, this.value);
@@ -146,7 +142,7 @@ public final class IntTextField extends JTextField {
      * @return the int value currently displayed.
      */
     public int getValue() {
-        return value;
+        return this.value;
     }
 
     /**
@@ -188,11 +184,11 @@ public final class IntTextField extends JTextField {
      * checkValue().
      */
     private int filter(int value, int oldValue) {
-        if (filter == null) {
+        if (this.filter == null) {
             return value;
         }
 
-        return filter.filter(value, oldValue);
+        return this.filter.filter(value, oldValue);
     }
 
     //==============================Interfaces============================//
@@ -210,9 +206,9 @@ public final class IntTextField extends JTextField {
          * Filters the given value, returning the new value that should be
          * displayed.
          *
-         * @param value The value entered by the user.
+         * @param value    The value entered by the user.
          * @param oldValue The value previously displayed, in case it needs
-         * to be reverted to.
+         *                 to be reverted to.
          */
         int filter(int value, int oldValue);
     }

@@ -21,13 +21,13 @@ package edu.pitt.dbmi.data.reader.metadata;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 /**
- *
  * Dec 18, 2018 2:39:25 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -43,7 +43,7 @@ public class MetadataFileWriter implements MetadataWriter {
     }
 
     @Override
-    public void write(Metadata metadata, Path outputFile) throws JsonProcessingException, IOException {
+    public void write(Metadata metadata, Path outputFile) throws IOException {
         ObjectWriter writer = new ObjectMapper().writer().withDefaultPrettyPrinter();
         if (Files.exists(outputFile)) {
             if (Files.deleteIfExists(outputFile)) {

@@ -9,6 +9,6 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 public interface UsesScoreWrapper {
 
     void setScoreWrapper(ScoreWrapper score);
-    
+
     ScoreWrapper getScoreWrapper();
 }

@@ -2,11 +2,11 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FASK;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.util.Parameters;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -41,13 +41,9 @@ public class SpecialExampleSimulationClark {
         parameters.set("maxOutdegree", 100);
         parameters.set("connected", false);
 
-//
-//        statistics.setWeight("AP", 1.0);
-//        statistics.setWeight("AR", 0.5);
-
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new Fask());
+        algorithms.add(new FASK());
 
         Simulations simulations = new Simulations();
 
@@ -61,7 +57,7 @@ public class SpecialExampleSimulationClark {
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
         comparison.setSaveGraphs(true);
-        comparison.setSavePatterns(true);
+        comparison.setSaveCPDAGs(true);
         comparison.setSavePags(true);
 
 //        comparison.saveToFiles("comparison", new SpecialDataClark(new SpecialGraphClark()), parameters);

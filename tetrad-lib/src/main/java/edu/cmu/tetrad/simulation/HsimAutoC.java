@@ -1,11 +1,21 @@
 package edu.cmu.tetrad.simulation;
 
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataWriter;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
+
 import java.io.FileWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,9 +26,9 @@ import java.util.*;
  */
 public class HsimAutoC {
 
-    private boolean verbose = false;
+    private boolean verbose;
     private DataSet data;
-    private boolean write = false;
+    private boolean write;
     private String filenameOut = "defaultOut";
     private char delimiter = ',';
 
@@ -26,7 +36,7 @@ public class HsimAutoC {
     //contructor using a previously existing DataSet object
     public HsimAutoC(DataSet indata) {
         //first check if indata is already the right type
-        data = indata;
+        this.data = indata;
         //may need to make this part more complicated if CovarianceMatrix method is finicky
     }
 
@@ -34,13 +44,13 @@ public class HsimAutoC {
     public HsimAutoC(String readfilename, char delim) {
         String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
-        Set<String> eVars = new HashSet<String>();
+        Set<String> eVars = new HashSet<>();
         eVars.add("MULT");
         Path dataFile = Paths.get(readfilename);
 
         ContinuousTabularDatasetFileReader dataReader = new ContinuousTabularDatasetFileReader(dataFile, DelimiterUtils.toDelimiter(delim));
         try {
-            data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
+            this.data = (DataSet) DataConvertUtils.toDataModel(dataReader.readInData());
         } catch (Exception IOException) {
             IOException.printStackTrace();
         }
@@ -52,20 +62,17 @@ public class HsimAutoC {
         double[] output;
         output = new double[5];
         //========first make the Dag for Hsim==========
-        ICovarianceMatrix cov = new CovarianceMatrix(data);
+        ICovarianceMatrix cov = new CovarianceMatrix(this.data);
         SemBicScore score = new SemBicScore(cov);
+        score.setPenaltyDiscount(2.0);
 
-        double penaltyDiscount = 2.0;
         Fges fges = new Fges(score);
         fges.setVerbose(false);
-        fges.setPenaltyDiscount(penaltyDiscount);
 
         Graph estGraph = fges.search();
         //if (verbose) System.out.println(estGraph);
 
-        //Pattern estPattern = new Pattern(estGraph);
-        PatternToDag patternToDag = new PatternToDag(estGraph);
-        Graph estGraphDAG = patternToDag.patternToDagMeek();
+        Graph estGraphDAG = SearchGraphUtils.dagFromCPDAG(estGraph);
         Dag estDAG = new Dag(estGraphDAG);
         //Dag estDAG = new Dag(estGraph);
 
@@ -73,9 +80,9 @@ public class HsimAutoC {
         //for this class, I'm going to choose variables for resimulation randomly, rather than building cliques
         //select a random node
         List<Node> remainingNodes = estGraph.getNodes();
-        int randIndex = new Random().nextInt(remainingNodes.size());
+        int randIndex = RandomUtil.getInstance().nextInt(remainingNodes.size());
         Node randomnode = remainingNodes.get(randIndex);
-        if (verbose) {
+        if (this.verbose) {
             System.out.println("the first node is " + randomnode);
         }
         List<Node> queue = new ArrayList<>();
@@ -85,26 +92,26 @@ public class HsimAutoC {
         while (queue.size() < resimSize) {
             //choose another node randomly
             remainingNodes.remove(randIndex);
-            randIndex = new Random().nextInt(remainingNodes.size());
+            randIndex = RandomUtil.getInstance().nextInt(remainingNodes.size());
             randomnode = remainingNodes.get(randIndex);
             //add that node to the resim set
             queue.add(randomnode);
         }
 
-        Set<Node> simnodes = new HashSet<Node>(queue);
-        if (verbose) {
+        Set<Node> simnodes = new HashSet<>(queue);
+        if (this.verbose) {
             System.out.println("the resimmed nodes are " + simnodes);
         }
 
         //===========Apply the hybrid resimulation===============
-        HsimContinuous hsimC = new HsimContinuous(estDAG, simnodes, data); //regularDataSet
+        HsimContinuous hsimC = new HsimContinuous(estDAG, simnodes, this.data); //regularDataSet
         DataSet newDataSet = hsimC.hybridsimulate();
 
         //write output to a new file
-        if (write) {
+        if (this.write) {
             try {
-                FileWriter fileWriter = new FileWriter(filenameOut);
-                DataWriter.writeRectangularData(newDataSet, fileWriter, delimiter);
+                FileWriter fileWriter = new FileWriter(this.filenameOut);
+                DataWriter.writeRectangularData(newDataSet, fileWriter, this.delimiter);
                 fileWriter.close();
             } catch (Exception IOException) {
                 IOException.printStackTrace();
@@ -112,13 +119,11 @@ public class HsimAutoC {
         }
 
         //=======Run FGS on the output data, and compare it to the original learned graph
-        //Path dataFileOut = Paths.get(filenameOut);
-        //edu.cmu.tetrad.io.DataReader dataReaderOut = new VerticalTabularDiscreteDataReader(dataFileOut, delimiter);
-        ICovarianceMatrix newcov = new CovarianceMatrix(data);
+        ICovarianceMatrix newcov = new CovarianceMatrix(this.data);
         SemBicScore newscore = new SemBicScore(newcov);
+        newscore.setPenaltyDiscount(2.0);
         Fges fgesOut = new Fges(newscore);
         fgesOut.setVerbose(false);
-        fgesOut.setPenaltyDiscount(2.0);
 
         Graph estGraphOut = fgesOut.search();
         //if (verbose) System.out.println(" bugchecking: fgs estGraphOut: " + estGraphOut);
@@ -134,12 +139,9 @@ public class HsimAutoC {
 
         //SearchGraphUtils.graphComparison(estGraph, estGraphOut, System.out);
         estEvalGraphOut = GraphUtils.replaceNodes(estEvalGraphOut, estEvalGraph.getNodes());
-        //if (verbose) System.out.println(estEvalGraph);
-        //if (verbose) System.out.println(estEvalGraphOut);
 
-        //SearchGraphUtils.graphComparison(estEvalGraphOut, estEvalGraph, System.out);
         output = HsimUtils.errorEval(estEvalGraphOut, estEvalGraph);
-        if (verbose) {
+        if (this.verbose) {
             System.out.println(output[0] + " " + output[1] + " " + output[2] + " " + output[3] + " " + output[4]);
         }
         return output;
@@ -147,18 +149,18 @@ public class HsimAutoC {
 
     //******* Methods for setting values to private variables****************//
     public void setVerbose(boolean verbosity) {
-        verbose = verbosity;
+        this.verbose = verbosity;
     }
 
     public void setWrite(boolean setwrite) {
-        write = setwrite;
+        this.write = setwrite;
     }
 
     public void setFilenameOut(String filename) {
-        filenameOut = filename;
+        this.filenameOut = filename;
     }
 
     public void setDelimiter(char delim) {
-        delimiter = delim;
+        this.delimiter = delim;
     }
 }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -33,12 +33,12 @@ public class PointPair {
     /**
      * The from point.
      */
-    private Point from;
+    private final Point from;
 
     /**
      * The to point.
      */
-    private Point to;
+    private final Point to;
 
     /**
      * This creates a PointPair with each Point at (0, 0).
@@ -65,15 +65,15 @@ public class PointPair {
     }
 
     public Point getFrom() {
-        return from;
+        return this.from;
     }
 
     public Point getTo() {
-        return to;
+        return this.to;
     }
 
     public String toString() {
-        return "<From " + from + " to " + to + ">";
+        return "<From " + this.from + " to " + this.to + ">";
     }
 }
 

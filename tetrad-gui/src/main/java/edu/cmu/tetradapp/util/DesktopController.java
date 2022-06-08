@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,16 +24,16 @@ package edu.cmu.tetradapp.util;
 import edu.cmu.tetrad.session.Session;
 
 /**
- * <p>Indirect control for the desktop to avoid package cycles. The reference to
+ * Indirect control for the desktop to avoid package cycles. The reference to
  * the desktop is set using the <code>activate</code> method, as a
  * DesktopControllable. Once set, the method calls in the DesktopControllable
- * interface are passed on to it.</p>
+ * interface are passed on to it.
  *
  * <p>Note that all argument types are interface-tagged as well to avoid further
- * package cycles.</p>
+ * package cycles.
  *
  * <p>Not pretty, but easier and cleaner by far than passing the reference to the
- * desktop down through all of the relevant classes in tetradapp.</p>
+ * desktop down through all of the relevant classes in tetradapp.
  *
  * @author Joseph Ramsey
  */
@@ -42,7 +42,7 @@ public class DesktopController implements DesktopControllable {
 
 
     public static DesktopControllable getInstance() {
-        return INSTANCE;
+        return DesktopController.INSTANCE;
     }
 
     /**
@@ -51,63 +51,63 @@ public class DesktopController implements DesktopControllable {
      * launched.
      */
     public static void setReference(DesktopControllable component) {
-        INSTANCE = component;
+        DesktopController.INSTANCE = component;
     }
 
     public void newSessionEditor() {
-        getInstance().newSessionEditor();
+        DesktopController.getInstance().newSessionEditor();
     }
 
     public SessionEditorIndirectRef getFrontmostSessionEditor() {
-        return getInstance().getFrontmostSessionEditor();
+        return DesktopController.getInstance().getFrontmostSessionEditor();
     }
 
     public void exitProgram() {
-        getInstance().exitProgram();
+        DesktopController.getInstance().exitProgram();
     }
 
     public boolean existsSessionByName(String name) {
-        return getInstance().existsSessionByName(name);
+        return DesktopController.getInstance().existsSessionByName(name);
     }
 
     public Session getSessionByName(String name) {
-        return getInstance().getSessionByName(name);
+        return DesktopController.getInstance().getSessionByName(name);
     }
 
     public void addSessionEditor(SessionEditorIndirectRef editor) {
-        getInstance().addSessionEditor(editor);
+        DesktopController.getInstance().addSessionEditor(editor);
     }
 
     public void closeEmptySessions() {
-        getInstance().closeAllSessions();
+        DesktopController.getInstance().closeAllSessions();
     }
 
     public void putMetadata(SessionWrapperIndirectRef sessionWrapper,
-            TetradMetadataIndirectRef metadata) {
-        getInstance().putMetadata(sessionWrapper, metadata);
+                            TetradMetadataIndirectRef metadata) {
+        DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
     }
 
     public TetradMetadataIndirectRef getTetradMetadata(
             SessionWrapperIndirectRef sessionWrapper) {
-        return getInstance().getTetradMetadata(sessionWrapper);
+        return DesktopController.getInstance().getTetradMetadata(sessionWrapper);
     }
 
     public void addEditorWindow(EditorWindowIndirectRef editorWindow, int layer) {
-        getInstance().addEditorWindow(editorWindow, layer);
+        DesktopController.getInstance().addEditorWindow(editorWindow, layer);
     }
-  
+
 
     public void closeFrontmostSession() {
-        getInstance().closeFrontmostSession();
+        DesktopController.getInstance().closeFrontmostSession();
     }
 
     @Override
     public void closeSessionByName(String name) {
-        getInstance().closeSessionByName(name);
+        DesktopController.getInstance().closeSessionByName(name);
     }
 
     public boolean closeAllSessions() {
-        return getInstance().closeAllSessions();
+        return DesktopController.getInstance().closeAllSessions();
     }
 }
 

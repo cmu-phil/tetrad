@@ -1,22 +1,18 @@
 package edu.cmu.tetradapp.editor;
 
-import java.awt.Component;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.prefs.Preferences;
 
-import javax.swing.AbstractAction;
-import javax.swing.JFileChooser;
-
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-
 /**
- * 
  * Nov 30, 2016 5:54:33 PM
- * 
+ *
  * @author Chirayu (Kong) Wongchokprasitti, PhD
- * 
  */
 public class LoadGraphJson extends AbstractAction {
 
@@ -25,10 +21,10 @@ public class LoadGraphJson extends AbstractAction {
     /**
      * The component whose image is to be saved.
      */
-    private GraphEditable graphEditable;
+    private final GraphEditable graphEditable;
 
     public LoadGraphJson(GraphEditable graphEditable, String title) {
-	super(title);
+        super(title);
 
         if (graphEditable == null) {
             throw new NullPointerException("Component must not be null.");
@@ -39,11 +35,11 @@ public class LoadGraphJson extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        JFileChooser chooser = getJFileChooser();
+        JFileChooser chooser = LoadGraphJson.getJFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.showOpenDialog((Component) this.graphEditable);
 
-        final File file = chooser.getSelectedFile();
+        File file = chooser.getSelectedFile();
 
         if (file == null) {
             System.out.println("File was null.");
@@ -54,7 +50,7 @@ public class LoadGraphJson extends AbstractAction {
 
         Graph graph = GraphUtils.loadGraphJson(file);
         GraphUtils.circleLayout(graph, 200, 200, 150);
-        graphEditable.setGraph(graph);
+        this.graphEditable.setGraph(graph);
     }
 
     private static JFileChooser getJFileChooser() {

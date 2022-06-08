@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,7 +41,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -64,7 +64,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     /**
      * The algorithm wrapper being viewed.
      */
-    private AlgorithmRunner algorithmRunner;
+    private final AlgorithmRunner algorithmRunner;
 
     /**
      * The workbench displaying the result workbench.
@@ -80,7 +80,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     /**
      * The label for the result graph workbench.
      */
-    private String resultLabel;
+    private final String resultLabel;
 
     /**
      * The scrollpange for the result workbench.
@@ -91,7 +91,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
      * True if the warning message that previously defined knowledge is being
      * used has already been shown and doesn't need to be shown again.
      */
-    boolean knowledgeMessageShown = false;
+    boolean knowledgeMessageShown;
 
     /**
      * History of graph edits.
@@ -166,7 +166,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
      */
     public java.util.List getSelectedModelComponents() {
         java.util.List<Component> selectedComponents =
-                workbench.getSelectedComponents();
+                this.workbench.getSelectedComponents();
         java.util.List<TetradSerializable> selectedModelComponents =
                 new ArrayList<>();
 
@@ -187,7 +187,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     /**
      * Not supported.
      */
-    public void pasteSubsession(java.util.List sessionElements, Point upperLeft) {
+    public void pasteSubsession(java.util.List<Object> sessionElements, Point upperLeft) {
         throw new UnsupportedOperationException("Cannot paste into Search editor.");
     }
 
@@ -213,7 +213,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     void execute() {
         Window owner = (Window) getTopLevelAncestor();
 
-        final WatchedProcess process = new WatchedProcess(owner) {
+        WatchedProcess process = new WatchedProcess(owner) {
             public void watch() {
                 try {
                     getExecuteButton().setEnabled(false);
@@ -222,7 +222,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                 }
                 setErrorMessage(null);
 
-                if (!knowledgeMessageShown) {
+                if (!AbstractSearchEditor.this.knowledgeMessageShown) {
                     Parameters searchParams = getAlgorithmRunner().getParams();
 
                     if (searchParams != null) {
@@ -232,7 +232,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                                     JOptionUtils.centeringComp(),
                                     "Using previously set knowledge. (To edit, use " +
                                             "the Knowledge menu.)");
-                            knowledgeMessageShown = true;
+                            AbstractSearchEditor.this.knowledgeMessageShown = true;
                         }
                     }
                 }
@@ -269,8 +269,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                     throw new RuntimeException(e);
                 }
 
-//                getWorkbenchScroll().setBorder(
-//                        new TitledBorder(getResultLabel()));
                 Graph resultGraph = resultGraph();
 
                 doDefaultArrangement(resultGraph);
@@ -287,23 +285,21 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
             }
         };
 
-        Thread watcher = new Thread() {
-            public void run() {
-                while (true) {
-                    try {
-                        sleep(300);
+        Thread watcher = new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(300);
 
-                        if (!process.isAlive()) {
-                            getExecuteButton().setEnabled(true);
-                            return;
-                        }
-                    } catch (InterruptedException e) {
+                    if (!process.isAlive()) {
                         getExecuteButton().setEnabled(true);
                         return;
                     }
+                } catch (InterruptedException e) {
+                    getExecuteButton().setEnabled(true);
+                    return;
                 }
             }
-        };
+        });
 
         watcher.start();
     }
@@ -316,17 +312,17 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
 
     JButton getExecuteButton() {
-        return executeButton;
+        return this.executeButton;
     }
 
     AlgorithmRunner getAlgorithmRunner() {
-        return algorithmRunner;
+        return this.algorithmRunner;
     }
 
     //===========================PRIVATE METHODS==========================//
 
     private Graph resultGraph() {
-        Graph resultGraph = algorithmRunner.getGraph();
+        Graph resultGraph = this.algorithmRunner.getGraph();
 
         if (resultGraph == null) {
             resultGraph = new EdgeListGraph();
@@ -349,16 +345,16 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     void setup(String resultLabel) {
         setLayout(new BorderLayout());
         add(getToolbar(), BorderLayout.WEST);
-        add(workbenchScroll(resultLabel), BorderLayout.CENTER);
+        add(workbenchScroll(), BorderLayout.CENTER);
         add(menuBar(), BorderLayout.NORTH);
     }
 
 
-    JScrollPane workbenchScroll(String resultLabel) {
+    JScrollPane workbenchScroll() {
         Graph resultGraph = resultGraph();
 
-        Graph sourceGraph = algorithmRunner.getSourceGraph();
-        Parameters searchParams = algorithmRunner.getParams();
+        Graph sourceGraph = this.algorithmRunner.getSourceGraph();
+        Parameters searchParams = this.algorithmRunner.getParams();
         Graph latestWorkbenchGraph = null;
 
         if (searchParams != null) {
@@ -371,28 +367,14 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
             GraphUtils.arrangeBySourceGraph(resultGraph, latestWorkbenchGraph);
         }
 
-//        boolean arrangedAll = DataGraphUtils.arrangeBySourceGraph(resultGraph,
-//                latestWorkbenchGraph);
-//
-//        if (!arrangedAll) {
-//            arrangedAll =
-//                    DataGraphUtils.arrangeBySourceGraph(resultGraph, sourceGraph);
-//        }
-
-//        if (!arrangedAll) {
-//            DataGraphUtils.circleLayout(resultGraph, 200, 200, 150);
-//        }
-
         this.workbench = new GraphWorkbench(resultGraph);
 
-        graphHistory.clear();
-        graphHistory.add(resultGraph);
+        this.graphHistory.clear();
+        this.graphHistory.add(resultGraph);
 
         this.workbench.setAllowDoubleClickActions(false);
         this.workbench.setAllowNodeEdgeSelection(true);
-        this.workbenchScroll = new JScrollPane(workbench);
-//        workbenchScroll.setPreferredSize(new Dimension(450, 450));
-//        workbenchScroll.setBorder(new TitledBorder(resultLabel));
+        this.workbenchScroll = new JScrollPane(this.workbench);
 
         this.workbench.addMouseListener(new MouseAdapter() {
             public void mouseExited(MouseEvent e) {
@@ -400,16 +382,16 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
             }
         });
 
-        return workbenchScroll;
+        return this.workbenchScroll;
     }
 
 //     JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
 //        JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
 //
 //        copy.setAccelerator(
-//                KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+//                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
 //        paste.setAccelerator(
-//                KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+//                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 //
 //        edit.add(copy);
 //        edit.add(paste);
@@ -423,13 +405,11 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         menuBar.add(file);
         JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
         file.add(fileMenu);
-//        file.add(new SaveGraph(this, "Save Graph..."));
-//        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
-        file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
+        file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
 
         JMenu edit = new JMenu("Edit");
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
-        copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+        copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         edit.add(copy);
 
         menuBar.add(edit);
@@ -441,35 +421,35 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
 
     String getResultLabel() {
-        return resultLabel;
+        return this.resultLabel;
     }
 
     JScrollPane getWorkbenchScroll() {
-        return workbenchScroll;
+        return this.workbenchScroll;
     }
 
     Graph getLatestWorkbenchGraph() {
-        if (algorithmRunner.getParams() == null) {
+        if (this.algorithmRunner.getParams() == null) {
             return null;
         }
 
-        Graph graph = (Graph) algorithmRunner.getParams().get("sourceGraph", null);
+        Graph graph = (Graph) this.algorithmRunner.getParams().get("sourceGraph", null);
 
         if (graph == null) {
-            return algorithmRunner.getSourceGraph();
+            return this.algorithmRunner.getSourceGraph();
         }
 
         return graph;
     }
 
     void storeLatestWorkbenchGraph() {
-        Graph latestWorkbenchGraph = workbench.getGraph();
+        Graph latestWorkbenchGraph = this.workbench.getGraph();
 
         if (latestWorkbenchGraph.getNumNodes() == 0) {
             return;
         }
 
-        Parameters searchParams = algorithmRunner.getParams();
+        Parameters searchParams = this.algorithmRunner.getParams();
 
         try {
             Graph graph = new MarshalledObject<>(latestWorkbenchGraph).get();
@@ -497,7 +477,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
     }
 
     GraphHistory getGraphHistory() {
-        return graphHistory;
+        return this.graphHistory;
     }
 
     public void setTestType(IndTestType testType) {

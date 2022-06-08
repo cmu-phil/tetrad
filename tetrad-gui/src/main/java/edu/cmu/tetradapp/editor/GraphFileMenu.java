@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,8 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import javax.swing.*;
-
-import edu.cmu.tetradapp.app.hpc.action.LoadHpcGraphJsonAction;
 
 
 /**
@@ -46,10 +44,7 @@ final class GraphFileMenu extends JMenu {
         load.add(new LoadGraph(editable, "XML..."));
         load.add(new LoadGraphTxt(editable, "Text..."));
         load.add(new LoadGraphJson(editable, "Json..."));
-        // Load from remote HPC servers
-        load.addSeparator();
-        load.add(new LoadHpcGraphJsonAction(editable, "Remote Json from HPC..."));
-        
+
         JMenu save = new JMenu("Save...");
         add(save);
 
@@ -59,8 +54,6 @@ final class GraphFileMenu extends JMenu {
         save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
         save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
 
-//        add(new SaveGraph(editable, "Save Graph..."));
-//        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         addSeparator();
         add(new SaveComponentImage(comp, "Save Graph Image..."));
     }

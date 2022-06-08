@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
@@ -22,6 +23,7 @@ import java.util.List;
         command = "cg-bic-score",
         dataType = DataType.Mixed
 )
+@Mixed
 public class ConditionalGaussianBicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
@@ -30,7 +32,7 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final ConditionalGaussianScore conditionalGaussianScore =
+        ConditionalGaussianScore conditionalGaussianScore =
                 new ConditionalGaussianScore(DataUtils.getMixedDataSet(dataSet),
                         parameters.getDouble("penaltyDiscount"),
                         parameters.getDouble("structurePrior"),
@@ -62,6 +64,6 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
 
     @Override
     public Node getVariable(String name) {
-        return  dataSet.getVariable(name);
+        return this.dataSet.getVariable(name);
     }
 }

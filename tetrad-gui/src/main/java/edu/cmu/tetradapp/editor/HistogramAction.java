@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -55,8 +55,8 @@ class HistogramAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
-        if(dataSet == null || dataSet.getNumColumns() == 0){
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
+        if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot display a histogram for an empty data set.");
             return;
         }
@@ -67,18 +67,18 @@ class HistogramAction extends AbstractAction {
         if (selected != null && selected.length >= 1) {
 
             // warn user if they selected more than 10
-            if(selected.length > 10){
+            if (selected.length > 10) {
                 int option = JOptionPane.showConfirmDialog(findOwner(), "You are about to open " + selected.length +
-                " histograms, are you sure you want to proceed?", "Histogram Warning", JOptionPane.YES_NO_OPTION);
+                        " histograms, are you sure you want to proceed?", "Histogram Warning", JOptionPane.YES_NO_OPTION);
                 // if selected no, return
-                if(option == JOptionPane.NO_OPTION){
+                if (option == JOptionPane.NO_OPTION) {
                     return;
                 }
             }
 
             for (int index : selected) {
                 JPanel component = createHistogramPanel(dataSet.getVariable(index));
-                EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, dataEditor);
+                EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, this.dataEditor);
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
                 setLocation(editorWindow, index);
@@ -88,7 +88,7 @@ class HistogramAction extends AbstractAction {
 
             // No selected variable--just show a histogram for the first variable.
             JPanel component = createHistogramPanel(null);
-            EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, dataEditor);
+            EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, this.dataEditor);
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();
             editorWindow.setVisible(true);
@@ -112,8 +112,8 @@ class HistogramAction extends AbstractAction {
 
         int x = (int) (150 * Math.cos(index * 15 * (Math.PI / 180)));
         int y = (int) (150 * Math.sin(index * 15 * (Math.PI / 180)));
-        x += (dim.width - bounds.width)/2;
-        y += (dim.height - bounds.height)/2;
+        x += (dim.width - bounds.width) / 2;
+        y += (dim.height - bounds.height) / 2;
         dialog.setLocation(x, y);
     }
 
@@ -123,7 +123,8 @@ class HistogramAction extends AbstractAction {
      * one is selected for you)
      */
     private JPanel createHistogramPanel(Node selected) {
-        DataSet dataSet = (DataSet) dataEditor.getSelectedDataModel();
+        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
+        assert dataSet != null;
         Histogram histogram = new Histogram(dataSet);
         histogram.setTarget(selected == null ? null : selected.getName());
         HistogramView view = new HistogramView(histogram);
@@ -146,7 +147,7 @@ class HistogramAction extends AbstractAction {
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
-                JFrame.class, dataEditor);
+                JFrame.class, this.dataEditor);
     }
 }
 

@@ -19,13 +19,12 @@
 package edu.cmu.tetrad.stat;
 
 /**
- *
  * Feb 9, 2016 3:13:19 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface RealVariance {
 
-    public double[] compute(boolean biasCorrected);
+    double[] compute(boolean biasCorrected);
 
 }

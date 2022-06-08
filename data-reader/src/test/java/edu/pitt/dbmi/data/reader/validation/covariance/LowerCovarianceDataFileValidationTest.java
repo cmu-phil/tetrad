@@ -20,15 +20,15 @@ package edu.pitt.dbmi.data.reader.validation.covariance;
 
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
- *
  * Nov 20, 2018 2:04:40 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -36,8 +36,6 @@ import org.junit.Test;
 public class LowerCovarianceDataFileValidationTest {
 
     private final Delimiter delimiter = Delimiter.SPACE;
-    private final char quoteCharacter = '"';
-    private final String commentMarker = "//";
 
     private final Path dataFile = Paths.get(getClass().getResource("/data/covariance/bad_spartina.txt").getFile());
 
@@ -49,8 +47,10 @@ public class LowerCovarianceDataFileValidationTest {
      */
     @Test
     public void testValidate() {
-        CovarianceValidation validation = new LowerCovarianceDataFileValidation(dataFile, delimiter);
+        CovarianceValidation validation = new LowerCovarianceDataFileValidation(this.dataFile, this.delimiter);
+        String commentMarker = "//";
         validation.setCommentMarker(commentMarker);
+        char quoteCharacter = '"';
         validation.setQuoteCharacter(quoteCharacter);
 
         List<ValidationResult> results = validation.validate();

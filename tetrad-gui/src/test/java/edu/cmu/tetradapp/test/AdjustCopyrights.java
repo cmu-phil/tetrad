@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,8 +42,7 @@ public class AdjustCopyrights {
 
         try {
             copyrightNotice = loadCopyrightNotice();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -73,9 +72,8 @@ public class AdjustCopyrights {
 
                 int from = matcher.start();
                 outStream.println(
-                        inContents.substring(from, inContents.length()));
-            }
-            catch (IOException e) {
+                        inContents.substring(from));
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -101,8 +99,7 @@ public class AdjustCopyrights {
         for (File file : files) {
             if (file.isDirectory()) {
                 javaFiles.addAll(getJavaFiles(file));
-            }
-            else {
+            } else {
                 if (file.getName().endsWith(".java")) {
                     javaFiles.add(file);
                 }

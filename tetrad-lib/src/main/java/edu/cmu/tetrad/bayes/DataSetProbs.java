@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -43,7 +43,7 @@ public final class DataSetProbs implements DiscreteProbs {
      *
      * @serial
      */
-    private DataSet dataSet;
+    private final DataSet dataSet;
 
     /**
      * An array whose length is the number of dimensions of the cell and whose
@@ -54,14 +54,6 @@ public final class DataSetProbs implements DiscreteProbs {
      * @serial
      */
     private final int[] dims;
-
-//    /**
-//     * Indicates whether bounds on coordinate values are explicitly enforced.
-//     * This may slow down loops.
-//     *
-//     * @serial
-//     */
-//    private boolean boundsEnforced = true;
 
     /**
      * The number of rows in the data.
@@ -89,15 +81,15 @@ public final class DataSetProbs implements DiscreteProbs {
         }
 
         this.dataSet = dataSet;
-        dims = new int[dataSet.getNumColumns()];
+        this.dims = new int[dataSet.getNumColumns()];
 
-        for (int i = 0; i < dims.length; i++) {
+        for (int i = 0; i < this.dims.length; i++) {
             DiscreteVariable variable =
                     (DiscreteVariable) dataSet.getVariable(i);
-            dims[i] = variable.getNumCategories();
+            this.dims[i] = variable.getNumCategories();
         }
 
-        numRows = dataSet.getNumRows();
+        this.numRows = dataSet.getNumRows();
     }
 
     //===========================PUBLIC METHODS=========================//
@@ -107,15 +99,15 @@ public final class DataSetProbs implements DiscreteProbs {
      * variable values is the order of the variables in getVariable().
      */
     public double getCellProb(int[] variableValues) {
-        int[] point = new int[dims.length];
+        int[] point = new int[this.dims.length];
         int count = 0;
 
         this.missingValueCaseFound = false;
 
         point:
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < dims.length; j++) {
-                point[j] = dataSet.getInt(i, j);
+        for (int i = 0; i < this.numRows; i++) {
+            for (int j = 0; j < this.dims.length; j++) {
+                point[j] = this.dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
                     this.missingValueCaseFound = true;
@@ -135,15 +127,15 @@ public final class DataSetProbs implements DiscreteProbs {
      * @return the estimated probability of the given proposition.
      */
     public double getProb(Proposition assertion) {
-        int[] point = new int[dims.length];
+        int[] point = new int[this.dims.length];
         int count = 0;
 
         this.missingValueCaseFound = false;
 
         point:
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < dims.length; j++) {
-                point[j] = dataSet.getInt(i, j);
+        for (int i = 0; i < this.numRows; i++) {
+            for (int j = 0; j < this.dims.length; j++) {
+                point[j] = this.dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
                     this.missingValueCaseFound = true;
@@ -172,7 +164,7 @@ public final class DataSetProbs implements DiscreteProbs {
         }
 
         List<Node> assertionVars = assertion.getVariableSource().getVariables();
-        List<Node> dataVars = dataSet.getVariables();
+        List<Node> dataVars = this.dataSet.getVariables();
 
         assertionVars = GraphUtils.replaceNodes(assertionVars, dataVars);
 
@@ -185,15 +177,15 @@ public final class DataSetProbs implements DiscreteProbs {
                             "\n\tData vars: " + dataVars);
         }
 
-        int[] point = new int[dims.length];
+        int[] point = new int[this.dims.length];
         int count1 = 0;
         int count2 = 0;
         this.missingValueCaseFound = false;
 
         point:
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < dims.length; j++) {
-                point[j] = dataSet.getInt(i, j);
+        for (int i = 0; i < this.numRows; i++) {
+            for (int j = 0; j < this.dims.length; j++) {
+                point[j] = this.dataSet.getInt(i, j);
 
                 if (point[j] == DiscreteVariable.MISSING_VALUE) {
                     continue point;
@@ -216,7 +208,7 @@ public final class DataSetProbs implements DiscreteProbs {
      * @return the dataset that this is estimating probabilities for.
      */
     public DataSet getDataSet() {
-        return dataSet;
+        return this.dataSet;
     }
 
     /**
@@ -227,23 +219,6 @@ public final class DataSetProbs implements DiscreteProbs {
         return null;
     }
 
-//    /**
-//     * True iff bounds checking is performed on variable values indices.
-//     */
-//    public boolean isBoundsEnforced() {
-//        return boundsEnforced;
-//    }
-//
-//    /**
-//     * True iff bounds checking is performed on variable values indices.
-//     */
-//    public void setBoundsEnforced(boolean boundsEnforced) {
-//        this.boundsEnforced = boundsEnforced;
-//    }
-
-    public boolean isMissingValueCaseFound() {
-        return missingValueCaseFound;
-    }
 }
 
 

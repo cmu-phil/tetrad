@@ -54,8 +54,8 @@ in XML format.
 "-graphtxt" followed by a filename will write graphical output to that file
 in text format.
 
-"-initialgraphtxt" followed by a file name will read in an initial graph.
-This is only used for FGES.
+"-externalgraphtxt" followed by a file name will read in an initial graph.
+This is only used for pairwise algorithms.
 
 "-nodsep" for FCI indicates that the D-Sep search should not be run.
 

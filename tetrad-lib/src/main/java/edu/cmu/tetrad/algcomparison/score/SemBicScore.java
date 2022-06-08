@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -22,6 +23,7 @@ import java.util.List;
         command = "sem-bic-score",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
+@LinearGaussian
 public class SemBicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
@@ -34,7 +36,7 @@ public class SemBicScore implements ScoreWrapper {
         edu.cmu.tetrad.search.SemBicScore semBicScore;
 
         if (dataSet instanceof DataSet) {
-            semBicScore = new edu.cmu.tetrad.search.SemBicScore((DataSet) this.dataSet);
+            semBicScore = new edu.cmu.tetrad.search.SemBicScore((DataSet) this.dataSet, parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
         } else if (dataSet instanceof ICovarianceMatrix) {
             semBicScore = new edu.cmu.tetrad.search.SemBicScore((ICovarianceMatrix) this.dataSet);
         } else {
@@ -74,12 +76,13 @@ public class SemBicScore implements ScoreWrapper {
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
         parameters.add(Params.SEM_BIC_RULE);
+        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         return parameters;
     }
 
     @Override
     public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+        return this.dataSet.getVariable(name);
     }
 
 }

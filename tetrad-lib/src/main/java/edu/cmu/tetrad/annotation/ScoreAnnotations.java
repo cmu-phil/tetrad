@@ -21,7 +21,6 @@ package edu.cmu.tetrad.annotation;
 import java.util.List;
 
 /**
- *
  * Sep 26, 2017 1:14:01 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -35,7 +34,7 @@ public class ScoreAnnotations extends AbstractAnnotations<Score> {
     }
 
     public static ScoreAnnotations getInstance() {
-        return INSTANCE;
+        return ScoreAnnotations.INSTANCE;
     }
 
     public List<AnnotatedClass<Score>> filterOutExperimental(List<AnnotatedClass<Score>> list) {

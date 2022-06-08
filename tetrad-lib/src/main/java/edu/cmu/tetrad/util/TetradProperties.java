@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- *
  * Nov 10, 2017 4:14:31 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -38,7 +37,7 @@ public class TetradProperties {
     private final Map<String, String> props = new HashMap<>();
 
     private TetradProperties() {
-        final Properties properties = new Properties();
+        Properties properties = new Properties();
         try (InputStream inputStream = TetradProperties.class.getResourceAsStream("/tetrad-lib.properties")) {
             if (inputStream != null) {
                 properties.load(inputStream);
@@ -47,15 +46,15 @@ public class TetradProperties {
             exception.printStackTrace(System.err);
         }
 
-        properties.stringPropertyNames().forEach(e -> props.put(e, properties.getProperty(e)));
+        properties.stringPropertyNames().forEach(e -> this.props.put(e, properties.getProperty(e)));
     }
 
     public static TetradProperties getInstance() {
-        return INSTANCE;
+        return TetradProperties.INSTANCE;
     }
 
     public Set<String> getProperties() {
-        return props.keySet();
+        return this.props.keySet();
     }
 
     public String getValue(String property) {
@@ -63,7 +62,7 @@ public class TetradProperties {
             return null;
         }
 
-        return props.get(property);
+        return this.props.get(property);
     }
 
 }

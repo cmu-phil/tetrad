@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,9 +39,8 @@ public interface LagGraph extends TetradSerializable {
      *
      * @param factor       a factor name in the graph.
      * @param laggedFactor a lagged factor with factor name in the graph and lag
-     *                     >=1.
-     * @throws java.lang.IllegalArgumentException
-     *          if the edge cannot be added.
+     *                     &gt;=1.
+     * @throws java.lang.IllegalArgumentException if the edge cannot be added.
      */
     void addEdge(String factor, LaggedFactor laggedFactor)
             throws IllegalArgumentException;
@@ -102,7 +101,7 @@ public interface LagGraph extends TetradSerializable {
 
     /**
      * Sets the maximum allowable lag. Edges may not be added with lags greater
-     * than this. This value must be >= the getModel value of getMaxLag().
+     * than this. This value must be &gt;= the getModel value of getMaxLag().
      */
     void setMaxLagAllowable(int maxLagAllowable);
 
@@ -129,10 +128,10 @@ public interface LagGraph extends TetradSerializable {
      * The way to do this is to use this method to get a copy of the
      * connectivity to store internally in the update function. Because it is a
      * SortedMap, factors and lagged factors can be expected to stay in the same
-     * order. </p> <p><i>Note:</i> This strategy is not implemented yet!  Please
+     * order. <p><i>Note:</i> This strategy is not implemented yet!  Please
      * remove this note when it is implemented.  The idea is to get rid of the
      * classes IndexedParent and Connectivity and use this sorted map to replace
-     * them.</p>
+     * them.
      *
      * @return this sorted map.
      */

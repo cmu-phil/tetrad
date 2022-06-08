@@ -28,26 +28,28 @@
 package jgpml.covariancefunctions;
 
 import Jama.Matrix;
-import static jgpml.covariancefunctions.MatrixOperations.*;
 
 import java.util.Arrays;
+
+import static jgpml.covariancefunctions.MatrixOperations.exp;
 
 /**
  * Squared Exponential covariance function with isotropic distance measure. The
  * covariance function is parameterized as:
- * <P><DD>
+ * <P>
  * k(x^p,x^q) = sf2 * exp(-(x^p - x^q)'*inv(P)*(x^p - x^q)/2)
- * </DD>
+ *
  * where the P matrix is ell^2 times the unit matrix and sf2 is the signal
  * variance. The hyperparameters are:
- * <P>
+ * <p>
  * [ log(ell)
  * log(sqrt(sf2)) ]
  */
 
-public class CovSEiso implements CovarianceFunction{
+public class CovSEiso implements CovarianceFunction {
 
-    public CovSEiso(){}
+    public CovSEiso() {
+    }
 
 
     /**
@@ -68,15 +70,13 @@ public class CovSEiso implements CovarianceFunction{
      */
     public Matrix compute(Matrix loghyper, Matrix X) {
 
-        if(loghyper.getColumnDimension()!=1 || loghyper.getRowDimension()!=numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, "+loghyper.getRowDimension()+" instead of "+numParameters());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double ell = Math.exp(loghyper.get(0,0));
-        double sf2 = Math.exp(2*loghyper.get(1,0));
+        double ell = Math.exp(loghyper.get(0, 0));
+        double sf2 = Math.exp(2 * loghyper.get(1, 0));
 
-        Matrix K = exp(squareDist(X.transpose().times(1/ell)).times(-0.5)).times(sf2);
-
-        return K;
+        return exp(CovSEiso.squareDist(X.transpose().times(1 / ell)).times(-0.5)).times(sf2);
     }
 
     /**
@@ -85,23 +85,23 @@ public class CovSEiso implements CovarianceFunction{
      * @param loghyper column <code>Matrix</code> of hyperparameters
      * @param X        input dataset
      * @param Xstar    test set
-     * @return [K(Xstar,Xstar) K(X,Xstar)]
+     * @return [K(Xstar, Xstar) K(X,Xstar)]
      */
     public Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar) {
 
-        if(loghyper.getColumnDimension()!=1 || loghyper.getRowDimension()!=numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, "+loghyper.getRowDimension()+" instead of "+numParameters());
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
 
-        double ell = Math.exp(loghyper.get(0,0));
-        double sf2 = Math.exp(2*loghyper.get(1,0));
+        double ell = Math.exp(loghyper.get(0, 0));
+        double sf2 = Math.exp(2 * loghyper.get(1, 0));
         double[] a = new double[Xstar.getRowDimension()];
-        Arrays.fill(a,sf2);
-        Matrix A = new Matrix(a,a.length);
+        Arrays.fill(a, sf2);
+        Matrix A = new Matrix(a, a.length);
 
-        Matrix B = exp(squareDist(X.transpose().times(1/ell),Xstar.transpose().times(1/ell)).times(-0.5)).times(sf2);
+        Matrix B = exp(CovSEiso.squareDist(X.transpose().times(1 / ell), Xstar.transpose().times(1 / ell)).times(-0.5)).times(sf2);
 
-        return new Matrix[]{A,B};
+        return new Matrix[]{A, B};
     }
 
     /**
@@ -115,41 +115,44 @@ public class CovSEiso implements CovarianceFunction{
      */
     public Matrix computeDerivatives(Matrix loghyper, Matrix X, int index) {
 
-        if(loghyper.getColumnDimension()!=1 || loghyper.getRowDimension()!=numParameters())
-            throw new IllegalArgumentException("Wrong number of hyperparameters, "+loghyper.getRowDimension()+" instead of "+numParameters());
-        if(index>numParameters()-1)
-            throw new IllegalArgumentException("Wrong hyperparameters index "+index+" it should be smaller or equal to "+(numParameters()-1));
+        if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
+            throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
+        if (index > numParameters() - 1)
+            throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
-        double ell = Math.exp(loghyper.get(0,0));
-        double sf2 = Math.exp(2*loghyper.get(1,0));
+        double ell = Math.exp(loghyper.get(0, 0));
+        double sf2 = Math.exp(2 * loghyper.get(1, 0));
 
-        Matrix tmp = squareDist(X.transpose().times(1/ell));
+        Matrix tmp = CovSEiso.squareDist(X.transpose().times(1 / ell));
         Matrix A = null;
-        if(index==0){
+        if (index == 0) {
             A = exp(tmp.times(-0.5)).arrayTimes(tmp).times(sf2);
         } else {
-            A = exp(tmp.times(-0.5)).times(2*sf2);
+            A = exp(tmp.times(-0.5)).times(2 * sf2);
         }
 
         return A;
     }
 
 
-    private static Matrix squareDist(Matrix a){
-        return squareDist(a,a);
+    private static Matrix squareDist(Matrix a) {
+        return CovSEiso.squareDist(a, a);
     }
 
-    private static Matrix squareDist(Matrix a, Matrix b){
-        Matrix C = new Matrix(a.getColumnDimension(),b.getColumnDimension());
-        final int m = a.getColumnDimension();
-        final int n = b.getColumnDimension();
-        final int d = a.getRowDimension();
+    private static Matrix squareDist(Matrix a, Matrix b) {
+        Matrix C = new Matrix(a.getColumnDimension(), b.getColumnDimension());
+        int m = a.getColumnDimension();
+        int n = b.getColumnDimension();
+        int d = a.getRowDimension();
 
-        for (int i=0; i<m; i++){
-            for (int j=0; j<n; j++) {
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
                 double z = 0.0;
-                for (int k=0; k<d; k++) { double t = a.get(k,i) - b.get(k,j); z += t*t; }
-                C.set(i,j,z);
+                for (int k = 0; k < d; k++) {
+                    double t = a.get(k, i) - b.get(k, j);
+                    z += t * t;
+                }
+                C.set(i, j, z);
             }
         }
 
@@ -160,21 +163,10 @@ public class CovSEiso implements CovarianceFunction{
 
         CovSEiso cf = new CovSEiso();
 
-        Matrix X = Matrix.identity(6,6);
-        Matrix logtheta = new Matrix(new double[][]{{0.1},{0.2}});
+        Matrix X = Matrix.identity(6, 6);
+        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}});
 
-//        Matrix z = new Matrix(new double[][]{{1,2,3,4,5,6},{1,2,3,4,5,6}});
-//
-//            System.out.println("");
-//            Matrix K = cf.compute(logtheta,X);
-//            K.print(K.getColumnDimension(), 8);
-//
-//            Matrix[] res = cf.compute(logtheta,X,z);
-//
-//            res[0].print(res[0].getColumnDimension(), 20);
-//            res[1].print(res[1].getColumnDimension(), 20);
-
-        Matrix d = cf.computeDerivatives(logtheta,X,1);
+        Matrix d = cf.computeDerivatives(logtheta, X, 1);
 
         d.print(d.getColumnDimension(), 8);
     }

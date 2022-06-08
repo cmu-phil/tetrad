@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,7 +34,7 @@ import java.util.SortedSet;
  * indices rather than Strings to refer to factors. Since lag graphs are
  * dynamic, they can't do this directly, as the indices might change from one
  * time to the next. However, for certain uses of lag graphs, the graph itself
- * may be assumed to be static, so this optimization is useful.</p>
+ * may be assumed to be static, so this optimization is useful.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -46,14 +46,14 @@ public class IndexedConnectivity implements TetradSerializable {
      *
      * @serial
      */
-    private List<String> factors;
+    private final List<String> factors;
 
     /**
      * The graph that this "snapshot" of indexedConnectivity was taken from.
      *
      * @serial
      */
-    private IndexedParent[][] parents;
+    private final IndexedParent[][] parents;
 
     //=============================CONSTRUCTORS===========================//
 
@@ -105,15 +105,12 @@ public class IndexedConnectivity implements TetradSerializable {
                 _parents[i2] = list.get(i2);
             }
 
-            parents[i] = _parents;
+            this.parents[i] = _parents;
         }
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static IndexedConnectivity serializableInstance() {
         return new IndexedConnectivity(BasicLagGraph.serializableInstance());
@@ -159,8 +156,8 @@ public class IndexedConnectivity implements TetradSerializable {
      * parent.
      */
     public int getIndex(int factor, IndexedParent parent) {
-        for (int i = 0; i < parents[factor].length; i++) {
-            if (parent.equals(parents[factor][i])) {
+        for (int i = 0; i < this.parents[factor].length; i++) {
+            if (parent.equals(this.parents[factor][i])) {
                 return i;
             }
         }
@@ -224,19 +221,16 @@ public class IndexedConnectivity implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (factors == null) {
+        if (this.factors == null) {
             throw new NullPointerException();
         }
 
-        if (parents == null) {
+        if (this.parents == null) {
             throw new IllegalStateException();
         }
 

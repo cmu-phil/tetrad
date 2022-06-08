@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -32,8 +32,6 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,40 +76,34 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
 
     public void setup() {
         DoubleTextField alphaField = new DoubleTextField(
-                params.getDouble("alpha", 0.001), 4, NumberFormatUtil.getInstance().getNumberFormat());
-        alphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    getParams().set("alpha", 0.001);
-                    return value;
-                } catch (Exception e) {
-                    return oldValue;
-                }
+                this.params.getDouble("alpha", 0.001), 4, NumberFormatUtil.getInstance().getNumberFormat());
+        alphaField.setFilter((value, oldValue) -> {
+            try {
+                getParams().set("alpha", 0.001);
+                return value;
+            } catch (Exception e) {
+                return oldValue;
             }
         });
 
-        final TestType[] descriptions = TestType.getTestDescriptions();
+        TestType[] descriptions = TestType.getTestDescriptions();
         JComboBox testSelector = new JComboBox(descriptions);
         testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
 
-        testSelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                TestType testType = (TestType) combo.getSelectedItem();
-                getParams().set("tetradTestType", testType);
-            }
+        testSelector.addActionListener(e -> {
+            JComboBox combo = (JComboBox) e.getSource();
+            TestType testType = (TestType) combo.getSelectedItem();
+            getParams().set("tetradTestType", testType);
         });
 
-        final TestType[] purifyDescriptions = TestType.getPurifyTestDescriptions();
+        TestType[] purifyDescriptions = TestType.getPurifyTestDescriptions();
         JComboBox purifySelector = new JComboBox(purifyDescriptions);
         purifySelector.setSelectedItem(getParams().get("purifyTestType", TestType.NONE));
 
-        purifySelector.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JComboBox combo = (JComboBox) e.getSource();
-                TestType testType = (TestType) combo.getSelectedItem();
-                getParams().set("purifyTestType", testType);
-            }
+        purifySelector.addActionListener(e -> {
+            JComboBox combo = (JComboBox) e.getSource();
+            TestType testType = (TestType) combo.getSelectedItem();
+            getParams().set("purifyTestType", testType);
         });
 
         //Where is it setting the appropriate knowledge for the search?
@@ -138,17 +130,10 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
             DataSet dataSet = (DataSet) dataModel;
             isDiscreteModel = dataSet.isDiscrete();
 
-            //            try {
-            //                new DataSet((DataSet) dataModel);
-            //                isDiscreteModel = true;
-            //            }
-            //            catch (IllegalArgumentException e) {
-            //                isDiscreteModel = false;
-            //            }
         }
 
-        params.set("varNames", varNames);
-        alphaField.setValue(params.getDouble("alpha", 0.001));
+        this.params.set("varNames", varNames);
+        alphaField.setValue(this.params.getDouble("alpha", 0.001));
 
         Box b = Box.createVerticalBox();
 
@@ -184,7 +169,7 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
     }
 
     private Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

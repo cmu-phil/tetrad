@@ -1,13 +1,31 @@
-This is the code for the Tetrad project. Please, if you
-are a user of Tetrad, or even a novice, if you are 
-willing, would you please consider giving us feedback
-on what you like about it or don't like about it? It
-would be most appreciated. Just open up an issue (click
-on the Issues tab, above).
+NEWS: 7.1.0 RELEASED 2022-05-10 TO THE MAVEN CENTRAL REPOSITORY! HERE:
 
-An introduction to Tetrad can be found here:
+https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.1.0/
 
-http://www.phil.cmu.edu/tetrad
+FIXES FOR THIS RELEASE:
+
+https://github.com/cmu-phil/tetrad/wiki/Fixes-for-version-7.1.0
+
+This is the code for the Tetrad project. The purpose of Tetrad is to make 
+algorithms for inferring causal relationships in data; it is a Java project
+of many years now.
+
+Please, if you are a user of Tetrad, or even a novice, if you are willing, 
+would you please consider giving us feedback on what you like about it or 
+don't like about it? It would be most appreciated. Just open up an issue 
+(click on the Issues tab, above).
+
+Our project URL is here:
+
+https://github.com/cmu-phil/tetrad
+
+The web page for the Center for Causal Discovery is here:
+
+https://www.ccd.pitt.edu/
+
+We have a project web page here:
+
+https://sites.google.com/view/tetradcausal
 
 A tutorial can be found here:
 
@@ -15,13 +33,13 @@ https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/res
 
 The manual is here:
 
-http://cmu-phil.github.io/tetrad/manual/
+https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html
 
 Javadocs can be found by running the javadocs command on the project once checked out.
 
 Downloads directory is here:
 
-https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/edu/cmu/tetrad-gui/
+https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.1.0/
 
 The wiki is here:
 
@@ -31,29 +49,26 @@ The issue tracker is here:
 
 https://github.com/cmu-phil/tetrad/issues
 
-For instructions on how to set this project up in 
-IntelliJ IDEA, see the Wiki. Alternatively, you can 
-run the lifecycle package target and launch the ejar 
-that is  built in the target directory, using the call
+For instructions on how to set this project up in IntelliJ IDEA, see:
 
-java -jar *-launch.jar
+https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA
 
-The project contains fairly well-developed code in these 
-packages:
+Alternatively, you can run the lifecycle package target and launch the ejar that is  
+built in the target directory, using the call
+
+java -Xmx[g]G -jar *-launch.jar
+
+where g is the number of gigabytes allocated for heap.
+
+The project contains fairly well-developed code in these packages:
 
 tetrad
 pitt
-tetradapp (now succeeded by Causal Command - https://github.com/bd2kccd/causal-cmd)
+tetradapp
+
+For the command line version, see causal Command:
+
+https://github.com/bd2kccd/causal-cmd
 
 The  tetrad-lib package contains the "model" code; the 
 tetrad-gui package contains the "view" (GUI) code.
-
-We have a (small) team working (part-time) on this code,
-but if you have contributions to me, please feel free.
-If you have suggestions or bug reports, please subit 
-those to the github issue tracker. If you have code
-contributions, these will be handled via the
-issue tracker and the GitHub pull-request procedure. As 
-usual, please fork the repository if you'd like to work on 
-it; contributions will be handled through the usual
-github review method by pull request.

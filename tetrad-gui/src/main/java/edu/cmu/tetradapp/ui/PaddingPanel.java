@@ -18,14 +18,11 @@
  */
 package edu.cmu.tetradapp.ui;
 
-import javax.swing.GroupLayout;
-import javax.swing.JComponent;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 /**
  * This a wrapper panel that puts gaps around the wrapped panel.
- *
+ * <p>
  * Nov 22, 2017 11:35:16 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -45,10 +42,10 @@ public class PaddingPanel extends JPanel {
     }
 
     private void initComponents() {
-        layeredPane.setLayer(innerComponent, JLayeredPane.DEFAULT_LAYER);
+        this.layeredPane.setLayer(this.innerComponent, JLayeredPane.DEFAULT_LAYER);
 
-        GroupLayout layeredPaneLayout = new GroupLayout(layeredPane);
-        layeredPane.setLayout(layeredPaneLayout);
+        GroupLayout layeredPaneLayout = new GroupLayout(this.layeredPane);
+        this.layeredPane.setLayout(layeredPaneLayout);
         layeredPaneLayout.setHorizontalGroup(layeredPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layeredPaneLayout.createSequentialGroup()
                         .addContainerGap()
@@ -63,7 +60,7 @@ public class PaddingPanel extends JPanel {
         );
 
         GroupLayout layout = new GroupLayout(this);
-        this.setLayout(layout);
+        setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(layeredPane, GroupLayout.Alignment.TRAILING)

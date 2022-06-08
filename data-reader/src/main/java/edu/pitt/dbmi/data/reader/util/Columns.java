@@ -21,7 +21,6 @@ package edu.pitt.dbmi.data.reader.util;
 import java.util.Arrays;
 
 /**
- *
  * Dec 11, 2018 2:08:19 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -31,7 +30,7 @@ public final class Columns {
     private Columns() {
     }
 
-    public static final int[] sortNew(int[] columns) {
+    public static int[] sortNew(int[] columns) {
         int size = (columns == null) ? 0 : columns.length;
         if (size > 0) {
             int[] copiedColumns = new int[size];
@@ -51,14 +50,14 @@ public final class Columns {
      * @param columns
      * @return
      */
-    public static final int[] extractValidColumnNumbers(int numberOfColumns, int[] columns) {
+    public static int[] extractValidColumnNumbers(int numberOfColumns, int[] columns) {
         return (columns == null || columns.length == 0)
                 ? new int[0]
                 : Arrays.stream(columns)
-                        .filter(e -> e > 0 && e <= numberOfColumns)
-                        .sorted()
-                        .distinct()
-                        .toArray();
+                .filter(e -> e > 0 && e <= numberOfColumns)
+                .sorted()
+                .distinct()
+                .toArray();
     }
 
 }

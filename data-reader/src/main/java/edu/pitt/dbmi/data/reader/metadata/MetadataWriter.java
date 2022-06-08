@@ -19,19 +19,19 @@
 package edu.pitt.dbmi.data.reader.metadata;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- *
  * Dec 18, 2018 2:39:39 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface MetadataWriter {
 
-    public String writeAsString(Metadata metadata) throws JsonProcessingException;
+    String writeAsString(Metadata metadata) throws JsonProcessingException;
 
-    public void write(Metadata metadata, Path outputFile) throws JsonProcessingException, IOException;
+    void write(Metadata metadata, Path outputFile) throws IOException;
 
 }

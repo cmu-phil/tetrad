@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,9 +23,9 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Fges;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Pcd;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pcd;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -66,9 +66,7 @@ public class TestKunMeasurementError {
         Simulations simulations = new Simulations();
 
 //        String dir = "/Users/user/Downloads/Simul1_T500";
-        String dir = "/Users/user/Downloads/Simul1_T2000";
-//        String dir = "/Users/user/Downloads/Simul2_T500";
-//        String dir = "/Users/user/Downloads/Simul2_T2000";
+        final String dir = "/Users/user/Downloads/Simul1_T2000";
 
         simulations.add(new LoadContinuousDataAndSingleGraphKun(
                 dir, "Cov_X"));
@@ -82,9 +80,9 @@ public class TestKunMeasurementError {
         IndependenceWrapper test = new SemBicTest();
         ScoreWrapper score = new SemBicScore();
 
-        algorithms.add(new Pc(test));
+        algorithms.add(new PC(test));
         algorithms.add(new Fges(score));
-        algorithms.add(new Pcd( ));
+        algorithms.add(new Pcd());
 
         Comparison comparison = new Comparison();
 

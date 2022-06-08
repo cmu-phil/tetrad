@@ -19,16 +19,16 @@
 package edu.pitt.dbmi.data.reader.metadata;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
- *
  * Dec 18, 2018 2:48:02 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -46,7 +46,7 @@ public class MetadataFileWriterTest {
      * @throws JsonProcessingException
      */
     @Test
-    public void testWriteAsString() throws JsonProcessingException, IOException {
+    public void testWriteAsString() throws IOException {
         List<ColumnMetadata> domainCols = new LinkedList<>();
         domainCols.add(new ColumnMetadata("X3", false));
         domainCols.add(new ColumnMetadata("X5", true));

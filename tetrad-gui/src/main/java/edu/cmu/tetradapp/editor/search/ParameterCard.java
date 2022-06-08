@@ -20,10 +20,10 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetradapp.editor.AlgorithmParameterPanel;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
-import java.awt.Dimension;
+
+import java.awt.*;
 
 /**
- *
  * Apr 15, 2019 3:35:36 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -35,7 +35,6 @@ public class ParameterCard extends AlgorithmParameterPanel {
     private final GeneralAlgorithmRunner algorithmRunner;
 
     public ParameterCard(GeneralAlgorithmRunner algorithmRunner) {
-        super();
         this.algorithmRunner = algorithmRunner;
 
         initComponents();
@@ -46,7 +45,7 @@ public class ParameterCard extends AlgorithmParameterPanel {
     }
 
     public void refresh() {
-        addToPanel(algorithmRunner);
+        addToPanel(this.algorithmRunner);
     }
 
 }

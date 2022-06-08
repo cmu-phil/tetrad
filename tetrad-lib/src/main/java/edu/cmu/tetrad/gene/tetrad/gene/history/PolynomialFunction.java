@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -30,7 +30,7 @@ import java.util.ArrayList;
 
 /**
  * <p>Implements a polynomial update function, Gi.0 = P(Parents(G0.0)) + ei,
- * where P is a polynomial function and ei is a random noise term.</p>
+ * where P is a polynomial function and ei is a random noise term.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -42,21 +42,21 @@ public class PolynomialFunction implements UpdateFunction {
      *
      * @serial
      */
-    private IndexedLagGraph connectivity;
+    private final IndexedLagGraph connectivity;
 
     /**
      * The polynomials of each factor given its parents.
      *
      * @serial
      */
-    private Polynomial[] polynomials;
+    private final Polynomial[] polynomials;
 
     /**
      * Error distributions from which errors are drawn for each of the factors.
      *
      * @serial
      */
-    private Distribution[] errorDistributions;
+    private final Distribution[] errorDistributions;
 
     //=============================CONSTRUCTORS===========================//
 
@@ -82,18 +82,15 @@ public class PolynomialFunction implements UpdateFunction {
         }
 
         // Set up error distributions.
-        errorDistributions = new Distribution[numFactors];
+        this.errorDistributions = new Distribution[numFactors];
 
-        for (int i = 0; i < errorDistributions.length; i++) {
-            errorDistributions[i] = new Normal(0.0, 0.05);
+        for (int i = 0; i < this.errorDistributions.length; i++) {
+            this.errorDistributions[i] = new Normal(0.0, 0.05);
         }
     }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static PolynomialFunction serializableInstance() {
         return new PolynomialFunction(BasicLagGraph.serializableInstance());
@@ -112,8 +109,8 @@ public class PolynomialFunction implements UpdateFunction {
             IndexedParent parent = this.connectivity.getParent(factorIndex, i);
             values[i] = history[parent.getLag()][parent.getIndex()];
         }
-        return polynomials[factorIndex].evaluate(values) +
-                errorDistributions[factorIndex].nextRandom();
+        return this.polynomials[factorIndex].evaluate(values) +
+                this.errorDistributions[factorIndex].nextRandom();
     }
 
     /**
@@ -200,23 +197,20 @@ public class PolynomialFunction implements UpdateFunction {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (connectivity == null) {
+        if (this.connectivity == null) {
             throw new NullPointerException();
         }
 
-        if (polynomials == null) {
+        if (this.polynomials == null) {
             throw new NullPointerException();
         }
 
-        if (errorDistributions == null) {
+        if (this.errorDistributions == null) {
             throw new NullPointerException();
         }
 

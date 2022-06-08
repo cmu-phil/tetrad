@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,7 +24,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeEqualityMode;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
-import edu.cmu.tetrad.util.TetradSerializable;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -39,8 +39,7 @@ import java.util.Map;
  * @author Willie Wheeler 07/99
  * @author Joseph Ramsey modifications 12/00
  */
-public final class ContinuousVariable extends AbstractVariable
-        implements TetradSerializable {
+public final class ContinuousVariable extends AbstractVariable {
 
     static final long serialVersionUID = 23L;
 
@@ -82,9 +81,10 @@ public final class ContinuousVariable extends AbstractVariable
      */
     private transient PropertyChangeSupport pcs;
 
-    private Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS=========================//
+
     /**
      * Constructs a new continuous variable with the given name.
      *
@@ -102,6 +102,7 @@ public final class ContinuousVariable extends AbstractVariable
         this.nodeType = variable.nodeType;
         this.centerX = variable.centerX;
         this.centerY = variable.centerY;
+        this.nodeVariableType = getNodeVariableType();
     }
 
     /**
@@ -112,13 +113,14 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     //==============================PUBLIC METHODS======================//
+
     /**
      * Checks the value to make sure it's a legitimate value for this column.
      *
      * @param value the value to check.
      * @return true iff the value is legitimate.
      */
-    public boolean checkValue(final Object value) {
+    public boolean checkValue(Object value) {
         if (value instanceof Double) {
             return true;
         } else if (value instanceof String) {
@@ -143,21 +145,21 @@ public final class ContinuousVariable extends AbstractVariable
      * @return the missing value marker, wrapped as a Double.
      */
     public Object getMissingValueMarker() {
-        return MISSING_VALUE;
+        return ContinuousVariable.MISSING_VALUE;
     }
 
     /**
      * @return the missing value marker.
      */
     public static double getDoubleMissingValue() {
-        return MISSING_VALUE;
+        return ContinuousVariable.MISSING_VALUE;
     }
 
     /**
      * Determines whether the argument is equal to the missing value marker.
      *
      * @param value the Object to test--should be a wrapped version of the
-     * missing value marker.
+     *              missing value marker.
      * @return true iff it really is a wrapped version of the missing value
      * marker.
      */
@@ -169,7 +171,7 @@ public final class ContinuousVariable extends AbstractVariable
      * Determines whether the argument is equal to the missing value marker.
      *
      * @param value the Object to test--should be a wrapped version of the
-     * missing value marker.
+     *              missing value marker.
      * @return true iff it really is a wrapped version of the missing value
      * marker.
      */
@@ -186,7 +188,7 @@ public final class ContinuousVariable extends AbstractVariable
         if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
             return super.hashCode();
         } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            return getName().hashCode();
+            return this.getName().hashCode();
         }
 
         throw new IllegalArgumentException();
@@ -216,7 +218,7 @@ public final class ContinuousVariable extends AbstractVariable
     }
 
     public NodeType getNodeType() {
-        return nodeType;
+        return this.nodeType;
     }
 
     public void setNodeType(NodeType nodeType) {
@@ -284,14 +286,12 @@ public final class ContinuousVariable extends AbstractVariable
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (nodeType == null) {
+        if (this.nodeType == null) {
             throw new NullPointerException();
         }
     }
@@ -308,22 +308,22 @@ public final class ContinuousVariable extends AbstractVariable
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return attributes;
+        return this.attributes;
     }
 
     @Override
     public Object getAttribute(String key) {
-        return attributes.get(key);
+        return this.attributes.get(key);
     }
 
     @Override
     public void removeAttribute(String key) {
-        attributes.remove(key);
+        this.attributes.remove(key);
     }
 
     @Override
     public void addAttribute(String key, Object value) {
-        attributes.put(key, value);
+        this.attributes.put(key, value);
     }
 
 }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -56,7 +56,7 @@ public final class CellTable {
         this.table = new MultiDimIntTable(dims);
     }
 
-    public synchronized final void addToTable(DataSet dataSet, int[] indices) {
+    public synchronized void addToTable(DataSet dataSet, int[] indices) {
         int[] dims = new int[indices.length];
 
         for (int i = 0; i < indices.length; i++) {
@@ -65,7 +65,7 @@ public final class CellTable {
             dims[i] = variable.getNumCategories();
         }
 
-        table.reset(dims);
+        this.table.reset(dims);
 
         int[] coords = new int[indices.length];
 
@@ -84,7 +84,7 @@ public final class CellTable {
                 }
             }
 
-            table.increment(coords, 1);
+            this.table.increment(coords, 1);
         }
     }
 
@@ -92,8 +92,8 @@ public final class CellTable {
      * @param varIndex the index of the variable in question.
      * @return the number of dimensions of the variable.
      */
-    public final int getNumValues(int varIndex) {
-        return table.getDims(varIndex);
+    public int getNumValues(int varIndex) {
+        return this.table.getDims(varIndex);
     }
 
     /**
@@ -107,7 +107,7 @@ public final class CellTable {
      * @param coords an array of the sort described above.
      * @return the marginal sum specified.
      */
-    public synchronized final long calcMargin(int[] coords) {
+    public synchronized long calcMargin(int[] coords) {
         internalCoordCopy(coords);
 
         int sum = 0;
@@ -115,7 +115,7 @@ public final class CellTable {
 
         while (++i < this.coordCopy.length) {
             if (this.coordCopy[i] == -1) {
-                for (int j = 0; j < table.getDimension(i); j++) {
+                for (int j = 0; j < this.table.getDimension(i); j++) {
                     this.coordCopy[i] = j;
                     sum += calcMargin(this.coordCopy);
                 }
@@ -125,7 +125,7 @@ public final class CellTable {
             }
         }
 
-        return table.getValue(this.coordCopy);
+        return this.table.getValue(this.coordCopy);
     }
 
     /**
@@ -140,7 +140,7 @@ public final class CellTable {
      * @param marginVars an <code>int[]</code> value
      * @return an <code>int</code> value
      */
-    public synchronized final long calcMargin(int[] coords, int[] marginVars) {
+    public synchronized long calcMargin(int[] coords, int[] marginVars) {
         internalCoordCopy(coords);
 
         for (int marginVar : marginVars) {
@@ -160,19 +160,19 @@ public final class CellTable {
             this.coordCopy = new int[coords.length];
         }
 
-        System.arraycopy(coords, 0, coordCopy, 0, coords.length);
+        System.arraycopy(coords, 0, this.coordCopy, 0, coords.length);
     }
 
     private int getMissingValue() {
-        return missingValue;
+        return this.missingValue;
     }
 
-    public final void setMissingValue(int missingValue) {
+    public void setMissingValue(int missingValue) {
         this.missingValue = missingValue;
     }
 
     public long getValue(int[] testCell) {
-        return table.getValue(testCell);
+        return this.table.getValue(testCell);
     }
 }
 

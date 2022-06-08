@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -30,37 +30,38 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
     static final long serialVersionUID = 23L;
 
     /**
-     * The human readable name for the descriptor.
+     * The human-readable name for the descriptor.
      */
-    private String name;
+    private final String name;
 
     /**
      * States what positions the expression can occur in.
      */
-    private Position position;
+    private final Position position;
 
     /**
      * The symbol used to represent the expression.
      */
-    private String token;
+    private final String token;
 
     /**
      * The expression sig.
      */
-    private ExpressionSignature signature;
+    private final ExpressionSignature signature;
 
     /**
      * True if the calculator should display this expression.
      */
-    private boolean display;
+    private final boolean display;
 
 
     /**
      * Constructs an abstract expression descriptor.
-     * @param name          - The name of the descriptor.
-     * @param token         The token of the descriptor, also used for the signature.
-     * @param position      The position that the expression can occur in.
-     * @param unlimited     States whether an unlimited number of arguments is allowed.
+     *
+     * @param name      - The name of the descriptor.
+     * @param token     The token of the descriptor, also used for the signature.
+     * @param position  The position that the expression can occur in.
+     * @param unlimited States whether an unlimited number of arguments is allowed.
      */
     public AbstractExpressionDescriptor(String name, String token, Position position, boolean unlimited) {
         if (name == null) {
@@ -100,7 +101,7 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
     }
 
     public boolean isDisplay() {
-        return display;
+        return this.display;
     }
 
     //=============================== Inner Class ==============================================//
@@ -113,7 +114,7 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
         static final long serialVersionUID = 23L;
 
         private String signature;
-        private String[] arguments;
+        private final String[] arguments;
 
         public Signature(String function, boolean unlimited, boolean commulative, String... arguments) {
             if (function == null) {

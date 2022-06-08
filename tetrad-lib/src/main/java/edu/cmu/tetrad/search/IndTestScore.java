@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,12 +24,15 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.TetradLogger;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -43,25 +46,18 @@ public class IndTestScore implements IndependenceTest {
 
     private final Score score;
     private final List<Node> variables;
-    private final HashMap<Node, Integer> variablesHash;
     private double bump = Double.NaN;
-    private DataModel data = null;
-    private boolean verbose = false;
+    private final DataModel data;
+    private boolean verbose;
 
-    public  IndTestScore(Score score) {
+    public IndTestScore(Score score) {
         this(score, null);
     }
 
-    public  IndTestScore(Score score, DataModel data) {
+    public IndTestScore(Score score, DataModel data) {
         if (score == null) throw new NullPointerException();
         this.score = score;
         this.variables = score.getVariables();
-        this.variablesHash = new HashMap<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            this.variablesHash.put(variables.get(i), i);
-        }
-
         this.data = data;
     }
 
@@ -81,43 +77,36 @@ public class IndTestScore implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         List<Node> z1 = new ArrayList<>(z);
 
-        if (determines(z1, x)) return false;
-        if (determines(z1, y)) return false;
+        if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());;
+        if (determines(z1, y)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());;
 
-        double v = this.score.localScoreDiff(variables.indexOf(x), variables.indexOf(y), varIndices(z));
+        double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y), varIndices(z));
         this.bump = v;
-        return  v <= 0;
+
+        boolean independent = v <= 0;
+
+        if (this.verbose) {
+            if (independent) {
+                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFact(x, y, z) + " score = " + nf.format(score));
+            }
+        }
+
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
     }
 
     private int[] varIndices(List<Node> z) {
         int[] indices = new int[z.size()];
 
         for (int i = 0; i < z.size(); i++) {
-            indices[i] = variables.indexOf(z.get(i));
+            indices[i] = this.variables.indexOf(z.get(i));
         }
 
         return indices;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        return isIndependent(x, y, Arrays.asList(z));
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
-    }
-
-    /**
-     * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
     }
 
     /**
@@ -125,11 +114,7 @@ public class IndTestScore implements IndependenceTest {
      * not meaningful for tis test.
      */
     public double getPValue() {
-        return bump;
-    }
-
-    public double getPValue(Node x, Node y, List<Node> z) {
-        return getPValue();
+        return this.bump;
     }
 
     /**
@@ -144,7 +129,7 @@ public class IndTestScore implements IndependenceTest {
      * @return the variable by the given name.
      */
     public Node getVariable(String name) {
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(name)) {
                 return node;
             }
@@ -159,7 +144,7 @@ public class IndTestScore implements IndependenceTest {
     public List<String> getVariableNames() {
         List<String> names = new ArrayList<>();
 
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             names.add(node.getName());
         }
 
@@ -170,7 +155,7 @@ public class IndTestScore implements IndependenceTest {
      * @return true if y is determined the variable in z.
      */
     public boolean determines(List<Node> z, Node y) {
-        return score.determines(z, y);
+        return this.score.determines(z, y);
     }
 
     /**
@@ -191,11 +176,11 @@ public class IndTestScore implements IndependenceTest {
      * @return The data model for the independence test.
      */
     public DataModel getData() {
-        return data;
+        return this.data;
     }
 
     public ICovarianceMatrix getCov() {
-        return ((SemBicScore) score).getCovariances();
+        return ((SemBicScore) this.score).getCovariances();
     }
 
     public List<DataSet> getDataSets() {
@@ -203,7 +188,7 @@ public class IndTestScore implements IndependenceTest {
     }
 
     public int getSampleSize() {
-        return score.getSampleSize();
+        return this.score.getSampleSize();
     }
 
     public List<Matrix> getCovMatrices() {
@@ -214,16 +199,16 @@ public class IndTestScore implements IndependenceTest {
      * A score that is higher with more likely models.
      */
     public double getScore() {
-        return bump;
+        return this.bump;
     }
 
     public Score getWrappedScore() {
-        return score;
+        return this.score;
     }
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
@@ -233,7 +218,7 @@ public class IndTestScore implements IndependenceTest {
 
     @Override
     public String toString() {
-        return score.toString() + " Interpreted as a Test";
+        return this.score.toString() + " Interpreted as a Test";
     }
 }
 

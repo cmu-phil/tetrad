@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,16 +22,12 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphConverter;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.SemIm;
-import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TetradLogger;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -84,13 +80,13 @@ public class TestPcStableMax {
 
         System.out.println(knowledge);
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---B,B-->C,D", /*"A---B,B-->C,A-->D,C-->D", */
+        checkWithKnowledge(  /*"A---B,B-->C,A-->D,C-->D", */
                 knowledge);
     }
 
-//    @Test
+    //    @Test
     public void testCites() {
-        String citesString = "164\n" +
+        final String citesString = "164\n" +
                 "ABILITY\tGPQ\tPREPROD\tQFJ\tSEX\tCITES\tPUBS\n" +
                 "1.0\n" +
                 ".62\t1.0\n" +
@@ -101,8 +97,8 @@ public class TestPcStableMax {
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
-        DataReader reader = new DataReader();
-        ICovarianceMatrix dataSet = reader.parseCovariance(citesChars);
+        ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
+                '\"', "*");
 
         IKnowledge knowledge = new Knowledge2();
 
@@ -117,24 +113,24 @@ public class TestPcStableMax {
         PcStableMax pc = new PcStableMax(new IndTestFisherZ(dataSet, 0.11));
         pc.setKnowledge(knowledge);
 
-        Graph pattern = pc.search();
+        Graph CPDAG = pc.search();
 
-        Graph _true = new EdgeListGraph(pattern.getNodes());
+        Graph _true = new EdgeListGraph(CPDAG.getNodes());
 
-        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("GPQ"));
-        _true.addDirectedEdge(pattern.getNode("ABILITY"), pattern.getNode("PREPROD"));
-        _true.addDirectedEdge(pattern.getNode("GPQ"), pattern.getNode("QFJ"));
-        _true.addDirectedEdge(pattern.getNode("PREPROD"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("PREPROD"), pattern.getNode("PUBS"));
-        _true.addDirectedEdge(pattern.getNode("PUBS"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("CITES"));
-        _true.addDirectedEdge(pattern.getNode("QFJ"), pattern.getNode("PUBS"));
-        _true.addDirectedEdge(pattern.getNode("SEX"), pattern.getNode("PUBS"));
+        _true.addDirectedEdge(CPDAG.getNode("ABILITY"), CPDAG.getNode("CITES"));
+        _true.addDirectedEdge(CPDAG.getNode("ABILITY"), CPDAG.getNode("GPQ"));
+        _true.addDirectedEdge(CPDAG.getNode("ABILITY"), CPDAG.getNode("PREPROD"));
+        _true.addDirectedEdge(CPDAG.getNode("GPQ"), CPDAG.getNode("QFJ"));
+        _true.addDirectedEdge(CPDAG.getNode("PREPROD"), CPDAG.getNode("CITES"));
+        _true.addDirectedEdge(CPDAG.getNode("PREPROD"), CPDAG.getNode("PUBS"));
+        _true.addDirectedEdge(CPDAG.getNode("PUBS"), CPDAG.getNode("CITES"));
+        _true.addDirectedEdge(CPDAG.getNode("QFJ"), CPDAG.getNode("CITES"));
+        _true.addDirectedEdge(CPDAG.getNode("QFJ"), CPDAG.getNode("PUBS"));
+        _true.addDirectedEdge(CPDAG.getNode("SEX"), CPDAG.getNode("PUBS"));
 
-        System.out.println(pattern + " " + _true);
+        System.out.println(CPDAG + " " + _true);
 
-        assertEquals(pattern, _true);
+        assertEquals(CPDAG, _true);
     }
 
     /**
@@ -167,10 +163,9 @@ public class TestPcStableMax {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String inputGraph, String outputGraph,
-                                    IKnowledge knowledge) {
+    private void checkWithKnowledge(IKnowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -183,41 +178,10 @@ public class TestPcStableMax {
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
 
         // Do test.
         assertEquals(trueGraph, resultGraph);
-    }
-
-    @Test
-    public void testPcStable2() {
-        RandomUtil.getInstance().setSeed(1450030184196L);
-        List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < 10; i++) {
-            nodes.add(new ContinuousVariable("X" + (i + 1)));
-        }
-
-        Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false);
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(200, false);
-
-        TetradLogger.getInstance().setForceLog(false);
-        IndependenceTest test = new IndTestFisherZ(data, 0.05);
-
-        PcStableMax pc = new PcStableMax(test);
-        pc.setVerbose(false);
-        Graph pattern = pc.search();
-
-        for (int i = 0; i < 1; i++) {
-            DataSet data2 = DataUtils.reorderColumns(data);
-            IndependenceTest test2 = new IndTestFisherZ(data2, 0.05);
-            PcStableMax pc2 = new PcStableMax(test2);
-            pc2.setVerbose(false);
-            Graph pattern2 = pc2.search();
-            assertTrue(pattern.equals(pattern2));
-        }
     }
 }
 

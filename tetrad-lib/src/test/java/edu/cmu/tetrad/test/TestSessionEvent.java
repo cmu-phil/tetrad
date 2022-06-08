@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,7 +39,7 @@ public class TestSessionEvent {
     /**
      * The session for the events being tested.
      */
-    private Session session = new Session("Test");
+    private final Session session = new Session("Test");
 
     /**
      * Tests whether an ADD_NODE event can be constructed properly.
@@ -49,7 +49,7 @@ public class TestSessionEvent {
 
         SessionNode node = new SessionNode(Type1.class);
         SessionEvent event =
-                new SessionEvent(session, node, SessionEvent.NODE_ADDED);
+                new SessionEvent(this.session, node, SessionEvent.NODE_ADDED);
 
         assertTrue(node == event.getNode());
         assertEquals(SessionEvent.NODE_ADDED, event.getType());
@@ -63,7 +63,7 @@ public class TestSessionEvent {
 
         SessionNode node = new SessionNode(Type1.class);
         SessionEvent event =
-                new SessionEvent(session, node, SessionEvent.NODE_REMOVED);
+                new SessionEvent(this.session, node, SessionEvent.NODE_REMOVED);
 
         assertTrue(node == event.getNode());
         assertEquals(SessionEvent.NODE_REMOVED, event.getType());
@@ -77,7 +77,7 @@ public class TestSessionEvent {
 
         SessionNode node = new SessionNode(Type1.class);
         SessionEvent event =
-                new SessionEvent(session, node, SessionEvent.MODEL_CREATED);
+                new SessionEvent(this.session, node, SessionEvent.MODEL_CREATED);
 
         assertTrue(node == event.getNode());
         assertEquals(SessionEvent.MODEL_CREATED, event.getType());
@@ -90,7 +90,7 @@ public class TestSessionEvent {
     public void testModelDestroyedEvent() {
         SessionNode node = new SessionNode(Type1.class);
         SessionEvent event =
-                new SessionEvent(session, node, SessionEvent.MODEL_DESTROYED);
+                new SessionEvent(this.session, node, SessionEvent.MODEL_DESTROYED);
 
         assertTrue(node == event.getNode());
         assertEquals(SessionEvent.MODEL_DESTROYED, event.getType());
@@ -103,7 +103,7 @@ public class TestSessionEvent {
     public void testModelUnclearEvent() {
         SessionNode node = new SessionNode(Type1.class);
         SessionEvent event =
-                new SessionEvent(session, node, SessionEvent.MODEL_UNCLEAR);
+                new SessionEvent(this.session, node, SessionEvent.MODEL_UNCLEAR);
 
         assertTrue(node == event.getNode());
         assertEquals(SessionEvent.MODEL_UNCLEAR, event.getType());
@@ -116,7 +116,7 @@ public class TestSessionEvent {
     public void testParentAddedEvent() {
         SessionNode child = new SessionNode(Type1.class);
         SessionNode parent = new SessionNode(Type2.class);
-        SessionEvent event = new SessionEvent(session, parent, child,
+        SessionEvent event = new SessionEvent(this.session, parent, child,
                 SessionEvent.PARENT_ADDED);
 
         assertTrue(child == event.getChild());
@@ -131,7 +131,7 @@ public class TestSessionEvent {
     public void testParentRemovedEvent() {
         SessionNode child = new SessionNode(Type1.class);
         SessionNode parent = new SessionNode(Type2.class);
-        SessionEvent event = new SessionEvent(session, parent, child,
+        SessionEvent event = new SessionEvent(this.session, parent, child,
                 SessionEvent.PARENT_REMOVED);
 
         assertTrue(child == event.getChild());

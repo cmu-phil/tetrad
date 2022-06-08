@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,8 +27,6 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Edits the parameters for simulating data from Bayes nets.
@@ -40,7 +38,7 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     /**
      * Constructs a dialog to edit the given workbench Bayes simulation
@@ -73,57 +71,46 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
     public void setup() {
         setLayout(new BorderLayout());
 
-        JRadioButton manualRetain = new JRadioButton();
+        JRadioButton manual = new JRadioButton();
         JRadioButton randomRetain = new JRadioButton();
 
-        manualRetain.setText(
-                "Manually, retaining previous values where possible.");
-        randomRetain.setText(
-                "Using a symmetric prior for each row of each conditional" +
-                        " probability table.");
+        manual.setText("Manually");
+        randomRetain.setText("Using a symmetric prior for each row of each conditional" +
+                " probability table.");
 
         ButtonGroup group = new ButtonGroup();
-        group.add(manualRetain);
+        group.add(manual);
         group.add(randomRetain);
 
-        final DoubleTextField symmetricAlphaField = new DoubleTextField(
-                params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
-        symmetricAlphaField.setFilter(new DoubleTextField.Filter() {
-            public double filter(double value, double oldValue) {
-                try {
-                    params.set("symmetricAlpha", value);
-                    return value;
-                }
-                catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
+        DoubleTextField symmetricAlphaField = new DoubleTextField(
+                this.params.getDouble("symmetricAlpha", 1.0), 5, NumberFormatUtil.getInstance().getNumberFormat());
+        symmetricAlphaField.setFilter((value, oldValue) -> {
+            try {
+                DirichletBayesImParamsEditor.this.params.set("symmetricAlpha", value);
+                return value;
+            } catch (IllegalArgumentException e) {
+                return oldValue;
             }
         });
 
-        if (getParams().getString("initializationMode", "manualRetain").equals("manualRetain")) {
-            manualRetain.setSelected(true);
+        if (getParams().getString("initializationMode", "symmetricPrior").equals("manual")) {
+            manual.setSelected(true);
             symmetricAlphaField.setEnabled(false);
-        }
-        else if (getParams().getString("initializationMode", "manualRetain").equals("symmetricPrior")) {
+        } else if (getParams().getString("initializationMode", "symmetricPrior").equals("symmetricPrior")) {
             randomRetain.setSelected(true);
             symmetricAlphaField.setEnabled(true);
-        }
-        else {
+        } else {
             throw new IllegalStateException();
         }
 
-        manualRetain.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("initializationMode", "manualRetain");
-                symmetricAlphaField.setEnabled(false);
-            }
+        manual.addActionListener(e -> {
+            getParams().set("initializationMode", "manual");
+            symmetricAlphaField.setEnabled(false);
         });
 
-        randomRetain.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("initializationMode", "symmetricPrior");
-                symmetricAlphaField.setEnabled(true);
-            }
+        randomRetain.addActionListener(e -> {
+            getParams().set("initializationMode", "symmetricPrior");
+            symmetricAlphaField.setEnabled(true);
         });
 
         // continue workbench construction.
@@ -135,7 +122,7 @@ public class DirichletBayesImParamsEditor extends JPanel implements ParameterEdi
         b2.add(Box.createHorizontalGlue());
 
         Box b3 = Box.createHorizontalBox();
-        b3.add(manualRetain);
+        b3.add(manual);
         b3.add(Box.createHorizontalGlue());
 
         Box b4 = Box.createHorizontalBox();

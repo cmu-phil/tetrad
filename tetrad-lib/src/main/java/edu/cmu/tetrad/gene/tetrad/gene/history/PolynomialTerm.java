@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -30,10 +30,10 @@ import java.util.Arrays;
 /**
  * <p>Implements a term in a polymonial whose variables are mapped to indices in
  * in the set {0, 1, 2, ...}. The term has a coefficient and a freely generated
- * list of variables. For example, if "x" -> 0, "y" -> 1, "z" -> 2, then the
+ * list of variables. For example, if "x" -&gt; 0, "y" -&gt; 1, "z" -&gt; 2, then the
  * following terms are represented as follows, where "Vi" stands for the
- * variable mapped to index i:</p> </p> <ol> <li> 2.5x -> 2.5*(V0)(V0) <li>
- * 1.7xyz^2 -> 1.7*(V0)(V1)(V2)(V2) <li> -5.0z^3y^2 -> -5.0*(V2)(V2)(V2)(V1)(V1)
+ * variable mapped to index i: <ol> <li> 2.5x -&gt; 2.5*(V0)(V0) <li>
+ * 1.7xyz^2 -&gt; 1.7*(V0)(V1)(V2)(V2) <li> -5.0z^3y^2 -&gt; -5.0*(V2)(V2)(V2)(V1)(V1)
  * </ol>
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
@@ -53,7 +53,7 @@ public class PolynomialTerm implements TetradSerializable {
      *
      * @serial
      */
-    private int[] variables;
+    private final int[] variables;
 
     //=================================CONSTRUCTORS========================//
 
@@ -73,9 +73,6 @@ public class PolynomialTerm implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see edu.cmu.TestSerialization
-     * @see edu.cmu.tetradapp.util.TetradSerializableUtils
      */
     public static PolynomialTerm serializableInstance() {
         return new PolynomialTerm(0.0, new int[0]);
@@ -124,7 +121,7 @@ public class PolynomialTerm implements TetradSerializable {
      */
     public int getMaxIndex() {
         int max = 0;
-        for (int variable : variables) {
+        for (int variable : this.variables) {
             if (variable > max) {
                 max = variable;
             }
@@ -169,15 +166,12 @@ public class PolynomialTerm implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (variables == null) {
+        if (this.variables == null) {
             throw new NullPointerException();
         }
     }

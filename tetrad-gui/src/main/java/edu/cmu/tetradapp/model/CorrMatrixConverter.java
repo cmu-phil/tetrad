@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,7 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -47,12 +50,10 @@ public class CorrMatrixConverter extends DataWrapper {
             }
 
             covMatrix = new CorrelationMatrix(dataSet);
-        }
-        else if (wrapper.getSelectedDataModel() instanceof ICovarianceMatrix) {
+        } else if (wrapper.getSelectedDataModel() instanceof ICovarianceMatrix) {
             ICovarianceMatrix covOrig = (ICovarianceMatrix) wrapper.getSelectedDataModel();
             covMatrix = new CorrelationMatrix(covOrig);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Expecting a continuous data set or a covariance matrix.");
         }
 

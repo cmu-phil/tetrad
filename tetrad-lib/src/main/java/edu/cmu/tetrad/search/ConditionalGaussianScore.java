@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,12 +21,15 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implements a conditional Gaussian BIC score for FGS.
@@ -39,7 +42,6 @@ public class ConditionalGaussianScore implements Score {
 
     // The variables of the continuousData set.
     private final List<Node> variables;
-    private final Map<Node, Integer> nodesHash;
 
     // Likelihood function
     private final ConditionalGaussianLikelihood likelihood;
@@ -61,19 +63,11 @@ public class ConditionalGaussianScore implements Score {
         this.penaltyDiscount = penaltyDiscount;
         this.structurePrior = structurePrior;
 
-        Map<Node, Integer> nodesHash = new HashMap<>();
+        this.likelihood = new ConditionalGaussianLikelihood(dataSet);
 
-        for (int j = 0; j < variables.size(); j++) {
-            nodesHash.put(variables.get(j), j);
-        }
-
-        this.nodesHash = nodesHash;
-
-        likelihood = new ConditionalGaussianLikelihood(dataSet);
-
-        likelihood.setNumCategoriesToDiscretize(numCategoriesToDiscretize);
-        likelihood.setPenaltyDiscount(penaltyDiscount);
-        likelihood.setDiscretize(discretize);
+        this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
+        this.likelihood.setPenaltyDiscount(penaltyDiscount);
+        this.likelihood.setDiscretize(discretize);
     }
 
     /**
@@ -81,33 +75,38 @@ public class ConditionalGaussianScore implements Score {
      */
     public double localScore(int i, int... parents) {
         List<Integer> rows = getRows(i, parents);
-        likelihood.setRows(rows);
+        this.likelihood.setRows(rows);
 
-        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihood(i, parents);
+        ConditionalGaussianLikelihood.Ret ret = this.likelihood.getLikelihood(i, parents);
 
-        int N = dataSet.getNumRows();
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        return 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(rows.size());
+        double score = 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(rows.size());
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NEGATIVE_INFINITY;
+        } else {
+            return score;
+        }
     }
 
     private List<Integer> getRows(int i, int[] parents) {
         List<Integer> rows = new ArrayList<>();
 
         K:
-        for (int k = 0; k < dataSet.getNumRows(); k++) {
-            if (variables.get(i) instanceof DiscreteVariable) {
-                if (dataSet.getInt(k, i) == -99) continue;
-            } else if (variables.get(i) instanceof ContinuousVariable) {
-                if (Double.isNaN(dataSet.getInt(k, i))) continue;
+        for (int k = 0; k < this.dataSet.getNumRows(); k++) {
+            if (this.variables.get(i) instanceof DiscreteVariable) {
+                if (this.dataSet.getInt(k, i) == -99) continue;
+            } else if (this.variables.get(i) instanceof ContinuousVariable) {
+                this.dataSet.getInt(k, i);
             }
 
             for (int p : parents) {
-                if (variables.get(i) instanceof DiscreteVariable) {
-                    if (dataSet.getInt(k, p) == -99) continue K;
-                } else if (variables.get(i) instanceof ContinuousVariable) {
-                    if (Double.isNaN(dataSet.getInt(k, p))) continue K;
+                if (this.variables.get(i) instanceof DiscreteVariable) {
+                    if (this.dataSet.getInt(k, p) == -99) continue K;
+                } else if (this.variables.get(i) instanceof ContinuousVariable) {
+                    this.dataSet.getInt(k, p);
                 }
             }
 
@@ -118,12 +117,12 @@ public class ConditionalGaussianScore implements Score {
     }
 
     private double getStructurePrior(int[] parents) {
-        if (structurePrior <= 0) {
+        if (this.structurePrior <= 0) {
             return 0;
         } else {
             int k = parents.length;
-            double n = dataSet.getNumColumns() - 1;
-            double p = structurePrior / n;
+            double n = this.dataSet.getNumColumns() - 1;
+            double p = this.structurePrior / n;
             return k * Math.log(p) + (n - k) * Math.log(1.0 - p);
         }
     }
@@ -159,7 +158,7 @@ public class ConditionalGaussianScore implements Score {
     }
 
     public int getSampleSize() {
-        return dataSet.getNumRows();
+        return this.dataSet.getNumRows();
     }
 
     @Override
@@ -169,12 +168,12 @@ public class ConditionalGaussianScore implements Score {
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     @Override
     public Node getVariable(String targetName) {
-        for (Node node : variables) {
+        for (Node node : this.variables) {
             if (node.getName().equals(targetName)) {
                 return node;
             }
@@ -185,7 +184,7 @@ public class ConditionalGaussianScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(dataSet.getNumRows()));
+        return (int) Math.ceil(Math.log(this.dataSet.getNumRows()));
     }
 
     @Override
@@ -194,7 +193,7 @@ public class ConditionalGaussianScore implements Score {
     }
 
     public double getPenaltyDiscount() {
-        return penaltyDiscount;
+        return this.penaltyDiscount;
     }
 
     public void setPenaltyDiscount(double penaltyDiscount) {
@@ -208,7 +207,7 @@ public class ConditionalGaussianScore implements Score {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "Conditional Gaussian Score Penalty " + nf.format(penaltyDiscount);
+        return "Conditional Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
     }
 }
 

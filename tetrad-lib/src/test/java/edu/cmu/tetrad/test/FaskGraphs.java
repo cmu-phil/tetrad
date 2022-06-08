@@ -1,13 +1,13 @@
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
-import edu.cmu.tetrad.data.DataReader;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FASK;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DelimiterType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,27 +22,26 @@ import java.util.Set;
  * @author jdramsey
  */
 public class FaskGraphs {
-    private List<String> filenames = new ArrayList<>();
+    private final List<String> filenames = new ArrayList<>();
     private List<DataSet> datasets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
-    private List<Boolean> types = new ArrayList<>();
+    private final List<Boolean> types = new ArrayList<>();
 
     /**
-     *
-     * @param path The path to the directory containing the files.
+     * @param path       The path to the directory containing the files.
      * @param parameters Parameters for the FASK search.
-     * @param contains Some string(s) the data filenames must include. May be  blank.
+     * @param contains   Some string(s) the data filenames must include. May be  blank.
      */
     public FaskGraphs(String path, Parameters parameters, String... contains) {
         loadFiles(path, parameters, contains);
     }
 
     public List<String> getFilenames() {
-        return filenames;
+        return this.filenames;
     }
 
     public List<Graph> getGraphs() {
-        return graphs;
+        return this.graphs;
     }
 
     public void setGraphs(List<Graph> graphs) {
@@ -50,7 +49,7 @@ public class FaskGraphs {
     }
 
     public List<Boolean> getTypes() {
-        return types;
+        return this.types;
     }
 
     public void reconcileNames(FaskGraphs... files) {
@@ -70,7 +69,7 @@ public class FaskGraphs {
 
         List<Graph> graphs2 = new ArrayList<>();
 
-        for (Graph graph : graphs) {
+        for (Graph graph : this.graphs) {
             graphs2.add(GraphUtils.replaceNodes(graph, nodes));
         }
 
@@ -78,7 +77,7 @@ public class FaskGraphs {
     }
 
     public List<DataSet> getDatasets() {
-        return datasets;
+        return this.datasets;
     }
 
     public void setDatasets(List<DataSet> datasets) {
@@ -86,10 +85,6 @@ public class FaskGraphs {
     }
 
     private void loadFiles(String path, Parameters parameters, String... contains) {
-        DataReader reader = new DataReader();
-        reader.setVariablesSupplied(true);
-        reader.setDelimiter(DelimiterType.TAB);
-
         File dir = new File(path);
 
         File[] files = dir.listFiles();
@@ -109,21 +104,23 @@ public class FaskGraphs {
             if (!name.contains("graph")) {
                 try {
                     if (name.contains("autistic")) {
-                        types.add(true);
-                        DataSet dataSet = reader.parseTabular(new File(path, name));
-                        filenames.add(name);
-                        datasets.add(dataSet);
-                        Fask fask = new Fask();
+                        this.types.add(true);
+                        DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"',
+                                "*", true, Delimiter.TAB);
+                        this.filenames.add(name);
+                        this.datasets.add(dataSet);
+                        FASK fask = new FASK();
                         Graph search = fask.search(dataSet, parameters);
-                        graphs.add(search);
+                        this.graphs.add(search);
                     } else if (name.contains("typical")) {
-                        types.add(false);
-                        DataSet dataSet = reader.parseTabular(new File(path, name));
-                        filenames.add(name);
-                        datasets.add(dataSet);
-                        Fask fask = new Fask();
+                        this.types.add(false);
+                        DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"',
+                                "*", true, Delimiter.TAB);
+                        this.filenames.add(name);
+                        this.datasets.add(dataSet);
+                        FASK fask = new FASK();
                         Graph search = fask.search(dataSet, parameters);
-                        graphs.add(search);
+                        this.graphs.add(search);
                     }
 
                     System.out.println("Loaded " + name);

@@ -19,7 +19,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 /**
- *
  * Jun 4, 2019 3:10:49 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

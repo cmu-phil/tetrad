@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,13 +39,13 @@ public class ExpressionManager {
     /**
      * A mapping from tokens to their descriptors.
      */
-    private Map<String, ExpressionDescriptor> tokenMap = new HashMap<>();
+    private final Map<String, ExpressionDescriptor> tokenMap = new HashMap<>();
 
 
     /**
      * List of all the descriptors.
      */
-    private List<ExpressionDescriptor> descriptors;
+    private final List<ExpressionDescriptor> descriptors;
 
 //    private static RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
 
@@ -53,11 +53,11 @@ public class ExpressionManager {
     /**
      * Singleton instance.
      */
-    private final static ExpressionManager INSTANCE = new ExpressionManager();
+    private static final ExpressionManager INSTANCE = new ExpressionManager();
 
 
     private ExpressionManager() {
-        this.descriptors = new ArrayList<>(listDescriptors());
+        this.descriptors = new ArrayList<>(ExpressionManager.listDescriptors());
         for (ExpressionDescriptor exp : this.descriptors) {
             if (this.tokenMap.containsKey(exp.getToken())) {
                 throw new IllegalStateException("Expression descriptors must have unique tokens, but " + exp.getToken()
@@ -74,7 +74,7 @@ public class ExpressionManager {
      * @return an instanceo of the manager.
      */
     public static ExpressionManager getInstance() {
-        return INSTANCE;
+        return ExpressionManager.INSTANCE;
     }
 
     /**
@@ -206,7 +206,7 @@ public class ExpressionManager {
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length > 0) {
                 return new AbstractExpression("+", Position.BOTH, expressions) {
                     static final long serialVersionUID = 23L;
@@ -357,7 +357,7 @@ public class ExpressionManager {
         }
 
 
-        public Expression createExpression(final Expression... expressions) throws ExpressionInitializationException {
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
             if (expressions.length != 1) {
                 throw new ExpressionInitializationException("Cosh must have one and only one" +
                         " argument.");
@@ -984,7 +984,7 @@ public class ExpressionManager {
                 public double evaluate(Context context) {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
-                    final ChiSquaredDistribution distribution = new ChiSquaredDistribution(randomGenerator, e1);
+                    ChiSquaredDistribution distribution = new ChiSquaredDistribution(randomGenerator, e1);
                     return distribution.sample();
                 }
 
@@ -1018,7 +1018,7 @@ public class ExpressionManager {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
-                    final GammaDistribution distribution = new GammaDistribution(randomGenerator, e1, e2);
+                    GammaDistribution distribution = new GammaDistribution(randomGenerator, e1, e2);
                     return distribution.sample();
                 }
 
@@ -1510,31 +1510,6 @@ public class ExpressionManager {
         }
     }
 
-//    private static class ExponentialPowerExpressionDescriptor extends AbstractExpressionDescriptor {
-//        static final long serialVersionUID = 23L;
-//
-//        public ExponentialPowerExpressionDescriptor() {
-//            super("ExponentialPower", "ExponentialPower", Position.PREFIX, false, false, true, "expr");
-//        }
-//
-//        //=========================== Public Methods =========================//
-//
-//        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
-//            if (expressions.length != 1) {
-//                throw new ExpressionInitializationException("Exp must have one argument.");
-//            }
-//
-//            return new AbstractExpression("ExponentialPower", Position.PREFIX, expressions) {
-//                static final long serialVersionUID = 23L;
-//
-//                public double evaluate(Context context) {
-//                    Expression exp1 = getExpressions().get(0);
-//                    return RandomUtil.getInstance().nextExponentialPower(exp1.evaluate(context));
-//                }
-//            };
-//        }
-//    }
-
     private static class ExponentialExpressionDescriptor extends AbstractExpressionDescriptor {
         static final long serialVersionUID = 23L;
 
@@ -1558,7 +1533,7 @@ public class ExpressionManager {
 
                     double e1 = exp1.evaluate(context);
 
-                    final ExponentialDistribution distribution = new ExponentialDistribution(randomGenerator, e1);
+                    ExponentialDistribution distribution = new ExponentialDistribution(randomGenerator, e1);
                     return distribution.sample();
                 }
 
@@ -1568,8 +1543,7 @@ public class ExpressionManager {
 
                     double e1 = exp1.evaluate(context);
 
-                    final ExponentialDistribution distribution = new ExponentialDistribution(randomGenerator, e1);
-                    return distribution;
+                    return new ExponentialDistribution(randomGenerator, e1);
                 }
             };
 
@@ -1603,11 +1577,7 @@ public class ExpressionManager {
                     double e1 = exp1.evaluate(context);
                     double e2 = exp2.evaluate(context);
 
-//                    if (e2 <= 0) {
-//                        throw new IllegalArgumentException();
-//                    }
-
-                    final LogNormalDistribution distribution = new LogNormalDistribution(randomGenerator, e1, e2);
+                    LogNormalDistribution distribution = new LogNormalDistribution(randomGenerator, e1, e2);
                     return distribution.sample();
                 }
 
@@ -1728,7 +1698,7 @@ public class ExpressionManager {
                     RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
                     double e1 = getExpressions().get(0).evaluate(context);
                     double e2 = getExpressions().get(1).evaluate(context);
-                    final NormalDistribution distribution = new NormalDistribution(randomGenerator, e1, e2);
+                    NormalDistribution distribution = new NormalDistribution(randomGenerator, e1, e2);
                     return distribution.sample();
 //                    faster
 //                    return RandomUtil.getInstance().nextNormal(e1, e2);
@@ -1894,32 +1864,6 @@ public class ExpressionManager {
             };
         }
     }
-
-//    private static class HyperbolicExpressionDescriptor extends AbstractExpressionDescriptor {
-//        static final long serialVersionUID = 23L;
-//
-//        public HyperbolicExpressionDescriptor() {
-//            super("Hyperbolic", "Hyperbolic", Position.PREFIX, false, false, true, "expr");
-//        }
-//
-//        //=========================== Public Methods =========================//
-//
-//        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
-//            if (expressions.length != 2) {
-//                throw new ExpressionInitializationException("Hyperbolic must have two arguments.");
-//            }
-//
-//            return new AbstractExpression("Hyperbolic", Position.PREFIX, expressions) {
-//                static final long serialVersionUID = 23L;
-//
-//                public double evaluate(Context context) {
-//                    Expression exp1 = getExpressions().get(0);
-//                    Expression exp2 = getExpressions().get(1);
-//                    return RandomUtil.getInstance().nextHyperbolic(exp1.evaluate(context), exp2.evaluate(context));
-//                }
-//            };
-//        }
-//    }
 
 
     /**
@@ -2416,9 +2360,6 @@ public class ExpressionManager {
                 }
 
                 private double[] convert(double... p) {
-                    /*for (double _p : p) {
-                        if (_p < 0) throw new IllegalArgumentException("All arguments must be >= 0: " + _p);
-                    }*/
 
                     double sum = 0.0;
                     double[] pout = new double[p.length];

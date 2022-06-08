@@ -2,28 +2,32 @@ package edu.cmu.tetrad.data.simulation;
 
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.pitt.dbmi.data.reader.Delimiter;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author jdramsey
  */
 public class LoadContinuousDataAndGraphs implements Simulation {
     static final long serialVersionUID = 23L;
-    private String path;
-    private List<Graph> graphs = new ArrayList<>();
+    private final String path;
+    private final List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
-    private List<String> usedParameters = new ArrayList<>();
+    private final List<String> usedParameters = new ArrayList<>();
 
     public LoadContinuousDataAndGraphs(String path) {
         this.path = path;
@@ -31,30 +35,30 @@ public class LoadContinuousDataAndGraphs implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (!newModel && !dataSets.isEmpty()) return;
+//        if (!newModel && !dataSets.isEmpty()) return;
 
         this.dataSets = new ArrayList<>();
 
-        if (new File(path + "/data").exists()) {
-            int numDataSets = new File(path + "/data").listFiles().length;
+        if (new File(this.path + "/data").exists()) {
+            int numDataSets = Objects.requireNonNull(new File(this.path + "/data").listFiles()).length;
 
             try {
                 for (int i = 0; i < numDataSets; i++) {
-                    File file2 = new File(path + "/graph/graph." + (i + 1) + ".txt");
+                    File file2 = new File(this.path + "/graph/graph." + (i + 1) + ".txt");
                     System.out.println("Loading graph from " + file2.getAbsolutePath());
                     this.graphs.add(GraphUtils.loadGraphTxt(file2));
 
                     edu.cmu.tetrad.graph.GraphUtils.circleLayout(this.graphs.get(i), 225, 200, 150);
 
-                    File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
+                    File file1 = new File(this.path + "/data/data." + (i + 1) + ".txt");
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
-                    DataReader reader = new DataReader();
-                    reader.setVariablesSupplied(true);
-                    dataSets.add(reader.parseTabular(file1));
+                    DataSet data = DataUtils.loadContinuousData(file1, "//", '\"',
+                            "*", true, Delimiter.TAB);
+                    this.dataSets.add(data);
                 }
 
-                File paramFile = new File(path, "parameters.txt");
+                File paramFile = new File(this.path, "parameters.txt");
                 System.out.println("Loading parameters from " + paramFile.getAbsolutePath());
                 BufferedReader r = new BufferedReader(new FileReader(paramFile));
 
@@ -66,16 +70,16 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                         String key = tokens[0];
                         String value = tokens[1];
 
-                        usedParameters.add(key);
+                        this.usedParameters.add(key);
                         try {
                             double _value = Double.parseDouble(value);
                             parameters.set(key, _value);
                         } catch (NumberFormatException e) {
-                        	if(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")){
+                            if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                                 parameters.set(key, Boolean.valueOf(value));
-                        	}else{
+                            } else {
                                 parameters.set(key, value);
-                        	}
+                            }
                         }
                         System.out.println(key + " : " + value);
                     }
@@ -90,18 +94,18 @@ public class LoadContinuousDataAndGraphs implements Simulation {
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+        return this.graphs.get(index);
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     @Override
     public String getDescription() {
         try {
-            File file = new File(path, "parameters.txt");
+            File file = new File(this.path, "parameters.txt");
             BufferedReader r = new BufferedReader(new FileReader(file));
 
             StringBuilder b = new StringBuilder();
@@ -121,12 +125,12 @@ public class LoadContinuousDataAndGraphs implements Simulation {
 
     @Override
     public List<String> getParameters() {
-        return usedParameters;
+        return this.usedParameters;
     }
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override

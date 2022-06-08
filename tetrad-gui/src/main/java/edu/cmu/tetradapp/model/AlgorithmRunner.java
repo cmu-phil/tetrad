@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.graph.TripleClassifier;
+import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.session.Executable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
@@ -77,12 +77,12 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
     /**
      * Sets the initial graph for the algorithm, if feasible.
      */
-    void setInitialGraph(Graph graph);
+    void setExternalGraph(Graph graph);
 
     /**
      * @return the initial graph, if there is one, or null if not.
      */
-    Graph getInitialGraph();
+    Graph getExternalGraph();
 
     String getAlgorithmName();
 }

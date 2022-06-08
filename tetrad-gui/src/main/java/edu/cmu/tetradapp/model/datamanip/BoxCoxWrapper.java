@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -60,14 +60,6 @@ public class BoxCoxWrapper extends DataWrapper {
         setDataModelList(convertedList);
 
 
-//        DataModel model = data.getSelectedDataModel();
-//        if (!(model instanceof DataSet)) {
-//            throw new IllegalArgumentException("The data model must be a rectangular dataset");
-//        }
-//        model = TimeSeriesUtils.ar2((DataSet) model, params.getNumOfTimeLags());
-//        this.setDataModel(model);
-//        this.setSourceGraph(data.getSourceGraph());
-
         LogDataUtils.logDataModelList("Result data from an AR residual calculation.", getDataModelList());
 
     }
@@ -83,8 +75,7 @@ public class BoxCoxWrapper extends DataWrapper {
 
                 if (lambda == 0.0) {
                     d2 = Math.log(y);
-                }
-                else {
+                } else {
                     d2 = (Math.pow(y, lambda) - 1.0) / lambda;
                 }
 
@@ -106,17 +97,13 @@ public class BoxCoxWrapper extends DataWrapper {
 
                 if (lambda != 0 && y >= 0.0) {
                     d2 = (Math.pow(y + 1.0, lambda) - 1.0) / lambda;
-                }
-                else if (lambda == 0 && y >= 0.0) {
+                } else if (lambda == 0 && y >= 0.0) {
                     d2 = Math.log(y + 1.0);
-                }
-                else if (lambda != 2 && y < 0.0) {
+                } else if (lambda != 2 && y < 0.0) {
                     d2 = (Math.pow(1.0 - y, 2.0 - lambda) - 1) / (lambda - 2.0);
-                }
-                else if (lambda == 2 && y < 0.0) {
+                } else if (lambda == 2 && y < 0.0) {
                     d2 = -Math.log(1.0 - y);
-                }
-                else {
+                } else {
                     throw new IllegalStateException("Impossible state.");
                 }
 

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -31,7 +31,6 @@ package edu.cmu.tetradapp.editor;
  * editor is a Dialog then <code>finalizeEdit()</code> will be called right after <code>setup()</code>
  * assuming that the Dialog is modal and is handling matters on the users behalf.
  *
- *
  * @author Tyler Gibson
  */
 public interface FinalizingParameterEditor extends ParameterEditor {
@@ -44,8 +43,6 @@ public interface FinalizingParameterEditor extends ParameterEditor {
      * @return - true iff the edit was committed.
      */
     boolean finalizeEdit();
-
-
 
 
 }

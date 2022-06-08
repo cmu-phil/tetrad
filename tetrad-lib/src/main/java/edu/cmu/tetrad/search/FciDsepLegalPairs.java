@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * Specifies what coefs as a legal pair of edges X---Y---Z for purposes of calculating possible d-separation sets for
  * the FCI algorithm. In this case, legal initial edges are those adjacent to initial nodes, and legal pairs of edges
- * are those for which either X-->Y<--Z or X is adjacent to Z--i.e. X, Y, and Z form a triangle. (It is assumed (and
+ * are those for which either X-->Y&lt;--Z or X is adjacent to Z--i.e. X, Y, and Z form a triangle. (It is assumed (and
  * checked) that is adjacent to Y and Y is adjacent to Z.)
  *
  * @author Joseph Ramsey
@@ -39,7 +39,7 @@ class FciDsepLegalPairs implements LegalPairs {
     /**
      * Graph with respect to which graph properties are tested.
      */
-    private Graph graph;
+    private final Graph graph;
 
     /**
      * Constructs a new legal pairs object. See class level doc.
@@ -62,20 +62,20 @@ class FciDsepLegalPairs implements LegalPairs {
     }
 
     /**
-     * @return true iff x-->y<--z or else x is adjacent to z.
+     * @return true iff x-->y&lt;--z or else x is adjacent to z.
      * @throws IllegalArgumentException if x is not adjacent to y or y is not adjacent to z.
      */
     public boolean isLegalPair(Node x, Node y, Node z, List<Node> c,
                                List<Node> d) {
-        if (!(graph.isAdjacentTo(x, y)) || !(graph.isAdjacentTo(y, z))) {
+        if (!(this.graph.isAdjacentTo(x, y)) || !(this.graph.isAdjacentTo(y, z))) {
             throw new IllegalArgumentException();
         }
 
-        if (graph.isDefCollider(x, y, z)) {
+        if (this.graph.isDefCollider(x, y, z)) {
             return true;
         }
 
-        return graph.isAdjacentTo(x, z);
+        return this.graph.isAdjacentTo(x, z);
     }
 }
 

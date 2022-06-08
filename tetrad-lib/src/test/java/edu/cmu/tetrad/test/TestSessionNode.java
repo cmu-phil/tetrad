@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.session.*;
+import edu.cmu.tetrad.util.Parameters;
 import org.junit.Test;
 
 import java.rmi.MarshalledObject;
@@ -35,15 +35,15 @@ import static org.junit.Assert.*;
 
 /**
  * <p>Tests the operation of the session node. The session node needs to be able
- * to:</p> </p> <ul> </p> <li>Add and remove parents or children without
+ * to:&gt; 0 <ul> <li>Add and remove parents or children without
  * violating the constraint that the set of models for the parents of a node at
  * any time should be a subset of the set of objects needed to constuct an
  * object of the given model class for some constructor of the model class. Note
  * that in adding parents or children, the lists of parents or children of other
- * nodes need to be adjusted and kept in sync. </p> <li>Create a new model given
+ * nodes need to be adjusted and kept in sync. <li>Create a new model given
  * the parents of the node, provided the models of the node's parents can be
  * mapped unambiguously onto the objects required for some constructor of the
- * model class. </p> <li>Fire events to listeners when any of the following
+ * model class. <li>Fire events to listeners when any of the following
  * happens: (a) parents are added or removed; (b) models are created or
  * destroyed. The adding and removing of listeners must also be tested.
  *
@@ -59,17 +59,17 @@ public class TestSessionNode {
     /**
      * <p>Tests the <code>existsConstructor</code> method, which determines
      * whether a constructor exists in the model class that accepts objects of
-     * the given classes as arguments.</p>
+     * the given classes as arguments.&gt; 0
      */
     @Test
     public void testExistsConstructor() {
         SessionNode node = new SessionNode(Type1.class);
-        Class[] testSet1 = new Class[]{Type1.class};
-        Class[] testSet2 = new Class[]{Type2.class};
-        Class[] testSet3 = new Class[]{Type3.class};
-        Class[] testSet4 = new Class[]{Type2.class, Type3.class};
-        Class[] testSet5 = new Class[]{Type3.class, Type4.class};
-        Class[] testSet6 = new Class[]{Type2.class, Type2.class};
+        Class[] testSet1 = {Type1.class};
+        Class[] testSet2 = {Type2.class};
+        Class[] testSet3 = {Type3.class};
+        Class[] testSet4 = {Type2.class, Type3.class};
+        Class[] testSet5 = {Type3.class, Type4.class};
+        Class[] testSet6 = {Type2.class, Type2.class};
 
         assertTrue(!node.existsConstructor(Type1.class, testSet1));
         assertTrue(node.existsConstructor(Type1.class, testSet2));
@@ -86,7 +86,7 @@ public class TestSessionNode {
     @Test
     public void testGetValueCombination() {
         SessionNode node = new SessionNode(Type1.class);
-        int[] numValues = new int[]{2, 3, 4};
+        int[] numValues = {2, 3, 4};
 
         assertEquals(24, node.getProduct(numValues));
         assertTrue(isTheSame(node.getValueCombination(0, numValues), 0, 0, 0));
@@ -107,14 +107,14 @@ public class TestSessionNode {
 
     /**
      * <p>Tests the <code>assignParameters</code> method for the case where each
-     * model contains exactly one model type. Must test the following:</p> </p>
-     * <ul> </p> <li>The order of the classes of the returned argument array
+     * model contains exactly one model type. Must test the following:&gt; 0
+     * <ul> <li>The order of the classes of the returned argument array
      * must be the same as the order of the classes in the parameterTypes array.
-     * </p> <li>If one of the classes in the parameterTypes array is null, null
-     * should be returned. </p> <li>If an object of some type required by the
+     * <li>If one of the classes in the parameterTypes array is null, null
+     * should be returned. <li>If an object of some type required by the
      * parameterTypes array does not exist in the object array, null should be
-     * returned. </p> <li>If there are more objects in the object array than are
-     * required by the parameterTypes array, null should be returned. </p>
+     * returned. <li>If there are more objects in the object array than are
+     * required by the parameterTypes array, null should be returned.
      * </ul>
      */
     @Test
@@ -133,7 +133,7 @@ public class TestSessionNode {
         objects.add(object2);
 
         // Try it with the correct parameter types...
-        Class[] parameterTypes1 = new Class[]{Type2.class, Type3.class};
+        Class[] parameterTypes1 = {Type2.class, Type3.class};
         Object[] arguments1 = node.assignParameters(parameterTypes1, objects);
 
         assertNotNull(arguments1);
@@ -143,7 +143,7 @@ public class TestSessionNode {
         }
 
         // Try it with the wrong set...
-        Class[] parameterTypes2 = new Class[]{Type1.class, Type3.class};
+        Class[] parameterTypes2 = {Type1.class, Type3.class};
         Object[] arguments2 = node.assignParameters(parameterTypes2, objects);
 
         assertNull(arguments2);
@@ -151,18 +151,17 @@ public class TestSessionNode {
         // Try it with the right set but with a null inserted.
         try {
             Class[] parameterTypes3 =
-                    new Class[]{Type2.class, Type3.class, null};
+                    {Type2.class, Type3.class, null};
             node.assignParameters(parameterTypes3, objects);
             fail("Should not have been able to assign parameters with a null " +
                     "parameter in the list.");
-        }
-        catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             // What we wanted.
         }
 
         // Try it with too many types...
         Class[] parameterTypes4 =
-                new Class[]{Type2.class, Type3.class, Type4.class};
+                {Type2.class, Type3.class, Type4.class};
         Object[] arguments4 = node.assignParameters(parameterTypes4, objects);
 
         assertNull(arguments4);
@@ -180,8 +179,6 @@ public class TestSessionNode {
         SessionNode node3 = new SessionNode(Type3.class);
         SessionNode node4 =
                 new SessionNode(new Class[]{Type1.class, Type2.class});
-        //        SessionNode node5 = new SessionNode(new Class[]{Type1.class,
-        //                                                        Type2.class});
         SessionNode node6 = new SessionNode(
                 new Class[]{Type1.class, Type2.class, Type3.class});
         SessionNode node7 =
@@ -293,7 +290,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testGetConsistentModelClasses() throws Exception {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionNode node1 = new SessionNode(new Class[]{Type1.class});
         SessionNode node2 = new SessionNode(new Class[]{Type2.class});
@@ -310,8 +307,7 @@ public class TestSessionNode {
         try {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             fail("Model not created.");
         }
 
@@ -326,7 +322,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testCreateModel() {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionNode node1 = new SessionNode(Type1.class);
         SessionNode node2 = new SessionNode(Type2.class);
@@ -340,8 +336,7 @@ public class TestSessionNode {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
             node1.createModel(Type1.class, simulation);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             fail("Model not created.");
         }
@@ -355,7 +350,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testEvents() {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionListener listener = new SessionListener() {
 
@@ -471,8 +466,7 @@ public class TestSessionNode {
             assertNotNull(node1.getModel());
             node2.destroyModel();
             assertNull(node1.getModel());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }
@@ -490,7 +484,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testStructuralIdentity() {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionNode node1 = new SessionNode(Type1.class);
         SessionNode node2 = new SessionNode(Type2.class);
@@ -505,8 +499,7 @@ public class TestSessionNode {
             node1.createModel(Type1.class, simulation);
             assertTrue(node1.isStructurallyIdentical(node1));
             assertTrue(!node1.isStructurallyIdentical(node2));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }
@@ -521,7 +514,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testSerialization() {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionNode node1 = new SessionNode(Type1.class);
         SessionNode node2 = new SessionNode(Type2.class);
@@ -535,8 +528,7 @@ public class TestSessionNode {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
             node1.createModel(Type1.class, simulation);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail("Model not created.");
         }
 
@@ -544,8 +536,7 @@ public class TestSessionNode {
 
         try {
             node1Copy = (SessionNode) new MarshalledObject(node1).get();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail("Serialization failed.");
         }
 
@@ -557,7 +548,7 @@ public class TestSessionNode {
      */
 //    @Test
     public void testParameterization() {
-        boolean simulation = true;
+        final boolean simulation = true;
 
         SessionNode node1 = new SessionNode(Type1.class);
         SessionNode node2 = new SessionNode(Type2.class);
@@ -572,8 +563,7 @@ public class TestSessionNode {
             node2.createModel(Type2.class, simulation);
             node3.createModel(Type3.class, simulation);
 //            node1.createModel(Type1.class, simulation);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             fail("Model not created.");
         }
@@ -582,8 +572,7 @@ public class TestSessionNode {
 
         try {
             node1.createModel(simulation);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             fail("Model not created.");
         }
     }
@@ -593,7 +582,7 @@ public class TestSessionNode {
      */
     @Test
     public void testSetName() {
-        String name = "Test";
+        final String name = "Test";
         SessionNode node1 = new SessionNode("???", name, Type1.class);
         assertEquals(name, node1.getDisplayName());
     }

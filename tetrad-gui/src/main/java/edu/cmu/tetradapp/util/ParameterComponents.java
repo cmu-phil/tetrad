@@ -21,24 +21,17 @@ package edu.cmu.tetradapp.util;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
+
+import javax.swing.*;
 import java.text.DecimalFormat;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
 
 /**
  * A utility for creating parameter components for GUI.
- *
+ * <p>
  * May 24, 2019 11:37:33 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -48,7 +41,7 @@ public final class ParameterComponents {
     private ParameterComponents() {
     }
 
-    public static final Box[] toArray(Map<String, Box> parameterComponents) {
+    public static Box[] toArray(Map<String, Box> parameterComponents) {
         ParamDescriptions paramDescs = ParamDescriptions.getInstance();
 
         List<Box> boolComps = new LinkedList<>();
@@ -65,21 +58,21 @@ public final class ParameterComponents {
                 .toArray(Box[]::new);
     }
 
-    public static final Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+    public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
         ParamDescriptions paramDescs = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        e -> createParameterComponent(e, parameters, paramDescs.get(e)),
+                        e -> ParameterComponents.createParameterComponent(e, parameters, paramDescs.get(e)),
                         (u, v) -> {
                             throw new IllegalStateException(String.format("Duplicate key %s.", u));
                         },
                         TreeMap::new));
     }
 
-    public static final DoubleTextField getDoubleField(final String parameter, final Parameters parameters,
-            double defaultValue, final double lowerBound, final double upperBound) {
-        final DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
+    public static DoubleTextField getDoubleField(String parameter, Parameters parameters,
+                                                 double defaultValue, double lowerBound, double upperBound) {
+        DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
         field.setFilter((value, oldValue) -> {
@@ -107,9 +100,9 @@ public final class ParameterComponents {
         return field;
     }
 
-    public static final IntTextField getIntTextField(final String parameter, final Parameters parameters,
-            final int defaultValue, final double lowerBound, final double upperBound) {
-        final IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
+    public static IntTextField getIntTextField(String parameter, Parameters parameters,
+                                               int defaultValue, double lowerBound, double upperBound) {
+        IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
             if (value == field.getValue()) {
@@ -136,7 +129,7 @@ public final class ParameterComponents {
         return field;
     }
 
-    public static final Box getBooleanSelectionBox(final String parameter, final Parameters parameters, boolean defaultValue) {
+    public static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
         JRadioButton yesButton = new JRadioButton("Yes");
@@ -179,8 +172,8 @@ public final class ParameterComponents {
         return selectionBox;
     }
 
-    public static final StringTextField getStringField(final String parameter, final Parameters parameters, String defaultValue) {
-        final StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
+    public static StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+        StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
         field.setFilter((value, oldValue) -> {
             if (value.equals(field.getValue().trim())) {
@@ -205,15 +198,15 @@ public final class ParameterComponents {
         if (defaultValue instanceof Double) {
             double lowerBoundDouble = paramDesc.getLowerBoundDouble();
             double upperBoundDouble = paramDesc.getUpperBoundDouble();
-            component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+            component = ParameterComponents.getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
         } else if (defaultValue instanceof Integer) {
             int lowerBoundInt = paramDesc.getLowerBoundInt();
             int upperBoundInt = paramDesc.getUpperBoundInt();
-            component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+            component = ParameterComponents.getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
         } else if (defaultValue instanceof Boolean) {
-            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+            component = ParameterComponents.getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
         } else if (defaultValue instanceof String) {
-            component = getStringField(parameter, parameters, (String) defaultValue);
+            component = ParameterComponents.getStringField(parameter, parameters, (String) defaultValue);
         } else {
             throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }

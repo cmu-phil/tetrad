@@ -18,15 +18,7 @@
  */
 package edu.cmu.tetrad.util;
 
-import edu.cmu.tetrad.data.BoxDataSet;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataBox;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.data.DoubleDataBox;
-import edu.cmu.tetrad.data.MixedDataBox;
-import edu.cmu.tetrad.data.VerticalIntDataBox;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.pitt.dbmi.data.reader.ContinuousData;
@@ -38,12 +30,12 @@ import edu.pitt.dbmi.data.reader.metadata.ColumnMetadata;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
 import edu.pitt.dbmi.data.reader.tabular.MixedTabularData;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularData;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- *
  * Dec 15, 2018 11:10:30 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -55,13 +47,13 @@ public class DataConvertUtils {
 
     public static DataModel toDataModel(Data data, Metadata metadata) {
         if (data instanceof ContinuousData) {
-            return toContinuousDataModel((ContinuousData) data);
+            return DataConvertUtils.toContinuousDataModel((ContinuousData) data);
         } else if (data instanceof VerticalDiscreteTabularData) {
-            return toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data, metadata);
+            return DataConvertUtils.toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data, metadata);
         } else if (data instanceof MixedTabularData) {
-            return toMixedDataBox((MixedTabularData) data, metadata);
+            return DataConvertUtils.toMixedDataBox((MixedTabularData) data, metadata);
         } else if (data instanceof CovarianceData) {
-            return toCovarianceMatrix((CovarianceData) data);
+            return DataConvertUtils.toCovarianceMatrix((CovarianceData) data);
         } else {
             return null;
         }
@@ -69,20 +61,20 @@ public class DataConvertUtils {
 
     public static DataModel toDataModel(Data data) {
         if (data instanceof ContinuousData) {
-            return toContinuousDataModel((ContinuousData) data);
+            return DataConvertUtils.toContinuousDataModel((ContinuousData) data);
         } else if (data instanceof VerticalDiscreteTabularData) {
-            return toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data);
+            return DataConvertUtils.toVerticalDiscreteDataModel((VerticalDiscreteTabularData) data);
         } else if (data instanceof MixedTabularData) {
-            return toMixedDataBox((MixedTabularData) data);
+            return DataConvertUtils.toMixedDataBox((MixedTabularData) data);
         } else if (data instanceof CovarianceData) {
-            return toCovarianceMatrix((CovarianceData) data);
+            return DataConvertUtils.toCovarianceMatrix((CovarianceData) data);
         } else {
             return null;
         }
     }
 
     public static DataModel toCovarianceMatrix(CovarianceData dataset) {
-        List<Node> variables = toNodes(dataset.getVariables());
+        List<Node> variables = DataConvertUtils.toNodes(dataset.getVariables());
         Matrix matrix = new Matrix(dataset.getData());
         int sampleSize = dataset.getNumberOfCases();
 
@@ -92,9 +84,6 @@ public class DataConvertUtils {
     /**
      * Converting using metadata
      *
-     * @param dataset
-     * @param metadata
-     * @return
      */
     public static DataModel toMixedDataBox(MixedTabularData dataset, Metadata metadata) {
         int numOfRows = dataset.getNumOfRows();
@@ -104,8 +93,8 @@ public class DataConvertUtils {
 
         Node[] nodes = Arrays.stream(columns)
                 .map(e -> e.getDataColumn().isDiscrete()
-                ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
-                : new ContinuousVariable(e.getDataColumn().getName()))
+                        ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
+                        : new ContinuousVariable(e.getDataColumn().getName()))
                 .toArray(Node[]::new);
 
         metadata.getInterventionalColumns().forEach(e -> {
@@ -132,8 +121,8 @@ public class DataConvertUtils {
 
         List<Node> nodes = Arrays.stream(columns)
                 .map(e -> e.getDataColumn().isDiscrete()
-                ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
-                : new ContinuousVariable(e.getDataColumn().getName()))
+                        ? new DiscreteVariable(e.getDataColumn().getName(), e.getCategories())
+                        : new ContinuousVariable(e.getDataColumn().getName()))
                 .collect(Collectors.toList());
 
         return new BoxDataSet(new MixedDataBox(nodes, numOfRows, continuousData, discreteData), nodes);
@@ -142,13 +131,9 @@ public class DataConvertUtils {
     /**
      * Converting using metadata
      *
-     * @param dataset
-     * @param metatdata
-     * @return
      */
     public static DataModel toVerticalDiscreteDataModel(VerticalDiscreteTabularData dataset, Metadata metatdata) {
-        Node[] nodes = toNodes(dataset.getDataColumns()).stream()
-                .toArray(Node[]::new);
+        Node[] nodes = DataConvertUtils.toNodes(dataset.getDataColumns()).toArray(new Node[0]);
 
         metatdata.getInterventionalColumns().forEach(e -> {
             ColumnMetadata valueColumn = e.getValueColumn();
@@ -170,14 +155,14 @@ public class DataConvertUtils {
 
     public static DataModel toVerticalDiscreteDataModel(VerticalDiscreteTabularData dataset) {
         DataBox dataBox = new VerticalIntDataBox(dataset.getData());
-        List<Node> variables = toNodes(dataset.getDataColumns());
+        List<Node> variables = DataConvertUtils.toNodes(dataset.getDataColumns());
 
         return new BoxDataSet(dataBox, variables);
     }
 
     public static DataModel toContinuousDataModel(ContinuousData dataset) {
         DataBox dataBox = new DoubleDataBox(dataset.getData());
-        List<Node> variables = toNodes(dataset.getDataColumns());
+        List<Node> variables = DataConvertUtils.toNodes(dataset.getDataColumns());
 
         return new BoxDataSet(dataBox, variables);
     }

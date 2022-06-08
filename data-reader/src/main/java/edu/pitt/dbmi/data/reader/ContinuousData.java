@@ -19,15 +19,14 @@
 package edu.pitt.dbmi.data.reader;
 
 /**
- *
  * Dec 10, 2018 3:14:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface ContinuousData extends Data {
 
-    public DataColumn[] getDataColumns();
+    DataColumn[] getDataColumns();
 
-    public double[][] getData();
+    double[][] getData();
 
 }

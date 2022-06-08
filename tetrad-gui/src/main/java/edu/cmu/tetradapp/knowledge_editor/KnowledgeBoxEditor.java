@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,41 +21,27 @@
 package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.ForbiddenGraphModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
+
+import javax.swing.*;
+import javax.swing.border.*;
+import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.io.CharArrayWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.prefs.Preferences;
-import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.border.MatteBorder;
-import javax.swing.border.TitledBorder;
 
 /**
  * Edits knowledge of forbidden and required edges.
@@ -73,31 +59,23 @@ public class KnowledgeBoxEditor extends JPanel {
 
     private final Map<String, JLabel> labelMap = new HashMap<>();
 
-    private List<String> varNames;
-    private KnowledgeWorkbench edgeWorkbench;
-    private JPanel tiersPanel;
-    private boolean showForbiddenExplicitly = false;
-    private boolean showForbiddenByTiers = false;
-    private boolean showRequired = false;
-    private boolean showRequiredByGroups = false;
-    private boolean showForbiddenByGroups = false;
-    private JTextArea textArea;
-
-
-    private final KnowledgeBoxModel knowledgeBoxModel;
-    private JTabbedPane tabbedPane = null;
-    private Graph sourceGraph;
-
+    private final List<Node> vars;
     private final List<String> firstTierVars = new LinkedList<>();
     private final List<String> secondTierVars = new LinkedList<>();
-    
-    
-    public KnowledgeBoxEditor(final KnowledgeBoxModel knowledgeBoxModel) {
-        this(knowledgeBoxModel, knowledgeBoxModel.getVarNames());
-    }
+    private final KnowledgeBoxModel knowledgeBoxModel;
+    private IKnowledge knowledge;
+    private KnowledgeWorkbench edgeWorkbench;
+    private JPanel tiersPanel;
+    private boolean showForbiddenExplicitly;
+    private boolean showForbiddenByTiers;
+    private boolean showRequired;
+    private boolean showRequiredByGroups;
+    private boolean showForbiddenByGroups;
+    private final JTabbedPane tabbedPane;
+    private int numTiers = 3;
 
-    public KnowledgeBoxEditor(final ForbiddenGraphModel knowledgeBoxModel) {
-        this(knowledgeBoxModel, knowledgeBoxModel.getVarNames());
+    public KnowledgeBoxEditor(ForbiddenGraphModel knowledgeBoxModel) {
+        this((KnowledgeBoxModel) knowledgeBoxModel);
     }
 
     /**
@@ -106,21 +84,15 @@ public class KnowledgeBoxEditor extends JPanel {
      * from object to object even for the same knowledge), and possible source
      * graph. The source graph is used only to arrange nodes in the edge panel.
      */
-    private KnowledgeBoxEditor(final KnowledgeBoxModel knowledgeBoxModel, List<String> varNames) {
-        if (knowledgeBoxModel == null) {
-            throw new NullPointerException();
-        }
-
-        if (varNames == null) {
-            varNames = new ArrayList<>();
-        }
-
-        this.varNames = varNames;
+    public KnowledgeBoxEditor(KnowledgeBoxModel knowledgeBoxModel) {
+        this.vars = knowledgeBoxModel.getVariables();
+        this.knowledge = knowledgeBoxModel.getKnowledge();
         this.knowledgeBoxModel = knowledgeBoxModel;
 
         setLayout(new BorderLayout());
-        JTabbedPane tabbedPane = new JTabbedPane();
-        resetTabbedPane(tabbedPane);
+        JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.LEFT);
+        this.tabbedPane = tabbedPane;
+        resetTabbedPane();
 
         add(tabbedPane, BorderLayout.CENTER);
         setPreferredSize(new Dimension(640, 500));
@@ -131,7 +103,7 @@ public class KnowledgeBoxEditor extends JPanel {
             @Override
             public void componentHidden(ComponentEvent e) {
                 TetradLogger.getInstance().log("knowledge", "Edited Knowledge:");
-                TetradLogger.getInstance().log("knowledge", knowledgeBoxModel.getKnowledge().toString());
+                TetradLogger.getInstance().log("knowledge", KnowledgeBoxEditor.this.knowledge.toString());
             }
         });
 
@@ -139,8 +111,8 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     private void initComponents() {
-        getKnowledge().getVariables().forEach(e -> labelMap.put(e, createJLabel(e)));
-        getKnowledge().getVariablesNotInTiers().forEach(e -> labelMap.put(e, createJLabel(e)));
+        getKnowledge().getVariables().forEach(e -> this.labelMap.put(e, createJLabel(e)));
+        getKnowledge().getVariablesNotInTiers().forEach(e -> this.labelMap.put(e, createJLabel(e)));
     }
 
     private JLabel createJLabel(String name) {
@@ -149,7 +121,7 @@ public class KnowledgeBoxEditor extends JPanel {
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setBorder(new CompoundBorder(new MatteBorder(2, 2, 2, 2, Color.WHITE), new LineBorder(Color.BLACK)));
         label.setForeground(Color.BLACK);
-        label.setBackground(UNSELECTED_BG);
+        label.setBackground(this.UNSELECTED_BG);
 
         return label;
     }
@@ -159,13 +131,13 @@ public class KnowledgeBoxEditor extends JPanel {
         JMenu file = new JMenu("File");
         menuBar.add(file);
 
-        JMenuItem load = new JMenuItem("Load");
-        JMenuItem save = new JMenuItem("Save");
+        JMenuItem loadKnowledge = new JMenuItem("Load Knowledge...");
+        JMenuItem saveKnowledge = new JMenuItem("Save Knowledge...");
 
-        file.add(load);
-        file.add(save);
+        file.add(loadKnowledge);
+        file.add(saveKnowledge);
 
-        load.addActionListener((e) -> {
+        loadKnowledge.addActionListener((e) -> {
             JFileChooser chooser = new JFileChooser();
             String sessionSaveLocation
                     = Preferences.userRoot().get("fileSaveLocation", "");
@@ -178,7 +150,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 return;
             }
 
-            final File selectedFile = chooser.getSelectedFile();
+            File selectedFile = chooser.getSelectedFile();
 
             if (selectedFile == null) {
                 return;
@@ -187,14 +159,9 @@ public class KnowledgeBoxEditor extends JPanel {
             Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
 
             try {
-                IKnowledge knowledge = new DataReader().parseKnowledge(selectedFile);
-
-                if (knowledge == null) {
-                    throw new NullPointerException("No knowledge found in this file. Perhaps the formatting is off");
-                }
-
+                IKnowledge knowledge = DataUtils.loadKnowledge(selectedFile, DelimiterType.WHITESPACE, "//");
                 setKnowledge(knowledge);
-                resetTabbedPane(KnowledgeBoxEditor.this.tabbedPane);
+                resetTabbedPane();
             } catch (Exception e1) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         e1.getMessage());
@@ -202,7 +169,7 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         });
 
-        save.addActionListener((e) -> {
+        saveKnowledge.addActionListener((e) -> {
             JFileChooser chooser = new JFileChooser();
             String sessionSaveLocation
                     = Preferences.userRoot().get("fileSaveLocation", "");
@@ -215,7 +182,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 return;
             }
 
-            final File selectedFile = chooser.getSelectedFile();
+            File selectedFile = chooser.getSelectedFile();
 
             if (selectedFile == null) {
                 return;
@@ -224,40 +191,37 @@ public class KnowledgeBoxEditor extends JPanel {
             Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
 
             try {
-                DataWriter.saveKnowledge(knowledgeBoxModel.getKnowledge(), new FileWriter(selectedFile));
+                DataWriter.saveKnowledge(this.knowledge, new FileWriter(selectedFile));
             } catch (Exception e1) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         e1.getMessage());
             }
         });
 
-
         return menuBar;
     }
 
-    private void resetTabbedPane(JTabbedPane tabbedPane) {
-        tabbedPane.removeAll();
-        tabbedPane.add("Tiers", tierDisplay());
-        tabbedPane.add("Other Groups", new OtherGroupsEditor(knowledgeBoxModel.getKnowledge(), this.varNames));
-        tabbedPane.add("Edges", edgeDisplay());
+    public void resetTabbedPane() {
+        this.tabbedPane.removeAll();
+        this.tabbedPane.add("Tiers", tierDisplay());
+        this.tabbedPane.add("Other Groups", new OtherGroupsEditor(this.knowledge, this.knowledge.getVariables()));
+        this.tabbedPane.add("Edges", edgeDisplay());
 
-        tabbedPane.addChangeListener((e) -> {
+        this.tabbedPane.addChangeListener((e) -> {
             JTabbedPane pane = (JTabbedPane) e.getSource();
             if (pane.getSelectedIndex() == 0) {
-                setNumDisplayTiers(getNumTiers());
+                setNumDisplayTiers(Math.max(getNumTiers(), this.knowledge.getNumTiers()));
             } else if (pane.getSelectedIndex() == 2) {
                 resetEdgeDisplay(null);
             }
         });
-
-        this.tabbedPane = tabbedPane;
     }
 
     private Box tierDisplay() {
         if (getNumTiers() < 0) {
             int numTiers = getKnowledge().getNumTiers();
-            int _default = (int) (Math.pow(varNames.size(), 0.5) + 1);
-            numTiers = numTiers < _default ? _default : numTiers;
+            int _default = (int) (Math.pow(this.vars.size(), 0.5) + 1);
+            numTiers = Math.max(numTiers, _default);
             setNumDisplayTiers(numTiers);
         }
 
@@ -291,11 +255,11 @@ public class KnowledgeBoxEditor extends JPanel {
         b1.add(spinner);
         b.add(b1);
 
-        tiersPanel = new JPanel();
-        tiersPanel.setLayout(new BorderLayout());
-        tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
+        this.tiersPanel = new JPanel();
+        this.tiersPanel.setLayout(new BorderLayout());
+        this.tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
 
-        b.add(tiersPanel);
+        b.add(this.tiersPanel);
 
         Box c = Box.createHorizontalBox();
         c.add(new JLabel("Use shift key to select multiple items."));
@@ -309,12 +273,10 @@ public class KnowledgeBoxEditor extends JPanel {
         if (numTiers < 2) {
             int knowledgeTiers = getKnowledge().getNumTiers();
             int defaultTiers = (int) (Math.pow(getVarNames().size(), 0.5) + 1);
-            numTiers = knowledgeTiers < defaultTiers ? defaultTiers
-                    : knowledgeTiers;
-            setNumTiers(numTiers);
-        } else {
-            setNumTiers(numTiers);
+            numTiers = Math.max(knowledgeTiers, defaultTiers);
         }
+
+        setNumTiers(numTiers);
 
         for (int i = numTiers; i < getKnowledge().getNumTiers(); i++) {
             List<String> vars = getKnowledge().getTier(i);
@@ -324,72 +286,73 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         }
 
-        tiersPanel.removeAll();
-        tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
-        tiersPanel.revalidate();
-        tiersPanel.repaint();
+        this.tiersPanel.removeAll();
+        this.tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
+        this.tiersPanel.revalidate();
+        this.tiersPanel.repaint();
     }
 
     /**
-     * If the knowledge box sees interventional variables 
-     * it automatically places those variables in the first tier 
+     * If the knowledge box sees interventional variables
+     * it automatically places those variables in the first tier
      * and the rest of domain variables in second tier - Zhou
      */
     private void checkInterventionalVariables() {
-        knowledgeBoxModel.getVariables().forEach(e->{ 
+        this.vars.forEach(e -> {
             if ((e.getNodeVariableType() == NodeVariableType.INTERVENTION_STATUS) || (e.getNodeVariableType() == NodeVariableType.INTERVENTION_VALUE)) {
-                firstTierVars.add(e.getName());
+                this.firstTierVars.add(e.getName());
             } else {
                 if (e.getAttribute("fullyDeterminisedDomainVar") != null) {
                     // Also put domain variables that have the "fullyDeterminisedDomainVar" set as true into the first tier
                     if ((boolean) e.getAttribute("fullyDeterminisedDomainVar")) {
-                        firstTierVars.add(e.getName());
+                        this.firstTierVars.add(e.getName());
                     }
                 } else {
-                    secondTierVars.add(e.getName());
+                    this.secondTierVars.add(e.getName());
                 }
             }
         });
     }
-    
+
     private Box getTierBoxes(int numTiers) {
         // Handling interventional variables
         checkInterventionalVariables();
-        
+
         // Only for dataset with interventional variables and the first time
         // we open the knowledge box - Zhou
-        if (getKnowledge().isEmpty() && !firstTierVars.isEmpty()) {
+        if (getKnowledge().isEmpty() && !this.firstTierVars.isEmpty()) {
             // Display interventional variables in first tier and the rest in second tier
-            getKnowledge().setTier(0, firstTierVars);
-            getKnowledge().setTier(1, secondTierVars);
+            getKnowledge().setTier(0, this.firstTierVars);
+            getKnowledge().setTier(1, this.secondTierVars);
         }
-        
-        for (String var : varNames) {
-            getKnowledge().addVariable(var);
+
+        for (Node var : this.vars) {
+            getKnowledge().addVariable(var.getName());
         }
 
         // Overall container
         Box container = Box.createVerticalBox();
 
-        // Vars not in tier
-        List varsNotInTiers = getKnowledge().getVariablesNotInTiers();
-        JList varsNotInTiersList = new DragDropList(varsNotInTiers, -1);
+        // Vars not in tier. Reinitialize in case the variables in knowledge have changed.
+        initComponents();
+        List<String> varsNotInTiers = getKnowledge().getVariablesNotInTiers();
+        JList<String> varsNotInTiersList = new DragDropList(varsNotInTiers, -1);
         varsNotInTiersList.setBorder(null);
 
         Box varsNotInTiersBox = Box.createHorizontalBox();
         JScrollPane jScrollPane1 = new JScrollPane(varsNotInTiersList);
         jScrollPane1.setPreferredSize(new Dimension(640, 50));
         varsNotInTiersBox.add(jScrollPane1);
-        
+
         Box tiersBox = Box.createVerticalBox();
 
         // Use this list so we can set the first tier forbidden within tier with interventional variables handling - Zhou
         List<JCheckBox> forbiddenCheckboxes = new LinkedList<>();
-        
+
         for (int tier = 0; tier < numTiers; tier++) {
             Box textRow = Box.createHorizontalBox();
             textRow.add(new JLabel("Tier " + (tier + 1)));
-            final int _tier = tier;
+            int _tier = tier;
 
             textRow.add(Box.createHorizontalGlue());
 
@@ -397,9 +360,9 @@ public class KnowledgeBoxEditor extends JPanel {
 
             JCheckBox forbiddenCheckbox = new JCheckBox("Forbid Within Tier", getKnowledge().isTierForbiddenWithin(_tier));
 
-            JCheckBox causesOnlyNextTierCheckbox =  new JCheckBox("Can Cause Only Next Tier", getKnowledge().isOnlyCanCauseNextTier(_tier));
+            JCheckBox causesOnlyNextTierCheckbox = new JCheckBox("Can Cause Only Next Tier", getKnowledge().isOnlyCanCauseNextTier(_tier));
 
-            final JComponent upReference = this;
+            JComponent upReference = this;
 
             forbiddenCheckbox.addActionListener((e) -> {
                 JCheckBox checkbox = (JCheckBox) e.getSource();
@@ -414,11 +377,11 @@ public class KnowledgeBoxEditor extends JPanel {
             });
 
             forbiddenCheckboxes.add(forbiddenCheckbox);
-            
+
             textRow.add(regexAdd);
 
             regexAdd.addActionListener((e) -> {
-                String regex = JOptionPane.showInputDialog("Search Pattern");
+                String regex = JOptionPane.showInputDialog("Search Cpdag");
                 try {
                     getKnowledge().removeFromTiers(regex);
                     getKnowledge().addToTier(_tier, regex);
@@ -428,10 +391,10 @@ public class KnowledgeBoxEditor extends JPanel {
 
                 notifyKnowledge();
 
-                tiersPanel.removeAll();
-                tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
-                tiersPanel.revalidate();
-                tiersPanel.repaint();
+                this.tiersPanel.removeAll();
+                this.tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
+                this.tiersPanel.revalidate();
+                this.tiersPanel.repaint();
             });
 
             textRow.add(forbiddenCheckbox);
@@ -452,33 +415,33 @@ public class KnowledgeBoxEditor extends JPanel {
 
             tiersBox.add(textRow);
 
-            List tierNames = getKnowledge().getTier(tier);
+            List<String> tierNames = getKnowledge().getTier(tier);
 
-            JList tierList = new DragDropList(tierNames, tier);
+            JList<String> tierList = new DragDropList(tierNames, tier);
 
             Box tierBox = Box.createHorizontalBox();
             JScrollPane jScrollPane = new JScrollPane(tierList);
             jScrollPane.setPreferredSize(new Dimension(600, 50));
             tierBox.add(jScrollPane);
-            
+
             tiersBox.add(tierBox);
         }
-        
+
         // Add all tiers to a scroll pane
         JScrollPane tiersScrollPane = new JScrollPane(tiersBox);
         tiersScrollPane.setPreferredSize(new Dimension(640, 400));
-        
+
         // Also check "Forbin Within Tier" for the first tier variables
-        if (!firstTierVars.isEmpty()) {
+        if (!this.firstTierVars.isEmpty()) {
             forbiddenCheckboxes.get(0).setSelected(true);
             getKnowledge().setTierForbiddenWithin(0, true);
         }
-        
+
         // Finally add to container
         container.add(varsNotInTiersBox);
         container.add(Box.createVerticalStrut(5));
         container.add(tiersScrollPane);
-        
+
         return container;
     }
 
@@ -491,27 +454,27 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         });
 
-        edgeWorkbench = new KnowledgeWorkbench(graph);
+        this.edgeWorkbench = new KnowledgeWorkbench(graph);
         resetEdgeDisplay(null);
 
-        JCheckBox showForbiddenByTiersCheckbox = new JCheckBox("Show Forbidden By Tiers", showForbiddenByTiers);
+        JCheckBox showForbiddenByTiersCheckbox = new JCheckBox("Show Forbidden By Tiers", this.showForbiddenByTiers);
         JCheckBox showForbiddenGroupsCheckBox = new JCheckBox("Show Forbidden by Groups", this.showForbiddenByGroups);
-        JCheckBox showForbiddenExplicitlyCheckbox = new JCheckBox("Show Forbidden Explicitly", showForbiddenExplicitly);
-        
-        
+        JCheckBox showForbiddenExplicitlyCheckbox = new JCheckBox("Show Forbidden Explicitly", this.showForbiddenExplicitly);
+
+
         JCheckBox showRequiredGroupsCheckBox = new JCheckBox("Show Required by Groups", this.showRequiredByGroups);
-        JCheckBox showRequiredExplicitlyCheckbox = new JCheckBox("Show Required Explicitly", showRequired);
-        
+        JCheckBox showRequiredExplicitlyCheckbox = new JCheckBox("Show Required Explicitly", this.showRequired);
+
 
         showRequiredGroupsCheckBox.addActionListener((e) -> {
             JCheckBox box = (JCheckBox) e.getSource();
-            showRequiredByGroups = box.isSelected();
+            this.showRequiredByGroups = box.isSelected();
             resetEdgeDisplay(showRequiredGroupsCheckBox);
         });
 
         showForbiddenGroupsCheckBox.addActionListener((e) -> {
             JCheckBox box = (JCheckBox) e.getSource();
-            showForbiddenByGroups = box.isSelected();
+            this.showForbiddenByGroups = box.isSelected();
             resetEdgeDisplay(showForbiddenGroupsCheckBox);
         });
 
@@ -535,14 +498,14 @@ public class KnowledgeBoxEditor extends JPanel {
 
         JPanel workbenchPanel = new JPanel();
         workbenchPanel.setLayout(new BorderLayout());
-        workbenchPanel.add(new JScrollPane(edgeWorkbench), BorderLayout.CENTER);
+        workbenchPanel.add(new JScrollPane(this.edgeWorkbench), BorderLayout.CENTER);
         workbenchPanel.setBorder(new TitledBorder("Forbidden and Required Edges"));
 
         JPanel display = new JPanel();
         display.setPreferredSize(new Dimension(640, 450));
         display.setLayout(new BorderLayout());
 
-        JPanel b2 = new KnowledgeEditorToolbar(edgeWorkbench, getSourceGraph());
+        JPanel b2 = new KnowledgeEditorToolbar(this.edgeWorkbench, this.edgeWorkbench.getSourceGraph());
         display.add(b2, BorderLayout.WEST);
         display.add(workbenchPanel, BorderLayout.CENTER);
 
@@ -553,7 +516,7 @@ public class KnowledgeBoxEditor extends JPanel {
         forbiddenOptionsBox.add(showForbiddenGroupsCheckBox);
         forbiddenOptionsBox.add(showForbiddenExplicitlyCheckbox);
         forbiddenOptionsBox.add(Box.createHorizontalGlue());
-        
+
         Box requiredOptionsBox = Box.createHorizontalBox();
         requiredOptionsBox.add(showRequiredGroupsCheckBox);
         requiredOptionsBox.add(showRequiredExplicitlyCheckbox);
@@ -577,12 +540,12 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showRequiredByGroups) {
             List<KnowledgeEdge> list = knowledge.getListOfRequiredEdges();
-            if (list.size() > EDGE_LIMIT) {
-                showRequiredByGroups = false;
+            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
+                this.showRequiredByGroups = false;
                 if (checkBox != null) {
                     checkBox.setSelected(false);
                 }
-                String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
+                String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
                 list.forEach(e -> {
@@ -603,12 +566,12 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showForbiddenByGroups) {
             List<KnowledgeEdge> list = knowledge.getListOfForbiddenEdges();
-            if (list.size() > EDGE_LIMIT) {
-                showForbiddenByGroups = false;
+            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
+                this.showForbiddenByGroups = false;
                 if (checkBox != null) {
                     checkBox.setSelected(false);
                 }
-                String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
+                String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
                 list.forEach(e -> {
@@ -627,14 +590,14 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         }
 
-        if (showRequired) {
+        if (this.showRequired) {
             List<KnowledgeEdge> list = knowledge.getListOfExplicitlyRequiredEdges();
-            if (list.size() > EDGE_LIMIT) {
-                showRequired = false;
+            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
+                this.showRequired = false;
                 if (checkBox != null) {
                     checkBox.setSelected(false);
                 }
-                String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
+                String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
                 list.forEach(e -> {
@@ -653,14 +616,14 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         }
 
-        if (showForbiddenByTiers) {
+        if (this.showForbiddenByTiers) {
             List<KnowledgeEdge> list = knowledge.getListOfForbiddenEdges();
-            if (list.size() > EDGE_LIMIT) {
-                showForbiddenByTiers = false;
+            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
+                this.showForbiddenByTiers = false;
                 if (checkBox != null) {
                     checkBox.setSelected(false);
                 }
-                String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
+                String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
                 list.forEach(e -> {
@@ -691,14 +654,14 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         }
 
-        if (showForbiddenExplicitly) {
+        if (this.showForbiddenExplicitly) {
             List<KnowledgeEdge> list = knowledge.getListOfExplicitlyForbiddenEdges();
-            if (list.size() > EDGE_LIMIT) {
-                showForbiddenExplicitly = false;
+            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
+                this.showForbiddenExplicitly = false;
                 if (checkBox != null) {
                     checkBox.setSelected(false);
                 }
-                String errMsg = String.format("The number of edges to show exceeds the limit %d.", EDGE_LIMIT);
+                String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
                 JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
             } else {
                 list.forEach(e -> {
@@ -719,162 +682,35 @@ public class KnowledgeBoxEditor extends JPanel {
         }
 
         boolean arrangedAll = GraphUtils.arrangeBySourceGraph(graph,
-                edgeWorkbench.getGraph());
+                this.edgeWorkbench.getGraph());
 
         if (!arrangedAll) {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
-        edgeWorkbench.setGraph(graph);
-        if (knowledgeBoxModel != null) {
-            notifyKnowledge();
-        }
-
-    }
-
-    private Component textDisplay() {
-        final JButton testButton = new JButton("Test");
-        final JButton loadFromTextPaneButton = new JButton("Load from Text Pane");
-        final JButton loadFromFileButton = new JButton("Load from File");
-
-        testButton.addActionListener((e) -> {
-            try {
-                String text = getTextArea().getText();
-                DataReader reader = new DataReader();
-                reader.parseKnowledge(text.toCharArray());
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "Looks good.");
-            } catch (Exception e1) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        e1.getMessage());
-            }
-        });
-
-        loadFromTextPaneButton.addActionListener((e) -> {
-            try {
-                String text = getTextArea().getText();
-                DataReader reader = new DataReader();
-                IKnowledge knowledge = reader.parseKnowledge(text.toCharArray());
-                setKnowledge(knowledge);
-                resetTabbedPane(KnowledgeBoxEditor.this.tabbedPane);
-            } catch (Exception e1) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        e1.getMessage());
-            }
-        });
-
-        loadFromFileButton.addActionListener((e) -> {
-            JFileChooser chooser = new JFileChooser();
-            String sessionSaveLocation
-                    = Preferences.userRoot().get("fileSaveLocation", "");
-            chooser.setCurrentDirectory(new File(sessionSaveLocation));
-            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-            int ret1 = chooser.showOpenDialog(JOptionUtils.centeringComp());
-
-            if (!(ret1 == JFileChooser.APPROVE_OPTION)) {
-                return;
-            }
-
-            final File file = chooser.getSelectedFile();
-
-            if (file == null) {
-                return;
-            }
-
-            Preferences.userRoot().put("fileSaveLocation", file.getParent());
-
-            try {
-                IKnowledge knowledge = new DataReader().parseKnowledge(file);
-                setKnowledge(knowledge);
-                resetTabbedPane(KnowledgeBoxEditor.this.tabbedPane);
-            } catch (Exception e1) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        e1.getMessage());
-            }
-        });
-
-        Box b = Box.createVerticalBox();
-
-        textArea = new JTextArea();
-        resetTextDisplay();
-
-        b.add(getTextArea());
-
-        Box b2 = Box.createHorizontalBox();
-        b2.add(Box.createHorizontalGlue());
-        b2.add(testButton);
-        b2.add(loadFromTextPaneButton);
-        b2.add(loadFromFileButton);
-        b.add(b2);
-
-        return b;
-    }
-
-    private void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        knowledgeBoxModel.setKnowledge(knowledge);
+        this.edgeWorkbench.setGraph(graph);
+        notifyKnowledge();
     }
 
     private void notifyKnowledge() {
         firePropertyChange("modelChanged", null, null);
     }
 
-    private void resetTextDisplay() {
-        getTextArea().setFont(new Font("Monospaced", Font.PLAIN, 12));
-        getTextArea().setBorder(
-                new CompoundBorder(new LineBorder(Color.black),
-                        new EmptyBorder(3, 3, 3, 3)));
-
-        try {
-            IKnowledge knowledge = getKnowledge();
-            CharArrayWriter out = new CharArrayWriter();
-            DataWriter.saveKnowledge(knowledge, out);
-
-            getTextArea().setText(out.toString());
-        } catch (IOException e) {
-            getTextArea().setText("Could not render knowledge.");
-        }
-
-    }
-
-    private void loadKnowledge(String fileName) {
-        if (fileName == null) {
-            throw new IllegalStateException("No data file was specified.");
-        }
-
-        try {
-            File knowledgeFile = new File(fileName);
-
-            CharArrayWriter writer = new CharArrayWriter();
-
-            FileReader fr = new FileReader(knowledgeFile);
-            int i;
-
-            while ((i = fr.read()) != -1) {
-                writer.append((char) i);
-            }
-
-            DataReader reader = new DataReader();
-            char[] chars = writer.toCharArray();
-
-            System.out.println(new String(chars));
-
-            knowledgeBoxModel.setKnowledge(reader.parseKnowledge(chars));
-        } catch (Exception e) {
-            throw new RuntimeException("Couldn't read knowledge.");
-        }
-    }
-
     private IKnowledge getKnowledge() {
-        return knowledgeBoxModel.getKnowledge();
+        return this.knowledge;
+    }
+
+    public void setKnowledge(IKnowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException();
+        }
+
+        this.knowledge = knowledge;
+        this.knowledgeBoxModel.setKnowledge(knowledge);
     }
 
     private List<String> getVarNames() {
-        return varNames;
+        return this.knowledge.getVariables();
     }
 
     private void setShowForbiddenExplicitly(boolean showForbiddenExplicitly) {
@@ -889,20 +725,12 @@ public class KnowledgeBoxEditor extends JPanel {
         this.showForbiddenByTiers = showForbiddenByTiers;
     }
 
-    private JTextArea getTextArea() {
-        return textArea;
-    }
-
     private int getNumTiers() {
-        return knowledgeBoxModel.getNumTiers();
+        return this.numTiers;
     }
 
     private void setNumTiers(int numTiers) {
-        knowledgeBoxModel.setNumTiers(numTiers);
-    }
-
-    private Graph getSourceGraph() {
-        return sourceGraph;
+        this.numTiers = numTiers;
     }
 
     private class DragDropList extends JList<String> {
@@ -925,12 +753,12 @@ public class KnowledgeBoxEditor extends JPanel {
             setDropMode(DropMode.ON_OR_INSERT);
             setDragEnabled(true);
             setCellRenderer((JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) -> {
-                JLabel label = labelMap.get(value);
+                JLabel label = KnowledgeBoxEditor.this.labelMap.get(value);
                 if (label == null) {
                     label = new JLabel();
                 }
 
-                label.setBackground(isSelected ? SELECTED_BG : UNSELECTED_BG);
+                label.setBackground(isSelected ? KnowledgeBoxEditor.this.SELECTED_BG : KnowledgeBoxEditor.this.UNSELECTED_BG);
 
                 return label;
             });
@@ -939,15 +767,15 @@ public class KnowledgeBoxEditor extends JPanel {
                 private static final long serialVersionUID = 3109256773218160485L;
 
                 @Override
-                public boolean canImport(TransferHandler.TransferSupport info) {
+                public boolean canImport(TransferSupport info) {
                     return info.isDataFlavorSupported(ListTransferable.DATA_FLAVOR);
                 }
 
                 @Override
                 protected Transferable createTransferable(JComponent c) {
-                    JList<String> source = (JList<String>) c;
+                    JList source = (JList) c;
 
-                    List<String> list = source.getSelectedValuesList();
+                    List list = source.getSelectedValuesList();
                     if (list == null) {
                         getToolkit().beep();
                         list = Collections.EMPTY_LIST;
@@ -962,7 +790,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 }
 
                 @Override
-                public boolean importData(TransferHandler.TransferSupport info) {
+                public boolean importData(TransferSupport info) {
                     if (!info.isDrop()) {
                         return false;
                     }
@@ -975,10 +803,10 @@ public class KnowledgeBoxEditor extends JPanel {
                     try {
                         List<String> list = (List<String>) transferable.getTransferData(ListTransferable.DATA_FLAVOR);
                         list.forEach(name -> {
-                            if (tier >= 0) {
+                            if (DragDropList.this.tier >= 0) {
                                 try {
                                     knowledge.removeFromTiers(name);
-                                    knowledge.addToTier(tier, name);
+                                    knowledge.addToTier(DragDropList.this.tier, name);
 
                                     notifyKnowledge();
 
@@ -1011,7 +839,7 @@ public class KnowledgeBoxEditor extends JPanel {
                         try {
                             List<String> list = (List<String>) data.getTransferData(ListTransferable.DATA_FLAVOR);
                             list.forEach(listModel::removeElement);
-                        } catch (IOException | UnsupportedFlavorException exception) {
+                        } catch (IOException | UnsupportedFlavorException ignored) {
                         }
                     }
                 }
@@ -1019,7 +847,7 @@ public class KnowledgeBoxEditor extends JPanel {
             });
 
             DefaultListModel<String> listModel = new DefaultListModel<>();
-            items.forEach(listModel::addElement);
+            this.items.forEach(listModel::addElement);
             setModel(listModel);
         }
 
@@ -1056,7 +884,5 @@ public class KnowledgeBoxEditor extends JPanel {
 
             Arrays.stream(values).forEach(listModel::addElement);
         }
-
     }
-
 }

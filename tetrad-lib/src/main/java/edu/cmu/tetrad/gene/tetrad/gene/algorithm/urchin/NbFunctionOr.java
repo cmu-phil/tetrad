@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,7 +24,7 @@ package edu.cmu.tetrad.gene.tetrad.gene.algorithm.urchin;
 
 public class NbFunctionOr extends AbstractNbComponent {
     public NbFunctionOr(double factor, double power, NbComponent[] parents,
-            int[] inhibitExcite, String name) {
+                        int[] inhibitExcite, String name) {
 
         super(factor, power, parents, inhibitExcite, name);
         if (parents.length < 2) {
@@ -40,8 +40,7 @@ public class NbFunctionOr extends AbstractNbComponent {
 
         if (getInhibitExcite()[0] > 0) {
             sum = getParents()[0].getValue();
-        }
-        else {
+        } else {
             sum = 1.0 - getParents()[0].getValue();
         }
 
@@ -49,8 +48,7 @@ public class NbFunctionOr extends AbstractNbComponent {
             double v = 0.0;
             if (getInhibitExcite()[i] > 0) {
                 v = getParents()[i].getValue();
-            }
-            else {
+            } else {
                 v = (1.0 - getParents()[i].getValue());
             }
             sum += v * (1.0 - sum);

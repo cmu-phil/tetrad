@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,7 +34,7 @@ import junit.framework.TestSuite;
 public class TestRevealEvaluator extends TestCase {
     private static final int ngenes = 6;
     private static final int ntimes = 9;
-    private static final int[][] cases = new int[ntimes][ngenes];
+    private static final int[][] cases = new int[TestRevealEvaluator.ntimes][TestRevealEvaluator.ngenes];
     private static final double TOLERANCE = 0.000001;
 
     /**
@@ -56,62 +56,62 @@ public class TestRevealEvaluator extends TestCase {
         int[] bp = {0, 1, 0, 1, 1, 1, 1, 1};
         int[] cp = {0, 0, 0, 1, 0, 1, 1, 1};
 
-        for (int i = 0; i < ntimes - 1; i++) {
-            cases[i][0] = a[i];
-            cases[i][1] = b[i];
-            cases[i][2] = c[i];
-            cases[i + 1][3] = ap[i];
-            cases[i + 1][4] = bp[i];
-            cases[i + 1][5] = cp[i];
+        for (int i = 0; i < TestRevealEvaluator.ntimes - 1; i++) {
+            TestRevealEvaluator.cases[i][0] = a[i];
+            TestRevealEvaluator.cases[i][1] = b[i];
+            TestRevealEvaluator.cases[i][2] = c[i];
+            TestRevealEvaluator.cases[i + 1][3] = ap[i];
+            TestRevealEvaluator.cases[i + 1][4] = bp[i];
+            TestRevealEvaluator.cases[i + 1][5] = cp[i];
         }
-        cases[8][0] = 0;
-        cases[8][1] = 0;
-        cases[8][2] = 0;
-        cases[0][3] = 0;
-        cases[0][4] = 0;
-        cases[0][5] = 0;
+        TestRevealEvaluator.cases[8][0] = 0;
+        TestRevealEvaluator.cases[8][1] = 0;
+        TestRevealEvaluator.cases[8][2] = 0;
+        TestRevealEvaluator.cases[0][3] = 0;
+        TestRevealEvaluator.cases[0][4] = 0;
+        TestRevealEvaluator.cases[0][5] = 0;
 
-        RevealEvaluator re = new RevealEvaluator(cases);
+        RevealEvaluator re = new RevealEvaluator(TestRevealEvaluator.cases);
 
         double rea = re.entropy(a);
-        assertEquals(1.0, rea, TOLERANCE);
+        TestCase.assertEquals(1.0, rea, TestRevealEvaluator.TOLERANCE);
         System.out.println("H(a) = " + rea);  //Should be 1.0
 
         double reb = re.entropy(b);
-        assertEquals(1.0, reb, TOLERANCE);
+        TestCase.assertEquals(1.0, reb, TestRevealEvaluator.TOLERANCE);
         System.out.println("H(b) = " + reb);  //Should be 1.0
 
         double rec = re.entropy(c);
-        assertEquals(1.0, rec, TOLERANCE);
+        TestCase.assertEquals(1.0, rec, TestRevealEvaluator.TOLERANCE);
         System.out.println("H(c) = " + rec);  //Should be 1.0
 
         double reab = re.jointEntropy(a, b);
-        assertEquals(2.0, reab, TOLERANCE);
+        TestCase.assertEquals(2.0, reab, TestRevealEvaluator.TOLERANCE);
         System.out.println("H(a,b) = " + reab);  //Should be 2.0
 
         double reap = re.entropy(ap);
-        assertEquals(1.0, reap, TOLERANCE);
+        TestCase.assertEquals(1.0, reap, TestRevealEvaluator.TOLERANCE);
         System.out.println("H(ap) = " + reap);   //Should be 1.0
 
         double rebp = re.entropy(bp);
-        assertEquals(0.8112781244591328, rebp, TOLERANCE);
+        TestCase.assertEquals(0.8112781244591328, rebp, TestRevealEvaluator.TOLERANCE);
         System.out.println("H(bp) = " + rebp);   //Should be 0.8112781244591328
 
         double recp = re.entropy(cp);
-        assertEquals(1.0, recp, TOLERANCE);
+        TestCase.assertEquals(1.0, recp, TestRevealEvaluator.TOLERANCE);
         System.out.println("H(cp) = " + recp);   //Should be 1.0
 
         double reapa = re.jointEntropy(ap, a);
-        assertEquals(2.0, reapa, TOLERANCE);
+        TestCase.assertEquals(2.0, reapa, TestRevealEvaluator.TOLERANCE);
         System.out.println("H(ap, a) = " + reapa);  //Should be 2.0
 
         double rebpb = re.jointEntropy(bp, b);
-        assertEquals(1.8112781244591327, rebpb, TOLERANCE);
+        TestCase.assertEquals(1.8112781244591327, rebpb, TestRevealEvaluator.TOLERANCE);
         System.out.println(
                 "H(bp, b) = " + rebpb); //Should be 1.8112781244591327
 
         double recpb = re.jointEntropy(cp, b);
-        assertEquals(1.8112781244591327, recpb, TOLERANCE);
+        TestCase.assertEquals(1.8112781244591327, recpb, TestRevealEvaluator.TOLERANCE);
         System.out.println(
                 "H(cp, b) = " + recpb); //Should be 1.8112781244591327
 
@@ -122,11 +122,11 @@ public class TestRevealEvaluator extends TestCase {
         }
 
         double rebpab = re.jointEntropy(bp, ab);
-        assertEquals(2.5, rebpab, TOLERANCE);
+        TestCase.assertEquals(2.5, rebpab, TestRevealEvaluator.TOLERANCE);
         System.out.println("H(bp, a, b) = " + rebpab); //Should be 2.5
 
         double recpab = re.jointEntropy(cp, ab);
-        assertEquals(2.5, recpab, TOLERANCE);
+        TestCase.assertEquals(2.5, recpab, TestRevealEvaluator.TOLERANCE);
         System.out.println("H(cp, a, b) = " + recpab); //Should be 2.5
 
         int[][] abc = new int[3][8];
@@ -137,7 +137,7 @@ public class TestRevealEvaluator extends TestCase {
         }
 
         double recpabc = re.jointEntropy(cp, abc);
-        assertEquals(3.0, recpabc, TOLERANCE);
+        TestCase.assertEquals(3.0, recpabc, TestRevealEvaluator.TOLERANCE);
         System.out.println("H(cp, a, b, c) = " + recpabc); //Should be 3.0
 
         //Setup array cases and test mutualInformation
@@ -145,7 +145,7 @@ public class TestRevealEvaluator extends TestCase {
         p[0] = 0;
 
         double rembpa = re.mutualInformation(4, p, 1);
-        assertEquals(0.31127812445913294, rembpa, TOLERANCE);
+        TestCase.assertEquals(0.31127812445913294, rembpa, TestRevealEvaluator.TOLERANCE);
         System.out.println(
                 "M(Bp, A) = " + rembpa); //Should be 0.31127812445913294
 
@@ -154,7 +154,7 @@ public class TestRevealEvaluator extends TestCase {
         pp[1] = 1;
 
         double rmcpab = re.mutualInformation(5, pp, 1);
-        assertEquals(0.5, rmcpab, TOLERANCE);
+        TestCase.assertEquals(0.5, rmcpab, TestRevealEvaluator.TOLERANCE);
         System.out.println("M(Cp, [A,B]) = " + rmcpab); //Should be 0.5
 
         int[] ppp = new int[3];
@@ -163,7 +163,7 @@ public class TestRevealEvaluator extends TestCase {
         ppp[2] = 2;
 
         double rmcpabc = re.mutualInformation(5, ppp, 1);
-        assertEquals(1.0, rmcpabc, TOLERANCE);
+        TestCase.assertEquals(1.0, rmcpabc, TestRevealEvaluator.TOLERANCE);
         System.out.println("M(Cp, [A,B,C]) = " + rmcpabc); //Should be 1.0
 
     }

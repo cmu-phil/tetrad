@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -57,7 +57,7 @@ public class CalculatorWrapper extends DataWrapper {
         DataModelList originals = data.getDataModelList();
 
         for (DataModel model : originals) {
-            DataSet copy = copy((DataSet) model);
+            DataSet copy = CalculatorWrapper.copy((DataSet) model);
 
             List<String> equations = new ArrayList<>();
 
@@ -76,14 +76,12 @@ public class CalculatorWrapper extends DataWrapper {
 
             if (!equations.isEmpty()) {
                 try {
-                    Transformation.transform(copy, equations.toArray(new String[equations.size()]));
+                    Transformation.transform(copy, equations.toArray(new String[0]));
                 } catch (ParseException e) {
                     throw new IllegalStateException("Was given unparsable expressions.");
                 }
-                list.add(copy);
-            } else {
-                list.add(copy);
             }
+            list.add(copy);
         }
 
         setDataModel(list);
@@ -128,11 +126,8 @@ public class CalculatorWrapper extends DataWrapper {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
-    @SuppressWarnings({"MethodMayBeStatic"})
+    @SuppressWarnings("MethodMayBeStatic")
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();

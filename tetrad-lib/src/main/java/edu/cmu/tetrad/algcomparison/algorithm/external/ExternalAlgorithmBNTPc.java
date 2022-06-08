@@ -1,22 +1,20 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An API to allow results from external algorithms to be included in a report through the algrorithm
@@ -26,22 +24,22 @@ import java.util.List;
  * library("MASS");
  * library("pcalg");
  * <p>
- * path<-"/Users/user/tetrad/comparison-final";
- * simulation<-1;
+ * path&lt;-"/Users/user/tetrad/comparison-final";
+ * simulation&lt;-1;
  * <p>
- * subdir<-"pc.solve.confl.TRUE";
+ * subdir&lt;-"pc.solve.confl.TRUE";
  * dir.create(paste(path, "/save/", simulation, "/", subdir, sep=""));
  * <p>
  * for (i in 1:10) {
- * data<-read.table(paste(path, "/save/", simulation, "/data/data.", i, ".txt", sep=""), header=TRUE)
- * n<-nrow(data)
- * C<-cor(data)
- * v<-names(data)
- * suffStat<-list(C = C, n=n)
- * pc.fit<-pc(suffStat=suffStat, indepTest=gaussCItest, alpha=0.001, labels=v,
+ * data&lt;-read.table(paste(path, "/save/", simulation, "/data/data.", i, ".txt", sep=""), header=TRUE)
+ * n&lt;-nrow(data)
+ * C&lt;-cor(data)
+ * v&lt;-names(data)
+ * suffStat&lt;-list(C = C, n=n)
+ * pc.fit&lt;-pc(suffStat=suffStat, indepTest=gaussCItest, alpha=0.001, labels=v,
  * solve.conf=TRUE)
- * A<-as(pc.fit, "amat")
- * name<-paste(path, "/save/", simulation, "/", subdir, "/graph.", i, ".txt", sep="")
+ * A&lt;-as(pc.fit, "amat")
+ * name&lt;-paste(path, "/save/", simulation, "/", subdir, "/graph.", i, ".txt", sep="")
  * print(name)
  * write.matrix(A, file=name, sep="\t")
  * }
@@ -51,7 +49,7 @@ import java.util.List;
 public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
-    private String shortDescription = null;
+    private final String shortDescription;
 
     public ExternalAlgorithmBNTPc(String extDir) {
         this.extDir = extDir;
@@ -69,14 +67,13 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
     public Graph search(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);
 
-        File file = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        File file = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
 
         System.out.println(file.getAbsolutePath());
 
         try {
-            DataReader reader = new DataReader();
-            reader.setVariablesSupplied(false);
-            DataSet dataSet2 = reader.parseTabular(file);
+            DataSet dataSet2 = DataUtils.loadContinuousData(file, "//", '\"',
+                    "*", true, Delimiter.TAB);
             System.out.println("Loading graph from " + file.getAbsolutePath());
             Graph graph = GraphUtils.loadGraphBNTPcMatrix(dataSet.getVariables(), dataSet2);
 
@@ -89,17 +86,17 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
     }
 
     /**
-     * Returns the pattern of the supplied DAG.
+     * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     public String getDescription() {
-        if (shortDescription == null) {
-            return "Load data from " + path + "/" + extDir;
+        if (this.shortDescription == null) {
+            return "Load data from " + this.path + "/" + this.extDir;
         } else {
-            return shortDescription;
+            return this.shortDescription;
         }
     }
 
@@ -112,7 +109,7 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);
 
-        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
 
         try {
             BufferedReader r = new BufferedReader(new FileReader(file));

@@ -1,12 +1,12 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.BufferedReader;
@@ -24,22 +24,22 @@ import java.util.List;
  * library("MASS");
  * library("pcalg");
  * <p>
- * path<-"/Users/user/tetrad/comparison-final";
- * simulation<-1;
+ * path&lt;-"/Users/user/tetrad/comparison-final";
+ * simulation&lt;-1;
  * <p>
- * subdir<-"pc.solve.confl.TRUE";
+ * subdir&lt;-"pc.solve.confl.TRUE";
  * dir.create(paste(path, "/save/", simulation, "/", subdir, sep=""));
  * <p>
  * for (i in 1:10) {
- * data<-read.table(paste(path, "/save/", simulation, "/data/data.", i, ".txt", sep=""), header=TRUE)
- * n<-nrow(data)
- * C<-cor(data)
- * v<-names(data)
- * suffStat<-list(C = C, n=n)
- * pc.fit<-pc(suffStat=suffStat, indepTest=gaussCItest, alpha=0.001, labels=v,
+ * data&lt;-read.table(paste(path, "/save/", simulation, "/data/data.", i, ".txt", sep=""), header=TRUE)
+ * n&lt;-nrow(data)
+ * C&lt;-cor(data)
+ * v&lt;-names(data)
+ * suffStat&lt;-list(C = C, n=n)
+ * pc.fit&lt;-pc(suffStat=suffStat, indepTest=gaussCItest, alpha=0.001, labels=v,
  * solve.conf=TRUE)
- * A<-as(pc.fit, "amat")
- * name<-paste(path, "/save/", simulation, "/", subdir, "/graph.", i, ".txt", sep="")
+ * A&lt;-as(pc.fit, "amat")
+ * name&lt;-paste(path, "/save/", simulation, "/", subdir, "/graph.", i, ".txt", sep="")
  * print(name)
  * write.matrix(A, file=name, sep="\t")
  * }
@@ -49,7 +49,7 @@ import java.util.List;
 public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final String extDir;
-    private String shortDescription = null;
+    private final String shortDescription;
 
     public ExternalAlgorithmPcalgGes(String extDir) {
         this.extDir = extDir;
@@ -67,7 +67,7 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
     public Graph search(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);
 
-        File nodes = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/nodes." + index + ".txt");
+        File nodes = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/nodes." + index + ".txt");
         System.out.println(nodes.getAbsolutePath());
 
         List<Node> vars = new ArrayList<>();
@@ -84,14 +84,14 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
             e.printStackTrace();
         }
 
-        File inEdges = new File(path, "/results/" + extDir + "/" + (simIndex + 1) + "/in.edges." + index + ".txt");
+        File inEdges = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/in.edges." + index + ".txt");
 
         try {
             BufferedReader r = new BufferedReader(new FileReader(inEdges));
             String line;
             Graph graph = new EdgeListGraph(vars);
 
-            for (int i = 0; i < vars.size(); i++) {
+            for (Node var : vars) {
                 line = r.readLine();
                 String[] tokens = line.split(",");
 
@@ -99,14 +99,13 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
                     String trim = token.trim();
                     if (trim.isEmpty()) continue;
                     int j = Integer.parseInt(trim) - 1;
-                    Node v1 = vars.get(i);
                     Node v2 = vars.get(j);
 
-                    if (!graph.isAdjacentTo(v2, v1)) {
-                        graph.addDirectedEdge(v2, v1);
+                    if (!graph.isAdjacentTo(v2, var)) {
+                        graph.addDirectedEdge(v2, var);
                     } else {
-                        graph.removeEdge(v2, v1);
-                        graph.addUndirectedEdge(v2, v1);
+                        graph.removeEdge(v2, var);
+                        graph.addUndirectedEdge(v2, var);
                     }
                 }
             }
@@ -120,17 +119,17 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
     }
 
     /**
-     * Returns the pattern of the supplied DAG.
+     * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
         return new EdgeListGraph(graph);
     }
 
     public String getDescription() {
-        if (shortDescription == null) {
-            return "Load data from " + path + "/" + extDir;
+        if (this.shortDescription == null) {
+            return "Load data from " + this.path + "/" + this.extDir;
         } else {
-            return shortDescription;
+            return this.shortDescription;
         }
     }
 
@@ -143,7 +142,7 @@ public class ExternalAlgorithmPcalgGes extends ExternalAlgorithm {
     public long getElapsedTime(DataModel dataSet, Parameters parameters) {
         int index = getIndex(dataSet);
 
-        File file = new File(path, "/elapsed/" + extDir + "/" + (simIndex + 1) + "/graph." + index + ".txt");
+        File file = new File(this.path, "/elapsed/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
 
         try {
             BufferedReader r = new BufferedReader(new FileReader(file));

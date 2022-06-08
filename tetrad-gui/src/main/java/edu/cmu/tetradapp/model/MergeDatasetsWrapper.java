@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -32,13 +32,13 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * @author Tyler Gibson
  */
 public class MergeDatasetsWrapper extends DataWrapper {
-       static final long serialVersionUID = 23L;
+    static final long serialVersionUID = 23L;
 
     public MergeDatasetsWrapper(DataWrapper[] data, Parameters params) {
         construct(data);
     }
 
-    private void construct(DataWrapper...dataWrappers) {
+    private void construct(DataWrapper... dataWrappers) {
         for (DataWrapper wrapper : dataWrappers) {
             if (wrapper == null) {
                 throw new NullPointerException("The given data must not be null");
@@ -64,9 +64,6 @@ public class MergeDatasetsWrapper extends DataWrapper {
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
-
-
-
 
 
 }

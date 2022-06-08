@@ -22,10 +22,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+
 import java.util.List;
 
 /**
- *
  * Sep 26, 2017 12:19:41 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -39,7 +39,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
     }
 
     public static AlgorithmAnnotations getInstance() {
-        return INSTANCE;
+        return AlgorithmAnnotations.INSTANCE;
     }
 
     public List<AnnotatedClass<Algorithm>> filterOutExperimental(List<AnnotatedClass<Algorithm>> list) {
@@ -47,33 +47,23 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
     }
 
     public boolean acceptMultipleDataset(Class clazz) {
-        return (clazz == null)
-                ? false
-                : MultiDataSetAlgorithm.class.isAssignableFrom(clazz);
+        return clazz != null && MultiDataSetAlgorithm.class.isAssignableFrom(clazz);
     }
 
     public boolean acceptKnowledge(Class clazz) {
-        return (clazz == null)
-                ? false
-                : HasKnowledge.class.isAssignableFrom(clazz);
+        return clazz != null && HasKnowledge.class.isAssignableFrom(clazz);
     }
 
     public boolean requireIndependenceTest(Class clazz) {
-        return (clazz == null)
-                ? false
-                : TakesIndependenceWrapper.class.isAssignableFrom(clazz);
+        return clazz != null && TakesIndependenceWrapper.class.isAssignableFrom(clazz);
     }
 
     public boolean requireScore(Class clazz) {
-        return (clazz == null)
-                ? false
-                : UsesScoreWrapper.class.isAssignableFrom(clazz);
+        return clazz != null && UsesScoreWrapper.class.isAssignableFrom(clazz);
     }
 
     public boolean handleUnmeasuredConfounder(Class clazz) {
-        return (clazz == null)
-                ? false
-                : clazz.isAnnotationPresent(UnmeasuredConfounder.class);
+        return clazz != null && clazz.isAnnotationPresent(UnmeasuredConfounder.class);
     }
 
 }

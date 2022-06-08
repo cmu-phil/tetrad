@@ -8,6 +8,7 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public interface GraphSettable extends GraphSource {
     Parameters getParameters();
+
     void setGraph(Graph newValue);
 
     void setModelIndex(int index);

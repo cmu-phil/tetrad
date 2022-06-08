@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -28,30 +28,26 @@ import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.SplashScreen;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Image;
-import java.awt.Toolkit;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Locale;
-import javax.swing.JFrame;
-import javax.swing.UIManager;
-import javax.swing.WindowConstants;
+import java.util.prefs.Preferences;
 
 /**
- * <p>
  * Launches Tetrad as an application. The intended class path in either case is
  * "edu.cmu.tetradapp.Tetrad", so care should be taken not to move this class
  * out of the "INSTANCE" package. The launch itself is carried out by the method
- * "launchFrame()", which generates a new frame for the application.</p>
+ * "launchFrame()", which generates a new frame for the application.
  * <p>
  * Note to programmers: <b>Please don't make any changes to this class.</b>
  * If you need another way of launching Tetrad for special purposes, it's easy
  * enough to create a copy of this class with a different name and modify
- * it.</p>
+ * it.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
@@ -73,13 +69,7 @@ public final class Tetrad implements PropertyChangeListener {
      * The main application title.
      */
     private final String mainTitle
-            = "Tetrad " + Version.currentViewableVersion()
-                    .toString();
-
-    /**
-     * Skip latest version checking
-     */
-    private static boolean skipLatest;
+            = "Tetrad " + Version.currentViewableVersion();
 
     public static boolean enableExperimental;
 
@@ -88,6 +78,7 @@ public final class Tetrad implements PropertyChangeListener {
     }
 
     //==============================PUBLIC METHODS=========================//
+
     /**
      * Responds to "exitProgram" property change events by disposing of the
      * Tetrad IV frame and exiting if possible.
@@ -95,7 +86,7 @@ public final class Tetrad implements PropertyChangeListener {
      * @param e the property change event
      */
     @Override
-    public void propertyChange(final PropertyChangeEvent e) {
+    public void propertyChange(PropertyChangeEvent e) {
         if ("exitProgram".equals(e.getPropertyName())) {
             exitApplication();
         }
@@ -104,35 +95,35 @@ public final class Tetrad implements PropertyChangeListener {
     /**
      * <p>
      * Launches Tetrad as an application. One way to launch Tetrad IV as an
-     * application is the following:</p>
+     * application is the following:&gt; 0
      * <pre>java -cp jarname.jar INSTANCE.Tetrad</pre>
      * <p>
      * where "jarname.jar" is a jar containing all of the classes of Tetrad IV,
      * properly compiled, along with all of the auxiliary jar contents and all
      * of the images which Tetrad IV uses, all in their proper relative
-     * directories.</p>
+     * directories.&gt; 0
      *
      * @param argv --skip-latest argument will skip checking for latest version.
      */
-    public static void main(final String[] argv) {
+    public static void main(String[] argv) {
         if (argv != null && argv.length > 0) {
-            enableExperimental = EXP_OPT.equals(argv[0]);
+            Tetrad.enableExperimental = Tetrad.EXP_OPT.equals(argv[0]);
         }
 
         // Avoid updates to swing code that causes comparison-method-violates-its-general-contract warnings
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
-        setLookAndFeel();
+        Tetrad.setLookAndFeel();
 
         // This is needed to get numbers to be parsed and rendered uniformly, especially in the interface.
         Locale.setDefault(Locale.US);
 
         // Check if we should skip checking for latest version
-        skipLatest = argv.length > 0 && argv[0] != null && argv[0].compareToIgnoreCase("--skip-latest") == 0;
-        SplashScreen.show("Loading Tetrad...", 1000, skipLatest);
-        EventQueue.invokeLater(() -> {
-            new Tetrad().launchFrame();
-        });
+        SplashScreen.show("Loading Tetrad...", 1000);
+        EventQueue.invokeLater(() -> new Tetrad().launchFrame());
+
+        boolean enableExperimental = Preferences.userRoot().getBoolean("enableExperimental", false);
+        Tetrad.enableExperimental = enableExperimental;
     }
 
     //===============================PRIVATE METHODS=======================//
@@ -186,28 +177,15 @@ public final class Tetrad implements PropertyChangeListener {
                 double width = height * (4.0 / 3);
 
                 return new Dimension((int) width, (int) height);
-//                return Toolkit.getDefaultToolkit().getScreenSize();
 
-//                Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-//                return new Dimension(size.width - 100, size.height - 100);
             }
 
-//            public Dimension getMinimumSize() {
-//                return Toolkit.getDefaultToolkit().getScreenSize();
-////                return new Dimension(400, 400);
-//            }
-//////
-//            public Dimension getMaximumSize() {
-//                return Toolkit.getDefaultToolkit().getScreenSize();
-//            }
         };
 
         // Fixing a bug caused by switch to Oracle Java (at least for Mac), although I must say the following
         // code is what should have worked to begin with. Bug was that sessions would appear only in the lower
         // left hand corner of the screen.
         this.frame.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
-//        this.frame.setMinimumSize(Toolkit.getDefaultToolkit().getScreenSize());
-//        this.frame.setMaximumSize(Toolkit.getDefaultToolkit().getScreenSize());
 
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
@@ -227,18 +205,13 @@ public final class Tetrad implements PropertyChangeListener {
 
         getFrame().addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(final WindowEvent e) {
+            public void windowClosing(WindowEvent e) {
                 exitApplication();
             }
         });
 
         SplashScreen.hide();
 
-//        try {
-//            Preferences.userRoot().clear();
-//        } catch (BackingStoreException e) {
-//            e.printStackTrace();
-//        }
     }
 
     /**
@@ -263,11 +236,11 @@ public final class Tetrad implements PropertyChangeListener {
     }
 
     private JFrame getFrame() {
-        return frame;
+        return this.frame;
     }
 
     private TetradDesktop getDesktop() {
-        return desktop;
+        return this.desktop;
     }
 
 }

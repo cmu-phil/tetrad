@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.SemIm;
@@ -13,6 +14,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +24,7 @@ import java.util.List;
 public class SemSimulation implements Simulation {
 
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private SemPm pm;
     private SemIm im;
     private List<DataSet> dataSets = new ArrayList<>();
@@ -43,31 +45,30 @@ public class SemSimulation implements Simulation {
     public SemSimulation(SemIm im) {
         SemGraph graph = im.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
-        this.randomGraph = new SingleGraph(graph);
-        this.im = im;
-        this.pm = im.getSemPm();
+        Graph graph2 = new EdgeListGraph(graph);
+        this.randomGraph = new SingleGraph(graph2);
+        this.im = new SemIm(im);
+        this.pm = new SemPm(im.getSemPm());
         this.ims = new ArrayList<>();
-        ims.add(im);
+        this.ims.add(im);
     }
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (!newModel && !dataSets.isEmpty()) return;
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        Graph graph = randomGraph.createGraph(parameters);
-
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
-        ims = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
+        this.ims = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
 
@@ -88,41 +89,38 @@ public class SemSimulation implements Simulation {
             }
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.reorderColumns(dataSet);
+                dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
             dataSet.setName("" + (i + 1));
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+        return this.graphs.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Linear, Gaussian SEM simulation using " + randomGraph.getDescription();
+        return "Linear, Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 
-        if (!(randomGraph instanceof SingleGraph)) {
-            parameters.addAll(randomGraph.getParameters());
+        if (!(this.randomGraph instanceof SingleGraph)) {
+            parameters.addAll(this.randomGraph.getParameters());
         }
 
-//        if (pm == null) {
-//            parameters.addAll(SemPm.getParameterNames());
-//        }
-        if (im == null) {
+        if (this.im == null) {
             parameters.addAll(SemIm.getParameterNames());
         }
 
@@ -133,13 +131,16 @@ public class SemSimulation implements Simulation {
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.STANDARDIZE);
+        parameters.add(Params.SIMULATION_ERROR_TYPE);
+        parameters.add(Params.SIMULATION_PARAM1);
+        parameters.add(Params.SIMULATION_PARAM2);
 
         return parameters;
     }
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
@@ -157,21 +158,19 @@ public class SemSimulation implements Simulation {
 
             if (pm == null) {
                 pm = new SemPm(graph);
-                im = new SemIm(pm, parameters);
-                ims.add(im);
-                return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
-            } else {
-                im = new SemIm(pm, parameters);
-                ims.add(im);
-                return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
             }
-        } else {
-            ims.add(im);
-            return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
+
+            im = new SemIm(pm, parameters);
         }
+
+        // Need this in case the SEM IM is given externally.
+        im.setParams(parameters);
+
+        this.ims.add(im);
+        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
     }
 
     public List<SemIm> getSemIms() {
-        return ims;
+        return this.ims;
     }
 }

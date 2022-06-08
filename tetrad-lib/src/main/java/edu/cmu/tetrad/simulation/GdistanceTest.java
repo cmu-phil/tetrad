@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
+
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,8 +22,8 @@ public class GdistanceTest {
 
     public static void main(String... args) {
         //first generate a couple random graphs
-        int numVars = 16;
-        int numEdges = 16;
+        final int numVars = 16;
+        final int numEdges = 16;
         List<Node> vars = new ArrayList<>();
         for (int i = 0; i < numVars; i++) {
             vars.add(new ContinuousVariable("X" + i));
@@ -41,9 +42,9 @@ public class GdistanceTest {
             DataSet locationMap = (DataSet) DataConvertUtils.toDataModel(dataReaderMap.readInData());
             // System.out.println(locationMap);
             //then compare their distance
-            double xdist = 2.4;
-            double ydist = 2.4;
-            double zdist = 2;
+            final double xdist = 2.4;
+            final double ydist = 2.4;
+            final double zdist = 2;
             Gdistance gdist = new Gdistance(locationMap, xdist, ydist, zdist);
             List<Double> output = gdist.distances(testdag1, testdag2);
 

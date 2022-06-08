@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,15 +41,15 @@ class SaveScreenshot extends AbstractAction {
     /**
      * The component whose image is to be saved.
      */
-    private JComponent comp;
+    private final JComponent comp;
 
     /**
      * True iff the enclosing editor window of a component should be used.
      */
-    private boolean editorWindowUsed;
+    private final boolean editorWindowUsed;
 
     public SaveScreenshot(JComponent comp, boolean editorWindowUsed,
-            String title) {
+                          String title) {
         super(title);
 
         if (comp == null) {
@@ -76,8 +76,7 @@ class SaveScreenshot extends AbstractAction {
         // Write the image to file.
         try {
             ImageIO.write(image, "png", file);
-        }
-        catch (IOException e1) {
+        } catch (IOException e1) {
             throw new RuntimeException(e1);
         }
     }
@@ -85,38 +84,15 @@ class SaveScreenshot extends AbstractAction {
     private Component getComp() {
         EditorWindow editorWindow =
                 (EditorWindow) SwingUtilities.getAncestorOfClass(
-                        EditorWindow.class, comp);
+                        EditorWindow.class, this.comp);
 
-        if (editorWindowUsed && editorWindow != null) {
+        if (this.editorWindowUsed && editorWindow != null) {
             return editorWindow.getRootPane().getContentPane();
-        }
-        else {
-            return comp;
+        } else {
+            return this.comp;
         }
     }
 
-//    /**
-//     * Filters out all but .png file when loading and saving.
-//     *
-//     * @author Joseph Ramsey jdramsey@andrew.cmu.edu
-//     */
-//    private static class PngFileFilter extends FileFilter {
-//
-//        /**
-//         * Accepts a file if its name ends with ".tet".
-//         */
-//        public boolean accept(File file) {
-//            return file.isDirectory() || file.getNode().endsWith(".png");
-//        }
-//
-//        /**
-//         * @return the description of this file filter that will be displayed in
-//         * a JFileChooser.
-//         */
-//        public String getDescription() {
-//            return "PNG Image (.png)";
-//        }
-//    }
 }
 
 

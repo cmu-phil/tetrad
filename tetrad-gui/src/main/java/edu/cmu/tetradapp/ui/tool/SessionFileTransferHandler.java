@@ -20,6 +20,7 @@ package edu.cmu.tetradapp.ui.tool;
 
 import edu.cmu.tetrad.session.Session;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
 import edu.cmu.tetradapp.app.DecompressibleInputStream;
 import edu.cmu.tetradapp.app.SessionEditor;
@@ -27,6 +28,10 @@ import edu.cmu.tetradapp.app.SessionEditorWorkbench;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
@@ -38,13 +43,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.prefs.Preferences;
-import javax.swing.JOptionPane;
-import javax.swing.TransferHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- *
  * Dec 6, 2017 1:02:46 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -53,7 +53,7 @@ public class SessionFileTransferHandler extends TransferHandler {
 
     private static final long serialVersionUID = -6674597813640455425L;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SessionFileTransferHandler.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(SessionFileTransferHandler.class);
 
     @Override
     public boolean canImport(TransferSupport support) {
@@ -104,10 +104,8 @@ public class SessionFileTransferHandler extends TransferHandler {
                             throw e1;
                         } catch (Exception e2) {
                             e2.printStackTrace();
-                            sessionWrapper = null;
                         }
                     } else if (o instanceof SessionWrapper) {
-                        metadata = null;
                         sessionWrapper = (SessionWrapper) o;
                     }
 
@@ -124,7 +122,7 @@ public class SessionFileTransferHandler extends TransferHandler {
 
                         JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                                 "Could not load this session file into Tetrad " + Version.currentViewableVersion() + "! \n" +
-                                "The session was saved by Tetrad " + version + " on " +  df.format(date));
+                                        "The session was saved by Tetrad " + version + " on " + df.format(date));
 
                         return false;
                     }
@@ -141,15 +139,16 @@ public class SessionFileTransferHandler extends TransferHandler {
                     DesktopController.getInstance().closeEmptySessions();
                     DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
                 } catch (FileNotFoundException exception) {
-                    LOGGER.error("", exception);
+                    TetradLogger.getInstance().forceLogMessage(exception.toString());
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "That wasn't a TETRAD session file: " + file);
                 } catch (Exception exception) {
-                    LOGGER.error("", exception);
+                    TetradLogger.getInstance().forceLogMessage(exception.toString());
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
             }
         } catch (UnsupportedFlavorException | IOException exception) {
-            LOGGER.error("", exception);
+            TetradLogger.getInstance().forceLogMessage(exception.toString());
+//            SessionFileTransferHandler.LOGGER.error("", exception);
         }
 
         return super.importData(support);

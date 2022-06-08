@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,12 +34,12 @@ import java.util.List;
 public class Sextad implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private Node i;
-    private Node j;
-    private Node k;
-    private Node l;
-    private Node m;
-    private Node n;
+    private final Node i;
+    private final Node j;
+    private final Node k;
+    private final Node l;
+    private final Node m;
+    private final Node n;
 
     public Sextad(Node i, Node j, Node k, Node l, Node m, Node n) {
         testDistinctness(i, j, k, l, m, n);
@@ -61,7 +61,7 @@ public class Sextad implements TetradSerializable {
         this.m = nodes[4];
         this.n = nodes[5];
 
-        testDistinctness(i, j, k, l, m, n);
+        testDistinctness(this.i, this.j, this.k, this.l, this.m, this.n);
 
     }
 
@@ -101,70 +101,69 @@ public class Sextad implements TetradSerializable {
     }
 
     public Node getI() {
-        return i;
+        return this.i;
     }
 
     public Node getJ() {
-        return j;
+        return this.j;
     }
 
     public Node getK() {
-        return k;
+        return this.k;
     }
 
     public Node getL() {
-        return l;
+        return this.l;
     }
 
     public Node getM() {
-        return m;
+        return this.m;
     }
 
     public Node getN() {
-        return n;
+        return this.n;
     }
 
     public int hashCode() {
-        int hash = 17 * i.hashCode() * j.hashCode() * k.hashCode();
-        hash += 29 * l.hashCode() * m.hashCode() * n.hashCode();
+        int hash = 17 * this.i.hashCode() * this.j.hashCode() * this.k.hashCode();
+        hash += 29 * this.l.hashCode() * this.m.hashCode() * this.n.hashCode();
 
         return hash;
     }
 
     public boolean equals(Object o) {
         if (!(o instanceof Sextad)) throw new IllegalArgumentException();
-        if (o == null) return false;
         Sextad sextad = (Sextad) o;
 
-        boolean leftEquals = i == sextad.i && j == sextad.j && k == sextad.k ||
-                i == sextad.i && j == sextad.k && k == sextad.j ||
-                i == sextad.j && j == sextad.i && k == sextad.k ||
-                i == sextad.j && j == sextad.k && k == sextad.i ||
-                i == sextad.k && j == sextad.i && k == sextad.j ||
-                i == sextad.k && j == sextad.j && k == sextad.i;
+        boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
+                this.i == sextad.i && this.j == sextad.k && this.k == sextad.j ||
+                this.i == sextad.j && this.j == sextad.i && this.k == sextad.k ||
+                this.i == sextad.j && this.j == sextad.k && this.k == sextad.i ||
+                this.i == sextad.k && this.j == sextad.i && this.k == sextad.j ||
+                this.i == sextad.k && this.j == sextad.j && this.k == sextad.i;
 
-        boolean rightEquals = l == sextad.l && m == sextad.m && n == sextad.n ||
-                l == sextad.l && m == sextad.n && n == sextad.m ||
-                l == sextad.m && m == sextad.l && n == sextad.n ||
-                l == sextad.m && m == sextad.n && n == sextad.l ||
-                l == sextad.n && m == sextad.l && n == sextad.m ||
-                l == sextad.n && m == sextad.m && n == sextad.l;
+        boolean rightEquals = this.l == sextad.l && this.m == sextad.m && this.n == sextad.n ||
+                this.l == sextad.l && this.m == sextad.n && this.n == sextad.m ||
+                this.l == sextad.m && this.m == sextad.l && this.n == sextad.n ||
+                this.l == sextad.m && this.m == sextad.n && this.n == sextad.l ||
+                this.l == sextad.n && this.m == sextad.l && this.n == sextad.m ||
+                this.l == sextad.n && this.m == sextad.m && this.n == sextad.l;
 
         return leftEquals && rightEquals;
     }
 
     public String toString() {
-        return "<" + i + ", " + j + ", " + k + "; " + l + ", " + m + ", " + n + ">";
+        return "<" + this.i + ", " + this.j + ", " + this.k + "; " + this.l + ", " + this.m + ", " + this.n + ">";
     }
 
     public List<Node> getNodes() {
         List<Node> nodes = new ArrayList<>();
-        nodes.add(i);
-        nodes.add(j);
-        nodes.add(k);
-        nodes.add(l);
-        nodes.add(m);
-        nodes.add(n);
+        nodes.add(this.i);
+        nodes.add(this.j);
+        nodes.add(this.k);
+        nodes.add(this.l);
+        nodes.add(this.m);
+        nodes.add(this.n);
         return nodes;
     }
 }

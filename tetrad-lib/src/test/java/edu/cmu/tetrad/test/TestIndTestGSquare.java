@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,10 +21,11 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestGSquare;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Test;
 
 import java.io.File;
@@ -41,14 +42,14 @@ import static org.junit.Assert.assertTrue;
  * @author Joseph Ramsey
  */
 public class TestIndTestGSquare {
-    private final String[] discreteFiles = new String[]{
+    private final String[] discreteFiles = {
             "src/test/resources/embayes_l1x1x2x3MD.dat",
             "src/test/resources/determinationtest.dat"};
 
     @Test
     public void testIsIndependent() {
         try {
-            DataSet dataSet = getDataSet(1);
+            DataSet dataSet = getDataSet();
 
             IndTestGSquare test = new IndTestGSquare(dataSet, 0.05);
             List<Node> v = test.getVariables();
@@ -57,13 +58,12 @@ public class TestIndTestGSquare {
             Node y = v.get(1);
             ArrayList<Node> z = new ArrayList<>();
             z.add(v.get(2));
-            assertTrue(test.isIndependent(x, y, z));
+            assertTrue(test.checkIndependence(x, y, z).independent());
 
             test.setDeterminationP(0.99);
             assertFalse(test.determines(z, x));
             assertFalse(test.determines(z, y));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
@@ -71,7 +71,7 @@ public class TestIndTestGSquare {
     @Test
     public void testDetermination() {
         try {
-            DataSet dataSet = getDataSet(1);
+            DataSet dataSet = getDataSet();
 
             IndTestGSquare test = new IndTestGSquare(dataSet, 0.05);
 
@@ -80,20 +80,17 @@ public class TestIndTestGSquare {
 
             test.setDeterminationP(0.99);
             assertFalse(test.determines(z, x));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
-    private DataSet getDataSet(int i) throws IOException {
-        String filename = discreteFiles[i];
+    private DataSet getDataSet() throws IOException {
+        String filename = this.discreteFiles[1];
         System.out.println("Loading " + filename);
 
-        DataReader reader = new DataReader();
-        reader.setMissingValueMarker("-99");
-        reader.setMaxIntegralDiscrete(5);
-        return reader.parseTabular(new File(filename));
+        return DataUtils.loadDiscreteData(new File(filename),
+                "//", '\"', "-99", true, Delimiter.TAB);
     }
 }
 

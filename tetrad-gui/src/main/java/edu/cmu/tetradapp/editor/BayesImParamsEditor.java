@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,8 +26,6 @@ import edu.cmu.tetrad.util.Parameters;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Edits the parameters for simulating data from Bayes nets.
@@ -39,7 +37,7 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
     /**
      * The parameters object being edited.
      */
-    private Parameters params = null;
+    private Parameters params;
 
     /**
      * Constructs a dialog to edit the given workbench Bayes simulation
@@ -69,67 +67,27 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         setLayout(new BorderLayout());
 
         JRadioButton manually = new JRadioButton();
-        final JRadioButton randomly = new JRadioButton();
-        final JCheckBox randomEveryTime = new JCheckBox();
+        JRadioButton randomly = new JRadioButton();
 
-        manually.setText("Manually.");
-        randomly.setText("Randomly.");
-//        randomEveryTime.setText("<html>" +
-//                "Pick new random values every time this " +
-//                "<br>Bayes IM is re-initialized." + "</html>");
-//        randomEveryTime.setVerticalTextPosition(SwingConstants.TOP);
+        manually.setText("Manually: Probability tables initially blank");
+        randomly.setText("Randomly: Random probabilties are assigned, which can then be edited");
 
         ButtonGroup group = new ButtonGroup();
         group.add(manually);
         group.add(randomly);
 
-        if (getParams().getString("initializationMode", "manualRetain").equals("manualRetain")) {
+        String string = getParams().getString("initializationMode", "randomOverwrite");
+
+        if ("manualRetain".equals(string)) {
             manually.setSelected(true);
-//            randomEveryTime.setEnabled(false);
-//            randomEveryTime.setSelected(false);
-        } else if (getParams().getString("initializationMode", "manualRetain").equals("randomRetain")) {
+        } else if ("randomOverwrite".equals(string)) {
             randomly.setSelected(true);
-//            randomEveryTime.setEnabled(true);
-//            randomEveryTime.setSelected(false);
-        } else if (getParams().getString("initializationMode", "manualRetain").equals("randomOverwrite")) {
-            randomly.setSelected(true);
-//            randomEveryTime.setEnabled(true);
-//            randomEveryTime.setSelected(true);
         } else {
             throw new IllegalStateException();
         }
 
-        manually.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("initializationMode", "manualRetain");
-//                randomEveryTime.setEnabled(false);
-            }
-        });
-
-        randomly.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getParams().set("initializationMode", "randomRetain");
-//                randomEveryTime.setEnabled(true);
-//                randomEveryTime.setSelected(false);
-            }
-        });
-
-//        randomEveryTime.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                if (!(randomly.isSelected())) {
-//                    throw new IllegalStateException("Should only get here if " +
-//                            "initializing randomly.");
-//                }
-//
-//                JCheckBox checkBox = (JCheckBox) e.getSource();
-//
-//                if (checkBox.isSelected()) {
-//                    getParams().set("initializationMode", "randomOverwrite");
-//                } else {
-//                    getParams().set("initializationMode", "randomRetain");
-//                }
-//            }
-//        });
+        manually.addActionListener(e -> getParams().set("initializationMode", "manualRetain"));
+        randomly.addActionListener(e -> getParams().set("initializationMode", "randomOverwrite"));
 
         // continue workbench construction.
         Box b1 = Box.createVerticalBox();
@@ -147,16 +105,10 @@ public class BayesImParamsEditor extends JPanel implements ParameterEditor {
         b4.add(randomly);
         b4.add(Box.createHorizontalGlue());
 
-//        Box b5 = Box.createHorizontalBox();
-//        b5.add(Box.createHorizontalStrut(20));
-//        b5.add(randomEveryTime);
-//        b5.add(Box.createHorizontalGlue());
-
         b1.add(b2);
         b1.add(Box.createVerticalStrut(5));
         b1.add(b3);
         b1.add(b4);
-//        b1.add(b5);
         b1.add(Box.createHorizontalGlue());
         add(b1, BorderLayout.CENTER);
         setBorder(new EmptyBorder(5, 5, 5, 5));

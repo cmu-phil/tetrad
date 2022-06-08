@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -25,12 +25,12 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -70,18 +70,18 @@ public final class IndTestCramerT implements IndependenceTest {
     /**
      * The cutoff value for 'alpha' area in the two tails of the partial correlation distribution function.
      */
-    private double cutoff = 0.;
+    private double cutoff;
 
     /**
      * The last calculated partial correlation, needed to calculate relative strength.
      */
-    private double storedR = 0.;
+    private double storedR;
 
     /**
      * Formats as 0.0000.
      */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private boolean verbose = false;
+    private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -100,7 +100,7 @@ public final class IndTestCramerT implements IndependenceTest {
         this.dataSet = dataSet;
         this.covMatrix = new CorrelationMatrix(dataSet);
         this.variables =
-                Collections.unmodifiableList(covMatrix.getVariables());
+                Collections.unmodifiableList(this.covMatrix.getVariables());
         setAlpha(alpha);
     }
 
@@ -139,7 +139,7 @@ public final class IndTestCramerT implements IndependenceTest {
         }
 
         for (Node var : vars) {
-            if (!variables.contains(var)) {
+            if (!this.variables.contains(var)) {
                 throw new IllegalArgumentException(
                         "All vars must be original vars");
             }
@@ -148,10 +148,10 @@ public final class IndTestCramerT implements IndependenceTest {
         int[] indices = new int[vars.size()];
 
         for (int i = 0; i < indices.length; i++) {
-            indices[i] = variables.indexOf(vars.get(i));
+            indices[i] = this.variables.indexOf(vars.get(i));
         }
 
-        ICovarianceMatrix newCorrMatrix = covMatrix.getSubmatrix(indices);
+        ICovarianceMatrix newCorrMatrix = this.covMatrix.getSubmatrix(indices);
 
         double alphaNew = getAlpha();
         return new IndTestCramerT(newCorrMatrix, alphaNew);
@@ -166,7 +166,7 @@ public final class IndTestCramerT implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
@@ -234,8 +234,8 @@ public final class IndTestCramerT implements IndependenceTest {
 
         this.storedR = a / b; // Store R so P value can be calculated.
 
-        if (Math.abs(storedR) > 1) {
-            storedR = Math.signum(storedR);
+        if (Math.abs(this.storedR) > 1) {
+            this.storedR = Math.signum(this.storedR);
         }
 
         if (Double.isNaN(this.storedR)) {
@@ -247,36 +247,21 @@ public final class IndTestCramerT implements IndependenceTest {
         boolean independent = isZero(this.storedR, size, getAlpha());
         double pValue = getPValue();
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
-            } else {
-                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, pValue));
             }
         }
 
-        return independent;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
     }
 
     /**
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * Integrator.getArea(pdf(), Math.abs(storedR), 1.0, 100);
+        return 2.0 * Integrator.getArea(pdf(), Math.abs(this.storedR), 1.0, 100);
     }
 
     /**
@@ -298,7 +283,7 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     private ICovarianceMatrix covMatrix() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
     /**
@@ -323,16 +308,16 @@ public final class IndTestCramerT implements IndependenceTest {
         return null;
     }
 
-    public boolean determines(List z, Node x) throws UnsupportedOperationException {
+    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
-            parents[j] = covMatrix.getVariables().indexOf(z.get(j));
+            parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
         }
 
-        int i = covMatrix.getVariables().indexOf(x);
+        int i = this.covMatrix.getVariables().indexOf(x);
 
-        Matrix matrix2D = covMatrix.getMatrix();
+        Matrix matrix2D = this.covMatrix.getMatrix();
         double variance = matrix2D.get(i, i);
 
         if (parents.length > 0) {
@@ -359,7 +344,7 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     public DataSet getData() {
-        return dataSet;
+        return this.dataSet;
     }
 
     @Override
@@ -405,7 +390,7 @@ public final class IndTestCramerT implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Partial Correlation T Test, alpha = " + nf.format(getAlpha());
+        return "Partial Correlation T Test, alpha = " + IndTestCramerT.nf.format(getAlpha());
     }
 
     //==========================PRIVATE METHODS============================//
@@ -439,11 +424,11 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     private PartialCorrelationPdf pdf() {
-        return pdf;
+        return this.pdf;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {

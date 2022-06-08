@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -46,7 +46,7 @@ public class FloatDataBox implements DataBox {
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                data[i][j] = Float.NaN;
+                this.data[i][j] = Float.NaN;
             }
         }
     }
@@ -79,14 +79,14 @@ public class FloatDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return data.length;
+        return this.data.length;
     }
 
     /**
      * @return the number of columns in this data box.n
      */
     public int numCols() {
-        return data[0].length;
+        return this.data[0].length;
     }
 
     /**
@@ -95,12 +95,12 @@ public class FloatDataBox implements DataBox {
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
-            synchronized (data) {
-                data[row][col] = Float.NaN;
+            synchronized (this.data) {
+                this.data[row][col] = Float.NaN;
             }
         } else {
-            synchronized (data) {
-                data[row][col] = value.floatValue();
+            synchronized (this.data) {
+                this.data[row][col] = value.floatValue();
             }
         }
     }
@@ -110,9 +110,9 @@ public class FloatDataBox implements DataBox {
      * is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
-        float datum = data[row][col];
+        float datum = this.data[row][col];
 
-        if (datum == Float.NaN) {
+        if (Double.isNaN(datum)) {
             return null;
         } else {
             return datum;

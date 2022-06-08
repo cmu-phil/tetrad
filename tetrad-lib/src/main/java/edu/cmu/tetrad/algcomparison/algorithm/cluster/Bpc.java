@@ -2,37 +2,36 @@ package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
+import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BuildPureClusters;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BPC. Disabled on 4/2/2019
+ * Build Pure Clusters.
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "BPC",
-//        command = "bpc",
-//        algoType = AlgType.search_for_structure_over_latents
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "BPC",
+        command = "bpc",
+        algoType = AlgType.search_for_structure_over_latents
+)
 @Bootstrapping
-public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterAlgorithm {
+public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
-    private Algorithm algorithm = null;
-    private Graph initialGraph = null;
     private IKnowledge knowledge = new Knowledge2();
 
     public Bpc() {
@@ -53,41 +52,57 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
                 testType = TestType.TETRAD_DELTA;
             }
 
-            TestType purifyType = TestType.TETRAD_BASED;
-
-            BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType, purifyType);
+            BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);
             bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-            return bpc.search();
+            Graph graph = bpc.search();
+
+            if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
+                return graph;
+            } else {
+
+                Clusters clusters = ClusterUtils.mimClusters(graph);
+
+                Mimbuild mimbuild = new Mimbuild();
+                mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+                mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge2()));
+
+                if (parameters.getBoolean("includeThreeClusters", true)) {
+                    mimbuild.setMinClusterSize(3);
+                } else {
+                    mimbuild.setMinClusterSize(4);
+                }
+
+                List<List<Node>> partition = ClusterUtils.clustersToPartition(clusters, dataSet.getVariables());
+                List<String> latentNames = new ArrayList<>();
+
+                for (int i = 0; i < clusters.getNumClusters(); i++) {
+                    latentNames.add(clusters.getClusterName(i));
+                }
+
+                Graph structureGraph = mimbuild.search(partition, latentNames, cov);
+                GraphUtils.circleLayout(structureGraph, 200, 200, 150);
+                GraphUtils.fruchtermanReingoldLayout(structureGraph);
+
+                ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
+
+                TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
+
+                Graph fullGraph = mimbuild.getFullGraph();
+                GraphUtils.circleLayout(fullGraph, 200, 200, 150);
+                GraphUtils.fruchtermanReingoldLayout(fullGraph);
+
+                return fullGraph;
+            }
         } else {
             Bpc algorithm = new Bpc();
 
-            //algorithm.setKnowledge(knowledge);
-//          if (initialGraph != null) {
-//      		algorithm.setInitialGraph(initialGraph);
-//  		}
-
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING));
-            search.setKnowledge(knowledge);
-
-            search.setPercentResampleSize(parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE));
-            search.setResamplingWithReplacement(parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT));
-            
-            ResamplingEdgeEnsemble edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-            switch (parameters.getInt(Params.RESAMPLING_ENSEMBLE, 1)) {
-                case 0:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Preserved;
-                    break;
-                case 1:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Highest;
-                    break;
-                case 2:
-                    edgeEnsemble = ResamplingEdgeEnsemble.Majority;
-            }
-            search.setEdgeEnsemble(edgeEnsemble);
-            search.setAddOriginalDataset(parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
+                    parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
+                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT),
+                    parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -96,7 +111,7 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.patternForDag(new EdgeListGraph(graph));
+        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override
@@ -112,8 +127,9 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.ALPHA);
+        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
+        parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.VERBOSE);
 
         return parameters;
@@ -121,27 +137,11 @@ public class Bpc implements Algorithm, TakesInitialGraph, HasKnowledge, ClusterA
 
     @Override
     public IKnowledge getKnowledge() {
-        return knowledge;
+        return this.knowledge;
     }
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
     }
-
-    @Override
-    public Graph getInitialGraph() {
-        return initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
-    @Override
-    public void setInitialGraph(Algorithm algorithm) {
-        this.algorithm = algorithm;
-    }
-
 }

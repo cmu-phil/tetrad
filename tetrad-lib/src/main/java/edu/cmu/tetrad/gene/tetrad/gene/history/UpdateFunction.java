@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,12 +36,12 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * factors and the number and order of the parents (IndexedParent's) for each
  * factor. This information should be encoded in the function itself, but there
  * is no requirement that the function be checked against the graph explicitly
- * to make sure the graph is actually implemented.</p>
+ * to make sure the graph is actually implemented.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
 public interface UpdateFunction extends TetradSerializable {
-    static final long serialVersionUID = 23L;
+    long serialVersionUID = 23L;
 
     /**
      * Returns the indexed lag graph, if one is available.

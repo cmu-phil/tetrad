@@ -4,8 +4,10 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.GraphScore;
+import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +33,7 @@ public class DSeparationScore implements ScoreWrapper {
     public DSeparationScore() {
 
     }
-    
+
     public DSeparationScore(Graph graph) {
         this.graph = graph;
     }
@@ -40,7 +42,7 @@ public class DSeparationScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         if (dataSet == null) {
-            return new GraphScore(graph);
+            return new GraphScore(this.graph);
         } else {
             throw new IllegalArgumentException("Expecting no data for a d-separation test.");
         }
@@ -63,12 +65,12 @@ public class DSeparationScore implements ScoreWrapper {
 
     @Override
     public Node getVariable(String name) {
-        return dataSet.getVariable(name);
+        return this.dataSet.getVariable(name);
     }
 
     public void setGraph(Graph graph) {
         this.graph = graph;
     }
 
-    
+
 }

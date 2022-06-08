@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -44,14 +44,14 @@ public class GaussianPower implements Distribution {
     }
 
     public GaussianPower(double power) {
-        this.sd = (double) 1;
+        this.sd = 1;
         this.power = power;
         this.name = "N^" + power + "(" + 0 + "," + (double) 1 + ")";
     }
 
     public void setParameter(int index, double value) {
         if (index == 0) {
-            power = value;
+            this.power = value;
         }
 
         throw new IllegalArgumentException();
@@ -59,9 +59,9 @@ public class GaussianPower implements Distribution {
 
     public double getParameter(int index) {
         if (index == 0) {
-            return sd;
+            return this.sd;
         } else if (index == 1) {
-            return power;
+            return this.power;
         }
 
         throw new IllegalArgumentException();
@@ -83,7 +83,7 @@ public class GaussianPower implements Distribution {
 
     public double nextRandom() {
         double value = RandomUtil.getInstance().nextNormal(0, 1);
-        double poweredValue = java.lang.Math.pow(java.lang.Math.abs(value), power);
+        double poweredValue = java.lang.Math.pow(java.lang.Math.abs(value), this.power);
         return (value >= 0) ? poweredValue : -poweredValue;
     }
 }

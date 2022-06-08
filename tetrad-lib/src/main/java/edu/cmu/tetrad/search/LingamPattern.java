@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -25,14 +25,12 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
 import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
 
 import java.text.DecimalFormat;
@@ -41,63 +39,48 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements the Lingam Pattern algorithm as specified in Hoyer et al., "Causal discovery of linear acyclic models with
- * arbitrary distributions," UAI 2008. The test for normality used for residuals is Anderson-Darling, following ad.test
+ * Implements the Lingam CPDAG algorithm as specified in Hoyer et al., "Causal discovery of linear acyclic models with
+ * arbitrary distributions," UAI 2008. The test for normality used for residuals is Anderson-Darling, following 'ad.test'
  * in the nortest package of R. The default alpha level is 0.05--that is, p values from AD below 0.05 are taken to
  * indicate nongaussianity.
  * <p>
- * It is assumed that the pattern is the result of a pattern search such as PC or GES. In any case, it is important that
- * the residuals be independent for ICA to work.
+ * It is assumed that the CPDAG is the result of a CPDAG search such as PC or GES. In any
+ * case, it is important that the residuals be independent for ICA to work.
  *
  * @author Joseph Ramsey
  */
 public class LingamPattern {
-    private Graph pattern;
-    private DataSet dataSet;
-    private IKnowledge knowledge = new Knowledge2();
-    private Graph bestDag;
-    private Graph ngDagPattern;
+    private final Graph cpdag;
+    private final DataSet dataSet;
     private double[] pValues;
     private double alpha = 0.05;
-    private long timeLimit = -1;
-    private int numSamples = 200;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
-    private TetradLogger logger = TetradLogger.getInstance();
 
     //===============================CONSTRUCTOR============================//
 
-    public LingamPattern(Graph pattern, DataSet dataSet)
+    public LingamPattern(Graph cpdag, DataSet dataSet)
             throws IllegalArgumentException {
 
-        if (pattern == null) {
-            throw new IllegalArgumentException("Pattern must be specified.");
+        if (cpdag == null) {
+            throw new IllegalArgumentException("CPDAG must be specified.");
         }
 
         if (dataSet == null) {
             throw new IllegalArgumentException("Data set must be specified.");
         }
 
-        this.pattern = pattern;
+        this.cpdag = cpdag;
         this.dataSet = dataSet;
     }
 
     //===============================PUBLIC METHODS========================//
 
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
-    }
-
     public Graph search() {
-        long initialTime = System.currentTimeMillis();
 
-        Graph _pattern = GraphUtils.bidirectedToUndirected(getPattern());
+        Graph _cpdag = GraphUtils.bidirectedToUndirected(getCpdag());
 
-        TetradLogger.getInstance().log("info", "Making list of all dags in pattern...");
+        TetradLogger.getInstance().log("info", "Making list of all dags in CPDAG...");
 
-        List<Graph> dags = SearchGraphUtils.getAllGraphsByDirectingUndirectedEdges(_pattern);
+        List<Graph> dags = SearchGraphUtils.getAllGraphsByDirectingUndirectedEdges(_cpdag);
 
         TetradLogger.getInstance().log("normalityTests", "Anderson Darling P value for Variables\n");
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -134,7 +117,6 @@ public class LingamPattern {
         }
 
         Graph dag = dags.get(maxj);
-        this.bestDag = new EdgeListGraph(dags.get(maxj));
         this.pValues = scores.get(maxj).pvals;
 
         TetradLogger.getInstance().log("graph", "winning dag = " + dag);
@@ -145,13 +127,11 @@ public class LingamPattern {
             TetradLogger.getInstance().log("normalityTests", getDataSet().getVariable(j) + ": " + nf.format(scores.get(maxj).pvals[j]));
         }
 
-//        System.out.println();
+        Graph ngDagCPDAG = SearchGraphUtils.cpdagFromDag(dag);
 
-        Graph ngDagPattern = SearchGraphUtils.patternFromDag(dag);
+        List<Node> nodes = ngDagCPDAG.getNodes();
 
-        List<Node> nodes = ngDagPattern.getNodes();
-
-        for (Edge edge : ngDagPattern.getEdges()) {
+        for (Edge edge : ngDagCPDAG.getEdges()) {
             Node node1 = edge.getNode1();
             Node node2 = edge.getNode2();
 
@@ -166,8 +146,8 @@ public class LingamPattern {
                     continue;
                 }
 
-                ngDagPattern.removeEdge(edge);
-                ngDagPattern.addEdge(dag.getEdge(node1, node2));
+                ngDagCPDAG.removeEdge(edge);
+                ngDagCPDAG.addEdge(dag.getEdge(node1, node2));
 
                 if (node1Nongaussian) {
                     TetradLogger.getInstance().log("edgeOrientations", node1 + " nongaussian ");
@@ -181,24 +161,15 @@ public class LingamPattern {
             }
         }
 
-//        System.out.println();
-//
-//        System.out.println("Applying Meek rules.");
-//        System.out.println();
+        new MeekRules().orientImplied(ngDagCPDAG);
 
-        new MeekRules().orientImplied(ngDagPattern);
-
-        this.ngDagPattern = ngDagPattern;
-
-        TetradLogger.getInstance().log("graph", "Returning: " + ngDagPattern);
-        return ngDagPattern;
+        TetradLogger.getInstance().log("graph", "Returning: " + ngDagCPDAG);
+        return ngDagCPDAG;
     }
 
     //=============================PRIVATE METHODS=========================//
 
     private Score getScore(Graph dag, Matrix data, List<Node> variables) {
-//        System.out.println("Scoring DAG: " + dag);
-
         Regression regression = new RegressionDataset(data, variables);
 
         List<Node> nodes = dag.getNodes();
@@ -247,11 +218,11 @@ public class LingamPattern {
     }
 
     public double[] getPValues() {
-        return pValues;
+        return this.pValues;
     }
 
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     public void setAlpha(double alpha) {
@@ -262,36 +233,12 @@ public class LingamPattern {
         this.alpha = alpha;
     }
 
-    public Graph getNgDagPattern() {
-        return ngDagPattern;
-    }
-
-    public Graph getBestDag() {
-        return bestDag;
-    }
-
-    public void setTimeLimit(long timeLimit) {
-        this.timeLimit = timeLimit;
-    }
-
-    private Graph getPattern() {
-        return pattern;
+    private Graph getCpdag() {
+        return this.cpdag;
     }
 
     private DataSet getDataSet() {
-        return dataSet;
-    }
-
-    private IKnowledge getKnowledge() {
-        return knowledge;
-    }
-
-    private long getTimeLimit() {
-        return timeLimit;
-    }
-
-    private int getNumSamples() {
-        return numSamples;
+        return this.dataSet;
     }
 
     private static class Score {

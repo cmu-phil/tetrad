@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,7 +29,13 @@ import java.util.List;
  * Interface for a score suitable for FGES
  */
 public interface Score {
-    double localScore(int node, int...parents);
+
+    /**
+     * @param node The index of the node.
+     * @param parents The indices of the node's parents.
+     * @return The score, or NaN if the score cannot be calculated.
+     */
+    double localScore(int node, int... parents);
 
     double localScoreDiff(int x, int y, int[] z);
 

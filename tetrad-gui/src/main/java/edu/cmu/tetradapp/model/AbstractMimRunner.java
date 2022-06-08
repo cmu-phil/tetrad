@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -49,7 +49,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
      *
      * @serial Cannot be null.
      */
-    private transient DataModel dataModel;
+    private final transient DataModel dataModel;
 
     /**
      * The parameters guiding this search (when executed).
@@ -110,7 +110,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 
         DataModel data = getDataModel(dataWrapper);
         getParams().set("knowledge", dataWrapper.getKnowledge());
-        List names = data.getVariableNames();
+        List<String> names = data.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = data;
     }
@@ -128,7 +128,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
 //        this.sourceGraph = wrapper.getSourceGraph();
 
         DataModel data = wrapper.getData();
-        List names = data.getVariableNames();
+        List<String> names = data.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = data;
     }
@@ -143,7 +143,7 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         this.sourceGraph = runner.getSourceGraph();
 
         DataModel dataSource = runner.getData();
-        List names = dataSource.getVariableNames();
+        List<String> names = dataSource.getVariableNames();
         transferVarNamesToParams(names);
         this.dataModel = dataSource;
     }
@@ -171,16 +171,16 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     }
 
     public final DataModel getData() {
-        if (dataWrapper != null) {
-            DataModelList dataModelList = dataWrapper.getDataModelList();
+        if (this.dataWrapper != null) {
+            DataModelList dataModelList = this.dataWrapper.getDataModelList();
 
             if (dataModelList.size() == 1) {
                 return dataModelList.get(0);
             } else {
                 return dataModelList;
             }
-        } else if (dataModel != null) {
-            return dataModel;
+        } else if (this.dataModel != null) {
+            return this.dataModel;
         } else {
             throw new IllegalArgumentException();
         }
@@ -254,12 +254,12 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
                 "Unexpected dataModel source: " + dataModel);
     }
 
-    private void transferVarNamesToParams(List names) {
+    private void transferVarNamesToParams(List<String> names) {
         getParams().set("varNames", names);
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {

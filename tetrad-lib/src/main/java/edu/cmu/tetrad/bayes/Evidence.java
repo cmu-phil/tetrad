@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -45,7 +45,7 @@ public final class Evidence implements TetradSerializable {
      *
      * @serial Cannot be null.
      */
-    private Proposition proposition;
+    private final Proposition proposition;
 
     /**
      * A manipulation indicating how the bayes Im should be manipulated before
@@ -123,32 +123,32 @@ public final class Evidence implements TetradSerializable {
      * @return the Bayes IM that this is evidence for.
      */
     public VariableSource getVariableSource() {
-        return proposition.getVariableSource();
+        return this.proposition.getVariableSource();
     }
 
     public int getNodeIndex(String nodeName) {
-        return proposition.getNodeIndex(nodeName);
+        return this.proposition.getNodeIndex(nodeName);
     }
 
     public int getCategoryIndex(String nodeName, String category) {
-        return proposition.getCategoryIndex(nodeName, category);
+        return this.proposition.getCategoryIndex(nodeName, category);
     }
 
     public int getNumNodes() {
-        return proposition.getVariableSource().getVariables().size();
+        return this.proposition.getVariableSource().getVariables().size();
     }
 
     public Node getNode(int nodeIndex) {
-        return proposition.getVariableSource().getVariables().get(nodeIndex);
+        return this.proposition.getVariableSource().getVariables().get(nodeIndex);
     }
 
     public DiscreteVariable getVariable(String nodeName) {
-        int index = proposition.getVariableSource().getVariableNames().indexOf(nodeName);
-        return (DiscreteVariable) proposition.getVariableSource().getVariables().get(index);
+        int index = this.proposition.getVariableSource().getVariableNames().indexOf(nodeName);
+        return (DiscreteVariable) this.proposition.getVariableSource().getVariables().get(index);
     }
 
     public int getNumCategories(int variable) {
-        return proposition.getNumCategories(variable);
+        return this.proposition.getNumCategories(variable);
     }
 
     public Proposition getProposition() {
@@ -156,11 +156,11 @@ public final class Evidence implements TetradSerializable {
     }
 
     public boolean isManipulated(int nodeIndex) {
-        return manipulation.isManipulated(nodeIndex);
+        return this.manipulation.isManipulated(nodeIndex);
     }
 
     public void setManipulated(int nodeIndex, boolean manipulated) {
-        manipulation.setManipulated(nodeIndex, manipulated);
+        this.manipulation.setManipulated(nodeIndex, manipulated);
     }
 
     public String toString() {
@@ -179,8 +179,8 @@ public final class Evidence implements TetradSerializable {
     }
 
     public boolean hasNoEvidence(int variable) {
-        for (int i = 0; i < proposition.getNumCategories(variable); i++) {
-            if (!proposition.isAllowed(variable, i)) {
+        for (int i = 0; i < this.proposition.getNumCategories(variable); i++) {
+            if (!this.proposition.isAllowed(variable, i)) {
                 return false;
             }
         }
@@ -194,7 +194,7 @@ public final class Evidence implements TetradSerializable {
     public List<Node> getVariablesInEvidence() {
         List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < getNumNodes(); i++) {
-            if (proposition.getSingleCategory(i) != -1) {
+            if (this.proposition.getSingleCategory(i) != -1) {
                 nodes.add(getNode(i));
             }
         }
@@ -229,14 +229,14 @@ public final class Evidence implements TetradSerializable {
 
         Evidence evidence = (Evidence) o;
 
-        return proposition.equals(evidence.proposition) && manipulation.equals(evidence.manipulation);
+        return this.proposition.equals(evidence.proposition) && this.manipulation.equals(evidence.manipulation);
 
     }
 
     public int hashCode() {
         int hashCode = 37;
-        hashCode = 19 * hashCode + proposition.hashCode();
-        hashCode = 19 * hashCode + manipulation.hashCode();
+        hashCode = 19 * hashCode + this.proposition.hashCode();
+        hashCode = 19 * hashCode + this.manipulation.hashCode();
         return hashCode;
     }
 
@@ -249,15 +249,12 @@ public final class Evidence implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (proposition == null) {
+        if (this.proposition == null) {
             throw new NullPointerException();
         }
     }

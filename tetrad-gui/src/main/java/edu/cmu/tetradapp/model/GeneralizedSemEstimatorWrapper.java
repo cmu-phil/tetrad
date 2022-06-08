@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
@@ -50,15 +49,15 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
      */
     private String name;
 
-    private GeneralizedSemPm semPm = null;
+    private GeneralizedSemPm semPm;
 
-    private DataSet data = null;
+    private final DataSet data;
 
     /**
      * True just in case errors should be shown in the interface.
      */
     private boolean showErrors;
-    private GeneralizedSemIm estIm = null;
+    private GeneralizedSemIm estIm;
     private String report = "";
 
     //==============================CONSTRUCTORS==========================//
@@ -74,24 +73,15 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
         execute();
     }
 
-//    public GeneralizedSemEstimatorWrapper(GeneralizedSemImWrapper semIm, DataWrapper data) {
-//    	if (semIm == null) {
-//            throw new NullPointerException("SEM IM must not be null.");
-//        }
-//    	
-//    	this.semPm = semIm.getSemIms().get(0).getSemPm();
-//    	this.data = (DataSet) data.getSelectedDataModel();
-//
-//        execute();
-//    }
-    
     public void execute() {
         GeneralizedSemEstimator estimator = new GeneralizedSemEstimator();
-        estIm = estimator.estimate(this.semPm, this.data);
+        this.estIm = estimator.estimate(this.semPm, this.data);
         this.report = estimator.getReport();
     }
 
-    public static Node serializableInstance() {return new GraphNode("X");}
+    public static Node serializableInstance() {
+        return new GraphNode("X");
+    }
 
 
     //============================PUBLIC METHODS=========================//
@@ -109,9 +99,6 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -119,11 +106,11 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
     }
 
     public Graph getGraph() {
-        return semPm.getGraph();
+        return this.semPm.getGraph();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -131,7 +118,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
     }
 
     public boolean isShowErrors() {
-        return showErrors;
+        return this.showErrors;
     }
 
     public void setShowErrors(boolean showErrors) {
@@ -140,33 +127,33 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
 
     //======================= Private methods ====================//
 
-    private void log(GeneralizedSemIm im){
+    private void log(GeneralizedSemIm im) {
         TetradLogger.getInstance().log("info", "Generalized SEM IM");
         TetradLogger.getInstance().log("im", im.toString());
     }
 
-	public Graph getSourceGraph() {
-		return getGraph();
-	}
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
 
     public Graph getResultGraph() {
         return getGraph();
     }
 
     public List<String> getVariableNames() {
-		return getGraph().getNodeNames();
-	}
+        return getGraph().getNodeNames();
+    }
 
-	public List<Node> getVariables() {
-		return getGraph().getNodes();
-	}
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
 
 
     /**
      * The wrapped SemPm.
      */
     public GeneralizedSemPm getSemPm() {
-        return semPm;
+        return this.semPm;
     }
 
     public void setSemPm(GeneralizedSemPm semPm) {
@@ -174,7 +161,7 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
     }
 
     public String getReport() {
-        return report;
+        return this.report;
     }
 }
 

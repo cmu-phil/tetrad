@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,18 +39,17 @@ import java.util.Set;
  * @author Joseph Ramsey
  */
 public class VcpcRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
     private Graph dag;
-    private IndependenceFactsModel independenceFactsModel = null;
+    private IndependenceFactsModel independenceFactsModel;
     private Graph trueGraph;
 //    private Vcpc vcpc = null;
 
 
-    private Set<Edge>vcpcAdjacent;
-    private Set<Edge>vcpcApparent;
-    private Set<Edge>vcpcDefinite;
-    private List<Node>vcpcNodes;
+    private Set<Edge> vcpcAdjacent;
+    private Set<Edge> vcpcApparent;
+    private Set<Edge> vcpcDefinite;
 
     //============================CONSTRUCTORS============================//
 
@@ -74,10 +73,9 @@ public class VcpcRunner extends AbstractAlgorithmRunner
     }
 
 
-
     /**
      * Constucts a wrapper for the given
-    /**
+     * /**
      * Constucts a wrapper for the given EdgeListGraph.
      */
     public VcpcRunner(Graph graph, Parameters params) {
@@ -172,28 +170,22 @@ public class VcpcRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        Parameters searchParams = getParams();
-
-        Parameters params =
-                searchParams;
 
 
         Vcpc vcpc = new Vcpc(getIndependenceTest());
         vcpc.setKnowledge(knowledge);
         vcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        vcpc.setDepth(params.getInt("depth", -1));
-        if (independenceFactsModel != null) {
-            vcpc.setFacts(independenceFactsModel.getFacts());
+        vcpc.setDepth(getParams().getInt("depth", -1));
+        if (this.independenceFactsModel != null) {
+            vcpc.setFacts(this.independenceFactsModel.getFacts());
         }
         Graph graph = vcpc.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else if (knowledge.isDefaultToKnowledgeLayout()) {
+        } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
@@ -202,8 +194,8 @@ public class VcpcRunner extends AbstractAlgorithmRunner
     }
 
     public IndependenceTest getIndependenceTest() {
-        if (dag != null) {
-            return new IndTestDSep(dag);
+        if (this.dag != null) {
+            return new IndTestDSep(this.dag);
         }
 
         Object dataModel = getDataModel();
@@ -221,7 +213,7 @@ public class VcpcRunner extends AbstractAlgorithmRunner
     }
 
     public IndependenceFactsModel getIndependenceFactsModel() {
-        return independenceFactsModel;
+        return this.independenceFactsModel;
     }
 
     /**
@@ -229,8 +221,6 @@ public class VcpcRunner extends AbstractAlgorithmRunner
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
-//        names.add("ColliderDiscovery");
-//        names.add("Noncolliders");
         names.add("Ambiguous Triples");
         return names;
     }
@@ -241,22 +231,20 @@ public class VcpcRunner extends AbstractAlgorithmRunner
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         return triplesList;
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<>(vcpcAdjacent);
+        return new HashSet<>(this.vcpcAdjacent);
     }
 
     public Set<Edge> getAppNon() {
-        return new HashSet<>(vcpcApparent);
+        return new HashSet<>(this.vcpcApparent);
     }
 
     public Set<Edge> getDefNon() {
-        return new HashSet<>(vcpcDefinite);
+        return new HashSet<>(this.vcpcDefinite);
     }
 
     public boolean supportsKnowledge() {
@@ -286,15 +274,12 @@ public class VcpcRunner extends AbstractAlgorithmRunner
     }
 
     private void setVcpcFields(Vcpc vcpc) {
-        vcpcAdjacent = vcpc.getAdjacencies();
-        vcpcApparent = vcpc.getApparentNonadjacencies();
-        vcpcDefinite = vcpc.getDefiniteNonadjacencies();
-        vcpcNodes = getGraph().getNodes();
+        this.vcpcAdjacent = vcpc.getAdjacencies();
+        this.vcpcApparent = vcpc.getApparentNonadjacencies();
+        this.vcpcDefinite = vcpc.getDefiniteNonadjacencies();
+        List<Node> vcpcNodes = getGraph().getNodes();
     }
 
-//    public Vcpc getVcpc() {
-//        return vcpc;
-//    }
 }
 
 

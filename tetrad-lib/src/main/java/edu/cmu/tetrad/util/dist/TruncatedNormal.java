@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -68,8 +68,8 @@ public class TruncatedNormal implements Distribution {
     //=========================CONSTRUCTORS===========================//
 
     private TruncatedNormal() {
-        setParameter(0, (double) 0);
-        setParameter(1, (double) 1);
+        setParameter(0, 0);
+        setParameter(1, 1);
         setParameter(2, Double.NEGATIVE_INFINITY);
         setParameter(3, Double.POSITIVE_INFINITY);
     }
@@ -91,13 +91,13 @@ public class TruncatedNormal implements Distribution {
 
     public void setParameter(int index, double value) {
         if (index == 0) {
-            mean = value;
+            this.mean = value;
         } else if (index == 1 && value >= 0) {
-            sd = value;
+            this.sd = value;
         } else if (index == 2) {
-            low = value;
+            this.low = value;
         } else if (index == 3) {
-            high = value;
+            this.high = value;
         } else {
             throw new IllegalArgumentException("Illegal value for parameter " +
                     index + ": " + value);
@@ -106,9 +106,9 @@ public class TruncatedNormal implements Distribution {
 
     public double getParameter(int index) {
         if (index == 0) {
-            return mean;
+            return this.mean;
         } else if (index == 1) {
-            return sd;
+            return this.sd;
         } else {
             throw new IllegalArgumentException("Illegal index: " + index);
         }
@@ -139,12 +139,12 @@ public class TruncatedNormal implements Distribution {
      * @return the next random sample from the distribution.
      */
     public double nextRandom() {
-        return RandomUtil.getInstance().nextTruncatedNormal(mean, sd, low, high);
+        return RandomUtil.getInstance().nextTruncatedNormal(this.mean, this.sd, this.low, this.high);
     }
 
     public String toString() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        return "TruncNormal(" + nf.format(mean) + ", " + nf.format(sd) + ", " + nf.format(low) + ", " + nf.format(high) + ")";
+        return "TruncNormal(" + nf.format(this.mean) + ", " + nf.format(this.sd) + ", " + nf.format(this.low) + ", " + nf.format(this.high) + ")";
     }
 
     //========================PRIVATE METHODS===========================//
@@ -168,7 +168,7 @@ public class TruncatedNormal implements Distribution {
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (sd <= 0) {
+        if (this.sd <= 0) {
             throw new IllegalStateException();
         }
 

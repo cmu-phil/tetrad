@@ -23,10 +23,10 @@ import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.Algorithm;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.util.AlgorithmDescriptions;
+
 import java.io.Serializable;
 
 /**
- *
  * Nov 30, 2017 4:41:37 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -64,23 +64,23 @@ public class AlgorithmModel implements Serializable, Comparable<AlgorithmModel> 
     }
 
     public AnnotatedClass<Algorithm> getAlgorithm() {
-        return algorithm;
+        return this.algorithm;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     public boolean isRequiredScore() {
-        return requiredScore;
+        return this.requiredScore;
     }
 
     public boolean isRequiredTest() {
-        return requiredTest;
+        return this.requiredTest;
     }
 
 }

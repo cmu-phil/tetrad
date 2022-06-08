@@ -18,19 +18,14 @@
  */
 package edu.cmu.tetrad.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
- *
  * Sep 19, 2017 1:56:20 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-@Target({ElementType.TYPE})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface UnmeasuredConfounder {

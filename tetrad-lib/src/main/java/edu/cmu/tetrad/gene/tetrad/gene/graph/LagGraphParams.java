@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.gene.tetrad.gene.graph;
 
-import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;
@@ -11,12 +10,12 @@ public class LagGraphParams {
     public static final int CONSTANT = 0;
     public static final int MAX = 1;
     public static final int MEAN = 2;
-    private int indegreeType = 0;
+    private int indegreeType;
     private int varsPerInd = 5;
     private int mlag = 1;
     private int indegree = 2;
     private double percentUnregulated = 10;
-    private Parameters parameters;
+    private final Parameters parameters;
 
     public LagGraphParams(Parameters parameters) {
         this.parameters = parameters;
@@ -27,37 +26,37 @@ public class LagGraphParams {
     }
 
     public int getVarsPerInd() {
-        return parameters.getInt("lagGraphVarsPerInd", varsPerInd);
+        return this.parameters.getInt("lagGraphVarsPerInd", this.varsPerInd);
     }
 
     public void setVarsPerInd(int varsPerInd) {
-        if(varsPerInd > 0) {
-            parameters.set("lagGraphVarsPerInd", varsPerInd);
+        if (varsPerInd > 0) {
+            this.parameters.set("lagGraphVarsPerInd", varsPerInd);
             this.varsPerInd = varsPerInd;
         }
 
     }
 
     public int getMlag() {
-        return parameters.getInt("lagGraphMlag", mlag);
+        return this.parameters.getInt("lagGraphMlag", this.mlag);
     }
 
     public void setMlag(int mlag) {
-        if(mlag > 0) {
-            parameters.set("lagGraphMLag", mlag);
+        if (mlag > 0) {
+            this.parameters.set("lagGraphMLag", mlag);
             this.mlag = mlag;
         }
 
     }
 
     public int getIndegree() {
-        return parameters.getInt("lagGraphIndegree", indegree);
+        return this.parameters.getInt("lagGraphIndegree", this.indegree);
     }
 
     public void setIndegree(int indegree) {
-        if(indegree > 1) {
+        if (indegree > 1) {
             this.indegree = indegree;
-            parameters.set("lagGraphIndegree", indegree);
+            this.parameters.set("lagGraphIndegree", indegree);
         }
 
     }
@@ -67,7 +66,7 @@ public class LagGraphParams {
     }
 
     public void setIndegreeType(int indegreeType) {
-        switch(indegreeType) {
+        switch (indegreeType) {
             case 0:
             case 1:
             case 2:
@@ -83,7 +82,7 @@ public class LagGraphParams {
     }
 
     public void setPercentUnregulated(double percentUnregulated) {
-        if(percentUnregulated >= 0.0D && percentUnregulated <= 100.0D) {
+        if (percentUnregulated >= 0.0D && percentUnregulated <= 100.0D) {
             this.percentUnregulated = percentUnregulated;
         } else {
             throw new IllegalArgumentException();
@@ -92,18 +91,18 @@ public class LagGraphParams {
 
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-        switch(this.indegreeType) {
+        switch (this.indegreeType) {
             case 0:
             case 1:
             case 2:
-                if(this.varsPerInd < 1) {
+                if (this.varsPerInd < 1) {
                     throw new IllegalStateException("VarsPerInd out of range: " + this.varsPerInd);
-                } else if(this.mlag <= 0) {
+                } else if (this.mlag <= 0) {
                     throw new IllegalStateException("Mlag out of range: " + this.mlag);
-                } else if(this.varsPerInd <= 1) {
+                } else if (this.varsPerInd <= 1) {
                     throw new IllegalStateException("VarsPerInd out of range: " + this.varsPerInd);
                 } else {
-                    if(this.percentUnregulated > 0.0D && this.percentUnregulated < 100.0D) {
+                    if (this.percentUnregulated > 0.0D && this.percentUnregulated < 100.0D) {
                         return;
                     }
 

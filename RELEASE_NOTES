@@ -1,3 +1,7 @@
+7.1.0
+
+See https://github.com/cmu-phil/tetrad/wiki/Fixes-for-version-7.1.0
+
 6.8.0
 Added Testwise Deletion for Fisher Z, G Square, Chi Square, Conditional Gaussian Test, Degenerate Gaussian Test, KCI Test, Conditional Correlation Test, Probabilistic Test
 Added the Junction Tree Inference; that’s incorporated as an "Updater" as well in the Tetrad interface

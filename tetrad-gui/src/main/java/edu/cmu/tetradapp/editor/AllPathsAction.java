@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -59,9 +59,9 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
      */
     public void actionPerformed(ActionEvent e) {
         Box b = Box.createVerticalBox();
-        final Graph graph = workbench.getGraph();
+        Graph graph = this.workbench.getGraph();
 
-        final JTextArea textArea = new JTextArea();
+        JTextArea textArea = new JTextArea();
         JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(600, 600));
 
@@ -77,7 +77,7 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
         panel.add(b);
 
         EditorWindow window = new EditorWindow(panel,
-                "All Paths", "Close", false, workbench);
+                "All Paths", "Close", false, this.workbench);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
@@ -99,8 +99,6 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
             }
         };
 
-//        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), b,
-//                "Graph Properties", JOptionPane.PLAIN_MESSAGE);
     }
 
     private void addTreks(Node node1, Node node2, Graph graph, JTextArea textArea) {

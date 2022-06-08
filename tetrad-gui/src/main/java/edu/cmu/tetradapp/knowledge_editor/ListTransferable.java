@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,16 +37,16 @@ class ListTransferable implements Transferable {
     /**
      * The list of graph nodes that constitutes the selection.
      */
-    private List list;
+    private final List list;
 
     /**
      * Supported dataflavors--only one.
      */
-    private final static DataFlavor[] dataFlavors = new DataFlavor[]{
+    private static final DataFlavor[] dataFlavors = {
             new DataFlavor(ListTransferable.class, "String List Selection")};
 
 
-    public final static DataFlavor DATA_FLAVOR = dataFlavors[0];
+    public static final DataFlavor DATA_FLAVOR = ListTransferable.dataFlavors[0];
 
 
     /**
@@ -62,16 +62,14 @@ class ListTransferable implements Transferable {
     }
 
     /**
+     * @param flavor the requested flavor for the data
      * @return an object which represents the data to be transferred.  The
      * class of the object returned is defined by the representation class
      * of the flavor.
-     *
-     * @param flavor the requested flavor for the data
-     * @throws java.io.IOException if the data is no longer available
-     *                             in the requested flavor.
-     * @throws java.awt.datatransfer.UnsupportedFlavorException
-     *                             if the requested data flavor is
-     *                             not supported.
+     * @throws java.io.IOException                              if the data is no longer available
+     *                                                          in the requested flavor.
+     * @throws java.awt.datatransfer.UnsupportedFlavorException if the requested data flavor is
+     *                                                          not supported.
      * @see DataFlavor#getRepresentationClass
      */
     public Object getTransferData(DataFlavor flavor)
@@ -80,17 +78,16 @@ class ListTransferable implements Transferable {
             throw new UnsupportedFlavorException(flavor);
         }
 
-        return list;
+        return this.list;
     }
 
     /**
+     * @param flavor the requested flavor for the data
      * @return whether or not the specified data flavor is supported for
      * this object.
-     *
-     * @param flavor the requested flavor for the data
      */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
-        return flavor.equals(dataFlavors[0]);
+        return flavor.equals(ListTransferable.dataFlavors[0]);
     }
 
     /**
@@ -100,7 +97,7 @@ class ListTransferable implements Transferable {
      * least descriptive).
      */
     public DataFlavor[] getTransferDataFlavors() {
-        return dataFlavors;
+        return ListTransferable.dataFlavors;
     }
 }
 

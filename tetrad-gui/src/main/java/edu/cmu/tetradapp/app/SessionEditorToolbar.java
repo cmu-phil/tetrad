@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,18 +22,16 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Displays a vertical list of buttons that determine the next action the user
@@ -67,20 +65,21 @@ final class SessionEditorToolbar extends JPanel {
     /**
      * True iff the shift key was down on last click.
      */
-    private boolean shiftDown = false;
+    private boolean shiftDown;
 
     /**
      * The workbench this toolbar controls.
      */
-    private SessionEditorWorkbench workbench;
+    private final SessionEditorWorkbench workbench;
 
     //=============================CONSTRUCTORS==========================//
+
     /**
      * Constructs a new session toolbar.
      *
      * @param workbench the workbench this toolbar controls.
      */
-    public SessionEditorToolbar(final SessionEditorWorkbench workbench) {
+    public SessionEditorToolbar(SessionEditorWorkbench workbench) {
         if (workbench == null) {
             throw new NullPointerException("Workbench must not be null.");
         }
@@ -96,40 +95,40 @@ final class SessionEditorToolbar extends JPanel {
         /*
       Node infos for all of the nodes.
          */
-        ButtonInfo[] buttonInfos = new ButtonInfo[]{
-            new ButtonInfo("Select", "Select and Move", "move",
-            "<html>Select and move nodes or groups of nodes "
-            + "<br>on the workbench.</html>"),
-            new ButtonInfo("Edge", "Draw Edge", "flow",
-            "<html>Add an edge from one node to another to declare"
-            + "<br>that the object in the first node should be used "
-            + "<br>to construct the object in the second node."
-            + "<br>As a shortcut, hold down the Control key."
-            + "</html>"),
-            new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
-            new ButtonInfo("Compare", "Compare", "compare",
-            "<html>Add a node to compare graphs or SEM IM's.</html>"),
-            new ButtonInfo("PM", "Parametric Model", "pm",
-            "<html>Add a node for a parametric model.</html>"),
-            new ButtonInfo("IM", "Instantiated Model", "im",
-            "<html>Add a node for an instantiated model.</html>"),
-            new ButtonInfo("Estimator", "Estimator", "estimator",
-            "<html>Add a node for an estimator.</html>"),
-            new ButtonInfo("Data", "Data", "data",
-            "<html>Add a node for a data object.</html>"),
-            new ButtonInfo("Simulation", "Simulation", "simulation",
-            "<html>Add a node for a simulation object.</html>"),
-            new ButtonInfo("Search", "Search", "search",
-            "<html>Add a node for a search algorithm.</html>"),
-            new ButtonInfo("Updater", "Updater", "updater",
-            "<html>Add a node for an updater.</html>"),
-            //new ButtonInfo("Classify", "Classify", "search",
-            //"<html>Add a node for a classifier.</html>"),
-            new ButtonInfo("Regression", "Regression", "regression",
-            "<html>Add a node for a regression.</html>"),
-            new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
-            new ButtonInfo("Note", "Note", "note",
-            "<html>Add a note to the session.</html>")
+        ButtonInfo[] buttonInfos = {
+                new ButtonInfo("Select", "Select and Move", "move",
+                        "<html>Select and move nodes or groups of nodes "
+                                + "<br>on the workbench.</html>"),
+                new ButtonInfo("Edge", "Draw Edge", "flow",
+                        "<html>Add an edge from one node to another to declare"
+                                + "<br>that the object in the first node should be used "
+                                + "<br>to construct the object in the second node."
+                                + "<br>As a shortcut, hold down the Control key."
+                                + "</html>"),
+                new ButtonInfo("Graph", "Graph", "graph", "<html>Add a graph node.</html>"),
+                new ButtonInfo("Compare", "Compare", "compare",
+                        "<html>Add a node to compare graphs or SEM IM's.</html>"),
+                new ButtonInfo("PM", "Parametric Model", "pm",
+                        "<html>Add a node for a parametric model.</html>"),
+                new ButtonInfo("IM", "Instantiated Model", "im",
+                        "<html>Add a node for an instantiated model.</html>"),
+                new ButtonInfo("Estimator", "Estimator", "estimator",
+                        "<html>Add a node for an estimator.</html>"),
+                new ButtonInfo("Data", "Data", "data",
+                        "<html>Add a node for a data object.</html>"),
+                new ButtonInfo("Simulation", "Simulation", "simulation",
+                        "<html>Add a node for a simulation object.</html>"),
+                new ButtonInfo("Search", "Search", "search",
+                        "<html>Add a node for a search algorithm.</html>"),
+                new ButtonInfo("Knowledge", "Knowledge", "knowledge", "<html>Add a knowledge box node.</html>"),
+                new ButtonInfo("Updater", "Updater", "updater",
+                        "<html>Add a node for an updater.</html>"),
+                //new ButtonInfo("Classify", "Classify", "search",
+                //"<html>Add a node for a classifier.</html>"),
+                new ButtonInfo("Regression", "Regression", "regression",
+                        "<html>Add a node for a regression.</html>"),
+                new ButtonInfo("Note", "Note", "note",
+                        "<html>Add a note to the session.</html>")
         };
         JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
 
@@ -159,14 +158,12 @@ final class SessionEditorToolbar extends JPanel {
 //        }
         // Add an action listener to help send messages to the
         // workbench.
-        ChangeListener changeListener = new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JToggleButton _button = (JToggleButton) e.getSource();
+        ChangeListener changeListener = e -> {
+            JToggleButton _button = (JToggleButton) e.getSource();
 
-                if (_button.getModel().isSelected()) {
-                    setWorkbenchMode(_button);
+            if (_button.getModel().isSelected()) {
+                setWorkbenchMode(_button);
 //                    setCursor(workbench.getCursor());
-                }
             }
         };
 
@@ -177,6 +174,7 @@ final class SessionEditorToolbar extends JPanel {
         // Select the Select button.
         JToggleButton button = getButtonForType(this.selectType);
 
+        assert button != null;
         button.getModel().setSelected(true);
 
         // Add the buttons to the workbench.
@@ -193,45 +191,42 @@ final class SessionEditorToolbar extends JPanel {
 
         // Add property change listener so that selection can be moved
         // back to "SELECT_MOVE" after an action.
-        workbench.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if (!isRespondingToEvents()) {
-                    return;
-                }
+        workbench.addPropertyChangeListener(e -> {
+            if (!isRespondingToEvents()) {
+                return;
+            }
 
-                String propertyName = e.getPropertyName();
-                if ("nodeAdded".equals(propertyName)) {
-                    if (!isShiftDown()) {
-                        resetSelectMove();
-                    }
-                } else if ("edgeAdded".equals(propertyName)) {
-                    // keep edge select type selected
-                    JToggleButton selectButton = getButtonForType(edgeSelectType);
-                    if (!(selectButton.isSelected())) {
-                        selectButton.doClick();
-                        selectButton.requestFocus();
-                    }
+            String propertyName = e.getPropertyName();
+            if ("nodeAdded".equals(propertyName)) {
+                if (!isShiftDown()) {
+                    resetSelectMove();
+                }
+            } else if ("edgeAdded".equals(propertyName)) {
+                // keep edge select type selected
+                JToggleButton selectButton = getButtonForType(SessionEditorToolbar.this.edgeSelectType);
+                assert selectButton != null;
+                if (!(selectButton.isSelected())) {
+                    selectButton.doClick();
+                    selectButton.requestFocus();
                 }
             }
         });
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                .addKeyEventDispatcher(new KeyEventDispatcher() {
-                    public boolean dispatchKeyEvent(KeyEvent e) {
-                        int keyCode = e.getKeyCode();
-                        int id = e.getID();
+                .addKeyEventDispatcher(e -> {
+                    int keyCode = e.getKeyCode();
+                    int id = e.getID();
 
-                        if (keyCode == KeyEvent.VK_SHIFT) {
-                            if (id == KeyEvent.KEY_PRESSED) {
-                                setShiftDown(true);
-                            } else if (id == KeyEvent.KEY_RELEASED) {
-                                setShiftDown(false);
-                                resetSelectMove();
-                            }
+                    if (keyCode == KeyEvent.VK_SHIFT) {
+                        if (id == KeyEvent.KEY_PRESSED) {
+                            setShiftDown(true);
+                        } else if (id == KeyEvent.KEY_RELEASED) {
+                            setShiftDown(false);
+                            resetSelectMove();
                         }
-
-                        return false;
                     }
+
+                    return false;
                 });
 
         resetSelectMove();
@@ -241,27 +236,20 @@ final class SessionEditorToolbar extends JPanel {
      * Sets the selection back to move/select.
      */
     private void resetSelectMove() {
-        JToggleButton selectButton = getButtonForType(selectType);
+        JToggleButton selectButton = getButtonForType(this.selectType);
+        assert selectButton != null;
         if (!(selectButton.isSelected())) {
             selectButton.doClick();
             selectButton.requestFocus();
         }
     }
 
-//    /**
-//     * Sets the selection back to Flowchart.
-//     */
-//    public void resetFlowchart() {
-//        JToggleButton edgeButton = getButtonForType(edgeType);
-//        edgeButton.doClick();
-//        edgeButton.requestFocus();
-//    }
     /**
      * True iff the toolbar is responding to events. This may need to be turned
      * off temporarily.
      */
     private boolean isRespondingToEvents() {
-        return respondingToEvents;
+        return this.respondingToEvents;
     }
 
     /**
@@ -278,6 +266,7 @@ final class SessionEditorToolbar extends JPanel {
     }
 
     //===========================PRIVATE METHODS=========================//
+
     /**
      * Constructs the button with the given node type and image prefix. If the
      * node type is "Select", constructs a button that allows nodes to be
@@ -339,36 +328,24 @@ final class SessionEditorToolbar extends JPanel {
         /*
       The node type of the button that is used for the edge-drawing tool.
          */
-        String edgeType = "Edge";
-        if (selectType.equals(nodeType)) {
-            workbench.setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
-            workbench.setNextButtonType(null);
+        final String edgeType = "Edge";
+        if (this.selectType.equals(nodeType)) {
+            this.workbench.setWorkbenchMode(AbstractWorkbench.SELECT_MOVE);
+            this.workbench.setNextButtonType(null);
             setCursor(new Cursor(Cursor.HAND_CURSOR));
-            workbench.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            this.workbench.setCursor(new Cursor(Cursor.HAND_CURSOR));
         } else if (edgeType.equals(nodeType)) {
-            workbench.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
-            workbench.setNextButtonType(null);
-//            setCursor(workbench.getCursor());
+            this.workbench.setWorkbenchMode(AbstractWorkbench.ADD_EDGE);
+            this.workbench.setNextButtonType(null);
 
-//            Toolkit toolkit = Toolkit.getDefaultToolkit();
-//            Image image = ImageUtils.getImage(this, "arrowCursorImage.png");
-//            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
-//            setCursor(c);
-//            workbench.setCursor(c);
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            workbench.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            this.workbench.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         } else {
-            workbench.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
-            workbench.setNextButtonType(nodeType);
+            this.workbench.setWorkbenchMode(AbstractWorkbench.ADD_NODE);
+            this.workbench.setNextButtonType(nodeType);
 
-//            Toolkit toolkit = Toolkit.getDefaultToolkit();
-//            Image image = ImageUtils.getImage(this, "cursorImage.png");
-//            Cursor c = toolkit.createCustomCursor(image, new Point(10, 10), "img");
-//            setCursor(c);
-//            workbench.setCursor(c);
-//            setCursor(workbench.getCursor());
             setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-            workbench.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+            this.workbench.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 
         }
     }
@@ -378,11 +355,9 @@ final class SessionEditorToolbar extends JPanel {
      * button exists.
      */
     private JToggleButton getButtonForType(String nodeType) {
-        for (Object o : nodeTypes.keySet()) {
-            JToggleButton button = (JToggleButton) o;
-
-            if (nodeType.equals(nodeTypes.get(button))) {
-                return button;
+        for (JToggleButton o : this.nodeTypes.keySet()) {
+            if (nodeType.equals(this.nodeTypes.get(o))) {
+                return o;
             }
         }
 
@@ -390,20 +365,13 @@ final class SessionEditorToolbar extends JPanel {
     }
 
     private boolean isShiftDown() {
-        return shiftDown;
+        return this.shiftDown;
     }
 
     private void setShiftDown(boolean shiftDown) {
         this.shiftDown = shiftDown;
     }
 
-//    public boolean isControlDown() {
-//        return shiftDown;
-//    }
-//
-//    private void setControlDown(boolean shiftDown) {
-//        this.shiftDown = shiftDown;
-//    }
     /**
      * Holds info for constructing a single button.
      */
@@ -413,7 +381,7 @@ final class SessionEditorToolbar extends JPanel {
          * This is the name used to construct nodes on the graph of this type.
          * Need to coordinate with session.
          */
-        private String nodeTypeName;
+        private final String nodeTypeName;
 
         /**
          * The name displayed on the button.
@@ -434,7 +402,7 @@ final class SessionEditorToolbar extends JPanel {
         private final String toolTipText;
 
         public ButtonInfo(String nodeTypeName, String displayName,
-                String imagePrefix, String toolTipText) {
+                          String imagePrefix, String toolTipText) {
             this.nodeTypeName = nodeTypeName;
             this.displayName = displayName;
             this.imagePrefix = imagePrefix;
@@ -442,23 +410,19 @@ final class SessionEditorToolbar extends JPanel {
         }
 
         public String getNodeTypeName() {
-            return nodeTypeName;
+            return this.nodeTypeName;
         }
 
         public String getDisplayName() {
-            return displayName;
-        }
-
-        public void setNodeTypeName(String nodeTypeName) {
-            this.nodeTypeName = nodeTypeName;
+            return this.displayName;
         }
 
         public String getImagePrefix() {
-            return imagePrefix;
+            return this.imagePrefix;
         }
 
         public String getToolTipText() {
-            return toolTipText;
+            return this.toolTipText;
         }
     }
 }

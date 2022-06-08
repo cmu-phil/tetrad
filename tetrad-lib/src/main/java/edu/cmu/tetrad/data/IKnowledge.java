@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -45,10 +46,6 @@ public interface IKnowledge extends TetradSerializable {
     void clear();
 
     boolean equals(Object o);
-
-    Iterator<KnowledgeEdge> explicitlyForbiddenEdgesIterator();
-
-    Iterator<KnowledgeEdge> explicitlyRequiredEdgesIterator();
 
     Iterator<KnowledgeEdge> forbiddenEdgesIterator();
 
@@ -88,8 +85,6 @@ public interface IKnowledge extends TetradSerializable {
 
     void removeKnowledgeGroup(int index);
 
-    void removeVariable(String varName);
-
     Iterator<KnowledgeEdge> requiredEdgesIterator();
 
     void setForbidden(String var1, String var2);
@@ -114,15 +109,15 @@ public interface IKnowledge extends TetradSerializable {
 
     IKnowledge copy();
 
-    int isInWhichTier(Node node); // added by DMalinsky for tsFCI 4/20/16
+    int isInWhichTier(Node node); // added by DMalinsky for SvarFCI 4/20/16
 
-    public List<KnowledgeEdge> getListOfRequiredEdges();
+    List<KnowledgeEdge> getListOfRequiredEdges();
 
-    public List<KnowledgeEdge> getListOfExplicitlyRequiredEdges();
+    List<KnowledgeEdge> getListOfExplicitlyRequiredEdges();
 
-    public List<KnowledgeEdge> getListOfForbiddenEdges();
+    List<KnowledgeEdge> getListOfForbiddenEdges();
 
-    public List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges();
+    List<KnowledgeEdge> getListOfExplicitlyForbiddenEdges();
 
     boolean isOnlyCanCauseNextTier(int tier);
 

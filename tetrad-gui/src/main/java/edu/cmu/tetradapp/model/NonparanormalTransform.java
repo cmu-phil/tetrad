@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -39,14 +39,13 @@ public class NonparanormalTransform extends DataWrapper {
     //=============================CONSTRUCTORS==============================//
     public NonparanormalTransform(DataWrapper wrapper, Parameters params) {
         DataModel dataModel = wrapper.getSelectedDataModel();
-        if (dataModel instanceof DataSet && ((DataSet) dataModel).isContinuous()) {
-            setDataModel(DataUtils.getNonparanormalTransformed((DataSet) dataModel));
-            setSourceGraph(wrapper.getSourceGraph());
+        DataSet nonparanormalTransformed = DataUtils.getNonparanormalTransformed((DataSet) dataModel);
+        nonparanormalTransformed.setKnowledge(dataModel.getKnowledge().copy());
 
-            LogDataUtils.logDataModelList("Conversion of parent data to correlation matrix form.", getDataModelList());
-        } else {
-            throw new IllegalArgumentException("Expecting a continuous data set.");
-        }
+        setDataModel(nonparanormalTransformed);
+        setSourceGraph(wrapper.getSourceGraph());
+
+        LogDataUtils.logDataModelList("Conversion of parent data to correlation matrix form.", getDataModelList());
     }
 
     /**

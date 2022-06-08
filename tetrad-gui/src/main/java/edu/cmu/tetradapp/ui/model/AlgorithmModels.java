@@ -24,15 +24,11 @@ import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetradapp.Tetrad;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- *
  * Nov 30, 2017 4:20:43 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -41,21 +37,21 @@ public final class AlgorithmModels {
 
     private static final AlgorithmModels INSTANCE = new AlgorithmModels();
 
-    private  List<AlgorithmModel> models;
-    private  Map<AlgType, List<AlgorithmModel>> modelMap;
+    private List<AlgorithmModel> models;
+    private Map<AlgType, List<AlgorithmModel>> modelMap;
 
     private AlgorithmModels() {
         refreshModels();
     }
 
-    private  void refreshModels() {
+    private void refreshModels() {
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
         List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
                 ? algoAnno.getAnnotatedClasses()
                 : algoAnno.filterOutExperimental(algoAnno.getAnnotatedClasses());
-        models = Collections.unmodifiableList(
+        this.models = Collections.unmodifiableList(
                 list.stream()
-                        .map(e -> new AlgorithmModel(e))
+                        .map(AlgorithmModel::new)
                         .sorted()
                         .collect(Collectors.toList()));
 
@@ -67,18 +63,16 @@ public final class AlgorithmModels {
         }
 
         // group by datatype
-        models.stream().forEach(e -> {
-            map.get(e.getAlgorithm().getAnnotation().algoType()).add(e);
-        });
+        this.models.forEach(e -> map.get(e.getAlgorithm().getAnnotation().algoType()).add(e));
 
         // make it unmodifiable
         map.forEach((k, v) -> map.put(k, Collections.unmodifiableList(v)));
-        modelMap = Collections.unmodifiableMap(map);
+        this.modelMap = Collections.unmodifiableMap(map);
     }
 
     public static AlgorithmModels getInstance() {
-        INSTANCE.refreshModels();   // if we had a subscriber pattern for app settings would not have to waste time doing this every time!
-        return INSTANCE;
+        AlgorithmModels.INSTANCE.refreshModels();   // if we had a subscriber CPDAG for app settings would not have to waste time doing this every time!
+        return AlgorithmModels.INSTANCE;
     }
 
     private List<AlgorithmModel> filterInclusivelyByAllOrSpecificDataType(List<AlgorithmModel> algorithmModels, DataType dataType, boolean multiDataSetAlgorithm) {
@@ -87,29 +81,25 @@ public final class AlgorithmModels {
         return (dataType == DataType.All)
                 ? algorithmModels
                 : algorithmModels.stream()
-                        .filter(e -> {
-                            return multiDataSetAlgorithm
-                                    ? algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz())
-                                    : true;
-                        })
-                        .filter(e -> {
-                            for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
-                                if (dt == DataType.All || dt == dataType) {
-                                    return true;
-                                }
-                            }
-                            return false;
-                        })
-                        .collect(Collectors.toList());
+                .filter(e -> !multiDataSetAlgorithm || algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz()))
+                .filter(e -> {
+                    for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
+                        if (dt == DataType.All || dt == dataType) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })
+                .collect(Collectors.toList());
     }
 
     public List<AlgorithmModel> getModels(DataType dataType, boolean multiDataSetAlgorithm) {
-        return filterInclusivelyByAllOrSpecificDataType(models, dataType, multiDataSetAlgorithm);
+        return filterInclusivelyByAllOrSpecificDataType(this.models, dataType, multiDataSetAlgorithm);
     }
 
     public List<AlgorithmModel> getModels(AlgType algType, DataType dataType, boolean multiDataSetAlgorithm) {
-        return modelMap.containsKey(algType)
-                ? filterInclusivelyByAllOrSpecificDataType(modelMap.get(algType), dataType, multiDataSetAlgorithm)
+        return this.modelMap.containsKey(algType)
+                ? filterInclusivelyByAllOrSpecificDataType(this.modelMap.get(algType), dataType, multiDataSetAlgorithm)
                 : Collections.EMPTY_LIST;
     }
 

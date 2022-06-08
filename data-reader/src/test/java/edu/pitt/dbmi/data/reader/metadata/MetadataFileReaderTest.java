@@ -18,15 +18,15 @@
  */
 package edu.pitt.dbmi.data.reader.metadata;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
- *
  * Dec 18, 2018 2:22:25 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -45,7 +45,7 @@ public class MetadataFileReaderTest {
      */
     @Test
     public void testRead() throws IOException {
-        MetadataReader metadataReader = new MetadataFileReader(metadataFile);
+        MetadataReader metadataReader = new MetadataFileReader(this.metadataFile);
         Metadata metadata = metadataReader.read();
 
         List<ColumnMetadata> domainCols = metadata.getDomainColumnns();

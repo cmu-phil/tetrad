@@ -21,7 +21,6 @@ package edu.pitt.dbmi.data.reader.preview;
 import java.nio.file.Path;
 
 /**
- *
  * Feb 20, 2017 2:09:44 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)

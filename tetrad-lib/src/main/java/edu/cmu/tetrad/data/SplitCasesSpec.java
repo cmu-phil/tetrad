@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -71,17 +71,17 @@ public final class SplitCasesSpec implements TetradSerializable {
      * Generates a simple exemplar of this class to test serialization.
      */
     public static SplitCasesSpec serializableInstance() {
-        return new SplitCasesSpec(0, new int[0], new ArrayList<String>());
+        return new SplitCasesSpec(0, new int[0], new ArrayList<>());
     }
 
     //============================PUBLIC METHODS========================//
 
     public List<String> getSplitNames() {
-        return splitNames;
+        return this.splitNames;
     }
 
     public int[] getBreakpoints() {
-        return breakpoints;
+        return this.breakpoints;
     }
 
     /**
@@ -93,25 +93,22 @@ public final class SplitCasesSpec implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (breakpoints == null) {
+        if (this.breakpoints == null) {
             throw new NullPointerException();
         }
 
-        if (splitNames == null) {
+        if (this.splitNames == null) {
             throw new NullPointerException();
         }
     }
 
     public int getSampleSize() {
-        return sampleSize;
+        return this.sampleSize;
     }
 }
 

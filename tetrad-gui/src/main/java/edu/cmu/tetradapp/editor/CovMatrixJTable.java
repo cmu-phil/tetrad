@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -47,8 +47,8 @@ import java.text.NumberFormat;
  */
 public class CovMatrixJTable extends JTable implements DataModelContainer,
         PropertyChangeListener {
-    private CovCellRenderer covCellRenderer;
-    private CovCellEditor covCellEditor;
+    private final CovCellRenderer covCellRenderer;
+    private final CovCellEditor covCellEditor;
 
     /**
      * Construct a new JTable for the given CovarianceMatrix.
@@ -67,8 +67,8 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
         setDefaultRenderer(Number.class, new NumberCellRenderer());
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        covCellEditor = new CovCellEditor();
-        covCellRenderer = new CovCellRenderer(covMatrix);
+        this.covCellEditor = new CovCellEditor();
+        this.covCellRenderer = new CovCellRenderer(covMatrix);
 
         setRowSelectionAllowed(true);
         setColumnSelectionAllowed(true);
@@ -165,7 +165,7 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
 
     public TableCellEditor getCellEditor(int row, int col) {
         CovMatrixTable covMatrixTable = (CovMatrixTable) getModel();
-        covCellEditor.setRed(false);
+        this.covCellEditor.setRed(false);
 
         if (row >= 4 && col >= 1) {
             java.util.List<String> varNames = covMatrixTable.getCovMatrix().getVariableNames();
@@ -175,11 +175,11 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
             if (selectedVarNames.contains(varNames.get(row - 4)) && selectedVarNames.contains(varNames.get(col - 1))) {
                 if (!MatrixUtils.isPositiveDefinite(subMatrix.getMatrix())) {
 //                    covCellEditor.setRed(!covMatrixTable.isEditingMatrixPositiveDefinite());
-                    covCellEditor.setRed(true);
+                    this.covCellEditor.setRed(true);
                 }
             }
         }
-        return covCellEditor;
+        return this.covCellEditor;
     }
 
     public TableCellRenderer getCellRenderer(int row, int col) {
@@ -191,24 +191,22 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
             java.util.List<String> selectedVarNames = covMatrixTable.getCovMatrix().getSelectedVariableNames();
             ICovarianceMatrix subMatrix = covMatrixTable.getCovMatrix().getSubmatrix(selectedVarNames);
 
-            covCellEditor.setRed(false);
-            covCellRenderer.setPositiveDefinite(true);
+            this.covCellEditor.setRed(false);
+            this.covCellRenderer.setPositiveDefinite(true);
 
             if (row >= 4 && row - 4 < varNames.size() && col >= 1 && col - 1 < varNames.size()) {
                 if (selectedVarNames.contains(varNames.get(row - 4)) && selectedVarNames.contains(varNames.get(col - 1))) {
                     if (!MatrixUtils.isPositiveDefinite(subMatrix.getMatrix())) {
 //                    covCellEditor.setRed(!covMatrixTable.isEditingMatrixPositiveDefinite());
-                        covCellEditor.setRed(true);
-                        covCellRenderer.setPositiveDefinite(false);
+                        this.covCellEditor.setRed(true);
+                        this.covCellRenderer.setPositiveDefinite(false);
                     }
                 }
             }
         }
 
 
-//        covCellRenderer.setPositiveDefinite(
-//                covMatrixTable.isEditingMatrixPositiveDefinite());
-        return covCellRenderer;
+        return this.covCellRenderer;
     }
 
     public DataModel getDataModel() {
@@ -249,7 +247,7 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
 class CovCellRenderer extends DefaultTableCellRenderer {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private boolean positiveDefinite = true;
-    private ICovarianceMatrix covMatrix;
+    private final ICovarianceMatrix covMatrix;
     private final Color selectedColor = new Color(204, 204, 255);
 
     public CovCellRenderer(ICovarianceMatrix covMatrix) {
@@ -267,7 +265,7 @@ class CovCellRenderer extends DefaultTableCellRenderer {
             setText(value.toString());
         } else if (value instanceof Double) {
             double doubleValue = (Double) value;
-            setText(nf.format(doubleValue));
+            setText(this.nf.format(doubleValue));
         } else {
             setText("");
         }
@@ -290,12 +288,12 @@ class CovCellRenderer extends DefaultTableCellRenderer {
         }
 
         if (value instanceof Number) {
-            renderer.setHorizontalAlignment(JLabel.RIGHT);
+            renderer.setHorizontalAlignment(SwingConstants.RIGHT);
         } else {
-            renderer.setHorizontalAlignment(JLabel.LEFT);
+            renderer.setHorizontalAlignment(SwingConstants.LEFT);
         }
 
-        java.util.List variables = covMatrix.getVariables();
+        java.util.List variables = this.covMatrix.getVariables();
         int rowVar = row - 4;
         int colVar = col - 1;
         int numVars = variables.size();
@@ -303,30 +301,30 @@ class CovCellRenderer extends DefaultTableCellRenderer {
         if (colVar >= 0 && colVar < numVars && rowVar >= 0 &&
                 rowVar < numVars && rowVar >= colVar) {
             boolean rowSelected =
-                    covMatrix.isSelected((Node) variables.get(rowVar));
+                    this.covMatrix.isSelected((Node) variables.get(rowVar));
             boolean colSelected =
-                    covMatrix.isSelected((Node) variables.get(colVar));
+                    this.covMatrix.isSelected((Node) variables.get(colVar));
 
             if (rowSelected && colSelected) {
-                renderer.setBackground(selectedColor);
+                renderer.setBackground(this.selectedColor);
             }
         }
 
         if (colVar == -1 && rowVar >= 0 && rowVar < numVars) {
             boolean rowSelected =
-                    covMatrix.isSelected((Node) variables.get(rowVar));
+                    this.covMatrix.isSelected((Node) variables.get(rowVar));
 
             if (rowSelected) {
-                renderer.setBackground(selectedColor);
+                renderer.setBackground(this.selectedColor);
             }
         }
 
         if (rowVar == -1 && colVar >= 0 && colVar < numVars) {
             boolean colSelected =
-                    covMatrix.isSelected((Node) variables.get(colVar));
+                    this.covMatrix.isSelected((Node) variables.get(colVar));
 
             if (colSelected) {
-                renderer.setBackground(selectedColor);
+                renderer.setBackground(this.selectedColor);
             }
         }
 
@@ -339,7 +337,7 @@ class CovCellRenderer extends DefaultTableCellRenderer {
     }
 
     private boolean isPositiveDefinite() {
-        return positiveDefinite;
+        return this.positiveDefinite;
     }
 
     public void setPositiveDefinite(boolean positiveDefinite) {
@@ -347,7 +345,7 @@ class CovCellRenderer extends DefaultTableCellRenderer {
     }
 
     public ICovarianceMatrix getCovMatrix() {
-        return covMatrix;
+        return this.covMatrix;
     }
 
 }
@@ -362,29 +360,29 @@ class CovCellEditor extends DefaultCellEditor {
     public CovCellEditor() {
         super(new JTextField());
 
-        textField = (JTextField) editorComponent;
-        textField.setHorizontalAlignment(JTextField.LEFT);
-        textField.setBorder(new LineBorder(Color.black));
+        this.textField = (JTextField) this.editorComponent;
+        this.textField.setHorizontalAlignment(SwingConstants.LEFT);
+        this.textField.setBorder(new LineBorder(Color.black));
 
-        delegate = new EditorDelegate() {
+        this.delegate = new EditorDelegate() {
             public void setValue(Object value) {
                 if (value == null) {
-                    textField.setText("");
+                    CovCellEditor.this.textField.setText("");
                 } else if (value instanceof String) {
-                    textField.setText((String) value);
+                    CovCellEditor.this.textField.setText((String) value);
                 } else if (value instanceof Integer) {
-                    textField.setText(value.toString());
+                    CovCellEditor.this.textField.setText(value.toString());
                 } else if (value instanceof Double) {
                     double doubleValue = (Double) value;
 
                     if (Double.isNaN(doubleValue)) {
-                        textField.setText("");
+                        CovCellEditor.this.textField.setText("");
                     } else {
-                        textField.setText(nf.format(doubleValue));
+                        CovCellEditor.this.textField.setText(CovCellEditor.this.nf.format(doubleValue));
                     }
                 }
 
-                textField.selectAll();
+                CovCellEditor.this.textField.selectAll();
             }
 
             /**
@@ -394,18 +392,18 @@ class CovCellEditor extends DefaultCellEditor {
              * @return this text value.
              */
             public Object getCellEditorValue() {
-                return textField.getText();
+                return CovCellEditor.this.textField.getText();
             }
         };
 
-        textField.addActionListener(delegate);
+        this.textField.addActionListener(this.delegate);
     }
 
     public void setRed(boolean red) {
         if (red) {
-            textField.setForeground(Color.RED);
+            this.textField.setForeground(Color.RED);
         } else {
-            textField.setForeground(Color.BLACK);
+            this.textField.setForeground(Color.BLACK);
         }
     }
 }

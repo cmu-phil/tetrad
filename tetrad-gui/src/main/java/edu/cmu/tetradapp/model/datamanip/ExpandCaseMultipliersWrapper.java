@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,7 +36,6 @@ public class ExpandCaseMultipliersWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;
 
 
-
     public ExpandCaseMultipliersWrapper(DataWrapper data, Parameters params) {
         if (data == null) {
             throw new NullPointerException("The givan data must not be null");
@@ -46,7 +45,7 @@ public class ExpandCaseMultipliersWrapper extends DataWrapper {
             throw new IllegalArgumentException("Data must be tabular");
         }
         DataFilter interpolator = new CaseExpander();
-        this.setDataModel(interpolator.filter((DataSet)model));
+        this.setDataModel(interpolator.filter((DataSet) model));
         this.setSourceGraph(data.getSourceGraph());
 
         LogDataUtils.logDataModelList("Expansion of case multipliers in parent data.", getDataModelList());

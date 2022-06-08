@@ -3,12 +3,13 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataReader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -19,28 +20,28 @@ import java.util.List;
  */
 public class LoadContinuousDataAndSingleGraph implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
-    private String path;
-    private String subdir;
-    private Graph graph = null;
+    private final String path;
+    private final String subdir;
+    private Graph graph;
     private List<DataSet> dataSets = new ArrayList<>();
-    private List<String> usedParameters = new ArrayList<>();
-    private Parameters parametersValues = new Parameters();
+    private final List<String> usedParameters = new ArrayList<>();
+    private final Parameters parametersValues = new Parameters();
 
     public LoadContinuousDataAndSingleGraph(String path, String subdir) {
         this.path = path;
         this.subdir = subdir;
         String structure = new File(path).getName();
-        parametersValues.set("Structure", structure);
+        this.parametersValues.set("Structure", structure);
     }
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (!newModel && !dataSets.isEmpty()) return;
-        if (!dataSets.isEmpty()) return;
+//        if (!newModel && !dataSets.isEmpty()) return;
+        if (!this.dataSets.isEmpty()) return;
 
         this.dataSets = new ArrayList<>();
 
-        File dir = new File(path + "/" + subdir);
+        File dir = new File(this.path + "/" + this.subdir);
 
         if (dir.exists()) {
             File[] files = dir.listFiles();
@@ -48,12 +49,11 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
-                DataReader reader = new DataReader();
-                reader.setVariablesSupplied(true);
 
                 try {
-                    DataSet dataSet = reader.parseTabular(file);
-                    dataSets.add(dataSet);
+                    DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"',
+                            "*", true, Delimiter.TAB);
+                    this.dataSets.add(dataSet);
 
                     if (!(dataSet.isContinuous())) {
                         throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
@@ -64,7 +64,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             }
         }
 
-        File dir2 = new File(path + "/graph");
+        File dir2 = new File(this.path + "/graph");
 
         if (dir2.exists()) {
             File[] files = dir2.listFiles();
@@ -78,17 +78,13 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             System.out.println("Loading graph from " + file.getAbsolutePath());
             this.graph = GraphUtils.loadGraphTxt(file);
 
-//            if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
-//                graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
-//            }
-
             GraphUtils.circleLayout(this.graph, 225, 200, 150);
         }
 
         if (parameters.get("numRuns") != null) {
             parameters.set("numRuns", parameters.get("numRuns"));
         } else {
-            parameters.set("numRuns", dataSets.size());
+            parameters.set("numRuns", this.dataSets.size());
         }
 
         System.out.println();
@@ -101,7 +97,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     public String getDescription() {
@@ -116,12 +112,12 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
 
     @Override
     public List<String> getParameters() {
-        return usedParameters;
+        return this.usedParameters;
     }
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
@@ -131,6 +127,6 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
 
     @Override
     public Parameters getParameterValues() {
-        return parametersValues;
+        return this.parametersValues;
     }
 }

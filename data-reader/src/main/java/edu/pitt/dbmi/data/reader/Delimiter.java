@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.data.reader;
 
 /**
- *
  * Nov 5, 2018 2:27:47 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -38,22 +37,22 @@ public enum Delimiter {
     private final char value;
     private final byte byteValue;
 
-    private Delimiter(String name, char value) {
+    Delimiter(String name, char value) {
         this.name = name;
         this.value = value;
         this.byteValue = (byte) value;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public char getValue() {
-        return value;
+        return this.value;
     }
 
     public byte getByteValue() {
-        return byteValue;
+        return this.byteValue;
     }
 
 }

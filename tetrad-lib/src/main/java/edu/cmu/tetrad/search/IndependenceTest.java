@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,9 +24,11 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -45,37 +47,27 @@ public interface IndependenceTest {
 
     /**
      * @return true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
-    boolean isIndependent(Node x, Node y, List<Node> z);
+    IndependenceResult checkIndependence(Node x, Node y, List<Node> z);
 
     /**
      * @return true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
+     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
-    boolean isIndependent(Node x, Node y, Node... z);
+//    IndependenceResult isIndependent(Node x, Node y, Node... z);
+    default IndependenceResult checkIndependence(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return checkIndependence(x, y, zList);
+    }
 
-    /**
-     * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    boolean isDependent(Node x, Node y, List<Node> z);
-
-    /**
-     * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-    boolean isDependent(Node x, Node y, Node... z);
-
-    /**
-     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
-     */
-    double getPValue();
+//    /**
+//     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
+//     * not meaningful for tis test.
+//     */
+//    double getPValue();
 
 //    double getPValue(Node x, Node y, List<Node> z);
 

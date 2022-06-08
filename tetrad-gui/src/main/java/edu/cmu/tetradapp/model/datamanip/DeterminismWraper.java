@@ -10,14 +10,14 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
 /**
- *
  * Feb 11, 2019 4:19:04 PM
  *
- * @author Zhou Yuan <zhy19@pitt.edu>
+ * @author Zhou Yuan zhy19@pitt.edu
  */
 public class DeterminismWraper extends DataWrapper {
     private static final long serialVersionUID = -5573234622763285581L;
@@ -33,23 +33,20 @@ public class DeterminismWraper extends DataWrapper {
         // Put together with added interventions to get the final combined dataset
         // Create a new class in tetrad-lib data package to handle the data processing
         // Kepp the origional data unchanged, use copies for combinging.
-        
+
         // Display the merged dataset in the data editor 
         // when users click the "OK" button on the Interventions editor panel
-        
+
         // Get the merged data through parameter set by the editor
         // Kepp the origional data unchanged, use copies for merging.
         DataModel mergedDataset = (DataModel) params.get("DeterminisedDataset");
         mergedDataset.setName("Determinised");
-        setDataModel(mergedDataset); 
+        setDataModel(mergedDataset);
     }
 
 
     /**
      * Generates a simple exemplar of this class to test serialization.
-     *
-     * @return 
-     * @see TetradSerializableUtils
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
@@ -67,9 +64,6 @@ public class DeterminismWraper extends DataWrapper {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

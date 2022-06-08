@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -20,9 +20,20 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -34,14 +45,6 @@ import java.text.NumberFormat;
 import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.Map;
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.TableColumnModelEvent;
-import javax.swing.event.TableColumnModelListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 
 /**
  * Displays a DataSet object as a JTable.
@@ -69,8 +72,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
      */
     public TabularDataJTable(DataSet model) {
 
-//		System.out.println("Calling constructor "
-//				+ Arrays.toString(Thread.currentThread().getStackTrace()));
         TabularDataTable dataModel = new TabularDataTable(model);
 
         dataModel.addPropertyChangeListener(this);
@@ -78,7 +79,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 //		System.out.println("dataModel: "+model.getColumnToTooltip());
         this.columnToTooltip
-                = model.getColumnToTooltip() != null ? model.getColumnToTooltip() : new Hashtable<String, String>();
+                = model.getColumnToTooltip() != null ? model.getColumnToTooltip() : new Hashtable<>();
         int rowCount = this.dataModel.getRowCount();
         int max = 0;
 
@@ -182,17 +183,6 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int rowIndex, int vColIndex) {
-//		if (columnToTooltip == null) {
-//			columnToTooltip = new Hashtable<String, String>();
-//			 	columnToTooltip.put("ADJ_COR", "Adjacencies in the reference graph that are in the true graph.");
-//	        	columnToTooltip.put("ADJ_FN", "Adjacencies in the true graph that are not in the reference graph.");
-//	        	columnToTooltip.put("ADJ_FP", "Adjacencies in the reference graph that are not in the true graph.");
-//	        	columnToTooltip.put("AHD_COR", "Arrowpoints in the reference graph that are in the true graph.");
-//	        	columnToTooltip.put("AHD_FN", "Arrowpoints in the true graph that are not in the reference graph.");
-//	        	columnToTooltip.put("AHD_FP", "Arrowpoints in the reference graph that are not in the true graph.");
-//
-//		}
-//	 	System.out.println("columnToTooltip " + columnToTooltip);
         Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
         if (c instanceof JComponent) {
             JComponent jc = (JComponent) c;
@@ -200,7 +190,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
             Object o = getValueAt(rowIndex, vColIndex);
 
             if (o != null) {
-                String tooltip = columnToTooltip.get(o.toString());
+                String tooltip = this.columnToTooltip.get(o.toString());
 //				System.out.println("tooltip " + o + " "+ tooltip);
                 if (tooltip != null) {
                     jc.setToolTipText(tooltip);
@@ -441,8 +431,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
         /*
 	  The number of initial "special" columns not used to display the data set.
          */
-        int numLeadingCols = 1;
-        return numLeadingCols;
+        return 1;
     }
 
     /**
@@ -485,13 +474,13 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
 class RowNumberRenderer extends DefaultTableCellRenderer {
 
     public Component getTableCellRendererComponent(JTable table, Object value,
-            boolean isSelected, boolean hasFocus, int row, int column) {
+                                                   boolean isSelected, boolean hasFocus, int row, int column) {
         JLabel label = (JLabel) super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
 
         if (row > 1) {
             setText(Integer.toString(row - 1));
-            label.setHorizontalAlignment(JLabel.CENTER);
+            label.setHorizontalAlignment(SwingConstants.CENTER);
             label.setFont(new Font("SansSerif", Font.BOLD, 12));
         }
 
@@ -499,63 +488,6 @@ class RowNumberRenderer extends DefaultTableCellRenderer {
     }
 }
 
-//class MultiplierRenderer extends DefaultTableCellRenderer {
-//	public Component getTableCellRendererComponent(JTable table, Object value,
-//			boolean isSelected, boolean hasFocus, int row, int column) {
-//		JLabel label = (JLabel) super.getTableCellRendererComponent(table,
-//				value, isSelected, hasFocus, row, column);
-//
-//		if (value == null) {
-//			setText("");
-//		} else {
-//			setText(value.toString());
-//		}
-//
-//		label.setHorizontalAlignment(JLabel.CENTER);
-//		label.setFont(new Font("SansSerif", Font.BOLD, 10));
-//		label.setForeground(Color.DARK_GRAY);
-//
-//		return label;
-//	}
-//}
-//class MultiplierEditor extends DefaultCellEditor {
-//	private final JTextField textField;
-//
-//	/**
-//	 * Constructs a new number cell editor.
-//	 */
-//	public MultiplierEditor() {
-//		super(new JTextField());
-//
-//		textField = (JTextField) editorComponent;
-//		textField.setHorizontalAlignment(JTextField.CENTER);
-//		textField.setFont(new Font("SansSerif", Font.BOLD, 10));
-//		textField.setForeground(Color.DARK_GRAY);
-//		textField.setBorder(new LineBorder(Color.black));
-//
-//		delegate = new EditorDelegate() {
-//			public void setValue(Object value) {
-//				if (value instanceof Integer) {
-//					textField.setText(value.toString());
-//				}
-//
-//				textField.selectAll();
-//			}
-//
-//			/**
-//			 * Overrides delegate; gets the text value from the cell to send
-//			 * back to the model.
-//			 *
-//			 * @return this text value.
-//			 */
-//			public Object getCellEditorValue() {
-//				return textField.getText();
-//			}
-//		};
-//
-//		textField.addActionListener(delegate);
-//	}
-//}
 class VariableNameRenderer extends DefaultTableCellRenderer {
 
     public void setValue(Object value) {
@@ -563,9 +495,13 @@ class VariableNameRenderer extends DefaultTableCellRenderer {
             value = "";
         }
 
+        if (((String) value).contains("\b")) {
+            return;
+        }
+
         setText((String) value);
         setFont(new Font("SansSerif", Font.BOLD, 12));
-        setHorizontalAlignment(JLabel.CENTER);
+        setHorizontalAlignment(SwingConstants.CENTER);
     }
 }
 
@@ -590,9 +526,9 @@ class VariableNameEditor extends DefaultCellEditor {
     public VariableNameEditor() {
         super(new JTextField());
 
-        textField = (JTextField) editorComponent;
+        this.textField = (JTextField) this.editorComponent;
 
-        delegate = new EditorDelegate() {
+        this.delegate = new EditorDelegate() {
 
             /**
              * Overrides delegate; sets the value of the textfield to the value
@@ -605,10 +541,10 @@ class VariableNameEditor extends DefaultCellEditor {
                     value = "";
                 }
 
-                textField.setText((String) value);
-                textField.setFont(new Font("SansSerif", Font.BOLD, 12));
-                textField.setHorizontalAlignment(JTextField.CENTER);
-                textField.selectAll();
+                VariableNameEditor.this.textField.setText((String) value);
+                VariableNameEditor.this.textField.setFont(new Font("SansSerif", Font.BOLD, 12));
+                VariableNameEditor.this.textField.setHorizontalAlignment(SwingConstants.CENTER);
+                VariableNameEditor.this.textField.selectAll();
             }
 
             /**
@@ -618,11 +554,11 @@ class VariableNameEditor extends DefaultCellEditor {
              * @return this text value.
              */
             public Object getCellEditorValue() {
-                return textField.getText();
+                return VariableNameEditor.this.textField.getText();
             }
         };
 
-        textField.addActionListener(delegate);
+        this.textField.addActionListener(this.delegate);
     }
 }
 
@@ -635,7 +571,7 @@ class DataCellRenderer extends DefaultTableCellRenderer {
     public DataCellRenderer(TabularDataJTable tableTabular, int numLeadingCols) {
         this.dataSet = ((TabularDataTable) tableTabular.getModel()).getDataSet();
         this.numLeadingCols = numLeadingCols;
-        this.nf = dataSet.getNumberFormat();
+        this.nf = this.dataSet.getNumberFormat();
     }
 
     public void setValue(Object value) {
@@ -644,14 +580,14 @@ class DataCellRenderer extends DefaultTableCellRenderer {
         } else if (value instanceof Integer) {
             setText(value.toString());
         } else if (value instanceof Double) {
-            setText(nf.format((double) (Double) value));
+            setText(this.nf.format((double) (Double) value));
         } else {
             setText("");
         }
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value,
-            boolean isSelected, boolean hasFocus, int row, int col) {
+                                                   boolean isSelected, boolean hasFocus, int row, int col) {
 
         // Have to set the alignment here, since this is the only place the col
         // index of the component is available...
@@ -659,22 +595,15 @@ class DataCellRenderer extends DefaultTableCellRenderer {
                 isSelected, hasFocus, row, col);
         DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) c;
 
-        if (dataSet.getNumColumns() > 0 && col >= getNumLeadingCols()
-                && col < dataSet.getNumColumns() + getNumLeadingCols()) {
-            int dataCol = col - getNumLeadingCols();
-            Node variable = dataSet.getVariable(dataCol);
-
-            if (variable instanceof DiscreteVariable) {
-                renderer.setHorizontalAlignment(JLabel.RIGHT);
-            } else {
-                renderer.setHorizontalAlignment(JLabel.RIGHT);
-            }
+        if (this.dataSet.getNumColumns() > 0 && col >= getNumLeadingCols()
+                && col < this.dataSet.getNumColumns() + getNumLeadingCols()) {
+            renderer.setHorizontalAlignment(SwingConstants.RIGHT);
         }
 
         return renderer;
     }
 
     private int getNumLeadingCols() {
-        return numLeadingCols;
+        return this.numLeadingCols;
     }
 }

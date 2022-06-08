@@ -21,21 +21,21 @@ package edu.pitt.dbmi.data.reader.validation.tabular;
 import edu.pitt.dbmi.data.reader.DataReader;
 import edu.pitt.dbmi.data.reader.validation.Validation;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+
 import java.util.List;
 import java.util.Set;
 
 /**
- *
  * Dec 12, 2018 2:34:56 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface TabularColumnValidation extends Validation, DataReader {
 
-    public List<ValidationResult> validate();
+    List<ValidationResult> validate();
 
-    public List<ValidationResult> validate(int[] excludedColumns);
+    List<ValidationResult> validate(int[] excludedColumns);
 
-    public List<ValidationResult> validate(Set<String> excludedColumns);
+    List<ValidationResult> validate(Set<String> excludedColumns);
 
 }

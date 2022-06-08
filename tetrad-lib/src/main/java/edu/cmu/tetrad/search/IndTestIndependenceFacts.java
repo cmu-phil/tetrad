@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -25,11 +25,13 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IndependenceFacts;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -40,14 +42,11 @@ import java.util.List;
  */
 public final class IndTestIndependenceFacts implements IndependenceTest {
 
-    private IndependenceFacts facts;
-    private boolean verbose = false;
+    private final IndependenceFacts facts;
+    private boolean verbose;
 
     public IndTestIndependenceFacts(IndependenceFacts facts) {
         this.facts = facts;
-
-//        System.out.println("Independence Facts for test: ");
-//        System.out.println(facts);
     }
 
 
@@ -55,46 +54,23 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         Node[] _z = new Node[z.size()];
 
         for (int i = 0; i < z.size(); i++) {
             _z[i] = z.get(i);
         }
 
-        boolean independent = facts.isIndependent(x, y, _z);
+        boolean independent = this.facts.isIndependent(x, y, _z);
 
-        if (verbose) {
+        if (this.verbose) {
             if (independent) {
-                TetradLogger.getInstance().log("independencies",
-                        SearchLogUtils.independenceFactMsg(x, y, z, Double.NaN));
-//            System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, Double.NaN));
-            } else {
-                TetradLogger.getInstance().log("dependencies",
-                        SearchLogUtils.dependenceFactMsg(x, y, z, Double.NaN));
-//            System.out.println(SearchLogUtils.dependenceFactMsg(x, y, z, Double.NaN));
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
             }
         }
 
-        return independent;
-    }
-
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zz = new ArrayList<>();
-
-        for (Node node : z) {
-            zz.add(node);
-        }
-
-        return isIndependent(x, y, zz);
-    }
-
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        return !isIndependent(x, y, z);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
     }
 
     public double getPValue() {
@@ -102,13 +78,13 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     public List<Node> getVariables() {
-        return facts.getVariables();
+        return this.facts.getVariables();
     }
 
     public Node getVariable(String name) {
         if (name == null) throw new NullPointerException();
 
-        List<Node> variables = facts.getVariables();
+        List<Node> variables = this.facts.getVariables();
 
         for (Node node : variables) {
             if (name.equals(node.getName())) {
@@ -120,7 +96,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     public List<String> getVariableNames() {
-        return facts.getVariableNames();
+        return this.facts.getVariableNames();
     }
 
     public boolean determines(List<Node> z, Node y) {
@@ -136,7 +112,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     public DataModel getData() {
-        return facts;
+        return this.facts;
     }
 
     @Override
@@ -165,7 +141,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     public void setVerbose(boolean verbose) {

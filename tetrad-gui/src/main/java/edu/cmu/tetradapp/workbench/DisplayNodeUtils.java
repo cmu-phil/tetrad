@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,42 +37,35 @@ public class DisplayNodeUtils {
     private static final Color NODE_TEXT_COLOR = new Color(0, 1, 53);
 
 
-//    private static final Color NODE_FILL_COLOR = Color.white;
-//    private static final Color NODE_EDGE_COLOR = Color.black;
-//    private static final Color NODE_SELECTED_FILL_COLOR = Color.gray;
-//    private static final Color NODE_SELECTED_EDGE_COLOR = Color.red;
-//    private static final Color NODE_TEXT_COLOR = Color.black;
-
-
     private static final Font FONT = new Font("Dialog", Font.BOLD, 12);
     private static final int PIXEL_GAP = 7;
 
     public static Color getNodeFillColor() {
-        return NODE_FILL_COLOR;
+        return DisplayNodeUtils.NODE_FILL_COLOR;
     }
 
     public static Color getNodeEdgeColor() {
-        return NODE_EDGE_COLOR;
+        return DisplayNodeUtils.NODE_EDGE_COLOR;
     }
 
     public static Color getNodeSelectedFillColor() {
-        return NODE_SELECTED_FILL_COLOR;
+        return DisplayNodeUtils.NODE_SELECTED_FILL_COLOR;
     }
 
     public static Color getNodeSelectedEdgeColor() {
-        return NODE_SELECTED_EDGE_COLOR;
+        return DisplayNodeUtils.NODE_SELECTED_EDGE_COLOR;
     }
 
     public static Color getNodeTextColor() {
-        return NODE_TEXT_COLOR;
+        return DisplayNodeUtils.NODE_TEXT_COLOR;
     }
 
     public static Font getFont() {
-        return FONT;
+        return DisplayNodeUtils.FONT;
     }
 
     public static int getPixelGap() {
-        return PIXEL_GAP;
+        return DisplayNodeUtils.PIXEL_GAP;
     }
 }
 

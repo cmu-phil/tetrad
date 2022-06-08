@@ -1,11 +1,13 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.DegenerateGaussianScore;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.SemBicScoreDGWrapper;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import java.util.List;
         command = "dg-bic-score",
         dataType = DataType.Mixed
 )
+@Mixed
 public class DegenerateGaussianBicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
@@ -29,7 +32,8 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        final DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(DataUtils.getMixedDataSet(dataSet));
+//        DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(DataUtils.getMixedDataSet(dataSet));
+        SemBicScoreDGWrapper degenerateGaussianScore = new SemBicScoreDGWrapper(DataUtils.getMixedDataSet(dataSet));
         degenerateGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         degenerateGaussianScore.setStructurePrior(parameters.getDouble("structurePrior"));
         return degenerateGaussianScore;
@@ -55,6 +59,6 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
 
     @Override
     public Node getVariable(String name) {
-        return  dataSet.getVariable(name);
+        return this.dataSet.getVariable(name);
     }
 }

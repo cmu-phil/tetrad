@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -79,13 +79,9 @@ public final class TestUpdaterJointMarginal {
         //int x3Index = bayesImMixed.getNodeIndex(x3Node);
         int x3Index = estimatedIm.getNodeIndex(x3Node);
 
-        //bayesImMixed.setProbability(l1Index, 0, 0, 0.5);
-        //bayesImMixed.setProbability(l1Index, 0, 1, 0.5);
         estimatedIm.setProbability(l1Index, 0, 0, 0.5);
         estimatedIm.setProbability(l1Index, 0, 1, 0.5);
 
-        //bayesImMixed.setProbability(x1Index, 0, 0, 0.33333);
-        //bayesImMixed.setProbability(x1Index, 0, 1, 0.66667);
         estimatedIm.setProbability(x1Index, 0, 0,
                 0.33333);      //p(x1 = 0 | l1 = 0)
         estimatedIm.setProbability(x1Index, 0, 1,
@@ -95,8 +91,6 @@ public final class TestUpdaterJointMarginal {
         estimatedIm.setProbability(x1Index, 1, 1,
                 0.33333);      //p(x1 = 1 | l1 = 1)
 
-        //bayesImMixed.setProbability(x2Index, 1, 0, 0.66667);
-        //bayesImMixed.setProbability(x2Index, 1, 1, 0.33333);
         estimatedIm.setProbability(x2Index, 1, 0,
                 0.66667);      //p(x2 = 0 | l1 = 1)
         estimatedIm.setProbability(x2Index, 1, 1,
@@ -106,8 +100,6 @@ public final class TestUpdaterJointMarginal {
         estimatedIm.setProbability(x2Index, 0, 1,
                 0.66667);      //p(x2 = 1 | l1 = 0)
 
-        //bayesImMixed.setProbability(x3Index, 1, 0, 0.66667);
-        //bayesImMixed.setProbability(x3Index, 1, 1, 0.33333);
         estimatedIm.setProbability(x3Index, 1, 0,
                 0.66667);      //p(x3 = 0 | l1 = 1)
         estimatedIm.setProbability(x3Index, 1, 1,

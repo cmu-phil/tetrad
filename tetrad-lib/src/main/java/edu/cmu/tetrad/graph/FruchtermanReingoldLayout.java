@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -22,7 +22,8 @@
 package edu.cmu.tetrad.graph;
 
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Lays out a graph by linearly summing repulsive force between all nodes and
@@ -35,7 +36,7 @@ public final class FruchtermanReingoldLayout {
     /**
      * The graph being laid out.
      */
-    private Graph graph;
+    private final Graph graph;
 
     /**
      * Array of e for the graph. The ith edge is e[i][0]-->e[i][[1].
@@ -82,17 +83,15 @@ public final class FruchtermanReingoldLayout {
     //============================PUBLIC METHODS==========================//
 
     public void doLayout() {
-        GraphUtils.circleLayout(graph, 300, 300, 200);
+        GraphUtils.circleLayout(this.graph, 300, 300, 200);
 
         List<List<Node>> components =
                 GraphUtils.connectedComponents(this.graph());
 
-        Collections.sort(components, new Comparator<List<Node>>() {
-            public int compare(List<Node> o1, List<Node> o2) {
-                int i1 = o1.size();
-                int i2 = o2.size();
-                return i2 < i1 ? -1 : i2 == i1 ? 0 : 1;
-            }
+        components.sort((o1, o2) -> {
+            int i1 = o1.size();
+            int i2 = o2.size();
+            return Integer.compare(i2, i1);
         });
 
         for (List<Node> component1 : components) {
@@ -102,27 +101,19 @@ public final class FruchtermanReingoldLayout {
 
     private void layoutComponent(List<Node> nodes) {
         int numNodes = nodes.size();
-        nodePosition = new double[numNodes][2];
-        nodeDisposition = new double[numNodes][2];
+        this.nodePosition = new double[numNodes][2];
+        this.nodeDisposition = new double[numNodes][2];
 
         for (int i = 0; i < numNodes; i++) {
             Node node = nodes.get(i);
             nodePosition()[i][0] = node.getCenterX();
             nodePosition()[i][1] = node.getCenterY();
-
-            //pos[i][0] = RandomUtil.nextInt(600);
-            //pos[i][1] = RandomUtil.nextInt(600);
         }
 
         List<Edge> edges = new ArrayList<>(GraphUtils.undirectedGraph(graph()).getEdges());
 
-        for (Iterator<Edge> i = edges.iterator(); i.hasNext(); ) {
-            Edge edge = i.next();
-            if (!nodes.contains(edge.getNode1()) ||
-                    !nodes.contains(edge.getNode2())) {
-                i.remove();
-            }
-        }
+        edges.removeIf(edge -> !nodes.contains(edge.getNode1()) ||
+                !nodes.contains(edge.getNode2()));
 
         this.edges = new int[edges.size()][2];
 
@@ -134,10 +125,10 @@ public final class FruchtermanReingoldLayout {
             this.edges()[i][1] = u;
         }
 
-        double avgDegree = 2 * graph.getNumEdges() / graph.getNumNodes();
+        double avgDegree = 2 * this.graph.getNumEdges() / (double) this.graph.getNumNodes();
 
         setOptimalDistance(20.0 + 20.0 * avgDegree);
-        setTemperature(5.0);
+        setTemperature();
 
         for (int i = 0; i < numIterations(); i++) {
 
@@ -154,12 +145,7 @@ public final class FruchtermanReingoldLayout {
 
                     if (norm == 0.0) {
                         norm = 0.1;
-//                        continue;
                     }
-//
-//                    if (norm > 4.0 * getOptimalDistance()) {
-//                        continue;
-//                    }
 
                     double repulsiveForce = fr(norm);
 
@@ -180,12 +166,7 @@ public final class FruchtermanReingoldLayout {
 
                 if (norm == 0.0) {
                     norm = 0.1;
-//                    continue;
                 }
-
-//                if (norm < 1.5 * getOptimalDistance()) {
-//                    continue;
-//                }
 
                 double attractiveForce = fa(norm);
                 double attractX = (deltaX / norm) * attractiveForce;
@@ -210,10 +191,6 @@ public final class FruchtermanReingoldLayout {
 
             for (int v = 0; v < numNodes; v++) {
                 double norm = norm(nodeDisposition()[v][0], nodeDisposition()[v][1]);
-
-//                if (norm == 0.0) {
-//                    continue;
-//                }
 
                 nodePosition()[v][0] += (nodeDisposition()[v][0] / norm) *
                         Math.min(norm, getTemperature());
@@ -242,7 +219,7 @@ public final class FruchtermanReingoldLayout {
             }
         }
 
-        leftmostX = leftmostX() + 100.;
+        this.leftmostX = leftmostX() + 100.;
 
         for (int i = 0; i < componentNodes.size(); i++) {
             nodePosition()[i][0] += leftmostX() - minX;
@@ -251,7 +228,7 @@ public final class FruchtermanReingoldLayout {
 
         for (int i = 0; i < componentNodes.size(); i++) {
             if (nodePosition()[i][0] > leftmostX()) {
-                leftmostX = nodePosition()[i][0];
+                this.leftmostX = nodePosition()[i][0];
             }
         }
 
@@ -277,19 +254,19 @@ public final class FruchtermanReingoldLayout {
     }
 
     private Graph graph() {
-        return graph;
+        return this.graph;
     }
 
     private int[][] edges() {
-        return edges;
+        return this.edges;
     }
 
     private double[][] nodePosition() {
-        return nodePosition;
+        return this.nodePosition;
     }
 
     private double[][] nodeDisposition() {
-        return nodeDisposition;
+        return this.nodeDisposition;
     }
 
     private int numIterations() {
@@ -297,11 +274,11 @@ public final class FruchtermanReingoldLayout {
     }
 
     private double leftmostX() {
-        return leftmostX;
+        return this.leftmostX;
     }
 
     private double getOptimalDistance() {
-        return optimalDistance;
+        return this.optimalDistance;
     }
 
     private void setOptimalDistance(double optimalDistance) {
@@ -309,11 +286,11 @@ public final class FruchtermanReingoldLayout {
     }
 
     private double getTemperature() {
-        return temperature;
+        return this.temperature;
     }
 
-    private void setTemperature(double temperature) {
-        this.temperature = temperature;
+    private void setTemperature() {
+        this.temperature = 5.0;
     }
 }
 

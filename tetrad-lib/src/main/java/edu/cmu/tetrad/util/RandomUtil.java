@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -27,7 +27,6 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -51,15 +50,7 @@ public class RandomUtil {
      * The singleton instance.
      */
     private static final RandomUtil randomUtil = new RandomUtil();
-
-    // Random number generator from the Apache library.
     private RandomGenerator randomGenerator;
-
-    private NormalDistribution normal = new NormalDistribution(0, 1);
-
-    private long seed;
-
-    private Map<Long, RandomGenerator> seedsToGenerators = new HashedMap<>();
 
 
     //========================================CONSTRUCTORS===================================//
@@ -68,23 +59,14 @@ public class RandomUtil {
      * Constructs a new random number generator based on the getModel date in milliseconds.
      */
     private RandomUtil() {
-        this(new Date().getTime());
-    }
-
-    /**
-     * Constructs a new random number generator using the given seed.
-     *
-     * @param seed A long value.
-     */
-    private RandomUtil(long seed) {
-        setSeed(seed);
+        this.randomGenerator = new SynchronizedRandomGenerator(new Well44497b(System.nanoTime()));
     }
 
     /**
      * @return the singleton instance of this class.
      */
     public static RandomUtil getInstance() {
-        return randomUtil;
+        return RandomUtil.randomUtil;
     }
 
     //=======================================PUBLIC METHODS=================================//
@@ -94,11 +76,11 @@ public class RandomUtil {
      * @return Ibid.
      */
     public int nextInt(int n) {
-        return randomGenerator.nextInt(n);
+        return this.randomGenerator.nextInt(n);
     }
 
     public double nextDouble() {
-        return randomGenerator.nextDouble();
+        return this.randomGenerator.nextDouble();
     }
 
     /**
@@ -109,7 +91,7 @@ public class RandomUtil {
     public double nextUniform(double low, double high) {
         if (low == high) return low;
         else {
-            return new UniformRealDistribution(randomGenerator, low, high).sample();
+            return new UniformRealDistribution(this.randomGenerator, low, high).sample();
         }
     }
 
@@ -119,14 +101,7 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double nextNormal(double mean, double sd) {
-        if (sd <= 0) {
-            throw new IllegalArgumentException("Standard deviation must be non-negative: " + sd);
-        }
-
-        double sample = normal.sample();
-        return sample * sd + mean;
-
-//        return new NormalDistribution(randomGenerator, mean, sd).sample();
+        return new NormalDistribution(randomGenerator, mean, sd).sample();
     }
 
     /**
@@ -145,36 +120,15 @@ public class RandomUtil {
 
         double d;
 
-        while (true) {
+        do {
             d = nextNormal(mean, sd);
-            if (d >= low && d <= high) break;
-        }
+        } while (!(d >= low) || !(d <= high));
 
         return d;
     }
 
-    /**
-     * Sets the seed to the given value.
-     *
-     * @param seed A long value. Once this seed is set, the behavior of the random number generator is deterministic, so
-     *             setting the seed can be used to repeat previous behavior.
-     */
-    public void setSeed(long seed) {
-
-        // Do not change this generator; you will screw up innuerable unit tests!
-        randomGenerator = new SynchronizedRandomGenerator(new Well44497b(seed));
-        seedsToGenerators.put(seed, randomGenerator);
-        normal = new NormalDistribution(randomGenerator, 0, 1);
-        this.seed = seed;
-    }
-
     public void revertSeed(long seed) {
-
-        // Do not change this generator; you will screw up innuerable unit tests!
-        randomGenerator = seedsToGenerators.get(seed);
-        normal = new NormalDistribution(randomGenerator, 0, 1);
-        this.seed = seed;
-
+        this.randomGenerator = new Well44497b(seed);
     }
 
     /**
@@ -183,7 +137,7 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double nextPoisson(double lambda) {
-        return new PoissonDistribution(randomGenerator, lambda, 1.0E-12D, 100000).sample();
+        return new PoissonDistribution(this.randomGenerator, lambda, 1.0E-12D, 100000).sample();
     }
 
     /**
@@ -193,7 +147,7 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double normalPdf(double mean, double sd, double value) {
-        return new NormalDistribution(randomGenerator, mean, sd).density(value);
+        return new NormalDistribution(this.randomGenerator, mean, sd).density(value);
     }
 
     /**
@@ -203,9 +157,7 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double normalCdf(double mean, double sd, double value) {
-        return normal.cumulativeProbability((value - mean) / sd);
-//        value = (value - mean) / sd;
-//        return ProbUtils.normalCdf(value);
+        return new NormalDistribution(0, 1).cumulativeProbability((value - mean) / sd);
     }
 
     /**
@@ -222,7 +174,7 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double nextT(double df) {
-        return new TDistribution(randomGenerator, df).sample();
+        return new TDistribution(this.randomGenerator, df).sample();
     }
 
     /**
@@ -230,7 +182,14 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double nextExponential(double lambda) {
-        return new ExponentialDistribution(randomGenerator, lambda).sample();
+        return new ExponentialDistribution(this.randomGenerator, lambda).sample();
+    }
+
+    /**
+     * @return Ibid.
+     */
+    public double nextGumbel(double mu, double beta) {
+        return new GumbelDistribution(this.randomGenerator, mu, beta).sample();
     }
 
     /**
@@ -238,7 +197,7 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double nextChiSquare(double df) {
-        return new ChiSquaredDistribution(randomGenerator, df).sample();
+        return new ChiSquaredDistribution(this.randomGenerator, df).sample();
     }
 
     /**
@@ -247,19 +206,25 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double nextGamma(double shape, double scale) {
-        return new GammaDistribution(randomGenerator, shape, scale).sample();
+        return new GammaDistribution(this.randomGenerator, shape, scale).sample();
     }
 
-    public long getSeed() {
-        return seed;
+    /**
+     * Sets the seed to the given value.
+     *
+     * @param seed A long value. Once this seed is set, the behavior of the random number generator is deterministic, so
+     *             setting the seed can be used to repeat previous behavior.
+     */
+    public void setSeed(long seed) {
+        randomGenerator.setSeed(seed);
     }
 
     public RandomGenerator getRandomGenerator() {
-        return randomGenerator;
+        return this.randomGenerator;
     }
 
     public long nextLong() {
-        return randomGenerator.nextLong();
+        return this.randomGenerator.nextLong();
     }
 }
 

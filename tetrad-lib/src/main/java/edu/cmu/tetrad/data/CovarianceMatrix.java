@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -21,15 +21,14 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradAlgebra;
-import edu.cmu.tetrad.util.Matrix;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Stores a covariance matrix together with variable names and sample size,
@@ -63,7 +62,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     /**
      * The size of the sample from which this covariance matrix was calculated.
      *
-     * @serial Range > 0.
+     * @serial Range &gt; 0.
      */
     private int sampleSize;
 
@@ -128,7 +127,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     public CovarianceMatrix(List<Node> variables, double[][] matrix,
                             int sampleSize) {
-        if (variables.size() != matrix.length && variables.size() != matrix[0].length) {
+        if (variables.size() > matrix.length && variables.size() != matrix[0].length) {
             throw new IllegalArgumentException("# variables not equal to matrix dimension.");
         }
 
@@ -206,13 +205,13 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @return the dimension of the covariance matrix.
      */
     public final int getDimension() {
-        return variables.size();
+        return this.variables.size();
     }
 
     /**
      * The size of the sample used to calculated this covariance matrix.
      *
-     * @return The sample size (> 0).
+     * @return The sample size (&gt; 0).
      */
     public final int getSampleSize() {
         return this.sampleSize;
@@ -236,7 +235,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @return the knowledge associated with this data.
      */
     public final IKnowledge getKnowledge() {
-        return this.knowledge.copy();
+        return this.knowledge;
     }
 
     /**
@@ -258,10 +257,10 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         List<Node> submatrixVars = new LinkedList<>();
 
         for (int indice : indices) {
-            submatrixVars.add(variables.get(indice));
+            submatrixVars.add(this.variables.get(indice));
         }
 
-        Matrix cov = new Matrix(_covariancesMatrix.getSelection(indices, indices));
+        Matrix cov = new Matrix(this._covariancesMatrix.getSelection(indices, indices));
         return new CovarianceMatrix(submatrixVars, cov, getSampleSize());
     }
 
@@ -281,16 +280,32 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     public final CovarianceMatrix getSubmatrix(String[] submatrixVarNames) {
         List<Node> submatrixVars = new LinkedList<>();
 
+            List<String> missing = new ArrayList<>();
+
         for (String submatrixVarName : submatrixVarNames) {
-            submatrixVars.add(getVariable(submatrixVarName));
+            if (submatrixVarName.startsWith("E_")) continue;
+            Node variable = getVariable(submatrixVarName);
+            if (variable == null) missing.add(submatrixVarName);
+            submatrixVars.add(variable);
         }
 
-        if (!getVariables().containsAll(submatrixVars)) {
+        if (!missing.isEmpty()) {
             throw new IllegalArgumentException(
-                    "The variables in the submatrix "
-                            + "must be in the original matrix: original=="
-                            + getVariables() + ", sub==" + submatrixVars);
+                    "The following variables in the submatrix are missing from the data: " +
+                            "\n   " + missing +
+                            "\nIf there are lagged variables, try using the data box to convert the data to time " +
+                            "\nlagged data first.");
         }
+
+//        if (!getVariables().containsAll(submatrixVars)) {
+//
+//
+//
+//            throw new IllegalArgumentException(
+//                    "The variables in the submatrix "
+//                            + "must be in the original matrix: original=="
+//                            + getVariables() + ", sub==" + submatrixVars);
+//        }
 
         for (int i = 0; i < submatrixVars.size(); i++) {
             if (submatrixVars.get(i) == null) {
@@ -312,7 +327,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @return the value of element (i,j) in the matrix
      */
     public final double getValue(int i, int j) {
-        return _covariancesMatrix.get(i, j);
+        return this._covariancesMatrix.get(i, j);
     }
 
     public void setMatrix(Matrix matrix) {
@@ -331,18 +346,18 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @return the size of the square matrix.
      */
     public final int getSize() {
-        return _covariancesMatrix.columns();
+        return this._covariancesMatrix.columns();
     }
 
     /**
      * @return a the covariance matrix (not a copy).
      */
     public final Matrix getMatrix() {
-        return _covariancesMatrix;
+        return this._covariancesMatrix;
     }
 
     public final void select(Node variable) {
-        if (variables.contains(variable)) {
+        if (this.variables.contains(variable)) {
             getSelectedVariables().add(variable);
         }
     }
@@ -362,7 +377,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     public final List<String> getSelectedVariableNames() {
         List<String> selectedVariableNames = new LinkedList<>();
 
-        for (Node variable : selectedVariables) {
+        for (Node variable : this.selectedVariables) {
             selectedVariableNames.add(variable.getName());
         }
 
@@ -376,10 +391,10 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         StringBuilder buf = new StringBuilder();
-        buf.append(sampleSize).append("\n");
+        buf.append(this.sampleSize).append("\n");
 
         // Build the variable names
-        buf.append(getVariableNames().stream().collect(Collectors.joining("\t")));
+        buf.append(String.join("\t", getVariableNames()));
 
         int numVars = getVariableNames().size();
         buf.append("\n");
@@ -446,12 +461,13 @@ public class CovarianceMatrix implements ICovarianceMatrix {
 
     @Override
     public DataModel copy() {
-        return null;
+        return new CovarianceMatrix(this);
     }
 
     @Override
     public void setValue(int i, int j, double v) {
-        _covariancesMatrix.set(i, j, v);
+        this._covariancesMatrix.set(i, j, v);
+        this._covariancesMatrix.set(j, i, v);
     }
 
     @Override
@@ -462,23 +478,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     //========================PRIVATE METHODS============================//
 
     private Set<Node> getSelectedVariables() {
-        return selectedVariables;
-    }
-
-    /**
-     * Checks the sample size, variable, and matrix information.
-     */
-    private void checkMatrix() {
-        for (Node variable : variables) {
-            if (variable == null) {
-                throw new NullPointerException();
-            }
-        }
-
-        if (sampleSize < 1) {
-            throw new IllegalArgumentException(
-                    "Sample size must be at least 1.");
-        }
+        return this.selectedVariables;
     }
 
     /**
@@ -499,16 +499,16 @@ public class CovarianceMatrix implements ICovarianceMatrix {
             throw new NullPointerException();
         }
 
-        if (knowledge == null) {
+        if (this.knowledge == null) {
             throw new NullPointerException();
         }
 
-        if (sampleSize < -1) {
+        if (this.sampleSize < -1) {
             throw new IllegalStateException();
         }
 
-        if (selectedVariables == null) {
-            selectedVariables = new HashSet<>();
+        if (this.selectedVariables == null) {
+            this.selectedVariables = new HashSet<>();
         }
     }
 }

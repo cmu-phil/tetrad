@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.VariableSource;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.IM;
+
 import java.util.List;
 
 /**
@@ -159,7 +160,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
 
     /**
      * @param nodeIndex the index of the node.
-     * @param rowIndex the index of the row in question.
+     * @param rowIndex  the index of the row in question.
      * @return an array containing the combination of parent values for a given
      * node and given row in the probability table for that node. To get the
      * combination of parent values from the row number, the row number is
@@ -185,10 +186,10 @@ public interface BayesIm extends VariableSource, IM, Simulator {
 
     /**
      * @param nodeIndex the index of the node in question.
-     * @param rowIndex the row in the table for this for node which represents
-     * the combination of parent values in question.
-     * @param colIndex the column in the table for this node which represents
-     * the value of the node in question.
+     * @param rowIndex  the row in the table for this for node which represents
+     *                  the combination of parent values in question.
+     * @param colIndex  the column in the table for this node which represents
+     *                  the value of the node in question.
      * @return the probability for the given node at the given row and column in
      * the table for that node. To get the node index, use getNodeIndex(). To
      * get the row index, use getRowIndex(). To get the column index, use
@@ -210,7 +211,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * then the row number is (7 * (5 * (3 * 0 + 2) + 4)) + 5 = 103. This is the
      * inverse function to getVariableValues().
      * <p>
-     * Note: If the node has n values, the length of 'values' must be >= the
+     * Note: If the node has n values, the length of 'values' must be &gt;= the
      * number of parents. Only the first n values are used.
      * @see #getParentValues
      */
@@ -242,15 +243,15 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * indicated is the combination indicated by rowIndex.
      *
      * @param nodeIndex the index of the node in question.
-     * @param rowIndex the row in the table for this for node which represents
-     * the combination of parent values in question.
-     * @param colIndex the column in the table for this node which represents
-     * the value of the node in question.
-     * @param value the desired probability to be set.
+     * @param rowIndex  the row in the table for this for node which represents
+     *                  the combination of parent values in question.
+     * @param colIndex  the column in the table for this node which represents
+     *                  the value of the node in question.
+     * @param value     the desired probability to be set.
      * @see #getProbability
      */
     void setProbability(int nodeIndex, int rowIndex, int colIndex,
-            double value);
+                        double value);
 
     /**
      * Sets the probability for the given node. The matrix row represent row
@@ -259,11 +260,11 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * represent column index, the column in the table for this node which
      * represents the value of the node in question.
      *
-     * @param nodeIndex the index of the node in question.
+     * @param nodeIndex  the index of the node in question.
      * @param probMatrix a matrix containing probabilities of a node along with
-     * its parents
+     *                   its parents
      */
-    public void setProbability(int nodeIndex, double[][] probMatrix);
+    void setProbability(int nodeIndex, double[][] probMatrix);
 
     /**
      * @return the index of the node with the given name in the specified
@@ -276,7 +277,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * add to 1.
      *
      * @param nodeIndex the node for the table that this row belongs to.
-     * @param rowIndex the index of the row.
+     * @param rowIndex  the index of the row.
      */
     void clearRow(int nodeIndex, int rowIndex);
 
@@ -285,7 +286,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * add to 1.
      *
      * @param nodeIndex the node for the table that this row belongs to.
-     * @param rowIndex the index of the row.
+     * @param rowIndex  the index of the row.
      */
     void randomizeRow(int nodeIndex, int rowIndex);
 
@@ -294,7 +295,7 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      * Double.NaN value in it.
      *
      * @param nodeIndex the node for the table whose incomplete rows are to be
-     * randomized.
+     *                  randomized.
      */
     void randomizeIncompleteRows(int nodeIndex);
 

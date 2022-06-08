@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -24,16 +24,17 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.TetradSerializable;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Stores a graph with a score.
  *
  * @author Joseph Ramsey
  */
-public class ScoredGraph implements Comparable, TetradSerializable {
+public class ScoredGraph implements Comparable<ScoredGraph>, TetradSerializable {
     static final long serialVersionUID = 23L;
-    private Graph graph;
-    private Double score;
+    private final Graph graph;
+    private final Double score;
 
     public ScoredGraph(Graph graph, Double score) {
         this.graph = graph;
@@ -45,34 +46,28 @@ public class ScoredGraph implements Comparable, TetradSerializable {
     }
 
     public Graph getGraph() {
-        return graph;
+        return this.graph;
     }
 
     public double getScore() {
-        return score;
+        return this.score;
     }
 
     public int hashCode() {
-        return score.hashCode();
+        return this.score.hashCode();
     }
 
-    public boolean equals(Object o) {
-        ScoredGraph _scoredGraph = (ScoredGraph) o;
-
-        if (!score.equals(_scoredGraph.getScore())) {
+    public boolean equals(ScoredGraph o) {
+        if (!this.score.equals(o.getScore())) {
             return false;
         }
 
-        if (!graph.equals(_scoredGraph.getGraph())) {
-            return false;
-        }
-
-        return true;
+        return this.graph.equals(o.getGraph());
     }
 
-    public int compareTo(Object o) {
+    public int compareTo(@NotNull ScoredGraph o) {
         Double thisScore = getScore();
-        Double otherScore = ((ScoredGraph) o).getScore();
+        Double otherScore = o.getScore();
         return thisScore.compareTo(otherScore);
     }
 }

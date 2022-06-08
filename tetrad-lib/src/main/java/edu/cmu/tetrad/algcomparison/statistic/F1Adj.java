@@ -6,9 +6,9 @@ import edu.cmu.tetrad.graph.Graph;
 
 /**
  * Calculates the F1 statistic for adjacencies. See
- * </p>
+ *
  * https://en.wikipedia.org/wiki/F1_score
- * </p>
+ *
  * We use what's on this page called the "traditional" F1 statistic.
  *
  * @author Joseh Ramsey

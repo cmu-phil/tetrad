@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,14 +26,14 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.util.prefs.Preferences;
-import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
 
 /**
  * Saves a session from a file.
@@ -44,7 +44,7 @@ final class SaveSessionAsAction extends AbstractAction {
 
     private static final long serialVersionUID = 2798487128341621686L;
 
-    private boolean saved = false;
+    private boolean saved;
 
     public SaveSessionAsAction() {
         super("Save Session As...");
@@ -80,7 +80,7 @@ final class SaveSessionAsAction extends AbstractAction {
             this.saved = false;
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Another session by that name is currently open. Please "
-                    + "\nclose that session first.");
+                            + "\nclose that session first.");
             return;
         }
 
@@ -107,7 +107,7 @@ final class SaveSessionAsAction extends AbstractAction {
     }
 
     public boolean isSaved() {
-        return saved;
+        return this.saved;
     }
 
 }

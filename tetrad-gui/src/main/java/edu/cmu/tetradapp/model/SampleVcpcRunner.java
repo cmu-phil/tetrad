@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,26 +36,23 @@ import java.util.List;
 import java.util.Set;
 
 /**
-* Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
-*
-* @author Joseph Ramsey
-*/
+ * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
+ *
+ * @author Joseph Ramsey
+ */
 public class SampleVcpcRunner extends AbstractAlgorithmRunner
-        implements IndTestProducer, GraphSource {
+        implements IndTestProducer {
     static final long serialVersionUID = 23L;
-    private IndependenceFactsModel independenceFactsModel = null;
+    private IndependenceFactsModel independenceFactsModel;
     private Graph trueGraph;
-//    private Vcpc vcpc = null;
-
     private SemPm semPm;
 
     private SemIm semIm;
 
 
-    private Set<Edge>sVcpcAdjacent;
-    private Set<Edge>sVcpcApparent;
-    private Set<Edge>sVcpcDefinite;
-    private List<Node>sVcpcNodes;
+    private Set<Edge> sVcpcAdjacent;
+    private Set<Edge> sVcpcApparent;
+    private Set<Edge> sVcpcDefinite;
 
     //============================CONSTRUCTORS============================//
 
@@ -173,29 +170,20 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
     public void execute() {
         IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
-        Parameters searchParams = getParams();
-
-        Parameters params =
-                searchParams;
 
 
         SampleVcpc svcpc = new SampleVcpc(getIndependenceTest());
 
         svcpc.setKnowledge(knowledge);
         svcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        svcpc.setDepth(params.getInt("depth", -1));
-        if (independenceFactsModel != null) {
-            svcpc.setFacts(independenceFactsModel.getFacts());
+        svcpc.setDepth(getParams().getInt("depth", -1));
+        if (this.independenceFactsModel != null) {
+            svcpc.setFacts();
         }
 
-//        vcpc.setSemPm(semPm);
-//
-//        if (semPm != null) {
-//            vcpc.setSemPm(getSemPm());
-//        }
-        svcpc.setSemIm(semIm);
+        svcpc.setSemIm(this.semIm);
 
-        if (semIm != null) {
+        if (this.semIm != null) {
             svcpc.setSemIm(this.semIm);
         }
 
@@ -203,18 +191,17 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        }
-        else if (knowledge.isDefaultToKnowledgeLayout()) {
+        } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
-        }
-        else {
+        } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
 
         setResultGraph(graph);
         setSvcpcFields(svcpc);
     }
-//
+
+    //
     public IndependenceTest getIndependenceTest() {
         Object dataModel = getDataModel();
 
@@ -227,10 +214,6 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     }
 
 
-
-
-
-
     public Graph getGraph() {
         return getResultGraph();
     }
@@ -240,8 +223,6 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
      */
     public List<String> getTriplesClassificationTypes() {
         List<String> names = new ArrayList<>();
-//        names.add("ColliderDiscovery");
-//        names.add("Noncolliders");
         names.add("Ambiguous Triples");
         return names;
     }
@@ -252,22 +233,20 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     public List<List<Triple>> getTriplesLists(Node node) {
         List<List<Triple>> triplesList = new ArrayList<>();
         Graph graph = getGraph();
-//        triplesList.add(DataGraphUtils.getCollidersFromGraph(node, graph));
-//        triplesList.add(DataGraphUtils.getNoncollidersFromGraph(node, graph));
         triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
         return triplesList;
     }
 
     public Set<Edge> getAdj() {
-        return new HashSet<>(sVcpcAdjacent);
+        return new HashSet<>(this.sVcpcAdjacent);
     }
 
     public Set<Edge> getAppNon() {
-        return new HashSet<>(sVcpcApparent);
+        return new HashSet<>(this.sVcpcApparent);
     }
 
     public Set<Edge> getDefNon() {
-        return new HashSet<>(sVcpcDefinite);
+        return new HashSet<>(this.sVcpcDefinite);
     }
 
     public boolean supportsKnowledge() {
@@ -289,6 +268,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     public SemIm getSemIm() {
         return this.semIm;
     }
+
     public SemPm getSemPm() {
         return this.semPm;
     }
@@ -303,15 +283,12 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     }
 
     private void setSvcpcFields(SampleVcpc svcpc) {
-        sVcpcAdjacent = svcpc.getAdjacencies();
-        sVcpcApparent = svcpc.getApparentNonadjacencies();
-        sVcpcDefinite = svcpc.getDefiniteNonadjacencies();
-        sVcpcNodes = getGraph().getNodes();
+        this.sVcpcAdjacent = svcpc.getAdjacencies();
+        this.sVcpcApparent = svcpc.getApparentNonadjacencies();
+        this.sVcpcDefinite = svcpc.getDefiniteNonadjacencies();
+        List<Node> sVcpcNodes = getGraph().getNodes();
     }
 
-//    public Vcpc getVcpc() {
-//        return vcpc;
-//    }
 }
 
 

@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.data.reader;
 
 /**
- *
  * Dec 12, 2018 11:16:53 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -31,13 +30,13 @@ public interface DataReader {
      *
      * @param quoteCharacter
      */
-    public void setQuoteCharacter(char quoteCharacter);
+    void setQuoteCharacter(char quoteCharacter);
 
     /**
      * Set the value to indicate a line is a comment to be ignored.
      *
      * @param commentMarker
      */
-    public void setCommentMarker(String commentMarker);
+    void setCommentMarker(String commentMarker);
 
 }

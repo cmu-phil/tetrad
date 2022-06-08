@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,7 +29,7 @@ package edu.cmu.tetrad.search;
 public class GwpResult {
 
     public interface PartialEvaluationResult {
-        public double[] values();
+        double[] values();
     }
 
     public static class AdjacencyEvaluationResult implements PartialEvaluationResult {
@@ -37,17 +37,16 @@ public class GwpResult {
         public Integer errorsOfCommission;
 
         public AdjacencyEvaluationResult(Integer errorsOfOmission, Integer errorsOfCommission) {
-            super();
             this.errorsOfOmission = errorsOfOmission;
             this.errorsOfCommission = errorsOfCommission;
         }
 
         public double loss() {
-            return errorsOfOmission + errorsOfCommission;
+            return this.errorsOfOmission + this.errorsOfCommission;
         }
 
         public double[] values() {
-            return new double[]{errorsOfOmission, errorsOfCommission, loss()};
+            return new double[]{this.errorsOfOmission, this.errorsOfCommission, loss()};
         }
     }
 
@@ -60,7 +59,6 @@ public class GwpResult {
 
         public OrientationEvaluationResult(Integer correct, Integer directedWrongWay,
                                            Integer undirectedWhenShouldBeDirected, Integer directedWhenShouldBeUndirected) {
-            super();
             this.nCorrect = correct;
             this.directedWrongWay = directedWrongWay;
             this.undirectedWhenShouldBeDirected = undirectedWhenShouldBeDirected;
@@ -68,12 +66,8 @@ public class GwpResult {
         }
 
         public double[] values() {
-            return new double[]{nCorrect, directedWrongWay, undirectedWhenShouldBeDirected, directedWhenShouldBeUndirected};
+            return new double[]{this.nCorrect, this.directedWrongWay, this.undirectedWhenShouldBeDirected, this.directedWhenShouldBeUndirected};
         }
-
-//		public double loss(){
-//
-//		}
 
     }
 
@@ -82,17 +76,16 @@ public class GwpResult {
         public Integer nEdgesEvaluated;
 
         public CoefficientEvaluationResult(Double totalCoeffErrorSq, Integer edgesEvaluated) {
-            super();
             this.totalCoeffErrorSq = totalCoeffErrorSq;
             this.nEdgesEvaluated = edgesEvaluated;
         }
 
         public double loss() {
-            return totalCoeffErrorSq;
+            return this.totalCoeffErrorSq;
         }
 
         public double[] values() {
-            return new double[]{totalCoeffErrorSq, nEdgesEvaluated, loss()};
+            return new double[]{this.totalCoeffErrorSq, this.nEdgesEvaluated, loss()};
         }
 
     }
@@ -103,36 +96,31 @@ public class GwpResult {
     public CoefficientEvaluationResult coeffAll;
     public CoefficientEvaluationResult coeffSome;
 
-    public PatternEvaluationResult pat;
+    public CPDAGEvaluationResult pat;
 
-    public String name = null;
+    public String name;
 
     /**
      * Loss function for PC: * for adjacency errors, 1 pt (i.e. 1 for omission, 1 for commission) for orientation errors: *
      * undirected when it should be directed: 0.5 * directed when it should be undirected: 0.5 * directed the wrong way:
      * 1.0 (in other words, 0.5 for each arrow-head difference, for orientation errors)
      */
-    public static class PatternEvaluationResult {
+    public static class CPDAGEvaluationResult {
 
         public AdjacencyEvaluationResult adj;
         public OrientationEvaluationResult ori;
 
-        public PatternEvaluationResult(AdjacencyEvaluationResult adj, OrientationEvaluationResult ori) {
+        public CPDAGEvaluationResult(AdjacencyEvaluationResult adj, OrientationEvaluationResult ori) {
             this.adj = adj;
             this.ori = ori;
         }
 
         public double loss() {
-            double oriLoss = ori.directedWrongWay + 0.5 * ori.undirectedWhenShouldBeDirected +
-                    0.5 * ori.directedWhenShouldBeUndirected;
+            double oriLoss = this.ori.directedWrongWay + 0.5 * this.ori.undirectedWhenShouldBeDirected +
+                    0.5 * this.ori.directedWhenShouldBeUndirected;
 
-            double adjLoss = 1.5 * adj.errorsOfOmission + 1.0 * adj.errorsOfCommission;
-
-            //			System.out.println("adjLoss = " + adjLoss);
-//			System.out.println("oriLoss = " + oriLoss);
-            double loss = adjLoss + oriLoss;
-//			System.out.println("returning loss = " + loss);
-            return loss;
+            double adjLoss = 1.5 * this.adj.errorsOfOmission + 1.0 * this.adj.errorsOfCommission;
+            return adjLoss + oriLoss;
         }
 
     }
@@ -143,7 +131,6 @@ public class GwpResult {
      */
     public GwpResult(String methodName, AdjacencyEvaluationResult adj, OrientationEvaluationResult ori,
                      CoefficientEvaluationResult coeffAll, CoefficientEvaluationResult coeffSome) {
-        super();
         this.name = methodName;
         this.adj = adj;
         this.ori = ori;
@@ -154,12 +141,11 @@ public class GwpResult {
 
     /**
      * constructor for evaluations where the method evaluated purports to give us the Markov-equivalence class, represented
-     * by a pattern.
+     * by a CPDAG.
      * <p>
      * * @param methodName
      */
-    public GwpResult(String methodName, PatternEvaluationResult pat) {
-        super();
+    public GwpResult(String methodName, CPDAGEvaluationResult pat) {
         this.name = methodName;
         this.pat = pat;
     }

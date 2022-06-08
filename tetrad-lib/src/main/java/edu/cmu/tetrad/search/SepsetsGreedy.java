@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -36,9 +36,9 @@ public class SepsetsGreedy implements SepsetProducer {
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final SepsetMap extraSepsets;
-    private int depth = 3;
-    private boolean verbose = false;
-    private Graph dag;
+    private int depth;
+    private boolean verbose;
+    private IndependenceResult result;
 
     public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
         this.graph = graph;
@@ -65,20 +65,20 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     private List<Node> getSepsetGreedy(Node i, Node k) {
-        if (extraSepsets != null) {
-            final List<Node> v = extraSepsets.get(i, k);
+        if (this.extraSepsets != null) {
+            List<Node> v = this.extraSepsets.get(i, k);
 
             if (v != null) {
                 return v;
             }
         }
 
-        List<Node> adji = graph.getAdjacentNodes(i);
-        List<Node> adjk = graph.getAdjacentNodes(k);
+        List<Node> adji = this.graph.getAdjacentNodes(i);
+        List<Node> adjk = this.graph.getAdjacentNodes(k);
         adji.remove(k);
         adjk.remove(i);
 
-        for (int d = 0; d <= Math.min((depth == -1 ? 1000 : depth), Math.max(adji.size(), adjk.size())); d++) {
+        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), Math.max(adji.size(), adjk.size())); d++) {
             if (d <= adji.size()) {
                 ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
@@ -86,7 +86,7 @@ public class SepsetsGreedy implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adji);
 
-                    if (getIndependenceTest().isIndependent(i, k, v)) {
+                    if (getIndependenceTest().checkIndependence(i, k, v).independent()) {
                         return v;
                     }
                 }
@@ -99,7 +99,7 @@ public class SepsetsGreedy implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adjk);
 
-                    if (getIndependenceTest().isIndependent(i, k, v)) {
+                    if (getIndependenceTest().checkIndependence(i, k, v).independent()) {
                         return v;
                     }
                 }
@@ -111,30 +111,27 @@ public class SepsetsGreedy implements SepsetProducer {
 
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return independenceTest.isIndependent(a, b, c);
-    }
-
-    @Override
-    public double getPValue() {
-        return independenceTest.getPValue();
+        IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
+        this.result= result;
+        return result.independent();
     }
 
     @Override
     public double getScore() {
-        return -(independenceTest.getPValue() - independenceTest.getAlpha());
+        return -(result.getPValue() - this.independenceTest.getAlpha());
     }
 
     @Override
     public List<Node> getVariables() {
-        return independenceTest.getVariables();
+        return this.independenceTest.getVariables();
     }
 
     private IndependenceTest getIndependenceTest() {
-        return independenceTest;
+        return this.independenceTest;
     }
 
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override
@@ -143,8 +140,8 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     public Graph getDag() {
-        if (independenceTest instanceof IndTestDSep) {
-            return ((IndTestDSep) independenceTest).getGraph();
+        if (this.independenceTest instanceof IndTestDSep) {
+            return ((IndTestDSep) this.independenceTest).getGraph();
         } else {
             return null;
         }

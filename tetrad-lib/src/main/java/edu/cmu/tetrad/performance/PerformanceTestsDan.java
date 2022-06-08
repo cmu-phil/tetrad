@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -26,7 +26,10 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.search.GFci;
+import edu.cmu.tetrad.search.IndTestFisherZ;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 
@@ -40,18 +43,19 @@ import java.util.List;
 
 /**
  * Contains some tests for Dan Malinsky, that might be of interest to others.
+ *
  * @author Joseph Ramsey.
  */
 public class PerformanceTestsDan {
     private void testIdaOutputForDan() {
-        int numRuns = 100;
+        final int numRuns = 100;
 
         for (int run = 0; run < numRuns; run++) {
-            double alphaGFci = 0.01;
-            double alphaPc = 0.01;
-            int penaltyDiscount = 1;
-            int depth = 3;
-            int maxPathLength = 3;
+            final double alphaGFci = 0.01;
+            final double alphaPc = 0.01;
+            final int penaltyDiscount = 1;
+            final int depth = 3;
+            final int maxPathLength = 3;
 
             final int numVars = 15;
             final double edgesPerNode = 1.0;
@@ -88,8 +92,8 @@ public class PerformanceTestsDan {
                 out5 = new PrintStream(new File(dir, "coef.matrix.txt"));
                 out6 = new PrintStream(new File(dir, "pag.long.txt"));
                 out7 = new PrintStream(new File(dir, "pag.matrix.txt"));
-                out8 = new PrintStream(new File(dir, "pattern.long.txt"));
-                out9 = new PrintStream(new File(dir, "pattern.matrix.txt"));
+                out8 = new PrintStream(new File(dir, "cpdag.long.txt"));
+                out9 = new PrintStream(new File(dir, "cpdag.matrix.txt"));
                 out10 = new PrintStream(new File(dir, "data.txt"));
                 out11 = new PrintStream(new File(dir, "true.pag.long.txt"));
                 out12 = new PrintStream(new File(dir, "true.pag.matrix.txt"));
@@ -114,9 +118,6 @@ public class PerformanceTestsDan {
             Graph dag = GraphUtils.randomGraph(vars, 0, (int) (vars.size() * edgesPerNode), 5, 5, 5, false);
 
             GraphUtils.fixLatents1(numLatents, dag);
-//        List<Node> varsWithLatents = new ArrayList<Node>();
-//
-//        Graph dag = getLatentGraph(_vars, varsWithLatents, edgesPerNode, numLatents);
 
 
             out3.println(dag);
@@ -143,9 +144,9 @@ public class PerformanceTestsDan {
             out5.println();
 
             String vars_temp = vars.toString();
-            vars_temp = vars_temp.replace("[","");
-            vars_temp = vars_temp.replace("]","");
-            vars_temp = vars_temp.replace("X","");
+            vars_temp = vars_temp.replace("[", "");
+            vars_temp = vars_temp.replace("]", "");
+            vars_temp = vars_temp.replace("X", "");
             out2.println(vars_temp);
 
             List<Node> _vars = new ArrayList<>();
@@ -157,9 +158,9 @@ public class PerformanceTestsDan {
             }
 
             String _vars_temp = _vars.toString();
-            _vars_temp = _vars_temp.replace("[","");
-            _vars_temp = _vars_temp.replace("]","");
-            _vars_temp = _vars_temp.replace("X","");
+            _vars_temp = _vars_temp.replace("[", "");
+            _vars_temp = _vars_temp.replace("]", "");
+            _vars_temp = _vars_temp.replace("X", "");
             out2.println(_vars_temp);
 
             DataSet fullData = im.simulateData(numCases, false);
@@ -168,8 +169,8 @@ public class PerformanceTestsDan {
 
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 
-            final IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
-            final edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
+            IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
+            edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
 
             out6.println("GFCI.PAG_of_the_true_DAG");
 
@@ -185,24 +186,24 @@ public class PerformanceTestsDan {
             out6.println(pag);
             printDanMatrix(_vars, pag, out7);
 
-            out8.println("Pattern_of_the_true_DAG OVER MEASURED VARIABLES");
+            out8.println("CPDAG_of_the_true_DAG OVER MEASURED VARIABLES");
 
-            final IndTestFisherZ independencePc = new IndTestFisherZ(cov, alphaPc);
+            IndTestFisherZ independencePc = new IndTestFisherZ(cov, alphaPc);
 
             Pc pc = new Pc(independencePc);
             pc.setVerbose(false);
             pc.setDepth(depth);
 
-            Graph pattern = pc.search();
+            Graph CPDAG = pc.search();
 
-            out8.println(pattern);
+            out8.println(CPDAG);
 
-            printDanMatrix(_vars, pattern, out9);
+            printDanMatrix(_vars, CPDAG, out9);
 
             out10.println(data);
 
             out11.println("True PAG_of_the_true_DAG");
-            final Graph truePag = new DagToPag2(dag).convert();
+            Graph truePag = new DagToPag(dag).convert();
             out11.println(truePag);
             printDanMatrix(_vars, truePag, out12);
 
@@ -221,11 +222,11 @@ public class PerformanceTestsDan {
         }
     }
 
-    private void printDanMatrix(List<Node> vars, Graph pattern, PrintStream out) {
-        pattern = GraphUtils.replaceNodes(pattern, vars);
+    private void printDanMatrix(List<Node> vars, Graph CPDAG, PrintStream out) {
+        CPDAG = GraphUtils.replaceNodes(CPDAG, vars);
         for (int i = 0; i < vars.size(); i++) {
             for (Node var : vars) {
-                Edge edge = pattern.getEdge(vars.get(i), var);
+                Edge edge = CPDAG.getEdge(vars.get(i), var);
 
                 if (edge == null) {
                     out.print(0 + "\t");

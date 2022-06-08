@@ -7,12 +7,12 @@ package edu.cmu.tetrad.util;
  * @author Joseph Ramsey
  */
 public class TaskManager {
-    private static TaskManager instance = new TaskManager();
+    private static final TaskManager instance = new TaskManager();
 
     private boolean canceled;
 
     public static TaskManager getInstance() {
-        return instance;
+        return TaskManager.instance;
     }
 
     public void setCanceled(boolean canceled) {
@@ -20,6 +20,6 @@ public class TaskManager {
     }
 
     public boolean isCanceled() {
-        return canceled;
+        return this.canceled;
     }
 }

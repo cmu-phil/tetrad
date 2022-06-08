@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -47,11 +47,7 @@ public class ReidentifyVariables {
             for (Node _latent : trueGraph.getNodes()) {
                 List<Node> trueChildren = trueGraph.getChildren(_latent);
 
-                for (Node node2 : new ArrayList<>(trueChildren)) {
-                    if (node2.getNodeType() == NodeType.LATENT) {
-                        trueChildren.remove(node2);
-                    }
-                }
+                trueChildren.removeIf(node2 -> node2.getNodeType() == NodeType.LATENT);
 
                 boolean containsAll = true;
                 latent = _latent;
@@ -124,7 +120,7 @@ public class ReidentifyVariables {
             if (node.getNodeType() != NodeType.LATENT) continue;
 
             List<Node> children = trueGraph.getChildren(node);
-            children.removeAll(getLatents(trueGraph));
+            children.removeAll(ReidentifyVariables.getLatents(trueGraph));
 
             List<Node> all = new ArrayList<>();
             all.add(node);
@@ -157,7 +153,7 @@ public class ReidentifyVariables {
                     continue;
                 }
 
-                double sum = sumOfAbsLoadings(cluster, _latent, trueGraph, ims);
+                double sum = ReidentifyVariables.sumOfAbsLoadings(cluster, _latent, trueGraph, ims);
 
                 if (sum > maxSum) {
                     maxSum = sum;
@@ -178,12 +174,12 @@ public class ReidentifyVariables {
         Set<String> values = new HashSet<>(clustersToNames.values());
 
         for (String key : values) {
-            double maxSum = Double.NEGATIVE_INFINITY;
+            final double maxSum = Double.NEGATIVE_INFINITY;
             List<Node> maxCluster = null;
 
             for (List<Node> _cluster : clustersToNames.keySet()) {
                 if (clustersToNames.get(_cluster).equals(key)) {
-                    double sum = sumOfAbsLoadings(_cluster, trueGraph.getNode(key), trueGraph, ims);
+                    double sum = ReidentifyVariables.sumOfAbsLoadings(_cluster, trueGraph.getNode(key), trueGraph, ims);
                     if (sum > maxSum) {
                         maxCluster = _cluster;
                     }

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -20,8 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.test;
+
 import edu.cmu.tetrad.util.TetradSerializableUtils;
-import junit.framework.TestCase;
 import org.junit.Test;
 
 import static junit.framework.TestCase.fail;
@@ -44,27 +44,27 @@ import static junit.framework.TestCase.fail;
  * serializableInstance() static constructors. If this test passes, then all
  * data from old sessions will be loaded back up, and mistakes of its use will
  * be due to misinterpretation or ignoring of old data by programmers. Adding
- * fields is fine.</p>
+ * fields is fine.&gt; 0
  *
  * <p>The test assumes that there is an identified set of public classes inside the
  * scope "serializableScope" (= "dir") that implement the TetradSerializable
  * interface. It checks to make sure that each serializable field of each of
  * these classes is primitive, of a TetradSerializable type, of a type
  * designated as safe in the safelySerializableTypes array (see), or is an array
- * of one of these types.</p>
+ * of one of these types.&gt; 0
  *
  * <p>The test is as follows. First, the "getModel" directory is cleared, and then
  * the serializableInstance() method for each TetradSerializable class C in dir
  * is called to produce a serializable instance I of C. I is then serialized out
  * to the "getModel" directory. At the same time, the list of field names for
  * each class is compiled, and this list is saved out to the "getModel"
- * directory.</p>
+ * directory.&gt; 0
  *
  * <p>Next, serialized files in the "getModel" directory are deserialized, just make
  * sure this is possible. For default serialization (which we're using) this is
  * not necessary, but if the default serialization method is overridden, it's
  * necessary to make sure fields are read in in the order they are written out,
- * so the test is included.</p>
+ * so the test is included.&gt; 0
  *
  * <p>Finally, each serialized file in the archive saved out to the "archive"
  * directory is deserialized, just make sure this is possible. If anyone has
@@ -77,7 +77,7 @@ import static junit.framework.TestCase.fail;
  * getModel classes have fields by the same names as previous versions of those
  * classes, then the types of those fields  must be  compatible, since the
  * deserialization test for each archive must also pass. This guarantees that
- * fields cannot be dropped or names of fields changed.</p>
+ * fields cannot be dropped or names of fields changed.&gt; 0
  *
  * <p>The main() method of this class (called by Ant) performs one additional step,
  * when a new version of Tetrad is being posted online--namely, it zips up the
@@ -85,10 +85,10 @@ import static junit.framework.TestCase.fail;
  * archive) to the "archives" directory. The point of this is to make sure
  * conflicts are only found with previous published versions and not with all
  * previous versions. (Developmental versions are counted as published
- * versions.)</p>
+ * versions.)&gt; 0
  *
  * <p>It is assumed that each instantiable TetradSerializable class C  in dir has a
- * static constructor of the following form:</p>
+ * static constructor of the following form:&gt; 0
  * <pre>
  * public static C* serializableInstance() {
  *     // Returns an instance of C, of type C* = C or some super class C*
@@ -102,9 +102,9 @@ import static junit.framework.TestCase.fail;
  * with the field in the later version of the same name, if a field in the later
  * version by that name exists. It is not necessary to consider different
  * instantiations or subclasses of the type of a field, since all
- * TetradSerializable classes are already tested.</p>
+ * TetradSerializable classes are already tested.&gt; 0
  *
- * <p><For more information on binary serialization, see the Serialization spec:</p>
+ * <p><For more information on binary serialization, see the Serialization spec:&gt; 0
  * <pre>
  * http://java.sun.com/j2se/1.4.2/docs/guide/serialization/
  * </pre>
@@ -112,10 +112,10 @@ import static junit.framework.TestCase.fail;
  * <pre>
  * http://java.sun.com/developer/technicalArticles/Programming/serialization/
  * </pre>
- * <p>Or Joshua Block, Effective Java.</p>                                                                                     fd
+ * <p>Or Joshua Block, Effective Java.&gt; 0                                                                                     fd
  *
  * @author Joseph Ramsey
-// * @see edu.cmu.tetradapp.util.TetradSerializableUtils
+ * // * @see edu.cmu.tetradapp.util.TetradSerializableUtils
  */
 public class TestSerialization {
 
@@ -126,9 +126,9 @@ public class TestSerialization {
      */
     @Test
     public void testLoadabilility() {
-        String serializableScope = "target/classes/edu/cmu";
-        String currentDirectory = "build/tetrad/serializable/model";
-        String archiveDirectory = "archives";
+        final String serializableScope = "target/classes/edu/cmu";
+        final String currentDirectory = "build/tetrad/serializable/model";
+        final String archiveDirectory = "archives";
 
         TetradSerializableUtils utils = new TetradSerializableUtils(
                 serializableScope, currentDirectory, archiveDirectory);
@@ -138,8 +138,7 @@ public class TestSerialization {
             utils.serializeCurrentDirectory();
             utils.deserializeCurrentDirectory();
             utils.deserializeArchivedVersions();
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             System.out.println();
             e.printStackTrace();
             fail("TestSerialization.testLoadability() failed! Please fix " +
@@ -148,9 +147,9 @@ public class TestSerialization {
     }
 
     public void doArchive() {
-        String serializableScope = "build/tetrad/classes/edu/cmu";
-        String currentDirectory = "build/tetrad/serializable/model";
-        String archiveDirectory = "archives";
+        final String serializableScope = "build/tetrad/classes/edu/cmu";
+        final String currentDirectory = "build/tetrad/serializable/model";
+        final String archiveDirectory = "archives";
 
         TetradSerializableUtils utils = new TetradSerializableUtils(
                 serializableScope, currentDirectory, archiveDirectory);

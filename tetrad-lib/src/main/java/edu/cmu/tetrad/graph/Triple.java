@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -38,9 +38,9 @@ public final class Triple implements TetradSerializable {
     // Note: Switching all uses of Underline to Triple, since they did the
     // same thing, and this allows for some useful generalizations, especially
     // since for triples it is always the case that (x, y, z) = (z, y, x).
-    private Node x;
-    private Node y;
-    private Node z;
+    private final Node x;
+    private final Node y;
+    private final Node z;
 
     /**
      * Constructs a triple of nodes.
@@ -62,47 +62,43 @@ public final class Triple implements TetradSerializable {
         return new Triple(new GraphNode("X"), new GraphNode("Y"), new GraphNode("Z"));
     }
 
-    public final Node getX() {
-        return x;
+    public Node getX() {
+        return this.x;
     }
 
-    public final Node getY() {
-        return y;
+    public Node getY() {
+        return this.y;
     }
 
-    public final Node getZ() {
-        return z;
+    public Node getZ() {
+        return this.z;
     }
 
-    public final int hashCode() {
+    public int hashCode() {
         int hash = 17;
-        hash += 19 * x.hashCode() * z.hashCode();
-        hash += 23 * y.hashCode();
+        hash += 19 * this.x.hashCode() * this.z.hashCode();
+        hash += 23 * this.y.hashCode();
         return hash;
     }
 
-    public final boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (!(obj instanceof Triple)) {
             return false;
         }
 
         Triple triple = (Triple) obj;
-        return (x == triple.x && y == triple.y &&
-                z == triple.z)
-                || (x == triple.z && y == triple.y &&
-                z == triple.x);
-//        return (x.equals(triple.x) && y.equals(triple.y) &&
-//                z.equals(triple.z))
-//                || (x.equals(triple.z) && y.equals(triple.y) &&
-//                z.equals(triple.x));
+        return (this.x == triple.x && this.y == triple.y &&
+                this.z == triple.z)
+                || (this.x == triple.z && this.y == triple.y &&
+                this.z == triple.x);
     }
 
     public String toString() {
-        return "<" + x + ", " + y + ", " + z + ">";
+        return "<" + this.x + ", " + this.y + ", " + this.z + ">";
     }
 
     public boolean alongPathIn(Graph graph) {
-        return graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, z) && x != z;
+        return graph.isAdjacentTo(this.x, this.y) && graph.isAdjacentTo(this.y, this.z) && this.x != this.z;
     }
 
     public static String pathString(Graph graph, Node x, Node y, Node z) {

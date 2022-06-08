@@ -21,7 +21,6 @@ package edu.pitt.dbmi.data.reader.metadata;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- *
  * Dec 18, 2018 11:21:23 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -52,11 +51,11 @@ public class ColumnMetadata {
 
     @Override
     public String toString() {
-        return "ColumnMetadata{" + "name=" + name + ", discrete=" + discrete + ", columnNumber=" + columnNumber + '}';
+        return "ColumnMetadata{" + "name=" + this.name + ", discrete=" + this.discrete + ", columnNumber=" + this.columnNumber + '}';
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -64,7 +63,7 @@ public class ColumnMetadata {
     }
 
     public boolean isDiscrete() {
-        return discrete;
+        return this.discrete;
     }
 
     public void setDiscrete(boolean discrete) {
@@ -72,7 +71,7 @@ public class ColumnMetadata {
     }
 
     public int getColumnNumber() {
-        return columnNumber;
+        return this.columnNumber;
     }
 
     public void setColumnNumber(int columnNumber) {

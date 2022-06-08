@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -70,32 +70,6 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         BayesIm bayesIm = wrapper.getBayesIm();
         setup(bayesIm, params);
     }
-/*
-    public RowSummingExactWrapper(DirichletBayesImWrapper wrapper, Parameters params) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        DirichletBayesIm bayesIm = wrapper.getDirichletBayesIm();
-        setup(bayesIm, params);
-    }
-
-    public RowSummingExactWrapper(BayesEstimatorWrapper wrapper, Parameters params) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-
-        BayesIm bayesIm = wrapper.getEstimatedBayesIm();
-        setup(bayesIm, params);
-    }
-
-    public RowSummingExactWrapper(DirichletEstimatorWrapper wrapper, Parameters params) {
-        if (wrapper == null) {
-            throw new NullPointerException();
-        }
-        DirichletBayesIm bayesIm = wrapper.getEstimatedBayesIm();
-        setup(bayesIm, params);
-    }
- */
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -104,18 +78,16 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
-//        return new IdentifiabilityWrapper(
-//                BayesImWrapperObs.serializableInstance(), new Parameters());
     }
 
     //==============================PUBLIC METHODS========================//
 
     public ManipulatingBayesUpdater getBayesUpdater() {
-        return bayesUpdater;
+        return this.bayesUpdater;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -128,16 +100,15 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
         TetradLogger.getInstance().setConfigForClass(this.getClass());
         this.params = params;
         if (params.get("evidence", null) == null || ((Evidence) params.get("evidence", null)).isIncompatibleWith(bayesIm)) {
-            bayesUpdater = new Identifiability(bayesIm);
-        }
-        else {
-            bayesUpdater = new Identifiability(bayesIm,
+            this.bayesUpdater = new Identifiability(bayesIm);
+        } else {
+            this.bayesUpdater = new Identifiability(bayesIm,
                     (Evidence) params.get("evidence", null));
         }
 
 
         Node node = (Node) getParams().get("variable", null);
-		
+
         if (node != null) {
             NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
@@ -166,7 +137,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
 
             for (int i = 0; i < priors.length; i++) {
                 TetradLogger.getInstance().log("details", category(evidence, nodeName, i) + "\t"
-                                + nf.format(priors[i]) + "\t" + nf.format(marginals[i]));
+                        + nf.format(priors[i]) + "\t" + nf.format(marginals[i]));
             }
         }
         TetradLogger.getInstance().reset();
@@ -190,9 +161,6 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -204,7 +172,7 @@ public class IdentifiabilityWrapper implements SessionModel, UpdaterWrapper, Unm
     }
 
     public Parameters getParams() {
-        return params;
+        return this.params;
     }
 }
 

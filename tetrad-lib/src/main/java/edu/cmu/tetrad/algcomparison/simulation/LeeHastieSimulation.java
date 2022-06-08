@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
-import edu.cmu.tetrad.algcomparison.utils.HasParameters;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -13,19 +12,23 @@ import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.csb.mgm.MixedUtils;
-import java.util.*;
 import org.apache.commons.lang3.RandomUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
 /**
- * A version of the Lee & Hastic simulation which is guaranteed ot generate a
+ * A version of the Lee and Hastic simulation which is guaranteed ot generate a
  * discrete data set.
  *
  * @author jdramsey
  */
-public class LeeHastieSimulation implements Simulation, HasParameters {
+public class LeeHastieSimulation implements Simulation {
 
     static final long serialVersionUID = 23L;
-    private RandomGraph randomGraph;
+    private final RandomGraph randomGraph;
     private List<DataSet> dataSets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
     private DataType dataType;
@@ -37,7 +40,7 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (!newModel && !dataSets.isEmpty()) return;
+//        if (!newModel && !dataSets.isEmpty()) return;
 
         double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
@@ -59,49 +62,49 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
         this.shuffledOrder = null;
 
-        Graph graph = randomGraph.createGraph(parameters);
+        Graph graph = this.randomGraph.createGraph(parameters);
 
-        dataSets = new ArrayList<>();
-        graphs = new ArrayList<>();
+        this.dataSets = new ArrayList<>();
+        this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             System.out.println("Simulating dataset #" + (i + 1));
 
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
-                graph = randomGraph.createGraph(parameters);
+                graph = this.randomGraph.createGraph(parameters);
             }
 
-            graphs.add(graph);
+            this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
             dataSet.setName("" + (i + 1));
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
-                dataSet = DataUtils.reorderColumns(dataSet);
+                dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
-            dataSets.add(dataSet);
+            this.dataSets.add(dataSet);
         }
     }
 
     @Override
     public Graph getTrueGraph(int index) {
-        return graphs.get(index);
+        return this.graphs.get(index);
     }
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     @Override
     public String getDescription() {
-        return "Lee & Hastie simulation using " + randomGraph.getDescription();
+        return "Lee & Hastie simulation using " + this.randomGraph.getDescription();
     }
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = randomGraph.getParameters();
+        List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.MIN_CATEGORIES);
         parameters.add(Params.MAX_CATEGORIES);
         parameters.add(Params.PERCENT_DISCRETE);
@@ -118,12 +121,12 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
     public DataType getDataType() {
-        return dataType;
+        return this.dataType;
     }
 
     private DataSet simulate(Graph dag, Parameters parameters) {
@@ -141,18 +144,18 @@ public class LeeHastieSimulation implements Simulation, HasParameters {
 
         for (int i = 0; i < nodes.size(); i++) {
             if (i < nodes.size() * parameters.getDouble(Params.PERCENT_DISCRETE) * 0.01) {
-                final int minNumCategories = parameters.getInt(Params.MIN_CATEGORIES);
-                final int maxNumCategories = parameters.getInt(Params.MAX_CATEGORIES);
-                final int value = pickNumCategories(minNumCategories, maxNumCategories);
-                nd.put(shuffledOrder.get(i).getName(), value);
+                int minNumCategories = parameters.getInt(Params.MIN_CATEGORIES);
+                int maxNumCategories = parameters.getInt(Params.MAX_CATEGORIES);
+                int value = pickNumCategories(minNumCategories, maxNumCategories);
+                nd.put(this.shuffledOrder.get(i).getName(), value);
             } else {
-                nd.put(shuffledOrder.get(i).getName(), 0);
+                nd.put(this.shuffledOrder.get(i).getName(), 0);
             }
         }
 
         Graph graph = MixedUtils.makeMixedGraph(dag, nd);
 
-        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.5,-.5,.5,1.5)");
+        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(graph, "Split(-1.0,-.0,.0,1.0)");
         GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
 
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);

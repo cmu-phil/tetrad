@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -41,12 +41,12 @@ public class LongDataBox implements DataBox {
     /**
      * The number of rows (tracked because it may be zero).
      */
-    private int numRows = 0;
+    private int numRows;
 
     /**
      * The number of columns (tracked because it may be zero).
      */
-    private int numCols = 0;
+    private int numCols;
 
     /**
      * Constructs an 2D long array consisting entirely of missing values (-99).
@@ -56,7 +56,7 @@ public class LongDataBox implements DataBox {
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                data[i][j] = -99L;
+                this.data[i][j] = -99L;
             }
         }
     }
@@ -92,14 +92,14 @@ public class LongDataBox implements DataBox {
      * @return the number of rows in this data box.
      */
     public int numRows() {
-        return numRows;
+        return this.numRows;
     }
 
     /**
      * @return the number of columns in this data box.n
      */
     public int numCols() {
-        return numCols;
+        return this.numCols;
     }
 
     /**
@@ -108,12 +108,12 @@ public class LongDataBox implements DataBox {
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
-            synchronized (data) {
-                data[row][col] = -99L;
+            synchronized (this.data) {
+                this.data[row][col] = -99L;
             }
         } else {
-            synchronized (data) {
-                data[row][col] = value.longValue();
+            synchronized (this.data) {
+                this.data[row][col] = value.longValue();
             }
         }
     }
@@ -123,7 +123,7 @@ public class LongDataBox implements DataBox {
      * is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
-        long datum = data[row][col];
+        long datum = this.data[row][col];
 
         if (datum == -99L) {
             return null;

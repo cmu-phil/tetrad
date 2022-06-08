@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,8 +23,10 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -40,13 +42,13 @@ import java.util.Map;
  * @author Bryan Andrews
  */
 public class IndTestMVPLRT implements IndependenceTest {
-    private DataSet data;
-    private Map<Node, Integer> nodesHash;
-    private double alpha = 0.001;
+    private final DataSet data;
+    private final Map<Node, Integer> nodesHash;
+    private double alpha;
 
     // Likelihood function
-    private MVPLikelihood likelihood;
-    private boolean verbose = false;
+    private final MVPLikelihood likelihood;
+    private boolean verbose;
 
 
     // P Values
@@ -54,14 +56,14 @@ public class IndTestMVPLRT implements IndependenceTest {
 
     public IndTestMVPLRT(DataSet data, double alpha, int fDegree, boolean discretize) {
         this.data = data;
-        this.likelihood= new MVPLikelihood(data, -1, fDegree, discretize);
+        this.likelihood = new MVPLikelihood(data, -1, fDegree, discretize);
 
-        nodesHash = new HashedMap<>();
+        this.nodesHash = new HashedMap<>();
 
         List<Node> variables = data.getVariables();
 
         for (int i = 0; i < variables.size(); i++) {
-            nodesHash.put(variables.get(i), i);
+            this.nodesHash.put(variables.get(i), i);
         }
 
         this.alpha = alpha;
@@ -76,20 +78,20 @@ public class IndTestMVPLRT implements IndependenceTest {
 
     /**
      * @return true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
+     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
 
-        int _x = nodesHash.get(x);
-        int _y = nodesHash.get(y);
+        int _x = this.nodesHash.get(x);
+        int _y = this.nodesHash.get(y);
         int[] list0 = new int[z.size() + 1];
         int[] list1 = new int[z.size() + 1];
         int[] list2 = new int[z.size()];
         list0[0] = _x;
         list1[0] = _y;
         for (int i = 0; i < z.size(); i++) {
-            int _z = nodesHash.get(z.get(i));
+            int _z = this.nodesHash.get(z.get(i));
             list0[i + 1] = _z;
             list1[i + 1] = _z;
             list2[i] = _z;
@@ -100,15 +102,19 @@ public class IndTestMVPLRT implements IndependenceTest {
         double lik_1;
         double dof_1;
 
-        lik_0 = likelihood.getLik(_y, list0) - likelihood.getLik(_y, list2);
-        dof_0 = likelihood.getLik(_y, list0) - likelihood.getLik(_y, list2);
+        lik_0 = this.likelihood.getLik(_y, list0) - this.likelihood.getLik(_y, list2);
+        dof_0 = this.likelihood.getLik(_y, list0) - this.likelihood.getLik(_y, list2);
 
-        lik_1 = likelihood.getLik(_x, list1) - likelihood.getLik(_x, list2);
-        dof_1 = likelihood.getLik(_x, list1) - likelihood.getLik(_x, list2);
+        lik_1 = this.likelihood.getLik(_x, list1) - this.likelihood.getLik(_x, list2);
+        dof_1 = this.likelihood.getLik(_x, list1) - this.likelihood.getLik(_x, list2);
 
 
-        if (dof_0 <= 0) { dof_0 = 1; }
-        if (dof_1 <= 0) { dof_1 = 1; }
+        if (dof_0 <= 0) {
+            dof_0 = 1;
+        }
+        if (dof_1 <= 0) {
+            dof_1 = 1;
+        }
         double p_0 = 0;
         double p_1 = 0;
         try {
@@ -123,26 +129,16 @@ public class IndTestMVPLRT implements IndependenceTest {
         }
         this.pValue = Math.min(p_0, p_1);
 
-        return this.pValue > alpha;
-    }
+        boolean independent = this.pValue > this.alpha;
 
-    public boolean isIndependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isIndependent(x, y, zList);
-    }
+        if (this.verbose) {
+            if (independent) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+            }
+        }
 
-    /**
-     * @return true if the given independence question is judged false, true if not. The independence question is of the
-     * form x _||_ y | z, z = <z1,...,zn>, where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
-     */
-    public boolean isDependent(Node x, Node y, List<Node> z) {
-        return !this.isIndependent(x, y, z);
-    }
-
-    public boolean isDependent(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return isDependent(x, y, zList);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
     }
 
     /**
@@ -158,7 +154,7 @@ public class IndTestMVPLRT implements IndependenceTest {
      * relations.
      */
     public List<Node> getVariables() {
-        return data.getVariables();
+        return this.data.getVariables();
     }
 
     /**
@@ -196,7 +192,7 @@ public class IndTestMVPLRT implements IndependenceTest {
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
-        return alpha;
+        return this.alpha;
     }
 
     /**
@@ -207,7 +203,7 @@ public class IndTestMVPLRT implements IndependenceTest {
     }
 
     public DataSet getData() {
-        return data;
+        return this.data;
     }
 
     @Override
@@ -238,7 +234,7 @@ public class IndTestMVPLRT implements IndependenceTest {
 
     @Override
     public boolean isVerbose() {
-        return verbose;
+        return this.verbose;
     }
 
     @Override

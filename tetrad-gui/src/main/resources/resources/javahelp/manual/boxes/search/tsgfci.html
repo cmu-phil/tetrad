@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-    <title>Search Algorithms: tsFCI</title>
+    <title>Search Algorithms: SvarFCI</title>
     <meta http-equiv="Content-Type"
           content="text/html; charset=iso-8859-1">
 </head>
@@ -10,20 +10,20 @@
     <tbody>
     <tr>
         <td>
-            <h2><font color="#ffffff">Search Algorithms: tsGFCI</font></h2>
+            <h2><font color="#ffffff">Search Algorithms: svarGFCI</font></h2>
         </td>
     </tr>
     </tbody>
 </table>
 <p>
-    The tsGFCI algorithm is a version of GFCI for time series data. See the GFCI documentation for
+    The svarGFCI algorithm is a version of GFCI for time series data. See the GFCI documentation for
 
     a description of the GFCI algorithm, which allows for unmeasured (hidden, latent) variables in
 
     the data-generating process and produces a PAG (partial ancestral graph).</p>
 <p>
 
-    tsGFCI takes as input a <em>time lag data set</em>, i.e., a data set which includes time series
+    svarGFCI takes as input a <em>time lag data set</em>, i.e., a data set which includes time series
 
     observations of variables X1, X2, X3, ..., and their lags X1:1, X2:1, X3:1, ..., X1:2, X2:2,
 
@@ -39,7 +39,7 @@
 </p>
 <p>
 
-    tsGFCI uses a BIC score to search for a skeleton. Thus, the only user-specified parameter is an
+    svarGFCI uses a BIC score to search for a skeleton. Thus, the only user-specified parameter is an
 
     optional <em>penalty score</em> to bias the search in favor of more sparse models. See the description of
 
@@ -49,7 +49,7 @@
 </p>
 <p>
 
-    As is the case with tsFCI, tsGFCI will automatically respect the time order of the variables and
+    As is the case with SvarFCI, SvarGFCI will automatically respect the time order of the variables and
 
     impose a repeating structure. Firstly, it puts lagged variables in appropriate tiers so, e.g., X3:2
 

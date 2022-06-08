@@ -22,7 +22,6 @@ import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
 import edu.pitt.dbmi.data.reader.MixedData;
 
 /**
- *
  * Dec 29, 2018 5:16:48 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -43,22 +42,22 @@ public class MixedTabularData implements MixedData {
 
     @Override
     public int getNumOfRows() {
-        return numOfRows;
+        return this.numOfRows;
     }
 
     @Override
     public DiscreteDataColumn[] getDataColumns() {
-        return dataColumns;
+        return this.dataColumns;
     }
 
     @Override
     public double[][] getContinuousData() {
-        return continuousData;
+        return this.continuousData;
     }
 
     @Override
     public int[][] getDiscreteData() {
-        return discreteData;
+        return this.discreteData;
     }
 
 }

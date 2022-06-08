@@ -19,15 +19,14 @@
 package edu.cmu.tetrad.stat.correlation;
 
 /**
- *
  * Jan 27, 2016 4:46:07 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface RealCovariance {
 
-    public double[] computeLowerTriangle(boolean biasCorrected);
+    double[] computeLowerTriangle(boolean biasCorrected);
 
-    public double[][] compute(boolean biasCorrected);
+    double[][] compute(boolean biasCorrected);
 
 }

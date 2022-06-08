@@ -21,16 +21,16 @@ package edu.pitt.dbmi.data.reader.validation.covariance;
 import edu.pitt.dbmi.data.reader.DataReader;
 import edu.pitt.dbmi.data.reader.validation.Validation;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+
 import java.util.List;
 
 /**
- *
  * Dec 12, 2018 2:43:10 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public interface CovarianceValidation extends Validation, DataReader {
 
-    public List<ValidationResult> validate();
+    List<ValidationResult> validate();
 
 }

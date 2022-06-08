@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.DiscreteMixedScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class DiscreteMixedBicScore implements ScoreWrapper {
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        final DiscreteMixedScore discreteMixedScore
+        DiscreteMixedScore discreteMixedScore
                 = new DiscreteMixedScore(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"));
         discreteMixedScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return discreteMixedScore;

@@ -1,15 +1,13 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -20,22 +18,22 @@ import java.util.Set;
  * library("MASS");
  * library("pcalg");
  * <p>
- * path<-"/Users/user/tetrad/comparison-final";
- * simulation<-1;
+ * path&lt;-"/Users/user/tetrad/comparison-final";
+ * simulation&lt;-1;
  * <p>
- * subdir<-"pc.solve.confl.TRUE";
+ * subdir&lt;-"pc.solve.confl.TRUE";
  * dir.create(paste(path, "/save/", simulation, "/", subdir, sep=""));
  * <p>
  * for (i in 1:10) {
- * data<-read.table(paste(path, "/save/", simulation, "/data/data.", i, ".txt", sep=""), header=TRUE)
- * n<-nrow(data)
- * C<-cor(data)
- * v<-names(data)
- * suffStat<-list(C = C, n=n)
- * pc.fit<-pc(suffStat=suffStat, indepTest=gaussCItest, alpha=0.001, labels=v,
+ * data&lt;-read.table(paste(path, "/save/", simulation, "/data/data.", i, ".txt", sep=""), header=TRUE)
+ * n&lt;-nrow(data)
+ * C&lt;-cor(data)
+ * v&lt;-names(data)
+ * suffStat&lt;-list(C = C, n=n)
+ * pc.fit&lt;-pc(suffStat=suffStat, indepTest=gaussCItest, alpha=0.001, labels=v,
  * solve.conf=TRUE)
- * A<-as(pc.fit, "amat")
- * name<-paste(path, "/save/", simulation, "/", subdir, "/graph.", i, ".txt", sep="")
+ * A&lt;-as(pc.fit, "amat")
+ * name&lt;-paste(path, "/save/", simulation, "/", subdir, "/graph.", i, ".txt", sep="")
  * print(name)
  * write.matrix(A, file=name, sep="\t")
  * }
@@ -45,7 +43,7 @@ import java.util.Set;
 public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;
     private final ExternalAlgorithm[] algorithms;
-    private String shortDescription = null;
+    private final String shortDescription;
     private long elapsed = -99;
 
     public ExternalAlgorithmIntersection(String shortDescription, ExternalAlgorithm... algorithms) {
@@ -59,18 +57,18 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     public Graph search(DataModel dataSet, Parameters parameters) {
         this.elapsed = 0;
 
-        for (ExternalAlgorithm algorithm : algorithms) {
+        for (ExternalAlgorithm algorithm : this.algorithms) {
             algorithm.setPath(this.path);
             algorithm.setSimIndex(this.simIndex);
             algorithm.setSimulation(this.simulation);
-            elapsed += algorithm.getElapsedTime((DataSet) dataSet, parameters);
+            this.elapsed += algorithm.getElapsedTime(dataSet, parameters);
         }
 
-        Graph graph0 = algorithms[0].search(dataSet, parameters);
+        Graph graph0 = this.algorithms[0].search(dataSet, parameters);
         Set<Edge> edges = graph0.getEdges();
 
-        for (int i = 1; i < algorithms.length; i++) {
-            edges.retainAll(algorithms[i].search(dataSet, parameters).getEdges());
+        for (int i = 1; i < this.algorithms.length; i++) {
+            edges.retainAll(this.algorithms[i].search(dataSet, parameters).getEdges());
         }
 
         EdgeListGraph intersection = new EdgeListGraph(graph0.getNodes());
@@ -83,14 +81,14 @@ public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     }
 
     /**
-     * Returns the pattern of the supplied DAG.
+     * Returns the CPDAG of the supplied DAG.
      */
     public Graph getComparisonGraph(Graph graph) {
-        return algorithms[0].getComparisonGraph(graph);
+        return this.algorithms[0].getComparisonGraph(graph);
     }
 
     public String getDescription() {
-        return shortDescription;
+        return this.shortDescription;
     }
 
     public DataType getDataType() {

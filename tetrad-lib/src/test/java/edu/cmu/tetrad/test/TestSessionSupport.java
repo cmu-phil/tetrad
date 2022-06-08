@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -42,11 +42,6 @@ public class TestSessionSupport {
     private SessionSupport sessionSupport;
 
     /**
-     * A Session object to facilitate testing.
-     */
-    private Session session;
-
-    /**
      * A session node to facilitate testing.
      */
     private SessionNode node1;
@@ -72,7 +67,10 @@ public class TestSessionSupport {
     public void setUp() {
         this.node1 = new SessionNode(Type1.class);
         this.node2 = new SessionNode(Type2.class);
-        this.session = new Session("Test");
+        /**
+         * A Session object to facilitate testing.
+         */
+        Session session = new Session("Test");
         this.sessionSupport = new SessionSupport(session);
     }
 
@@ -196,38 +194,38 @@ public class TestSessionSupport {
 
         // Test node added event.
         setEvent1Received(false);
-        this.sessionSupport.fireNodeAdded(node1);
+        this.sessionSupport.fireNodeAdded(this.node1);
         assertTrue(isEvent1Received());
 
         // Test node removed event.
         setEvent1Received(false);
-        this.sessionSupport.fireNodeRemoved(node1);
+        this.sessionSupport.fireNodeRemoved(this.node1);
         assertTrue(isEvent1Received());
 
         // Test parent added event.
         setEvent1Received(false);
-        this.sessionSupport.fireParentAdded(node1, node2);
+        this.sessionSupport.fireParentAdded(this.node1, this.node2);
         assertTrue(isEvent1Received());
 
         // Test parent removed event.
         setEvent1Received(false);
-        this.sessionSupport.fireParentRemoved(node1, node2);
+        this.sessionSupport.fireParentRemoved(this.node1, this.node2);
         assertTrue(isEvent1Received());
 
         // Test model created event.
         setEvent1Received(false);
-        this.sessionSupport.fireModelCreated(node1);
+        this.sessionSupport.fireModelCreated(this.node1);
         assertTrue(isEvent1Received());
 
         // Test model destroyed event.
         setEvent1Received(false);
-        this.sessionSupport.fireModelDestroyed(node1);
+        this.sessionSupport.fireModelDestroyed(this.node1);
         assertTrue(isEvent1Received());
 
         // Remove the listener and make sure it's removed.
         this.sessionSupport.removeSessionListener(l1);
         setEvent1Received(false);
-        this.sessionSupport.fireNodeAdded(node1);
+        this.sessionSupport.fireNodeAdded(this.node1);
         assertTrue(!isEvent1Received());
     }
 
@@ -262,7 +260,7 @@ public class TestSessionSupport {
         this.sessionSupport.addSessionListener(l2);
         setEvent1Received(false);
         setEvent2Received(false);
-        this.sessionSupport.fireNodeAdded(node1);
+        this.sessionSupport.fireNodeAdded(this.node1);
         assertTrue(isEvent1Received());
         assertTrue(isEvent2Received());
 
@@ -271,7 +269,7 @@ public class TestSessionSupport {
         this.sessionSupport.removeSessionListener(l1);
         setEvent1Received(false);
         setEvent2Received(false);
-        this.sessionSupport.fireNodeAdded(node1);
+        this.sessionSupport.fireNodeAdded(this.node1);
         assertTrue(!isEvent1Received());
         assertTrue(isEvent2Received());
     }
@@ -280,7 +278,7 @@ public class TestSessionSupport {
      * Helps to determine whether an event was received.
      */
     public boolean isEvent1Received() {
-        return event1Received;
+        return this.event1Received;
     }
 
     /**
@@ -295,7 +293,7 @@ public class TestSessionSupport {
      * Helps to determine whether an event was received.
      */
     public boolean isEvent2Received() {
-        return event2Received;
+        return this.event2Received;
     }
 
     /**

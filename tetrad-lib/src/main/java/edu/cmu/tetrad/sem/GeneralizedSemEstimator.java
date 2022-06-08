@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -29,22 +29,20 @@ import edu.cmu.tetrad.data.MultiGeneralAndersonDarlingTest;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.distribution.RealDistribution;
-import org.apache.commons.math3.optim.*;
+import org.apache.commons.math3.optim.InitialGuess;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.PointValuePair;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
-import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.*;
-import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.log;
 
 /**
- * Estimates a Generalized SEM IM given a Generalized SEM PM and a data set.
+ * Estimates a Generalized SEM I'M given a Generalized SEM PM and a data set.
  *
  * @author Joseph Ramsey
  */
@@ -83,7 +81,7 @@ public class GeneralizedSemEstimator {
                 values[j] = parameterEstimationInitializationExpression.evaluate(new MyContext());
             }
 
-            double[] point = optimize(likelihoodFittingfunction, values, 1);
+            double[] point = optimize(likelihoodFittingfunction, values);
 
             for (int j = 0; j < parameters.size(); j++) {
                 estIm.setParameterValue(parameters.get(j), point[j]);
@@ -101,16 +99,12 @@ public class GeneralizedSemEstimator {
         }
 
         List<String> parameters = new ArrayList<>();
-        double[] values = new double[parameters.size()];
-
-        for (int i = 0; i < parameters.size(); i++) {
-            values[i] = estIm.getParameterValue(parameters.get(i));
-        }
+        double[] values = new double[0];
 
         LikelihoodFittingFunction likelihoodFittingFunction = new LikelihoodFittingFunction(pm, parameters,
                 nodes, data, context);
 
-        optimize(likelihoodFittingFunction, values, 1);
+        optimize(likelihoodFittingFunction, values);
 
         MultiGeneralAndersonDarlingTest test = new MultiGeneralAndersonDarlingTest(allResiduals, allDistributions);
 
@@ -118,67 +112,20 @@ public class GeneralizedSemEstimator {
 
         this.aSquaredStar = aSquaredStar;
 
-        String builder2 = "Report:\n" +
+        this.report = "Report:\n" +
                 "\nModel A^2* (Anderson Darling) = " + aSquaredStar + "\n" +
                 builder;
-
-        this.report = builder2;
 
         return estIm;
     }
 
-//    // Maximizes likelihood of the entire model.
-//    public GeneralizedSemIm estimate2(GeneralizedSemPm pm, DataSet data) {
-//
-//        GeneralizedSemIm estIm = new GeneralizedSemIm(pm);
-//        MyContext context = new MyContext();
-//
-//        List<Node> nodes = pm.getGraph().getNodes();
-//        nodes.removeAll(pm.getErrorNodes());
-//
-//        List<String> parameters = new ArrayList<>(pm.getParameters());
-//
-//        LikelihoodFittingFunction5 likelihoodFittingFunction = new LikelihoodFittingFunction5(pm, parameters,
-//                nodes, data, context);
-//
-//        double[] values = new double[parameters.size()];
-//
-//        for (int j = 0; j < parameters.size(); j++) {
-//            Expression expression = pm.getParameterEstimationInitializationExpression(parameters.get(j));
-//            RealDistribution dist = expression.getRealDistribution(context);
-//            if (dist != null) {
-//                double lb = dist.getSupportLowerBound();
-//                double up = dist.getSupportUpperBound();
-//                values[j] = expression.evaluate(context);
-//                if (values[j] < lb) values[j] = lb;
-//                if (values[j] > up) values[j] = up;
-//            } else {
-//                values[j] = expression.evaluate(context);
-//            }
-//        }
-//
-//        double[] point = optimize(likelihoodFittingFunction, values, 1);
-//
-//        for (int j = 0; j < parameters.size(); j++) {
-//            estIm.setParameterValue(parameters.get(j), point[j]);
-//        }
-//
-////        MultiGeneralAndersonDarlingTest test = new MultiGeneralAndersonDarlingTest(allResiduals, allDistributions);
-////        System.out.println("Multi AD A^2 = " + test.getASquared());
-////        System.out.println("Multi AD A^2-Star = " + test.getASquaredStar());
-////        System.out.println("Multi AD p = " + test.getP());
-//
-//
-//        return estIm;
-//    }
-
 
     public String getReport() {
-        return report;
+        return this.report;
     }
 
     public double getaSquaredStar() {
-        return aSquaredStar;
+        return this.aSquaredStar;
     }
 
 
@@ -187,13 +134,13 @@ public class GeneralizedSemEstimator {
         final Map<String, Double> parameterValues = new HashMap<>();
 
         public Double getValue(String term) {
-            Double value = parameterValues.get(term);
+            Double value = this.parameterValues.get(term);
 
             if (value != null) {
                 return value;
             }
 
-            value = variableValues.get(term);
+            value = this.variableValues.get(term);
 
             if (value != null) {
                 return value;
@@ -203,11 +150,11 @@ public class GeneralizedSemEstimator {
         }
 
         public void putParameterValue(String s, double parameter) {
-            parameterValues.put(s, parameter);
+            this.parameterValues.put(s, parameter);
         }
 
         public void putVariableValue(String s, double value) {
-            variableValues.put(s, value);
+            this.variableValues.put(s, value);
         }
     }
 
@@ -220,7 +167,7 @@ public class GeneralizedSemEstimator {
         double[][] residuals = new double[data.length][data[0].length];
 
         for (Node node : tierOrdering) {
-            context.putVariableValue(pm.getErrorNode(node).toString(), 0.0);
+            context.putVariableValue(Objects.requireNonNull(pm.getErrorNode(node)).toString(), 0.0);
         }
 
         for (int i = 0; i < params.size(); i++) {
@@ -254,7 +201,7 @@ public class GeneralizedSemEstimator {
         double[] residuals = new double[data.length];
 
         for (Node node : tierOrdering) {
-            context.putVariableValue(pm.getErrorNode(node).toString(), 0.0);
+            context.putVariableValue(Objects.requireNonNull(pm.getErrorNode(node)).toString(), 0.0);
         }
 
         for (int i = 0; i < params.size(); i++) {
@@ -294,10 +241,10 @@ public class GeneralizedSemEstimator {
         return dataValues;
     }
 
-    private double[] optimize(MultivariateFunction function, double[] values, int optimizer) {
+    private double[] optimize(MultivariateFunction function, double[] values) {
         PointValuePair pair;
 
-        if (optimizer == 1) {
+        {
 //            0.01, 0.000001
             //2.0D * FastMath.ulp(1.0D), 1e-8
             MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
@@ -307,59 +254,6 @@ public class GeneralizedSemEstimator {
                     GoalType.MINIMIZE,
                     new MaxEval(100000)
             );
-        } else if (optimizer == 2) {
-            MultivariateOptimizer search = new SimplexOptimizer(1e-7, 1e-7);
-            pair = search.optimize(
-                    new InitialGuess(values),
-                    new ObjectiveFunction(function),
-                    GoalType.MINIMIZE,
-                    new MaxEval(100000),
-                    new NelderMeadSimplex(values.length)
-            );
-        } else if (optimizer == 3) {
-            int dim = values.length;
-            int additionalInterpolationPoints = 0;
-            final int numIterpolationPoints = 2 * dim + 1 + additionalInterpolationPoints;
-
-            BOBYQAOptimizer search = new BOBYQAOptimizer(numIterpolationPoints);
-            pair = search.optimize(
-                    new MaxEval(100000),
-                    new ObjectiveFunction(function),
-                    GoalType.MINIMIZE,
-                    new InitialGuess(values),
-                    SimpleBounds.unbounded(dim)
-            );
-        } else if (optimizer == 4) {
-            MultivariateOptimizer search = new CMAESOptimizer(3000000, .05, false, 0, 0,
-                    new MersenneTwister(), false, new SimplePointChecker<PointValuePair>(0.5, 0.5));
-            pair = search.optimize(
-                    new MaxEval(30000),
-                    new ObjectiveFunction(function),
-                    GoalType.MINIMIZE,
-                    new InitialGuess(values),
-                    new CMAESOptimizer.Sigma(new double[values.length]),
-                    new CMAESOptimizer.PopulationSize(1000)
-            );
-        } else if (optimizer == 5) {
-//            0.01, 0.000001
-            //2.0D * FastMath.ulp(1.0D), 1e-8
-            MultivariateOptimizer search = new PowellOptimizer(.05, .05);
-            pair = search.optimize(
-                    new InitialGuess(values),
-                    new ObjectiveFunction(function),
-                    GoalType.MINIMIZE,
-                    new MaxEval(100000)
-            );
-        } else if (optimizer == 6) {
-            MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
-            pair = search.optimize(
-                    new InitialGuess(values),
-                    new ObjectiveFunction(function),
-                    GoalType.MAXIMIZE,
-                    new MaxEval(10000)
-            );
-        } else {
-            throw new IllegalStateException();
         }
 
         return pair.getPoint();
@@ -368,9 +262,9 @@ public class GeneralizedSemEstimator {
     static class LikelihoodFittingFunction implements MultivariateFunction {
         private final GeneralizedSemPm pm;
         private final MyContext context;
-        private List<String> parameters;
-        private List<Node> tierOrdering;
-        private double[][] dataValues;
+        private final List<String> parameters;
+        private final List<Node> tierOrdering;
+        private final double[][] dataValues;
 
         /**
          * f
@@ -382,34 +276,34 @@ public class GeneralizedSemEstimator {
             this.parameters = parameters;
             this.tierOrdering = tierOrdering;
             this.context = context;
-            dataValues = getDataValues(data, tierOrdering);
+            this.dataValues = GeneralizedSemEstimator.getDataValues(data, tierOrdering);
         }
 
         @Override
-        public double value(final double[] parameters) {
+        public double value(double[] parameters) {
             for (double parameter : parameters) {
                 if (Double.isNaN(parameter)) {
                     return Double.POSITIVE_INFINITY;
                 }
             }
 
-            double[][] r = calcResiduals(dataValues, tierOrdering, this.parameters, parameters, pm, context);
+            double[][] r = GeneralizedSemEstimator.calcResiduals(this.dataValues, this.tierOrdering, this.parameters, parameters, this.pm, this.context);
 
             double total = 0.0;
 
-            for (int index = 0; index < tierOrdering.size(); index++) {
-                Node error = pm.getErrorNode(tierOrdering.get(index));
+            for (int index = 0; index < this.tierOrdering.size(); index++) {
+                Node error = this.pm.getErrorNode(this.tierOrdering.get(index));
 
                 for (int k = 0; k < parameters.length; k++) {
-                    context.putParameterValue(this.parameters.get(k), parameters[k]);
+                    this.context.putParameterValue(this.parameters.get(k), parameters[k]);
                 }
 
-                Expression expression = pm.getNodeExpression(error);
-                RealDistribution dist = expression.getRealDistribution(context);
+                Expression expression = this.pm.getNodeExpression(error);
+                RealDistribution dist = expression.getRealDistribution(this.context);
 
                 if (dist == null) {
                     try {
-                        dist = new EmpiricalDistributionForExpression(pm, error, context).getDist();
+                        dist = new EmpiricalDistributionForExpression(this.pm, error, this.context).getDist();
                     } catch (Exception e) {
                         return Double.POSITIVE_INFINITY;
                     }
@@ -445,7 +339,7 @@ public class GeneralizedSemEstimator {
         }
 
         public List<Node> getTierOrdering() {
-            return tierOrdering;
+            return this.tierOrdering;
         }
     }
 
@@ -453,10 +347,10 @@ public class GeneralizedSemEstimator {
 
         private final GeneralizedSemPm pm;
         private final DataSet data;
-        private List<String> parameters;
-        private List<Node> tierOrdering;
-        private int index = -1;
-        private MyContext context;
+        private final List<String> parameters;
+        private final List<Node> tierOrdering;
+        private final int index;
+        private final MyContext context;
 
         private List<Double> disturbances;
         private RealDistribution distribution;
@@ -475,29 +369,29 @@ public class GeneralizedSemEstimator {
         }
 
         @Override
-        public double value(final double[] values) {
+        public double value(double[] values) {
             for (double value : values) {
                 if (Double.isNaN(value)) {
                     return Double.POSITIVE_INFINITY;
                 }
             }
 
-            Node error = pm.getErrorNode(tierOrdering.get(index));
+            Node error = this.pm.getErrorNode(this.tierOrdering.get(this.index));
 
             for (int k = 0; k < values.length; k++) {
-                context.putParameterValue(this.parameters.get(k), values[k]);
+                this.context.putParameterValue(this.parameters.get(k), values[k]);
             }
 
-            double[][] dataValues = getDataValues(data, tierOrdering);
+            double[][] dataValues = GeneralizedSemEstimator.getDataValues(this.data, this.tierOrdering);
 
-            double[] r = calcOneResiduals(index, dataValues, tierOrdering, parameters, values, pm, context);
+            double[] r = GeneralizedSemEstimator.calcOneResiduals(this.index, dataValues, this.tierOrdering, this.parameters, values, this.pm, this.context);
 
-            Expression expression = pm.getNodeExpression(error);
+            Expression expression = this.pm.getNodeExpression(error);
 
             RealDistribution dist;
 
             try {
-                dist = expression.getRealDistribution(context);
+                dist = expression.getRealDistribution(this.context);
             } catch (Exception e) {
                 return Double.POSITIVE_INFINITY;
             }
@@ -506,11 +400,6 @@ public class GeneralizedSemEstimator {
                 throw new IllegalArgumentException("For estimation, only error distributions may be used for which " +
                         "a p.d.f. is available.");
 
-//                try {
-//                    dist = new EmpiricalDistributionForExpression(pm, error, context).getDist();
-//                } catch (Exception e) {
-//                    return Double.POSITIVE_INFINITY;
-//                }
             }
 
             List<Double> residuals = new ArrayList<>();
@@ -550,212 +439,19 @@ public class GeneralizedSemEstimator {
         }
 
         public List<Node> getTierOrdering() {
-            return tierOrdering;
+            return this.tierOrdering;
         }
 
 
         public List<Double> getResiduals() {
-            return disturbances;
+            return this.disturbances;
         }
 
         public RealDistribution getDistribution() {
-            return distribution;
+            return this.distribution;
         }
     }
 
 
-//    /**
-//     * Wraps the SEM maximum likelihood fitting function for purposes of being
-//     * evaluated using the PAL ConjugateDirection optimizer.
-//     *
-//     * @author Joseph Ramsey
-//     */
-//    static class CoefFittingFunction implements MultivariateFunction {
-//
-//        /**
-//         * The wrapped Sem.
-//         */
-//        private final GeneralizedSemPm pm;
-//        private DataSet data;
-//
-//        private List<String> freeParameters;
-//
-//        private MyContext context;
-//        private List<Node> tierOrdering;
-//        private double[][] dataValues;
-//        private double[][] calculatedValues;
-//
-//        /**
-//         * Constructs a new CoefFittingFunction for the given Sem.
-//         */
-//        public CoefFittingFunction(GeneralizedSemIm init, List<String> parameters, DataSet data) {
-//            this.pm = init.getSemPm();
-//            this.data = data;
-//
-//            context = new MyContext();
-//
-//            this.freeParameters = parameters;
-//            tierOrdering = pm.getGraph().getFullTierOrdering();
-//            tierOrdering.removeAll(pm.getErrorNodes());
-//
-//            dataValues = new double[data.getNumRows()][tierOrdering.size()];
-//            calculatedValues = new double[data.getNumRows()][tierOrdering.size()];
-//
-//            int[] indices = new int[tierOrdering.size()];
-//
-//            for (int i = 0; i < tierOrdering.size(); i++) {
-//                indices[i] = data.getColumn(data.getVariable(tierOrdering.get(i).getNode()));
-//            }
-//
-//            for (int i = 0; i < data.getNumRows(); i++) {
-//                for (int j = 0; j < tierOrdering.size(); j++) {
-//                    dataValues[i][j] = data.getDouble(i, indices[j]);
-//                }
-//            }
-//        }
-//
-//        @Override
-//        public double value(final double[] parameters) {
-//            for (int i = 0; i < freeParameters.size(); i++) {
-//                context.putParameterValue(freeParameters.get(i), parameters[i]);
-//            }
-//
-//            for (Node error : pm.getErrorNodes()) {
-//                context.putVariableValue(error.getNode(), 0.0);
-//            }
-//
-//            double totalDiscrepancy = 0.0;
-//            int numRows = 0;
-//
-//            ROWS:
-//            for (int row = 0; row < data.getNumRows(); row++) {
-//                for (int i = 0; i < tierOrdering.size(); i++) {
-//                    context.putVariableValue(tierOrdering.get(i).getNode(), dataValues[row][i]);
-//                    if (Double.isNaN(dataValues[row][i])) continue ROWS;
-//                }
-//
-//                for (int i = 0; i < tierOrdering.size(); i++) {
-//                    Node node = tierOrdering.get(i);
-//                    Expression expression = pm.getNodeExpression(node);
-//                    calculatedValues[row][i] = expression.evaluate(context);
-//                    if (Double.isNaN(calculatedValues[row][i])) continue ROWS;
-//                }
-//
-//                for (int i = 0; i < tierOrdering.size(); i++) {
-//                    double discrepancy = calculatedValues[row][i] - dataValues[row][i];
-////                    totalDiscrepancy += discrepancy * discrepancy;
-//                    totalDiscrepancy += abs(discrepancy);
-//                }
-//
-//                numRows++;
-//            }
-//
-//            if (numRows == 0) {
-//                return Double.POSITIVE_INFINITY;
-//            }
-//
-//            return totalDiscrepancy / numRows;
-//        }
-//
-//        public List<Node> getTierOrdering() {
-//            return tierOrdering;
-//        }
-//    }
-
-//    static class LikelihoodFittingFunction5 implements MultivariateFunction {
-//        private final GeneralizedSemPm pm;
-//        private final MyContext context;
-//        private List<String> parameters;
-//        private List<Node> tierOrdering;
-//        private double[][] dataValues;
-//        private double maxLikelihood;
-//
-//        /**
-//         * f
-//         * Constructs a new CoefFittingFunction for the given Sem.
-//         */
-//        public LikelihoodFittingFunction5(GeneralizedSemPm pm, List<String> parameters,
-//                                          List<Node> tierOrdering, DataSet data, MyContext context) {
-//            this.pm = pm;
-//            this.parameters = parameters;
-//            this.tierOrdering = tierOrdering;
-//            this.context = context;
-//            dataValues = getDataValues(data, tierOrdering);
-//        }
-//
-//        @Override
-//        public double value(final double[] parameters) {
-//            for (double parameter : parameters) {
-//                if (Double.isNaN(parameter)) {
-//                    return Double.POSITIVE_INFINITY;
-//                }
-//            }
-//
-////            double[][] r = calcResiduals(dataValues, tierOrdering, this.parameters, parameters, pm, context);
-//
-//            double total = 0.0;
-//
-//            for (int index = 0; index < tierOrdering.size(); index++) {
-//                Node node = tierOrdering.get(index);
-//                Node error = pm.getErrorNode(node);
-//
-//                if (error == null) {
-//                    throw new NullPointerException();
-//                }
-//
-//                for (int k = 0; k < parameters.length; k++) {
-//                    context.putParameterValue(this.parameters.get(k), parameters[k]);
-//                }
-//
-//                for (int i = 0; i < tierOrdering.size(); i++) {
-//                    Expression expression = pm.getNodeExpression(error);
-//                    context.putVariableValue(error.getNode(), expression.evaluate(context));
-//                }
-//
-//                RealDistribution dist;
-//
-//                try {
-//                    dist = new EmpiricalDistributionForExpression(pm, node, context).getDist();
-//                } catch (Exception e) {
-//                    return Double.POSITIVE_INFINITY;
-//                }
-//
-//                List<Double> data = new ArrayList<>();
-//
-//                for (double[] dataValue : dataValues) {
-//                    data.add(dataValue[index]);
-//                }
-//
-//                double likelihood = getLikelihood(data, dist);
-//
-//                System.out.println(likelihood);
-//
-//                total += likelihood;
-//            }
-//
-//            maxLikelihood = total;
-//
-//            return -total;
-//        }
-//
-//        private double getLikelihood(List<Double> residuals, RealDistribution dist) {
-//            double sum = 0.0;
-//
-//            for (double r : residuals) {
-//                try {
-//                    double t = dist.density(r);
-//                    sum += log(t + 1e-15);
-//                } catch (Exception e) {
-//                    //
-//                }
-//            }
-//
-//            return sum;
-//        }
-//
-//        public List<Node> getTierOrdering() {
-//            return tierOrdering;
-//        }
-//    }
 }
 

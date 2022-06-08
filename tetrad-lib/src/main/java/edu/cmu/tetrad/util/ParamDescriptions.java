@@ -1,38 +1,33 @@
 package edu.cmu.tetrad.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * Stores descriptions of the parameters for the simulation box. All parameters
  * that go into the interface need to be described here.
  *
  * @author jdramsey
- * @author Zhou Yuan <zhy19@pitt.edu>
+ * @author Zhou Yuan zhy19@pitt.edu
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public final class ParamDescriptions {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ParamDescriptions.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(ParamDescriptions.class);
 
     private static final ParamDescriptions INSTANCE = new ParamDescriptions();
 
     private final Map<String, ParamDescription> map = new TreeMap<>();
 
-    private List<String> paramsWithUnsupportedValueType = new ArrayList<>();
+    private final List<String> paramsWithUnsupportedValueType = new ArrayList<>();
 
     private ParamDescriptions() {
         Document doc = null;
@@ -44,7 +39,7 @@ public final class ParamDescriptions {
         final String VALUE_TYPE_DOUBLE = "Double";
         final String VALUE_TYPE_BOOLEAN = "Boolean";
 
-        final Set<String> PARAM_VALUE_TYPES = new HashSet<>(Arrays.asList(
+        Set<String> PARAM_VALUE_TYPES = new HashSet<>(Arrays.asList(
                 VALUE_TYPE_STRING,
                 VALUE_TYPE_INTEGER,
                 VALUE_TYPE_DOUBLE,
@@ -57,7 +52,8 @@ public final class ParamDescriptions {
                 doc = Jsoup.parse(inputStream, "UTF-8", "");
             }
         } catch (IOException ex) {
-            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
+            TetradLogger.getInstance().forceLogMessage("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.");
+//            ParamDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
 
         // Get the description of each parameter
@@ -66,17 +62,17 @@ public final class ParamDescriptions {
 
             for (Element element : elements) {
                 String paramName = element.id();
-                String valueType = doc.getElementById(paramName + "_value_type").text().trim();
+                String valueType = Objects.requireNonNull(doc.getElementById(paramName + "_value_type")).text().trim();
 
                 // Add params that don't have value types for spalsh screen error
                 if (!PARAM_VALUE_TYPES.contains(valueType)) {
-                    paramsWithUnsupportedValueType.add(paramName);
+                    this.paramsWithUnsupportedValueType.add(paramName);
                 } else {
-                    String shortDescription = doc.getElementById(paramName + "_short_desc").text().trim();
-                    String longDescription = doc.getElementById(paramName + "_long_desc").text().trim();
-                    String defaultValue = doc.getElementById(paramName + "_default_value").text().trim();
-                    String lowerBound = doc.getElementById(paramName + "_lower_bound").text().trim();
-                    String upperBound = doc.getElementById(paramName + "_upper_bound").text().trim();
+                    String shortDescription = Objects.requireNonNull(doc.getElementById(paramName + "_short_desc")).text().trim();
+                    String longDescription = Objects.requireNonNull(doc.getElementById(paramName + "_long_desc")).text().trim();
+                    String defaultValue = Objects.requireNonNull(doc.getElementById(paramName + "_default_value")).text().trim();
+                    String lowerBound = Objects.requireNonNull(doc.getElementById(paramName + "_lower_bound")).text().trim();
+                    String upperBound = Objects.requireNonNull(doc.getElementById(paramName + "_upper_bound")).text().trim();
 
                     if (shortDescription.equals("")) {
                         shortDescription = String.format("Missing short description for %s", paramName);
@@ -108,25 +104,24 @@ public final class ParamDescriptions {
                         Boolean defaultValueBoolean = defaultValue.equalsIgnoreCase("true");
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueBoolean);
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_STRING)) {
-                        String defaultValueString = defaultValue;
-                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueString);
+                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValue);
                     }
 
-                    map.put(paramName, paramDescription);
+                    this.map.put(paramName, paramDescription);
                 }
             }
         }
 
         // add parameters not in documentation
-        map.put(Params.PRINT_STREAM, new ParamDescription(Params.PRINT_STREAM, "printStream", "A writer to print output messages.", ""));
+        this.map.put(Params.PRINT_STREAM, new ParamDescription(Params.PRINT_STREAM, "printStream", "A writer to print output messages.", ""));
     }
 
     public static ParamDescriptions getInstance() {
-        return INSTANCE;
+        return ParamDescriptions.INSTANCE;
     }
 
     public ParamDescription get(String name) {
-        ParamDescription paramDesc = map.get(name);
+        ParamDescription paramDesc = this.map.get(name);
 
         return (paramDesc == null)
                 ? new ParamDescription(name, String.format("Please add a description for %s to the manual.", name), "", 0)
@@ -134,15 +129,15 @@ public final class ParamDescriptions {
     }
 
     public void put(String name, ParamDescription paramDescription) {
-        map.put(name, paramDescription);
+        this.map.put(name, paramDescription);
     }
 
     public Set<String> getNames() {
-        return map.keySet();
+        return this.map.keySet();
     }
 
     public List<String> getParamsWithUnsupportedValueType() {
-        return paramsWithUnsupportedValueType;
+        return this.paramsWithUnsupportedValueType;
     }
 
 }

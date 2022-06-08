@@ -19,15 +19,15 @@
 package edu.pitt.dbmi.data.reader.covariance;
 
 import edu.pitt.dbmi.data.reader.Delimiter;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
- *
  * Dec 7, 2018 4:39:33 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -35,12 +35,10 @@ import org.junit.Test;
 public class LowerCovarianceDataFileReaderTest {
 
     private final Delimiter delimiter = Delimiter.SPACE;
-    private final char quoteCharacter = '"';
-    private final String commentMarker = "//";
 
     private final Path[] dataFiles = {
-        Paths.get(getClass().getResource("/data/covariance/spartina.txt").getFile()),
-        Paths.get(getClass().getResource("/data/covariance/quotes_spartina.txt").getFile())
+            Paths.get(getClass().getResource("/data/covariance/spartina.txt").getFile()),
+            Paths.get(getClass().getResource("/data/covariance/quotes_spartina.txt").getFile())
     };
 
     public LowerCovarianceDataFileReaderTest() {
@@ -53,9 +51,11 @@ public class LowerCovarianceDataFileReaderTest {
      */
     @Test
     public void testReadInData() throws IOException {
-        for (Path dataFile : dataFiles) {
-            CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(dataFile, delimiter);
+        for (Path dataFile : this.dataFiles) {
+            CovarianceDataReader dataFileReader = new LowerCovarianceDataFileReader(dataFile, this.delimiter);
+            String commentMarker = "//";
             dataFileReader.setCommentMarker(commentMarker);
+            char quoteCharacter = '"';
             dataFileReader.setQuoteCharacter(quoteCharacter);
 
             CovarianceData covarianceData = dataFileReader.readInData();

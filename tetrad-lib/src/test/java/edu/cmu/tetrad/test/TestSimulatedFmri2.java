@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,7 +23,9 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FASK;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -68,8 +70,8 @@ public class TestSimulatedFmri2 {
 
         Simulations simulations = new Simulations();
 
-        String dir = "/Users/user/Downloads/CyclesTestingData/";
-        String subdir = "data_fslfilter_concat";
+        final String dir = "/Users/user/Downloads/CyclesTestingData/";
+        final String subdir = "data_fslfilter_concat";
 
         simulations.add(new LoadContinuousDataAndSingleGraph(
                 dir + "Network1_amp", subdir));
@@ -114,7 +116,7 @@ public class TestSimulatedFmri2 {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.multi.Fask(new FisherZ()));
+        algorithms.add(new FASK(new FisherZ(), new SemBicScore()));
 //
         Comparison comparison = new Comparison();
 
@@ -126,7 +128,7 @@ public class TestSimulatedFmri2 {
         comparison.setTabDelimitedTables(false);
         comparison.setSaveGraphs(true);
 
-        String directory = "comparison_testing_nonconcat";
+        final String directory = "comparison_testing_nonconcat";
 
         comparison.compareFromSimulations(directory, simulations, algorithms, statistics, parameters);
     }

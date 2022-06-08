@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -34,7 +34,7 @@ import java.util.Set;
  * <p>Stores a directed graph over models of specific types, where the possible
  * parent relationships between the models are given in the constructors of the
  * model classes themselves. For instance, if a class Model1 has only this
- * constructor:</p> </p> <code>public Model1(Model2 x, Model3 y)... </code> </p>
+ * constructor:&gt; 0 <code>public Model1(Model2 x, Model3 y)... </code>
  * <p>then if a SessionNode is constructed with Model.class as argument, it will
  * configure itself as a SessionNode requiring two parents, one capable of
  * implementing models of type Model2 and a second capable of implementing
@@ -46,7 +46,7 @@ import java.util.Set;
  * type of model. A SessionNode, for instance, can support the construction of
  * graphs in general, even if different graphs are implemented using different
  * classes. The SessionNode can keep track of what its parents are and therefore
- * which of its possible models it's capable of constructing. </p> <p>The
+ * which of its possible models it's capable of constructing. <p>The
  * Session itself keeps track of which nodes are in the session and manages
  * adding and removing nodes. Nodes that are added to the session must be
  * freshly constructed. This constraint eliminates a number of problems that
@@ -54,20 +54,20 @@ import java.util.Set;
  * participate in more than one Session. If the addNode method is called with a
  * node that is not in the freshly constructed state (either because it was
  * actually just constructed or because the <code>reset</code> method was just
- * called on the node), an IllegalArgumentException is thrown./p> </p> <p>When a
+ * called on the node), an IllegalArgumentException is thrown. <p>When a
  * node is removed from a session, all of its connections to other objects are
  * eliminated and its models destroyed. This has consequences for other objects,
  * since destroying the model of a session node may result in the destruction of
  * models downstream and the elimination of parent/child relationships between
- * nodes is mutual.</p> </p> <p>The Session organizes events coming from the
+ * nodes is mutual.&gt; 0 <p>The Session organizes events coming from the
  * nodes in the session so that a listener to the Session receives all events
  * from the Session. This is convenience service so that listeners do not need
  * to pay attention to all of the different nodes in the session individually.
- * See <code>SessionEvent</code> for the types of events that are sent.</p> </p>
+ * See <code>SessionEvent</code> for the types of events that are sent.&gt; 0
  * <p>It is intended for the Session to be serializable. For the Session and
  * SessionNode classes, this can be checked directly in unit tests. For the
  * various models that the Session can construct, this has to be tested
- * separately.</p>
+ * separately.&gt; 0
  *
  * @author Joseph Ramsey
  * @see SessionNode
@@ -90,7 +90,7 @@ public final class Session implements TetradSerializable {
      *
      * @serial Can't be null.
      */
-    private List<SessionNode> nodes = new LinkedList<>();
+    private final List<SessionNode> nodes = new LinkedList<>();
 
     /**
      * Notes when the model has changed. Should be false at time of
@@ -135,7 +135,7 @@ public final class Session implements TetradSerializable {
     /**
      * Sets the name.
      */
-    public final void setName(String name) {
+    public void setName(String name) {
         if (name == null) {
             throw new NullPointerException("Name must not be null.");
         }
@@ -152,7 +152,7 @@ public final class Session implements TetradSerializable {
 
     /**
      * <p>Adds the given node to the session, provided the node is in a freshly
-     * created state.</p>
+     * created state.&gt; 0
      *
      * @throws NullPointerException     if the node is null.
      * @throws IllegalArgumentException if the node is not in a freshly created
@@ -176,11 +176,6 @@ public final class Session implements TetradSerializable {
         }
 
         // Causing templates not to work sometimes. Unnecessary. jdramsey 6/5/2015
-//        if (existsNodeByName(node.getDisplayName())) {
-//            throw new IllegalArgumentException(
-//                    "Attempt to add node to the session with duplicate name: " +
-//                            node.getDisplayName());
-//        }
 
         this.nodes.add(node);
         node.addSessionListener(getSessionHandler());
@@ -235,7 +230,7 @@ public final class Session implements TetradSerializable {
 
     /**
      * <p>Removes the given node from the session, removing any connectivity the
-     * node might have to other objects.</p>
+     * node might have to other objects.&gt; 0
      *
      * @param node the SessionNode to be removed.
      * @throws IllegalArgumentException if the specified node is not in the
@@ -243,9 +238,9 @@ public final class Session implements TetradSerializable {
      * @see edu.cmu.tetrad.session.SessionNode#resetToFreshlyCreated
      */
     public void removeNode(SessionNode node) {
-        if (nodes.contains(node)) {
+        if (this.nodes.contains(node)) {
             node.resetToFreshlyCreated();
-            nodes.remove(node);
+            this.nodes.remove(node);
             node.removeSessionListener(getSessionHandler());
             getSessionSupport().fireNodeRemoved(node);
         } else {
@@ -258,7 +253,7 @@ public final class Session implements TetradSerializable {
      * @return the getModel set of session nodes.
      */
     public Set<SessionNode> getNodes() {
-        return new HashSet<>(nodes);
+        return new HashSet<>(this.nodes);
     }
 
     /**
@@ -342,7 +337,7 @@ public final class Session implements TetradSerializable {
     }
 
     public boolean isSessionChanged() {
-        return sessionChanged;
+        return this.sessionChanged;
     }
 
     public void setSessionChanged(boolean sessionChanged) {
@@ -350,7 +345,7 @@ public final class Session implements TetradSerializable {
     }
 
     public boolean isNewSession() {
-        return newSession;
+        return this.newSession;
     }
 
     public void setNewSession(boolean newSession) {
@@ -423,7 +418,7 @@ public final class Session implements TetradSerializable {
     }
 
     public boolean isEmpty() {
-        return nodes.isEmpty();
+        return this.nodes.isEmpty();
     }
 
     /**
@@ -435,24 +430,21 @@ public final class Session implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
-     * @throws java.io.IOException
-     * @throws ClassNotFoundException
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
 
-        if (name == null) {
+        if (this.name == null) {
             throw new NullPointerException();
         }
 
-        if (nodes == null) {
+        if (this.nodes == null) {
             throw new NullPointerException();
         }
 
-        sessionChanged = false;
-        newSession = false;
+        this.sessionChanged = false;
+        this.newSession = false;
     }
 }
 

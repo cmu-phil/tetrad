@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -48,7 +48,7 @@ class CalculatorAction extends AbstractAction {
     /**
      * The data the calculator is working on.
      */
-    private DataWrapper wrapper;
+    private final DataWrapper wrapper;
 
 
     /**
@@ -61,7 +61,7 @@ class CalculatorAction extends AbstractAction {
      */
     private CalculatorAction(DataWrapper wrapper) {
         super("Calculator ...");
-        if(wrapper == null){
+        if (wrapper == null) {
             throw new NullPointerException("DataWrapper was null.");
         }
         this.wrapper = wrapper;
@@ -71,7 +71,7 @@ class CalculatorAction extends AbstractAction {
     /**
      * Constructs the calculator given the data editor its attached to.
      */
-    public CalculatorAction(DataEditor editor){
+    public CalculatorAction(DataEditor editor) {
         this(editor.getDataWrapper());
         this.dataEditor = editor;
 
@@ -81,20 +81,20 @@ class CalculatorAction extends AbstractAction {
      * Launches the calculator editoir.
      */
     public void actionPerformed(ActionEvent e) {
-        final CalculatorEditor editor = new CalculatorEditor();
+        CalculatorEditor editor = new CalculatorEditor();
 
-        Parameters params = wrapper.getParams();
+        Parameters params = this.wrapper.getParams();
 
         if (params instanceof HasCalculatorParams) {
-            params = ((HasCalculatorParams)params).getCalculatorParams();
+            params = ((HasCalculatorParams) params).getCalculatorParams();
         }
 
         editor.setParams(params);
-        editor.setParentModels(new Object[]{wrapper});
+        editor.setParentModels(new Object[]{this.wrapper});
         editor.setup();
 
         EditorWindow editorWindow =
-                new EditorWindow(editor, editor.getName(), "Save", true, dataEditor);
+                new EditorWindow(editor, editor.getName(), "Save", true, this.dataEditor);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
@@ -109,7 +109,7 @@ class CalculatorAction extends AbstractAction {
                     return;
                 }
 
-                if(editor.finalizeEdit()) {
+                if (editor.finalizeEdit()) {
                     List<String> equations = new ArrayList<>();
                     String _displayEquations = Preferences.userRoot().get("calculator_equations", "");
                     String[] displayEquations = _displayEquations.split("///");
@@ -119,8 +119,7 @@ class CalculatorAction extends AbstractAction {
                             for (Node node : editor.getDataSet().getVariables()) {
                                 equations.add(equation.replace("$", node.getName()));
                             }
-                        }
-                        else {
+                        } else {
                             equations.add(equation);
                         }
                     }

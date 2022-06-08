@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -63,27 +63,21 @@ public class ScatterPlotOld {
             uses that instead.
          */
 
-        if(xVariable != null)
+        if (xVariable != null)
             this.xVariable = xVariable;
-        else
-        {
-            for(int i = 0; i < dataSet.getNumColumns(); i++)
-            {
-                if (dataSet.getVariable(i) instanceof ContinuousVariable)
-                {
+        else {
+            for (int i = 0; i < dataSet.getNumColumns(); i++) {
+                if (dataSet.getVariable(i) instanceof ContinuousVariable) {
                     this.xVariable = (ContinuousVariable) dataSet.getVariable(i);
                     break;
                 }
             }
         }
-        if(yVariable != null)
+        if (yVariable != null)
             this.setyVariable(yVariable);
-        else
-        {
-            for(int i = 0; i < dataSet.getNumColumns(); i++)
-            {
-                if (dataSet.getVariable(i) instanceof ContinuousVariable)
-                {
+        else {
+            for (int i = 0; i < dataSet.getNumColumns(); i++) {
+                if (dataSet.getVariable(i) instanceof ContinuousVariable) {
                     this.setyVariable((ContinuousVariable) dataSet.getVariable(i));
                     break;
                 }
@@ -99,40 +93,36 @@ public class ScatterPlotOld {
         setxData(new double[dataSet.getNumRows()]);
         setyData(new double[dataSet.getNumRows()]);
 
-//        xMin = xMax = dataSet.getDouble(0, xIndex);
-//        yMin = yMax = dataSet.getDouble(0, yIndex);
+        this.xMin = Double.MAX_VALUE;
+        this.xMax = Double.MIN_VALUE;
+        this.yMin = Double.MAX_VALUE;
+        this.yMax = Double.MIN_VALUE;
 
-        xMin = Double.MAX_VALUE;
-        xMax = Double.MIN_VALUE;
-        yMin = Double.MAX_VALUE;
-        yMax = Double.MIN_VALUE;
-
-        for(int i = 0; i < dataSet.getNumRows(); i++)
-        {
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
             getyData()[i] = dataSet.getDouble(i, yIndex);
             getxData()[i] = dataSet.getDouble(i, xIndex);
 
-            if(getyData()[i] < yMin) yMin = getyData()[i];
-            if(getyData()[i] > yMax) yMax = getyData()[i];
-            if(getxData()[i] < xMin) xMin = getxData()[i];
-            if(getxData()[i] > xMax) xMax = getxData()[i];
+            if (getyData()[i] < this.yMin) this.yMin = getyData()[i];
+            if (getyData()[i] > this.yMax) this.yMax = getyData()[i];
+            if (getxData()[i] < this.xMin) this.xMin = getxData()[i];
+            if (getxData()[i] > this.xMax) this.xMax = getxData()[i];
         }
-        
+
         this.setDataSet(dataSet);
         setIndexSet(new Vector());
         setComplementIndexSet(new Vector());
-        for(int i = 0; i < dataSet.getNumRows(); i++)
+        for (int i = 0; i < dataSet.getNumRows(); i++)
             getIndexSet().add(i);
     }
 
     //==================================== Public Methods ====================================//
 
-     /**
+    /**
      * @return the max sample value between the y and x variables.
      */
     public double getMaxSample() {
-        if(xMax > yMax) return xMax;
-        else return yMax;
+        if (this.xMax > this.yMax) return this.xMax;
+        else return this.yMax;
     }
 
 
@@ -140,27 +130,23 @@ public class ScatterPlotOld {
      * @return the min sample value.
      */
     public double getMinSample() {
-        if(xMin < yMin) return xMin;
-        else return yMin;
+        if (this.xMin < this.yMin) return this.xMin;
+        else return this.yMin;
     }
 
-    public ContinuousVariable getXVariable()
-    {
-        return xVariable;
+    public ContinuousVariable getXVariable() {
+        return this.xVariable;
     }
 
-    public ContinuousVariable getYVariable()
-    {
+    public ContinuousVariable getYVariable() {
         return getyVariable();
     }
 
-    public double[] getYData()
-    {
+    public double[] getYData() {
         return getyData();
     }
 
-    public double[] getXData()
-    {
+    public double[] getXData() {
         return getxData();
     }
 
@@ -172,7 +158,7 @@ public class ScatterPlotOld {
     }
 
     public double[] getyData() {
-        return yData;
+        return this.yData;
     }
 
     private void setyData(double[] yData) {
@@ -180,7 +166,7 @@ public class ScatterPlotOld {
     }
 
     public double[] getxData() {
-        return xData;
+        return this.xData;
     }
 
     private void setxData(double[] xData) {
@@ -196,12 +182,12 @@ public class ScatterPlotOld {
      * ScatterPlot is drawn.  This is used in the case of adding conditional
      * variables, where we only want to view the y/x variables plotted against
      * each other when some other set of variables fall within particular ranges.
-     *
+     * <p>
      * When there are no conditional variables in use, the indexSet contains
      * numbers (0, ..., (n - 1)) (all of the indices).
      */
     public Vector getIndexSet() {
-        return indexSet;
+        return this.indexSet;
     }
 
     public void setIndexSet(Vector indexSet) {
@@ -209,7 +195,7 @@ public class ScatterPlotOld {
     }
 
     public Vector getComplementIndexSet() {
-        return complementIndexSet;
+        return this.complementIndexSet;
     }
 
     public void setComplementIndexSet(Vector complementIndexSet) {
@@ -217,7 +203,7 @@ public class ScatterPlotOld {
     }
 
     public boolean isDrawRegLine() {
-        return drawRegLine;
+        return this.drawRegLine;
     }
 
     public void setDrawRegLine(boolean drawRegLine) {
@@ -225,7 +211,7 @@ public class ScatterPlotOld {
     }
 
     private ContinuousVariable getyVariable() {
-        return yVariable;
+        return this.yVariable;
     }
 
     private void setyVariable(ContinuousVariable yVariable) {

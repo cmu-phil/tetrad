@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.graph;
 
 import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;

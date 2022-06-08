@@ -21,7 +21,6 @@ package edu.cmu.tetrad.annotation;
 import java.util.List;
 
 /**
- *
  * Sep 26, 2017 1:18:28 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -35,7 +34,7 @@ public class TestOfIndependenceAnnotations extends AbstractAnnotations<TestOfInd
     }
 
     public static TestOfIndependenceAnnotations getInstance() {
-        return INSTANCE;
+        return TestOfIndependenceAnnotations.INSTANCE;
     }
 
     public List<AnnotatedClass<TestOfIndependence>> filterOutExperimental(List<AnnotatedClass<TestOfIndependence>> list) {

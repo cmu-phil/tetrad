@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -23,17 +23,15 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.mixed.Mgm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcStable;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.DegenerateGaussianLRT;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.independence.MultinomialLogisticRegressionWald;
-import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.DegenerateGaussianBicScore;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -53,9 +51,6 @@ public class TestDegenerateGaussian {
         parameters.set("minCategories", 2);
         parameters.set("maxCategories", 4);
         parameters.set("differentGraphs", true);
-
-//        parameters.set("varLow", 2.0);
-//        parameters.set("varHigh", 2.0);
 
         parameters.set("sampleSize", 1000);
         parameters.set("percentDiscrete", 50);
@@ -85,13 +80,10 @@ public class TestDegenerateGaussian {
         algorithms.add(new Fges(new ConditionalGaussianBicScore()));
         algorithms.add(new Fges(new DegenerateGaussianBicScore()));
         algorithms.add(new PcStable(new DegenerateGaussianLRT()));
-//        algorithms.add(new CpcStable(new MultinomialLogisticRegressionWald(), new Mgm()));
-//        algorithms.add(new Fges(new BdeuScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new ConditionalGaussianSimulation(new RandomForward()));
         simulations.add(new LeeHastieSimulation(new RandomForward()));
-//        simulations.add(new BayesNetSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
 
@@ -99,7 +91,6 @@ public class TestDegenerateGaussian {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        //comparison.setParallelized(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }

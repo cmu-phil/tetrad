@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -59,19 +59,14 @@ interface DiscreteProbs {
      * combinations of values for bayesIm.getNode(i) as boolean arrays of length
      * bayesim.getNumSplits(i), with a[i][j] = true iff the condition
      * includes the j'th value of bayesIm.getNode(i), and similarly for
-     * b[i][j].</p> </p> <p>This does not allow all possible conditional
+     * b[i][j].&gt; 0 <p>This does not allow all possible conditional
      * probabilities to be calculated, since for instance the condition X1 = 1
      * or X2 = 2 cannot be represented this way directly, but it does capture
      * all conditions for which this type of method would generally be of
-     * interest.</p>
+     * interest.&gt; 0
      */
     double getConditionalProb(Proposition assertion, Proposition condition);
 
-    /**
-     * @return true if a missing values case was encountered during the last
-     * method call.
-     */
-    boolean isMissingValueCaseFound();
 }
 
 

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -54,8 +54,8 @@ public class ShiftDataWrapper extends DataWrapper {
 
         DataModelList dataModelList = data.getDataModelList();
 
-        int rows = -1;
-        int cols = -1;
+        final int rows = -1;
+        final int cols = -1;
 
         for (DataModel model : dataModelList) {
             if (!(model instanceof DataSet)) {
@@ -66,22 +66,12 @@ public class ShiftDataWrapper extends DataWrapper {
 
             DataSet dataSet = (DataSet) model;
 
-//            if (rows == -1) {
-//                rows = dataSet.getNumRows();
-//                cols = dataSet.getNumColumns();
-//            } else {
-//                if (dataSet.getNumRows() != rows || dataSet.getNumColumns() != cols) {
-//                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                            "For the shift search, all of the data sets in the data box must have the same dimensions.");
-//                    return;
-//                }
-//            }
         }
 
         List<DataSet> dataSets = new ArrayList<>();
 
-        for (int i = 0; i < dataModelList.size(); i++) {
-            dataSets.add((DataSet) dataModelList.get(i));
+        for (DataModel dataModel : dataModelList) {
+            dataSets.add((DataSet) dataModel);
         }
 
         int[] backshifts = (int[]) params.get("shifts", null);
@@ -94,9 +84,7 @@ public class ShiftDataWrapper extends DataWrapper {
 
         DataModelList _list = new DataModelList();
 
-        for (DataSet dataSet : backshiftedDataSets) {
-            _list.add(dataSet);
-        }
+        _list.addAll(backshiftedDataSets);
 
         this.setDataModel(_list);
         this.setSourceGraph(data.getSourceGraph());

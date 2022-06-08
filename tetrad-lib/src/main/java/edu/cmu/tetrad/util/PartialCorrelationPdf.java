@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -37,14 +37,14 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      *
      * @serial
      */
-    private int n = 0;
+    private final int n;
 
     /**
      * Number of compared variables--that is, 2 + (#conditioning variables).
      *
      * @serial
      */
-    private int k = 0;
+    private final int k;
 
     /**
      * The aggregate value of the constant expression in the distribution
@@ -60,7 +60,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      *
      * @serial
      */
-    private double outsideExp = 0.0;
+    private final double outsideExp;
 
     //===========================CONSTRUCTORS========================//
 
@@ -89,7 +89,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      *
      * @return the examplar.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
+    @SuppressWarnings("UnusedDeclaration")
     public static PartialCorrelationPdf serializableInstance() {
         return new PartialCorrelationPdf(5, 2);
     }
@@ -103,7 +103,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      * @return the value of the function at x.
      */
     public double valueAt(double x) {
-        return constant * Math.pow(1 - x * x, outsideExp);
+        return this.constant * Math.pow(1 - x * x, this.outsideExp);
     }
 
     /**
@@ -129,14 +129,14 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
     }
 
     private int getN() {
-        return n;
+        return this.n;
     }
 
     /**
      * @return Ibid.
      */
     public int getK() {
-        return k;
+        return this.k;
     }
 }
 

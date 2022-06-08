@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 /**
  * The 2-cycle precision. This counts 2-cycles manually, wherever they occur in the graphs.
  * The true positives are the number of 2-cycles in both the true and estimated graphs.
- * Thus, if the true does not contains X->Y,Y->X and estimated graph does contain it,
+ * Thus, if the true does not contains X-&gt;Y,Y-&gt;X and estimated graph does contain it,
  * one false positive is counted.
  *
  * @author jdramsey, rubens (November 2016)
@@ -28,7 +28,7 @@ public class TwoCycleFalseNegative implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        return (double) adjConfusion.getTwoCycleFn();
+        return adjConfusion.getTwoCycleFn();
 
     }
 

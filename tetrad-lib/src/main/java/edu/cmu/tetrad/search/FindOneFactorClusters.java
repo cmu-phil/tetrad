@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015 by Peter Spirtes, Richard Scheines, Joseph   //
-// Ramsey, and Clark Glymour.                                                //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
 //                                                                           //
 // This program is free software; you can redistribute it and/or modify      //
 // it under the terms of the GNU General Public License as published by      //
@@ -40,45 +40,25 @@ import static java.lang.Math.sqrt;
  */
 public class FindOneFactorClusters {
 
-    public Algorithm getAlgorithm() {
-        return algorithm;
-    }
-
-    public void setAlgorithm(Algorithm algorithm) {
-        this.algorithm = algorithm;
-    }
-
-    public enum Algorithm {SAG, GAP}
-
-    private CorrelationMatrix corr;
+    private final CorrelationMatrix corr;
     // The list of all variables.
-    private List<Node> variables;
-
+    private final List<Node> variables;
     // The significance level.
-    private double alpha;
-
-    private TestType testType = TestType.TETRAD_DELTA;
-
+    private final double alpha;
     // The Delta test. Testing two tetrads simultaneously.
-    private DeltaTetradTest test;
-
+    private final DeltaTetradTest test;
     // The tetrad test--using Ricardo's. Used only for Wishart.
-    private ContinuousTetradTest test2;
-
+    private final ContinuousTetradTest test2;
     // The data.
-    private transient DataModel dataModel;
-
+    private final transient DataModel dataModel;
+    private final TestType testType;
     private List<List<Node>> clusters;
-
-    private int depth = 0;
-    private boolean verbose = false;
-    private boolean significanceCalculated = false;
-    private Algorithm algorithm = Algorithm.GAP;
-
-    //========================================PUBLIC METHODS====================================//
+    private boolean verbose;
+    private boolean significanceCalculated;
+    private final Algorithm algorithm;
 
     public FindOneFactorClusters(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha) {
-        if (testType == null) throw new NullPointerException("Null test type.");
+        if (testType == null) throw new NullPointerException("Null indepTest type.");
         cov = new CovarianceMatrix(cov);
         this.variables = cov.getVariables();
         this.alpha = alpha;
@@ -107,14 +87,14 @@ public class FindOneFactorClusters {
     }
 
     // renjiey
-    private int findFrequentestIndex(Integer outliers[]) {
+    private int findFrequentestIndex(Integer[] outliers) {
         Map<Integer, Integer> map = new HashMap<>();
 
-        for (int i = 0; i < outliers.length; i++) {
-            if (map.containsKey(outliers[i])) {
-                map.put(outliers[i], map.get(outliers[i]) + 1);
+        for (Integer outlier : outliers) {
+            if (map.containsKey(outlier)) {
+                map.put(outlier, map.get(outlier) + 1);
             } else {
-                map.put(outliers[i], 1);
+                map.put(outlier, 1);
             }
         }
 
@@ -134,20 +114,20 @@ public class FindOneFactorClusters {
         return (key);
     }
 
-    // This is the main function. It remove variables in the data such that the remaining correlation matrix
-    // does not contain extreme value
+    // This is the main function. It removes variables in the data such that the remaining
+    // correlation matrix does not contain extreme value
     // Inputs: correlation matrix, upper and lower bound for unacceptable correlations
     // Output: and dynamic array of removed variables
     // renjiey
     private ArrayList<Integer> removeVariables(Matrix correlationMatrix, double lowerBound, double upperBound,
                                                double percentBound) {
-        Integer outlier[] = new Integer[correlationMatrix.rows() * (correlationMatrix.rows() - 1)];
+        Integer[] outlier = new Integer[correlationMatrix.rows() * (correlationMatrix.rows() - 1)];
         int count = 0;
         for (int i = 2; i < (correlationMatrix.rows() + 1); i++) {
             for (int j = 1; j < i; j++) {
 
-                if ((Math.abs(correlationMatrix.get(i - 1, j - 1)) < lowerBound)
-                        || (Math.abs(correlationMatrix.get(i - 1, j - 1)) > upperBound)) {
+                if ((abs(correlationMatrix.get(i - 1, j - 1)) < lowerBound)
+                        || (abs(correlationMatrix.get(i - 1, j - 1)) > upperBound)) {
                     outlier[count * 2] = i;
                     outlier[count * 2 + 1] = j;
 
@@ -193,11 +173,9 @@ public class FindOneFactorClusters {
     }
 
     // renjiey
-    private Integer[] removeZeroIndex(Integer outlier[]) {
+    private Integer[] removeZeroIndex(Integer[] outlier) {
         List<Integer> list = new ArrayList<>();
-        for (int i = 0; i < outlier.length; i++) {
-            list.add(outlier[i]);
-        }
+        Collections.addAll(list, outlier);
         for (Integer element : outlier) {
             if (element < 1) {
                 list.remove(element);
@@ -210,14 +188,20 @@ public class FindOneFactorClusters {
     public Graph search() {
         Set<List<Integer>> allClusters;
 
-        if (algorithm == Algorithm.SAG) {
+        if (this.algorithm == Algorithm.SAG) {
             allClusters = estimateClustersTetradsFirst();
-        } else if (algorithm == Algorithm.GAP) {
+        } else if (this.algorithm == Algorithm.GAP) {
             allClusters = estimateClustersTriplesFirst();
         } else {
-            throw new IllegalStateException("Expected SAG or GAP: " + testType);
+            throw new IllegalStateException("Expected SAG or GAP: " + this.testType);
         }
         this.clusters = variablesForIndices2(allClusters);
+
+        System.out.println("allClusters = " + allClusters);
+        System.out.println("this.clusters = " + this.clusters);
+
+//        if (allClusters.isEmpty()) return new EdgeListGraph();
+
         return convertToGraph(allClusters);
     }
 
@@ -225,8 +209,6 @@ public class FindOneFactorClusters {
 
     // This is the main algorithm.
     private Set<List<Integer>> estimateClustersTriplesFirst() {
-//        List<Integer> _variables = new ArrayList<Integer>();
-//        for (int i = 0; i < variables.size(); i++) _variables.add(i);
         List<Integer> _variables = allVariables();
 
         Set<Set<Integer>> triples = findPuretriples(_variables);
@@ -235,7 +217,7 @@ public class FindOneFactorClusters {
         Set<List<Integer>> _combined = new HashSet<>();
 
         for (Set<Integer> c : combined) {
-            List a = new ArrayList<>(c);
+            List<Integer> a = new ArrayList<>(c);
             Collections.sort(a);
             _combined.add(a);
         }
@@ -246,17 +228,15 @@ public class FindOneFactorClusters {
 
     private List<Integer> allVariables() {
         List<Integer> _variables = new ArrayList<>();
-        for (int i = 0; i < variables.size(); i++) _variables.add(i);
+        for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
         return _variables;
     }
 
     private Set<List<Integer>> estimateClustersTetradsFirst() {
-        System.out.println("A");
-
         List<Integer> _variables = allVariables();
 
         Set<List<Integer>> pureClusters = findPureClusters(_variables);
-        Set<List<Integer>> mixedClusters = findMixedClusters(pureClusters, _variables, unionPure(pureClusters));
+        Set<List<Integer>> mixedClusters = findMixedClusters(_variables, unionPure(pureClusters));
         Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
         allClusters.addAll(mixedClusters);
         return allClusters;
@@ -304,14 +284,11 @@ public class FindOneFactorClusters {
                     continue CHOICE;
                 }
 
-//                if (!(avgSumLnP(quartet) > -20)) {
-//                    continue CHOICE;
-//                }
             }
 
             HashSet<Integer> _cluster = new HashSet<>(triple);
 
-            if (verbose) {
+            if (this.verbose) {
                 log("++" + variablesForIndices(triple));
             }
 
@@ -380,9 +357,6 @@ public class FindOneFactorClusters {
 
                     _cluster.add(o);
 
-//                    if (!(avgSumLnP(new ArrayList<Integer>(_cluster)) > -10)) {
-//                        _cluster.remove(o);
-//                    }
                 }
 
                 // This takes out all pure clusters that are subsets of _cluster.
@@ -407,7 +381,7 @@ public class FindOneFactorClusters {
                     puretriples.remove(t);
                 }
 
-                if (verbose) {
+                if (this.verbose) {
                     log("Grown " + (++count) + " of " + total + ": " + variablesForIndices(new ArrayList<>(_cluster)));
                 }
                 grown.add(_cluster);
@@ -440,8 +414,6 @@ public class FindOneFactorClusters {
 
                         int n1 = _cluster2.get(choice[0]);
                         int n2 = _cluster2.get(choice[1]);
-                        int n3 = _cluster2.get(choice[2]);
-                        int n4 = _cluster2.get(choice[3]);
 
                         List<Integer> triple = triple(n1, n2, o);
 
@@ -469,7 +441,7 @@ public class FindOneFactorClusters {
                     }
                 }
 
-                if (verbose) {
+                if (this.verbose) {
                     System.out.println("Grown " + (++count) + " of " + total + ": " + _cluster);
                 }
 
@@ -549,7 +521,7 @@ public class FindOneFactorClusters {
                     puretriples.remove(t);
                 }
 
-                if (verbose) {
+                if (this.verbose) {
                     System.out.println("Grown " + (++count) + " of " + total + ": " + _cluster);
                 }
                 grown.add(_cluster);
@@ -562,31 +534,12 @@ public class FindOneFactorClusters {
             List<Set<Integer>> clusters = new LinkedList<>(puretriples);
             Set<Integer> t = new HashSet<>();
 
-            I:
             for (int i = 0; i < clusters.size(); i++) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
                 System.out.println("I = " + i);
-
-//                // remove "i" clusters that intersect with previous clusters.
-//                for (int k = 0; k < i - 1; k++) {
-//                    Set<Integer> ck = clusters.get(k);
-//                    Set<Integer> ci = clusters.get(i);
-//
-//                    if (ck == null) continue;
-//                    if (ci == null) continue;
-//
-//                    Set<Integer> cm = new HashSet<Integer>(ck);
-//                    cm.retainAll(ci);
-//
-//                    if (!cm.isEmpty()) {
-//                        clusters.remove(i);
-//                        i--;
-//                        continue I;
-//                    }
-//                }
 
                 J:
                 for (int j = i + 1; j < clusters.size(); j++) {
@@ -635,7 +588,7 @@ public class FindOneFactorClusters {
         for (Set<Integer> l : grown) {
             ArrayList<Integer> _l = new ArrayList<>(l);
             Collections.sort(_l);
-            if (verbose) {
+            if (this.verbose) {
                 log("Grown: " + variablesForIndices(_l));
             }
         }
@@ -644,37 +597,7 @@ public class FindOneFactorClusters {
 
         List<Set<Integer>> list = new ArrayList<>(grown);
 
-        Collections.sort(list, new Comparator<Set<Integer>>() {
-            @Override
-            public int compare(Set<Integer> o1, Set<Integer> o2) {
-                return o2.size() - o1.size();
-            }
-        });
-
-//        final Map<Set<Integer>, Double> significances = new HashMap<Set<Integer>, Double>();
-
-//        Collections.sort(list, new Comparator<Set<Integer>>() {
-//            @Override
-//            public int compare(Set<Integer> cluster1, Set<Integer> cluster2) {
-////                Double sum1 = significances.get(cluster1);
-////                if (sum1 == null) {
-////                    double sig = significance(new ArrayList<Integer>(cluster1));
-////                    significances.put(cluster1, sig);
-////                    sum1 = sig;
-////                }
-////                Double sum2 = significances.get(cluster2);
-////                if (sum2 == null) {
-////                    double sig = significance(new ArrayList<Integer>(cluster2));
-////                    significances.put(cluster2, sig);
-////                    sum2 = sig;
-////                }
-//
-//                double avg1 = avgSumLnP(new ArrayList<Integer>(cluster1));
-//                double avg2 = avgSumLnP(new ArrayList<Integer>(cluster2));
-//
-//                return Double.compare(avg2, avg1);
-//            }
-//        });
+        list.sort((o1, o2) -> o2.size() - o1.size());
 
         Set<Integer> all = new HashSet<>();
 
@@ -688,7 +611,7 @@ public class FindOneFactorClusters {
             all.addAll(cluster);
         }
 
-        if (significanceCalculated) {
+        if (this.significanceCalculated) {
             for (Set<Integer> _out : out) {
                 try {
                     double p = significance(new ArrayList<>(_out));
@@ -706,18 +629,13 @@ public class FindOneFactorClusters {
         return out;
     }
 
-    Map<Set<Integer>, Double> avgSumLnPs = new HashMap<>();
-
-    // Finds clusters of size 4 or higher for the tetrad first algorithm.
+    // Finds clusters of size 4 or higher for the tetrad-first algorithm.
     private Set<List<Integer>> findPureClusters(List<Integer> _variables) {
         Set<List<Integer>> clusters = new HashSet<>();
-//        List<Integer> allVariables = new ArrayList<Integer>();
-//        for (int i = 0; i < this.variables.size(); i++) allVariables.add(i);
-        List<Integer> allVariables = allVariables();
 
         VARIABLES:
         while (!_variables.isEmpty()) {
-            if (verbose) {
+            if (this.verbose) {
                 System.out.println(_variables);
             }
             if (_variables.size() < 4) break;
@@ -737,18 +655,13 @@ public class FindOneFactorClusters {
 
                 List<Integer> cluster = quartet(n1, n2, n3, n4);
 
-                // Note that purity needs to be assessed with respect to all of the variables in order to
+                // Note that purity needs to be assessed with respect to all the variables in order to
                 // remove all latent-measure impurities between pairs of latents.
-                if (pure(cluster, allVariables, alpha)) {
-                    if (verbose) {
-                        log("Found a pure: " + variablesForIndices(cluster));
-                    }
+                if (pure(cluster)) {
 
-//                    if (modelInsignificantWithNewCluster(clusters, cluster)) continue;
+                    addOtherVariables(_variables, cluster);
 
-                    addOtherVariables(_variables, allVariables, cluster);
-
-                    if (verbose) {
+                    if (this.verbose) {
                         log("Cluster found: " + variablesForIndices(cluster));
                     }
                     clusters.add(cluster);
@@ -764,7 +677,7 @@ public class FindOneFactorClusters {
         return clusters;
     }
 
-    private void addOtherVariables(List<Integer> _variables, List<Integer> allVariables, List<Integer> cluster) {
+    private void addOtherVariables(List<Integer> _variables, List<Integer> cluster) {
         O:
         for (int o : _variables) {
             if (cluster.contains(o)) continue;
@@ -788,18 +701,13 @@ public class FindOneFactorClusters {
 
                 quartet.add(o);
 
-//                if (pure(quartet, allVariables, alpha)) {
-//                    found = true;
-//                    break;
-//                }
-
-                if (!pure(quartet, allVariables, alpha)) {
+                if (!pure(quartet)) {
                     continue O;
                 }
             }
 
 //            if (found) {
-            log("Extending by " + variables.get(o));
+            log("Extending by " + this.variables.get(o));
             cluster.add(o);
 //            }
         }
@@ -811,17 +719,16 @@ public class FindOneFactorClusters {
         List<List<Integer>> __clusters = new ArrayList<>(clusters);
         __clusters.add(cluster);
         double significance3 = getModelPValue(__clusters);
-        if (verbose) {
+        if (this.verbose) {
             log("Significance * " + __clusters + " = " + significance3);
         }
 
-        return significance3 < alpha;
+        return significance3 < this.alpha;
     }
 
-    //  Finds clusters of size 3 3or the quartet first algorithm.
-    private Set<List<Integer>> findMixedClusters(Set<List<Integer>> clusters, List<Integer> remaining, Set<Integer> unionPure) {
+    //  Finds clusters of size 3 3or the quartet-first algorithm.
+    private Set<List<Integer>> findMixedClusters(List<Integer> remaining, Set<Integer> unionPure) {
         Set<List<Integer>> triples = new HashSet<>();
-        Set<List<Integer>> _clusters = new HashSet<>(clusters);
 
         if (unionPure.isEmpty()) {
             return new HashSet<>();
@@ -830,10 +737,6 @@ public class FindOneFactorClusters {
         REMAINING:
         while (true) {
             if (remaining.size() < 3) break;
-
-            if (verbose) {
-                log("UnionPure = " + variablesForIndices(new ArrayList<>(unionPure)));
-            }
 
             ChoiceGenerator gen = new ChoiceGenerator(remaining.size(), 3);
             int[] choice;
@@ -856,8 +759,8 @@ public class FindOneFactorClusters {
                     continue;
                 }
 
-                // Check all x as a cross check; really only one should be necessary.
-                boolean allvanish = true;
+                // Check all x as a cross-check; really only one should be necessary.
+                boolean allVanish = true;
                 boolean someVanish = false;
 
                 for (int t1 : allVariables()) {
@@ -872,24 +775,19 @@ public class FindOneFactorClusters {
 
 
                     if (vanishes(_cluster)) {
-//                        System.out.println("Vanishes: " + variablesForIndices(_cluster));
                         someVanish = true;
                     } else {
-//                        System.out.println("Doesn't vanish: " + variablesForIndices(_cluster));
-                        allvanish = false;
+                        allVanish = false;
                         break;
                     }
                 }
 
-                if (someVanish && allvanish) {
-//                    if (modelInsignificantWithNewCluster(_clusters, cluster)) continue;
-
+                if (someVanish && allVanish) {
                     triples.add(cluster);
-                    _clusters.add(cluster);
                     unionPure.addAll(cluster);
                     remaining.removeAll(cluster);
 
-                    if (verbose) {
+                    if (this.verbose) {
                         log("3-cluster found: " + variablesForIndices(cluster));
                     }
 
@@ -933,7 +831,7 @@ public class FindOneFactorClusters {
         List<Node> _cluster = new ArrayList<>();
 
         for (int c : cluster) {
-            _cluster.add(variables.get(c));
+            _cluster.add(this.variables.get(c));
         }
 
 //        Collections.sort(_cluster);
@@ -951,7 +849,7 @@ public class FindOneFactorClusters {
         return variables;
     }
 
-    private boolean pure(List<Integer> quartet, List<Integer> variables, double alpha) {
+    private boolean pure(List<Integer> quartet) {
         if (zeroCorr(quartet)) {
             return false;
         }
@@ -964,10 +862,6 @@ public class FindOneFactorClusters {
                     List<Integer> _quartet = new ArrayList<>(quartet);
                     _quartet.remove(quartet.get(i));
                     _quartet.add(o);
-
-//                    if (zeroCorr(_quartet)) {
-//                        continue;
-//                    }
 
                     if (!(vanishes(_quartet))) {
                         return false;
@@ -995,8 +889,8 @@ public class FindOneFactorClusters {
         g.addNode(l1);
         g.addNode(l2);
 
-        for (int i = 0; i < quartet.size(); i++) {
-            Node n = this.variables.get(quartet.get(i));
+        for (Integer integer : quartet) {
+            Node n = this.variables.get(integer);
             g.addNode(n);
             g.addDirectedEdge(l1, n);
             g.addDirectedEdge(l2, n);
@@ -1006,10 +900,10 @@ public class FindOneFactorClusters {
 
         SemEstimator est;
 
-        if (dataModel instanceof DataSet) {
-            est = new SemEstimator((DataSet) dataModel, pm, new SemOptimizerEm());
+        if (this.dataModel instanceof DataSet) {
+            est = new SemEstimator((DataSet) this.dataModel, pm, new SemOptimizerEm());
         } else {
-            est = new SemEstimator((CovarianceMatrix) dataModel, pm, new SemOptimizerEm());
+            est = new SemEstimator((CovarianceMatrix) this.dataModel, pm, new SemOptimizerEm());
         }
 
         return est.estimate();
@@ -1044,8 +938,8 @@ public class FindOneFactorClusters {
             g.addNode(l1);
             g.addNode(l2);
 
-            for (int k = 0; k < cluster.size(); k++) {
-                Node n = this.variables.get(cluster.get(k));
+            for (Integer integer : cluster) {
+                Node n = this.variables.get(integer);
                 g.addNode(n);
                 g.addDirectedEdge(l1, n);
                 g.addDirectedEdge(l2, n);
@@ -1082,10 +976,10 @@ public class FindOneFactorClusters {
 
         SemEstimator est;
 
-        if (dataModel instanceof DataSet) {
-            est = new SemEstimator((DataSet) dataModel, pm, new SemOptimizerEm());
+        if (this.dataModel instanceof DataSet) {
+            est = new SemEstimator((DataSet) this.dataModel, pm, new SemOptimizerEm());
         } else {
-            est = new SemEstimator((CovarianceMatrix) dataModel, pm, new SemOptimizerEm());
+            est = new SemEstimator((CovarianceMatrix) this.dataModel, pm, new SemOptimizerEm());
         }
 
         return est.estimate();
@@ -1134,7 +1028,7 @@ public class FindOneFactorClusters {
                 int N = this.corr.getSampleSize();
                 double f = sqrt(N) * Math.log((1. + r) / (1. - r));
                 double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(f)));
-                if (p > alpha) count++;
+                if (p > this.alpha) count++;
             }
         }
 
@@ -1145,7 +1039,7 @@ public class FindOneFactorClusters {
      * The clusters output by the algorithm from the last call to search().
      */
     public List<List<Node>> getClusters() {
-        return clusters;
+        return this.clusters;
     }
 
     public void setVerbose(boolean verbose) {
@@ -1153,32 +1047,30 @@ public class FindOneFactorClusters {
     }
 
     private boolean vanishes(int x, int y, int z, int w) {
-        if (testType == TestType.TETRAD_DELTA) {
-            Tetrad t1 = new Tetrad(variables.get(x), variables.get(y), variables.get(z), variables.get(w));
-            Tetrad t2 = new Tetrad(variables.get(x), variables.get(y), variables.get(w), variables.get(z));
+        if (this.testType == TestType.TETRAD_DELTA) {
+            Tetrad t1 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(z), this.variables.get(w));
+            Tetrad t2 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(w), this.variables.get(z));
 
-            return test.getPValue(t1, t2) > alpha;
-        } else if (testType == TestType.TETRAD_WISHART) {
-            return test2.tetradPValue(x, y, z, w) > alpha && test2.tetradPValue(x, y, w, z) > alpha;
+            return this.test.getPValue(t1, t2) > this.alpha;
+        } else if (this.testType == TestType.TETRAD_WISHART) {
+            return this.test2.tetradPValue(x, y, z, w) > this.alpha && this.test2.tetradPValue(x, y, w, z) > this.alpha;
         }
 
-        throw new IllegalArgumentException("Only the delta and wishart tests are being used: " + testType);
+        throw new IllegalArgumentException("Only the delta and wishart tests are being used: " + this.testType);
     }
 
     private Graph convertSearchGraphNodes(Set<Set<Node>> clusters) {
-        Graph graph = new EdgeListGraph(variables);
+        Graph graph = new EdgeListGraph();
 
         List<Node> latents = new ArrayList<>();
-        for (int i = 0; i < clusters.size(); i++) {
+        List<Set<Node>> _clusters = new ArrayList<>(clusters);
+
+        for (int i = 0; i < _clusters.size(); i++) {
             Node latent = new GraphNode(ClusterUtils.LATENT_PREFIX + (i + 1));
             latent.setNodeType(NodeType.LATENT);
             latents.add(latent);
             graph.addNode(latent);
-        }
 
-        List<Set<Node>> _clusters = new ArrayList<>(clusters);
-
-        for (int i = 0; i < latents.size(); i++) {
             for (Node node : _clusters.get(i)) {
                 if (!graph.containsNode(node)) graph.addNode(node);
                 graph.addDirectedEdge(latents.get(i), node);
@@ -1195,7 +1087,7 @@ public class FindOneFactorClusters {
             Set<Node> nodes = new HashSet<>();
 
             for (int i : cluster) {
-                nodes.add(variables.get(i));
+                nodes.add(this.variables.get(i));
             }
 
             _clustering.add(nodes);
@@ -1215,19 +1107,20 @@ public class FindOneFactorClusters {
     }
 
     private void log(String s) {
-        if (verbose) {
+        if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage(s);
-            System.out.println(s);
         }
     }
 
     public boolean isSignificanceCalculated() {
-        return significanceCalculated;
+        return this.significanceCalculated;
     }
 
     public void setSignificanceCalculated(boolean significanceCalculated) {
         this.significanceCalculated = significanceCalculated;
     }
+
+    public enum Algorithm {SAG, GAP}
 }
 
 

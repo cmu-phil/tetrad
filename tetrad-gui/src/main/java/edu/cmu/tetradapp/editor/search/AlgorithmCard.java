@@ -20,66 +20,29 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.TsImages;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.SingleGraphAlg;
-import edu.cmu.tetrad.algcomparison.score.BdeuScore;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesInitialGraph;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Gaussian;
-import edu.cmu.tetrad.annotation.Linear;
-import edu.cmu.tetrad.annotation.Nonexecutable;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
+import edu.cmu.tetrad.annotation.*;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
-import edu.cmu.tetradapp.ui.model.AlgorithmModel;
-import edu.cmu.tetradapp.ui.model.AlgorithmModels;
-import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
-import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
-import edu.cmu.tetradapp.ui.model.ScoreModel;
-import edu.cmu.tetradapp.ui.model.ScoreModels;
+import edu.cmu.tetradapp.ui.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultListModel;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.LayoutStyle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
 
 /**
- *
  * Apr 15, 2019 11:31:10 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -88,14 +51,13 @@ public class AlgorithmCard extends JPanel {
 
     private static final long serialVersionUID = -7552068626783685630L;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCard.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmCard.class);
 
     private final String ALGO_PARAM = "algo";
     private final String IND_TEST_PARAM = "ind_test";
     private final String SCORE_PARAM = "score";
     private final String ALGO_TYPE_PARAM = "algo_type";
-    private final String LINEAR_PARAM = "linear";
-    private final String GAUSSIAN_PARAM = "gaussian";
+    private final String DATASET_FILTER = "dataset_filter";
     private final String KNOWLEDGE_PARAM = "knowledge";
 
     private final List<JRadioButton> algoTypeOpts = new ArrayList<>();
@@ -103,42 +65,41 @@ public class AlgorithmCard extends JPanel {
     private final DefaultListModel<AlgorithmModel> algoModels = new DefaultListModel<>();
 
     private final ButtonGroup algoFilterBtnGrp = new ButtonGroup();
+    private final ButtonGroup datasetFilterBtnGrp = new ButtonGroup();
 
     private final Map<AlgorithmModel, Map<DataType, IndependenceTestModel>> defaultIndTestModels = new HashMap<>();
     private final Map<AlgorithmModel, Map<DataType, ScoreModel>> defaultScoreModels = new HashMap<>();
     private final JCheckBox knowledgeChkBox = new JCheckBox("accepts knowledge");
-    private final JCheckBox gaussianVarChkBox = new JCheckBox("Gaussian variables");
-    private final JCheckBox linearVarChkBox = new JCheckBox("Variables with linear relationship");
+    private final JRadioButton linearGaussianRadBtn = new JRadioButton("Linear, Gaussian");
+    private final JRadioButton mixedRadBtn = new JRadioButton("Mixed Discrete/Gaussian");
+    private final JRadioButton generalRadBtn = new JRadioButton("General");
+    private final JRadioButton allRadBtn = new JRadioButton("All");
     private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
     private final JComboBox<ScoreModel> scoreComboBox = new JComboBox<>();
-    private final JList<AlgorithmModel> algorithmList = new JList<>(algoModels);
+    private final JList<AlgorithmModel> algorithmList = new JList<>(this.algoModels);
 
     private final JTextArea algoDescTextArea = new JTextArea();
     private final JTextArea scoreDescTextArea = new JTextArea();
     private final JTextArea testDescTextArea = new JTextArea();
-
-    private boolean updatingTestModels;
-    private boolean updatingScoreModels;
-
     private final GeneralAlgorithmRunner algorithmRunner;
     private final DataType dataType;
     private final TetradDesktop desktop;
     private final boolean multiDataAlgo;
-    private final boolean hasMissingValues;
+    private boolean updatingTestModels;
+    private boolean updatingScoreModels;
 
     public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.dataType = getDataType(algorithmRunner);
-        this.hasMissingValues = hasMissingValues(algorithmRunner);
         this.desktop = (TetradDesktop) DesktopController.getInstance();
-        this.multiDataAlgo = (algorithmRunner.getSourceGraph() == null)
-                ? algorithmRunner.getDataModelList().size() > 1
-                : false;
+        this.multiDataAlgo = algorithmRunner.getSourceGraph() == null && algorithmRunner.getDataModelList().size() > 1;
 
         initComponents();
         initListeners();
 
         resetAllSettings();
+
+        this.algorithmList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     private void initComponents() {
@@ -163,12 +124,12 @@ public class AlgorithmCard extends JPanel {
 
         JPanel testAndScoreDescPanel = new JPanel();
         testAndScoreDescPanel.setLayout(new BoxLayout(testAndScoreDescPanel, BoxLayout.Y_AXIS));
-        testAndScoreDescPanel.add(new DescriptionPanel("Test Description", testDescTextArea));
+        testAndScoreDescPanel.add(new DescriptionPanel("Test Description", this.testDescTextArea));
         testAndScoreDescPanel.add(Box.createVerticalStrut(10));
-        testAndScoreDescPanel.add(new DescriptionPanel("Score Description", scoreDescTextArea));
+        testAndScoreDescPanel.add(new DescriptionPanel("Score Description", this.scoreDescTextArea));
 
         JPanel centerMainPanel = new JPanel(new BorderLayout(0, 10));
-        centerMainPanel.add(new DescriptionPanel("Algorithm Description", algoDescTextArea), BorderLayout.CENTER);
+        centerMainPanel.add(new DescriptionPanel("Algorithm Description", this.algoDescTextArea), BorderLayout.CENTER);
         centerMainPanel.add(testAndScoreDescPanel, BorderLayout.SOUTH);
         centerMainPanel.setPreferredSize(new Dimension(235, 200));
 
@@ -176,71 +137,81 @@ public class AlgorithmCard extends JPanel {
         add(westMainPanel, BorderLayout.WEST);
         add(centerMainPanel, BorderLayout.CENTER);
 
-        setPreferredSize(new Dimension(800, 506));
+        if (this.algorithmRunner.hasMissingValues()) {
+            setPreferredSize(new Dimension(308, 291));
+        } else {
+            setPreferredSize(new Dimension(308, 241));
+        }
     }
 
     private void initListeners() {
-        knowledgeChkBox.addActionListener(e -> {
+        this.knowledgeChkBox.addActionListener(e -> {
             refreshAlgorithmList();
         });
-        linearVarChkBox.addActionListener(e -> {
+        this.linearGaussianRadBtn.addActionListener(e -> {
             refreshTestAndScoreList();
         });
-        gaussianVarChkBox.addActionListener(e -> {
+        this.mixedRadBtn.addActionListener(e -> {
             refreshTestAndScoreList();
         });
-        algorithmList.addListSelectionListener(e -> {
-            if (!(e.getValueIsAdjusting() || algorithmList.isSelectionEmpty())) {
+        this.generalRadBtn.addActionListener(e -> {
+            refreshTestAndScoreList();
+        });
+        this.allRadBtn.addActionListener(e -> {
+            refreshTestAndScoreList();
+        });
+        this.algorithmList.addListSelectionListener(e -> {
+            if (!(e.getValueIsAdjusting() || this.algorithmList.isSelectionEmpty())) {
                 setAlgorithmDescription();
                 refreshTestAndScoreList();
                 validateAlgorithmOption();
             }
         });
-        indTestComboBox.addActionListener(e -> {
-            if (!updatingTestModels && indTestComboBox.getSelectedIndex() >= 0) {
+        this.indTestComboBox.addActionListener(e -> {
+            if (!this.updatingTestModels && this.indTestComboBox.getSelectedIndex() >= 0) {
                 setIndepTestDescription();
 
-                AlgorithmModel algoModel = algorithmList.getSelectedValue();
-                Map<DataType, IndependenceTestModel> map = defaultIndTestModels.get(algoModel);
+                AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
+                Map<DataType, IndependenceTestModel> map = this.defaultIndTestModels.get(algoModel);
                 if (map == null) {
                     map = new EnumMap<>(DataType.class);
-                    defaultIndTestModels.put(algoModel, map);
+                    this.defaultIndTestModels.put(algoModel, map);
                 }
-                map.put(dataType, indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex()));
+                map.put(this.dataType, this.indTestComboBox.getItemAt(this.indTestComboBox.getSelectedIndex()));
             }
         });
-        scoreComboBox.addActionListener(e -> {
-            if (!updatingScoreModels && scoreComboBox.getSelectedIndex() >= 0) {
+        this.scoreComboBox.addActionListener(e -> {
+            if (!this.updatingScoreModels && this.scoreComboBox.getSelectedIndex() >= 0) {
                 setScoreDescription();
 
-                AlgorithmModel algoModel = algorithmList.getSelectedValue();
-                Map<DataType, ScoreModel> map = defaultScoreModels.get(algoModel);
+                AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
+                Map<DataType, ScoreModel> map = this.defaultScoreModels.get(algoModel);
                 if (map == null) {
                     map = new EnumMap<>(DataType.class);
-                    defaultScoreModels.put(algoModel, map);
+                    this.defaultScoreModels.put(algoModel, map);
                 }
-                map.put(dataType, scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex()));
+                map.put(this.dataType, this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex()));
             }
         });
     }
 
     private void initDescriptionTextAreas() {
-        algoDescTextArea.setWrapStyleWord(true);
-        algoDescTextArea.setLineWrap(true);
-        algoDescTextArea.setEditable(false);
+        this.algoDescTextArea.setWrapStyleWord(true);
+        this.algoDescTextArea.setLineWrap(true);
+        this.algoDescTextArea.setEditable(false);
 
-        scoreDescTextArea.setWrapStyleWord(true);
-        scoreDescTextArea.setLineWrap(true);
-        scoreDescTextArea.setEditable(false);
-        scoreDescTextArea.setRows(6);
+        this.scoreDescTextArea.setWrapStyleWord(true);
+        this.scoreDescTextArea.setLineWrap(true);
+        this.scoreDescTextArea.setEditable(false);
+        this.scoreDescTextArea.setRows(6);
 
-        testDescTextArea.setWrapStyleWord(true);
-        testDescTextArea.setLineWrap(true);
-        testDescTextArea.setEditable(false);
-        testDescTextArea.setRows(6);
+        this.testDescTextArea.setWrapStyleWord(true);
+        this.testDescTextArea.setLineWrap(true);
+        this.testDescTextArea.setEditable(false);
+        this.testDescTextArea.setRows(6);
     }
 
-    private DataType getDataType(final GeneralAlgorithmRunner algorithmRunner) {
+    private DataType getDataType(GeneralAlgorithmRunner algorithmRunner) {
         DataModelList dataModelList = algorithmRunner.getDataModelList();
         if (dataModelList.containsEmptyData()) {
             if (algorithmRunner.getSourceGraph() == null) {
@@ -265,54 +236,40 @@ public class AlgorithmCard extends JPanel {
         }
     }
 
-    private boolean hasMissingValues(final GeneralAlgorithmRunner algorithmRunner) {
-        DataModelList dataModelList = algorithmRunner.getDataModelList();
-        if (dataModelList.containsEmptyData()) {
-            return false;
-        } else {
-            if (dataModelList.get(0) instanceof CovarianceMatrix) return false;
-
-            DataSet dataSet = (DataSet) dataModelList.get(0);
-
-            return dataSet.existsMissingValue();
-        }
-    }
-
     public AlgorithmModel getSelectedAlgorithm() {
-        return algorithmList.getSelectedValue();
+        return this.algorithmList.getSelectedValue();
     }
 
     public IndependenceTestModel getSelectedIndependenceTest() {
-        if (indTestComboBox.isEnabled()) {
-            return indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
+        if (this.indTestComboBox.isEnabled()) {
+            return this.indTestComboBox.getItemAt(this.indTestComboBox.getSelectedIndex());
         }
 
         return null;
     }
 
     public ScoreModel getSelectedScore() {
-        if (scoreComboBox.isEnabled()) {
-            scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
+        if (this.scoreComboBox.isEnabled()) {
+            this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex());
         }
 
         return null;
     }
 
     private void rememberUserAlgoSelections(Map<String, Object> userAlgoSelections) {
-        userAlgoSelections.put(IND_TEST_PARAM, indTestComboBox.getSelectedItem());
-        userAlgoSelections.put(SCORE_PARAM, scoreComboBox.getSelectedItem());
-        userAlgoSelections.put(ALGO_TYPE_PARAM, algoFilterBtnGrp.getSelection().getActionCommand());
-        userAlgoSelections.put(LINEAR_PARAM, linearVarChkBox.isSelected());
-        userAlgoSelections.put(GAUSSIAN_PARAM, gaussianVarChkBox.isSelected());
-        userAlgoSelections.put(KNOWLEDGE_PARAM, knowledgeChkBox.isSelected());
+        userAlgoSelections.put(this.IND_TEST_PARAM, this.indTestComboBox.getSelectedItem());
+        userAlgoSelections.put(this.SCORE_PARAM, this.scoreComboBox.getSelectedItem());
+        userAlgoSelections.put(this.ALGO_TYPE_PARAM, this.algoFilterBtnGrp.getSelection().getActionCommand());
+        userAlgoSelections.put(this.DATASET_FILTER, this.datasetFilterBtnGrp.getSelection().getActionCommand());
+        userAlgoSelections.put(this.KNOWLEDGE_PARAM, this.knowledgeChkBox.isSelected());
 
         // When there's a search result, we store the algo string name from the search so we wont' lose it
         // when the upstream nodes change.
         // Otherwise, we use the one that users selcted on the UI - Zhou
-        if (algorithmRunner.getGraphs() != null && algorithmRunner.getGraphs().size() > 0) {
-            userAlgoSelections.put(ALGO_PARAM, algorithmRunner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name());
+        if (this.algorithmRunner.getGraphs() != null && !this.algorithmRunner.getGraphs().isEmpty()) {
+            userAlgoSelections.put(this.ALGO_PARAM, this.algorithmRunner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name());
         } else {
-            userAlgoSelections.put(ALGO_PARAM, algorithmList.getSelectedValue().toString());
+            userAlgoSelections.put(this.ALGO_PARAM, this.algorithmList.getSelectedValue().toString());
         }
     }
 
@@ -322,30 +279,32 @@ public class AlgorithmCard extends JPanel {
      * button), because a new algo algorithmRunner is created and we lose the
      * stored models from the old algorithmRunner - Zhou
      *
-     * @param models
+//     * @param models
      */
     private void restoreUserAlgoSelections(Map<String, Object> userAlgoSelections) {
-        Object obj = userAlgoSelections.get(LINEAR_PARAM);
-        if ((obj != null) && (obj instanceof Boolean)) {
-            linearVarChkBox.setSelected((Boolean) obj);
-        }
-        obj = userAlgoSelections.get(GAUSSIAN_PARAM);
-        if ((obj != null) && (obj instanceof Boolean)) {
-            gaussianVarChkBox.setSelected((Boolean) obj);
-        }
-        obj = userAlgoSelections.get(KNOWLEDGE_PARAM);
-        if ((obj != null) && (obj instanceof Boolean)) {
-            knowledgeChkBox.setSelected((Boolean) obj);
-        }
-        obj = userAlgoSelections.get(ALGO_TYPE_PARAM);
+        Object obj = userAlgoSelections.get(this.DATASET_FILTER);
         if ((obj != null) && (obj instanceof String)) {
             String actCmd = String.valueOf(obj);
-            Optional<JRadioButton> opt = algoTypeOpts.stream()
+            for (Enumeration<AbstractButton> e = this.datasetFilterBtnGrp.getElements(); e.hasMoreElements(); ) {
+                JRadioButton radBtn = (JRadioButton) e.nextElement();
+                if (radBtn.getActionCommand().equals(actCmd)) {
+                    radBtn.setSelected(true);
+                    break;
+                }
+            }
+        }
+
+        obj = userAlgoSelections.get(this.KNOWLEDGE_PARAM);
+        if ((obj != null) && (obj instanceof Boolean)) {
+            this.knowledgeChkBox.setSelected((Boolean) obj);
+        }
+        obj = userAlgoSelections.get(this.ALGO_TYPE_PARAM);
+        if ((obj != null) && (obj instanceof String)) {
+            String actCmd = String.valueOf(obj);
+            Optional<JRadioButton> opt = this.algoTypeOpts.stream()
                     .filter(e -> e.getActionCommand().equals(actCmd))
                     .findFirst();
-            if (opt.isPresent()) {
-                opt.get().setSelected(true);
-            }
+            opt.ifPresent(jRadioButton -> jRadioButton.setSelected(true));
         }
 
         refreshAlgorithmList();
@@ -354,49 +313,49 @@ public class AlgorithmCard extends JPanel {
         // Restore the algo name from search when there's a search result.
         // Otherwise use the stored name form algorithmRunner.getModels(), which will be lost when the upstream nodes change - Zhou
         String selectedAlgoName = null;
-        if (algorithmRunner.getGraphs() != null && algorithmRunner.getGraphs().size() > 0) {
-            selectedAlgoName = algorithmRunner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
+        if (this.algorithmRunner.getGraphs() != null && this.algorithmRunner.getGraphs().size() > 0) {
+            selectedAlgoName = this.algorithmRunner.getAlgorithm().getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
         } else {
-            obj = userAlgoSelections.get(ALGO_PARAM);
+            obj = userAlgoSelections.get(this.ALGO_PARAM);
             if ((obj != null) && (obj instanceof String)) {
                 selectedAlgoName = (String) obj;
             }
         }
 
-        Enumeration<AlgorithmModel> enums = algoModels.elements();
+        Enumeration<AlgorithmModel> enums = this.algoModels.elements();
         while (enums.hasMoreElements()) {
             AlgorithmModel model = enums.nextElement();
             if (model.toString().equals(selectedAlgoName)) {
-                algorithmList.setSelectedValue(model, true);
+                this.algorithmList.setSelectedValue(model, true);
                 break;
             }
         }
 
-        obj = userAlgoSelections.get(IND_TEST_PARAM);
+        obj = userAlgoSelections.get(this.IND_TEST_PARAM);
         if ((obj != null) && (obj instanceof IndependenceTestModel)) {
-            String value = ((IndependenceTestModel) obj).toString();
-            ComboBoxModel<IndependenceTestModel> comboBoxModels = indTestComboBox.getModel();
+            String value = obj.toString();
+            ComboBoxModel<IndependenceTestModel> comboBoxModels = this.indTestComboBox.getModel();
             int size = comboBoxModels.getSize();
             for (int i = 0; i < size; i++) {
                 IndependenceTestModel model = comboBoxModels.getElementAt(i);
                 if (model.toString().equals(value)) {
-                    userAlgoSelections.put(IND_TEST_PARAM, model);
-                    indTestComboBox.getModel().setSelectedItem(model);
+                    userAlgoSelections.put(this.IND_TEST_PARAM, model);
+                    this.indTestComboBox.getModel().setSelectedItem(model);
                     break;
                 }
             }
         }
 
-        obj = userAlgoSelections.get(SCORE_PARAM);
+        obj = userAlgoSelections.get(this.SCORE_PARAM);
         if ((obj != null) && (obj instanceof ScoreModel)) {
-            String value = ((ScoreModel) obj).toString();
-            ComboBoxModel<ScoreModel> comboBoxModels = scoreComboBox.getModel();
+            String value = obj.toString();
+            ComboBoxModel<ScoreModel> comboBoxModels = this.scoreComboBox.getModel();
             int size = comboBoxModels.getSize();
             for (int i = 0; i < size; i++) {
                 ScoreModel model = comboBoxModels.getElementAt(i);
                 if (model.toString().equals(value)) {
-                    userAlgoSelections.put(SCORE_PARAM, model);
-                    scoreComboBox.getModel().setSelectedItem(model);
+                    userAlgoSelections.put(this.SCORE_PARAM, model);
+                    this.scoreComboBox.getModel().setSelectedItem(model);
                     break;
                 }
             }
@@ -404,11 +363,11 @@ public class AlgorithmCard extends JPanel {
     }
 
     public void refresh() {
-        restoreUserAlgoSelections(algorithmRunner.getUserAlgoSelections());
+        restoreUserAlgoSelections(this.algorithmRunner.getUserAlgoSelections());
     }
 
     public void saveStates() {
-        rememberUserAlgoSelections(algorithmRunner.getUserAlgoSelections());
+        rememberUserAlgoSelections(this.algorithmRunner.getUserAlgoSelections());
     }
 
     /**
@@ -429,45 +388,45 @@ public class AlgorithmCard extends JPanel {
         try {
             algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         } catch (IllegalAccessException | InstantiationException exception) {
-            LOGGER.error("", exception);
+            TetradLogger.getInstance().forceLogMessage(exception.toString());
         }
 
         // Those pairwise algos (R3, RShew, Skew..) require source graph to initialize - Zhou
-        if (algorithm != null && algorithm instanceof TakesInitialGraph && algorithmRunner.getSourceGraph() != null && !algorithmRunner.getDataModelList().isEmpty()) {
-            Algorithm initialGraph = new SingleGraphAlg(algorithmRunner.getSourceGraph());
-            ((TakesInitialGraph) algorithm).setInitialGraph(initialGraph);
+        if (algorithm != null && algorithm instanceof TakesExternalGraph && this.algorithmRunner.getSourceGraph() != null && !this.algorithmRunner.getDataModelList().isEmpty()) {
+            Algorithm externalGraph = new SingleGraphAlg(this.algorithmRunner.getSourceGraph());
+            ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }
 
         return algorithm;
     }
 
     public boolean isAllValid() {
-        AlgorithmModel algoModel = algorithmList.getSelectedValue();
-        IndependenceTestModel indTestModel = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
-        ScoreModel scoreModel = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
+        AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
+        IndependenceTestModel indTestModel = this.indTestComboBox.getItemAt(this.indTestComboBox.getSelectedIndex());
+        ScoreModel scoreModel = this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex());
 
         boolean missingTest = algoModel.isRequiredTest() && (indTestModel == null);
         boolean missingScore = algoModel.isRequiredScore() && (scoreModel == null);
         if (missingTest && missingScore) {
             String msg = String.format("%s requires both test and score.",
                     algoModel.getAlgorithm().getAnnotation().name());
-            JOptionPane.showMessageDialog(desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this.desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
 
             return false;
         } else if (missingTest) {
             String msg = String.format("%s requires independence test.",
                     algoModel.getAlgorithm().getAnnotation().name());
-            JOptionPane.showMessageDialog(desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this.desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
 
             return false;
         } else if (missingScore) {
             String msg = String.format("%s requires score.",
                     algoModel.getAlgorithm().getAnnotation().name());
-            JOptionPane.showMessageDialog(desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this.desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
 
             return false;
         } else {
-            algorithmRunner.setAlgorithm(getAlgorithmFromInterface(algoModel, indTestModel, scoreModel));
+            this.algorithmRunner.setAlgorithm(getAlgorithmFromInterface(algoModel, indTestModel, scoreModel));
 
             return true;
         }
@@ -476,7 +435,7 @@ public class AlgorithmCard extends JPanel {
     private void validateAlgorithmOption() {
         firePropertyChange("algoFwdBtn", null, true);
 
-        AlgorithmModel algoModel = algorithmList.getSelectedValue();
+        AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
         Class algoClass = algoModel.getAlgorithm().getClazz();
 
         if (algoClass.isAnnotationPresent(Nonexecutable.class)) {
@@ -492,44 +451,44 @@ public class AlgorithmCard extends JPanel {
                 }
 
             } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
-                LOGGER.error("", exception);
+                TetradLogger.getInstance().forceLogMessage(exception.toString());
                 msg = "";
             }
 
             firePropertyChange("algoFwdBtn", null, false);
-            JOptionPane.showMessageDialog(desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this.desktop, msg, "Please Note", JOptionPane.INFORMATION_MESSAGE);
         } else {
             // Check if initial graph is provided for those pairwise algorithms
-            if (TakesInitialGraph.class.isAssignableFrom(algoClass)) {
-                if (algorithmRunner.getSourceGraph() == null || algorithmRunner.getDataModelList().isEmpty()) {
+            if (TakesExternalGraph.class.isAssignableFrom(algoClass)) {
+                if (this.algorithmRunner.getSourceGraph() == null || this.algorithmRunner.getDataModelList().isEmpty()) {
                     try {
                         Object algo = algoClass.newInstance();
-                        Method m = algoClass.getDeclaredMethod("setInitialGraph", Algorithm.class);
+                        Method m = algoClass.getDeclaredMethod("setExternalGraph", Algorithm.class);
                         m.setAccessible(true);
                         try {
                             Algorithm algorithm = null;
                             m.invoke(algo, algorithm);
                         } catch (InvocationTargetException | IllegalArgumentException exception) {
                             firePropertyChange("algoFwdBtn", null, false);
-                            JOptionPane.showMessageDialog(desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
+                            JOptionPane.showMessageDialog(this.desktop, exception.getCause().getMessage(), "Please Note", JOptionPane.INFORMATION_MESSAGE);
                         }
                     } catch (IllegalAccessException | InstantiationException | NoSuchMethodException exception) {
-                        LOGGER.error("", exception);
+                        TetradLogger.getInstance().forceLogMessage(exception.toString());
                     }
                 }
             }
 
-            // Time-series (TsFci, TsGfci, TsImages) algorithms need lagged data
+            // SVAR (SvarFci, SvarGfci) algorithms need lagged data
             String cmd = algoModel.getAlgorithm().getAnnotation().command();
             if (cmd.equalsIgnoreCase("ts-fci")
                     || cmd.equalsIgnoreCase("ts-gfci")
                     || cmd.equalsIgnoreCase("ts-imgs")) {
-                DataModel dataModel = algorithmRunner.getDataModel();
-                IKnowledge knowledge = algorithmRunner.getKnowledge();
+                DataModel dataModel = this.algorithmRunner.getDataModel();
+                IKnowledge knowledge = this.algorithmRunner.getKnowledge();
                 if ((knowledge == null || knowledge.isEmpty())
                         && (dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
                     firePropertyChange("algoFwdBtn", null, false);
-                    JOptionPane.showMessageDialog(desktop, "Time-series algorithm needs lagged data", "Please Note", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this.desktop, "Time-series algorithm needs lagged data", "Please Note", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         }
@@ -537,169 +496,141 @@ public class AlgorithmCard extends JPanel {
     }
 
     private void refreshAlgorithmList() {
-        algoModels.clear();
+        this.algoModels.clear();
 
-        ButtonModel selectedAlgoType = algoFilterBtnGrp.getSelection();
+        ButtonModel selectedAlgoType = this.algoFilterBtnGrp.getSelection();
         if (selectedAlgoType != null) {
             AlgorithmModels algorithmModels = AlgorithmModels.getInstance();
             String algoType = selectedAlgoType.getActionCommand();
             if ("all".equals(algoType)) {
-                if (knowledgeChkBox.isSelected()) {
-                    algorithmModels.getModels(dataType, multiDataAlgo).stream()
+                if (this.knowledgeChkBox.isSelected()) {
+                    algorithmModels.getModels(this.dataType, this.multiDataAlgo).stream()
                             .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().getClazz()))
-                            .forEach(e -> algoModels.addElement(e));
+                            .forEach(e -> this.algoModels.addElement(e));
                 } else {
-                    algorithmModels.getModels(dataType, multiDataAlgo).stream()
-                            .forEach(e -> algoModels.addElement(e));
+                    algorithmModels.getModels(this.dataType, this.multiDataAlgo).stream()
+                            .forEach(e -> this.algoModels.addElement(e));
                 }
             } else {
-                if (knowledgeChkBox.isSelected()) {
-                    algorithmModels.getModels(AlgType.valueOf(algoType), dataType, multiDataAlgo).stream()
+                if (this.knowledgeChkBox.isSelected()) {
+                    algorithmModels.getModels(AlgType.valueOf(algoType), this.dataType, this.multiDataAlgo).stream()
                             .filter(e -> HasKnowledge.class.isAssignableFrom(e.getAlgorithm().getClazz()))
-                            .forEach(e -> algoModels.addElement(e));
+                            .forEach(e -> this.algoModels.addElement(e));
                 } else {
-                    algorithmModels.getModels(AlgType.valueOf(algoType), dataType, multiDataAlgo).stream()
-                            .forEach(e -> algoModels.addElement(e));
+                    algorithmModels.getModels(AlgType.valueOf(algoType), this.dataType, this.multiDataAlgo).stream()
+                            .forEach(e -> this.algoModels.addElement(e));
                 }
             }
 
-            if (algoModels.isEmpty()) {
-                algoDescTextArea.setText("");
+            if (this.algoModels.isEmpty()) {
+                this.algoDescTextArea.setText("");
                 firePropertyChange("algoFwdBtn", null, false);
 
             } else {
-                algorithmList.setSelectedIndex(0);
+                this.algorithmList.setSelectedIndex(0);
                 firePropertyChange("algoFwdBtn", null, true);
             }
         }
-        scoreComboBox.setEnabled(scoreComboBox.getItemCount() > 0);
+        this.scoreComboBox.setEnabled(this.scoreComboBox.getItemCount() > 0);
     }
 
     private void refreshTestList() {
-        updatingTestModels = true;
-        indTestComboBox.removeAllItems();
-        AlgorithmModel algoModel = algorithmList.getSelectedValue();
+        this.updatingTestModels = true;
+        this.indTestComboBox.removeAllItems();
+        AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
         if (algoModel != null && algoModel.isRequiredTest()) {
-            boolean linear = linearVarChkBox.isSelected();
-            boolean gaussian = gaussianVarChkBox.isSelected();
-            List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(dataType);
-            if (linear && gaussian) {
+            List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(this.dataType);
+            if (this.linearGaussianRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(Linear.class))
-                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(Gaussian.class))
-                        .forEach(e -> indTestComboBox.addItem(e));
-            } else if (linear) {
+                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(LinearGaussian.class))
+                        .forEach(e -> this.indTestComboBox.addItem(e));
+            } else if (this.mixedRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(Linear.class))
-                        .filter(e -> !e.getIndependenceTest().getClazz().isAnnotationPresent(Gaussian.class))
-                        .forEach(e -> indTestComboBox.addItem(e));
-            } else if (gaussian) {
+                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(Mixed.class))
+                        .forEach(e -> this.indTestComboBox.addItem(e));
+            } else if (this.generalRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> !e.getIndependenceTest().getClazz().isAnnotationPresent(Linear.class))
-                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(Gaussian.class))
-                        .forEach(e -> indTestComboBox.addItem(e));
-            } else {
-                models.forEach(e -> indTestComboBox.addItem(e));
+                        .filter(e -> e.getIndependenceTest().getClazz().isAnnotationPresent(General.class))
+                        .forEach(e -> this.indTestComboBox.addItem(e));
+            } else if (this.allRadBtn.isSelected()) {
+                models.stream()
+                        .forEach(e -> this.indTestComboBox.addItem(e));
             }
         }
-        updatingTestModels = false;
-        if (indTestComboBox.getItemCount() > 0) {
-            indTestComboBox.setEnabled(true);
+        this.updatingTestModels = false;
+        if (this.indTestComboBox.getItemCount() > 0) {
+            this.indTestComboBox.setEnabled(true);
 
-            Map<DataType, IndependenceTestModel> map = defaultIndTestModels.get(algoModel);
+            Map<DataType, IndependenceTestModel> map = this.defaultIndTestModels.get(algoModel);
             if (map == null) {
                 map = new EnumMap<>(DataType.class);
-                defaultIndTestModels.put(algoModel, map);
+                this.defaultIndTestModels.put(algoModel, map);
             }
 
-            IndependenceTestModel testModel = map.get(dataType);
+            IndependenceTestModel testModel = map.get(this.dataType);
             if (testModel == null) {
-                testModel = IndependenceTestModels.getInstance().getDefaultModel(dataType);
+                testModel = IndependenceTestModels.getInstance().getDefaultModel(this.dataType);
                 if (testModel == null) {
-                    testModel = indTestComboBox.getItemAt(0);
+                    testModel = this.indTestComboBox.getItemAt(0);
                 }
             }
-            indTestComboBox.setSelectedItem(testModel);
+            this.indTestComboBox.setSelectedItem(testModel);
         } else {
-            indTestComboBox.setEnabled(false);
+            this.indTestComboBox.setEnabled(false);
         }
 
-        if (indTestComboBox.getSelectedIndex() == -1) {
-            testDescTextArea.setText("");
+        if (this.indTestComboBox.getSelectedIndex() == -1) {
+            this.testDescTextArea.setText("");
         }
     }
 
     private void refreshScoreList() {
-        updatingScoreModels = true;
-        scoreComboBox.removeAllItems();
-        AlgorithmModel algoModel = algorithmList.getSelectedValue();
+        this.updatingScoreModels = true;
+        this.scoreComboBox.removeAllItems();
+        AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
         if (algoModel != null && algoModel.isRequiredScore()) {
-            boolean linear = linearVarChkBox.isSelected();
-            boolean gaussian = gaussianVarChkBox.isSelected();
-            List<ScoreModel> models = ScoreModels.getInstance().getModels(dataType);
-            List<ScoreModel> scoreModels = new LinkedList<>();
-            if (linear && gaussian) {
+            List<ScoreModel> models = ScoreModels.getInstance().getModels(this.dataType);
+            if (this.linearGaussianRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(Linear.class))
-                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(Gaussian.class))
-                        .forEach(e -> scoreModels.add(e));
-            } else if (linear) {
+                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(LinearGaussian.class))
+                        .forEach(e -> this.scoreComboBox.addItem(e));
+            } else if (this.mixedRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(Linear.class))
-                        .filter(e -> !e.getScore().getClazz().isAnnotationPresent(Gaussian.class))
-                        .forEach(e -> scoreModels.add(e));
-            } else if (gaussian) {
+                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(Mixed.class))
+                        .forEach(e -> this.scoreComboBox.addItem(e));
+            } else if (this.generalRadBtn.isSelected()) {
                 models.stream()
-                        .filter(e -> !e.getScore().getClazz().isAnnotationPresent(Linear.class))
-                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(Gaussian.class))
-                        .forEach(e -> scoreModels.add(e));
-            } else {
-                models.forEach(e -> scoreModels.add(e));
-            }
-
-            // TsIMaGES can only take SEM BIC score for continuous data
-            // or BDeu score for discrete data
-            if (TsImages.class.equals(algoModel.getAlgorithm().getClazz())) {
-                switch (dataType) {
-                    case Continuous:
-                        scoreModels.stream()
-                                .filter(e -> e.getScore().getClazz().equals(SemBicScore.class))
-                                .forEach(e -> scoreComboBox.addItem(e));
-                        break;
-                    case Discrete:
-                        scoreModels.stream()
-                                .filter(e -> e.getScore().getClazz().equals(BdeuScore.class))
-                                .forEach(e -> scoreComboBox.addItem(e));
-                        break;
-                }
-            } else {
-                scoreModels.forEach(e -> scoreComboBox.addItem(e));
+                        .filter(e -> e.getScore().getClazz().isAnnotationPresent(General.class))
+                        .forEach(e -> this.scoreComboBox.addItem(e));
+            } else if (this.allRadBtn.isSelected()) {
+                models.stream()
+                        .forEach(e -> this.scoreComboBox.addItem(e));
             }
         }
-        updatingScoreModels = false;
-        if (scoreComboBox.getItemCount() > 0) {
-            scoreComboBox.setEnabled(true);
+        this.updatingScoreModels = false;
+        if (this.scoreComboBox.getItemCount() > 0) {
+            this.scoreComboBox.setEnabled(true);
 
-            Map<DataType, ScoreModel> map = defaultScoreModels.get(algoModel);
+            Map<DataType, ScoreModel> map = this.defaultScoreModels.get(algoModel);
             if (map == null) {
                 map = new EnumMap<>(DataType.class);
-                defaultScoreModels.put(algoModel, map);
+                this.defaultScoreModels.put(algoModel, map);
             }
 
-            ScoreModel scoreModel = map.get(dataType);
+            ScoreModel scoreModel = map.get(this.dataType);
             if (scoreModel == null) {
-                scoreModel = ScoreModels.getInstance().getDefaultModel(dataType);
+                scoreModel = ScoreModels.getInstance().getDefaultModel(this.dataType);
                 if (scoreModel == null) {
-                    scoreModel = scoreComboBox.getItemAt(0);
+                    scoreModel = this.scoreComboBox.getItemAt(0);
                 }
             }
-            scoreComboBox.setSelectedItem(scoreModel);
+            this.scoreComboBox.setSelectedItem(scoreModel);
         } else {
-            scoreComboBox.setEnabled(false);
+            this.scoreComboBox.setEnabled(false);
         }
 
-        if (scoreComboBox.getSelectedIndex() == -1) {
-            scoreDescTextArea.setText("");
+        if (this.scoreComboBox.getSelectedIndex() == -1) {
+            this.scoreDescTextArea.setText("");
         }
     }
 
@@ -710,16 +641,15 @@ public class AlgorithmCard extends JPanel {
 
     private void resetAllSettings() {
         // clear cache
-        defaultIndTestModels.clear();
-        defaultScoreModels.clear();
+        this.defaultIndTestModels.clear();
+        this.defaultScoreModels.clear();
 
         // uncheck all checkboxes
-        linearVarChkBox.setSelected(false);
-        gaussianVarChkBox.setSelected(false);
-        knowledgeChkBox.setSelected(false);
+        this.datasetFilterBtnGrp.setSelected(this.allRadBtn.getModel(), true);
+        this.knowledgeChkBox.setSelected(false);
 
-        if (!algoTypeOpts.isEmpty()) {
-            algoTypeOpts.get(0).setSelected(true);
+        if (!this.algoTypeOpts.isEmpty()) {
+            this.algoTypeOpts.get(0).setSelected(true);
         }
         refreshAlgorithmList();
         refreshTestList();
@@ -727,36 +657,36 @@ public class AlgorithmCard extends JPanel {
     }
 
     private void setAlgorithmDescription() {
-        AlgorithmModel model = algorithmList.getSelectedValue();
+        AlgorithmModel model = this.algorithmList.getSelectedValue();
         if (model == null) {
-            algoDescTextArea.setText("");
+            this.algoDescTextArea.setText("");
         } else {
-            algoDescTextArea.setText(model.getDescription());
-            algoDescTextArea.setCaretPosition(0);
+            this.algoDescTextArea.setText(model.getDescription());
+            this.algoDescTextArea.setCaretPosition(0);
         }
     }
 
     private void setScoreDescription() {
-        ScoreModel model = scoreComboBox.getItemAt(scoreComboBox.getSelectedIndex());
+        ScoreModel model = this.scoreComboBox.getItemAt(this.scoreComboBox.getSelectedIndex());
         if (model == null) {
-            scoreDescTextArea.setText("");
+            this.scoreDescTextArea.setText("");
         } else {
-            scoreDescTextArea.setText(model.getDescription());
-            scoreDescTextArea.setCaretPosition(0);
+            this.scoreDescTextArea.setText(model.getDescription());
+            this.scoreDescTextArea.setCaretPosition(0);
         }
     }
 
     private void setIndepTestDescription() {
-        IndependenceTestModel model = indTestComboBox.getItemAt(indTestComboBox.getSelectedIndex());
+        IndependenceTestModel model = this.indTestComboBox.getItemAt(this.indTestComboBox.getSelectedIndex());
         if (model == null) {
-            testDescTextArea.setText("");
+            this.testDescTextArea.setText("");
         } else {
-            testDescTextArea.setText(model.getDescription());
-            testDescTextArea.setCaretPosition(0);
+            this.testDescTextArea.setText(model.getDescription());
+            this.testDescTextArea.setCaretPosition(0);
         }
     }
 
-    private class DescriptionPanel extends JPanel {
+    private static class DescriptionPanel extends JPanel {
 
         private static final long serialVersionUID = 2329356999486712496L;
 
@@ -771,9 +701,9 @@ public class AlgorithmCard extends JPanel {
         }
 
         private void initComponents() {
-            JScrollPane scrollPane = new JScrollPane(view);
+            JScrollPane scrollPane = new JScrollPane(this.view);
 
-            setBorder(BorderFactory.createTitledBorder(borderTitle));
+            setBorder(BorderFactory.createTitledBorder(this.borderTitle));
             setPreferredSize(new Dimension(235, 150));
 
             GroupLayout layout = new GroupLayout(this);
@@ -801,16 +731,16 @@ public class AlgorithmCard extends JPanel {
         private static final long serialVersionUID = -7068543172769683902L;
 
         public AlgorithmListPanel() {
-            initComponents();
+            this.initComponents();
         }
 
         private void initComponents() {
             JScrollPane scrollPane = new JScrollPane(algorithmList);
 
-            setBorder(BorderFactory.createTitledBorder("Choose Algorithm"));
+            this.setBorder(BorderFactory.createTitledBorder("Choose Algorithm"));
 
             GroupLayout layout = new GroupLayout(this);
-            this.setLayout(layout);
+            setLayout(layout);
             layout.setHorizontalGroup(
                     layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -834,8 +764,8 @@ public class AlgorithmCard extends JPanel {
         private static final long serialVersionUID = -3120503093689632462L;
 
         public AlgorithmFilterPanel() {
-            populateAlgoTypeOptions();
-            initComponents();
+            this.populateAlgoTypeOptions();
+            this.initComponents();
         }
 
         private void initComponents() {
@@ -845,14 +775,14 @@ public class AlgorithmCard extends JPanel {
             // Algo types label box
             Box algTypesBoxLabelBox = Box.createHorizontalBox();
             algTypesBoxLabelBox.add(new JLabel("Show algorithms that: "));
-            algTypesBoxLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+            algTypesBoxLabelBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             // Add label to containing box
             algoTypesBox.add(algTypesBoxLabelBox);
 
             // All option
             Box algoTypeOptionAllBox = Box.createHorizontalBox();
-            algoTypeOptionAllBox.setAlignmentX(LEFT_ALIGNMENT);
+            algoTypeOptionAllBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             // Add all option to containing box
             algoTypesBox.add(algoTypeOptionAllBox);
@@ -862,7 +792,7 @@ public class AlgorithmCard extends JPanel {
                 Dimension indentSize = new Dimension(10, 20);
                 algoTypeOpts.forEach(btn -> {
                     Box box = Box.createHorizontalBox();
-                    box.setAlignmentX(LEFT_ALIGNMENT);
+                    box.setAlignmentX(Component.LEFT_ALIGNMENT);
                     box.add(Box.createRigidArea(indentSize));
                     box.add(btn);
                     algoTypesBox.add(box);
@@ -875,11 +805,11 @@ public class AlgorithmCard extends JPanel {
             // Add label into this label box to size
             Box priorKnowledgeLabelBox = Box.createHorizontalBox();
             priorKnowledgeLabelBox.add(new JLabel("Show only: "));
-            priorKnowledgeLabelBox.setAlignmentX(LEFT_ALIGNMENT);
+            priorKnowledgeLabelBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             // Checkbox container
             Box priorKnowledgeOptionBox = Box.createHorizontalBox();
-            priorKnowledgeOptionBox.setAlignmentX(LEFT_ALIGNMENT);
+            priorKnowledgeOptionBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             // Add padding and option
             priorKnowledgeOptionBox.add(Box.createRigidArea(new Dimension(10, 20)));
@@ -890,27 +820,25 @@ public class AlgorithmCard extends JPanel {
             priorKnowledgeBox.add(priorKnowledgeOptionBox);
 
             Box algoFiltersBox = Box.createVerticalBox();
-            algoFiltersBox.setAlignmentX(LEFT_ALIGNMENT);
+            algoFiltersBox.setAlignmentX(Component.LEFT_ALIGNMENT);
             algoFiltersBox.add(algoTypesBox);
             algoFiltersBox.add(Box.createVerticalStrut(10));
             algoFiltersBox.add(priorKnowledgeBox);
 
-            setLayout(new BorderLayout());
-            setBorder(BorderFactory.createTitledBorder("Algorithm Filters"));
-            add(new PaddingPanel(algoFiltersBox), BorderLayout.CENTER);
+            this.setLayout(new BorderLayout());
+            this.setBorder(BorderFactory.createTitledBorder("Algorithm Filters"));
+            this.add(new PaddingPanel(algoFiltersBox), BorderLayout.CENTER);
         }
 
         /**
          * Create new radio buttons and add them to both the radio button list
          * and radio button group.
-         *
-         * @param radioButtons
          */
         private void populateAlgoTypeOptions() {
             JRadioButton showAllRadBtn = new JRadioButton("show all");
             showAllRadBtn.setActionCommand("all");
             showAllRadBtn.addActionListener(e -> {
-                refreshAlgorithmList();
+                AlgorithmCard.this.refreshAlgorithmList();
             });
             algoTypeOpts.add(showAllRadBtn);
             algoFilterBtnGrp.add(showAllRadBtn);
@@ -921,7 +849,7 @@ public class AlgorithmCard extends JPanel {
                 JRadioButton radioButton = new JRadioButton(name.replace("_", " "));
                 radioButton.setActionCommand(name);
                 radioButton.addActionListener(e -> {
-                    refreshAlgorithmList();
+                    AlgorithmCard.this.refreshAlgorithmList();
                 });
 
                 algoTypeOpts.add(radioButton);
@@ -935,27 +863,35 @@ public class AlgorithmCard extends JPanel {
 
         private static final long serialVersionUID = -1594897454478052884L;
 
-        private JLabel assumptionsLabel;
-        private JLabel scoreLabel;
-        private JLabel testLabel;
-
         public TestAndScorePanel() {
-            initComponents();
+            this.initComponents();
         }
 
         private void initComponents() {
-            assumptionsLabel = new JLabel();
-            testLabel = new JLabel();
-            scoreLabel = new JLabel();
+            linearGaussianRadBtn.setActionCommand("linear-gaussian");
+            mixedRadBtn.setActionCommand("mixed");
+            generalRadBtn.setActionCommand("general");
+            allRadBtn.setActionCommand("all");
 
-            setBorder(BorderFactory.createTitledBorder("Choose Statistical Test and Score"));
+            datasetFilterBtnGrp.add(linearGaussianRadBtn);
+            datasetFilterBtnGrp.add(mixedRadBtn);
+            datasetFilterBtnGrp.add(generalRadBtn);
+            datasetFilterBtnGrp.add(allRadBtn);
+
+            datasetFilterBtnGrp.setSelected(allRadBtn.getModel(), true);
+
+            JLabel assumptionsLabel = new JLabel();
+            JLabel testLabel = new JLabel();
+            JLabel scoreLabel = new JLabel();
+
+            this.setBorder(BorderFactory.createTitledBorder("Choose Statistical Test and Score"));
 
             assumptionsLabel.setText("Filter by dataset properties:");
 
             testLabel.setText("Test:");
             scoreLabel.setText("Score:");
 
-            if (hasMissingValues) {
+            if (algorithmRunner.hasMissingValues()) {
                 JLabel missingValueAlert = new JLabel();
                 JLabel testwiseDeletionAlert = new JLabel();
 
@@ -967,56 +903,62 @@ public class AlgorithmCard extends JPanel {
                 testwiseDeletionAlert.setText("testwise deletion will be used.");
 
                 GroupLayout layout = new GroupLayout(this);
-                this.setLayout(layout);
+                setLayout(layout);
                 layout.setHorizontalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
                                         .addContainerGap()
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addComponent(assumptionsLabel)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addGap(12, 12, 12)
-                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                                .addComponent(gaussianVarChkBox)
-                                                                .addComponent(linearVarChkBox)))
                                                 .addGroup(layout.createSequentialGroup()
                                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                                 .addComponent(testLabel)
                                                                 .addComponent(scoreLabel))
-                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+//                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                                                .addComponent(indTestComboBox, 0, 239, Short.MAX_VALUE)
+                                                                .addComponent(scoreComboBox, 0, 239, Short.MAX_VALUE)))
+                                                .addComponent(assumptionsLabel)
+                                                .addGroup(layout.createSequentialGroup()
+//                                                        .addGap(6, 6, 6)
                                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                                .addComponent(indTestComboBox, GroupLayout.PREFERRED_SIZE, 239, GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(scoreComboBox, GroupLayout.PREFERRED_SIZE, 239, GroupLayout.PREFERRED_SIZE)))
+                                                                .addComponent(mixedRadBtn)
+                                                                .addComponent(linearGaussianRadBtn)
+                                                                .addComponent(generalRadBtn)
+                                                                .addComponent(allRadBtn)))
                                                 .addComponent(missingValueAlert)
                                                 .addComponent(testwiseDeletionAlert))
-                                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
                 layout.setVerticalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
-                                        .addGap(12, 12, 12)
+                                        .addContainerGap()
                                         .addComponent(assumptionsLabel)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(linearVarChkBox)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(gaussianVarChkBox)
-                                        .addGap(18, 18, 18)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(linearGaussianRadBtn)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(mixedRadBtn)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(generalRadBtn)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(allRadBtn)
+                                        .addPreferredGap(ComponentPlacement.UNRELATED)
                                         .addComponent(missingValueAlert)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(testwiseDeletionAlert, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addPreferredGap(ComponentPlacement.RELATED)
+                                        .addComponent(testwiseDeletionAlert)
+                                        .addPreferredGap(ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                                .addComponent(indTestComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(testLabel))
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(testLabel)
+                                                .addComponent(indTestComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                                .addComponent(scoreComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(scoreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addComponent(scoreLabel))
-                                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
             } else {
                 GroupLayout layout = new GroupLayout(this);
-                this.setLayout(layout);
+                setLayout(layout);
                 layout.setHorizontalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
@@ -1024,41 +966,44 @@ public class AlgorithmCard extends JPanel {
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                 .addGroup(layout.createSequentialGroup()
                                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                                .addComponent(assumptionsLabel)
-                                                                .addGroup(layout.createSequentialGroup()
-                                                                        .addGap(12, 12, 12)
-                                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                                                .addComponent(gaussianVarChkBox)
-                                                                                .addComponent(linearVarChkBox))))
-                                                        .addGap(0, 0, Short.MAX_VALUE))
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                                 .addComponent(testLabel)
                                                                 .addComponent(scoreLabel))
-                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addPreferredGap(ComponentPlacement.RELATED)
+                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                                                .addComponent(indTestComboBox, 0, 239, Short.MAX_VALUE)
+                                                                .addComponent(scoreComboBox, 0, 239, Short.MAX_VALUE)))
+                                                .addComponent(assumptionsLabel)
+                                                .addGroup(layout.createSequentialGroup()
+                                                        .addGap(6, 6, 6)
                                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                                .addComponent(scoreComboBox, 0, 239, Short.MAX_VALUE)
-                                                                .addComponent(indTestComboBox, 0, 239, Short.MAX_VALUE))))
-                                        .addContainerGap())
+                                                                .addComponent(mixedRadBtn)
+                                                                .addComponent(linearGaussianRadBtn)
+                                                                .addComponent(generalRadBtn)
+                                                                .addComponent(allRadBtn))))
+                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
                 layout.setVerticalGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
                                         .addContainerGap()
                                         .addComponent(assumptionsLabel)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(linearVarChkBox)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(gaussianVarChkBox)
-                                        .addGap(22, 22, 22)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(linearGaussianRadBtn)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(mixedRadBtn)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(generalRadBtn)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(allRadBtn)
+                                        .addGap(18, 18, 18)
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                                 .addComponent(testLabel)
-                                                .addComponent(indTestComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(indTestComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(ComponentPlacement.RELATED)
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                                .addComponent(scoreComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(AlgorithmCard.this.scoreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addComponent(scoreLabel))
-                                        .addContainerGap())
+                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
             }
         }

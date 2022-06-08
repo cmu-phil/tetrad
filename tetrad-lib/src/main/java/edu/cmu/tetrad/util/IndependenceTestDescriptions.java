@@ -19,6 +19,13 @@
 package edu.cmu.tetrad.util;
 
 import edu.cmu.tetrad.annotation.TestOfIndependenceAnnotations;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,22 +33,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- *
  * May 14, 2019 11:25:02 AM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public final class IndependenceTestDescriptions {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IndependenceTestDescriptions.class);
+//    private static final Logger LOGGER = LoggerFactory.getLogger(IndependenceTestDescriptions.class);
 
     private static final IndependenceTestDescriptions INSTANCE = new IndependenceTestDescriptions();
 
@@ -49,7 +49,7 @@ public final class IndependenceTestDescriptions {
 
     private IndependenceTestDescriptions() {
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("manual/index.html")) {
-            final Document doc = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
+            Document doc = Jsoup.parse(inputStream, StandardCharsets.UTF_8.name(), "");
             getShortNames().forEach(shortName -> {
                 Element element = doc.getElementById(shortName);
                 if (element != null) {
@@ -57,20 +57,21 @@ public final class IndependenceTestDescriptions {
                     String desc = paragraphs.stream()
                             .map(p -> p.text().trim())
                             .collect(Collectors.joining("\n"));
-                    descriptions.put(shortName, desc);
+                    this.descriptions.put(shortName, desc);
                 }
             });
         } catch (IOException ex) {
-            LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
+            TetradLogger.getInstance().forceLogMessage("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.");
+//            IndependenceTestDescriptions.LOGGER.error("Failed to read tetrad HTML manual 'maunal/index.html' file from within the jar.", ex);
         }
     }
 
     public static IndependenceTestDescriptions getInstance() {
-        return INSTANCE;
+        return IndependenceTestDescriptions.INSTANCE;
     }
 
     public String get(String shortName) {
-        String description = descriptions.get(shortName);
+        String description = this.descriptions.get(shortName);
 
         return (description == null)
                 ? String.format("Please add a description for %s.", shortName)

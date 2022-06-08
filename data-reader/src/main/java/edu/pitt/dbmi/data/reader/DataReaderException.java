@@ -19,7 +19,6 @@
 package edu.pitt.dbmi.data.reader;
 
 /**
- *
  * Nov 6, 2018 2:26:59 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -50,8 +49,8 @@ public class DataReaderException extends RuntimeException {
      * specified detail message and cause.
      *
      * @param message the detail message.
-     * @param cause the cause (which is saved for later retrieval by the
-     * {@link #getCause()} method).
+     * @param cause   the cause (which is saved for later retrieval by the
+     *                {@link #getCause()} method).
      */
     public DataReaderException(String message, Throwable cause) {
         super(message, cause);

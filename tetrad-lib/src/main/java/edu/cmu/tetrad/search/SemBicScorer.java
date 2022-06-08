@@ -13,6 +13,10 @@ import java.util.Map;
 
 public class SemBicScorer {
     public static double scoreDag(Graph dag, DataModel data) {
+        return scoreDag(dag, data, true);
+    }
+
+    public static double scoreDag(Graph dag, DataModel data, boolean precomputeCovariances) {
         if (dag == null) throw new NullPointerException("DAG not specified.");
 
         Score score;
@@ -20,18 +24,14 @@ public class SemBicScorer {
         if (data instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dag);
         } else if (data instanceof DataSet) {
-            score = new SemBicScore((DataSet) data);
+            score = new SemBicScore((DataSet) data, precomputeCovariances);
         } else {
             throw new IllegalArgumentException("Expecting a covariance matrix of a dataset.");
         }
 
         dag = GraphUtils.replaceNodes(dag, data.getVariables());
 
-        if (dag == null) {
-            throw new NullPointerException("Dag was not specified.");
-        }
-
-        Map<Node, Integer> hashIndices = buildIndexing(dag.getNodes());
+        Map<Node, Integer> hashIndices = SemBicScorer.buildIndexing(dag.getNodes());
 
         double _score = 0.0;
 

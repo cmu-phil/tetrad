@@ -3,13 +3,18 @@ package edu.cmu.tetrad.data.simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.pitt.dbmi.data.reader.Delimiter;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,60 +26,54 @@ import java.util.List;
 @Experimental
 public class LoadContinuousDataSmithSim implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
-    private String path;
-    private Graph graph = null;
+    private final String path;
+    private Graph graph;
     private List<DataSet> dataSets = new ArrayList<>();
-    private List<String> usedParameters = new ArrayList<>();
-    private Parameters parametersValues = new Parameters();
+    private final List<String> usedParameters = new ArrayList<>();
+    private final Parameters parametersValues = new Parameters();
 
     public LoadContinuousDataSmithSim(String path) {
         this.path = path;
         String structure = new File(path).getName();
-        parametersValues.set("structure", structure);
+        this.parametersValues.set("structure", structure);
     }
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (!newModel && !dataSets.isEmpty()) return;
-        if (!dataSets.isEmpty()) return;
+        if (!this.dataSets.isEmpty()) return;
 
         this.dataSets = new ArrayList<>();
 
-        File dir = new File(path + "/data");
+        File dir = new File(this.path + "/data");
 
         if (dir.exists()) {
             File[] files = dir.listFiles();
 
+            assert files != null;
             for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
-                DataReader reader = new DataReader();
-                reader.setVariablesSupplied(false);
-                reader.setDelimiter(DelimiterType.COMMA);
                 try {
-                    DataSet dataSet = reader.parseTabular(file);
-                    dataSets.add(dataSet);
+                    DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"',
+                            "*", true, Delimiter.TAB);
+                    this.dataSets.add(dataSet);
                 } catch (Exception e) {
                     System.out.println("Couldn't parse " + file.getAbsolutePath());
                 }
             }
         }
 
-        File dir2 = new File(path + "/graph");
+        File dir2 = new File(this.path + "/graph");
 
         if (dir2.exists()) {
             File[] files = dir2.listFiles();
 
+            assert files != null;
             for (File file : files) {
                 if (!file.getName().endsWith(".txt")) continue;
 
                 System.out.println("Loading graph from " + file.getAbsolutePath());
                 this.graph = readGraph(file);
-//            this.graph = GraphUtils.loadGraphTxt(file);
-
-//            if (!graph.isAdjacentTo(graph.getNode("X3"), graph.getNode("X4"))) {
-//                graph.addUndirectedEdge(graph.getNode("X3"), graph.getNode("X4"));
-//            }
 
                 GraphUtils.circleLayout(this.graph, 225, 200, 150);
 
@@ -85,7 +84,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
         if (parameters.get(Params.NUM_RUNS) != null) {
             parameters.set(Params.NUM_RUNS, parameters.get(Params.NUM_RUNS));
         } else {
-            parameters.set(Params.NUM_RUNS, dataSets.size());
+            parameters.set(Params.NUM_RUNS, this.dataSets.size());
         }
 
         System.out.println();
@@ -98,14 +97,12 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
     @Override
     public DataModel getDataModel(int index) {
-        return dataSets.get(index);
+        return this.dataSets.get(index);
     }
 
     public String getDescription() {
         try {
-            StringBuilder b = new StringBuilder();
-            b.append("Load data sets and graphs from a directory.").append("\n\n");
-            return b.toString();
+            return "Load data sets and graphs from a directory." + "\n\n";
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -113,12 +110,12 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
     @Override
     public List<String> getParameters() {
-        return usedParameters;
+        return this.usedParameters;
     }
 
     @Override
     public int getNumDataModels() {
-        return dataSets.size();
+        return this.dataSets.size();
     }
 
     @Override
@@ -128,17 +125,14 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
     @Override
     public Parameters getParameterValues() {
-        return parametersValues;
+        return this.parametersValues;
     }
 
 
     public Graph readGraph(File file) {
         try {
-            DataReader reader = new DataReader();
-            reader.setVariablesSupplied(false);
-            reader.setDelimiter(DelimiterType.COMMA);
-
-            DataSet data = reader.parseTabular(file);
+            DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
+                    "*", true, Delimiter.TAB);
             List<Node> variables = data.getVariables();
             Graph graph = new EdgeListGraph(variables);
 
