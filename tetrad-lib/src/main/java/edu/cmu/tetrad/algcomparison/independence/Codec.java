@@ -20,11 +20,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@TestOfIndependence(
-        name = "CODEC Test",
-        command = "codec-test",
-        dataType = {DataType.Continuous, DataType.Covariance}
-)
+//@TestOfIndependence(
+//        name = "CODEC Test",
+//        command = "codec-test",
+//        dataType = {DataType.Continuous, DataType.Covariance}
+//)
 @LinearGaussian
 public class Codec implements IndependenceWrapper {
 
