@@ -15,7 +15,15 @@ would you please consider giving us feedback on what you like about it or
 don't like about it? It would be most appreciated. Just open up an issue 
 (click on the Issues tab, above).
 
-Our project URl is:
+Our project URL is here:
+
+https://github.com/cmu-phil/tetrad
+
+The web page for the Center for Causal Discovery is here:
+
+https://www.ccd.pitt.edu/
+
+We have a project web page here:
 
 https://sites.google.com/view/tetradcausal
 
@@ -31,7 +39,7 @@ Javadocs can be found by running the javadocs command on the project once checke
 
 Downloads directory is here:
 
-https://cloud.ccd.pitt.edu/nexus/content/repositories/releases/edu/cmu/tetrad-gui/
+https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.1.0/
 
 The wiki is here:
 
@@ -60,7 +68,7 @@ tetradapp
 
 For the command line version, see causal Command:
 
-https://github.com/bd2kccd/causal-cmd
+https://github.com/bd2k/causal-cmd
 
 The  tetrad-lib package contains the "model" code; the 
 tetrad-gui package contains the "view" (GUI) code.
