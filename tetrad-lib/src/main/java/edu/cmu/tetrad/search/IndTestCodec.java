@@ -47,12 +47,11 @@ import static java.lang.StrictMath.log;
  */
 public final class IndTestCodec implements IndependenceTest {
 
-    private final Map<Node, Integer> nodesHash;
     private double alpha = 0;
-    private List<Node> variables;
+    private final List<Node> variables;
     private final DataSet dataSet;
     private final double[][] data;
-    private boolean verbose = true;
+    private final boolean verbose = true;
 
 
     //==========================CONSTRUCTORS=============================//
@@ -74,7 +73,7 @@ public final class IndTestCodec implements IndependenceTest {
 
         this.variables = dataSet.getVariables();
 
-        nodesHash = new HashMap<>();
+        Map<Node, Integer> nodesHash = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
             nodesHash.put(variables.get(i), i);
@@ -125,10 +124,42 @@ public final class IndTestCodec implements IndependenceTest {
             R[j] = count;
         }
 
-        double Ndistance = Double.POSITIVE_INFINITY;
-        int Nj = 0;
+
+//        for (int j = 0; j < N; j++) {
+//            double Ndistance = Double.POSITIVE_INFINITY;
+//            int Nj = 0;
+//
+//            for (int i = 0; i < N; i++) {
+//                if (i == j) continue;
+//                double d = distance(data, X, i, j);
+//                if (d < Ndistance) {
+//                    Ndistance = d;
+//                    Nj = i;
+//                }
+//            }
+//        }
+//
+//        for (int j = 0; j < N; j++) {
+//            double Mdistance = Double.POSITIVE_INFINITY;
+//            int Mj = 0;
+//
+//            for (int i = 0; i < N; i++) {
+//                if (i == j) continue;
+//                double d = distance(data, XZ, i, j);
+//                if (d < Mdistance) {
+//                    Mdistance = d;
+//                    Mj = i;
+//                }
+//            }
+//        }
+
+        double num = 0;
+        double den = 0;
 
         for (int j = 0; j < N; j++) {
+            double Ndistance = Double.POSITIVE_INFINITY;
+            int Nj = 0;
+
             for (int i = 0; i < N; i++) {
                 if (i == j) continue;
                 double d = distance(data, X, i, j);
@@ -137,12 +168,10 @@ public final class IndTestCodec implements IndependenceTest {
                     Nj = i;
                 }
             }
-        }
 
-        double Mdistance = Double.POSITIVE_INFINITY;
-        int Mj = 0;
+            double Mdistance = Double.POSITIVE_INFINITY;
+            int Mj = 0;
 
-        for (int j = 0; j < N; j++) {
             for (int i = 0; i < N; i++) {
                 if (i == j) continue;
                 double d = distance(data, XZ, i, j);
@@ -151,22 +180,17 @@ public final class IndTestCodec implements IndependenceTest {
                     Mj = i;
                 }
             }
-        }
 
-        double num = 0;
-        double den = 0;
-
-        for (int j = 0; j < N; j++) {
             num += min(R[j], R[Mj]) - min(R[j], R[Nj]);
             den += R[j] - min(R[j], R[Nj]);
         }
 
         double t = num / den;
-        t = abs(t);
-        System.out.println(t);
+//        t = abs(t);
+//        System.out.println(t);
 
-//        if (t < 0) return new IndependenceResult(fact, true, t);
-//        if (t > 1) return new IndependenceResult(fact, false            , t);
+        if (t < 0) return new IndependenceResult(fact, true, t);
+        if (t > 1) return new IndependenceResult(fact, false, t);
 
 
         return new IndependenceResult(fact, t <= alpha, t);
