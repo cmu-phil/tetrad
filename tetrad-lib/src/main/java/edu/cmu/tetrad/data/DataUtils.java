@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Vector;
@@ -1138,8 +1139,10 @@ public final class DataUtils {
         int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
-        return new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()),
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()),
                 data.getVariables());
+        boxDataSet.setKnowledge(data.getKnowledge());
+        return boxDataSet;
     }
 
     public static List<DataSet> split(DataSet data, double percentTest) {

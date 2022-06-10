@@ -153,6 +153,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
 
             return graph;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }

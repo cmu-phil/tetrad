@@ -23,9 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-kWorimport edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GRaSPFCI;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
@@ -45,6 +43,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
@@ -77,6 +76,7 @@ public final class TestGrasp {
     public static void main(String[] args) {
 //        new TestGrasp().testLuFigure3();
 //        new TestGrasp().testLuFigure6();
+        new TestGrasp().newAlgsHeadToHead();
     }
 
     @NotNull
@@ -427,6 +427,159 @@ public final class TestGrasp {
                         + type, simulations,
                 algorithms, statistics, params);
     }
+
+    public void newAlgsHeadToHead() {
+        Parameters params = new Parameters();
+
+        params.set(Params.RANDOMIZE_COLUMNS, true);
+        params.set(Params.DIFFERENT_GRAPHS, true);
+        params.set(Params.NUM_RUNS, 20);
+        params.set(Params.COEF_LOW, 0);
+        params.set(Params.COEF_HIGH, 1);
+        params.set(Params.NUM_STARTS, 1);
+        params.set(Params.VAR_LOW, 1.0);
+        params.set(Params.VAR_HIGH, 1.0);
+        params.set(Params.STANDARDIZE, true);
+
+        params.set(Params.PENALTY_DISCOUNT, 2);
+        params.set(Params.ALPHA, 0.001);
+
+        params.set(Params.GRASP_DEPTH, 3);
+        params.set(Params.GRASP_SINGULAR_DEPTH, 1);
+        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+        params.set(Params.GRASP_TOLERANCE_DEPTH, 0);
+
+        params.set(Params.GRASP_ORDERED_ALG, true);
+        params.set(Params.GRASP_USE_SCORE, true);
+        params.set(Params.GRASP_USE_VERMA_PEARL, false);
+        params.set(Params.GRASP_USE_DATA_ORDER, true);
+        params.set(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM, false);
+        params.set(Params.CACHE_SCORES, true);
+        params.set(Params.VERBOSE, true);
+
+        params.set(Params.PRECOMPUTE_COVARIANCES, true);
+
+        {
+//            params.set(Params.GRASP_UNCOVERED_DEPTH, 1);
+//            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+
+//            params.set(Params.NUM_MEASURES, 20, 30, 40, 50, 60, 70, 80, 90, 100);
+//            params.set(Params.AVG_DEGREE, 6);
+//            params.set(Params.SAMPLE_SIZE, 1000);
+//
+            String dataPath, resultsPath;
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_measured";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_measured_1";
+
+//            doPaperRun(params, dataPath, resultsPath, true);
+
+//            params.set(Params.NUM_MEASURES, 60);
+//            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+//            params.set(Params.STANDARDIZE, 1000);
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_1";
+//
+//            doPaperRun(params, dataPath, resultsPath, true);
+//
+//            params.set(Params.NUM_MEASURES, 60);
+//            params.set(Params.AVG_DEGREE, 6);
+//            params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_sample_size";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_1";
+//
+//            doPaperRun(params, dataPath, resultsPath, true);
+
+        }
+
+        {
+            String dataPath, resultsPath;
+
+            params.set(Params.GRASP_SINGULAR_DEPTH, 1);
+            params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+
+            params.set(Params.NUM_MEASURES, 60);
+            params.set(Params.AVG_DEGREE, 3);
+            params.set(Params.SAMPLE_SIZE, 1000);
+
+            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
+            resultsPath = "/Users/josephramsey/Downloads/grasp/newAlgsComparison";
+
+            doNewAgsHeadToHead(params, dataPath, resultsPath, false);
+//
+//            params.set(Params.NUM_MEASURES, 60);
+//            params.set(Params.AVG_DEGREE, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+//            params.set(Params.STANDARDIZE, 1000);
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_avg_degree";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_avg_degree_2";
+//
+//            doPaperRun(params, dataPath, resultsPath, false);
+//
+//            params.set(Params.NUM_MEASURES, 60);
+//            params.set(Params.AVG_DEGREE, 6);
+//            params.set(Params.SAMPLE_SIZE, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000);
+//
+//            dataPath = "/Users/josephramsey/Downloads/grasp-data/vary_sample_size";
+//            resultsPath = "/Users/josephramsey/Downloads/grasp/vary_sample_size_2";
+//
+//            doPaperRun(params, dataPath, resultsPath, false);
+
+        }
+    }
+
+    public void doNewAgsHeadToHead(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
+        Algorithms algorithms = new Algorithms();
+//        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+//        algorithms.add(new rGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+
+//        if (doPcFges) {
+//            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
+//                    new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//            algorithms.add(new PC(new FisherZ()));
+//        }
+
+        Simulations simulations = new Simulations();
+        Simulation simulation = new SemSimulation(new RandomForward());
+        simulations.add(simulation);
+
+        Statistics statistics = new Statistics();
+        statistics.add(new ParameterColumn(Params.GRASP_DEPTH));
+        statistics.add(new ParameterColumn(Params.GRASP_SINGULAR_DEPTH));
+        statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
+        statistics.add(new ParameterColumn(Params.GRASP_ORDERED_ALG));
+        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
+        statistics.add(new ParameterColumn(Params.ALPHA));
+        statistics.add(new ParameterColumn(Params.NUM_MEASURES));
+        statistics.add(new ParameterColumn(Params.AVG_DEGREE));
+        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+        statistics.add(new NumberOfEdgesTrue());
+        statistics.add(new NumberOfEdgesEst());
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new ElapsedTime());
+
+        Comparison comparison = new Comparison();
+        comparison.setShowAlgorithmIndices(true);
+        comparison.setSaveGraphs(true);
+        comparison.setSavePags(true);
+        comparison.setSaveData(false);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
+
+//        comparison.saveToFiles("/Users/josephramsey/Downloads/grasp/vary_sample_size",
+//                simulation, params);
+
+        comparison.compareFromFiles(dataPath,
+                resultsPath,
+                algorithms, statistics, params);
+    }
+
 
 
     //    @Test

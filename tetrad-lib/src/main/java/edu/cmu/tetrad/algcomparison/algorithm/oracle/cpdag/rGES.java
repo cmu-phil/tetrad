@@ -50,7 +50,8 @@ public class rGES implements Algorithm, UsesScoreWrapper {
         Graph graph;
 
         Rges search = new Rges(score);
-        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setVerbose(false);
+//        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
         search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
