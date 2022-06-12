@@ -39,7 +39,7 @@ import java.util.*;
 public class Ion {
 
     // prune using path length
-    private boolean pathLengthSearch = true;
+    private boolean pathLengthSearch  = true;
 
     // prune using adjacencies
     private boolean adjacencySearch;
