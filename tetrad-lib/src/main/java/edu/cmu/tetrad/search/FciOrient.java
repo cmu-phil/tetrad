@@ -214,11 +214,11 @@ public final class FciOrient {
                 }
 
                 if (this.sepsets.isCollider(a, b, c)) {
-                    if (isArrowpointDisallowed(a, b, graph)) {
+                    if (!isArrowpointAllowed(a, b, graph)) {
                         continue;
                     }
 
-                    if (isArrowpointDisallowed(c, b, graph)) {
+                    if (!isArrowpointAllowed(c, b, graph)) {
                         continue;
                     }
 
@@ -364,7 +364,7 @@ public final class FciOrient {
         }
 
         if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-            if (isArrowpointDisallowed(b, c, graph)) {
+            if (!isArrowpointAllowed(b, c, graph)) {
                 return;
             }
 
@@ -389,7 +389,7 @@ public final class FciOrient {
                     && (graph.getEndpoint(b, c) == Endpoint.ARROW) && ((graph.getEndpoint(b, a) == Endpoint.TAIL)
                     || (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
-                if (isArrowpointDisallowed(a, c, graph)) {
+                if (!isArrowpointAllowed(a, c, graph)) {
                     return;
                 }
 
@@ -460,7 +460,7 @@ public final class FciOrient {
                         continue;
                     }
 
-                    if (isArrowpointDisallowed(D, B, graph)) {
+                    if (!isArrowpointAllowed(D, B, graph)) {
                         continue;
                     }
 
@@ -612,11 +612,11 @@ public final class FciOrient {
             if (this.dag.isAncestorOf(b, c)) {
                 graph.setEndpoint(c, b, Endpoint.TAIL);
             } else {
-                if (isArrowpointDisallowed(a, b, graph)) {
+                if (!isArrowpointAllowed(a, b, graph)) {
                     return false;
                 }
 
-                if (isArrowpointDisallowed(c, b, graph)) {
+                if (!isArrowpointAllowed(c, b, graph)) {
                     return false;
                 }
 
@@ -668,11 +668,11 @@ public final class FciOrient {
                 this.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
         } else {
-            if (isArrowpointDisallowed(a, b, graph)) {
+            if (!isArrowpointAllowed(a, b, graph)) {
                 return false;
             }
 
-            if (isArrowpointDisallowed(c, b, graph)) {
+            if (!isArrowpointAllowed(c, b, graph)) {
                 return false;
             }
 
@@ -1219,18 +1219,6 @@ public final class FciOrient {
         this.logger.log("info", "Finishing BK Orientation.");
     }
 
-    /**
-     * Helper method. Checks if an arrowpoint is permitted by
-     * background knowledge.
-     *
-     * @param x The possible other node.
-     * @param y The possible point node.
-     * @return Whether the arrowpoint is allowed.
-     */
-    private boolean isArrowpointDisallowed(Node x, Node y, Graph graph) {
-        return !isArrowpointAllowed(x, y, graph);
-    }
-
     private boolean isArrowpointAllowed(Node x, Node y, Graph graph) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
@@ -1242,7 +1230,7 @@ public final class FciOrient {
 
         if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
             if (this.knowledge.isForbidden(x.getName(), y.getName())) {
-                return false;
+                return true;
             }
         }
 
