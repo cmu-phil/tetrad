@@ -103,7 +103,7 @@ public class BossTuck {
                 s1 = scorer.score();
                 this.graph = scorer.getGraph(true);
                 bes();
-                s2 = scorer.score(getCausalOrdering(graph, scorer.getPi()));
+                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
             } while (s2 > s1);
 
             if (this.scorer.score() > best) {
@@ -113,6 +113,7 @@ public class BossTuck {
         }
 
         this.scorer.score(bestPerm);
+//        this.graph = scorer.getGraph(true);
 
         long stop = System.currentTimeMillis();
 
@@ -123,30 +124,6 @@ public class BossTuck {
 
         return bestPerm;
     }
-
-    public static List<Node> getCausalOrdering(Graph graph, List<Node> pi) {
-        if (graph.existsDirectedCycle()) {
-            throw new IllegalArgumentException("Graph must be acyclic.");
-        }
-
-        List<Node> found = new ArrayList<>();
-        boolean _found = true;
-
-        while (_found) {
-            _found = false;
-
-            for (Node node : pi) {
-                HashSet<Node> nodes = new HashSet<>(found);
-                if (!nodes.contains(node) && nodes.containsAll(graph.getParents(node))) {
-                    found.add(node);
-                    _found = true;
-                }
-            }
-        }
-
-        return found;
-    }
-
 
     public void betterMutation(@NotNull TeyssierScorer scorer) {
         double s;
@@ -280,12 +257,13 @@ public class BossTuck {
 
     @NotNull
     public Graph getGraph(boolean cpDag) {
-        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-        Graph graph = this.scorer.getGraph(cpDag);
-
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        graph.addAttribute("score ", nf.format(this.scorer.score()));
-        return graph;
+        return this.graph;
+//        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
+//        Graph graph = this.scorer.getGraph(cpDag);
+//
+//        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+//        graph.addAttribute("score ", nf.format(this.scorer.score()));
+//        return graph;
     }
 
     public void setCacheScores(boolean cachingScores) {

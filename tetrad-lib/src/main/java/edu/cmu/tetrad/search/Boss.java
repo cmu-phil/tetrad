@@ -103,7 +103,7 @@ public class Boss {
                 s1 = scorer.score();
                 this.graph = scorer.getGraph(true);
                 bes();
-                s2 = scorer.score(this.graph.getCausalOrdering());
+                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
             } while (s2 > s1);
 
             if (this.scorer.score() > best) {
@@ -113,6 +113,7 @@ public class Boss {
         }
 
         this.scorer.score(bestPerm);
+//        this.graph = scorer.getGraph(true);
 
         long stop = System.currentTimeMillis();
 
@@ -128,6 +129,7 @@ public class Boss {
         List<Node> pi = scorer.getPi();
         double s;
         double sp = scorer.score(pi);
+        int edges = scorer.getNumEdges();
 
         do {
             s = sp;
@@ -139,7 +141,7 @@ public class Boss {
                 for (int j = 0; j < scorer.size(); j++) {
                     scorer.moveTo(k, j);
 
-                    if (scorer.score() > sp) {
+                    if (scorer.score() >= sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
                             scorer.bookmark();
@@ -237,12 +239,13 @@ public class Boss {
 
     @NotNull
     public Graph getGraph(boolean cpDag) {
-        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-        Graph graph = this.scorer.getGraph(cpDag);
-
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        graph.addAttribute("score ", nf.format(this.scorer.score()));
-        return graph;
+        return this.graph;
+//        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
+//        Graph graph = this.scorer.getGraph(cpDag);
+//
+//        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+//        graph.addAttribute("score ", nf.format(this.scorer.score()));
+//        return graph;
     }
 
     public void setCacheScores(boolean cachingScores) {

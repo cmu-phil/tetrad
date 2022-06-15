@@ -251,7 +251,7 @@ public class SemBicScore implements Score {
         return localScoreDiff(x, y, new int[0]);
     }
 
-    private final Map<int[], Double> cache = new ConcurrentHashMap<>();
+    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
 
     /**
      * @param i The index of the node.
@@ -271,17 +271,20 @@ public class SemBicScore implements Score {
         all[0] = i;
         System.arraycopy(parents, 0, all, 1, parents.length);
 
-        if (cache.containsKey(all)) {
-            varey = cache.get(all);
+        List<Integer> _all = new ArrayList<>();
+        for (int value : all) _all.add(value);
+
+        if (cache.containsKey(_all)) {
+            varey = cache.get(_all);
         } else {
             try {
                 varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
-                cache.put(all, varey);
+                cache.put(_all, varey);
             } catch (SingularMatrixException e) {
                 varey = NaN;
             }
 
-            cache.put(all, varey);
+            cache.put(_all, varey);
         }
 
         double c = getPenaltyDiscount();
