@@ -77,7 +77,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             boss.setKnowledge(this.knowledge);
             boss.bestOrder(score.getVariables());
-            return boss.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
+            return boss.getGraph();
         } else {
             BOSS algorithm = new BOSS(this.score, this.test);
 

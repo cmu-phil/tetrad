@@ -256,7 +256,7 @@ public class BossTuck {
     }
 
     @NotNull
-    public Graph getGraph(boolean cpDag) {
+    public Graph getGraph() {
         return this.graph;
 //        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
 //        Graph graph = this.scorer.getGraph(cpDag);

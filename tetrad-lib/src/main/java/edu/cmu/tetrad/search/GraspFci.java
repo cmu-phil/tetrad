@@ -151,7 +151,6 @@ public final class GraspFci implements GraphSearch {
             }
         }
 
-
         TeyssierScorer scorer;
 
         scorer = new TeyssierScorer(this.test, this.score);

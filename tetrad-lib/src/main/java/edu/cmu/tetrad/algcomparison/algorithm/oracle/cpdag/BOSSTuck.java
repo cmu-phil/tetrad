@@ -77,7 +77,7 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             boss.setKnowledge(this.knowledge);
             boss.bestOrder(score.getVariables());
-            return boss.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
+            return boss.getGraph();
         } else {
             BOSSTuck algorithm = new BOSSTuck(this.score, this.test);
 
