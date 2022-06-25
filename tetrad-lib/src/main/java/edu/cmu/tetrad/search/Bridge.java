@@ -11,12 +11,12 @@ import java.util.List;
 import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
 
 /**
- * Implementation of the experimental rGES algorithm
+ * Implementation of the experimental BRIDGE algorithm
  *
  * @author bryanandrews
  */
 
-public class Rges {
+public class Bridge {
 
     private final List<Node> variables;
 
@@ -24,7 +24,7 @@ public class Rges {
 
     private final MeekRules meeks;
 
-    public Rges(@NotNull Score score) {
+    public Bridge(@NotNull Score score) {
         this.variables = new ArrayList<>(score.getVariables());
         this.ges = new Fges(score);
         this.meeks = new MeekRules();

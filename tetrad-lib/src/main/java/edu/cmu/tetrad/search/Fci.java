@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
@@ -235,6 +232,7 @@ public final class Fci implements GraphSearch {
         // Step CI C (Zhang's step F3.)
 
         FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
+        fciOrient.setVerbose(verbose);
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);

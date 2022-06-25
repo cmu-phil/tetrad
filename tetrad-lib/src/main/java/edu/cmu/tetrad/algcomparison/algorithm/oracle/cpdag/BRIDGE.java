@@ -10,7 +10,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Rges;
+import edu.cmu.tetrad.search.Bridge;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -20,26 +20,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * rGES (experimental algorithm).
+ * BRIDGE (experimental algorithm).
  *
  * @author bryanandrews
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "rGES",
-        command = "rges",
+        name = "BRIDGE",
+        command = "bridge",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class rGES implements Algorithm, UsesScoreWrapper {
+public class BRIDGE implements Algorithm, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
 
     private ScoreWrapper score;
 
-    public rGES() {}
+    public BRIDGE() {}
 
-    public rGES(ScoreWrapper score) {
+    public BRIDGE(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -49,7 +49,7 @@ public class rGES implements Algorithm, UsesScoreWrapper {
         Score score = this.score.getScore(dataModel, parameters);
         Graph graph;
 
-        Rges search = new Rges(score);
+        Bridge search = new Bridge(score);
         search.setVerbose(false);
 //        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
@@ -75,7 +75,7 @@ public class rGES implements Algorithm, UsesScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "rGES (r Greedy Equivalence Search) using " + this.score.getDescription();
+        return "BRIDGE (Bridges is not Restricted to Imaps During Greedy Equivalent Search) using " + this.score.getDescription();
     }
 
     @Override

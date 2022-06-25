@@ -149,7 +149,6 @@ public final class GFci implements GraphSearch {
 
         FciOrient fciOrient = new FciOrient(this.sepsets);
         fciOrient.setVerbose(this.verbose);
-        fciOrient.setOut(this.out);
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);

@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -186,17 +187,12 @@ public class IndTestDSep implements IndependenceTest {
             dSeparated = independenceFacts.isIndependent(x, y, z);
         }
 
-//        if (verbose) {
-//            if (dSeparated) {
-//                double pValue = 1.0;
-//                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
-//                System.out.println(SearchLogUtils.independenceFactMsg(x, y, z, pValue));
-//            } else {
-//                double pValue = 0.0;
-//                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
-//                System.out.println(SearchLogUtils.dependenceFactMsg(x, y, z, pValue));
-//            }
-//        }
+        if (this.verbose) {
+            if (dSeparated) {
+                TetradLogger.getInstance().forceLogMessage(
+                        SearchLogUtils.independenceFactMsg(x, y, z, 1.0));
+            }
+        }
 
         double pValue;
 

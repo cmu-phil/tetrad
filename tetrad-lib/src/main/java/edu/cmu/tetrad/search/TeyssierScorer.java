@@ -197,7 +197,7 @@ public class TeyssierScorer {
         this.pi.set(i, n);
         this.pi.set(j, m);
 
-        if (!validKnowledgeOrder(this.pi)) {
+        if (violatesKnowledge(this.pi)) {
             this.pi.set(i, m);
             this.pi.set(j, n);
             return false;
@@ -586,16 +586,16 @@ public class TeyssierScorer {
         }
     }
 
-    private boolean validKnowledgeOrder(List<Node> order) {
+    private boolean violatesKnowledge(List<Node> order) {
         for (int i = 0; i < order.size(); i++) {
             for (int j = i + 1; j < order.size(); j++) {
                 if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName())) {
-                    return false;
+                    return true;
                 }
             }
         }
 
-        return true;
+        return false;
     }
 
     private void initializeScores() {
@@ -656,7 +656,7 @@ public class TeyssierScorer {
 
     private void recalculate(int p) {
         if (this.prefixes.get(p) == null || !this.prefixes.get(p).containsAll(getPrefix(p))) {
-            Pair p1 = this.scores.get(p);
+//            Pair p1 = this.scores.get(p);
             Pair p2 = getParentsInternal(p);
             this.scores.set(p, p2);
         }
@@ -872,7 +872,7 @@ public class TeyssierScorer {
         this.pi.remove(v);
         this.pi.add(toIndex, v);
 
-        if (!validKnowledgeOrder(this.pi)) {
+        if (violatesKnowledge(this.pi)) {
             goToBookmark(-55);
         }
 

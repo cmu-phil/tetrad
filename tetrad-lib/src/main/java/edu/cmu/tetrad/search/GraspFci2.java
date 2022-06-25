@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -42,7 +43,7 @@ import java.util.*;
  *
  * @author jdramsey
  */
-public final class GraspFci implements GraphSearch {
+public final class GraspFci2 implements GraphSearch {
 
     // The score used, if GS is used to build DAGs.
     private final Score score;
@@ -88,9 +89,10 @@ public final class GraspFci implements GraphSearch {
     private boolean ordered = true;
     private boolean useScore = true;
     private boolean cacheScores = true;
+    private Graph graph;
 
     //============================CONSTRUCTORS============================//
-    public GraspFci(IndependenceTest test, Score score) {
+    public GraspFci2(IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
 
@@ -103,9 +105,11 @@ public final class GraspFci implements GraphSearch {
         this.logger.log("info", "Independence test = " + getTest() + ".");
 
         // The PAG being constructed.
-        Graph graph;
+
+        List<Node> nodes = score.getVariables();
 
         Grasp grasp = new Grasp(this.test, this.score);
+//        Graph graph;
 
         grasp.setDepth(this.depth);
         grasp.setSingularDepth(this.uncoveredDepth);
@@ -124,14 +128,11 @@ public final class GraspFci implements GraphSearch {
         List<Node> perm = grasp.bestOrder(this.score.getVariables());
         graph = grasp.getGraph(true);
 
-        Graph graspGraph = new EdgeListGraph(graph);
-
+        Graph fgesGraph = new EdgeListGraph(graph);
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
-
         fciOrientBk(this.knowledge, graph, graph.getNodes());
-
 
         for (Node b : perm) {
             List<Node> adj = graph.getAdjacentNodes(b);
@@ -141,7 +142,7 @@ public final class GraspFci implements GraphSearch {
                     Node a = adj.get(i);
                     Node c = adj.get(j);
 
-                    if (!graph.isAdjacentTo(a, c) && graspGraph.isDefCollider(a, b, c)
+                    if (!graph.isAdjacentTo(a, c) && fgesGraph.isDefCollider(a, b, c)
                             && isArrowpointAllowed(a, b, graph)
                             && isArrowpointAllowed(c, b, graph)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
@@ -154,56 +155,108 @@ public final class GraspFci implements GraphSearch {
         TeyssierScorer scorer;
 
         scorer = new TeyssierScorer(this.test, this.score);
+        scorer.setKnowledge(knowledge);
 
-        IKnowledge knowledge2 = new Knowledge2();
-        scorer.setKnowledge(knowledge2);
+        final int sepsetsDepth = -1;
+        SepsetProducer sepsets = new SepsetsGreedy(fgesGraph, test, null, sepsetsDepth);
 
-        scorer.score(perm);
+        for (Node b : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
 
-        List<Triple> triples = new ArrayList<>();
-        scorer.clearBookmarks();
+            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
 
-        for (Node b : perm) {
-            Set<Node> into = scorer.getParents(b);
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
 
-            for (Node a : into) {
-                for (Node c : into) {
-                    for (Node d : perm) {
-                        if (configuration(scorer, a, b, c, d)) {
-                            System.out.println("Configuration " + a + "->" + b + "<-" + c + "--" + d);
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
 
-                            scorer.bookmark();
-                            double score = scorer.score();
+            while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
 
-                            if (!knowledge2.isForbidden(b.toString(), c.toString())) {
-                                knowledge2.setForbidden(b.toString(), c.toString());
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
 
-                                scorer.swap(b, c);
-
-                                grasp.bestOrder(scorer.getPi());
-
-                                if (configuration(scorer, d, c, b, a) && score == scorer.score()) {
-                                    System.out.println("Configuration " + d + "->" + c + "<-" + b + "--" + a);
-
-                                    triples.add(new Triple(b, c, d));
-                                    graph.removeEdge(b, d);
-                                    graph.setEndpoint(b, c, Endpoint.ARROW);
-                                    graph.setEndpoint(d, c, Endpoint.ARROW);
-
-                                }
-
-                                scorer.goToBookmark();
-                                knowledge.removeForbidden(b.toString(), c.toString());
-                            }
-                        }
+                if (graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
+                    if (sepsets.getSepset(a, c) != null) {
+                        graph.removeEdge(a, c);
                     }
                 }
             }
         }
 
+//        IKnowledge knowledge2 = new Knowledge2();
+//        scorer.setKnowledge(knowledge2);
+//
+//        scorer.score(perm);
+//
+//        List<Triple> triples = new ArrayList<>();
+//        scorer.clearBookmarks();
+//
+//        for (Node b : perm) {
+//            Set<Node> into = scorer.getParents(b);
+//
+//            for (Node a : into) {
+//                for (Node c : into) {
+//                    for (Node d : perm) {
+//                        if (configuration(scorer, a, b, c, d)) {
+//                            System.out.println("Configuration " + a + "->" + b + "<-" + c + "--" + d);
+//
+//                            scorer.bookmark();
+//                            double score = scorer.score();
+//
+//                            if (!knowledge2.isForbidden(b.toString(), c.toString())) {
+//                                knowledge2.setForbidden(b.toString(), c.toString());
+//
+//                                scorer.swap(b, c);
+//
+//                                grasp.bestOrder(scorer.getPi());
+//
+//                                if (configuration(scorer, d, c, b, a) && score == scorer.score()) {
+//                                    System.out.println("Configuration " + d + "->" + c + "<-" + b + "--" + a);
+//
+//                                    triples.add(new Triple(b, c, d));
+//                                    graph.removeEdge(b, d);
+//                                    graph.setEndpoint(b, c, Endpoint.ARROW);
+//                                    graph.setEndpoint(d, c, Endpoint.ARROW);
+//
+//                                }
+//
+//                                scorer.goToBookmark();
+//                                knowledge.removeForbidden(b.toString(), c.toString());
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        for (Triple triple : triples) {
+//            Node b = triple.getX();
+//            Node d = triple.getZ();
+//
+//            graph.removeEdge(b, d);
+//        }
+//
+//        for (Triple triple : triples) {
+//            Node b = triple.getX();
+//            Node c = triple.getY();
+//            Node d = triple.getZ();
+//
+//            if (graph.isAdjacentTo(b, c) && graph.isAdjacentTo(d, c)
+//                    && isArrowpointAllowed(b, c, graph)
+//                    && isArrowpointAllowed(c, c, graph)) {
+//                graph.setEndpoint(b, c, Endpoint.ARROW);
+//                graph.setEndpoint(d, c, Endpoint.ARROW);
+//            }
+//        }
+
         // The maxDegree for the discriminating path step.
-        final int sepsetsDepth = -1;
-        SepsetProducer sepsets = new SepsetsTeyssier(graspGraph, scorer, null, sepsetsDepth);
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setVerbose(this.verbose);
@@ -228,8 +281,8 @@ public final class GraspFci implements GraphSearch {
                 && scorer.adjacent(b, c)
                 && scorer.adjacent(c, d)
                 && scorer.adjacent(b, d)
-                && !scorer.adjacent(a, c)
-                && scorer.collider(a, b, c);
+                && !scorer.adjacent(a, c);
+//                && scorer.collider(a, b, c);
     }
 
     private boolean distinct(Node a, Node b, Node c, Node d) {

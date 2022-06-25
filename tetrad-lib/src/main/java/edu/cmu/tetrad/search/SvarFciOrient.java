@@ -231,7 +231,7 @@ public final class SvarFciOrient {
 
     private void printWrongColliderMessage(Node a, Node b, Node c, Graph graph) {
         if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
-            System.out.println("R0" + ": Orienting collider by mistake: " + a + "*-&gt;" + b + "&lt;-*" + c);
+            System.out.println("R0" + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
         }
     }
 

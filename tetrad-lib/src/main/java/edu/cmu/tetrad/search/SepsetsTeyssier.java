@@ -115,7 +115,11 @@ public class SepsetsTeyssier implements SepsetProducer {
         nodes.add(b);
         nodes.addAll(c);
         this.scorer.score(nodes);
-        return !this.scorer.adjacent(a, b);
+        boolean adjacent = this.scorer.getGraph(false).isAdjacentTo(a, b);
+
+        System.out.println("Testing " + SearchLogUtils.independenceFact(a, b, c) + ": " + !adjacent);
+
+        return !adjacent;
     }
 
     @Override

@@ -2,6 +2,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.KnowledgeEdge;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -128,17 +130,19 @@ public class Grasp {
                 if (o1.getName().equals(o2.getName())) {
                     return 0;
                 } else if (this.knowledge.isRequired(o1.getName(), o2.getName())) {
-                    return 1;
+                    return -1;
                 } else if (this.knowledge.isRequired(o2.getName(), o1.getName())) {
-                    return -1;
-                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
-                    return -1;
+                    return 1;
                 } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
                     return 1;
+                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
+                    return -1;
                 } else {
                     return 1;
                 }
             });
+
+            System.out.println("knowledge order = " + order);
         }
     }
 
@@ -266,6 +270,11 @@ public class Grasp {
         if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
         Graph graph = this.scorer.getGraph(cpDag);
 
+        orientbk(knowledge, graph, variables);
+        MeekRules meekRules = new MeekRules();
+        meekRules.setRevertToUnshieldedColliders(false);
+        meekRules.orientImplied(graph);
+
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         graph.addAttribute("score ", nf.format(this.scorer.score()));
         return graph;
@@ -340,4 +349,59 @@ public class Grasp {
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
     }
+
+    public void orientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(to, from, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(from, to, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+    }
+
 }
