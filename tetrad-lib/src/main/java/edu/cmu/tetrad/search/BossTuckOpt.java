@@ -5,18 +5,15 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Math.min;
-import static java.util.Collections.shuffle;
 
 
 /**
@@ -25,7 +22,7 @@ import static java.util.Collections.shuffle;
  * @author bryanandrews
  * @author josephramsey
  */
-public class BossTuck {
+public class BossTuckOpt {
     private final List<Node> variables;
     private Score score;
     private IndependenceTest test;
@@ -33,30 +30,32 @@ public class BossTuck {
     private TeyssierScorer scorer;
     private long start;
     // flags
-    private boolean useScore = true;
-    private boolean usePearl;
     private boolean cachingScores = true;
-    private boolean useDataOrder = true;
 
     private boolean verbose = true;
 
     // other params
     private int depth = 4;
-    private int numStarts = 1;
 
-    public BossTuck(@NotNull Score score) {
+    private Graph graph;
+    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
+    private ConcurrentMap<Node, Integer> hashIndices;
+    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
+    private int arrowIndex = 0;
+
+
+
+    public BossTuckOpt(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
-        this.useScore = true;
     }
 
-    public BossTuck(@NotNull IndependenceTest test) {
+    public BossTuckOpt(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
-        this.useScore = false;
     }
 
-    public BossTuck(@NotNull IndependenceTest test, Score score) {
+    public BossTuckOpt(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
@@ -67,14 +66,6 @@ public class BossTuck {
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseVermaPearl(this.usePearl);
-
-        if (this.usePearl) {
-            this.scorer.setUseScore(false);
-        } else {
-            this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
-        }
-
         this.scorer.setKnowledge(this.knowledge);
         this.scorer.clearBookmarks();
 
@@ -85,36 +76,25 @@ public class BossTuck {
 
         this.scorer.score(order);
 
-        for (int r = 0; r < this.numStarts; r++) {
-            if (Thread.interrupted()) break;
+        this.start = System.currentTimeMillis();
 
-            if ((r == 0 && !this.useDataOrder) || r > 0) {
-                shuffle(order);
-            }
+        makeValidKnowledgeOrder(order);
 
-            this.start = System.currentTimeMillis();
+        this.scorer.score(order);
+        double s1, s2;
 
-            makeValidKnowledgeOrder(order);
+        do {
+            betterMutation(scorer);
+            s1 = scorer.score();
+            this.graph = scorer.getGraph(true);
+            bes();
+            s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
+        } while (s2 > s1);
 
-            this.scorer.score(order);
-            double s1, s2;
-
-            do {
-                betterMutation(scorer);
-                s1 = scorer.score();
-                this.graph = scorer.getGraph(true);
-                bes();
-                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
-            } while (s2 > s1);
-
-            if (this.scorer.score() > best) {
-                best = this.scorer.score();
-                bestPerm = scorer.getPi();
-            }
+        if (this.scorer.score() > best) {
+            best = this.scorer.score();
+            bestPerm = scorer.getPi();
         }
-
-        this.scorer.score(bestPerm);
-//        this.graph = scorer.getGraph(true);
 
         long stop = System.currentTimeMillis();
 
@@ -130,20 +110,33 @@ public class BossTuck {
         double s;
         double sp = scorer.score();
         scorer.bookmark();
+        List<Node> lastPi = scorer.getPi();
 
         do {
             s = sp;
 
-            for (int i = 1; i < scorer.size(); i++) {
+            List<Node> thisPi = scorer.getPi();
+            int startN = scorer.size() - 1;
+
+
+            for (int n = scorer.size() - 1; n >= 0; n--) {
+                if (lastPi.get(n) != thisPi.get(n)) {
+                    startN = n;
+                }
+            }
+
+            lastPi = scorer.getPi();
+
+            for (int i = startN; i > 0; i--) {
+//                for (int i = scorer.size() - 1; i > 0; i--) {
                 Node x = scorer.get(i);
                 for (int j = i - 1; j >= 0; j--) {
                     if (tuck(x, j, scorer)) {
                         if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
                             scorer.goToBookmark();
+                            lastPi = scorer.getPi();
                         } else {
                             sp = scorer.score();
-//                            i = scorer.size();
-//                            j = -1;
 
                             if (verbose) {
                                 System.out.print("\r# Edges = " + scorer.getNumEdges()
@@ -175,62 +168,6 @@ public class BossTuck {
 
         return true;
     }
-
-//    public void betterMutation(@NotNull TeyssierScorer scorer) {
-//        if (verbose) {
-//            System.out.println();
-//        }
-//
-//        double s;
-//        double sp;
-//
-//        sp = scorer.score();
-//        do {
-//            s = sp;
-//            scorer.bookmark();
-//
-//            for (int j = scorer.size() - 1; j >= 0; j--) {
-//                Node _j = scorer.get(j);
-//                for (int k = j - 1; k >= 0; k--) {
-//
-//                    tuck(_j, k, scorer);
-//
-//                    if (scorer.score() > sp) {
-//                        if (!violatesKnowledge(scorer.getPi())) {
-//                            sp = scorer.score();
-//                            scorer.bookmark();
-//
-//                            if (verbose) {
-//                                System.out.print("\r# Edges = " + scorer.getNumEdges()
-//                                        + " Score = " + scorer.score()
-//                                        + " (betterMutation)"
-//                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
-//                            }
-//
-//                            scorer.moveTo(_j, scorer.index(_j) + 1);
-//                        }
-//                    }
-//                }
-//
-//                scorer.goToBookmark();
-//                scorer.bookmark();
-//            }
-//        } while (sp > s);
-//    }
-
-//    private void tuck(Node k, int j, TeyssierScorer scorer) {
-//        if (!scorer.adjacent(k, scorer.get(j))) return;
-//        if (scorer.coveredEdge(k, scorer.get(j))) return;
-//        if (j >= scorer.index(k)) return;
-//
-//        Set<Node> ancestors = scorer.getAncestors(k);
-//        for (int i = j+1; i < scorer.index(k); i++) {
-//            if (ancestors.contains(scorer.get(i))) {
-//                scorer.moveTo(scorer.get(i), j);
-//            }
-//        }
-//        scorer.moveTo(k, j);
-//    }
 
     public int getNumEdges() {
         return this.scorer.getNumEdges();
@@ -266,20 +203,10 @@ public class BossTuck {
         meekRules.orientImplied(graph);
 
         return this.graph;
-//        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-//        Graph graph = this.scorer.getGraph(cpDag);
-//
-//        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-//        graph.addAttribute("score ", nf.format(this.scorer.score()));
-//        return graph;
     }
 
     public void setCacheScores(boolean cachingScores) {
         this.cachingScores = cachingScores;
-    }
-
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
     }
 
     public List<Node> getVariables() {
@@ -304,10 +231,6 @@ public class BossTuck {
         this.depth = depth;
     }
 
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
-    }
-
     private boolean violatesKnowledge(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
             for (int i = 0; i < order.size(); i++) {
@@ -321,21 +244,6 @@ public class BossTuck {
 
         return false;
     }
-
-    public void setUseRaskuttiUhler(boolean usePearl) {
-        this.usePearl = usePearl;
-    }
-
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
-    private Graph graph;
-    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
-    private boolean meekVerbose = false;
-    private ConcurrentMap<Node, Integer> hashIndices;
-    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
-    private int arrowIndex = 0;
 
 
     private void buildIndexing(List<Node> nodes) {
@@ -497,6 +405,7 @@ public class BossTuck {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
         rules.setAggressivelyPreventCycles(true);
+        boolean meekVerbose = false;
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);
     }
@@ -686,7 +595,7 @@ public class BossTuck {
                 continue;
             }
 
-            // Orient to*-&gt;from
+            // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
 //            graph.setEndpoint(from, to, Endpoint.CIRCLE);
 //            this.changeFlag = true;
@@ -712,7 +621,7 @@ public class BossTuck {
                 continue;
             }
 
-            // Orient to*-&gt;from
+            // Orient to*->from
             graph.setEndpoint(from, to, Endpoint.ARROW);
 //            graph.setEndpoint(from, to, Endpoint.CIRCLE);
 //            this.changeFlag = true;

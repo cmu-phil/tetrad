@@ -70,6 +70,7 @@ public class SemBicScore implements Score {
     // The rule type to use.
     private RuleType ruleType = RuleType.CHICKERING;
     private boolean precomputeCovariances = true;
+    private double logN;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -83,6 +84,7 @@ public class SemBicScore implements Score {
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
         this.indexMap = indexMap(this.variables);
+        this.logN = log(sampleSize);
     }
 
     public SemBicScore(DataSet dataSet) {
@@ -112,6 +114,7 @@ public class SemBicScore implements Score {
             this.sampleSize = this.covariances.getSampleSize();
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
+            this.logN = log(sampleSize);
             return;
         }
 
@@ -119,6 +122,7 @@ public class SemBicScore implements Score {
         this.sampleSize = dataSet.getNumRows();
         this.indexMap = indexMap(this.variables);
         this.calculateRowSubsets = true;
+        this.logN = log(sampleSize);
     }
 
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)
@@ -292,7 +296,7 @@ public class SemBicScore implements Score {
         if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
             // Standard BIC, with penalty discount and structure prior.
-            double _score = -n * log(varey) - c * k * log(n) ; // - 2 * getStructurePrior(k);
+            double _score = -n * log(varey) - c * k * logN ; // - 2 * getStructurePrior(k);
 
             if (Double.isNaN(_score) || Double.isInfinite(_score)) {
                 return Double.NaN;

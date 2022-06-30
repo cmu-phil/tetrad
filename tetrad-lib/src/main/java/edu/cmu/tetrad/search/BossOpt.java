@@ -5,18 +5,14 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
-import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Math.min;
-import static java.util.Collections.shuffle;
 
 
 /**
@@ -25,96 +21,50 @@ import static java.util.Collections.shuffle;
  * @author bryanandrews
  * @author josephramsey
  */
-public class BossTuck {
+public class BossOpt {
     private final List<Node> variables;
-    private Score score;
-    private IndependenceTest test;
+    private final Score score;
     private IKnowledge knowledge = new Knowledge2();
-    private TeyssierScorer scorer;
+    private TeyssierScorerOpt scorer;
     private long start;
     // flags
-    private boolean useScore = true;
-    private boolean usePearl;
-    private boolean cachingScores = true;
-    private boolean useDataOrder = true;
-
     private boolean verbose = true;
 
     // other params
     private int depth = 4;
-    private int numStarts = 1;
 
-    public BossTuck(@NotNull Score score) {
+    public BossOpt(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
-        this.useScore = true;
-    }
-
-    public BossTuck(@NotNull IndependenceTest test) {
-        this.test = test;
-        this.variables = new ArrayList<>(test.getVariables());
-        this.useScore = false;
-    }
-
-    public BossTuck(@NotNull IndependenceTest test, Score score) {
-        this.test = test;
-        this.score = score;
-        this.variables = new ArrayList<>(test.getVariables());
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
         long start = System.currentTimeMillis();
         order = new ArrayList<>(order);
 
-        this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseVermaPearl(this.usePearl);
-
-        if (this.usePearl) {
-            this.scorer.setUseScore(false);
-        } else {
-            this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
-        }
+        this.scorer = new TeyssierScorerOpt(this.score);
 
         this.scorer.setKnowledge(this.knowledge);
-        this.scorer.clearBookmarks();
-
-        this.scorer.setCachingScores(this.cachingScores);
 
         List<Node> bestPerm = null;
-        double best = NEGATIVE_INFINITY;
 
         this.scorer.score(order);
 
-        for (int r = 0; r < this.numStarts; r++) {
-            if (Thread.interrupted()) break;
+        this.start = System.currentTimeMillis();
 
-            if ((r == 0 && !this.useDataOrder) || r > 0) {
-                shuffle(order);
-            }
+        makeValidKnowledgeOrder(order);
 
-            this.start = System.currentTimeMillis();
+        this.scorer.score(order);
+        float s1, s2;
 
-            makeValidKnowledgeOrder(order);
-
-            this.scorer.score(order);
-            double s1, s2;
-
-            do {
-                betterMutation(scorer);
-                s1 = scorer.score();
-                this.graph = scorer.getGraph(true);
-                bes();
-                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
-            } while (s2 > s1);
-
-            if (this.scorer.score() > best) {
-                best = this.scorer.score();
-                bestPerm = scorer.getPi();
-            }
-        }
-
-        this.scorer.score(bestPerm);
-//        this.graph = scorer.getGraph(true);
+        do {
+            betterMutation(scorer);
+            s1 = scorer.score();
+            bestPerm = scorer.getPi();
+            this.graph = scorer.getGraph(true);
+            bes();
+            s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
+        } while (s2 > s1);
 
         long stop = System.currentTimeMillis();
 
@@ -126,111 +76,43 @@ public class BossTuck {
         return bestPerm;
     }
 
-    public void betterMutation(@NotNull TeyssierScorer scorer) {
-        double s;
-        double sp = scorer.score();
-        scorer.bookmark();
+    public void betterMutation(@NotNull TeyssierScorerOpt scorer) {
+        List<Node> pi = scorer.getPi();
+        float s;
+        float sp = scorer.score(pi);
 
         do {
             s = sp;
 
-            for (int i = 1; i < scorer.size(); i++) {
-                Node x = scorer.get(i);
-                for (int j = i - 1; j >= 0; j--) {
-                    if (tuck(x, j, scorer)) {
-                        if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
-                            scorer.goToBookmark();
-                        } else {
-                            sp = scorer.score();
-//                            i = scorer.size();
-//                            j = -1;
+            for (Node k : scorer.getPi()) {
+                int _j = -1;
 
-                            if (verbose) {
-                                System.out.print("\r# Edges = " + scorer.getNumEdges()
-                                        + " Score = " + scorer.score()
-                                        + " (betterMutation)"
-                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
-                            }
+//                scorer.moveTo(k, 0);
+
+                for (int j = 0; j < scorer.size(); j++) {
+                    scorer.moveTo(k, j);
+
+                    if (scorer.score() >= sp) {
+                        sp = scorer.score();
+                        _j = j;
+
+                        if (verbose) {
+                            System.out.print("\r# Edges = " + scorer.getNumEdges()
+                                    + " Score = " + scorer.score()
+                                    + " (betterMutation)"
+                                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                         }
-                        scorer.bookmark();
                     }
+
+//                    scorer.demote(k);
+                }
+
+                if (_j != -1) {
+                    scorer.moveTo(k, _j);
                 }
             }
         } while (sp > s);
-
-        System.out.println();
     }
-
-    private boolean tuck(Node k, int j, TeyssierScorer scorer) {
-        if (!scorer.adjacent(k, scorer.get(j))) return false;
-        if (scorer.coveredEdge(k, scorer.get(j))) return false;
-        if (j >= scorer.index(k)) return false;
-
-        Set<Node> ancestors = scorer.getAncestors(k);
-        for (int i = j + 1; i <= scorer.index(k); i++) {
-            if (ancestors.contains(scorer.get(i))) {
-                scorer.moveTo(scorer.get(i), j++);
-            }
-        }
-
-        return true;
-    }
-
-//    public void betterMutation(@NotNull TeyssierScorer scorer) {
-//        if (verbose) {
-//            System.out.println();
-//        }
-//
-//        double s;
-//        double sp;
-//
-//        sp = scorer.score();
-//        do {
-//            s = sp;
-//            scorer.bookmark();
-//
-//            for (int j = scorer.size() - 1; j >= 0; j--) {
-//                Node _j = scorer.get(j);
-//                for (int k = j - 1; k >= 0; k--) {
-//
-//                    tuck(_j, k, scorer);
-//
-//                    if (scorer.score() > sp) {
-//                        if (!violatesKnowledge(scorer.getPi())) {
-//                            sp = scorer.score();
-//                            scorer.bookmark();
-//
-//                            if (verbose) {
-//                                System.out.print("\r# Edges = " + scorer.getNumEdges()
-//                                        + " Score = " + scorer.score()
-//                                        + " (betterMutation)"
-//                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
-//                            }
-//
-//                            scorer.moveTo(_j, scorer.index(_j) + 1);
-//                        }
-//                    }
-//                }
-//
-//                scorer.goToBookmark();
-//                scorer.bookmark();
-//            }
-//        } while (sp > s);
-//    }
-
-//    private void tuck(Node k, int j, TeyssierScorer scorer) {
-//        if (!scorer.adjacent(k, scorer.get(j))) return;
-//        if (scorer.coveredEdge(k, scorer.get(j))) return;
-//        if (j >= scorer.index(k)) return;
-//
-//        Set<Node> ancestors = scorer.getAncestors(k);
-//        for (int i = j+1; i < scorer.index(k); i++) {
-//            if (ancestors.contains(scorer.get(i))) {
-//                scorer.moveTo(scorer.get(i), j);
-//            }
-//        }
-//        scorer.moveTo(k, j);
-//    }
 
     public int getNumEdges() {
         return this.scorer.getNumEdges();
@@ -242,19 +124,17 @@ public class BossTuck {
                 if (o1.getName().equals(o2.getName())) {
                     return 0;
                 } else if (this.knowledge.isRequired(o1.getName(), o2.getName())) {
-                    return -1;
+                    return 1;
                 } else if (this.knowledge.isRequired(o2.getName(), o1.getName())) {
-                    return 1;
-                } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
-                    return 1;
+                    return -1;
                 } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
                     return -1;
+                } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
+                    return 1;
                 } else {
                     return 1;
                 }
             });
-
-            System.out.println("knowledge order = " + order);
         }
     }
 
@@ -274,14 +154,6 @@ public class BossTuck {
 //        return graph;
     }
 
-    public void setCacheScores(boolean cachingScores) {
-        this.cachingScores = cachingScores;
-    }
-
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
     public List<Node> getVariables() {
         return this.variables;
     }
@@ -292,7 +164,6 @@ public class BossTuck {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        this.test.setVerbose(verbose);
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -302,10 +173,6 @@ public class BossTuck {
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
         this.depth = depth;
-    }
-
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
     }
 
     private boolean violatesKnowledge(List<Node> order) {
@@ -320,14 +187,6 @@ public class BossTuck {
         }
 
         return false;
-    }
-
-    public void setUseRaskuttiUhler(boolean usePearl) {
-        this.usePearl = usePearl;
-    }
-
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
     }
 
     private Graph graph;
@@ -666,60 +525,6 @@ public class BossTuck {
         }
     }
 
-    public void orientbk(IKnowledge bk, Graph graph, List<Node> variables) {
-        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-//            this.changeFlag = true;
-//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-//            this.changeFlag = true;
-//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-    }
-
     private void addArrowBackward(Node a, Node b, Set<Node> hOrT, Set<Node> naYX,
                                   Set<Node> parents, double bump) {
         Arrow arrow = new Arrow(bump, a, b, hOrT, null, naYX, parents, arrowIndex++);
@@ -847,4 +652,57 @@ public class BossTuck {
         }
     }
 
+    public void orientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(to, from, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(from, to, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+    }
 }

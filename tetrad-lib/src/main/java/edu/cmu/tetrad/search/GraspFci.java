@@ -76,7 +76,7 @@ public final class GraspFci implements GraphSearch {
     private PrintStream out = System.out;
 
     // GRaSP parameters
-    private int numStarts;
+    private int numStarts = 1;
     private int depth = 4;
     private int nonsingularDepth = 1;
     private int uncoveredDepth = 1;

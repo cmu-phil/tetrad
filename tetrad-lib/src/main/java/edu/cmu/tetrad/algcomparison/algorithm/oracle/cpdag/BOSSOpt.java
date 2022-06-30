@@ -27,23 +27,23 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSSTuck",
-        command = "boss-tuck",
+        name = "BOSSOpt",
+        command = "boss-opt",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class BOSSOpt implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BOSSTuck() {
+    public BOSSOpt() {
         // Used in reflection; do not delete.
     }
 
-    public BOSSTuck(ScoreWrapper score, IndependenceWrapper test) {
+    public BOSSOpt(ScoreWrapper score, IndependenceWrapper test) {
         this.score = score;
         this.test = test;
     }
@@ -65,21 +65,16 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             IndependenceTest test = this.test.getTest(dataModel, parameters);
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            BossTuck boss = new BossTuck(test, score);
+            BossOpt boss = new BossOpt(score);
 
             boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
-            boss.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
-            boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            boss.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
-            boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             boss.setKnowledge(this.knowledge);
             boss.bestOrder(score.getVariables());
             return boss.getGraph();
         } else {
-            BOSSTuck algorithm = new BOSSTuck(this.score, this.test);
+            BOSSOpt algorithm = new BOSSOpt(this.score, this.test);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -99,7 +94,7 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public String getDescription() {
-        return "BOSS-tuck (Better Order Score Search) using " + this.test.getDescription()
+        return "BOSSOpt (Better Order Score Search) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
@@ -114,7 +109,7 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
         // Flags
         params.add(Params.GRASP_DEPTH);
-//        params.add(Params.GRASP_USE_SCORE);
+        params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_VERMA_PEARL);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.CACHE_SCORES);
