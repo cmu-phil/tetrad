@@ -1174,9 +1174,8 @@ public final class FciOrient {
                 continue;
             }
 
-            // Orient to*-&gt;from
+            // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
-            graph.setEndpoint(from, to, Endpoint.CIRCLE);
             this.changeFlag = true;
             this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }

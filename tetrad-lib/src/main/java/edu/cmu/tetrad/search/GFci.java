@@ -111,10 +111,12 @@ public final class GFci implements GraphSearch {
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
         this.graph = fges.search();
+
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
         this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxDegree);
 
+        // "Extra" GFCI rule...
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -146,6 +148,8 @@ public final class GFci implements GraphSearch {
         }
 
         modifiedR0(fgesGraph);
+
+        if (true) return graph;
 
         FciOrient fciOrient = new FciOrient(this.sepsets);
         fciOrient.setVerbose(this.verbose);
@@ -339,9 +343,8 @@ public final class GFci implements GraphSearch {
                 continue;
             }
 
-            // Orient to*-&gt;from
+            // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
-            graph.setEndpoint(from, to, Endpoint.CIRCLE);
             this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 

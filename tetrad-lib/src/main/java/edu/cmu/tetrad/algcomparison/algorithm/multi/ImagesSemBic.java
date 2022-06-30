@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -29,13 +30,14 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "IMaGES Continuous",
-        command = "imgs_cont",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Continuous
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "IMaGES Continuous",
+//        command = "imgs_cont",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        dataType = DataType.Continuous
+//)
 @Bootstrapping
+@Experimental
 public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;

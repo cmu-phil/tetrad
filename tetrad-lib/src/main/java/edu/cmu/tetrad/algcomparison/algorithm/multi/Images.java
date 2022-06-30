@@ -2,16 +2,18 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
-import edu.cmu.tetrad.algcomparison.score.BdeuScore;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BdeuScoreImages;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.ImagesScore;
+import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -22,53 +24,88 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Wraps the IMaGES algorithm for discrete variables.
- *
+ * Wraps the IMaGES algorithm for continuous variables.
+ * <p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
  * datasets should be taken at a time (randomly). This cannot given multiple
  * values.
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "IMaGES Discrete",
-//        command = "imgs_disc",
-//        algoType = AlgType.forbid_latent_common_causes,
-//        dataType = DataType.Discrete
-//)
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "IMaGES",
+        command = "images",
+        algoType = AlgType.forbid_latent_common_causes,
+        dataType = DataType.All
+)
 @Bootstrapping
-@Experimental
-public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
+public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private IKnowledge knowledge = new Knowledge2();
 
-    public ImagesBDeu() {
+    private ScoreWrapper score;
+
+    public Images() {
     }
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            BdeuScoreImages score = new BdeuScoreImages(dataSets);
-            score.setSamplePrior(parameters.getDouble(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE));
-            score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
-            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-            search.setFaithfulnessAssumed(true);
-            search.setKnowledge(this.knowledge);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            List<DataModel> _dataSets = new ArrayList<>();
 
-            return search.search();
-        } else {
-            ImagesBDeu imagesBDeu = new ImagesBDeu();
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                for (DataModel dataSet : dataSets) {
+                    DataSet timeSeries = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                    if (dataSet.getName() != null) {
+                        timeSeries.setName(dataSet.getName());
+                    }
+                    _dataSets.add(timeSeries);
+                }
 
-            List<DataSet> datasets = new ArrayList<>();
+                dataSets = _dataSets;
+                this.knowledge = _dataSets.get(0).getKnowledge();
+            }
+
+            List<Score> scores = new ArrayList<>();
 
             for (DataModel dataModel : dataSets) {
-                datasets.add((DataSet) dataModel);
+                Score s = score.getScore(dataModel, parameters);
+                scores.add(s);
             }
+
+            ImagesScore score = new ImagesScore(scores);
+            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
+            search.setKnowledge(this.knowledge);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            return search.search();
+        } else {
+            Images imagesSemBic = new Images();
+
+            List<DataSet> dataSets2 = new ArrayList<>();
+
+            for (DataModel dataModel : dataSets) {
+                dataSets2.add((DataSet) dataModel);
+            }
+
+            List<DataSet> _dataSets = new ArrayList<>();
+
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                for (DataModel dataSet : dataSets2) {
+                    DataSet timeSeries = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                    if (dataSet.getName() != null) {
+                        timeSeries.setName(dataSet.getName());
+                    }
+                    _dataSets.add(timeSeries);
+                }
+
+                dataSets2 = _dataSets;
+                this.knowledge = _dataSets.get(0).getKnowledge();
+            }
+
             GeneralResamplingTest search = new GeneralResamplingTest(
-                    datasets,
-                    imagesBDeu,
+                    dataSets2,
+                    imagesSemBic,
                     parameters.getInt(Params.NUMBER_RESAMPLING),
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -76,6 +113,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setKnowledge(knowledge);
             return search.search();
         }
     }
@@ -83,13 +121,13 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(DataUtils.getDiscreteDataSet(dataSet)), parameters);
+            return search(Collections.singletonList(DataUtils.getMixedDataSet(dataSet)), parameters);
         } else {
-            ImagesBDeu imagesBDeu = new ImagesBDeu();
+            Images images = new Images();
 
             List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
-                    imagesBDeu,
+                    images,
                     parameters.getInt(Params.NUMBER_RESAMPLING),
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -103,26 +141,28 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
+        return new EdgeListGraph(graph);
     }
 
     @Override
     public String getDescription() {
-        return "IMaGES for discrete variables (using the BDeu score)";
+        return "IMaGES)";
     }
 
     @Override
     public DataType getDataType() {
-        return DataType.Discrete;
+        return DataType.All;
     }
 
     @Override
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
+        parameters.addAll(new SemBicScore().getParameters());
+
         parameters.addAll((new Fges()).getParameters());
-        parameters.addAll((new BdeuScore()).getParameters());
-        parameters.add(Params.NUM_RUNS);
         parameters.add(Params.RANDOM_SELECTION_SIZE);
+        parameters.add(Params.TIME_LAG);
+
         parameters.add(Params.VERBOSE);
 
         return parameters;
@@ -136,5 +176,15 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public ScoreWrapper getScoreWrapper() {
+        return this.score;
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
     }
 }
