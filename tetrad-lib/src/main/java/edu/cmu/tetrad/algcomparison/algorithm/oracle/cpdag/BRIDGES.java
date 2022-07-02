@@ -10,7 +10,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Bridge;
+import edu.cmu.tetrad.search.Bridges;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -20,26 +20,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BRIDGE (experimental algorithm).
+ * BRIDGES (experimental algorithm).
  *
  * @author bryanandrews
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BRIDGE",
-        command = "bridge",
+        name = "BRIDGES",
+        command = "bridges",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class BRIDGE implements Algorithm, UsesScoreWrapper {
+public class BRIDGES implements Algorithm, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
 
     private ScoreWrapper score;
 
-    public BRIDGE() {}
+    public BRIDGES() {}
 
-    public BRIDGE(ScoreWrapper score) {
+    public BRIDGES(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -49,7 +49,7 @@ public class BRIDGE implements Algorithm, UsesScoreWrapper {
         Score score = this.score.getScore(dataModel, parameters);
         Graph graph;
 
-        Bridge search = new Bridge(score);
+        Bridges search = new Bridges(score);
         search.setVerbose(false);
 //        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
@@ -75,7 +75,7 @@ public class BRIDGE implements Algorithm, UsesScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "BRIDGE (Bridges is not Restricted to Imaps During Greedy Equivalent Search) using " + this.score.getDescription();
+        return "BRIDGES (BRIDGES is not Restricted to Imaps During Greedy Equivalent Search) using " + this.score.getDescription();
     }
 
     @Override

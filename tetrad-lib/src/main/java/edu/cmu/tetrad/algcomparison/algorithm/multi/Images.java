@@ -51,6 +51,8 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
+        this.knowledge = dataSets.get(0).getKnowledge();
+
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             List<DataModel> _dataSets = new ArrayList<>();
 
@@ -91,8 +93,8 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
             List<DataSet> _dataSets = new ArrayList<>();
 
             if (parameters.getInt(Params.TIME_LAG) > 0) {
-                for (DataModel dataSet : dataSets2) {
-                    DataSet timeSeries = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                for (DataSet dataSet : dataSets2) {
+                    DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
                     if (dataSet.getName() != null) {
                         timeSeries.setName(dataSet.getName());
                     }
@@ -100,7 +102,6 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                 }
 
                 dataSets2 = _dataSets;
-                this.knowledge = _dataSets.get(0).getKnowledge();
             }
 
             GeneralResamplingTest search = new GeneralResamplingTest(
@@ -109,11 +110,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                     parameters.getInt(Params.NUMBER_RESAMPLING),
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
-
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setKnowledge(knowledge);
+            search.setKnowledge(dataSets.get(0).getKnowledge());
             return search.search();
         }
     }
@@ -125,13 +124,13 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
         } else {
             Images images = new Images();
 
-            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            List<DataSet> dataSets = Collections.singletonList(DataUtils.getMixedDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
                     images,
                     parameters.getInt(Params.NUMBER_RESAMPLING),
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
+//            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -146,7 +145,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 
     @Override
     public String getDescription() {
-        return "IMaGES)";
+        return "IMaGES";
     }
 
     @Override

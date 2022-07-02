@@ -155,6 +155,8 @@ public class GeneralResamplingSearch {
                     dataSet = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
                 }
 
+                dataSet.setKnowledge(data.getKnowledge());
+
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataSet, this.algorithm, this.parameters, this, this.verbose);
                 task.setExternalGraph(this.externalGraph);
                 task.setKnowledge(this.knowledge);
@@ -184,8 +186,6 @@ public class GeneralResamplingSearch {
                         resamplingDataset.setKnowledge(data.getKnowledge());
                         dataModels.add(resamplingDataset);
                     }
-
-
                 }
 
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataModels,
@@ -200,7 +200,7 @@ public class GeneralResamplingSearch {
 
         int numNoGraph = 0;
 
-        if (this.runParallel) {
+        if (false) {//this.runParallel) {
             List<Future<Graph>> futures = this.pool.invokeAll(tasks);
             for (Future<Graph> future : futures) {
                 Graph graph;

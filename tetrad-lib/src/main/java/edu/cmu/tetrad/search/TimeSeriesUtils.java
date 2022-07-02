@@ -401,19 +401,23 @@ public class TimeSeriesUtils {
             }
         }
 
-        for (Node node : newVariables) {
-            String varName = node.getName();
-            String tmp;
-            int lag;
-            if (varName.indexOf(':') == -1) {
-                lag = 0;
-//                laglist.add(lag);
-            } else {
-                tmp = varName.substring(varName.indexOf(':') + 1);
-                lag = Integer.parseInt(tmp);
-//                laglist.add(lag);
+        try {
+            for (Node node : newVariables) {
+                String varName = node.getName();
+                String tmp;
+                int lag;
+                if (varName.indexOf(':') == -1) {
+                    lag = 0;
+    //                laglist.add(lag);
+                } else {
+                    tmp = varName.substring(varName.indexOf(':') + 1);
+                    lag = Integer.parseInt(tmp);
+    //                laglist.add(lag);
+                }
+                knowledge.addToTier(numLags - lag, node.getName());
             }
-            knowledge.addToTier(numLags - lag, node.getName());
+        } catch (NumberFormatException e) {
+            return data;
         }
 
         DataSet laggedData = new BoxDataSet(new DoubleDataBox(laggedRows, newVariables.size()), newVariables);
