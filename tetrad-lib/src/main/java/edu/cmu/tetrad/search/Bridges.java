@@ -79,10 +79,11 @@ public class Bridges {
                         g0 = g1;
                         s0 = s1;
                         getOut().println(g0.getNumEdges());
-                    } else {
-                        g0.removeEdge(reversed);
-                        g0.addEdge(edge);
                     }
+//                    else {
+//                        g0.removeEdge(reversed);
+//                        g0.addEdge(edge);
+//                    }
                 }
             }
         }

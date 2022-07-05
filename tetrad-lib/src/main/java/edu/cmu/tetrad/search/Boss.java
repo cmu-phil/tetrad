@@ -99,13 +99,13 @@ public class Boss {
             this.scorer.score(order);
             double s1, s2;
 
-            do {
+//            do {
                 betterMutation(scorer);
-                s1 = scorer.score();
-                this.graph = scorer.getGraph(true);
-                bes();
-                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
-            } while (s2 > s1);
+//                s1 = scorer.score();
+//                this.graph = scorer.getGraph(true);
+//                bes();
+//                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
+//            } while (s2 > s1);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -114,7 +114,7 @@ public class Boss {
         }
 
         this.scorer.score(bestPerm);
-//        this.graph = scorer.getGraph(true);
+        this.graph = scorer.getGraph(true);
 
         long stop = System.currentTimeMillis();
 
@@ -130,19 +130,34 @@ public class Boss {
         List<Node> pi = scorer.getPi();
         double s;
         double sp = scorer.score(pi);
-//        int edges = scorer.getNumEdges();
+//        ArrayList<Set<Node>> prefixes = new ArrayList<>();
+//        for (int i1 = 0; i1 < scorer.size(); i1++) prefixes.add(scorer.getParents(i1));
+
+        Set<Node> _pi = new HashSet<>(scorer.getPi());
 
         do {
             s = sp;
             scorer.bookmark();
 
-            for (Node k : scorer.getPi()) {
+            for (Node k : _pi) {
                 sp = NEGATIVE_INFINITY;
 
                 for (int j = 0; j < scorer.size(); j++) {
+//                    if (!scorer.getPrefix(j).equals(prefixes.get(j))) continue;
+//                    int _k = scorer.index(k);
                     scorer.moveTo(k, j);
 
-                    if (scorer.score() >= sp) {
+//                    if (j <= _k) {
+//                        for (int j2 = j; j2 <= _k; j2++) {
+//                            prefixes.set(j2, scorer.getPrefix(j2));
+//                        }
+//                    } else {
+//                        for (int j2 = _k; j2 <= j; j2++) {
+//                            prefixes.set(j2, scorer.getPrefix(j2));
+//                        }
+//                    }
+
+                    if (scorer.score() > sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
                             scorer.bookmark();
@@ -151,7 +166,8 @@ public class Boss {
                                 System.out.print("\r# Edges = " + scorer.getNumEdges()
                                         + " Score = " + scorer.score()
                                         + " (betterMutation)"
-                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
+                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s")
+                                );
                             }
                         }
                     }
@@ -160,6 +176,8 @@ public class Boss {
                 scorer.goToBookmark();
             }
         } while (sp > s);
+
+        System.out.println();
     }
 
     public void betterMutation2(@NotNull TeyssierScorer scorer) {
@@ -206,7 +224,7 @@ public class Boss {
         if (j >= scorer.index(k)) return;
 
         Set<Node> ancestors = scorer.getAncestors(k);
-        for (int i = j+1; i < scorer.index(k); i++) {
+        for (int i = j + 1; i < scorer.index(k); i++) {
             if (ancestors.contains(scorer.get(i))) {
                 scorer.moveTo(scorer.get(i), j);
             }

@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Math.floor;
 import static java.util.Collections.shuffle;
@@ -252,10 +253,6 @@ public class TeyssierScorer {
      * @return Its index.
      */
     public int index(Node v) {
-        if (!this.orderHash.containsKey(v)) {
-            System.out.println();
-        }
-
         Integer integer = this.orderHash.get(v);
 
         if (integer == null)
@@ -621,7 +618,7 @@ public class TeyssierScorer {
 
     private float score(Node n, Set<Node> pi) {
         if (this.cachingScores) {
-            this.cache.computeIfAbsent(n, w -> new HashMap<>());
+            this.cache.computeIfAbsent(n, w -> new ConcurrentHashMap<>());
             Float score = this.cache.get(n).get(pi);
 
             if (score != null) {
@@ -640,14 +637,14 @@ public class TeyssierScorer {
         float v = (float) this.score.localScore(this.variablesHash.get(n), parentIndices);
 
         if (this.cachingScores) {
-            this.cache.computeIfAbsent(n, w -> new HashMap<>());
+            this.cache.computeIfAbsent(n, w -> new ConcurrentHashMap<>());
             this.cache.get(n).put(new HashSet<>(pi), v);
         }
 
         return v;
     }
 
-    private Set<Node> getPrefix(int i) {
+    public Set<Node> getPrefix(int i) {
         Set<Node> prefix = new HashSet<>();
 
         for (int j = 0; j < i; j++) {

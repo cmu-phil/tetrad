@@ -278,9 +278,9 @@ public class SemBicScore implements Score {
         List<Integer> _all = new ArrayList<>();
         for (int value : all) _all.add(value);
 
-        if (cache.containsKey(_all)) {
-            varey = cache.get(_all);
-        } else {
+//        if (cache.containsKey(_all)) {
+//            varey = cache.get(_all);
+//        } else {
             try {
                 varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
                 cache.put(_all, varey);
@@ -288,8 +288,8 @@ public class SemBicScore implements Score {
                 varey = NaN;
             }
 
-            cache.put(_all, varey);
-        }
+//            cache.put(_all, varey);
+//        }
 
         double c = getPenaltyDiscount();
 
