@@ -817,6 +817,7 @@ public final class TestGrasp {
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.NUM_STARTS, 1);
         params.set(Params.ALPHA, 0.001);
+        params.set(Params.VERBOSE, false);
 
         params.set(Params.PENALTY_DISCOUNT, 2);
 
@@ -834,17 +835,19 @@ public final class TestGrasp {
 //        params.set(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE, 10);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
+                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Bridges2(
+                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
 
         Statistics statistics = new Statistics();
-//        statistics.add(new ParameterColumn(Params.GRASP_DEPTH));
-//        statistics.add(new ParameterColumn(Params.NUM_ROUNDS));
-//        statistics.add(new ParameterColumn(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE));
-//        statistics.add(new ParameterColumn(Params.STRUCTURE_PRIOR));
+        statistics.add(new ParameterColumn(Params.NUM_MEASURES));
+        statistics.add(new ParameterColumn(Params.AVG_DEGREE));
+        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
 //        statistics.add(new ParameterColumn(Params.GRASP_FORWARD_TUCK_ONLY));
 //        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new NumberOfEdgesTrue());

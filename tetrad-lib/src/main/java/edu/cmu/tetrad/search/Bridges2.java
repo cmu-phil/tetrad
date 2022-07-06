@@ -138,7 +138,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
 
-    // True if FGES should run in a single thread, no if parallelized.
+    // True if BRIDGES should run in a single thread, no if parallelized.
     private boolean parallelized = false;
 
     /**
@@ -206,16 +206,38 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
 
         this.mode = Mode.heuristicSpeedup;
         fes(new HashSet<>(variables));
-        bes(new HashSet<>(variables));
+
+        Graph g1 = new EdgeListGraph(graph);
+
+        List<Node> changed;
+
+        if (initialGraph == null) {
+            changed = variables;
+        } else {
+            changed = getChangedNodes(g1, initialGraph, 1);
+        }
+
+        bes(new HashSet<>(changed));
+        Graph g2 = new EdgeListGraph(graph);
+        changed = getChangedNodes(g1, g2, 2);
 
         this.mode = Mode.coverNoncolliders;
-        fes(new HashSet<>(variables));
-        bes(new HashSet<>(variables));
+        fes(new HashSet<>(changed));
+        Graph g3 = new EdgeListGraph(graph);
+        changed = getChangedNodes(g2, g3, 3);
+
+        bes(new HashSet<>(changed));
+        Graph g4 = new EdgeListGraph(graph);
+        changed = getChangedNodes(g3, g4, 4);
 
         if (!faithfulnessAssumed) {
             this.mode = Mode.allowUnfaithfulness;
-            fes(new HashSet<>(variables));
-            bes(new HashSet<>(variables));
+
+            fes(new HashSet<>(changed));
+            Graph g5 = new EdgeListGraph(graph);
+            changed = getChangedNodes(g4, g5, 5);
+
+            bes(new HashSet<>(changed));
         }
 
         long endTime = System.currentTimeMillis();
@@ -228,6 +250,26 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
         this.modelScore = scoreDag(SearchGraphUtils.dagFromCPDAG(graph), true);
 
         return graph;
+    }
+
+    private List<Node> getChangedNodes(Graph g1, Graph g2, int index) {
+        List<Node> changed = new ArrayList<>();
+
+        for (Node node : variables) {
+            if (!new HashSet<>(g1.getEdges(node)).equals(new HashSet<>(g2.getEdges(node)))) {
+                changed.add(node);
+            }
+
+//            boolean adj = new HashSet<>(g1.getAdjacentNodes(node)).equals(new HashSet<>(g2.getAdjacentNodes(node)));
+//            boolean parents = new HashSet<>(g1.getParents(node)).equals(new HashSet<>(g2.getParents(node)));
+//            if (!adj) {//|| !parents) {
+//                changed.add(node);
+//            }
+        }
+
+        System.out.println("changed " + index + " = " + changed.size());
+
+        return changed;
     }
 
     /**

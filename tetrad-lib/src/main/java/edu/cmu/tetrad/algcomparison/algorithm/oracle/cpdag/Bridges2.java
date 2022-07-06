@@ -25,23 +25,23 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FGES",
-        command = "fges",
+        name = "BRIDGES2",
+        command = "bridges2",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
+public class Bridges2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
 
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Fges() {
+    public Bridges2() {
 
     }
 
-    public Fges(ScoreWrapper score) {
+    public Bridges2(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -61,8 +61,8 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
             Score score = this.score.getScore(dataModel, parameters);
             Graph graph;
 
-            edu.cmu.tetrad.search.Fges search
-                    = new edu.cmu.tetrad.search.Fges(score);
+            edu.cmu.tetrad.search.Bridges2 search
+                    = new edu.cmu.tetrad.search.Bridges2(score);
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
@@ -80,7 +80,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
             return graph;
         } else {
-            Fges fges = new Fges(this.score);
+            Bridges2 fges = new Bridges2(this.score);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(
@@ -101,7 +101,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "FGES (Fast Greedy Equivalence Search) using " + this.score.getDescription();
+        return "BRIDGES using " + this.score.getDescription();
     }
 
     @Override
