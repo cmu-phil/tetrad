@@ -30,18 +30,18 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Bridges2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
+public class Bridges3 implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
 
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Bridges2() {
+    public Bridges3() {
 
     }
 
-    public Bridges2(ScoreWrapper score) {
+    public Bridges3(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -80,7 +80,7 @@ public class Bridges2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
             return graph;
         } else {
-            Bridges2 fges = new Bridges2(this.score);
+            Bridges3 fges = new Bridges3(this.score);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(
