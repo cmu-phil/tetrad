@@ -189,8 +189,8 @@ public final class Bridges3 implements GraphSearch, GraphScorer {
 
         addRequiredEdges(this.graph);
         this.mode = Mode.heuristicSpeedup;
-        fes(variables);
-        bes(variables);
+        Set<Node> change = fes(variables);
+        change = bes(new ArrayList<>(change));
 
         List<Node> variables = this.variables;
 
@@ -209,10 +209,14 @@ public final class Bridges3 implements GraphSearch, GraphScorer {
 
                 Edge edge = edges.next();
                 if (edge.isDirected()) {
+//                    Set<Node> change = new HashSet<>();
 
                     Graph g = new EdgeListGraph(g0);
                     Node a = Edges.getDirectedEdgeHead(edge);
                     Node b = Edges.getDirectedEdgeTail(edge);
+
+                    change.add(a);
+                    change.add(b);
 
                     // This code performs "pre-tuck" operation
                     // that makes anterior nodes of the distal
@@ -222,6 +226,7 @@ public final class Bridges3 implements GraphSearch, GraphScorer {
                         if (existsSemidirectedPath(c, a, g)) {
                             g.removeEdge(g.getEdge(b, c));
                             g.addDirectedEdge(c, b);
+                            change.add(c);
                         }
                     }
 
@@ -230,9 +235,8 @@ public final class Bridges3 implements GraphSearch, GraphScorer {
                     g.removeEdge(edge);
                     g.addEdge(reversed);
 
-                    new MeekRules().orientImplied(g);
-
-                    Set<Node> change = getChangedNodes(g, g0);
+                    Set<Node> change2 = new MeekRules().orientImplied(g);
+                    change.addAll(change2);
 
                     Graph g1 = search2(g, new ArrayList<>(change));
                     double s1 = getModelScore();
@@ -284,18 +288,17 @@ public final class Bridges3 implements GraphSearch, GraphScorer {
         addRequiredEdges(this.graph);
 
         this.mode = Mode.heuristicSpeedup;
-        fes(variables);
-        Set<Node> change = bes(this.variables);
+        Set<Node> change = fes(variables);
+        change = bes(new ArrayList<>(change));
 
         this.mode = Mode.coverNoncolliders;
-        fes(new ArrayList<>(change));
-
-        change = bes(this.variables);
+        change = fes(new ArrayList<>(change));
+        change = bes(new ArrayList<>(change));
 
 //        if (!faithfulnessAssumed) {
         this.mode = Mode.allowUnfaithfulness;
-        fes(new ArrayList<>(change));
-        bes(new ArrayList<>(this.variables));
+        change = fes(new ArrayList<>(change));
+        change = bes(new ArrayList<>(change));
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
@@ -577,18 +580,54 @@ public final class Bridges3 implements GraphSearch, GraphScorer {
 
             insert(x, y, arrow.getHOrT(), arrow.getBump());
 
-            Set<Node> process = revertToCPDAG();
+            Set<Node> orientedByMeek = revertToCPDAG();
+            Set<Node> process = orientedByMeek;
+            _process.addAll(orientedByMeek);
 
             process.add(x);
             process.add(y);
             process.addAll(getCommonAdjacents(x, y));
 
-            _process.addAll(process);
 
+//            _process.add(x);
+//            _process.add(y);
+
+            _process.addAll(graph.getAdjacentNodes(x));
+            _process.addAll(graph.getAdjacentNodes(y));
+
+            for (Node n : orientedByMeek) {
+                _process.addAll(graph.getAdjacentNodes(n));
+            }
+
+//            _process.addAll(graph.getAdjacentNodes(x));
+//            _process.addAll(graph.getAdjacentNodes(y));
+//            _process.addAll(getCommonAdjacents(x, y));
+
+//            _process = new HashSet<>(process);
+//
             reevaluateForward(new HashSet<>(process));
         }
 
-        return _process;
+        return new HashSet<>(_process);
+    }
+
+    public List<Node> getNeighbors(Graph graph, Node node) {
+        List<Edge> edges = graph.getEdges(node);
+        List<Node> neighbors = new ArrayList<>();
+
+        for (Edge edge : edges) {
+            if (edge == null) {
+                continue;
+            }
+
+            if (!Edges.isUndirectedEdge(edge)) {
+                continue;
+            }
+
+            neighbors.add(edge.getDistalNode(node));
+        }
+
+        return neighbors;
     }
 
     private Set<Node> bes(List<Node> variables) {
@@ -633,18 +672,40 @@ public final class Bridges3 implements GraphSearch, GraphScorer {
 
             delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX());
 
-            Set<Node> process = revertToCPDAG();
+            Set<Node> orientedByMeek = revertToCPDAG();
+            Set<Node> process = orientedByMeek;
+            _process.addAll(process);
             process.add(x);
             process.add(y);
             process.addAll(graph.getAdjacentNodes(x));
             process.addAll(graph.getAdjacentNodes(y));
+            process.addAll(getCommonAdjacents(x, y));
 
-            _process.addAll(process);
+//            _process.add(x);
+//            _process.add(y);
+//            process.addAll(graph.getAdjacentNodes(x));
+//            process.addAll(graph.getAdjacentNodes(y));
+//            _process.addAll(graph.getParents(x));
+//            _process.addAll(graph.getParents(y));
+//            _process.addAll(getCommonAdjacents(x, y));
+
+//            _process.addAll(new HashSet<>(process));
+
+//            _process.add(x);
+//            _process.add(y);
+//            _process.addAll(getCommonAdjacents(x, y));
+
+            _process.addAll(graph.getAdjacentNodes(x));
+            _process.addAll(graph.getAdjacentNodes(y));
+
+            for (Node n : orientedByMeek) {
+                _process.addAll(graph.getAdjacentNodes(n));
+            }
 
             reevaluateBackward(new HashSet<>(process));
         }
 
-        return _process;
+        return new HashSet<>(_process);
     }
 
     // Returns true if knowledge is not empty.
