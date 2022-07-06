@@ -60,7 +60,7 @@ import static java.lang.Math.min;
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
  */
-public final class Bridges2 implements GraphSearch, GraphScorer {
+public final class Bridges3 implements GraphSearch, GraphScorer {
 
     final Set<Node> emptySet = new HashSet<>();
     final int[] count = new int[1];
@@ -90,7 +90,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
     /**
      * An initial graph to start from.
      */
-//    private Graph initialGraph;
+    private Graph initialGraph;
     /**
      * If non-null, edges not adjacent in this graph will not be added.
      */
@@ -139,7 +139,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
 
-    // True if BRIDGES should run in a single thread, no if parallelized.
+    // True if FGES should run in a single thread, no if parallelized.
     private boolean parallelized = false;
 
     /**
@@ -149,7 +149,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
      * consistent scoring criterion. This by default uses all of the processors on
      * the machine.
      */
-    public Bridges2(Score score) {
+    public Bridges3(Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -179,25 +179,22 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
         this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
+    public Graph search() {
 
-    private Set<Node> getChangedNodes(Graph g1, Graph g2, int index) {
-        Set<Node> changed = new HashSet<>();
+        initializeEffectEdges(variables);
 
-        for (Node node : variables) {
-            if (!(new HashSet<>(g1.getAdjacentNodes(node)).equals(new HashSet<>(g2.getAdjacentNodes(node))) &&
-                    new HashSet<>(g1.getParents(node)).equals(new HashSet<>(g2.getParents(node))))) {
-                changed.add(node);
-            }
+        if (adjacencies != null) {
+            adjacencies = GraphUtils.replaceNodes(adjacencies, getVariables());
         }
 
-        return changed;
-    }
+        addRequiredEdges(this.graph);
+        this.mode = Mode.heuristicSpeedup;
+        fes(variables);
+        bes(variables);
 
-    public Graph search() {
-        initializeEffectEdges(new ArrayList<>(variables));
-        Graph g0 = search2(new EdgeListGraph(variables), new HashSet<>(variables));
+        List<Node> variables = this.variables;
 
-        graph = g0;
+        Graph g0 = search2(new EdgeListGraph(variables), variables);
         double s0 = getModelScore();
 
         boolean flag = true;
@@ -209,9 +206,10 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
             Iterator<Edge> edges = g0.getEdges().iterator();
 
             while (!flag && edges.hasNext()) {
-                Edge edge = edges.next();
 
+                Edge edge = edges.next();
                 if (edge.isDirected()) {
+
                     Graph g = new EdgeListGraph(g0);
                     Node a = Edges.getDirectedEdgeHead(edge);
                     Node b = Edges.getDirectedEdgeTail(edge);
@@ -232,15 +230,12 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
                     g.removeEdge(edge);
                     g.addEdge(reversed);
 
-                    Set<Node> changed = new MeekRules().orientImplied(g);
+                    new MeekRules().orientImplied(g);
 
-//                    setExternalGraph(g);
-//                    graph = g;
-                    Graph g1 = search2(g, new HashSet<>(variables));
-//                    graph = g1;
+                    Set<Node> change = getChangedNodes(g, g0);
+
+                    Graph g1 = search2(g, new ArrayList<>(change));
                     double s1 = getModelScore();
-
-//                    System.out.println("s0 = " + s0 + " s1 = " + s1);
 
                     if (s1 > s0) {
                         flag = true;
@@ -248,15 +243,24 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
                         s0 = s1;
                         getOut().println(g0.getNumEdges());
                     }
-//                    else {
-//                        g0.removeEdge(reversed);
-//                        g0.addEdge(edge);
-//                    }
                 }
             }
         }
 
         return g0;
+    }
+
+    private Set<Node> getChangedNodes(Graph g1, Graph g2) {
+        Set<Node> changed = new HashSet<>();
+
+        for (Node node : variables) {
+            if (!(new HashSet<>(g1.getAdjacentNodes(node)).equals(new HashSet<>(g2.getAdjacentNodes(node))) &&
+                    new HashSet<>(g1.getParents(node)).equals(new HashSet<>(g2.getParents(node))))) {
+                changed.add(node);
+            }
+        }
+
+        return changed;
     }
 
     /**
@@ -266,48 +270,32 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
      *
      * @return the resulting Pattern.
      */
-    private Graph search2(Graph graph, Set<Node> vars) {
+    public Graph search2(Graph graph, List<Node> variables) {
         long start = System.currentTimeMillis();
         topGraphs.clear();
 
-        Graph g0 = new EdgeListGraph(graph);
+        this.graph = graph;
 
-        if (adjacencies != null) {
-            adjacencies = GraphUtils.replaceNodes(adjacencies, getVariables());
+        if (verbose) {
+            out.println("External graph variables: " + graph.getNodes());
+            out.println("Data set variables: " + this.variables);
         }
 
-//        if (initialGraph != null) {
-//            graph = new EdgeListGraph(initialGraph);
-//            graph = GraphUtils.replaceNodes(graph, getVariables());
-//        } else {
-//            initialGraph =  g0;
-//        }
-
-        addRequiredEdges(graph);
+        addRequiredEdges(this.graph);
 
         this.mode = Mode.heuristicSpeedup;
-        Graph g1 = fes(g0, new HashSet<>(vars));
-        Set<Node> changed = getChangedNodes(g0, g1, 13);
-
-        Graph g2 = bes(g1, new HashSet<>(changed));
-        changed = getChangedNodes(g1, g2, 2);
+        fes(variables);
+        Set<Node> change = bes(this.variables);
 
         this.mode = Mode.coverNoncolliders;
-        Graph g3 = fes(g2, new HashSet<>(changed));
-        changed = getChangedNodes(g2, g3, 3);
+        fes(new ArrayList<>(change));
 
-        Graph g4 = bes(g3, new HashSet<>(changed));
-        changed = getChangedNodes(g3, g4, 4);
-        graph = g4;
+        change = bes(this.variables);
 
-        if (!faithfulnessAssumed) {
-            this.mode = Mode.allowUnfaithfulness;
-
-            Graph g5 = fes(g4, new HashSet<>(changed));
-            changed = getChangedNodes(g4, g5, 5);
-
-            graph = bes(g5, new HashSet<>(changed));
-        }
+//        if (!faithfulnessAssumed) {
+        this.mode = Mode.allowUnfaithfulness;
+        fes(new ArrayList<>(change));
+        bes(new ArrayList<>(this.variables));
 
         long endTime = System.currentTimeMillis();
         this.elapsedTime = endTime - start;
@@ -316,12 +304,10 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
             this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(SearchGraphUtils.dagFromCPDAG(graph), true);
-        this.graph = graph;
+        this.modelScore = scoreDag(SearchGraphUtils.dagFromCPDAG(this.graph), true);
 
-        return graph;
+        return this.graph;
     }
-
 
     /**
      * @return the background knowledge.
@@ -359,24 +345,6 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
      */
     public LinkedList<ScoredGraph> getTopGraphs() {
         return topGraphs;
-    }
-
-    /**
-     * Sets the initial graph.
-     */
-    public void setExternalGraph(Graph externalGraph) {
-        externalGraph = GraphUtils.replaceNodes(externalGraph, variables);
-
-        if (verbose) {
-            out.println("External graph variables: " + externalGraph.getNodes());
-            out.println("Data set variables: " + variables);
-        }
-
-        if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(variables))) {
-            throw new IllegalArgumentException("Variables aren't the same.");
-        }
-
-//        this.initialGraph = externalGraph;
     }
 
     /**
@@ -565,11 +533,12 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
         }
     }
 
-    private Graph fes(Graph graph, Set<Node> initial) {
-        graph = new EdgeListGraph(graph);
+    private Set<Node> fes(List<Node> variables) {
         int maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
-        reevaluateForward(new HashSet<>(initial));
+        Set<Node> _process = new HashSet<>();
+
+        reevaluateForward(new HashSet<>(variables));
 
         while (!sortedArrows.isEmpty()) {
             Arrow arrow = sortedArrows.first();
@@ -606,7 +575,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
                 continue;
             }
 
-            insert(graph, x, y, arrow.getHOrT(), arrow.getBump());
+            insert(x, y, arrow.getHOrT(), arrow.getBump());
 
             Set<Node> process = revertToCPDAG();
 
@@ -614,15 +583,18 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
             process.add(y);
             process.addAll(getCommonAdjacents(x, y));
 
+            _process.addAll(process);
+
             reevaluateForward(new HashSet<>(process));
         }
 
-        return graph;
+        return _process;
     }
 
-    private Graph bes(Graph graph, Set<Node> initial) {
-        graph = new EdgeListGraph(graph);
-        reevaluateBackward(new HashSet<>(initial));
+    private Set<Node> bes(List<Node> variables) {
+        reevaluateBackward(new HashSet<>(variables));
+
+        Set<Node> _process = new HashSet<>();
 
         while (!sortedArrowsBack.isEmpty()) {
             Arrow arrow = sortedArrowsBack.first();
@@ -659,7 +631,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
             double _bump = deleteEval(x, y, complement,
                     arrow.parents, hashIndices);
 
-            delete(graph, x, y, arrow.getHOrT(), _bump, arrow.getNaYX());
+            delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX());
 
             Set<Node> process = revertToCPDAG();
             process.add(x);
@@ -667,10 +639,12 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
             process.addAll(graph.getAdjacentNodes(x));
             process.addAll(graph.getAdjacentNodes(y));
 
+            _process.addAll(process);
+
             reevaluateBackward(new HashSet<>(process));
         }
 
-        return graph;
+        return _process;
     }
 
     // Returns true if knowledge is not empty.
@@ -1042,7 +1016,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
     }
 
     // Do an actual insertion. (Definition 12 from Chickering, 2002).
-    private void insert(Graph graph, Node x, Node y, Set<Node> T, double bump) {
+    private void insert(Node x, Node y, Set<Node> T, double bump) {
         graph.addDirectedEdge(x, y);
 
         int numEdges = graph.getNumEdges();
@@ -1073,7 +1047,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
     }
 
     // Do an actual deletion (Definition 13 from Chickering, 2002).
-    private void delete(Graph graph, Node x, Node y, Set<Node> H, double bump, Set<Node> naYX) {
+    private void delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX) {
         Edge oldxy = graph.getEdge(x, y);
 
         Set<Node> diff = new HashSet<>(naYX);

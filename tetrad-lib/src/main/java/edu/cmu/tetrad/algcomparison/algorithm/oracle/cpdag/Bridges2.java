@@ -61,8 +61,8 @@ public class Bridges2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
             Score score = this.score.getScore(dataModel, parameters);
             Graph graph;
 
-            edu.cmu.tetrad.search.Bridges2 search
-                    = new edu.cmu.tetrad.search.Bridges2(score);
+            edu.cmu.tetrad.search.Bridges3 search
+                    = new edu.cmu.tetrad.search.Bridges3(score);
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
