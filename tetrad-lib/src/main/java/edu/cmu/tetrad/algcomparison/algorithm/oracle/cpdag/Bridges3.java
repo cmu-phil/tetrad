@@ -70,6 +70,7 @@ public class Bridges3 implements Algorithm, HasKnowledge, UsesScoreWrapper {
             search.setSymmetricFirstStep(parameters.getBoolean(Params.SYMMETRIC_FIRST_STEP));
             search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
             search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
+            search.setDepth(parameters.getInt(Params.DEPTH));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
@@ -101,7 +102,7 @@ public class Bridges3 implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "BRIDGES using " + this.score.getDescription();
+        return "BRIDGES3 using " + this.score.getDescription();
     }
 
     @Override
@@ -117,6 +118,7 @@ public class Bridges3 implements Algorithm, HasKnowledge, UsesScoreWrapper {
         parameters.add(Params.PARALLELIZED);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.DEPTH);
 
         parameters.add(Params.VERBOSE);
         parameters.add(Params.MEEK_VERBOSE);

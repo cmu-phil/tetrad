@@ -6,7 +6,6 @@ import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Math.floor;
 import static java.util.Collections.shuffle;
@@ -166,8 +165,6 @@ public class TeyssierScorer {
      * @param toIndex The index to move v to.
      */
     public void moveTo(Node v, int toIndex) {
-//        if (!this.pi.contains(v)) return;
-
         int vIndex = index(v);
 
         if (vIndex == toIndex) return;
@@ -600,12 +597,6 @@ public class TeyssierScorer {
 
     private void initializeScores() {
         for (int i1 = 0; i1 < this.pi.size(); i1++) this.prefixes.set(i1, null);
-
-        for (int i = 0; i < this.pi.size(); i++) {
-            recalculate(i);
-            this.orderHash.put(this.pi.get(i), i);
-        }
-
         updateScores(0, this.pi.size() - 1);
     }
 
@@ -617,14 +608,14 @@ public class TeyssierScorer {
     }
 
     private float score(Node n, Set<Node> pi) {
-        if (this.cachingScores) {
-            this.cache.computeIfAbsent(n, w -> new ConcurrentHashMap<>());
-            Float score = this.cache.get(n).get(pi);
-
-            if (score != null) {
-                return score;
-            }
-        }
+//        if (this.cachingScores) {
+//            this.cache.computeIfAbsent(n, w -> new HashMap<>());
+//            Float score = this.cache.get(n).get(pi);
+//
+//            if (score != null) {
+//                return score;
+//            }
+//        }
 
         int[] parentIndices = new int[pi.size()];
 
@@ -636,10 +627,10 @@ public class TeyssierScorer {
 
         float v = (float) this.score.localScore(this.variablesHash.get(n), parentIndices);
 
-        if (this.cachingScores) {
-            this.cache.computeIfAbsent(n, w -> new ConcurrentHashMap<>());
-            this.cache.get(n).put(new HashSet<>(pi), v);
-        }
+//        if (this.cachingScores) {
+//            this.cache.computeIfAbsent(n, w -> new HashMap<>());
+//            this.cache.get(n).put(new HashSet<>(pi), v);
+//        }
 
         return v;
     }

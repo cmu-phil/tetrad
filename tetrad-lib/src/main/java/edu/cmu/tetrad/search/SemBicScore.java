@@ -258,45 +258,68 @@ public class SemBicScore implements Score {
     private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
 
     /**
-     * @param i The index of the node.
+     * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
      */
     public double localScore(int i, int... parents) {
+//        S = sorted(X)
+//        key = tuple(S)
+//        if key not in self.cache:
+//        self.cache[key] = np.linalg.slogdet(self.cov[np.ix_(S, S)])[1]
+//        log_prob = self.cache[key]
+//
+//        bisect.insort(S,y)
+//        key = tuple(S)
+//        if key not in self.cache:
+//        self.cache[key] = np.linalg.slogdet(self.cov[np.ix_(S, S)])[1]
+//        log_prob -= self.cache[key]
+//
+//        return self.n/2 * log_prob - self.c * len(X) * np.log(self.n)
+
+//        Arrays.sort(parents);
+//
+//        int[] all = new int[parents.length + 1];
+//        all[0] = i;
+//        Arrays.sort(all);
+//        System.arraycopy(parents, 0, all, 1, parents.length);
+//
+//        Matrix cov1 = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), parents, parents, data, covariances);
+//        double lik = Math.log(MatrixUtils.determinant(cov1.toArray()));
+//
+//        Matrix cov2 = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
+//        lik -= Math.log(MatrixUtils.determinant(cov2.toArray()));
+
+
         int k = parents.length;
-
-        // Only do this once.
-        double n = this.sampleSize;
-
-        double varey;
+        double lik;
 
         Arrays.sort(parents);
-        int[] all = new int[parents.length + 1];
-        all[0] = i;
-        System.arraycopy(parents, 0, all, 1, parents.length);
 
         List<Integer> _all = new ArrayList<>();
-        for (int value : all) _all.add(value);
+        _all.add(i);
+        for (int value : parents) _all.add(value);
 
-//        if (cache.containsKey(_all)) {
-//            varey = cache.get(_all);
-//        } else {
+        if (cache.containsKey(_all)) {
+            lik = cache.get(_all);
+        } else {
             try {
-                varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
-                cache.put(_all, varey);
+                double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+                lik = -(double) this.sampleSize * log(varey);
+                cache.put(_all, lik);
             } catch (SingularMatrixException e) {
-                varey = NaN;
+                lik = NaN;
             }
 
-//            cache.put(_all, varey);
-//        }
+            cache.put(_all, lik);
+        }
 
         double c = getPenaltyDiscount();
 
         if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
             // Standard BIC, with penalty discount and structure prior.
-            double _score = -n * log(varey) - c * k * logN ; // - 2 * getStructurePrior(k);
+            double _score = lik - c * k * logN; // - 2 * getStructurePrior(k);
 
             if (Double.isNaN(_score) || Double.isInfinite(_score)) {
                 return Double.NaN;

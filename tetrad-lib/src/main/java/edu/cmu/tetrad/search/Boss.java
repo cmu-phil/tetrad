@@ -5,13 +5,14 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static java.lang.Double.NEGATIVE_INFINITY;
@@ -99,13 +100,13 @@ public class Boss {
             this.scorer.score(order);
             double s1, s2;
 
-//            do {
+            do {
                 betterMutation(scorer);
-//                s1 = scorer.score();
-//                this.graph = scorer.getGraph(true);
-//                bes();
-//                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
-//            } while (s2 > s1);
+                s1 = scorer.score();
+                this.graph = scorer.getGraph(true);
+                bes();
+                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
+            } while (s2 > s1);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -127,55 +128,40 @@ public class Boss {
     }
 
     public void betterMutation(@NotNull TeyssierScorer scorer) {
-        List<Node> pi = scorer.getPi();
         double s;
-        double sp = scorer.score(pi);
-//        ArrayList<Set<Node>> prefixes = new ArrayList<>();
-//        for (int i1 = 0; i1 < scorer.size(); i1++) prefixes.add(scorer.getParents(i1));
-
-        Set<Node> _pi = new HashSet<>(scorer.getPi());
+        double sp = scorer.score();
+        scorer.bookmark();
 
         do {
             s = sp;
-            scorer.bookmark();
 
-            for (Node k : _pi) {
+            for (Node k : scorer.getPi()) {
                 sp = NEGATIVE_INFINITY;
+                int _k = scorer.index(k);
+                scorer.bookmark();
 
                 for (int j = 0; j < scorer.size(); j++) {
-//                    if (!scorer.getPrefix(j).equals(prefixes.get(j))) continue;
-//                    int _k = scorer.index(k);
                     scorer.moveTo(k, j);
 
-//                    if (j <= _k) {
-//                        for (int j2 = j; j2 <= _k; j2++) {
-//                            prefixes.set(j2, scorer.getPrefix(j2));
-//                        }
-//                    } else {
-//                        for (int j2 = _k; j2 <= j; j2++) {
-//                            prefixes.set(j2, scorer.getPrefix(j2));
-//                        }
-//                    }
-
-                    if (scorer.score() > sp) {
+                    if (scorer.score() >= sp) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
-                            scorer.bookmark();
+                            _k = j;
 
-                            if (verbose) {
-                                System.out.print("\r# Edges = " + scorer.getNumEdges()
-                                        + " Score = " + scorer.score()
-                                        + " (betterMutation)"
-                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s")
-                                );
-                            }
+                            System.out.print("\r# Edges = " + scorer.getNumEdges()
+                                    + " Score = " + scorer.score()
+                                    + " (betterMutation)"
+                                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s")
+                            );
                         }
                     }
                 }
 
-                scorer.goToBookmark();
+                scorer.moveTo(k, _k);
             }
         } while (sp > s);
+
+        scorer.goToBookmark();
 
         System.out.println();
     }
@@ -331,13 +317,13 @@ public class Boss {
     private Graph graph;
     private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
     private boolean meekVerbose = false;
-    private ConcurrentMap<Node, Integer> hashIndices;
+    private Map<Node, Integer> hashIndices;
     private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
     private int arrowIndex = 0;
 
 
     private void buildIndexing(List<Node> nodes) {
-        this.hashIndices = new ConcurrentHashMap<>();
+        this.hashIndices = new HashMap<>();
 
         int i = -1;
 

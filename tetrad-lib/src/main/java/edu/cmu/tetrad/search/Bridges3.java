@@ -64,7 +64,7 @@ public final class Bridges3 implements GraphSearch, GraphScorer {
 
     final Set<Node> emptySet = new HashSet<>();
     final int[] count = new int[1];
-    private final int depth = 10000;
+    private int depth = 10000;
     /**
      * The logger for this class. The config needs to be set.
      */
@@ -179,6 +179,10 @@ public final class Bridges3 implements GraphSearch, GraphScorer {
         this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
     public Graph search() {
 
         initializeEffectEdges(variables);
@@ -203,14 +207,12 @@ public final class Bridges3 implements GraphSearch, GraphScorer {
             if (Thread.interrupted()) break;
 
             flag = false;
-            Iterator<Edge> edges = g0.getEdges().iterator();
+            Iterator<Edge> edges = new EdgeListGraph(g0).getEdges().iterator();
 
             while (!flag && edges.hasNext()) {
 
                 Edge edge = edges.next();
                 if (edge.isDirected()) {
-//                    Set<Node> change = new HashSet<>();
-
                     Graph g = new EdgeListGraph(g0);
                     Node a = Edges.getDirectedEdgeHead(edge);
                     Node b = Edges.getDirectedEdgeTail(edge);
@@ -652,12 +654,14 @@ public final class Bridges3 implements GraphSearch, GraphScorer {
             process.addAll(graph.getAdjacentNodes(y));
             process.addAll(getCommonAdjacents(x, y));
 
-            _process.addAll(graph.getAdjacentNodes(x));
-            _process.addAll(graph.getAdjacentNodes(y));
+            _process.add(x);
+            _process.add(y);
+//            _process.addAll(graph.getAdjacentNodes(x));
+//            _process.addAll(graph.getAdjacentNodes(y));
 
-            for (Node n : orientedByMeek) {
-                _process.addAll(graph.getAdjacentNodes(n));
-            }
+//            for (Node n : orientedByMeek) {
+//                _process.addAll(graph.getAdjacentNodes(n));
+//            }
 
             reevaluateBackward(new HashSet<>(process));
         }

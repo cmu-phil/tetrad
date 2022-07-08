@@ -207,7 +207,7 @@ public class IndependenceFacts implements DataModel {
     }
 
     public List<Node> getVariables() {
-        if (nodes != null) {
+        if (nodes != null && !nodes.isEmpty()) {
             return nodes;
         }
 
@@ -219,7 +219,7 @@ public class IndependenceFacts implements DataModel {
             variables.addAll(fact.getZ());
         }
 
-        if (nodes != null) {
+        if (nodes != null && !nodes.isEmpty()) {
             if (new HashSet<>(variables).equals(new HashSet<>(nodes))) {
                 return nodes;
             } else {

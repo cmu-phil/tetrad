@@ -76,7 +76,9 @@ public final class TestGrasp {
     public static void main(String[] args) {
 //        new TestGrasp().testLuFigure3();
 //        new TestGrasp().testLuFigure6();
-        new TestGrasp().testGrasp2();
+//        new TestGrasp().testGrasp2();
+//        new TestGrasp().wayneCheckDensityClaim2();
+        new TestGrasp().bryanCheckDensityClaims();
     }
 
     @NotNull
@@ -809,9 +811,9 @@ public final class TestGrasp {
 //    @Test
     public void testGrasp2() {
         Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 30);
-        params.set(Params.AVG_DEGREE, 6);
-        params.set(Params.SAMPLE_SIZE, 6000);
+        params.set(Params.NUM_MEASURES, 200);
+        params.set(Params.AVG_DEGREE, 5);
+        params.set(Params.SAMPLE_SIZE, 1000);
         params.set(Params.NUM_RUNS, 1);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
@@ -819,30 +821,22 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.001);
         params.set(Params.VERBOSE, false);
         params.set(Params.PARALLELIZED, true);
+        params.set(Params.DEPTH, 5);
 
         params.set(Params.PENALTY_DISCOUNT, 2);
-
-//        params.set(Params.GRASP_DEPTH, 3);
-//        params.set(Params.GRASP_CHECK_COVERING, false);
-//        params.set(Params.GRASP_FORWARD_TUCK_ONLY, false);
-//        params.set(Params.GRASP_BREAK_AFTER_IMPROVEMENT, false);
-//        params.set(Params.GRASP_ORDERED_ALG, true);
-//        params.set(Params.GRASP_USE_SCORE, true);
-//        params.set(Params.GRASP_USE_VERMA_PEARL, false);
-//        params.set(Params.GRASP_USE_DATA_ORDER, false);
-
 
         // use defaults.
 //        params.set(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE, 10);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
-                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES(
-                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
+//                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES(
+//                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Bridges3(
                 new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+//        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -851,8 +845,6 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.NUM_MEASURES));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-//        statistics.add(new ParameterColumn(Params.GRASP_FORWARD_TUCK_ONLY));
-//        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new NumberOfEdgesTrue());
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new AdjacencyPrecision());
@@ -1145,6 +1137,8 @@ public final class TestGrasp {
             List<Node> variables = facts.facts.getVariables();
             Collections.sort(variables);
 
+            System.out.println("Variables = " + variables);
+
             PermutationGenerator gen = new PermutationGenerator(variables.size());
             int[] perm;
             int count1 = 0;
@@ -1153,21 +1147,21 @@ public final class TestGrasp {
             while ((perm = gen.next()) != null) {
                 List<Node> pi = GraphUtils.asList(perm, variables);
 
-                Grasp grasp = new Grasp(new IndTestDSep(facts.getFacts()));
+                Boss grasp = new Boss(new IndTestDSep(facts.getFacts()), new GraphScore(facts.getFacts()));
 
                 grasp.setUseRaskuttiUhler(true);
                 grasp.setDepth(100);
-                grasp.setOrdered(true);
+//                grasp.setOrdered(true);
                 grasp.setVerbose(false);
 
                 grasp.bestOrder(pi);
-                Graph estCpdagGrasp = grasp.getGraph(true);
+                Graph estCpdagGrasp = grasp.getGraph();
 
                 if (estCpdagGrasp.getNumEdges() == facts.truth) {
                     count1++;
                 } else {
-                    System.out.println("Counterexample: Test #" + (i + 1) + " Permutation = " + pi + " #Edges = "
-                            + estCpdagGrasp.getNumEdges() + " #Frugal = " + facts.truth);
+//                    System.out.println("Counterexample: Test #" + (i + 1) + " Permutation = " + pi + " #Edges = "
+//                            + estCpdagGrasp.getNumEdges() + " #Frugal = " + facts.truth);
                 }
 
                 total++;
@@ -1408,13 +1402,17 @@ public final class TestGrasp {
 //                    List<Node> variables = facts.getVariables();
                     IndTestDSep test = new IndTestDSep(facts, variables);
 
-                    OtherPermAlgs spAlg = new OtherPermAlgs(test);
-                    spAlg.setUsePearl(true);
-                    spAlg.setMethod(OtherPermAlgs.Method.SP);
-                    spAlg.setUseDataOrder(true);
-                    spAlg.setNumVariables(numVars);
-                    List<Node> spPi = spAlg.bestOrder(variables);
-                    Graph spGraph = spAlg.getGraph(false);
+                    Grasp boss = new Grasp(test, new GraphScore(facts));
+                    boss.setNonSingularDepth(1);
+                    boss.setSingularDepth(1);
+
+//                    OtherPermAlgs spAlg = new OtherPermAlgs(test);
+//                    spAlg.setUsePearl(true);
+//                    spAlg.setMethod(OtherPermAlgs.Method.SP);
+//                    spAlg.setUseDataOrder(true);
+//                    spAlg.setNumVariables(numVars);
+                    List<Node> spPi = boss.bestOrder(variables);
+                    Graph spGraph = boss.getGraph(true);
                     int spNumEdges = spGraph.getNumEdges();
 
                     List<Node> failingInitialPi = null;
