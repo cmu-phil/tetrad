@@ -76,9 +76,9 @@ public final class TestGrasp {
     public static void main(String[] args) {
 //        new TestGrasp().testLuFigure3();
 //        new TestGrasp().testLuFigure6();
-//        new TestGrasp().testGrasp2();
+        new TestGrasp().testGrasp2();
 //        new TestGrasp().wayneCheckDensityClaim2();
-        new TestGrasp().bryanCheckDensityClaims();
+//        new TestGrasp().bryanCheckDensityClaims();
     }
 
     @NotNull
@@ -833,8 +833,8 @@ public final class TestGrasp {
 //                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES(
 //                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Bridges3(
-                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Bridges3(
+//                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 

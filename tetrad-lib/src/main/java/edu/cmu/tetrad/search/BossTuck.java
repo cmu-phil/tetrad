@@ -133,6 +133,8 @@ public class BossTuck {
             s = sp;
 
             for (int i = 1; i < scorer.size(); i++) {
+                scorer.bookmark(1);
+
                 Node x = scorer.get(i);
                 for (int j = i - 1; j >= 0; j--) {
                     if (tuck(x, j, scorer)) {
@@ -150,11 +152,15 @@ public class BossTuck {
                                         + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
                             }
                         }
+
                         scorer.bookmark();
                     }
                 }
             }
+
         } while (sp > s);
+
+        scorer.goToBookmark(1);
 
         System.out.println();
     }
