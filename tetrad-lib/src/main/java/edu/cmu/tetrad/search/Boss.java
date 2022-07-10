@@ -98,20 +98,19 @@ public class Boss {
             makeValidKnowledgeOrder(order);
 
             this.scorer.score(order);
+            double s1, s2;
+            double last = scorer.score();
 
-            while (true) {
-                double s1 = scorer.score();
-
-                double s2 = betterMutation(scorer);
+            do {
+                betterMutation(scorer);
+                s1 = scorer.score();
+                if (s1 == last) break;
+                last = s1;
                 this.graph = scorer.getGraph(true);
-
-                if (s2 <= s1) break;
-
                 bes();
-                double s3 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
+                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
 
-                if (s2 <= s3) break;
-            }
+            } while (s2 > s1);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();

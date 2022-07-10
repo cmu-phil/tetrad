@@ -23,10 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSSTuck;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GRaSPFCI;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
@@ -44,6 +41,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
@@ -811,7 +809,7 @@ public final class TestGrasp {
 //    @Test
     public void testGrasp2() {
         Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 200);
+        params.set(Params.NUM_MEASURES, 50);
         params.set(Params.AVG_DEGREE, 5);
         params.set(Params.SAMPLE_SIZE, 1000);
         params.set(Params.NUM_RUNS, 1);
@@ -833,8 +831,8 @@ public final class TestGrasp {
 //                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES(
 //                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Bridges3(
-//                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BRIDGES(
+                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 
