@@ -174,10 +174,8 @@ public class EdgeListGraph implements Graph {
         if (graph.ancestors != null) {
             this.ancestors = new HashMap<>();
 
-            for (Node node : nodes) {
-                if (graph.ancestors.containsKey(node)) {
-                    ancestors.put(node, new HashSet<>(graph.ancestors.get(node)));
-                }
+            for (Node node : graph.ancestors.keySet()) {
+                ancestors.put(node, new HashSet<>(graph.ancestors.get(node)));
             }
         }
 

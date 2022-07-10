@@ -127,7 +127,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
     private int arrowIndex = 0;
 
     // The BIC score of the model.
-    private double modelScore;
+    private double modelScore = 0;
 
     // Internal.
     private Mode mode = Mode.heuristicSpeedup;
@@ -1049,6 +1049,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
     // Do an actual insertion. (Definition 12 from Chickering, 2002).
     private void insert(Node x, Node y, Set<Node> T, double bump) {
         graph.addDirectedEdge(x, y);
+        modelScore += bump;
 
         int numEdges = graph.getNumEdges();
 
@@ -1085,6 +1086,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
         diff.removeAll(H);
 
         graph.removeEdge(oldxy);
+        modelScore += bump;
 
         int numEdges = graph.getNumEdges();
         if (numEdges % 1000 == 0) {

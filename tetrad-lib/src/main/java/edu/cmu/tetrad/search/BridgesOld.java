@@ -48,7 +48,7 @@ public class BridgesOld {
                 Edge edge = edges.next();
                 if (edge.isDirected()) {
 
-                    Graph g = new EdgeListGraph(g0);
+                    Graph g = new EdgeListGraph((EdgeListGraph) g0);
                     Node a = Edges.getDirectedEdgeHead(edge);
                     Node b = Edges.getDirectedEdgeTail(edge);
 
