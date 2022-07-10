@@ -145,7 +145,7 @@ public class Boss {
                 scorer.bookmark();
 
                 for (int j = 0; j < scorer.size(); j++) {
-                    if (!scorer.adjacent(k, scorer.get(j))) continue;
+//                    if (!scorer.adjacent(k, scorer.get(j))) continue;
                     scorer.moveTo(k, j);
 
                     if (scorer.score() >= sp) {

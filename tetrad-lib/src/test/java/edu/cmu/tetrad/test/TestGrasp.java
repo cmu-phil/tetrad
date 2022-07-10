@@ -40,8 +40,8 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
@@ -806,7 +806,7 @@ public final class TestGrasp {
                 simulations, algorithms, statistics, params);
     }
 
-//    @Test
+    //    @Test
     public void testGrasp2() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 50);
@@ -829,10 +829,8 @@ public final class TestGrasp {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
 //                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES(
-//                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BRIDGES(
-                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BRIDGES_OLD(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 

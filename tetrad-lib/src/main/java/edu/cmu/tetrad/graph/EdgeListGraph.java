@@ -51,7 +51,7 @@ public class EdgeListGraph implements Graph {
      *
      * @serial
      */
-    protected final List<Node> nodes;
+    protected List<Node> nodes;
 
     /**
      * The edges in the graph.
@@ -65,7 +65,7 @@ public class EdgeListGraph implements Graph {
      *
      * @serial
      */
-    final Map<Node, Set<Edge>> edgeLists;
+    Map<Node, Set<Edge>> edgeLists;
     private final Map<String, Object> attributes = new HashMap<>();
     /**
      * Fires property change events.
@@ -79,7 +79,7 @@ public class EdgeListGraph implements Graph {
     /**
      * Determines whether one node is an ancestor of another.
      */
-    protected Map<Node, Set<Node>> ancestors;
+    protected Map<Node, Set<Node>> ancestors = new HashMap<>();
     /**
      * @serial
      */
@@ -153,6 +153,37 @@ public class EdgeListGraph implements Graph {
         for (Node node : this.nodes) {
             this.namesHash.put(node.getName(), node);
         }
+
+        this.pag = graph.isPag();
+        this.cpdag = graph.isCPDAG();
+    }
+
+    public EdgeListGraph(EdgeListGraph graph) throws IllegalArgumentException {
+        this.nodes = new ArrayList<>(graph.nodes);
+        this.edgeLists = new HashMap<>();
+        for (Node node : nodes) {
+            edgeLists.put(node, new HashSet<>(graph.edgeLists.get(node)));
+        }
+        this.edgesSet = new HashSet<>(graph.edgesSet);
+        this.namesHash = new HashMap<>(graph.namesHash);
+
+        this.ambiguousTriples = new HashSet<>(graph.ambiguousTriples);
+        this.underLineTriples = new HashSet<>(graph.underLineTriples);
+        this.dottedUnderLineTriples = new HashSet<>(graph.dottedUnderLineTriples);
+
+        if (graph.ancestors != null) {
+            this.ancestors = new HashMap<>();
+
+            for (Node node : nodes) {
+                if (graph.ancestors.containsKey(node)) {
+                    ancestors.put(node, new HashSet<>(graph.ancestors.get(node)));
+                }
+            }
+        }
+
+        this.stuffRemovedSinceLastTripleAccess = graph.stuffRemovedSinceLastTripleAccess;
+
+        this.highlightedEdges = new HashSet<>(graph.highlightedEdges);
 
         this.pag = graph.isPag();
         this.cpdag = graph.isCPDAG();

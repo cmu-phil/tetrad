@@ -197,7 +197,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
 
         Set<Node> change = search2(new EdgeListGraph(variables), variables);
 
-        Graph g0 = new EdgeListGraph(graph);
+        Graph g0 = new EdgeListGraph((EdgeListGraph) graph);
 
         double s0 = getModelScore();
 
@@ -207,13 +207,14 @@ public final class Bridges implements GraphSearch, GraphScorer {
             if (Thread.interrupted()) break;
 
             flag = false;
-            Iterator<Edge> edges = new EdgeListGraph(g0).getEdges().iterator();
+            Iterator<Edge> edges = new EdgeListGraph((EdgeListGraph) g0).getEdges().iterator();
+            int count = 0;
 
             while (!flag && edges.hasNext()) {
 
                 Edge edge = edges.next();
                 if (edge.isDirected()) {
-                    Graph g = new EdgeListGraph(g0);
+                    Graph g = new EdgeListGraph((EdgeListGraph) g0);
                     Node a = Edges.getDirectedEdgeHead(edge);
                     Node b = Edges.getDirectedEdgeTail(edge);
 
@@ -245,6 +246,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
 
                     if (s1 > s0) {
                         flag = true;
+                        ++count;
                         g0 = g;
                         s0 = s1;
                         getOut().println(g0.getNumEdges());
