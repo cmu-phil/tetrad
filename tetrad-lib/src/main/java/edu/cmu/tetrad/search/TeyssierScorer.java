@@ -30,6 +30,7 @@ public class TeyssierScorer {
     private final Map<Integer, ArrayList<Node>> bookmarkedOrders = new HashMap<>();
     private final Map<Integer, ArrayList<Pair>> bookmarkedScores = new HashMap<>();
     private final Map<Integer, Map<Node, Integer>> bookmarkedOrderHashes = new HashMap<>();
+    private final Map<Integer, Float> bookmarkedRunningScores = new HashMap<>();
     private Map<Node, Map<Set<Node>, Float>> cache = new HashMap<>();
     private Map<Node, Integer> orderHash;
     private ArrayList<Node> pi; // The current permutation.
@@ -41,6 +42,7 @@ public class TeyssierScorer {
     private boolean useVermaPearl;
     private boolean useBackwardScoring;
     private boolean cachingScores = true;
+    private float runningScore = 0f;
 
     public TeyssierScorer(IndependenceTest test, Score score) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
@@ -131,6 +133,7 @@ public class TeyssierScorer {
      */
     public float score() {
         return sum();
+//        return runningScore;
     }
 
     private float sum() {
@@ -166,10 +169,8 @@ public class TeyssierScorer {
      */
     public void moveTo(Node v, int toIndex) {
         int vIndex = index(v);
-
         if (vIndex == toIndex) return;
-
-//        if (lastMoveSame(vIndex, toIndex)) return;
+        if (lastMoveSame(vIndex, toIndex)) return;
 
         this.pi.remove(v);
         this.pi.add(toIndex, v);
@@ -219,7 +220,7 @@ public class TeyssierScorer {
      * @return True iff x-&gt;y or y-&gt;x is a covered edge.
      */
     public boolean coveredEdge(Node x, Node y) {
-        if (!adjacent(x, y)) return false;
+//        if (!adjacent(x, y)) return false;
         Set<Node> px = getParents(x);
         Set<Node> py = getParents(y);
         px.remove(y);
@@ -449,6 +450,7 @@ public class TeyssierScorer {
         this.bookmarkedOrders.put(key, new ArrayList<>(this.pi));
         this.bookmarkedScores.put(key, new ArrayList<>(this.scores));
         this.bookmarkedOrderHashes.put(key, new HashMap<>(this.orderHash));
+        this.bookmarkedRunningScores.put(key, runningScore);
     }
 
     /**
@@ -472,6 +474,7 @@ public class TeyssierScorer {
         this.pi = this.bookmarkedOrders.remove(key);
         this.scores = this.bookmarkedScores.remove(key);
         this.orderHash = this.bookmarkedOrderHashes.remove(key);
+        this.runningScore = this.bookmarkedRunningScores.remove(key);
     }
 
     /**
@@ -488,6 +491,7 @@ public class TeyssierScorer {
         this.bookmarkedOrders.clear();
         this.bookmarkedScores.clear();
         this.bookmarkedOrderHashes.clear();
+        this.bookmarkedRunningScores.clear();
     }
 
     /**
@@ -648,6 +652,11 @@ public class TeyssierScorer {
     private void recalculate(int p) {
         if (this.prefixes.get(p) == null || !this.prefixes.get(p).containsAll(getPrefix(p))) {
             Pair p2 = getParentsInternal(p);
+            if (scores.get(p) == null) {
+                this.runningScore += p2.score;
+            } else {
+                this.runningScore += p2.score - scores.get(p).score;
+            }
             this.scores.set(p, p2);
         }
     }
@@ -660,12 +669,18 @@ public class TeyssierScorer {
 
     private boolean lastMoveSame(int i1, int i2) {
         if (i1 <= i2) {
+            Set<Node> prefix0 = getPrefix(i1);
+
             for (int i = i1; i <= i2; i++) {
-                if (!getPrefix(i).equals(this.prefixes.get(i))) return false;
+                prefix0.add(get(i));
+                if (!prefix0.equals(this.prefixes.get(i))) return false;
             }
         } else {
+            Set<Node> prefix0 = getPrefix(i1);
+
             for (int i = i2; i <= i1; i++) {
-                if (!getPrefix(i).equals(this.prefixes.get(i))) return false;
+                prefix0.add(get(i));
+                if (!prefix0.equals(this.prefixes.get(i))) return false;
             }
         }
 
@@ -866,6 +881,10 @@ public class TeyssierScorer {
             goToBookmark(-55);
         }
 
+    }
+
+    public boolean parent(Node k, Node j) {
+        return getParents(j).contains(k);
     }
 
     private static class Pair {

@@ -145,12 +145,12 @@ public class BossTuck {
 //                            i = scorer.size();
 //                            j = -1;
 
-                            if (verbose) {
+//                            if (verbose) {
                                 System.out.print("\r# Edges = " + scorer.getNumEdges()
                                         + " Score = " + scorer.score()
                                         + " (betterMutation)"
-                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
-                            }
+                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+//                            }
                         }
 
                         scorer.bookmark();

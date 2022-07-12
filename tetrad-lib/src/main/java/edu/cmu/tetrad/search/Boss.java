@@ -17,6 +17,7 @@ import java.util.concurrent.RecursiveTask;
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Math.min;
+import static java.util.Collections.reverse;
 import static java.util.Collections.shuffle;
 
 
@@ -109,7 +110,6 @@ public class Boss {
                 this.graph = scorer.getGraph(true);
                 bes();
                 s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
-
             } while (s2 > s1);
 
             if (this.scorer.score() > best) {
@@ -136,16 +136,21 @@ public class Boss {
         double sp = scorer.score();
         scorer.bookmark();
 
+        DO:
         do {
             s = sp;
 
-            for (Node k : scorer.getPi()) {
+
+            List<Node> pi = scorer.getPi();
+//            reverse(pi);
+
+            for (Node k : pi) {
                 sp = NEGATIVE_INFINITY;
                 int _k = scorer.index(k);
-                scorer.bookmark();
+                scorer.bookmark(1);
 
                 for (int j = 0; j < scorer.size(); j++) {
-//                    if (!scorer.adjacent(k, scorer.get(j))) continue;
+//                    if (!scorer.adjacent(scorer.get(j), k)) continue;
                     scorer.moveTo(k, j);
 
                     if (scorer.score() >= sp) {
@@ -166,7 +171,7 @@ public class Boss {
             }
         } while (sp > s);
 
-        scorer.goToBookmark();
+        scorer.goToBookmark(1);
 
         System.out.println();
 
