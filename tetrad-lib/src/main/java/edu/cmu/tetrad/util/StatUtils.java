@@ -1685,7 +1685,7 @@ public final class StatUtils {
      *
      * @return the given partial covariance.
      */
-    public static double partialCovariance(Matrix submatrix) {
+    public static double partialCovarianceWhittaker(Matrix submatrix) {
 
         // Using the method in Whittacker.
         // cov(X, Y | Z) = cov(X, Y) - cov(X, Z) inverse(cov(Z, Z)) cov(Z, Y)
@@ -1711,7 +1711,7 @@ public final class StatUtils {
      * @return the partial covariance(x, y | z) where these represent the column/row indices
      * of the desired variables in <code>covariance</code>
      */
-    public static double partialCovariance(Matrix covariance, int x, int y, int... z) {
+    public static double partialCovarianceWhittaker(Matrix covariance, int x, int y, int... z) {
 //        submatrix = TetradAlgebra.in                                                                                                                                 verse(submatrix);
 //        return -1.0 * submatrix.get(0, 1);
 
@@ -1725,11 +1725,11 @@ public final class StatUtils {
         selection[1] = y;
         System.arraycopy(z, 0, selection, 2, z.length);
 
-        return StatUtils.partialCovariance(covariance.getSelection(selection, selection));
+        return StatUtils.partialCovarianceWhittaker(covariance.getSelection(selection, selection));
     }
 
     public static double partialVariance(Matrix covariance, int x, int... z) {
-        return StatUtils.partialCovariance(covariance, x, x, z);
+        return StatUtils.partialCovarianceWhittaker(covariance, x, x, z);
     }
 
     public static double partialStandardDeviation(Matrix covariance, int x, int... z) {
@@ -1745,15 +1745,15 @@ public final class StatUtils {
      *
      * @return the given partial correlation.
      */
-    public static synchronized double partialCorrelation(Matrix submatrix) {
-        try {
-            return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
-        } catch (SingularMatrixException e) {
-            return NaN;
-        }
+    public static synchronized double partialCorrelation(Matrix submatrix) throws SingularMatrixException {
+//        try {
+        return StatUtils.partialCorrelationPrecisionMatrix(submatrix);
+//        } catch (SingularMatrixException e) {
+//            return NaN;
+//        }
     }
 
-    public static double partialCorrelationPrecisionMatrix(Matrix submatrix) {
+    public static double partialCorrelationPrecisionMatrix(Matrix submatrix) throws SingularMatrixException {
         Matrix inverse = submatrix.inverse();
         return (-inverse.get(0, 1)) / sqrt(inverse.get(0, 0) * inverse.get(1, 1));
     }

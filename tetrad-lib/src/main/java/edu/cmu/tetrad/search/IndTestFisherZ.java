@@ -210,7 +210,14 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
-        double p = getPValue(x, y, z);
+        double p = 0.0;
+        try {
+            p = getPValue(x, y, z);
+        } catch (SingularMatrixException e) {
+            e.printStackTrace();
+            return new IndependenceResult(new IndependenceFact(x, y, z),
+                    false, p);
+        }
 
         boolean independent = p > this.alpha;
 
@@ -237,7 +244,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         return this.p;
     }
 
-    public double getPValue(Node x, Node y, List<Node> z) {
+    public double getPValue(Node x, Node y, List<Node> z) throws SingularMatrixException {
         double r;
         int n;
 
@@ -280,9 +287,9 @@ public final class IndTestFisherZ implements IndependenceTest {
             cor = MatrixUtils.convertCovToCorr(cov);
         }
 
-        if (z.isEmpty()) return cor.get(0, 1);
+//        if (z.isEmpty()) return cor.get(0, 1);
 
-        return StatUtils.partialCorrelation(cor);
+        return StatUtils.partialCorrelationPrecisionMatrix(cor);
     }
 
     private Matrix getCov(List<Integer> rows, int[] cols) {
@@ -316,13 +323,13 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     private double getR(Node x, Node y, List<Node> z, List<Integer> rows) {
-        try {
-            return partialCorrelation(x, y, z, rows);
-        } catch (SingularMatrixException e) {
-            e.printStackTrace();
-            System.out.println(SearchLogUtils.determinismDetected(z, x));
-            return Double.NaN;
-        }
+//        try {
+        return partialCorrelation(x, y, z, rows);
+//        } catch (SingularMatrixException e) {
+//            e.printStackTrace();
+//            System.out.println(SearchLogUtils.determinismDetected(z, x));
+//            return Double.NaN;
+//        }
     }
 
 
