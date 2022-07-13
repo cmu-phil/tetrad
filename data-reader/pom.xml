@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.github.cmu-phil</groupId>
         <artifactId>tetrad</artifactId>
-        <version>7.1.2-2</version>
+        <version>7.1.3-SNAPSHOT</version>
     </parent>
 <!--    <groupId>io.github.cmu-phil</groupId>-->
     <artifactId>data-reader</artifactId>
