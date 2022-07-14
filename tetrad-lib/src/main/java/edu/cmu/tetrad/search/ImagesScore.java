@@ -26,6 +26,8 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
 
+import static java.lang.Math.log;
+
 /**
  * Implements a score to average results over multiple scores.
  *
@@ -69,6 +71,8 @@ public class ImagesScore implements Score {
         for (Score score : this.scores) {
             sum += score.localScoreDiff(x, y, z);
         }
+
+        sum -= (this.scores.size() - 1) * log(scores.get(0).getSampleSize());
 
         return sum / this.scores.size();
     }
@@ -155,7 +159,7 @@ public class ImagesScore implements Score {
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > -0.25 * getPenaltyDiscount() * Math.log(this.sampleSize);
+        return bump > -0.25 * getPenaltyDiscount() * log(this.sampleSize);
     }
 
     public DataSet getDataSet() {

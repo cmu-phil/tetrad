@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -11,9 +12,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.ImagesScore;
-import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -52,6 +51,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
         this.knowledge = dataSets.get(0).getKnowledge();
+        int meta = parameters.getInt(Params.IMAGES_META_ALG);
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             List<DataModel> _dataSets = new ArrayList<>();
@@ -77,10 +77,38 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
             }
 
             ImagesScore score = new ImagesScore(scores);
-            edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-            search.setKnowledge(this.knowledge);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+
+            if (meta == 1) {
+                edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
+                search.setKnowledge(this.knowledge);
+                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+                return search.search();
+            } else if (meta == 2) {
+                Grasp search = new edu.cmu.tetrad.search.Grasp(score);
+                search.setKnowledge(this.knowledge);
+                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+                search.bestOrder(score.getVariables());
+                return search.getGraph(true);
+            } else if (meta == 3) {
+                BossTuck search = new edu.cmu.tetrad.search.BossTuck(score);
+                search.setKnowledge(this.knowledge);
+                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+                search.bestOrder(score.getVariables());
+                return search.getGraph();
+            } else if (meta == 4) {
+                Boss search = new edu.cmu.tetrad.search.Boss(score);
+                search.setKnowledge(this.knowledge);
+                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+                search.bestOrder(score.getVariables());
+                return search.getGraph();
+            } else if (meta == 5) {
+                Bridges search = new edu.cmu.tetrad.search.Bridges(score);
+                search.setKnowledge(this.knowledge);
+                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+                return search.search();
+            } else {
+                throw new IllegalArgumentException("Unrecognized meta option: " + meta);
+            }
         } else {
             Images imagesSemBic = new Images();
 
@@ -161,6 +189,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
         parameters.addAll((new Fges()).getParameters());
         parameters.add(Params.RANDOM_SELECTION_SIZE);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.IMAGES_META_ALG);
 
         parameters.add(Params.VERBOSE);
 

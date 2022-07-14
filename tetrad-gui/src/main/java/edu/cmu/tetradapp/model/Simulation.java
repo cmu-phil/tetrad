@@ -32,10 +32,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Wraps a Simulation object for the Tetrad interface. A Simulation object
@@ -327,10 +324,11 @@ public class Simulation extends DataWrapper implements
 
     @Override
     public Graph getGraph() {
-        if (getGraphs().size() == 1) {
-            return getGraphs().get(0);
+        Set<Graph> graphs = new HashSet<>(getGraphs());
+        if (graphs.size() == 1) {
+            return graphs.iterator().next();
+        } else {
+            throw new IllegalArgumentException("Expecting one graph.");
         }
-
-        throw new IllegalArgumentException("Expecting one graph.");
     }
 }

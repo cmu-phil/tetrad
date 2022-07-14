@@ -136,21 +136,15 @@ public class Boss {
         double sp = scorer.score();
         scorer.bookmark();
 
-        DO:
         do {
             s = sp;
 
-
-            List<Node> pi = scorer.getPi();
-//            reverse(pi);
-
-            for (Node k : pi) {
+            for (Node k : scorer.getPi()) {
                 sp = NEGATIVE_INFINITY;
                 int _k = scorer.index(k);
                 scorer.bookmark(1);
 
                 for (int j = 0; j < scorer.size(); j++) {
-//                    if (!scorer.adjacent(scorer.get(j), k)) continue;
                     scorer.moveTo(k, j);
 
                     if (scorer.score() >= sp) {
@@ -236,7 +230,9 @@ public class Boss {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        this.test.setVerbose(verbose);
+        if (this.test != null) {
+            this.test.setVerbose(verbose);
+        }
     }
 
     public void setKnowledge(IKnowledge knowledge) {

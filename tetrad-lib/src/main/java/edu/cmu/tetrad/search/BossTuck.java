@@ -296,7 +296,9 @@ public class BossTuck {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        this.test.setVerbose(verbose);
+        if (this.test != null) {
+            this.test.setVerbose(verbose);
+        }
     }
 
     public void setKnowledge(IKnowledge knowledge) {
