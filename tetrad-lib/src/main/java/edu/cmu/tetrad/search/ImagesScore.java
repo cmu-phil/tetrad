@@ -72,9 +72,7 @@ public class ImagesScore implements Score {
             sum += score.localScoreDiff(x, y, z);
         }
 
-        sum -= (this.scores.size() - 1) * log(scores.get(0).getSampleSize());
-
-        return sum / this.scores.size();
+        return sum;
     }
 
     @Override

@@ -124,7 +124,7 @@ public class BossTuck {
         return bestPerm;
     }
 
-    public void betterMutation(@NotNull TeyssierScorer scorer) {
+    public void betterMutation(@NotNull TeyssierSco
         double s;
         double sp = scorer.score();
         scorer.bookmark();

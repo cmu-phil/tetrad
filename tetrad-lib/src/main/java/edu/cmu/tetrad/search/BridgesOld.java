@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,10 +24,12 @@ public class BridgesOld {
     private final Fges ges;
 
     private final MeekRules meeks;
+    private IKnowledge knowledge;
 
     public BridgesOld(@NotNull Score score) {
         this.variables = new ArrayList<>(score.getVariables());
         this.ges = new Fges(score);
+        this.ges.setKnowledge(knowledge);
         this.meeks = new MeekRules();
     }
 
@@ -127,4 +130,7 @@ public class BridgesOld {
         ges.setOut(out);
     }
 
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
+    }
 }

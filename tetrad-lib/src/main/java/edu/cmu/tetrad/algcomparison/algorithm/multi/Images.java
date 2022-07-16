@@ -83,30 +83,38 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                 search.setKnowledge(this.knowledge);
                 search.setVerbose(parameters.getBoolean(Params.VERBOSE));
                 return search.search();
-            } else if (meta == 2) {
-                Grasp search = new edu.cmu.tetrad.search.Grasp(score);
-                search.setKnowledge(this.knowledge);
-                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-                search.bestOrder(score.getVariables());
-                return search.getGraph(true);
-            } else if (meta == 3) {
+            }
+//            else if (meta == 2) {
+//                Grasp search = new edu.cmu.tetrad.search.Grasp(score);
+//                search.setKnowledge(this.knowledge);
+//                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+//                search.bestOrder(score.getVariables());
+//                search.setDepth(6);
+//                search.setSingularDepth(1);
+//                search.setNonSingularDepth(1);
+//                return search.getGraph(true);
+//            }
+            else if (meta == 2) {
                 BossTuck search = new edu.cmu.tetrad.search.BossTuck(score);
                 search.setKnowledge(this.knowledge);
                 search.setVerbose(parameters.getBoolean(Params.VERBOSE));
                 search.bestOrder(score.getVariables());
                 return search.getGraph();
-            } else if (meta == 4) {
-                Boss search = new edu.cmu.tetrad.search.Boss(score);
-                search.setKnowledge(this.knowledge);
-                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-                search.bestOrder(score.getVariables());
-                return search.getGraph();
-            } else if (meta == 5) {
-                Bridges search = new edu.cmu.tetrad.search.Bridges(score);
+            }
+//            else if (meta == 4) {
+//                Boss search = new edu.cmu.tetrad.search.Boss(score);
+//                search.setKnowledge(this.knowledge);
+//                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+//                search.bestOrder(score.getVariables());
+//                return search.getGraph();
+//            }
+            else if (meta == 5) {
+                BridgesOld search = new edu.cmu.tetrad.search.BridgesOld(score);
                 search.setKnowledge(this.knowledge);
                 search.setVerbose(parameters.getBoolean(Params.VERBOSE));
                 return search.search();
-            } else {
+            }
+            else {
                 throw new IllegalArgumentException("Unrecognized meta option: " + meta);
             }
         } else {
