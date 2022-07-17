@@ -17,7 +17,6 @@ import java.util.concurrent.RecursiveTask;
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Math.min;
-import static java.util.Collections.reverse;
 import static java.util.Collections.shuffle;
 
 
@@ -69,7 +68,7 @@ public class Boss {
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseVermaPearl(this.usePearl);
+        this.scorer.setUseRaskuttiUhler(this.usePearl);
 
         if (this.usePearl) {
             this.scorer.setUseScore(false);

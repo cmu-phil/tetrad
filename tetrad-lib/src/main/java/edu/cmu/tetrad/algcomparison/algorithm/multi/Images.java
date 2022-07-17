@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -99,7 +98,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                 search.setKnowledge(this.knowledge);
                 search.setVerbose(parameters.getBoolean(Params.VERBOSE));
                 search.bestOrder(score.getVariables());
-                return search.getGraph();
+                return search.getGraph(true);
             }
 //            else if (meta == 4) {
 //                Boss search = new edu.cmu.tetrad.search.Boss(score);

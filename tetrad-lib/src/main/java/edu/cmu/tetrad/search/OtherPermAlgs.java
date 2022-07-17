@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import cern.colt.Arrays;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
@@ -72,7 +71,7 @@ public class OtherPermAlgs {
             scorer.setUseScore(true);
         } else {
             scorer = new TeyssierScorer(test, score);
-            scorer.setUseVermaPearl(usePearl);
+            scorer.setUseRaskuttiUhler(usePearl);
             scorer.score(variables);
 
             if (usePearl) {

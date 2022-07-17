@@ -2517,7 +2517,7 @@ public final class TestGrasp {
 
                         TeyssierScorer scorer1 = new TeyssierScorer(dsep,
                                 new GraphScore(graph));
-                        scorer1.setUseVermaPearl(true);
+                        scorer1.setUseRaskuttiUhler(true);
                         scorer1.score(_perm0);
                         Graph g1 = scorer1.getGraph(true);
 
@@ -2525,7 +2525,7 @@ public final class TestGrasp {
                         List<Node> _perm = GraphUtils.asList(perm, test.getVariables());
 
                         TeyssierScorer scorer2 = new TeyssierScorer(test, score);
-                        scorer2.setUseVermaPearl(true);
+                        scorer2.setUseRaskuttiUhler(true);
                         scorer2.score(_perm);
 
                         Graph g2 = scorer2.getGraph(true);
@@ -2540,7 +2540,7 @@ public final class TestGrasp {
                             test = new IndTestFisherZ(dataSet, alpha[i]);
 
                             TeyssierScorer scorer3 = new TeyssierScorer(test, score);
-                            scorer3.setUseVermaPearl(true);
+                            scorer3.setUseRaskuttiUhler(true);
                             scorer3.score(_perm);
                             Graph g3 = scorer3.getGraph(true);
 

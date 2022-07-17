@@ -66,7 +66,7 @@ public class Boss2 {
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseVermaPearl(this.usePearl);
+        this.scorer.setUseRaskuttiUhler(this.usePearl);
 
         if (this.usePearl) {
             this.scorer.setUseScore(false);
