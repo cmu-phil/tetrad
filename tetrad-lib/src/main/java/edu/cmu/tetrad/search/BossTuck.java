@@ -124,7 +124,7 @@ public class BossTuck {
         return bestPerm;
     }
 
-    public void betterMutation(@NotNull TeyssierSco
+    public void betterMutation(@NotNull TeyssierScorer scorer) {
         double s;
         double sp = scorer.score();
         scorer.bookmark();
@@ -136,6 +136,7 @@ public class BossTuck {
                 scorer.bookmark(1);
 
                 Node x = scorer.get(i);
+
                 for (int j = i - 1; j >= 0; j--) {
                     if (tuck(x, j, scorer)) {
                         if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
@@ -167,7 +168,7 @@ public class BossTuck {
 
     private boolean tuck(Node k, int j, TeyssierScorer scorer) {
         if (!scorer.adjacent(k, scorer.get(j))) return false;
-        if (scorer.coveredEdge(k, scorer.get(j))) return false;
+//        if (scorer.coveredEdge(k, scorer.get(j))) return false;
         if (j >= scorer.index(k)) return false;
 
         Set<Node> ancestors = scorer.getAncestors(k);
