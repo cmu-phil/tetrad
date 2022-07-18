@@ -73,23 +73,21 @@ public class BossTuck {
 
         this.scorer.setKnowledge(this.knowledge);
         this.scorer.clearBookmarks();
-
         this.scorer.setCachingScores(this.cachingScores);
-
         this.start = System.currentTimeMillis();
 
         Fges fges = new Fges(score);
         fges.setKnowledge(knowledge);
         Graph g = fges.search();
-        pi = GraphUtils.getCausalOrdering(g, pi);
+        List<Node> pi1;
+        List<Node> pi2 = GraphUtils.getCausalOrdering(g, pi);
 
-        while (true) {
-            scorer.score(pi);
+        do {
+            scorer.score(pi2);
             betterMutation(scorer);
-            List<Node> pi2 = besOrder(scorer);
-            if (pi2.equals(pi)) break;
-            pi = pi2;
-        }
+            pi1 = scorer.getPi();
+            pi2 = besOrder(scorer);
+        } while (!pi1.equals(pi2));
 
         long stop = System.currentTimeMillis();
 
@@ -129,8 +127,8 @@ public class BossTuck {
             _found = false;
 
             for (Node node : initialOrder) {
-                HashSet<Node> nodes = new HashSet<>(found);
-                if (!nodes.contains(node) && nodes.containsAll(graph.getParents(node))) {
+                HashSet<Node> __found = new HashSet<>(found);
+                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
                     found.add(node);
                     _found = true;
                 }
@@ -189,7 +187,7 @@ public class BossTuck {
             pi2 = scorer.getPi();
 
             System.out.println(" begin " + begin(pi, pi2) + " end = " + end(pi, pi2));
-        } while (end(pi, pi2) <= scorer.size());
+        } while (!pi.equals(pi2));
 
         scorer.goToBookmark(1);
 
