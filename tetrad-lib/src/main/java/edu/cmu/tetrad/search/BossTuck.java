@@ -157,37 +157,42 @@ public class BossTuck {
 
         List<Node> pi, pi2;
 
-        do {
-            pi = scorer.getPi();
+//        do {
+        pi = scorer.getPi();
 
-            for (int i = 0; i < scorer.size(); i++) {
-                scorer.bookmark(1);
-                Node x = scorer.get(i);
+        for (int i = 0; i < scorer.size(); i++) {
+            scorer.bookmark(1);
+            Node x = scorer.get(i);
 
-                for (int j = i - 1; j >= 0; j--) {
-                    if (tuck(x, j, scorer)) {
-                        if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
-                            scorer.goToBookmark();
-                        } else {
-                            sp = scorer.score();
-//                            i = scorer.size();
-//                            j = -1;
+            for (int j = i - 1; j >= 0; j--) {
+                if (tuck(x, j, scorer)) {
+                    if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
+                        scorer.goToBookmark();
+                    } else {
+                        sp = scorer.score();
 
-                            System.out.print("\r# Edges = " + scorer.getNumEdges()
-                                    + " Score = " + scorer.score()
-                                    + " (betterMutation)"
-                                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-                        }
-
-                        scorer.bookmark();
+                        System.out.print("\r# Edges = " + scorer.getNumEdges()
+                                + " Score = " + scorer.score()
+                                + " (betterMutation)"
+                                + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                     }
+
+                    scorer.bookmark();
                 }
             }
+        }
 
-            pi2 = scorer.getPi();
+        Fges fges = new Fges(score);
+        fges.setKnowledge(knowledge);
+        fges.setExternalGraph(scorer.getGraph(true));
+        Graph g = fges.search();
+        pi2 = GraphUtils.getCausalOrdering(g, pi);
+//            pi2 = scorer.getPi();
 
-            System.out.println(" begin " + begin(pi, pi2) + " end = " + end(pi, pi2));
-        } while (!pi.equals(pi2));
+        System.out.println(" begin " + begin(pi, pi2) + " end = " + end(pi, pi2));
+
+//            break;
+//        } while (!pi.equals(pi2));
 
         scorer.goToBookmark(1);
 
@@ -196,7 +201,7 @@ public class BossTuck {
 
     private boolean tuck(Node k, int j, TeyssierScorer scorer) {
         if (!scorer.adjacent(k, scorer.get(j))) return false;
-//        if (scorer.coveredEdge(k, scorer.get(j))) return false;
+        if (scorer.coveredEdge(k, scorer.get(j))) return false;
         if (j >= scorer.index(k)) return false;
 
         Set<Node> ancestors = scorer.getAncestors(k);

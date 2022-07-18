@@ -50,6 +50,7 @@ import org.apache.commons.collections4.OrderedMap;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -804,6 +805,10 @@ public final class TestGrasp {
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testCompareGrasp1Grasp2",
                 simulations, algorithms, statistics, params);
+    }
+
+    @Test
+    public void name() {
     }
 
     //    @Test
