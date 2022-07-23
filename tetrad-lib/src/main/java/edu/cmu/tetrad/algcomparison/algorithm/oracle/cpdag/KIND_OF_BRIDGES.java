@@ -65,7 +65,7 @@ public class KIND_OF_BRIDGES implements Algorithm, UsesScoreWrapper, TakesIndepe
             IndependenceTest test = this.test.getTest(dataModel, parameters);
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            KindOfBridges alg = new KindOfBridges(test, score);
+            KindOfBridges alg = new KindOfBridges(score);
 
             alg.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             alg.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
@@ -75,7 +75,7 @@ public class KIND_OF_BRIDGES implements Algorithm, UsesScoreWrapper, TakesIndepe
 
             alg.setKnowledge(this.knowledge);
             alg.bestOrder(score.getVariables());
-            return alg.getGraph(true);
+            return alg.getGraph();
         } else {
             KIND_OF_BRIDGES algorithm = new KIND_OF_BRIDGES(this.score, this.test);
 
@@ -97,7 +97,7 @@ public class KIND_OF_BRIDGES implements Algorithm, UsesScoreWrapper, TakesIndepe
 
     @Override
     public String getDescription() {
-        return "KIND_OF_BRIDGES (Better Order Score Search) using " + this.test.getDescription()
+        return "KING_OF_BRIDGES (Better Order Score Search) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 

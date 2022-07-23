@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.Grasp;
 import org.jetbrains.annotations.NotNull;
@@ -95,10 +96,11 @@ public class TestAnneAnalysis3 {
                         edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(cov);
                         score.setPenaltyDiscount(penalty);
 
-                        Grasp alg = new Grasp(score);
+//                        Grasp alg = new Grasp(score);
+                        Boss alg = new Boss(score);
 
                         List<Node> nodes = alg.bestOrder(score.getVariables());
-                        Graph estCpdag = alg.getGraph(true);
+                        Graph estCpdag = alg.getGraph();
 
                         for (int j = 0; j < vars.size(); j++) {
                             for (int i = 0; i < vars.size(); i++) {

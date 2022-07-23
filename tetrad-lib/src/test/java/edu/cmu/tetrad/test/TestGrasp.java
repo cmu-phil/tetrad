@@ -647,9 +647,9 @@ public final class TestGrasp {
     //    @Test
     public void testGrasp1Bryan() {
         Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 100);
+        params.set(Params.NUM_MEASURES, 20);
         params.set(Params.AVG_DEGREE, 10);
-        params.set(Params.SAMPLE_SIZE, 1000);
+        params.set(Params.SAMPLE_SIZE, 6000);
         params.set(Params.NUM_RUNS, 1);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
@@ -814,13 +814,13 @@ public final class TestGrasp {
     //    @Test
     public void testGrasp2() {
         Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 20);
+        params.set(Params.NUM_MEASURES, 50);
         params.set(Params.AVG_DEGREE, 10);
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 20);
+        params.set(Params.NUM_RUNS, 1);
         params.set(Params.COEF_LOW, 0);
-        params.set(Params.COEF_HIGH, 1);
-        params.set(Params.NUM_STARTS, 10);
+        params.set(Params.COEF_HIGH, .8);
+        params.set(Params.NUM_STARTS, 5);
         params.set(Params.ALPHA, 0.001);
         params.set(Params.VERBOSE, true);
         params.set(Params.PARALLELIZED, true);
@@ -835,8 +835,10 @@ public final class TestGrasp {
 //        params.set(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE, 10);
 
         Algorithms algorithms = new Algorithms();
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
-//                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(
+                new edu.cmu.tetrad.algcomparison.independence.FisherZ()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
+                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BRIDGES_OLD(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));

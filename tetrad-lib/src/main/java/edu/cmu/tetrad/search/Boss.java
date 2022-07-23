@@ -99,17 +99,24 @@ public class Boss {
 
             this.scorer.score(order);
             double s1, s2;
-            double last = scorer.score();
 
             do {
-                betterMutation(scorer);
                 s1 = scorer.score();
-                if (s1 == last) break;
-                last = s1;
+                betterMutation(scorer);
                 this.graph = scorer.getGraph(true);
-                bes();
+                bes(graph);
                 s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
             } while (s2 > s1);
+
+//            List<Node> pi2 = order;// causalOrder(scorer.getPi(), graph);
+//            List<Node> pi1;
+//
+//            do {
+//                scorer.score(pi2);
+//                betterMutation(scorer);
+//                pi1 = scorer.getPi();
+//                pi2 = besOrder(scorer);
+//            } while (!pi1.equals(pi2));
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -128,6 +135,31 @@ public class Boss {
         }
 
         return bestPerm;
+    }
+
+    public List<Node> besOrder(TeyssierScorer scorer) {
+        Graph graph = scorer.getGraph(true);
+        bes(graph);
+
+        return causalOrder(scorer.getPi(), graph);
+    }
+
+    private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
+        List<Node> found = new ArrayList<>();
+        boolean _found = true;
+
+        while (_found) {
+            _found = false;
+
+            for (Node node : initialOrder) {
+                HashSet<Node> __found = new HashSet<>(found);
+                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
+                    found.add(node);
+                    _found = true;
+                }
+            }
+        }
+        return found;
     }
 
     public void betterMutation(@NotNull TeyssierScorer scorer) {
@@ -280,10 +312,10 @@ public class Boss {
         }
     }
 
-    private void bes() {
+    private void bes(Graph graph) {
         buildIndexing(variables);
 
-        reevaluateBackward(new HashSet<>(variables));
+        reevaluateBackward(new HashSet<>(variables), graph);
 
         while (!sortedArrowsBack.isEmpty()) {
             Arrow arrow = sortedArrowsBack.first();
@@ -302,7 +334,7 @@ public class Boss {
                 continue;
             }
 
-            if (!getNaYX(x, y).equals(arrow.getNaYX())) {
+            if (!getNaYX(x, y, graph).equals(arrow.getNaYX())) {
                 continue;
             }
 
@@ -310,7 +342,7 @@ public class Boss {
                 continue;
             }
 
-            if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX())) {
+            if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX(), graph)) {
                 continue;
             }
 
@@ -320,19 +352,19 @@ public class Boss {
             double _bump = deleteEval(x, y, complement,
                     arrow.parents, hashIndices);
 
-            delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX());
+            delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX(), graph);
 
-            Set<Node> process = revertToCPDAG();
+            Set<Node> process = revertToCPDAG(graph);
             process.add(x);
             process.add(y);
             process.addAll(graph.getAdjacentNodes(x));
             process.addAll(graph.getAdjacentNodes(y));
 
-            reevaluateBackward(new HashSet<>(process));
+            reevaluateBackward(new HashSet<>(process), graph);
         }
     }
 
-    private void delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX) {
+    private void delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX, Graph graph) {
         Edge oldxy = graph.getEdge(x, y);
 
         Set<Node> diff = new HashSet<>(naYX);
@@ -425,7 +457,7 @@ public class Boss {
         return knowledge;
     }
 
-    private Set<Node> revertToCPDAG() {
+    private Set<Node> revertToCPDAG(Graph graph) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
         rules.setAggressivelyPreventCycles(true);
@@ -434,7 +466,7 @@ public class Boss {
         return rules.orientImplied(graph);
     }
 
-    private boolean validDelete(Node x, Node y, Set<Node> H, Set<Node> naYX) {
+    private boolean validDelete(Node x, Node y, Set<Node> H, Set<Node> naYX, Graph graph) {
         boolean violatesKnowledge = false;
 
         if (existsKnowledge()) {
@@ -451,14 +483,14 @@ public class Boss {
 
         Set<Node> diff = new HashSet<>(naYX);
         diff.removeAll(H);
-        return isClique(diff) && !violatesKnowledge;
+        return isClique(diff, graph) && !violatesKnowledge;
     }
 
     private boolean existsKnowledge() {
         return !knowledge.isEmpty();
     }
 
-    private boolean isClique(Set<Node> nodes) {
+    private boolean isClique(Set<Node> nodes, Graph graph) {
         List<Node> _nodes = new ArrayList<>(nodes);
         for (int i = 0; i < _nodes.size(); i++) {
             for (int j = i + 1; j < _nodes.size(); j++) {
@@ -471,7 +503,7 @@ public class Boss {
         return true;
     }
 
-    private Set<Node> getNaYX(Node x, Node y) {
+    private Set<Node> getNaYX(Node x, Node y, Graph graph) {
         List<Node> adj = graph.getAdjacentNodes(y);
         Set<Node> nayx = new HashSet<>();
 
@@ -492,7 +524,7 @@ public class Boss {
         return nayx;
     }
 
-    private void reevaluateBackward(Set<Node> toProcess) {
+    private void reevaluateBackward(Set<Node> toProcess, Graph graph) {
         class BackwardTask extends RecursiveTask<Boolean> {
             private final Node r;
             private final List<Node> adj;
@@ -520,12 +552,12 @@ public class Boss {
 
                         if (e != null) {
                             if (e.pointsTowards(r)) {
-                                calculateArrowsBackward(w, r);
+                                calculateArrowsBackward(w, r, graph);
                             } else if (e.pointsTowards(w)) {
-                                calculateArrowsBackward(r, w);
+                                calculateArrowsBackward(r, w, graph);
                             } else {
-                                calculateArrowsBackward(w, r);
-                                calculateArrowsBackward(r, w);
+                                calculateArrowsBackward(w, r, graph);
+                                calculateArrowsBackward(r, w, graph);
                             }
                         }
                     }
@@ -558,14 +590,14 @@ public class Boss {
         return chunk;
     }
 
-    private void calculateArrowsBackward(Node a, Node b) {
+    private void calculateArrowsBackward(Node a, Node b, Graph graph) {
         if (existsKnowledge()) {
             if (!getKnowledge().noEdgeRequired(a.getName(), b.getName())) {
                 return;
             }
         }
 
-        Set<Node> naYX = getNaYX(a, b);
+        Set<Node> naYX = getNaYX(a, b, graph);
         Set<Node> parents = new HashSet<>(graph.getParents(b));
 
         List<Node> _naYX = new ArrayList<>(naYX);
@@ -596,6 +628,60 @@ public class Boss {
             Set<Node> _H = new HashSet<>(naYX);
             _H.removeAll(maxComplement);
             addArrowBackward(a, b, _H, naYX, parents, maxBump);
+        }
+    }
+
+    public void orientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(to, from, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(from, to, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
     }
 
@@ -723,54 +809,6 @@ public class Boss {
 
         public Set<Node> getParents() {
             return parents;
-        }
-    }
-
-    public void orientbk(IKnowledge bk, Graph graph, List<Node> variables) {
-        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-        }
-
-        for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(from, to, Endpoint.ARROW);
         }
     }
 }
