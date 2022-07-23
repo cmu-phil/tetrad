@@ -111,7 +111,7 @@ public class BOSSTuckOpt implements Algorithm, UsesScoreWrapper, TakesIndependen
         // Flags
         params.add(Params.GRASP_DEPTH);
 //        params.add(Params.GRASP_USE_SCORE);
-        params.add(Params.GRASP_USE_VERMA_PEARL);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.CACHE_SCORES);
         params.add(Params.VERBOSE);

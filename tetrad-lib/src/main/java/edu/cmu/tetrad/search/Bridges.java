@@ -185,6 +185,8 @@ public final class Bridges implements GraphSearch, GraphScorer {
 
     public Graph search() {
 
+        setVerbose(false);
+
         initializeEffectEdges(variables);
 
         if (adjacencies != null) {

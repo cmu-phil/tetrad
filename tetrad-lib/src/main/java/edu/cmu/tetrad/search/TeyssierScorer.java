@@ -447,10 +447,41 @@ public class TeyssierScorer {
      *            This bookmark will be stored until it is retrieved and then removed.
      */
     public void bookmark(int key) {
-        this.bookmarkedOrders.put(key, new ArrayList<>(this.pi));
-        this.bookmarkedScores.put(key, new ArrayList<>(this.scores));
-        this.bookmarkedOrderHashes.put(key, new HashMap<>(this.orderHash));
-        this.bookmarkedRunningScores.put(key, runningScore);
+        if (!bookmarkedOrders.containsKey(key)) {
+            this.bookmarkedOrders.put(key, new ArrayList<>(this.pi));
+            this.bookmarkedScores.put(key, new ArrayList<>(this.scores));
+            this.bookmarkedOrderHashes.put(key, new HashMap<>(this.orderHash));
+            this.bookmarkedRunningScores.put(key, runningScore);
+        } else {
+            List<Node> pi2 = this.bookmarkedOrders.get(key);
+            List<Pair> scores2 = this.bookmarkedScores.get(key);
+            Map<Node, Integer> hashes2 = this.bookmarkedOrderHashes.get(key);
+
+            int first = 0;
+            int last = size() - 1;
+
+            for (int i = 0; i < size(); i++) {
+                if (this.pi.get(i) != pi2.get(i)) {
+                    first = i;
+                    break;
+                }
+            }
+
+            for (int i = size() - 1; i >= 0; i--) {
+                if (this.pi.get(i) != pi2.get(i)) {
+                    last = i;
+                    break;
+                }
+            }
+
+            for (int i = first; i <= last; i++) {
+                pi2.set(i, pi.get(i));
+                scores2.set(i, scores.get(i));
+                hashes2.put(pi2.get(i), orderHash.get(pi2.get(i)));
+            }
+
+            this.bookmarkedRunningScores.put(key, runningScore);
+        }
     }
 
     /**
@@ -468,13 +499,54 @@ public class TeyssierScorer {
     public void goToBookmark(int key) {
         if (!this.bookmarkedOrders.containsKey(key)) {
 //            throw new IllegalArgumentException("That key was not bookmarked recently.");
+            bookmark(key);
             return;
         }
 
-        this.pi = this.bookmarkedOrders.remove(key);
-        this.scores = this.bookmarkedScores.remove(key);
-        this.orderHash = this.bookmarkedOrderHashes.remove(key);
-        this.runningScore = this.bookmarkedRunningScores.remove(key);
+        List<Node> pi2 = this.bookmarkedOrders.get(key);
+        List<Pair> scores2 = this.bookmarkedScores.get(key);
+        Map<Node, Integer> hashes2 = this.bookmarkedOrderHashes.get(key);
+        Float runningScore2 = this.bookmarkedRunningScores.get(key);
+
+        int first = size();
+        int last = -1;
+
+        for (int i = 0; i < size(); i++) {
+            if (this.pi.get(i) != pi2.get(i)) {
+                first = i;
+                break;
+            }
+        }
+
+        for (int i = size() - 1; i >= 0; i--) {
+            if (this.pi.get(i) != pi2.get(i)) {
+                last = i;
+                break;
+            }
+        }
+
+        for (int i = first; i <= last; i++) {
+            this.pi.set(i, pi2.get(i));
+            this.scores.set(i, scores2.get(i));
+            this.orderHash.put(pi.get(i), hashes2.get(pi.get(i)));
+        }
+
+        this.runningScore = runningScore2;
+
+        //        for (int i = 0; i < pi.size(); i++) {
+//            if (this.pi.get(i) != pi2.get(i)) {
+//                this.pi.set(i, pi2.get(i));
+//                this.scores.set(i, scores2.get(i));
+//                this.orderHash.put(pi.get(i), hashes2.get(pi.get(i)));
+//                this.runningScore = runningScore2;
+//            }
+//        }
+
+//        this.pi = this.bookmarkedOrders.remove(key);
+//        this.scores = this.bookmarkedScores.remove(key);
+//        this.orderHash = this.bookmarkedOrderHashes.remove(key);
+//        this.runningScore = this.bookmarkedRunningScores.remove(key);
+
     }
 
     /**

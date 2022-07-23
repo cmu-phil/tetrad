@@ -61,7 +61,7 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
             search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
+            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(search.getKnowledge());
 
@@ -108,7 +108,7 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
         params.add(Params.MAX_PATH_LENGTH);
 
         // Flags
-        params.add(Params.GRASP_USE_VERMA_PEARL);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.VERBOSE);
 

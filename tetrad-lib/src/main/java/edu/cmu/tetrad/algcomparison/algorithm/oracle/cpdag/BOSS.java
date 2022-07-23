@@ -69,7 +69,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
             boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             boss.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
+            boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
             boss.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
@@ -115,7 +115,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
         // Flags
         params.add(Params.GRASP_DEPTH);
         params.add(Params.GRASP_USE_SCORE);
-        params.add(Params.GRASP_USE_VERMA_PEARL);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.CACHE_SCORES);
         params.add(Params.VERBOSE);

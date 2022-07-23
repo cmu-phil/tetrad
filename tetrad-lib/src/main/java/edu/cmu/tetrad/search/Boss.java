@@ -130,7 +130,7 @@ public class Boss {
         return bestPerm;
     }
 
-    public double betterMutation(@NotNull TeyssierScorer scorer) {
+    public void betterMutation(@NotNull TeyssierScorer scorer) {
         double s;
         double sp = scorer.score();
         scorer.bookmark();
@@ -168,7 +168,7 @@ public class Boss {
 
         System.out.println();
 
-        return scorer.score();
+        scorer.score();
     }
 
     public int getNumEdges() {
@@ -203,12 +203,6 @@ public class Boss {
         meekRules.orientImplied(graph);
 
         return this.graph;
-//        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-//        Graph graph = this.scorer.getGraph(cpDag);
-//
-//        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-//        graph.addAttribute("score ", nf.format(this.scorer.score()));
-//        return graph;
     }
 
     public void setCacheScores(boolean cachingScores) {
@@ -754,9 +748,6 @@ public class Boss {
 
             // Orient to*-&gt;from
             graph.setEndpoint(to, from, Endpoint.ARROW);
-//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-//            this.changeFlag = true;
-//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
@@ -780,9 +771,6 @@ public class Boss {
 
             // Orient to*-&gt;from
             graph.setEndpoint(from, to, Endpoint.ARROW);
-//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-//            this.changeFlag = true;
-//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
     }
 }

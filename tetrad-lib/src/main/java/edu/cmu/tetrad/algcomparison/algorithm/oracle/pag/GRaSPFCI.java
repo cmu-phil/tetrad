@@ -79,7 +79,7 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setToleranceDepth(parameters.getInt(Params.GRASP_TOLERANCE_DEPTH));
             search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
+            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             search.setAllowRandomnessInsideAlgorithm(parameters.getBoolean(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -136,7 +136,7 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.GRASP_TOLERANCE_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
 //        params.add(Params.GRASP_USE_SCORE);
-        params.add(Params.GRASP_USE_VERMA_PEARL);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
         params.add(Params.TIME_LAG);

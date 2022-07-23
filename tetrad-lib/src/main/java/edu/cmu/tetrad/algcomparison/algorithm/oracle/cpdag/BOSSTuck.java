@@ -69,7 +69,7 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
             boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             boss.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
+            boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
             boss.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
@@ -77,7 +77,7 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             boss.setKnowledge(this.knowledge);
             boss.bestOrder(score.getVariables());
-            return boss.getGraph(true);
+            return boss.getGraph();
         } else {
             BOSSTuck algorithm = new BOSSTuck(this.score, this.test);
 
@@ -114,7 +114,7 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
         // Flags
         params.add(Params.GRASP_DEPTH);
-        params.add(Params.GRASP_USE_VERMA_PEARL);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.CACHE_SCORES);
         params.add(Params.VERBOSE);

@@ -15,7 +15,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.OtherPermAlgs;
 import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -64,7 +63,7 @@ public class SP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper
             OtherPermAlgs.Method method = OtherPermAlgs.Method.SP;
 
             otherPermAlgs.setMethod(method);
-            otherPermAlgs.setUsePearl(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
+            otherPermAlgs.setUsePearl(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             otherPermAlgs.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             otherPermAlgs.bestOrder(score.getVariables());
@@ -99,7 +98,7 @@ public class SP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper
     @Override
     public List<String> getParameters() {
         ArrayList<String> params = new ArrayList<>();
-        params.add(Params.GRASP_USE_VERMA_PEARL);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.VERBOSE);
         return params;
     }

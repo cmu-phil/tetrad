@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
+import static java.lang.Double.NEGATIVE_INFINITY;
 
 
 /**
@@ -17,7 +18,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
  * @author bryanandrews
  * @author josephramsey
  */
-public class Bridges3 {
+public class KindOfBridges {
     private final List<Node> variables;
     private final Score score;
     private final IndependenceTest test;
@@ -31,7 +32,7 @@ public class Bridges3 {
 
     private boolean verbose = true;
 
-    public Bridges3(@NotNull IndependenceTest test, Score score) {
+    public KindOfBridges(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
@@ -54,17 +55,19 @@ public class Bridges3 {
         this.scorer.setCachingScores(this.cachingScores);
         this.start = System.currentTimeMillis();
 
-        scorer.score(pi);
+//        scorer.score(pi);
 
+        Fges fges = new Fges(score);
+        fges.setKnowledge(knowledge);
+        fges.setVerbose(false);
+        Graph graph = fges.search();
+        List<Node> pi2 = causalOrder(pi, graph);
         List<Node> pi1;
-        List<Node> pi2 = fgesOrder(scorer);
 
         do {
             scorer.score(pi2);
-            oneMove(scorer);
-            betterMutation(scorer);
+            betterMutationBoss(scorer);
             pi1 = scorer.getPi();
-//            pi2 = besOrder(scorer);
             pi2 = fgesOrder(scorer);
         } while (!pi1.equals(pi2));
 
@@ -83,9 +86,9 @@ public class Bridges3 {
         fges.setKnowledge(knowledge);
         Graph graph = scorer.getGraph(true);
         fges.setExternalGraph(graph);
+        fges.setVerbose(false);
         graph = fges.search();
-        List<Node> pi2 = GraphUtils.getCausalOrdering(graph, scorer.getPi());
-        return causalOrder(pi2, graph);
+        return causalOrder(scorer.getPi(), graph);
     }
 
     @NotNull
@@ -115,12 +118,15 @@ public class Bridges3 {
 
         do {
             pi = scorer.getPi();
+            Graph cpdag = scorer.getGraph(true);
 
             for (int i = 0; i < scorer.size(); i++) {
                 scorer.bookmark(1);
                 Node x = scorer.get(i);
 
                 for (int j = i - 1; j >= 0; j--) {
+//                    if (!cpdag.isDirectedFromTo(scorer.get(j), x)) continue;
+                    if (!scorer.parent(scorer.get(j), x)) continue;
                     if (tuck(x, j, scorer)) {
                         if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
                             scorer.goToBookmark();
@@ -130,7 +136,6 @@ public class Bridges3 {
 
                             System.out.print("\r# Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                         }
-
                     }
                 }
             }
@@ -144,6 +149,47 @@ public class Bridges3 {
 
 
         System.out.println();
+    }
+
+    public void betterMutationBoss(@NotNull TeyssierScorer scorer) {
+        double s;
+        double sp = scorer.score();
+        scorer.bookmark();
+
+        do {
+            s = sp;
+
+            for (Node k : scorer.getPi()) {
+                sp = NEGATIVE_INFINITY;
+                int _k = scorer.index(k);
+                scorer.bookmark(1);
+
+                for (int j = 0; j < scorer.size(); j++) {
+                    scorer.moveTo(k, j);
+
+                    if (scorer.score() >= sp) {
+                        if (!violatesKnowledge(scorer.getPi())) {
+                            sp = scorer.score();
+                            _k = j;
+                        }
+                    }
+                }
+
+                System.out.print("\r# Edges = " + scorer.getNumEdges()
+                        + " Score = " + scorer.score()
+                        + " (betterMutation)"
+                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s")
+                );
+
+                scorer.moveTo(k, _k);
+            }
+        } while (sp > s);
+
+        scorer.goToBookmark(1);
+
+        System.out.println();
+
+        scorer.score();
     }
 
     private boolean tuck(Node k, int j, TeyssierScorer scorer) {

@@ -2,12 +2,15 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BridgesOld;
@@ -31,11 +34,14 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class BRIDGES_OLD implements Algorithm, UsesScoreWrapper {
+public class BRIDGES_OLD implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
 
     private ScoreWrapper score;
+
+    private IKnowledge knowledge = new Knowledge2();
+
 
     public BRIDGES_OLD() {}
 
@@ -50,6 +56,7 @@ public class BRIDGES_OLD implements Algorithm, UsesScoreWrapper {
         Graph graph;
 
         BridgesOld search = new BridgesOld(score);
+//        search.setKnowledge(knowledge);
         search.setVerbose(false);
 //        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
@@ -104,5 +111,16 @@ public class BRIDGES_OLD implements Algorithm, UsesScoreWrapper {
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
 
 }

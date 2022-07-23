@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
+import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Math.min;
 import static java.util.Collections.shuffle;
 
@@ -24,14 +25,14 @@ import static java.util.Collections.shuffle;
  */
 public class BossTuck {
     private final List<Node> variables;
-    private Score score;
+    private final Score score;
     private IndependenceTest test;
     private IKnowledge knowledge = new Knowledge2();
     private TeyssierScorer scorer;
     private long start;
     // flags
     private boolean useScore = true;
-    private boolean useRaskuttiUhler;
+    private boolean usePearl;
     private boolean cachingScores = true;
     private boolean useDataOrder = true;
 
@@ -47,25 +48,20 @@ public class BossTuck {
         this.useScore = true;
     }
 
-    public BossTuck(@NotNull IndependenceTest test) {
-        this.test = test;
-        this.variables = new ArrayList<>(test.getVariables());
-        this.useScore = false;
-    }
-
     public BossTuck(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
     }
 
-    public List<Node> bestOrder(@NotNull List<Node> pi) {
+    public List<Node> bestOrder(@NotNull List<Node> order) {
         long start = System.currentTimeMillis();
+        order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
+        this.scorer.setUseRaskuttiUhler(this.usePearl);
 
-        if (this.useRaskuttiUhler) {
+        if (this.usePearl) {
             this.scorer.setUseScore(false);
         } else {
             this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
@@ -73,126 +69,171 @@ public class BossTuck {
 
         this.scorer.setKnowledge(this.knowledge);
         this.scorer.clearBookmarks();
+
         this.scorer.setCachingScores(this.cachingScores);
-        this.start = System.currentTimeMillis();
 
-        Fges fges = new Fges(score);
-        fges.setKnowledge(knowledge);
-        Graph g = fges.search();
-        List<Node> pi1;
-        List<Node> pi2 = GraphUtils.getCausalOrdering(g, pi);
+        List<Node> bestPerm = null;
+        double best = NEGATIVE_INFINITY;
 
-        do {
-            scorer.score(pi2);
-            betterMutation(scorer);
-            pi1 = scorer.getPi();
-            pi2 = besOrder(scorer);
-        } while (!pi1.equals(pi2));
+        this.scorer.score(order);
+
+        for (int r = 0; r < this.numStarts; r++) {
+            if (Thread.interrupted()) break;
+
+            if ((r == 0 && !this.useDataOrder) || r > 0) {
+                shuffle(order);
+            }
+
+            this.start = System.currentTimeMillis();
+
+            makeValidKnowledgeOrder(order);
+
+            this.scorer.score(order);
+            double s1, s2;
+            double last = scorer.score();
+
+            do {
+                betterMutation(scorer);
+                s1 = scorer.score();
+                if (s1 == last) break;
+                last = s1;
+                this.graph = scorer.getGraph(true);
+                bes(this.graph);
+                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
+            } while (s2 > s1);
+
+            if (this.scorer.score() > best) {
+                best = this.scorer.score();
+                bestPerm = scorer.getPi();
+            }
+        }
+
+        this.scorer.score(bestPerm);
+        this.graph = scorer.getGraph(true);
 
         long stop = System.currentTimeMillis();
-
-        this.graph = g;
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
             TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
         }
 
-        return pi;
+        return bestPerm;
     }
 
-    private int begin(@NotNull List<Node> pi, List<Node> pi2) {
-        int begin = scorer.size();
+    public List<Node> bestOrder2(@NotNull List<Node> order) {
+        long start = System.currentTimeMillis();
+        order = new ArrayList<>(order);
 
-        for (int i = 0; i < pi.size(); i++) {
-            if (pi.get(i) != pi2.get(i)) {
-                begin = i;
-                break;
-            }
+        this.scorer = new TeyssierScorer(this.test, this.score);
+        this.scorer.setUseRaskuttiUhler(this.usePearl);
+
+        if (this.usePearl) {
+            this.scorer.setUseScore(false);
+        } else {
+            this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
         }
 
-        return begin;
-    }
+        this.scorer.setKnowledge(this.knowledge);
+        this.scorer.clearBookmarks();
 
-    public List<Node> besOrder(TeyssierScorer scorer) {
-        List<Node> initialOrder = scorer.getPi();
+        this.scorer.setCachingScores(this.cachingScores);
 
-        Graph graph = scorer.getGraph(true);
-        bes(graph);
+        List<Node> bestPerm = null;
+        double best = NEGATIVE_INFINITY;
 
-        List<Node> found = new ArrayList<>();
-        boolean _found = true;
+        this.scorer.score(order);
 
-        while (_found) {
-            _found = false;
+        for (int r = 0; r < this.numStarts; r++) {
+            if (Thread.interrupted()) break;
 
-            for (Node node : initialOrder) {
-                HashSet<Node> __found = new HashSet<>(found);
-                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-                    found.add(node);
-                    _found = true;
-                }
+            if ((r == 0 && !this.useDataOrder) || r > 0) {
+                shuffle(order);
             }
+
+            this.start = System.currentTimeMillis();
+
+            makeValidKnowledgeOrder(order);
+
+            List<Node> pi1;
+            List<Node> pi2 = scorer.getPi();
+
+            do {
+                scorer.score(pi2);
+                betterMutation(scorer);
+                pi1 = scorer.getPi();
+                pi2 = besOrder(scorer);
+            } while (!pi1.equals(pi2));
+
+            if (this.scorer.score() > best) {
+                best = this.scorer.score();
+                bestPerm = scorer.getPi();
+            }
+
+//            this.scorer.score(order);
+//            double s1, s2;
+//
+//            do {
+//                betterMutation(scorer);
+//                s1 = scorer.score();
+//                this.graph = scorer.getGraph(true);
+//                bes();
+//                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
+//            } while (s2 > s1);
+
+//            if (s2 > best) {
+//                best = this.scorer.score();
+//                bestPerm = scorer.getPi();
+//            }
         }
 
-        return found;
-    }
+        this.scorer.score(bestPerm);
 
-    private int end(@NotNull List<Node> pi, List<Node> pi2) {
-        int end = scorer.size();
+        long stop = System.currentTimeMillis();
 
-        for (int i = pi2.size() - 1; i >= 0; i--) {
-            if (pi.get(i) != pi2.get(i)) {
-                end = i;
-                break;
-            }
+        if (this.verbose) {
+            TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
         }
 
-        return end + 1;
+        return bestPerm;
     }
 
     public void betterMutation(@NotNull TeyssierScorer scorer) {
+        double s;
         double sp = scorer.score();
         scorer.bookmark();
 
-        List<Node> pi, pi2;
+        do {
+            s = sp;
 
-//        do {
-        pi = scorer.getPi();
+            for (int i = 1; i < scorer.size(); i++) {
+                scorer.bookmark(1);
 
-        for (int i = 0; i < scorer.size(); i++) {
-            scorer.bookmark(1);
-            Node x = scorer.get(i);
+                Node x = scorer.get(i);
+                for (int j = i - 1; j >= 0; j--) {
+                    if (tuck(x, j, scorer)) {
+                        if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
+                            scorer.goToBookmark();
+                        } else {
+                            sp = scorer.score();
+//                            i = scorer.size();
+//                            j = -1;
 
-            for (int j = i - 1; j >= 0; j--) {
-                if (tuck(x, j, scorer)) {
-                    if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
-                        scorer.goToBookmark();
-                    } else {
-                        sp = scorer.score();
+//                            if (verbose) {
+                            System.out.print("\r# Edges = " + scorer.getNumEdges()
+                                    + " Score = " + scorer.score()
+                                    + " (betterMutation)"
+                                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+//                            }
+                        }
 
-                        System.out.print("\r# Edges = " + scorer.getNumEdges()
-                                + " Score = " + scorer.score()
-                                + " (betterMutation)"
-                                + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        scorer.bookmark();
                     }
-
-                    scorer.bookmark();
                 }
             }
-        }
 
-        Fges fges = new Fges(score);
-        fges.setKnowledge(knowledge);
-        fges.setExternalGraph(scorer.getGraph(true));
-        Graph g = fges.search();
-        pi2 = GraphUtils.getCausalOrdering(g, pi);
-//            pi2 = scorer.getPi();
-
-        System.out.println(" begin " + begin(pi, pi2) + " end = " + end(pi, pi2));
-
-//            break;
-//        } while (!pi.equals(pi2));
+        } while (sp > s);
 
         scorer.goToBookmark(1);
 
@@ -212,6 +253,31 @@ public class BossTuck {
         }
 
         return true;
+    }
+
+    public List<Node> besOrder(TeyssierScorer scorer) {
+        Graph graph = scorer.getGraph(true);
+        bes(graph);
+
+        return causalOrder(scorer.getPi(), graph);
+    }
+
+    private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
+        List<Node> found = new ArrayList<>();
+        boolean _found = true;
+
+        while (_found) {
+            _found = false;
+
+            for (Node node : initialOrder) {
+                HashSet<Node> __found = new HashSet<>(found);
+                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
+                    found.add(node);
+                    _found = true;
+                }
+            }
+        }
+        return found;
     }
 
     public int getNumEdges() {
@@ -241,8 +307,8 @@ public class BossTuck {
     }
 
     @NotNull
-    public Graph getGraph(boolean cpdag) {
-        return scorer.getGraph(cpdag);
+    public Graph getGraph() {
+        return scorer.getGraph(true);
     }
 
     public void setCacheScores(boolean cachingScores) {
@@ -296,7 +362,7 @@ public class BossTuck {
     }
 
     public void setUseRaskuttiUhler(boolean usePearl) {
-        this.useRaskuttiUhler = usePearl;
+        this.usePearl = usePearl;
     }
 
     public void setUseDataOrder(boolean useDataOrder) {
@@ -305,7 +371,6 @@ public class BossTuck {
 
     private Graph graph;
     private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
-    private boolean meekVerbose = false;
     private ConcurrentMap<Node, Integer> hashIndices;
     private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
     private int arrowIndex = 0;
@@ -470,6 +535,7 @@ public class BossTuck {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
         rules.setAggressivelyPreventCycles(true);
+        boolean meekVerbose = false;
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);
     }
@@ -819,5 +885,4 @@ public class BossTuck {
             return parents;
         }
     }
-
 }

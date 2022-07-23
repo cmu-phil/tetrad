@@ -33,17 +33,17 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class BRIDGES3 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class KIND_OF_BRIDGES implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BRIDGES3() {
+    public KIND_OF_BRIDGES() {
         // Used in reflection; do not delete.
     }
 
-    public BRIDGES3(ScoreWrapper score, IndependenceWrapper test) {
+    public KIND_OF_BRIDGES(ScoreWrapper score, IndependenceWrapper test) {
         this.score = score;
         this.test = test;
     }
@@ -77,7 +77,7 @@ public class BRIDGES3 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             alg.bestOrder(score.getVariables());
             return alg.getGraph(true);
         } else {
-            BRIDGES3 algorithm = new BRIDGES3(this.score, this.test);
+            KIND_OF_BRIDGES algorithm = new KIND_OF_BRIDGES(this.score, this.test);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
