@@ -9,8 +9,10 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
+import static java.util.Collections.shuffle;
 
 /**
  * Implementation of the experimental BRIDGES algorithm
@@ -45,32 +47,25 @@ public class BridgesOld {
             if (Thread.interrupted()) break;
 
             flag = false;
-            Iterator<Edge> edges = g0.getEdges().iterator();
+            List<Edge> edges = new ArrayList<>(g0.getEdges());
+            shuffle(edges);
+            Iterator<Edge> edgeItr = edges.iterator();
 
-            while (!flag && edges.hasNext()) {
+            while (!flag && edgeItr.hasNext()) {
 
-                Edge edge = edges.next();
+                Edge edge = edgeItr.next();
                 if (edge.isDirected()) {
 
                     Graph g = new EdgeListGraph((EdgeListGraph) g0);
                     Node a = Edges.getDirectedEdgeHead(edge);
                     Node b = Edges.getDirectedEdgeTail(edge);
 
-                    // This code performs "pre-tuck" operation
-                    // that makes anterior nodes of the distal
-                    // node into parents of the proximal node
-
                     for (Node c : g.getAdjacentNodes(b)) {
-                        if (existsSemidirectedPath(c, a, g)) {
+                        if (c == a || existsSemidirectedPath(c, a, g)) {
                             g.removeEdge(g.getEdge(b, c));
                             g.addDirectedEdge(c, b);
                         }
                     }
-
-                    Edge reversed = edge.reverse();
-
-                    g.removeEdge(edge);
-                    g.addEdge(reversed);
 
                     meeks.orientImplied(g);
 
@@ -84,16 +79,59 @@ public class BridgesOld {
                         s0 = s1;
                         getOut().println(g0.getNumEdges());
                     }
-//                    else {
-//                        g0.removeEdge(reversed);
-//                        g0.addEdge(edge);
-//                    }
                 }
             }
         }
 
         return g0;
     }
+
+//    public Graph search() {
+//
+//        Graph g1 = ges.search();
+//        Graph g0 = g1;
+//        double s1 = ges.getModelScore();
+//        double s0 = s1 - 1;
+//
+//        while (s1 > s0) {
+//            if (Thread.interrupted()) break;
+//            g0 = new EdgeListGraph((EdgeListGraph) g1);
+//            s0 = s1;
+//
+//            Set<Edge> edges = g0.getEdges();
+//            getOut().println(edges.size());
+//
+//            for (Edge edge : edges) {
+//
+//                if (edge.isDirected()) {
+//
+//                    Graph g = new EdgeListGraph((EdgeListGraph) g0);
+//                    Node a = Edges.getDirectedEdgeHead(edge);
+//                    Node b = Edges.getDirectedEdgeTail(edge);
+//
+//                    for (Node c : g.getAdjacentNodes(b)) {
+//                        if (c == a || existsSemidirectedPath(c, a, g)) {
+//                            g.removeEdge(g.getEdge(b, c));
+//                            g.addDirectedEdge(c, b);
+//                        }
+//                    }
+//
+//                    meeks.orientImplied(g);
+//                    ges.setExternalGraph(g);
+//                    g = ges.search();
+//
+//                    double s = ges.getModelScore();
+//                    if (s > s1) {
+//                        g1 = g;
+//                        s1 = s;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return g0;
+//    }
+
 
     public List<Node> getVariables() {
         return this.variables;

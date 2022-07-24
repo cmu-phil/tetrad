@@ -131,13 +131,13 @@ public final class TestGrasp {
 
     }
 
-    //    @Test
+        @Test
     public void testGrasp1() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 200);
-        params.set(Params.AVG_DEGREE, 10);
+        params.set(Params.AVG_DEGREE, 6);
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 3);
+        params.set(Params.NUM_RUNS, 1);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.NUM_STARTS, 1);
@@ -158,10 +158,13 @@ public final class TestGrasp {
         params.set(Params.CACHE_SCORES, false);
 //        params.set(Params.GRASP_ALG, false);
 
+        params.set(Params.PARALLELIZED, true);
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+//        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+//        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new BRIDGES_OLD(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
