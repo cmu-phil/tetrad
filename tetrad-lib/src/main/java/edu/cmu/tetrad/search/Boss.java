@@ -45,6 +45,8 @@ public class Boss {
     private int depth = 4;
     private int numStarts = 1;
 
+    private AlgType algType = AlgType.BOSS;
+
     public Boss(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
@@ -97,26 +99,38 @@ public class Boss {
 
             makeValidKnowledgeOrder(order);
 
-            this.scorer.score(order);
-            double s1, s2;
-
-            do {
-                s1 = scorer.score();
-                betterMutation(scorer);
-                this.graph = scorer.getGraph(true);
-                bes(graph);
-                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
-            } while (s2 > s1);
-
-//            List<Node> pi2 = order;// causalOrder(scorer.getPi(), graph);
-//            List<Node> pi1;
+//            this.scorer.score(order);
+//            double s1, s2;
 //
 //            do {
-//                scorer.score(pi2);
+//                s1 = scorer.score();
 //                betterMutation(scorer);
-//                pi1 = scorer.getPi();
-//                pi2 = besOrder(scorer);
-//            } while (!pi1.equals(pi2));
+//                this.graph = scorer.getGraph(true);
+//                bes(graph);
+//                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
+//            } while (s2 > s1);
+
+            List<Node> pi2 = order;// causalOrder(scorer.getPi(), graph);
+            List<Node> pi1;
+
+            do {
+                scorer.score(pi2);
+
+                if (algType == AlgType.BOSS) {
+                    betterMutation(scorer);
+                } else {
+                    betterMutationTuck(scorer);
+                }
+
+                pi1 = scorer.getPi();
+
+                if (algType == AlgType.KING_OF_BRIDGES) {
+                    pi2 = fgesOrder(scorer);
+                } else {
+                    pi2 = besOrder(scorer);
+                }
+
+            } while (!pi1.equals(pi2));
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -137,10 +151,77 @@ public class Boss {
         return bestPerm;
     }
 
+    public void betterMutationTuck(@NotNull TeyssierScorer scorer) {
+        double s;
+        double sp = scorer.score();
+        scorer.bookmark();
+
+        do {
+            s = sp;
+
+            for (int i = 1; i < scorer.size(); i++) {
+                scorer.bookmark(1);
+
+                Node x = scorer.get(i);
+                for (int j = i - 1; j >= 0; j--) {
+                    if (tuck(x, j, scorer)) {
+                        if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
+                            scorer.goToBookmark();
+                        } else {
+                            sp = scorer.score();
+//                            i = scorer.size();
+//                            j = -1;
+
+//                            if (verbose) {
+                            System.out.print("\r# Edges = " + scorer.getNumEdges()
+                                    + " Score = " + scorer.score()
+                                    + " (betterMutation)"
+                                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+//                            }
+                        }
+
+                        scorer.bookmark();
+                    }
+                }
+            }
+
+        } while (sp > s);
+
+        scorer.goToBookmark(1);
+
+        System.out.println();
+    }
+
+    private boolean tuck(Node k, int j, TeyssierScorer scorer) {
+        if (!scorer.adjacent(k, scorer.get(j))) return false;
+        if (scorer.coveredEdge(k, scorer.get(j))) return false;
+        if (j >= scorer.index(k)) return false;
+
+        Set<Node> ancestors = scorer.getAncestors(k);
+        for (int i = j + 1; i <= scorer.index(k); i++) {
+            if (ancestors.contains(scorer.get(i))) {
+                scorer.moveTo(scorer.get(i), j++);
+            }
+        }
+
+        return true;
+    }
+
+
     public List<Node> besOrder(TeyssierScorer scorer) {
         Graph graph = scorer.getGraph(true);
         bes(graph);
 
+        return causalOrder(scorer.getPi(), graph);
+    }
+
+    public List<Node> fgesOrder(TeyssierScorer scorer) {
+        Fges fges = new Fges(score);
+        fges.setKnowledge(knowledge);
+        Graph graph = scorer.getGraph(true);
+        fges.setExternalGraph(graph);
+        fges.setVerbose(false);
+        graph = fges.search();
         return causalOrder(scorer.getPi(), graph);
     }
 
@@ -691,6 +772,10 @@ public class Boss {
         sortedArrowsBack.add(arrow);
     }
 
+    public void setAlgType(AlgType algType) {
+        this.algType = algType;
+    }
+
     private static class ArrowConfigBackward {
         private Set<Node> nayx;
         private Set<Node> parents;
@@ -811,4 +896,6 @@ public class Boss {
             return parents;
         }
     }
+
+    public enum AlgType{BOSS, BOSS_TUCK, KING_OF_BRIDGES}
 }

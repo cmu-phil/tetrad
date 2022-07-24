@@ -66,6 +66,8 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Boss boss = new Boss(test, score);
+            Boss alg = new Boss(score);
+            alg.setAlgType(Boss.AlgType.BOSS);
 
             boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             boss.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));

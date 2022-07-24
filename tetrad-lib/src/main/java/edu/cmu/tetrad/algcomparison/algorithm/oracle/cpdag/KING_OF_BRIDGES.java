@@ -27,23 +27,23 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS3",
-        command = "boss3",
+        name = "KING_OF_BRIDGES",
+        command = "king_of_bridges",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class BOSS3 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class KING_OF_BRIDGES implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BOSS3() {
+    public KING_OF_BRIDGES() {
         // Used in reflection; do not delete.
     }
 
-    public BOSS3(ScoreWrapper score, IndependenceWrapper test) {
+    public KING_OF_BRIDGES(ScoreWrapper score, IndependenceWrapper test) {
         this.score = score;
         this.test = test;
     }
@@ -65,21 +65,20 @@ public class BOSS3 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             IndependenceTest test = this.test.getTest(dataModel, parameters);
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            Boss3 boss = new Boss3(test, score);
+            Boss alg = new Boss(score);
+            alg.setAlgType(Boss.AlgType.KING_OF_BRIDGES);
 
-            boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
-            boss.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
-            boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
-            boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            boss.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
+            alg.setDepth(parameters.getInt(Params.GRASP_DEPTH));
+            alg.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
+            alg.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
+            alg.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            alg.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
-            boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setKnowledge(this.knowledge);
-            boss.bestOrder(score.getVariables());
-            return boss.getGraph(true);
+            alg.setKnowledge(this.knowledge);
+            alg.bestOrder(score.getVariables());
+            return alg.getGraph();
         } else {
-            BOSS3 algorithm = new BOSS3(this.score, this.test);
+            KING_OF_BRIDGES algorithm = new KING_OF_BRIDGES(this.score, this.test);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -99,7 +98,7 @@ public class BOSS3 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
     @Override
     public String getDescription() {
-        return "BOSS3 (Better Order Score Search) using " + this.test.getDescription()
+        return "KING_OF_BRIDGES (Better Order Score Search) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
@@ -114,7 +113,6 @@ public class BOSS3 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
         // Flags
         params.add(Params.GRASP_DEPTH);
-        params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.CACHE_SCORES);
