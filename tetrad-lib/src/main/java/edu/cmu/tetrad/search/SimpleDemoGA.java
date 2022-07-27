@@ -20,6 +20,7 @@ public class SimpleDemoGA {
 
     private final Score score;
     private final Population population;
+    private int numIterations = 40;
 
     public SimpleDemoGA(Score score, int numIndividuals) {
         this.score = score;
@@ -50,10 +51,10 @@ public class SimpleDemoGA {
             }
         }
 
-        int chunk = 20;
+        int chunk = Math.min(25, population.getNumGenes() / 2);
         List<Callable<Boolean>> tasks = new ArrayList<>();
 
-        for (int k = 0; k < 30; k++) {
+        for (int k = 0; k < numIterations; k++) {
             for (int i = 0; i < chunk; i++) {
                 for (int j = i; j < population.getNumGenes() - chunk; j += chunk) {
                     tasks.add(new MyTask(population, j, chunk));
