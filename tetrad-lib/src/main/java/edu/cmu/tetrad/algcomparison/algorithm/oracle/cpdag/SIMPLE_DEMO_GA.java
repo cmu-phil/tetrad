@@ -27,23 +27,23 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "GA_BOSS_IDEA",
-        command = "ga-boss-idea",
+        name = "SIMPLE_DEMO_GA",
+        command = "simple-demo-ga",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class GA_BOSS_IDEA implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class SIMPLE_DEMO_GA implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public GA_BOSS_IDEA() {
+    public SIMPLE_DEMO_GA() {
         // Used in reflection; do not delete.
     }
 
-    public GA_BOSS_IDEA(ScoreWrapper score, IndependenceWrapper test) {
+    public SIMPLE_DEMO_GA(ScoreWrapper score, IndependenceWrapper test) {
         this.score = score;
         this.test = test;
     }
@@ -65,20 +65,10 @@ public class GA_BOSS_IDEA implements Algorithm, UsesScoreWrapper, TakesIndepende
             IndependenceTest test = this.test.getTest(dataModel, parameters);
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            GaBossIdea boss = new GaBossIdea(test, score);
-
-            boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
-            boss.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
-            boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
-            boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            boss.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
-
-            boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setKnowledge(this.knowledge);
+            SimpleDemoGA boss = new SimpleDemoGA(score, 10);
             return boss.search();
         } else {
-            GA_BOSS_IDEA algorithm = new GA_BOSS_IDEA(this.score, this.test);
+            SIMPLE_DEMO_GA algorithm = new SIMPLE_DEMO_GA(this.score, this.test);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -98,7 +88,7 @@ public class GA_BOSS_IDEA implements Algorithm, UsesScoreWrapper, TakesIndepende
 
     @Override
     public String getDescription() {
-        return "BOSS (Better Order Score Search) using " + this.test.getDescription()
+        return "SIMPLE_DEMO_GA using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 

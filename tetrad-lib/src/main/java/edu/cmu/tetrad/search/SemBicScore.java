@@ -569,6 +569,15 @@ public class SemBicScore implements Score {
         this.ruleType = ruleType;
     }
 
+    public SemBicScore subset(List<Node> pi2) {
+        int[] cols = new int[pi2.size()];
+        for (int i = 0; i < cols.length; i++) {
+            cols[i] = variables.indexOf(pi2.get(i));
+        }
+        ICovarianceMatrix cov = getCovariances().getSubmatrix(cols);
+        return new SemBicScore(cov);
+    }
+
     public enum RuleType {CHICKERING, NANDY}
 
 }

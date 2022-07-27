@@ -959,7 +959,11 @@ public class TeyssierScorer {
         return getParents(j).contains(k);
     }
 
-    private static class Pair {
+    public Pair getPair(Node node) {
+        return scores.get(index(node));
+    }
+
+    public static class Pair {
         private final Set<Node> parents;
         private final float score;
 

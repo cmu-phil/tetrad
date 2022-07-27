@@ -59,7 +59,7 @@ public class Boss {
         this.useScore = false;
     }
 
-    public Boss(@NotNull IndependenceTest test, Score score) {
+    public Boss(IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
