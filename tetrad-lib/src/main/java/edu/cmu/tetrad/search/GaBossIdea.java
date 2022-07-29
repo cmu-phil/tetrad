@@ -9,10 +9,12 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
-import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Math.min;
 import static java.util.Collections.shuffle;
@@ -24,7 +26,7 @@ import static java.util.Collections.shuffle;
  * @author bryanandrews
  * @author josephramsey
  */
-public class Boss {
+public class GaBossIdea {
     private final List<Node> variables;
     private Score score;
     private IndependenceTest test;
@@ -45,22 +47,79 @@ public class Boss {
 
     private AlgType algType = AlgType.BOSS;
 
-    public Boss(@NotNull Score score) {
+    public GaBossIdea(Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
     }
 
-    public Boss(@NotNull IndependenceTest test) {
+    public GaBossIdea(IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
     }
 
-    public Boss(IndependenceTest test, Score score) {
+    public GaBossIdea(IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
+    }
+
+    public Graph search() {
+        int chunk = Math.min(25, variables.size() / 3);
+
+        TeyssierScorer scorer = new TeyssierScorer(test, score);
+        scorer.score(variables);
+
+        Map<Node, TeyssierScorer.Pair> bestScores = new HashMap<>();
+
+        for (Node node : variables) {
+            bestScores.put(node, scorer.getPair(node));
+        }
+
+        for (int i = 0; i < 200; i++) {
+            System.out.println(i);
+
+            List<Node> random = new ArrayList<>(variables);
+            shuffle(random);
+            List<Node> myVars = new ArrayList<>();
+
+            for (int j = 0; j < chunk; j++) {
+                myVars.add(random.get(j));
+            }
+
+            for (Node node : myVars) {
+                Boss boss = new Boss(score);
+                boss.setVerbose(false);
+                boss.bestOrder(myVars);
+
+//                float newScore = getPair(node, boss).getScore();
+                float oldScore = bestScores.get(node).getScore();
+
+//                if (newScore > oldScore) {
+////                        System.out.println("new score - old score = " + (newScore - oldScore));
+//                    bestScores.put(node, boss.getPair(node));
+//                }
+            }
+        }
+
+        return getGraph(bestScores);
+    }
+
+//    private TeyssierScorer.Pair getPair(Node node, Boss boss) {
+//        return boss.getPair(node);
+//    }
+
+    public Graph getGraph(Map<Node, TeyssierScorer.Pair> bestScores) {
+        Graph G1 = new EdgeListGraph(this.variables);
+
+        for (Node n : bestScores.keySet()) {
+            for (Node z : bestScores.get(n).getParents()) {
+                G1.addDirectedEdge(z, n);
+            }
+        }
+
+        return G1;
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
@@ -97,7 +156,28 @@ public class Boss {
 
             makeValidKnowledgeOrder(order);
 
-            List<Node> pi2 = order;// causalOrder(scorer.getPi(), graph);
+//            this.scorer.score(order);
+//            double s1, s2;
+//
+//            do {
+//                s1 = scorer.score();
+//                betterMutation(scorer);
+//                this.graph = scorer.getGraph(true);
+//                bes(graph);
+//                s2 = scorer.score(GraphUtils.getCausalOrdering(this.graph, scorer.getPi()));
+//            } while (s2 > s1);
+            List<Node> pi2;
+
+            if (algType == AlgType.KING_OF_BRIDGES) {
+                Fges fges = new Fges(score);
+                fges.setKnowledge(knowledge);
+                fges.setVerbose(false);
+                graph = fges.search();
+                pi2 = causalOrder(scorer.getPi(), graph);
+            } else {
+                pi2 = order;
+            }
+
             List<Node> pi1;
 
             do {
@@ -138,154 +218,6 @@ public class Boss {
         return bestPerm;
     }
 
-    public void betterMutation(@NotNull TeyssierScorer scorer) {
-        scorer.bookmark();
-        double s1, s2;
-
-        do {
-            scorer.bookmark(1);
-            s1 = scorer.score();
-
-            for (Node k : scorer.getPi()) {
-//                relocate(k, scorer);
-                relocateParallel(k, scorer);
-            }
-
-            s2 = scorer.score();
-        } while (s2 > s1);
-
-        scorer.goToBookmark(1);
-
-        System.out.println();
-
-        scorer.score();
-    }
-
-    private void relocate(Node k, @NotNull TeyssierScorer scorer) {
-        double _sp = NEGATIVE_INFINITY;
-//        int _k = scorer.index(k);
-        scorer.bookmark(scorer);
-
-        for (int j = 0; j < scorer.size(); j++) {
-            scorer.moveTo(k, j);
-
-            if (scorer.score() >= _sp) {
-                if (!violatesKnowledge(scorer.getPi())) {
-                    _sp = scorer.score();
-//                    _k = j;
-                    scorer.bookmark(scorer);
-                }
-            }
-        }
-
-        if (verbose) {
-            System.out.print("\r# Edges = " + scorer.getNumEdges()
-                    + " Score = " + scorer.score()
-                    + " (betterMutation)"
-                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s")
-            );
-        }
-
-//        scorer.moveTo(k, _k);
-        scorer.goToBookmark(scorer);
-    }
-
-    class MyTask implements Callable<Ret> {
-
-        Node k;
-        TeyssierScorer scorer;
-        double _sp;
-        int _k;
-        int chunk;
-        int w;
-
-        MyTask(Node k, TeyssierScorer scorer, double _sp, int _k, int chunk, int w) {
-            this.scorer = scorer;
-            this.k = k;
-            this._sp = _sp;
-            this._k = _k;
-            this.chunk = chunk;
-            this.w = w;
-        }
-
-        @Override
-        public Ret call() {
-            return relocateVisit(k, scorer, _sp, _k, chunk, w);
-        }
-    }
-
-    private void relocateParallel(Node k, @NotNull TeyssierScorer scorer) {
-        double _sp = NEGATIVE_INFINITY;
-        int _k = scorer.index(k);
-//        List<Node> pi = scorer.getPi();
-
-        int chunk = getChunkSize(scorer.size());
-        List<MyTask> tasks = new ArrayList<>();
-
-        for (int w = 0; w < scorer.size(); w += chunk) {
-            tasks.add(new MyTask(k, scorer, _sp, _k, chunk, w));
-        }
-
-        List<Future<Ret>> _ret = ForkJoinPool.commonPool().invokeAll(tasks);
-
-        try {
-            for (Future<Ret> ret : _ret) {
-                Ret ret1 = ret.get();
-                if (ret1._sp > _sp) {
-                    _sp = ret1._sp;
-                    _k = ret1._k;
-//                    pi = ret1.pi;
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (verbose) {
-            System.out.print("\r# Edges = " + scorer.getNumEdges()
-                    + " Score = " + scorer.score()
-                    + " (betterMutation)"
-                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s")
-            );
-        }
-
-//        scorer.score(pi);
-        scorer.moveTo(k, _k);
-    }
-
-    static class Ret {
-        double _sp;
-//        List<Node> pi;
-        int _k;
-    }
-
-    private Ret relocateVisit(Node k, @NotNull TeyssierScorer scorer, double _sp, int _k, int chunk, int w) {
-        TeyssierScorer scorer2 = new TeyssierScorer(test, score);
-        scorer2.score(scorer.getPi());
-        scorer2.bookmark(scorer2);
-
-        for (int j = w; j < min(w + chunk, scorer.size()); j++) {
-            scorer2.moveTo(k, j);
-
-            if (scorer2.score() >= _sp) {
-                if (!violatesKnowledge(scorer.getPi())) {
-                    _sp = scorer2.score();
-                    _k = j;
-//                    scorer2.bookmark(scorer2);
-                }
-            }
-        }
-
-        Ret ret = new Ret();
-        ret._sp = _sp;
-        ret._k = _k;
-
-//        scorer2.goToBookmark(scorer2);
-//        ret.pi = scorer2.getPi();
-
-        return ret;
-    }
-
     public void betterMutationTuck(@NotNull TeyssierScorer scorer) {
         double s;
         double sp = scorer.score();
@@ -304,13 +236,15 @@ public class Boss {
                             scorer.goToBookmark();
                         } else {
                             sp = scorer.score();
+//                            i = scorer.size();
+//                            j = -1;
 
-                            if (verbose) {
-                                System.out.print("\r# Edges = " + scorer.getNumEdges()
-                                        + " Score = " + scorer.score()
-                                        + " (betterMutation)"
-                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-                            }
+//                            if (verbose) {
+                            System.out.print("\r# Edges = " + scorer.getNumEdges()
+                                    + " Score = " + scorer.score()
+                                    + " (betterMutation)"
+                                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+//                            }
                         }
 
                         scorer.bookmark();
@@ -337,43 +271,6 @@ public class Boss {
             }
         }
 
-        return true;
-    }
-
-    private boolean bridgesTuck(Node k, int j, TeyssierScorer scorer) {
-        if (!scorer.adjacent(k, scorer.get(j))) return false;
-        if (scorer.coveredEdge(k, scorer.get(j))) return false;
-        if (j >= scorer.index(k)) return false;
-
-        Graph g = scorer.getGraph(true);
-
-        Edge edge = g.getEdge(k, scorer.get(j));
-
-        if (!edge.isDirected()) return false;
-
-        if (g.getParents(k).contains(scorer.get(j))) return false;
-
-        Node a = Edges.getDirectedEdgeHead(edge);
-        Node b = Edges.getDirectedEdgeTail(edge);
-
-        // This code performs "pre-tuck" operation
-        // that makes anterior nodes of the distal
-        // node into parents of the proximal node
-
-
-        for (Node c : g.getAdjacentNodes(b)) {
-            if (existsSemidirectedPath(c, a, g)) {
-                g.removeEdge(g.getEdge(b, c));
-                g.addDirectedEdge(c, b);
-
-                scorer.moveTo(c, scorer.index(b));
-            }
-        }
-
-        Edge reversed = edge.reverse();
-
-        g.removeEdge(edge);
-        g.addEdge(reversed);
         return true;
     }
 
@@ -413,6 +310,46 @@ public class Boss {
         return found;
     }
 
+    public void betterMutation(@NotNull TeyssierScorer scorer) {
+        double s;
+        double sp = scorer.score();
+        scorer.bookmark();
+
+        do {
+            s = sp;
+
+            for (Node k : scorer.getPi()) {
+                sp = NEGATIVE_INFINITY;
+                int _k = scorer.index(k);
+                scorer.bookmark(1);
+
+                for (int j = 0; j < scorer.size(); j++) {
+                    scorer.moveTo(k, j);
+
+                    if (scorer.score() >= sp) {
+                        if (!violatesKnowledge(scorer.getPi())) {
+                            sp = scorer.score();
+                            _k = j;
+                        }
+                    }
+                }
+
+                System.out.print("\r# Edges = " + scorer.getNumEdges()
+                        + " Score = " + scorer.score()
+                        + " (betterMutation)"
+                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s")
+                );
+
+                scorer.moveTo(k, _k);
+            }
+        } while (sp > s);
+
+        scorer.goToBookmark(1);
+
+        System.out.println();
+
+        scorer.score();
+    }
 
     public int getNumEdges() {
         return this.scorer.getNumEdges();

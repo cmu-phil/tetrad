@@ -24,62 +24,32 @@ import static java.util.Collections.shuffle;
  * @author bryanandrews
  * @author josephramsey
  */
-public class Boss {
+public class Boss2 {
     private final List<Node> variables;
-    private Score score;
-    private IndependenceTest test;
+    private final Score score;
     private IKnowledge knowledge = new Knowledge2();
-    private TeyssierScorer scorer;
+    private TeyssierScorer2 scorer;
     private long start;
-    // flags
-    private boolean useScore = true;
-    private boolean usePearl;
-    private boolean cachingScores = true;
     private boolean useDataOrder = true;
-
     private boolean verbose = true;
-
-    // other params
     private int depth = 4;
     private int numStarts = 1;
 
     private AlgType algType = AlgType.BOSS;
 
-    public Boss(@NotNull Score score) {
+    public Boss2(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
-        this.useScore = true;
-    }
-
-    public Boss(@NotNull IndependenceTest test) {
-        this.test = test;
-        this.variables = new ArrayList<>(test.getVariables());
-        this.useScore = false;
-    }
-
-    public Boss(IndependenceTest test, Score score) {
-        this.test = test;
-        this.score = score;
-        this.variables = new ArrayList<>(test.getVariables());
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
         long start = System.currentTimeMillis();
         order = new ArrayList<>(order);
 
-        this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseRaskuttiUhler(this.usePearl);
-
-        if (this.usePearl) {
-            this.scorer.setUseScore(false);
-        } else {
-            this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
-        }
+        this.scorer = new TeyssierScorer2(this.score);
 
         this.scorer.setKnowledge(this.knowledge);
         this.scorer.clearBookmarks();
-
-        this.scorer.setCachingScores(this.cachingScores);
 
         List<Node> bestPerm = null;
         double best = NEGATIVE_INFINITY;
@@ -97,7 +67,7 @@ public class Boss {
 
             makeValidKnowledgeOrder(order);
 
-            List<Node> pi2 = order;// causalOrder(scorer.getPi(), graph);
+            List<Node> pi2 = order;
             List<Node> pi1;
 
             do {
@@ -116,7 +86,6 @@ public class Boss {
                 } else {
                     pi2 = besOrder(scorer);
                 }
-
             } while (!pi1.equals(pi2));
 
             if (this.scorer.score() > best) {
@@ -138,7 +107,7 @@ public class Boss {
         return bestPerm;
     }
 
-    public void betterMutation(@NotNull TeyssierScorer scorer) {
+    public void betterMutation(@NotNull TeyssierScorer2 scorer) {
         scorer.bookmark();
         double s1, s2;
 
@@ -147,8 +116,8 @@ public class Boss {
             s1 = scorer.score();
 
             for (Node k : scorer.getPi()) {
-//                relocate(k, scorer);
-                relocateParallel(k, scorer);
+                relocate(k, scorer);
+//                relocateParallel(k, scorer);
             }
 
             s2 = scorer.score();
@@ -161,9 +130,8 @@ public class Boss {
         scorer.score();
     }
 
-    private void relocate(Node k, @NotNull TeyssierScorer scorer) {
+    private void relocate(Node k, @NotNull TeyssierScorer2 scorer) {
         double _sp = NEGATIVE_INFINITY;
-//        int _k = scorer.index(k);
         scorer.bookmark(scorer);
 
         for (int j = 0; j < scorer.size(); j++) {
@@ -172,7 +140,6 @@ public class Boss {
             if (scorer.score() >= _sp) {
                 if (!violatesKnowledge(scorer.getPi())) {
                     _sp = scorer.score();
-//                    _k = j;
                     scorer.bookmark(scorer);
                 }
             }
@@ -186,20 +153,19 @@ public class Boss {
             );
         }
 
-//        scorer.moveTo(k, _k);
         scorer.goToBookmark(scorer);
     }
 
     class MyTask implements Callable<Ret> {
 
         Node k;
-        TeyssierScorer scorer;
+        TeyssierScorer2 scorer;
         double _sp;
         int _k;
         int chunk;
         int w;
 
-        MyTask(Node k, TeyssierScorer scorer, double _sp, int _k, int chunk, int w) {
+        MyTask(Node k, TeyssierScorer2 scorer, double _sp, int _k, int chunk, int w) {
             this.scorer = scorer;
             this.k = k;
             this._sp = _sp;
@@ -214,7 +180,7 @@ public class Boss {
         }
     }
 
-    private void relocateParallel(Node k, @NotNull TeyssierScorer scorer) {
+    private void relocateParallel(Node k, @NotNull TeyssierScorer2 scorer) {
         double _sp = NEGATIVE_INFINITY;
         int _k = scorer.index(k);
 //        List<Node> pi = scorer.getPi();
@@ -259,8 +225,8 @@ public class Boss {
         int _k;
     }
 
-    private Ret relocateVisit(Node k, @NotNull TeyssierScorer scorer, double _sp, int _k, int chunk, int w) {
-        TeyssierScorer scorer2 = new TeyssierScorer(test, score);
+    private Ret relocateVisit(Node k, @NotNull TeyssierScorer2 scorer, double _sp, int _k, int chunk, int w) {
+        TeyssierScorer2 scorer2 = new TeyssierScorer2(score);
         scorer2.score(scorer.getPi());
         scorer2.bookmark(scorer2);
 
@@ -280,13 +246,10 @@ public class Boss {
         ret._sp = _sp;
         ret._k = _k;
 
-//        scorer2.goToBookmark(scorer2);
-//        ret.pi = scorer2.getPi();
-
         return ret;
     }
 
-    public void betterMutationTuck(@NotNull TeyssierScorer scorer) {
+    public void betterMutationTuck(@NotNull TeyssierScorer2 scorer) {
         double s;
         double sp = scorer.score();
         scorer.bookmark();
@@ -296,9 +259,12 @@ public class Boss {
 
             for (int i = 1; i < scorer.size(); i++) {
                 scorer.bookmark(1);
-
                 Node x = scorer.get(i);
-                for (int j = i - 1; j >= 0; j--) {
+
+                for (Node y : scorer.getParents(x)) {
+                    int j = scorer.index(y);
+
+//                for (int j = i - 1; j >= 0; j--) {
                     if (tuck(x, j, scorer)) {
                         if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
                             scorer.goToBookmark();
@@ -325,22 +291,26 @@ public class Boss {
         System.out.println();
     }
 
-    private boolean tuck(Node k, int j, TeyssierScorer scorer) {
+    private boolean tuck(Node k, int j, TeyssierScorer2 scorer) {
         if (!scorer.adjacent(k, scorer.get(j))) return false;
-        if (scorer.coveredEdge(k, scorer.get(j))) return false;
+//        if (scorer.coveredEdge(k, scorer.get(j))) return false;
         if (j >= scorer.index(k)) return false;
+        int _j = j;
 
         Set<Node> ancestors = scorer.getAncestors(k);
+
         for (int i = j + 1; i <= scorer.index(k); i++) {
             if (ancestors.contains(scorer.get(i))) {
-                scorer.moveTo(scorer.get(i), j++);
+                scorer.moveToNoUpdate(scorer.get(i), j++);
             }
         }
+
+        scorer.updateScores(_j, scorer.index(k));
 
         return true;
     }
 
-    private boolean bridgesTuck(Node k, int j, TeyssierScorer scorer) {
+    private boolean bridgesTuck(Node k, int j, TeyssierScorer2 scorer) {
         if (!scorer.adjacent(k, scorer.get(j))) return false;
         if (scorer.coveredEdge(k, scorer.get(j))) return false;
         if (j >= scorer.index(k)) return false;
@@ -378,14 +348,14 @@ public class Boss {
     }
 
 
-    public List<Node> besOrder(TeyssierScorer scorer) {
+    public List<Node> besOrder(TeyssierScorer2 scorer) {
         Graph graph = scorer.getGraph(true);
         bes(graph);
 
         return causalOrder(scorer.getPi(), graph);
     }
 
-    public List<Node> fgesOrder(TeyssierScorer scorer) {
+    public List<Node> fgesOrder(TeyssierScorer2 scorer) {
         Fges fges = new Fges(score);
         fges.setKnowledge(knowledge);
         Graph graph = scorer.getGraph(true);
@@ -448,10 +418,6 @@ public class Boss {
         return this.graph;
     }
 
-    public void setCacheScores(boolean cachingScores) {
-        this.cachingScores = cachingScores;
-    }
-
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
@@ -466,9 +432,6 @@ public class Boss {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        if (this.test != null) {
-            this.test.setVerbose(verbose);
-        }
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -478,10 +441,6 @@ public class Boss {
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
         this.depth = depth;
-    }
-
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
     }
 
     private boolean violatesKnowledge(List<Node> order) {
@@ -496,10 +455,6 @@ public class Boss {
         }
 
         return false;
-    }
-
-    public void setUseRaskuttiUhler(boolean usePearl) {
-        this.usePearl = usePearl;
     }
 
     public void setUseDataOrder(boolean useDataOrder) {
@@ -864,9 +819,6 @@ public class Boss {
 
             // Orient to*-&gt;from
             graph.setEndpoint(to, from, Endpoint.ARROW);
-//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-//            this.changeFlag = true;
-//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
@@ -890,9 +842,6 @@ public class Boss {
 
             // Orient to*-&gt;from
             graph.setEndpoint(from, to, Endpoint.ARROW);
-//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-//            this.changeFlag = true;
-//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
     }
 
