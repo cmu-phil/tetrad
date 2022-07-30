@@ -116,8 +116,8 @@ public class Boss2 {
             s1 = scorer.score();
 
             for (Node k : scorer.getPi()) {
-                relocate(k, scorer);
-//                relocateParallel(k, scorer);
+//                relocate(k, scorer);
+                relocateParallel(k, scorer);
             }
 
             s2 = scorer.score();
@@ -226,7 +226,7 @@ public class Boss2 {
     }
 
     private Ret relocateVisit(Node k, @NotNull TeyssierScorer2 scorer, double _sp, int _k, int chunk, int w) {
-        TeyssierScorer2 scorer2 = new TeyssierScorer2(score);
+        TeyssierScorer2 scorer2 = new TeyssierScorer2(scorer);
         scorer2.score(scorer.getPi());
         scorer2.bookmark(scorer2);
 
