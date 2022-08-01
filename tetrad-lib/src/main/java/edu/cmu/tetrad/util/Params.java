@@ -189,6 +189,7 @@ public final class Params {
     // System prameters that are not supposed to put in the HTML manual documentation
     public static final String PRINT_STREAM = "printStream";
     public static final String SEM_BIC_RULE = "semBicRule";
+    public static final String SEM_GIC_RULE = "semGicRule";
     public static final String SEM_BIC_STRUCTURE_PRIOR = "semBicStructurePrior";
     public static final String NUM_STARTS = "numStarts";
     public static final String CACHE_SCORES = "cacheScores";

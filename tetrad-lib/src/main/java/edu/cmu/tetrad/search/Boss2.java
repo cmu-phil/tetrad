@@ -221,7 +221,7 @@ public class Boss2 {
 
     static class Ret {
         double _sp;
-//        List<Node> pi;
+        //        List<Node> pi;
         int _k;
     }
 
@@ -257,19 +257,16 @@ public class Boss2 {
         do {
             s = sp;
 
-            for (int i = 1; i < scorer.size(); i++) {
-                scorer.bookmark(1);
-                Node x = scorer.get(i);
+            for (Node x : scorer.getPi()) {
+//            for (int i = 1; i < scorer.size(); i++) {
+//                Node x = scorer.get(i);
+                int i = scorer.index(x);
 
-                for (Node y : scorer.getParents(x)) {
-                    int j = scorer.index(y);
-
-//                for (int j = i - 1; j >= 0; j--) {
-                    if (tuck(x, j, scorer)) {
-                        if (scorer.score() <= sp || violatesKnowledge(scorer.getPi())) {
-                            scorer.goToBookmark();
-                        } else {
+                for (int j = i - 1; j >= 0; j--) {
+                    if (scorer.tuck(x, j)) {
+                        if (scorer.score() > sp && !violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
+                            scorer.bookmark();
 
                             if (verbose) {
                                 System.out.print("\r# Edges = " + scorer.getNumEdges()
@@ -277,37 +274,15 @@ public class Boss2 {
                                         + " (betterMutation)"
                                         + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                             }
+                        } else {
+                            scorer.goToBookmark();
                         }
-
-                        scorer.bookmark();
                     }
                 }
             }
-
         } while (sp > s);
 
-        scorer.goToBookmark(1);
-
         System.out.println();
-    }
-
-    private boolean tuck(Node k, int j, TeyssierScorer2 scorer) {
-        if (!scorer.adjacent(k, scorer.get(j))) return false;
-//        if (scorer.coveredEdge(k, scorer.get(j))) return false;
-        if (j >= scorer.index(k)) return false;
-        int _j = j;
-
-        Set<Node> ancestors = scorer.getAncestors(k);
-
-        for (int i = j + 1; i <= scorer.index(k); i++) {
-            if (ancestors.contains(scorer.get(i))) {
-                scorer.moveToNoUpdate(scorer.get(i), j++);
-            }
-        }
-
-        scorer.updateScores(_j, scorer.index(k));
-
-        return true;
     }
 
     private boolean bridgesTuck(Node k, int j, TeyssierScorer2 scorer) {

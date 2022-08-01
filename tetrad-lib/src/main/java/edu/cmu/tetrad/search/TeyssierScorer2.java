@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 import static java.lang.Math.floor;
-import static java.util.Collections.shuffle;
 
 
 /**
@@ -81,6 +80,34 @@ public class TeyssierScorer2 {
         }
     }
 
+    public boolean tuck(Node k, int j) {
+        if (!adjacent(k, get(j))) return false;
+//        if (coveredEdge(k, get(j))) return false;
+        if (j >= index(k)) return false;
+        int _j = j;
+        int _k = index(k);
+
+        bookmark(-55);
+
+        Set<Node> ancestors = getAncestors(k);
+
+        for (int i = j + 1; i <= index(k); i++) {
+            if (ancestors.contains(get(i))) {
+//                moveTo(get(i), j++);
+                moveToNoUpdate(get(i), j++);
+            }
+        }
+
+        if (lastMoveSame(_j, _k) || violatesKnowledge(pi)) {
+            goToBookmark(-55);
+            return false;
+        }
+
+        updateScores(_j, _k);
+
+        return true;
+    }
+
     /**
      * @param useScore True if the score should be used; false if the test should be used.
      */
@@ -95,10 +122,6 @@ public class TeyssierScorer2 {
      */
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    public void setUseBackwardScoring(boolean useBackwardScoring) {
-        this.useBackwardScoring = useBackwardScoring;
     }
 
     /**
@@ -126,8 +149,8 @@ public class TeyssierScorer2 {
      * @return The score of the current permutation.
      */
     public float score() {
-        return sum();
-//        return runningScore;
+//        return sum();
+        return runningScore;
     }
 
     private float sum() {
@@ -139,20 +162,6 @@ public class TeyssierScorer2 {
         }
 
         return score;
-    }
-
-    /**
-     * Performs a tuck operation. If pi[x] &lt; pi[y], moves y to index of x; otherwise moves x to index of y.
-     *
-     * @param x The first variable.
-     * @param y The second variable.
-     */
-    public void tuck(Node x, Node y) {
-        if (index(x) < index(y)) {
-            moveTo(y, index(x));
-        } else if (index(x) > index(y)) {
-            moveTo(x, index(y));
-        }
     }
 
     /**
@@ -227,15 +236,6 @@ public class TeyssierScorer2 {
      */
     public List<Node> getPi() {
         return new ArrayList<>(this.pi);
-    }
-
-    /**
-     * Returns the current permutation without making a copy. Could be dangerous!
-     *
-     * @return the current permutation.
-     */
-    public List<Node> getOrderShallow() {
-        return this.pi;
     }
 
     /**
@@ -338,37 +338,6 @@ public class TeyssierScorer2 {
         }
 
         return new ArrayList<>(pairs);
-    }
-
-    public Map<Node, Set<Node>> getAdjMap() {
-        Map<Node, Set<Node>> adjMap = new HashMap<>();
-        for (Node node1 : getPi()) {
-            if (!adjMap.containsKey(node1)) {
-                adjMap.put(node1, new HashSet<>());
-            }
-            for (Node node2 : getParents(node1)) {
-                if (!adjMap.containsKey(node2)) {
-                    adjMap.put(node2, new HashSet<>());
-                }
-                adjMap.get(node1).add(node2);
-                adjMap.get(node2).add(node1);
-            }
-        }
-        return adjMap;
-    }
-
-
-    public Map<Node, Set<Node>> getChildMap() {
-        Map<Node, Set<Node>> childMap = new HashMap<>();
-        for (Node node1 : getPi()) {
-            for (Node node2 : getParents(node1)) {
-                if (!childMap.containsKey(node2)) {
-                    childMap.put(node2, new HashSet<>());
-                }
-                childMap.get(node2).add(node1);
-            }
-        }
-        return childMap;
     }
 
     public Set<Node> getAncestors(Node node) {
@@ -492,9 +461,7 @@ public class TeyssierScorer2 {
      */
     public void goToBookmark(Object key) {
         if (!this.bookmarkedOrders.containsKey(key)) {
-//            throw new IllegalArgumentException("That key was not bookmarked recently.");
-            bookmark(key);
-            return;
+            throw new IllegalArgumentException("That key was not bookmarked.");
         }
 
         List<Node> pi2 = this.bookmarkedOrders.get(key);
@@ -520,27 +487,14 @@ public class TeyssierScorer2 {
         }
 
         for (int i = first; i <= last; i++) {
-            this.pi.set(i, pi2.get(i));
-            this.scores.set(i, scores2.get(i));
-            this.orderHash.put(pi.get(i), hashes2.get(pi.get(i)));
+            if (this.pi.get(i) != (pi2.get(i))) {
+                this.pi.set(i, pi2.get(i));
+                this.scores.set(i, scores2.get(i));
+                this.orderHash.put(pi.get(i), hashes2.get(pi.get(i)));
+            }
         }
 
         this.runningScore = runningScore2;
-
-        //        for (int i = 0; i < pi.size(); i++) {
-//            if (this.pi.get(i) != pi2.get(i)) {
-//                this.pi.set(i, pi2.get(i));
-//                this.scores.set(i, scores2.get(i));
-//                this.orderHash.put(pi.get(i), hashes2.get(pi.get(i)));
-//                this.runningScore = runningScore2;
-//            }
-//        }
-
-//        this.pi = this.bookmarkedOrders.remove(key);
-//        this.scores = this.bookmarkedScores.remove(key);
-//        this.orderHash = this.bookmarkedOrderHashes.remove(key);
-//        this.runningScore = this.bookmarkedRunningScores.remove(key);
-
     }
 
     /**
@@ -565,21 +519,6 @@ public class TeyssierScorer2 {
      */
     public int size() {
         return this.pi.size();
-    }
-
-    /**
-     * Shuffles the current permutation and rescores it.
-     */
-    public void shuffleVariables() {
-        this.pi = new ArrayList<>(this.pi);
-        shuffle(this.pi);
-        score(this.pi);
-    }
-
-    public List<Node> getShuffledVariables() {
-        List<Node> variables = getPi();
-        shuffle(variables);
-        return variables;
     }
 
     /**
@@ -651,7 +590,7 @@ public class TeyssierScorer2 {
     }
 
     private void initializeScores() {
-        for (int i1 = 0; i1 < this.pi.size(); i1++) this.prefixes.set(i1, null);
+//        for (int i1 = 0; i1 < this.pi.size(); i1++) this.prefixes.set(i1, null);
         updateScores(0, this.pi.size() - 1);
     }
 
@@ -685,15 +624,15 @@ public class TeyssierScorer2 {
     }
 
     private void recalculate(int p) {
-        if (this.prefixes.get(p) == null || !this.prefixes.get(p).containsAll(getPrefix(p))) {
-            Pair p2 = getGrowShrinkScore(p);
-            if (scores.get(p) == null) {
-                this.runningScore += p2.score;
-            } else {
-                this.runningScore += p2.score - scores.get(p).score;
-            }
-            this.scores.set(p, p2);
+        Pair p2 = getGrowShrinkScore(p);
+
+        if (scores.get(p) == null) {
+            this.runningScore += p2.score;
+        } else {
+            this.runningScore += p2.score - scores.get(p).getScore();
         }
+
+        this.scores.set(p, p2);
     }
 
     private void nodesHash(Map<Node, Integer> nodesHash, List<Node> variables) {
@@ -730,7 +669,8 @@ public class TeyssierScorer2 {
         boolean changed = true;
 
         float sMax = score(n, new HashSet<>());
-        List<Node> prefix = new ArrayList<>(getPrefix(p));
+        Set<Node> prefix1 = getPrefix(p);
+        List<Node> prefix = new ArrayList<>(prefix1);
 
         // Backward scoring only from the prefix variables
         if (this.useBackwardScoring) {
@@ -795,6 +735,8 @@ public class TeyssierScorer2 {
             }
         }
 
+        this.prefixes.set(p, prefix1);
+
         if (this.useScore) {
             return new Pair(parents, Float.isNaN(sMax) ? Float.NEGATIVE_INFINITY : sMax);
         } else {
@@ -819,23 +761,22 @@ public class TeyssierScorer2 {
     }
 
     public void moveToNoUpdate(Node v, int toIndex) {
-        bookmark(-55);
+//        bookmark(-55);
 
         if (!this.pi.contains(v)) return;
-
         int vIndex = index(v);
-
         if (vIndex == toIndex) return;
-
-        if (lastMoveSame(vIndex, toIndex)) return;
+//        if (lastMoveSame(vIndex, toIndex)) {
+//            goToBookmark(-55);
+//            return;
+//        }
 
         this.pi.remove(v);
         this.pi.add(toIndex, v);
 
-        if (violatesKnowledge(this.pi)) {
-            goToBookmark(-55);
-        }
-
+//        if (violatesKnowledge(this.pi)) {
+//            goToBookmark(-55);
+//        }
     }
 
     public boolean parent(Node k, Node j) {
