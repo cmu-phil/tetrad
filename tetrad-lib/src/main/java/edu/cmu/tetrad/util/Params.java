@@ -221,7 +221,8 @@ public final class Params {
     public static final String SIMULATION_PARAM2 = "simulationParam2";
     public static final String SELECTION_MIN_EFFECT = "selectionMinEffect";
     public static final String NUM_SUBSAMPLES = "numSubsamples";
-    public static final String TARGET_NAMES = "targetNames";
+    public static final String TARGETS = "targets";
+    public static final String MB = "mb";
     public static final String CSTAR_Q = "cstarQ";
     public static final String TIME_LAG = "timeLag";
     public static final String PRECOMPUTE_COVARIANCES = "precomputeCovariances";

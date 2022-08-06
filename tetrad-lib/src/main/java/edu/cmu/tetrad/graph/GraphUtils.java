@@ -939,7 +939,7 @@ public final class GraphUtils {
      *               calculated. All of the nodes and edges of the Markov Blanket DAG are in
      *               this DAG.
      */
-    public static Dag markovBlanketDag(Node target, Graph dag) {
+    public static Graph markovBlanketDag(Node target, Graph dag) {
         if (dag.getNode(target.getName()) == null) {
             throw new NullPointerException("Target node not in graph: " + target);
         }
@@ -951,7 +951,6 @@ public final class GraphUtils {
         List<Node> parents = dag.getParents(target);
         for (Node parent1 : parents) {
             blanket.addNode(parent1);
-
             blanket.addDirectedEdge(parent1, target);
         }
 
@@ -1011,7 +1010,7 @@ public final class GraphUtils {
             }
         }
 
-        return new Dag(blanket);
+        return blanket;
     }
 
     /**
