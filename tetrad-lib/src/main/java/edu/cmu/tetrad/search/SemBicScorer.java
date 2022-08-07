@@ -24,7 +24,7 @@ public class SemBicScorer {
         if (data instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dag);
         } else if (data instanceof DataSet) {
-            score = new SemBicScore((DataSet) data, precomputeCovariances);
+            score = new SemBicScore((DataSet) data);
         } else {
             throw new IllegalArgumentException("Expecting a covariance matrix of a dataset.");
         }

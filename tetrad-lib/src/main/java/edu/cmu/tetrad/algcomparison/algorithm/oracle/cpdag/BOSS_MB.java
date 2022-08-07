@@ -53,12 +53,13 @@ public class BOSS_MB implements Algorithm, HasKnowledge, UsesScoreWrapper {
             String[] tokens = this.targets.split(",");
             List<Node> targets = new ArrayList<>();
 
+            Score score = this.score.getScore(dataSet, parameters);
+
             for (String t : tokens) {
                 String name = t.trim();
-                targets.add(this.score.getVariable(name));
+                targets.add(score.getVariable(name));
             }
 
-            Score score = this.score.getScore(dataSet, parameters);
 
             BossMB boss = new BossMB(score);
 

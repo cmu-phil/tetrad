@@ -250,11 +250,15 @@ public class Boss2 {
     }
 
     public void betterMutationBossTuck(@NotNull TeyssierScorer2 scorer) {
+        if (Thread.currentThread().isInterrupted()) return;
+
         double s;
         double sp = scorer.score();
         scorer.bookmark();
 
         do {
+            if (Thread.currentThread().isInterrupted()) return;
+
             s = sp;
 
             for (Node x : scorer.getPi()) {
@@ -263,6 +267,8 @@ public class Boss2 {
                 int i = scorer.index(x);
 
                 for (int j = i - 1; j >= 0; j--) {
+                    if (Thread.currentThread().isInterrupted()) return;
+
                     if (scorer.tuck(x, j)) {
                         if (scorer.score() > sp && !violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();

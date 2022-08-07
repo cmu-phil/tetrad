@@ -449,7 +449,7 @@ public final class Cefs {
         double seconds = this.elapsedTime / 1000d;
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        TetradLogger.getInstance().log("info", "MB fan search took " + nf.format(seconds) + " seconds.");
+        TetradLogger.getInstance().log("info", "PC-MB took " + nf.format(seconds) + " seconds.");
         TetradLogger.getInstance().log("info", "Number of independence tests performed = " +
                 getNumIndependenceTests());
 

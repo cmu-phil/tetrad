@@ -34,7 +34,7 @@ public class BossMB {
     private boolean verbose = true;
     private int depth = 4;
     private int numStarts = 1;
-    private boolean findMb = true;
+    private boolean findMb = false;
 
     public BossMB(@NotNull Score score) {
         this.score = score;

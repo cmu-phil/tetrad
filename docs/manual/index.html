@@ -3370,13 +3370,13 @@ tabs will not appear.</p> -->
 
     <p><a href="#targetName">targetName</a></p>
 
-    <h3>The MBFS Algorithm</h3>
+    <h3>The PC-MB Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="mbfs">
+    <div id="pc-mb">
 
-        <p>Markov blanket fan search. Similar to FGES-MB (see FGES,
+        <p>PC-MB. Similar to FGES-MB (see FGES,
             2016) but using PC as the basic search instead of FGES. The rules of
             the PC search are restricted to just the variables in the Markov
             blanket of a target T, including T; the result is a graph that is a
@@ -4949,13 +4949,12 @@ tabs will not appear.</p> -->
         <h3 class="parameter_description"
             id="mb">mb</h3>
         <ul class="mb_list">
-            <li>Short Description: <span id="mb_short_desc">Find Markov blanket(s)
-        (comma separated)</span></li>
+            <li>Short Description: <span id="mb_short_desc">Find Markov blanket(s)</span></li>
             <li>Long Description: <span
                     id="mb_long_desc">Looks for the graph over the Markov blanket(s) and target(s) if true</span>
             </li>
             <li>Default Value: <span
-                    id="mb_default_value"false></span></li>
+                    id="mb_default_value">false</span></li>
             <li>Lower Bound: <span
                     id="mb_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -5528,7 +5527,8 @@ tabs will not appear.</p> -->
             <li>Short Description: <span
                     id="imagesMetaAlg_short_desc">IMaGES "meta" algorithm. 1 = FGES, 2 = BOSS-Tuck</span></li>
             <li>Long
-                Description: <span id="imagesMetaAlg_long_desc"> Sets the meta algorithm to be optimized using the IMaGES (average BIC) score.</span></li>
+                Description: <span id="imagesMetaAlg_long_desc"> Sets the meta algorithm to be optimized using the IMaGES (average BIC) score.</span>
+            </li>
             <li>Default Value:
                 <span id="imagesMetaAlg_default_value">1</span></li>
             <li>Lower Bound: <span

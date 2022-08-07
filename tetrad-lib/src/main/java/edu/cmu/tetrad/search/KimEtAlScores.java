@@ -91,23 +91,24 @@ public class KimEtAlScores implements Score {
 
 //        this.correlationThreshold = correlationThreshold;
 
-        dataSet = DataUtils.center(dataSet);
+//        dataSet = DataUtils.center(dataSet);
+//
+//        double[][] cov = new double[dataSet.getNumColumns()][dataSet.getNumColumns()];
+//
+//        for (int i = 0; i < dataSet.getNumColumns(); i++) {
+//            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+//                double sum = 0.0;
+//
+//                for (int k = 0; k < dataSet.getNumRows(); k++) {
+//                    sum += dataSet.getDouble(k, i) * dataSet.getDouble(k, j);
+//                }
+//
+//                cov[i][j] = sum / dataSet.getNumRows();
+//            }
+//        }
 
-        double[][] cov = new double[dataSet.getNumColumns()][dataSet.getNumColumns()];
-
-        for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                double sum = 0.0;
-
-                for (int k = 0; k < dataSet.getNumRows(); k++) {
-                    sum += dataSet.getDouble(k, i) * dataSet.getDouble(k, j);
-                }
-
-                cov[i][j] = sum / dataSet.getNumRows();
-            }
-        }
-
-        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet.getVariables(), cov, dataSet.getNumRows());
+//        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet.getVariables(), cov, dataSet.getNumRows());
+        ICovarianceMatrix covarianceMatrix = (DataUtils.getCovarianceMatrix(dataSet));
 
         this.data = dataSet.getDoubleData();
         this.dataSet = dataSet;

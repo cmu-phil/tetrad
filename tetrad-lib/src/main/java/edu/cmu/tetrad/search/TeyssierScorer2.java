@@ -642,6 +642,7 @@ public class TeyssierScorer2 {
         @Override
         public Boolean call() {
             for (int i = from; i <= to; i++) {
+                if (Thread.currentThread().isInterrupted()) break;
                 recalculate(i);
                 this.orderHash.put(this.pi.get(i), i);
             }

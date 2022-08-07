@@ -32,7 +32,7 @@ import java.util.List;
 import static java.lang.Math.*;
 
 /**
- * Implements the continuous BIC score for FGES.
+ * Implements the Zhang-Shen bound score.
  *
  * @author Joseph Ramsey
  */
@@ -54,7 +54,7 @@ public class ZhangShenBoundScore implements Score {
     private int sampleSize;
     // True if verbose output should be sent to out.
     private boolean verbose = false;
-    // A recpord of lambdas for each m0.
+    // A record of lambdas for each m0.
     private List<Double> lambdas;
     // The data, if it is set.
     private Matrix data;
@@ -86,7 +86,7 @@ public class ZhangShenBoundScore implements Score {
      * Constructs the score using a covariance matrix.
      */
     public ZhangShenBoundScore(DataSet dataSet) {
-        this(new CovarianceMatrix(dataSet));
+        this(DataUtils.getCovarianceMatrix(dataSet));
 
         this.dataSet = dataSet;
 

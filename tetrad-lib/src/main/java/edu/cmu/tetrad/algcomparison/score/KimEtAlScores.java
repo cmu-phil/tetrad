@@ -18,8 +18,8 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "ZS Bound Score",
-        command = "zsbound-score",
+        name = "Kim et al. Score",
+        command = "kim-scores",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 public class KimEtAlScores implements ScoreWrapper {
@@ -68,13 +68,14 @@ public class KimEtAlScores implements ScoreWrapper {
         }
 
         score.setRuleType(ruleType);
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
         return score;
     }
 
     @Override
     public String getDescription() {
-        return "Zhang-Shen Bound Score";
+        return "Kim et al. Scores";
     }
 
     @Override
@@ -85,7 +86,8 @@ public class KimEtAlScores implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.ZS_RISK_BOUND);
+        parameters.add(Params.SEM_GIC_RULE);
+        parameters.add(Params.PENALTY_DISCOUNT);
         return parameters;
     }
 

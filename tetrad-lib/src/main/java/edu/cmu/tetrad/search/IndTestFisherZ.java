@@ -55,7 +55,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     /**
      * The correlation matrix.
      */
-    private final CorrelationMatrix cor;
+    private final ICovarianceMatrix cor;
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
@@ -136,7 +136,8 @@ public final class IndTestFisherZ implements IndependenceTest {
      */
     public IndTestFisherZ(Matrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
-        this.cor = new CorrelationMatrix(this.dataSet);
+        this.cor = DataUtils.getCorrelationMatrix(this.dataSet);
+//        this.cor = new CorrelationMatrix(this.dataSet);
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);

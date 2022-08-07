@@ -73,12 +73,12 @@ public class HitonVariant implements MbSearch {
         this.depth = depth;
     }
 
-    public List<Node> findMb(String targetName) {
-        TetradLogger.getInstance().log("info", "target = " + targetName);
+    public List<Node> findMb(Node target) {
+        TetradLogger.getInstance().log("info", "target = " + target);
         //        numIndTests = 0;
         long time = System.currentTimeMillis();
 
-        Node t = getVariableForName(targetName);
+        Node t = target;
 
         // Sort variables by decreasing association with the target.
         this.sortedVariables = new LinkedList<>(this.variables);

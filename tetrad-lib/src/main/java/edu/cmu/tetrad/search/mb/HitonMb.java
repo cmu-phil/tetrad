@@ -97,27 +97,25 @@ public class HitonMb implements MbSearch {
         this.symmetric = symmetric;
     }
 
-    public List<Node> findMb(String targetName) {
-        TetradLogger.getInstance().log("info", "target = " + targetName);
+    public List<Node> findMb(Node target) {
+        TetradLogger.getInstance().log("info", "target = " + target);
         this.numIndTests = 0;
         long time = System.currentTimeMillis();
 
         this.pc = new HashMap<>();
         this.trimmed = new HashSet<>();
 
-        Node t = getVariableForName(targetName);
-
         // Sort variables by decreasing association with the target.
         this.sortedVariables = new LinkedList<>(this.variables);
 
         this.sortedVariables.sort((o1, o2) -> {
-            double score1 = o1 == t ? 1.0 : association(o1, t);
-            double score2 = o2 == t ? 1.0 : association(o2, t);
+            double score1 = o1 == target ? 1.0 : association(o1, target);
+            double score2 = o2 == target ? 1.0 : association(o2, target);
 
             return Double.compare(score2, score1);
         });
 
-        List<Node> nodes = hitonMb(t);
+        List<Node> nodes = hitonMb(target);
 
         long time2 = System.currentTimeMillis() - time;
         TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));

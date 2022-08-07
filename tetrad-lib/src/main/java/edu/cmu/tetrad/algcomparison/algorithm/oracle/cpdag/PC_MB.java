@@ -12,11 +12,15 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.PcMb;
+import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,22 +29,22 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "MBFS",
-        command = "mbfs",
+        name = "PC-MB",
+        command = "pc-mb",
         algoType = AlgType.search_for_Markov_blankets
 )
 @Bootstrapping
-public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+public class PC_MB implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
-    private String targetName;
+    private List<Node> targets;
 
-    public MBFS() {
+    public PC_MB() {
     }
 
-    public MBFS(IndependenceWrapper type) {
+    public PC_MB(IndependenceWrapper type) {
         this.test = type;
     }
 
@@ -48,24 +52,15 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             IndependenceTest test = this.test.getTest(dataSet, parameters);
-            edu.cmu.tetrad.search.Mbfs search = new edu.cmu.tetrad.search.Mbfs(test, parameters.getInt(Params.DEPTH));
-
+            PcMb search = new PcMb(test, parameters.getInt(Params.DEPTH));
+            List<Node> targets = targets(test, parameters.getString(Params.TARGETS));
+            this.targets = targets;
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
-
-            this.targetName = parameters.getString(Params.TARGET_NAME);
-            if (this.targetName.isEmpty()) {
-                throw new IllegalArgumentException("Target variable name needs to be provided.");
-            }
-
-            if (test.getVariable(this.targetName) == null) {
-                throw new IllegalArgumentException("Target variable name '" + this.targetName + "' not found in dataset.");
-            }
-
-            Node target = test.getVariable(this.targetName);
-            return search.search(target.getName());
+            search.setFindMb(parameters.getBoolean(Params.MB));
+            return search.search(targets);
         } else {
-            MBFS algorithm = new MBFS(this.test);
+            PC_MB algorithm = new PC_MB(this.test);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -77,15 +72,26 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         }
     }
 
+    @NotNull
+    private List<Node> targets(IndependenceTest test, String targetString) {
+        String[] tokens = targetString.split(",");
+        List<Node> targets = new ArrayList<>();
+
+        for (String t : tokens) {
+            String name = t.trim();
+            targets.add(test.getVariable(name));
+        }
+        return targets;
+    }
+
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        Node target = graph.getNode(this.targetName);
-        return GraphUtils.markovBlanketDag(target, new EdgeListGraph(graph));
+        return GraphUtils.markovBlanketDag(targets.get(0), new EdgeListGraph(graph));
     }
 
     @Override
     public String getDescription() {
-        return "MBFS (Markov Blanket Fan Search) using " + this.test.getDescription();
+        return "PC-MB (Markov blanket search using PC) using " + this.test.getDescription();
     }
 
     @Override
@@ -96,8 +102,9 @@ public class MBFS implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+        parameters.add(Params.TARGETS);
+        parameters.add(Params.MB);
         parameters.add(Params.DEPTH);
-        parameters.add(Params.TARGET_NAME);
 
         parameters.add(Params.VERBOSE);
         return parameters;

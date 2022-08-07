@@ -69,7 +69,6 @@ public class SemBicScore implements Score {
 
     // The rule type to use.
     private RuleType ruleType = RuleType.CHICKERING;
-    private boolean precomputeCovariances = true;
     private double logN;
 
     /**
@@ -87,15 +86,10 @@ public class SemBicScore implements Score {
         this.logN = log(sampleSize);
     }
 
-    public SemBicScore(DataSet dataSet) {
-        this(dataSet, true);
-    }
-
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore(DataSet dataSet, boolean precomputeCovariances) {
-        this.precomputeCovariances = precomputeCovariances;
+    public SemBicScore(DataSet dataSet) {
 
         if (dataSet == null) {
             throw new NullPointerException();
@@ -105,11 +99,8 @@ public class SemBicScore implements Score {
         this.data = dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            if (!precomputeCovariances) {
-                setCovariances(new CovarianceMatrixOnTheFly(dataSet));
-            } else {
-                setCovariances(new CovarianceMatrix(dataSet));
-            }
+            setCovariances(getiCovarianceMatrix(dataSet));
+
             this.variables = this.covariances.getVariables();
             this.sampleSize = this.covariances.getSampleSize();
             this.indexMap = indexMap(this.variables);
@@ -123,6 +114,12 @@ public class SemBicScore implements Score {
         this.indexMap = indexMap(this.variables);
         this.calculateRowSubsets = true;
         this.logN = log(sampleSize);
+    }
+
+    @NotNull
+    private ICovarianceMatrix getiCovarianceMatrix(DataSet dataSet) {
+        ICovarianceMatrix cov = DataUtils.getCovarianceMatrix(dataSet);
+        return cov;
     }
 
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)

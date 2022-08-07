@@ -126,7 +126,7 @@ public class DataForCalibration_RFCI {
 //        if (algorithm.equals("RFCI")) {
 
         final IndTestFisherZ test = new IndTestFisherZ(data, 0.001);
-        final SemBicScore score = new SemBicScore(data, true);
+        final SemBicScore score = new SemBicScore(data);
         score.setPenaltyDiscount(2);
 
         System.out.println("Starting search with all data");
@@ -346,7 +346,7 @@ public class DataForCalibration_RFCI {
 
     public Graph learnBNRFCI(DataSet bootstrapSample, int depth, Graph truePag) {
         final IndTestFisherZ test = new IndTestFisherZ(bootstrapSample, 0.001);
-        final SemBicScore score = new SemBicScore(bootstrapSample, true);
+        final SemBicScore score = new SemBicScore(bootstrapSample);
         score.setPenaltyDiscount(2);
 
         System.out.println("Starting search with a bootstrap");
