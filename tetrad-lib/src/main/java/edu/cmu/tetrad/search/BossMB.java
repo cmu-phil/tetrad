@@ -52,6 +52,7 @@ public class BossMB {
 
         List<Node> bestPerm = null;
         int bestSize = scorer.size();
+        double bestScore = NEGATIVE_INFINITY;
 
         this.scorer.score(order);
 
@@ -71,14 +72,19 @@ public class BossMB {
             List<Node> pi2 = order;
             List<Node> pi1;
 
+            float s1, s2;
+
             do {
                 pi1 = scorer.getPi();
+                s1 = scorer.score();
+
                 scorer.score(pi2);
                 betterMutationBossTuck(scorer, targets);
                 pi2 = besOrder(scorer);
-            } while (!pi1.equals(pi2));
+                s2 = scorer.score();
+            } while (pi2.size() > pi1.size());
 
-            if (this.scorer.size() < bestSize) {
+            if (this.scorer.size() <= bestSize) {
                 bestSize = this.scorer.size();
                 bestPerm = scorer.getPi();
             }
