@@ -1331,13 +1331,23 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public void reorientAllWith(Endpoint endpoint) {
-        for (Edge edge : new ArrayList<>(this.edgesSet)) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-
-            setEndpoint(a, b, endpoint);
-            setEndpoint(b, a, endpoint);
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i; i < nodes.size(); j++) {
+                if (isAdjacentTo(nodes.get(i), nodes.get(j))) {
+                    removeEdge(nodes.get(i), nodes.get(j));
+                    addUndirectedEdge(nodes.get(i), nodes.get(j));
+                }
+            }
         }
+//
+//
+//        for (Edge edge : new ArrayList<>(this.edgesSet)) {
+//            Node a = edge.getNode1();
+//            Node b = edge.getNode2();
+//
+//            setEndpoint(a, b, endpoint);
+//            setEndpoint(b, a, endpoint);
+//        }
     }
 
     /**

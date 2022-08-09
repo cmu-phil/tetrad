@@ -105,7 +105,8 @@ public class Cstar {
      * @param possibleEffects The effect variables.
      * @param test            This test is only used to make more tests like it for subsamples.
      */
-    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, IndependenceTest test) {
+    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects,
+                                                     IndependenceTest test) {
         return getRecords(dataSet, possibleCauses, possibleEffects, test, null);
     }
 

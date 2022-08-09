@@ -1731,9 +1731,6 @@ public final class GraphUtils {
 
         graph2 = GraphUtils.replaceNodes(graph2, graph1.getNodes());
 
-        graph1 = GraphUtils.undirectedGraph(graph1);
-        graph2 = GraphUtils.undirectedGraph(graph2);
-
         int count = 0;
 
         Set<Edge> edges1 = graph1.getEdges();
@@ -2314,6 +2311,35 @@ public final class GraphUtils {
             throw new IllegalStateException();
         }
     }
+
+//    public static Graph readerToGraphMyTxt(File file) throws IOException {
+//        List<Node> vars = new ArrayList<>();
+//        int numVars = 33;
+//        for (int i = 1; i <= numVars; i++) vars.add(new ContinuousVariable("X" + i));
+//
+//        Graph graph = new EdgeListGraph(vars);
+//
+//        try {
+//            DataSet datasSet = DataUtils.loadContinuousData(file, "//", '\"',
+//                    "*", false, Delimiter.TAB);
+//
+//            for (int i = 0; i < numVars; i++) {
+//                for (int j = i; j < numVars; j++) {
+//                    if (datasSet.getDouble(i, j) == 1.0 && datasSet.getDouble(j, i) == 1.0) {
+//                        graph.addBidirectedEdge(vars.get(i), vars.get(j));
+//                    } else if (datasSet.getDouble(i, j) == 1.0 && datasSet.getDouble(j, i) == 0.0) {
+//                        graph.addDirectedEdge(vars.get(i), vars.get(j));
+//                    } else if (datasSet.getDouble(i, j) == 0.0 && datasSet.getDouble(j, i) == 1.0) {
+//                        graph.addDirectedEdge(vars.get(j), vars.get(i));
+//                    }
+//                }
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return graph;
+//    }
 
     public static Graph loadGraphRuben(File file) {
         try {
@@ -3074,8 +3100,9 @@ public final class GraphUtils {
     /**
      * Finds a causal order for the given graph that is follows the order
      * of the given initialorder as possible.
-     * @param graph The graph to find a causal order for. Must be acyclic, though
-     *              it need not be a DAG.
+     *
+     * @param graph        The graph to find a causal order for. Must be acyclic, though
+     *                     it need not be a DAG.
      * @param initialorder The order to try to get as close to as possible.
      * @return Such a causal order.
      */
@@ -5087,7 +5114,12 @@ public final class GraphUtils {
         private final List<Edge> edgesReorientedTo;
         private final List<Edge> edgesAdjacencies;
 
-        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int arrowptFn, int arrowptFp, int arrowptCorrect, double adjPrec, double adjRec, double arrowptPrec, double arrowptRec, int shd, int twoCycleCorrect, int twoCycleFn, int twoCycleFp, List<Edge> edgesAdded, List<Edge> edgesRemoved, List<Edge> edgesReorientedFrom, List<Edge> edgesReorientedTo, List<Edge> edgesAdjacencies, int[][] counts) {
+        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int arrowptFn, int arrowptFp,
+                               int arrowptCorrect, double adjPrec, double adjRec, double arrowptPrec,
+                               double arrowptRec, int shd, int twoCycleCorrect, int twoCycleFn,
+                               int twoCycleFp, List<Edge> edgesAdded, List<Edge> edgesRemoved,
+                               List<Edge> edgesReorientedFrom, List<Edge> edgesReorientedTo,
+                               List<Edge> edgesAdjacencies, int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
             this.adjCorrect = adjCorrect;

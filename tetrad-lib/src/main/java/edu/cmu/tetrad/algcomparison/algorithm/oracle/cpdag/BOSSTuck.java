@@ -111,6 +111,7 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, HasKnowledge {
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.CACHE_SCORES);
+        params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 
         // Parameters

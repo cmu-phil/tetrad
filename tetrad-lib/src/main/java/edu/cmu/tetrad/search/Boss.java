@@ -141,8 +141,14 @@ public class Boss {
     public void betterMutation(@NotNull TeyssierScorer scorer) {
         scorer.bookmark();
         double s1, s2;
+        List<Node> pi1, pi2;
 
         do {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            pi1 = scorer.getPi();
             scorer.bookmark(1);
             s1 = scorer.score();
 
@@ -152,7 +158,9 @@ public class Boss {
             }
 
             s2 = scorer.score();
-        } while (s2 > s1);
+            pi2 = scorer.getPi();
+        } while (!pi1.equals(pi2));
+//    } while (s2 > s1);
 
         scorer.goToBookmark(1);
 
@@ -191,7 +199,6 @@ public class Boss {
     }
 
     class MyTask implements Callable<Ret> {
-
         Node k;
         TeyssierScorer scorer;
         double _sp;
@@ -210,6 +217,14 @@ public class Boss {
 
         @Override
         public Ret call() {
+            if (Thread.currentThread().isInterrupted()) {
+                Ret ret = new Ret();
+                ret._sp = _sp;
+                ret._k = _k;
+
+                return ret;
+            }
+
             return relocateVisit(k, scorer, _sp, _k, chunk, w);
         }
     }
@@ -290,8 +305,10 @@ public class Boss {
         double s;
         double sp = scorer.score();
         scorer.bookmark();
+        List<Node> pi1, pi2;
 
         do {
+            pi1 = scorer.getPi();
             s = sp;
 
             for (int i = 1; i < scorer.size(); i++) {
@@ -318,7 +335,9 @@ public class Boss {
                 }
             }
 
-        } while (sp > s);
+            pi2 = scorer.getPi();
+        } while (!pi1.equals(pi2));
+//    } while (sp > s);
 
         scorer.goToBookmark(1);
 

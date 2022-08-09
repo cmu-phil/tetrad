@@ -51,7 +51,7 @@ public class BossMB {
         this.scorer.clearBookmarks();
 
         List<Node> bestPerm = null;
-        double best = NEGATIVE_INFINITY;
+        int bestSize = scorer.size();
 
         this.scorer.score(order);
 
@@ -78,8 +78,8 @@ public class BossMB {
                 pi2 = besOrder(scorer);
             } while (!pi1.equals(pi2));
 
-            if (this.scorer.score() > best) {
-                best = this.scorer.score();
+            if (this.scorer.size() < bestSize) {
+                bestSize = this.scorer.size();
                 bestPerm = scorer.getPi();
             }
         }
@@ -193,12 +193,14 @@ public class BossMB {
         double s;
         double sp = scorer.score();
 
+        List<Node> p1, p2;
+
         do {
             s = sp;
+            p1 = scorer.getPi();
 
             Graph g = scorer.getGraph(false);
-            Set<Node> keep = new HashSet<>();
-            keep.addAll(targets);
+            Set<Node> keep = new HashSet<>(targets);
             for (Node n : targets) {
                 keep.addAll(g.getAdjacentNodes(n));
             }
@@ -222,7 +224,7 @@ public class BossMB {
             System.out.println("After snips: # vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges()
                     + " Score = " + scorer.score()
                     + " (betterMutation)"
-                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s") + " order = " + scorer.getPi());
 
 
             for (Node x : scorer.getPi()) {
@@ -246,7 +248,10 @@ public class BossMB {
                     }
                 }
             }
-        } while (sp > s);
+
+            p2 = scorer.getPi();
+        } while (!p1.equals(p2));
+//    } while (sp > s);
     }
 
     public List<Node> besOrder(TeyssierScorer2 scorer) {
