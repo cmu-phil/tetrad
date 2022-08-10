@@ -32,7 +32,7 @@ public class Grasp {
     private long start;
     // flags
     private boolean useScore = true;
-    private boolean usePearl;
+    private boolean useRaskuttiUhler;
     private boolean ordered;
     private boolean verbose;
     private boolean cachingScores = true;
@@ -67,10 +67,11 @@ public class Grasp {
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseRaskuttiUhler(this.usePearl);
+        this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
 
-        if (this.usePearl) {
+        if (this.useRaskuttiUhler) {
             this.scorer.setUseScore(false);
+            this.scorer.setUseRaskuttiUhler(true);
         } else {
             this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
         }
@@ -345,7 +346,11 @@ public class Grasp {
     }
 
     public void setUseRaskuttiUhler(boolean usePearl) {
-        this.usePearl = usePearl;
+        this.useRaskuttiUhler = usePearl;
+
+        if (this.useRaskuttiUhler) {
+            this.useScore = false;
+        }
     }
 
     public void setUseDataOrder(boolean useDataOrder) {
