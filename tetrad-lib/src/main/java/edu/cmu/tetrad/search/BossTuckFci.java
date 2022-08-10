@@ -24,11 +24,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -38,7 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Adjusts GFCI to use a permutation algorithm (such as GRaSP) to do the initial
+ * Adjusts GFCI to use a permutation algorithm (in this case BOSS-TUck) to do the initial
  * steps of finding adjacencies and unshielded colliders. Adjusts the GFCI rule
  * for finding bidirected edges to use permutation reasoning.
  * <p>
@@ -49,7 +45,7 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public final class GraspFci implements GraphSearch {
+public final class BossTuckFci implements GraphSearch {
 
     // The score used, if GS is used to build DAGs.
     private final Score score;
@@ -82,20 +78,11 @@ public final class GraspFci implements GraphSearch {
     // GRaSP parameters
     private int numStarts = 1;
     private int depth = 4;
-    private int nonsingularDepth = 1;
-    private int uncoveredDepth = 1;
-    private int toleranceDepth = 0;
-    private boolean useRaskuttiUhler;
     private boolean useDataOrder = true;
-    private boolean allowRandomnessInsideAlgorithm;
-
-    private boolean ordered = true;
-    private boolean useScore = true;
     private boolean cacheScores = true;
 
     //============================CONSTRUCTORS============================//
-    public GraspFci(IndependenceTest test, Score score) {
-        this.test = test;
+    public BossTuckFci(Score score) {
         this.score = score;
     }
 
@@ -105,42 +92,29 @@ public final class GraspFci implements GraphSearch {
         this.logger.log("info", "Independence test = " + getTest() + ".");
 
         // The PAG being constructed.
-        Grasp grasp = new Grasp(this.test, this.score);
+        Boss alg = new Boss(this.score);
+        alg.setAlgType(Boss.AlgType.BOSS_TUCK);
 
-        grasp.setDepth(this.depth);
-        grasp.setSingularDepth(this.uncoveredDepth);
-        grasp.setNonSingularDepth(this.nonsingularDepth);
-//        grasp.setToleranceDepth(this.toleranceDepth);
-        grasp.setOrdered(this.ordered);
-        grasp.setUseScore(this.useScore);
-        grasp.setUseRaskuttiUhler(this.useRaskuttiUhler);
-        grasp.setUseDataOrder(this.useDataOrder);
-        grasp.setVerbose(this.verbose);
-        grasp.setCacheScores(this.cacheScores);
+        alg.setDepth(this.depth);
+        alg.setUseDataOrder(this.useDataOrder);
+        alg.setVerbose(this.verbose);
+        alg.setCacheScores(this.cacheScores);
+        alg.setNumStarts(this.numStarts);
+        alg.setKnowledge(this.knowledge);
 
-        grasp.setNumStarts(this.numStarts);
-//        grasp.setKnowledge(this.knowledge);
+        List<Node> variables = this.score.getVariables();
 
-        List<Node> variables = null;
-
-        if (this.score != null) {
-            variables = this.score.getVariables();
-        } else if (this.test != null) {
-            variables = this.test.getVariables();
-        }
-
-        assert variables != null;
-        List<Node> perm = grasp.bestOrder(variables);
+        List<Node> perm = alg.bestOrder(variables);
 
         System.out.println("perm = " + perm);
 
-        Graph graph = grasp.getGraph(false);
+        Graph graph = alg.getGraph();
 
         System.out.println("graph = " + graph);
 
         Graph graspGraph = new EdgeListGraph(graph);
 
-        SepsetProducer sepsets = new SepsetsGreedy(graspGraph, this.test, null, -1);
+        SepsetProducer sepsets = new SepsetsTeyssier(graspGraph, new TeyssierScorer2(score),  new SepsetMap(), 3 );
 
         // "Extra" GFCI rule...
 //        for (Node b : score.getVariables()) {
@@ -175,14 +149,13 @@ public final class GraspFci implements GraphSearch {
 //            }
 //        }
 
-//        perm = grasp.bestOrder(this.score.getVariables());
+//        perm = alg.bestOrder(this.score.getVariables());
 //
 //        System.out.println("perm = " + perm);
 //
-//        graph = grasp.getGraph(true);
+//        graph = alg.getGraph(true);
 
         graph.reorientAllWith(Endpoint.CIRCLE);
-
 
 
 //        if (true) return graph;
@@ -211,9 +184,7 @@ public final class GraspFci implements GraphSearch {
         }
 
         TeyssierScorer scorer = new TeyssierScorer(this.test, this.score);
-        scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
         scorer.setKnowledge(knowledge);
-        scorer.setUseScore(this.useScore);
         scorer.setCachingScores(this.cacheScores);
 
         scorer.score(perm);
@@ -227,22 +198,13 @@ public final class GraspFci implements GraphSearch {
                 for (Node c : into) {
                     for (Node d : perm) {
                         if (configuration(scorer, a, b, c, d)) {
-                            System.out.println("Configuration " + a + "->" + b + "<-" + c + "--" + d);
-
                             scorer.bookmark();
-                            double score = scorer.score();
-
                             scorer.swap(b, c);
 
-                            grasp.bestOrder(scorer.getPi());
-
-                            if (configuration(scorer, d, c, b, a) && score == scorer.score()) {
-                                System.out.println("Configuration " + d + "->" + c + "<-" + b + "--" + a);
-
+                            if (configuration(scorer, d, c, b, a)) {
                                 graph.removeEdge(b, d);
                                 graph.setEndpoint(b, c, Endpoint.ARROW);
                                 graph.setEndpoint(d, c, Endpoint.ARROW);
-
                             }
 
                             scorer.goToBookmark();
@@ -274,12 +236,14 @@ public final class GraspFci implements GraphSearch {
     private boolean configuration(TeyssierScorer scorer, Node a, Node b, Node c, Node d) {
         if (!distinct(a, b, c, d)) return false;
 
-        return scorer.adjacent(a, b)
-                && scorer.adjacent(b, c)
-                && scorer.adjacent(c, d)
-                && scorer.adjacent(b, d)
-                && !scorer.adjacent(a, c)
-                && scorer.collider(a, b, c);
+        boolean adj1 = scorer.adjacent(a, b);
+        boolean adj2 = scorer.adjacent(b, c);
+        boolean adj3 = scorer.adjacent(c, d);
+        boolean adj4 = scorer.adjacent(b, d);
+        boolean adj5 = scorer.adjacent(a, c);
+        boolean collider = scorer.collider(a, b, c);
+
+        return adj1 && adj2 && adj3 && adj4 && !adj5 && collider;
     }
 
     private boolean distinct(Node a, Node b, Node c, Node d) {
@@ -444,40 +408,12 @@ public final class GraspFci implements GraphSearch {
         this.depth = depth;
     }
 
-    public void setUncoveredDepth(int uncoveredDepth) {
-        this.uncoveredDepth = uncoveredDepth;
-    }
-
-    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
-        this.useRaskuttiUhler = useRaskuttiUhler;
-    }
-
-    public void setNonSingularDepth(int nonsingularDepth) {
-        this.nonsingularDepth = nonsingularDepth;
-    }
-
-    public void setToleranceDepth(int toleranceDepth) {
-        this.toleranceDepth = toleranceDepth;
-    }
-
-    public void setOrdered(boolean ordered) {
-        this.ordered = ordered;
-    }
-
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
-    }
-
     public void setCacheScores(boolean cacheScores) {
         this.cacheScores = cacheScores;
     }
 
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
-    }
-
-    public void setAllowRandomnessInsideAlgorithm(boolean allowRandomnessInsideAlgorithms) {
-        this.allowRandomnessInsideAlgorithm = allowRandomnessInsideAlgorithms;
     }
 
     private boolean isArrowpointAllowed(Node x, Node y, Graph graph) {
