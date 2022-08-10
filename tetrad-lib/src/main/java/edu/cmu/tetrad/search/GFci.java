@@ -190,6 +190,7 @@ public final class GFci implements GraphSearch {
 
     // Due to Spirtes.
     public void modifiedR0(Graph fgesGraph) {
+        this.graph = new EdgeListGraph(graph);
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
 

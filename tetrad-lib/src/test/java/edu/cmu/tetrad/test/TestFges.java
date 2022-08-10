@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSSTuck;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.CPC;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
@@ -65,12 +66,12 @@ public class TestFges {
     private final PrintStream out = System.out;
 //    private OutputStream out =
 
-    //    @Test
+    @Test
     public void explore1() {
         RandomUtil.getInstance().setSeed(1450184147770L);
 
-        final int numVars = 10;
-        final double edgesPerNode = 1.0;
+        final int numVars = 1000;
+        final double edgesPerNode = 2.0;
         final int numCases = 1000;
         final double penaltyDiscount = 2.0;
 
@@ -91,42 +92,65 @@ public class TestFges {
             causalOrdering[i] = i;
         }
 
-        LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, causalOrdering);
-        simulator.setOut(this.out);
-        DataSet data = simulator.simulateDataFisher(numCases);
+        SemPm pm = new SemPm(dag);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(numCases, false);
+
+        System.out.println("data done");
+
+//        LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, causalOrdering);
+//        simulator.setOut(this.out);
+//        DataSet data = simulator.simulateDataFisher(numCases);
 
 //        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        ICovarianceMatrix cov = new CovarianceMatrix(data);
+        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
 
-        Fges fges = new Fges(score);
-        fges.setVerbose(false);
-        fges.setOut(this.out);
-        fges.setFaithfulnessAssumed(true);
+//        Boss2 alg = new Boss2(score);
+//        alg.setAlgType(Boss2.AlgType.BOSS_TUCK);
+//        alg.bestOrder(data.getVariables());
+//        alg.setVerbose(false);
+//        Graph estCPDAG = alg.getGraph();
 
-        Graph estCPDAG = fges.search();
+        Fges alg = new Fges(score);
+        alg.setVerbose(true);
+        alg.setOut(this.out);
+        alg.setFaithfulnessAssumed(true);
+        Graph estCPDAG = alg.search();
+
 
 //        printDegreeDistribution(estCPDAG, out);
 
         Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
 
-        int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
+        estCPDAG = GraphUtils.replaceNodes(estCPDAG, vars);
 
-        int[][] expectedCounts = {
-                {2, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 8, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-        };
+        System.out.println("true = " + trueCPDAG + " est = " + estCPDAG);
 
-        for (int i = 0; i < counts.length; i++) {
-            assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
-        }
+        double ap = new AdjacencyPrecision().getValue(trueCPDAG, estCPDAG, data);
+        double ar = new AdjacencyRecall().getValue(trueCPDAG, estCPDAG, data);
+
+        System.out.println("ap = " + ap + " ar = " + ar);
+
+
+
+//        int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
+//
+//        int[][] expectedCounts = {
+//                {2, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 8, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//        };
+//
+//        for (int i = 0; i < counts.length; i++) {
+//            assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
+//        }
 
     }
 
@@ -810,7 +834,7 @@ public class TestFges {
             knowledge.setForbidden(n1.getName(), n2.getName());
         }
 
-        return knowledge ;
+        return knowledge;
     }
 
     private IKnowledge requiredKnowledge(Graph graph) {

@@ -105,18 +105,17 @@ public final class Mmmb implements MbSearch {
     /**
      * Searches for the Markov blanket of the node by the given name.
      *
-     * @param targetName The name of the target node.
+     * @param target The name of the target node.
      * @return The Markov blanket of the target.
      */
-    public List<Node> findMb(String targetName) {
-        TetradLogger.getInstance().log("info", "target = " + targetName);
+    public List<Node> findMb(Node target) {
+        TetradLogger.getInstance().log("info", "target = " + target);
         this.numIndTests = 0;
         long time = System.currentTimeMillis();
 
         this.pc = new HashMap<>();
         this.trimmed = new HashSet<>();
 
-        Node target = getVariableForName(targetName);
         List<Node> nodes = mmmb(target);
 
         long time2 = System.currentTimeMillis() - time;

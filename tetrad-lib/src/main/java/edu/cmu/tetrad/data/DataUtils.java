@@ -2110,6 +2110,32 @@ public final class DataUtils {
         TetradLogger.getInstance().log("info", "\nData set loaded!");
         return covarianceMatrix;
     }
+
+    @NotNull
+    public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet) {
+        ICovarianceMatrix cov;
+
+        if (dataSet.getNumRows() < 1000) {
+            cov = new CovarianceMatrixOnTheFly(dataSet);
+        } else {
+            cov = new CovarianceMatrix(dataSet);
+        }
+
+        return cov;
+    }
+
+    @NotNull
+    public static ICovarianceMatrix getCorrelationMatrix(DataSet dataSet) {
+        ICovarianceMatrix cov;
+
+        if (dataSet.getNumRows() < 1000) {
+            cov = new CorrelationMatrixOnTheFly(new CovarianceMatrixOnTheFly(dataSet));
+        } else {
+            cov = new CovarianceMatrix(dataSet);
+        }
+
+        return cov;
+    }
 }
 
 

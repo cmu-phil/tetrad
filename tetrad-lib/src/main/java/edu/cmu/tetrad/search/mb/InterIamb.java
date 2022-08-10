@@ -58,8 +58,7 @@ public class InterIamb implements MbSearch {
         this.variables = test.getVariables();
     }
 
-    public List<Node> findMb(String targetName) {
-        Node target = getVariableForName(targetName);
+    public List<Node> findMb(Node target) {
         List<Node> cmb = new LinkedList<>();
         boolean cont = true;
 

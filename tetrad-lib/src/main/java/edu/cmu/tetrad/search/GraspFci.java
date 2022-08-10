@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -49,7 +48,7 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public final class GraspFci implements GraphSearch {
+public final class  GraspFci implements GraphSearch {
 
     // The score used, if GS is used to build DAGs.
     private final Score score;
@@ -60,9 +59,6 @@ public final class GraspFci implements GraphSearch {
     // The covariance matrix being searched over, if continuous data is supplied. This is
     // no used by the algorithm but can be retrieved by another method if desired
     ICovarianceMatrix covarianceMatrix;
-
-    // The sample size.
-    int sampleSize;
 
     // The background knowledge.
     private IKnowledge knowledge = new Knowledge2();
@@ -100,8 +96,6 @@ public final class GraspFci implements GraphSearch {
     public GraspFci(IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
-
-        this.sampleSize = score.getSampleSize();
     }
 
     //========================PUBLIC METHODS==========================//
@@ -126,11 +120,22 @@ public final class GraspFci implements GraphSearch {
         grasp.setNumStarts(this.numStarts);
 //        grasp.setKnowledge(this.knowledge);
 
-        List<Node> perm = grasp.bestOrder(this.score.getVariables());
+        List<Node> variables = null;
+
+        if (this.score != null) {
+            variables = this.score.getVariables();
+        } else if (this.test != null) {
+            variables = this.test.getVariables();
+        }
+
+        assert variables != null;
+        List<Node> perm = grasp.bestOrder(variables);
 
         System.out.println("perm = " + perm);
 
         Graph graph = grasp.getGraph(false);
+
+        System.out.println("graph = " + graph);
 
         Graph graspGraph = new EdgeListGraph(graph);
 
@@ -205,6 +210,10 @@ public final class GraspFci implements GraphSearch {
         }
 
         TeyssierScorer scorer = new TeyssierScorer(this.test, this.score);
+        scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
+        scorer.setKnowledge(knowledge);
+        scorer.setUseScore(this.useScore);
+        scorer.setCachingScores(this.cacheScores);
 
         scorer.score(perm);
 
@@ -220,13 +229,13 @@ public final class GraspFci implements GraphSearch {
                             System.out.println("Configuration " + a + "->" + b + "<-" + c + "--" + d);
 
                             scorer.bookmark();
-                            double score = scorer.score();
+//                            double score = scorer.score();
 
                             scorer.swap(b, c);
 
-                            grasp.bestOrder(scorer.getPi());
+//                            grasp.bestOrder(scorer.getPi());
 
-                            if (configuration(scorer, d, c, b, a) && score == scorer.score()) {
+                            if (configuration(scorer, d, c, b, a)) {// && score == scorer.score()) {
                                 System.out.println("Configuration " + d + "->" + c + "<-" + b + "--" + a);
 
                                 graph.removeEdge(b, d);

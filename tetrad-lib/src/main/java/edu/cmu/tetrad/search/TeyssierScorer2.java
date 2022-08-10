@@ -3,13 +3,15 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.ParamDescriptions;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 import static java.lang.Math.floor;
-import static java.util.Collections.shuffle;
-import static java.util.Collections.sort;
 
 
 /**
@@ -22,21 +24,19 @@ import static java.util.Collections.sort;
  * @author josephramsey
  * @author bryanandrews
  */
-public class TeyssierScorer {
+public class TeyssierScorer2 {
     private final List<Node> variables;
     private final Map<Node, Integer> variablesHash;
     private final Score score;
-    private final IndependenceTest test;
-    private final Map<Integer, ArrayList<Node>> bookmarkedOrders = new HashMap<>();
-    private final Map<Integer, ArrayList<Pair>> bookmarkedScores = new HashMap<>();
-    private final Map<Integer, Map<Node, Integer>> bookmarkedOrderHashes = new HashMap<>();
-    private final Map<Integer, Float> bookmarkedRunningScores = new HashMap<>();
-    private Map<Node, Map<Set<Node>, Float>> cache = new HashMap<>();
-    private Map<Node, Integer> orderHash;
-    private ArrayList<Node> pi; // The current permutation.
-    private ArrayList<Pair> scores;
+    private final Map<Object, ArrayList<Node>> bookmarkedOrders = new HashMap<>();
+    private final Map<Object, ArrayList<Pair>> bookmarkedScores = new HashMap<>();
+    private final Map<Object, Map<Node, Integer>> bookmarkedOrderHashes = new HashMap<>();
+    private final Map<Object, Float> bookmarkedRunningScores = new HashMap<>();
+    private final Map<Node, Integer> orderHash;
+    private List<Node> pi; // The current permutation.
+    private List<Pair> scores;
     private IKnowledge knowledge = new Knowledge2();
-    private ArrayList<Set<Node>> prefixes;
+//    private ArrayList<Set<Node>> prefixes;
 
     private boolean useScore = true;
     private boolean useRaskuttiUhler;
@@ -44,20 +44,33 @@ public class TeyssierScorer {
     private boolean cachingScores = true;
     private float runningScore = 0f;
 
-    public TeyssierScorer(IndependenceTest test, Score score) {
+    public TeyssierScorer2(TeyssierScorer2 scorer) {
+        this.score = scorer.score;
+        this.variables = new ArrayList<>(scorer.variables);
+        this.variablesHash = new HashMap<>(scorer.variablesHash);
+        this.orderHash = new HashMap<>(scorer.orderHash);
+        this.pi = new ArrayList<>(scorer.pi);
+        this.scores = new ArrayList<>(scorer.scores);
+        this.knowledge = scorer.knowledge;
+//        this.prefixes = new ArrayList<>(scorer.prefixes);
+        this.useScore = scorer.useScore;
+        this.useRaskuttiUhler = scorer.useRaskuttiUhler;
+        this.useBackwardScoring = scorer.useBackwardScoring;
+        this.cachingScores = scorer.cachingScores;
+        this.runningScore = scorer.runningScore;
+
+    }
+
+    public TeyssierScorer2(Score score) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
         this.score = score;
-        this.test = test;
 
         if (score != null) {
             this.variables = score.getVariables();
             this.pi = new ArrayList<>(this.variables);
-        } else if (test != null) {
-            this.variables = test.getVariables();
-            this.pi = new ArrayList<>(this.variables);
         } else {
-            throw new IllegalArgumentException("Need both a score and a test,");
+            throw new IllegalArgumentException("Need a score");
         }
 
         this.orderHash = new HashMap<>();
@@ -71,6 +84,34 @@ public class TeyssierScorer {
         }
     }
 
+    public boolean tuck(Node k, int j) {
+        if (!adjacent(k, get(j))) return false;
+//        if (coveredEdge(k, get(j))) return false;
+        if (j >= index(k)) return false;
+        int _j = j;
+        int _k = index(k);
+
+        bookmark(-55);
+
+        Set<Node> ancestors = getAncestors(k);
+
+        for (int i = j + 1; i <= index(k); i++) {
+            if (ancestors.contains(get(i))) {
+//                moveTo(get(i), j++);
+                moveToNoUpdate(get(i), j++);
+            }
+        }
+
+//        if (lastMoveSame(_j, _k) || violatesKnowledge(pi)) {
+//            goToBookmark(-55);
+//            return false;
+//        }
+
+        updateScores(_j, _k);
+
+        return true;
+    }
+
     /**
      * @param useScore True if the score should be used; false if the test should be used.
      */
@@ -81,30 +122,10 @@ public class TeyssierScorer {
     }
 
     /**
-     * @param cachingScores True if scores should be cached (potentially expensive for memory);
-     *                      false if not (potentially expensive for time).
-     */
-    public void setCachingScores(boolean cachingScores) {
-        this.cachingScores = cachingScores;
-    }
-
-    /**
      * @param knowledge Knowledge of forbidden edges.
      */
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    /**
-     * @param useRaskuttiUhler True if Pearl's method for building a DAG should be used.
-     */
-    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
-        this.useRaskuttiUhler = useRaskuttiUhler;
-        this.useScore = false;
-    }
-
-    public void setUseBackwardScoring(boolean useBackwardScoring) {
-        this.useBackwardScoring = useBackwardScoring;
     }
 
     /**
@@ -122,8 +143,9 @@ public class TeyssierScorer {
             this.scores.add(null);
         }
 
-        this.prefixes = new ArrayList<>();
-        for (int i1 = 0; i1 < order.size(); i1++) this.prefixes.add(null);
+//        this.prefixes = new ArrayList<>();
+//        for (int i1 = 0; i1 < order.size(); i1++) this.prefixes.add(null);
+        clearBookmarks();
         initializeScores();
         return score();
     }
@@ -132,8 +154,8 @@ public class TeyssierScorer {
      * @return The score of the current permutation.
      */
     public float score() {
-        return sum();
-//        return runningScore;
+//        return sum();
+        return runningScore;
     }
 
     private float sum() {
@@ -148,20 +170,6 @@ public class TeyssierScorer {
     }
 
     /**
-     * Performs a tuck operation. If pi[x] &lt; pi[y], moves y to index of x; otherwise moves x to index of y.
-     *
-     * @param x The first variable.
-     * @param y The second variable.
-     */
-    public void tuck(Node x, Node y) {
-        if (index(x) < index(y)) {
-            moveTo(y, index(x));
-        } else if (index(x) > index(y)) {
-            moveTo(x, index(y));
-        }
-    }
-
-    /**
      * Moves v to a new index.
      *
      * @param v       The variable to move.
@@ -170,7 +178,7 @@ public class TeyssierScorer {
     public void moveTo(Node v, int toIndex) {
         int vIndex = index(v);
         if (vIndex == toIndex) return;
-        if (lastMoveSame(vIndex, toIndex)) return;
+//        if (lastMoveSame(vIndex, toIndex)) return;
 
         this.pi.remove(v);
         this.pi.add(toIndex, v);
@@ -220,7 +228,7 @@ public class TeyssierScorer {
      * @return True iff x-&gt;y or y-&gt;x is a covered edge.
      */
     public boolean coveredEdge(Node x, Node y) {
-//        if (!adjacent(x, y)) return false;
+        if (!adjacent(x, y)) return false;
         Set<Node> px = getParents(x);
         Set<Node> py = getParents(y);
         px.remove(y);
@@ -233,15 +241,6 @@ public class TeyssierScorer {
      */
     public List<Node> getPi() {
         return new ArrayList<>(this.pi);
-    }
-
-    /**
-     * Returns the current permutation without making a copy. Could be dangerous!
-     *
-     * @return the current permutation.
-     */
-    public List<Node> getOrderShallow() {
-        return this.pi;
     }
 
     /**
@@ -306,7 +305,7 @@ public class TeyssierScorer {
      */
     public Graph getGraph(boolean cpDag) {
         List<Node> order = getPi();
-        Graph G1 = new EdgeListGraph(this.variables);
+        Graph G1 = new EdgeListGraph(getPi());
 
         for (int p = 0; p < order.size(); p++) {
             for (Node z : getParents(p)) {
@@ -314,7 +313,7 @@ public class TeyssierScorer {
             }
         }
 
-        GraphUtils.replaceNodes(G1, this.variables);
+//        GraphUtils.replaceNodes(G1, this.variables);
 
         if (cpDag) {
             return SearchGraphUtils.cpdagForDag(G1);
@@ -344,37 +343,6 @@ public class TeyssierScorer {
         }
 
         return new ArrayList<>(pairs);
-    }
-
-    public Map<Node, Set<Node>> getAdjMap() {
-        Map<Node, Set<Node>> adjMap = new HashMap<>();
-        for (Node node1 : getPi()) {
-            if (!adjMap.containsKey(node1)) {
-                adjMap.put(node1, new HashSet<>());
-            }
-            for (Node node2 : getParents(node1)) {
-                if (!adjMap.containsKey(node2)) {
-                    adjMap.put(node2, new HashSet<>());
-                }
-                adjMap.get(node1).add(node2);
-                adjMap.get(node2).add(node1);
-            }
-        }
-        return adjMap;
-    }
-
-
-    public Map<Node, Set<Node>> getChildMap() {
-        Map<Node, Set<Node>> childMap = new HashMap<>();
-        for (Node node1 : getPi()) {
-            for (Node node2 : getParents(node1)) {
-                if (!childMap.containsKey(node2)) {
-                    childMap.put(node2, new HashSet<>());
-                }
-                childMap.get(node2).add(node1);
-            }
-        }
-        return childMap;
     }
 
     public Set<Node> getAncestors(Node node) {
@@ -446,42 +414,42 @@ public class TeyssierScorer {
      * @param key This bookmark may be retrieved using the index 'key', an integer.
      *            This bookmark will be stored until it is retrieved and then removed.
      */
-    public void bookmark(int key) {
-//        if (!bookmarkedOrders.containsKey(key)) {
+    public void bookmark(Object key) {
+        if (!bookmarkedOrders.containsKey(key)) {
             this.bookmarkedOrders.put(key, new ArrayList<>(this.pi));
             this.bookmarkedScores.put(key, new ArrayList<>(this.scores));
             this.bookmarkedOrderHashes.put(key, new HashMap<>(this.orderHash));
             this.bookmarkedRunningScores.put(key, runningScore);
-//        } else {
-//            List<Node> pi2 = this.bookmarkedOrders.get(key);
-//            List<Pair> scores2 = this.bookmarkedScores.get(key);
-//            Map<Node, Integer> hashes2 = this.bookmarkedOrderHashes.get(key);
-//
-//            int first = 0;
-//            int last = size() - 1;
-//
-//            for (int i = 0; i < size(); i++) {
-//                if (this.pi.get(i) != pi2.get(i)) {
-//                    first = i;
-//                    break;
-//                }
-//            }
-//
-//            for (int i = size() - 1; i >= 0; i--) {
-//                if (this.pi.get(i) != pi2.get(i)) {
-//                    last = i;
-//                    break;
-//                }
-//            }
-//
-//            for (int i = first; i <= last; i++) {
-//                pi2.set(i, pi.get(i));
-//                scores2.set(i, scores.get(i));
-//                hashes2.put(pi2.get(i), orderHash.get(pi2.get(i)));
-//            }
-//
-//            this.bookmarkedRunningScores.put(key, runningScore);
-//        }
+        } else {
+            List<Node> pi2 = this.bookmarkedOrders.get(key);
+            List<Pair> scores2 = this.bookmarkedScores.get(key);
+            Map<Node, Integer> hashes2 = this.bookmarkedOrderHashes.get(key);
+
+            int first = 0;
+            int last = size() - 1;
+
+            for (int i = 0; i < size(); i++) {
+                if (this.pi.get(i) != pi2.get(i)) {
+                    first = i;
+                    break;
+                }
+            }
+
+            for (int i = size() - 1; i >= 0; i--) {
+                if (this.pi.get(i) != pi2.get(i)) {
+                    last = i;
+                    break;
+                }
+            }
+
+            for (int i = first; i <= last; i++) {
+                pi2.set(i, pi.get(i));
+                scores2.set(i, scores.get(i));
+                hashes2.put(pi2.get(i), orderHash.get(pi2.get(i)));
+            }
+
+            this.bookmarkedRunningScores.put(key, runningScore);
+        }
     }
 
     /**
@@ -496,58 +464,42 @@ public class TeyssierScorer {
      *
      * @param key The integer key for this bookmark.
      */
-    public void goToBookmark(int key) {
+    public void goToBookmark(Object key) {
         if (!this.bookmarkedOrders.containsKey(key)) {
-//            throw new IllegalArgumentException("That key was not bookmarked recently.");
-            bookmark(key);
-            return;
+            throw new IllegalArgumentException("That key was not bookmarked.");
         }
 
+        List<Node> pi2 = this.bookmarkedOrders.get(key);
+        List<Pair> scores2 = this.bookmarkedScores.get(key);
+        Map<Node, Integer> hashes2 = this.bookmarkedOrderHashes.get(key);
+        Float runningScore2 = this.bookmarkedRunningScores.get(key);
 
-//        List<Node> pi2 = this.bookmarkedOrders.get(key);
-//        List<Pair> scores2 = this.bookmarkedScores.get(key);
-//        Map<Node, Integer> hashes2 = this.bookmarkedOrderHashes.get(key);
-//        Float runningScore2 = this.bookmarkedRunningScores.get(key);
-//
-//        int first = size();
-//        int last = -1;
-//
-//        for (int i = 0; i < size(); i++) {
-//            if (this.pi.get(i) != pi2.get(i)) {
-//                first = i;
-//                break;
-//            }
-//        }
-//
-//        for (int i = size() - 1; i >= 0; i--) {
-//            if (this.pi.get(i) != pi2.get(i)) {
-//                last = i;
-//                break;
-//            }
-//        }
-//
-//        for (int i = first; i <= last; i++) {
-//            this.pi.set(i, pi2.get(i));
-//            this.scores.set(i, scores2.get(i));
-//            this.orderHash.put(pi.get(i), hashes2.get(pi.get(i)));
-//        }
-//
-//        this.runningScore = runningScore2;
-//
-//        //        for (int i = 0; i < pi.size(); i++) {
-////            if (this.pi.get(i) != pi2.get(i)) {
-////                this.pi.set(i, pi2.get(i));
-////                this.scores.set(i, scores2.get(i));
-////                this.orderHash.put(pi.get(i), hashes2.get(pi.get(i)));
-////                this.runningScore = runningScore2;
-////            }
-////        }
+        int first = size();
+        int last = -1;
 
-        this.pi = this.bookmarkedOrders.remove(key);
-        this.scores = this.bookmarkedScores.remove(key);
-        this.orderHash = this.bookmarkedOrderHashes.remove(key);
-        this.runningScore = this.bookmarkedRunningScores.remove(key);
+        for (int i = 0; i < size(); i++) {
+            if (this.pi.get(i) != pi2.get(i)) {
+                first = i;
+                break;
+            }
+        }
 
+        for (int i = size() - 1; i >= 0; i--) {
+            if (this.pi.get(i) != pi2.get(i)) {
+                last = i;
+                break;
+            }
+        }
+
+        for (int i = first; i <= last; i++) {
+            if (this.pi.get(i) != (pi2.get(i))) {
+                this.pi.set(i, pi2.get(i));
+                this.scores.set(i, scores2.get(i));
+                this.orderHash.put(pi.get(i), hashes2.get(pi.get(i)));
+            }
+        }
+
+        this.runningScore = runningScore2;
     }
 
     /**
@@ -575,21 +527,6 @@ public class TeyssierScorer {
     }
 
     /**
-     * Shuffles the current permutation and rescores it.
-     */
-    public void shuffleVariables() {
-        this.pi = new ArrayList<>(this.pi);
-        shuffle(this.pi);
-        score(this.pi);
-    }
-
-    public List<Node> getShuffledVariables() {
-        List<Node> variables = getPi();
-        shuffle(variables);
-        return variables;
-    }
-
-    /**
      * Returns True iff a is adjacent to b in the current graph.
      *
      * @param a The first node.
@@ -598,7 +535,7 @@ public class TeyssierScorer {
      */
     public boolean adjacent(Node a, Node b) {
         if (a == b) return false;
-        return getParents(a).contains(b) || getParents(b).contains(a);
+        return parent(a, b) || parent(b, a);
     }
 
     /**
@@ -643,21 +580,6 @@ public class TeyssierScorer {
         return true;
     }
 
-    /**
-     * A convenience method to reset the score cache if it becomes larger than a certain
-     * size.
-     *
-     * @param maxSize The maximum size of the score cache; it the if the score cache is
-     *                larger than this it will be cleared.
-     */
-    public void resetCacheIfTooBig(int maxSize) {
-        if (this.cache.size() > maxSize) {
-            this.cache = new HashMap<>();
-            System.out.println("Clearing cacche...");
-            System.gc();
-        }
-    }
-
     private boolean violatesKnowledge(List<Node> order) {
         if (!knowledge.isEmpty()) {
             for (int i = 0; i < order.size(); i++) {
@@ -673,27 +595,64 @@ public class TeyssierScorer {
     }
 
     private void initializeScores() {
-        for (int i1 = 0; i1 < this.pi.size(); i1++) this.prefixes.set(i1, null);
+//        for (int i1 = 0; i1 < this.pi.size(); i1++) this.prefixes.set(i1, null);
         updateScores(0, this.pi.size() - 1);
     }
 
     public void updateScores(int i1, int i2) {
-        for (int i = i1; i <= i2; i++) {
-            recalculate(i);
-            this.orderHash.put(this.pi.get(i), i);
+        int chunk = getChunkSize(i2 - i1 + 1);
+        List<MyTask> tasks = new ArrayList<>();
+
+        for (int w = 0; w < size(); w += chunk) {
+            tasks.add(new MyTask(pi, this, chunk, orderHash, w, w + chunk));
+        }
+
+        ForkJoinPool.commonPool().invokeAll(tasks);
+
+
+//        for (int i = i1; i <= i2; i++) {
+//            recalculate(i);
+//            this.orderHash.put(this.pi.get(i), i);
+//        }
+    }
+
+    private int getChunkSize(int n) {
+        int chunk = n / Runtime.getRuntime().availableProcessors();
+        if (chunk < 100) chunk = 100;
+        return chunk;
+    }
+
+    class MyTask implements Callable<Boolean> {
+        final List<Node> pi;
+        final Map<Node, Integer> orderHash;
+        TeyssierScorer2 scorer;
+        int chunk;
+        private final int from;
+        private final int to;
+
+        MyTask(List<Node> pi, TeyssierScorer2 scorer, int chunk, Map<Node, Integer> orderHash, int from, int to) {
+            this.pi = pi;
+            this.scorer = scorer;
+            this.chunk = chunk;
+            this.orderHash = orderHash;
+            this.from = from;
+            this.to = to;
+        }
+
+        @Override
+        public Boolean call() {
+            for (int i = from; i <= to; i++) {
+                if (Thread.currentThread().isInterrupted()) break;
+                recalculate(i);
+                this.orderHash.put(this.pi.get(i), i);
+            }
+
+            return true;
         }
     }
 
-    private float score(Node n, Set<Node> pi) {
-//        if (this.cachingScores) {
-//            this.cache.computeIfAbsent(n, w -> new HashMap<>());
-//            Float score = this.cache.get(n).get(pi);
-//
-//            if (score != null) {
-//                return score;
-//            }
-//        }
 
+    private float score(Node n, Set<Node> pi) {
         int[] parentIndices = new int[pi.size()];
 
         int k = 0;
@@ -702,14 +661,7 @@ public class TeyssierScorer {
             parentIndices[k++] = this.variablesHash.get(p);
         }
 
-        float v = (float) this.score.localScore(this.variablesHash.get(n), parentIndices);
-
-//        if (this.cachingScores) {
-//            this.cache.computeIfAbsent(n, w -> new HashMap<>());
-//            this.cache.get(n).put(new HashSet<>(pi), v);
-//        }
-
-        return v;
+        return (float) this.score.localScore(this.variablesHash.get(n), parentIndices);
     }
 
     public Set<Node> getPrefix(int i) {
@@ -723,15 +675,15 @@ public class TeyssierScorer {
     }
 
     private void recalculate(int p) {
-        if (this.prefixes.get(p) == null || !this.prefixes.get(p).containsAll(getPrefix(p))) {
-            Pair p2 = getParentsInternal(p);
-            if (scores.get(p) == null) {
-                this.runningScore += p2.score;
-            } else {
-                this.runningScore += p2.score - scores.get(p).score;
-            }
-            this.scores.set(p, p2);
+        Pair p2 = getGrowShrinkScore(p);
+
+        if (scores.get(p) == null) {
+            this.runningScore += p2.score;
+        } else {
+            this.runningScore += p2.score - scores.get(p).getScore();
         }
+
+        this.scores.set(p, p2);
     }
 
     private void nodesHash(Map<Node, Integer> nodesHash, List<Node> variables) {
@@ -740,25 +692,25 @@ public class TeyssierScorer {
         }
     }
 
-    private boolean lastMoveSame(int i1, int i2) {
-        if (i1 <= i2) {
-            Set<Node> prefix0 = getPrefix(i1);
-
-            for (int i = i1; i <= i2; i++) {
-                prefix0.add(get(i));
-                if (!prefix0.equals(this.prefixes.get(i))) return false;
-            }
-        } else {
-            Set<Node> prefix0 = getPrefix(i1);
-
-            for (int i = i2; i <= i1; i++) {
-                prefix0.add(get(i));
-                if (!prefix0.equals(this.prefixes.get(i))) return false;
-            }
-        }
-
-        return true;
-    }
+//    private boolean lastMoveSame(int i1, int i2) {
+//        if (i1 <= i2) {
+//            Set<Node> prefix0 = getPrefix(i1);
+//
+//            for (int i = i1; i <= i2; i++) {
+//                prefix0.add(get(i));
+//                if (!prefix0.equals(this.prefixes.get(i))) return false;
+//            }
+//        } else {
+//            Set<Node> prefix0 = getPrefix(i1);
+//
+//            for (int i = i2; i <= i1; i++) {
+//                prefix0.add(get(i));
+//                if (!prefix0.equals(this.prefixes.get(i))) return false;
+//            }
+//        }
+//
+//        return true;
+//    }
 
     @NotNull
     private Pair getGrowShrinkScore(int p) {
@@ -768,7 +720,8 @@ public class TeyssierScorer {
         boolean changed = true;
 
         float sMax = score(n, new HashSet<>());
-        List<Node> prefix = new ArrayList<>(getPrefix(p));
+        Set<Node> prefix1 = getPrefix(p);
+        List<Node> prefix = new ArrayList<>(prefix1);
 
         // Backward scoring only from the prefix variables
         if (this.useBackwardScoring) {
@@ -833,90 +786,13 @@ public class TeyssierScorer {
             }
         }
 
+//        this.prefixes.set(p, prefix1);
+
         if (this.useScore) {
             return new Pair(parents, Float.isNaN(sMax) ? Float.NEGATIVE_INFINITY : sMax);
         } else {
             return new Pair(parents, -parents.size());
         }
-    }
-
-    private Pair getGrowShrinkIndependent(int p) {
-        Node n = this.pi.get(p);
-
-        Set<Node> parents = new HashSet<>();
-
-        Set<Node> prefix = getPrefix(p);
-
-        boolean changed1 = true;
-
-        while (changed1) {
-            changed1 = false;
-
-            for (Node z0 : prefix) {
-                if (parents.contains(z0)) continue;
-                if (!knowledge.isEmpty() && this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
-
-                if (this.test.checkIndependence(n, z0, new ArrayList<>(parents)).dependent()) {
-                    parents.add(z0);
-                    changed1 = true;
-                }
-            }
-        }
-
-        boolean changed2 = true;
-
-        while (changed2) {
-            changed2 = false;
-
-            for (Node z1 : new HashSet<>(parents)) {
-                Set<Node> _p = new HashSet<>(parents);
-                _p.remove(z1);
-
-                if (this.test.checkIndependence(n, z1, new ArrayList<>(_p)).independent()) {
-                    parents.remove(z1);
-                    changed2 = true;
-                }
-            }
-        }
-
-        return new Pair(parents, -parents.size());
-    }
-
-    private Pair getParentsInternal(int p) {
-        if (this.useRaskuttiUhler) {
-            return getRaskuttiUhlerParents(p);
-        } else {
-            if (this.useScore) {
-                return getGrowShrinkScore(p);
-            } else {
-                return getGrowShrinkIndependent(p);
-            }
-        }
-    }
-
-    /**
-     * Returns the parents of the node at index p, calculated using Pearl's method.
-     *
-     * @param p The index.
-     * @return The parents, as a Pair object (parents + score).
-     */
-    private Pair getRaskuttiUhlerParents(int p) {
-        Node x = this.pi.get(p);
-        Set<Node> parents = new HashSet<>();
-        Set<Node> prefix = getPrefix(p);
-
-        for (Node y : prefix) {
-            Set<Node> minus = new HashSet<>(prefix);
-            minus.remove(y);
-            ArrayList<Node> z = new ArrayList<>(minus);
-            sort(z);
-
-            if (this.test.checkIndependence(x, y, z).dependent()) {
-                parents.add(y);
-            }
-        }
-
-        return new Pair(parents, -parents.size());
     }
 
     public Set<Set<Node>> getSkeleton() {
@@ -935,32 +811,109 @@ public class TeyssierScorer {
         return skeleton;
     }
 
-
     public void moveToNoUpdate(Node v, int toIndex) {
-        bookmark(-55);
+//        bookmark(-55);
 
         if (!this.pi.contains(v)) return;
-
         int vIndex = index(v);
-
         if (vIndex == toIndex) return;
-
-        if (lastMoveSame(vIndex, toIndex)) return;
+//        if (lastMoveSame(vIndex, toIndex)) {
+//            goToBookmark(-55);
+//            return;
+//        }
 
         this.pi.remove(v);
         this.pi.add(toIndex, v);
 
-        if (violatesKnowledge(this.pi)) {
-            goToBookmark(-55);
-        }
-
+//        if (violatesKnowledge(this.pi)) {
+//            goToBookmark(-55);
+//        }
     }
 
     public boolean parent(Node k, Node j) {
         return getParents(j).contains(k);
     }
 
-    private static class Pair {
+    public boolean spouse(Node x, Node target) {
+        for (Node y : pi) {
+            if (parent(x, y)) {
+                if (parent(target, y)) {
+                    if (target != x) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public boolean adjadj(Node x, Node target) {
+        int ix = index(x);
+        int it = index(target);
+
+        if (ix == it) {
+            return false;
+        } else if (ix < it) {
+            if (parent(x, target)) {
+                return true;
+            }
+        } else { // ix > it
+            if (parent(target, x)) {
+                return true;
+            }
+        }
+
+        for (int i = ix + 1; i < pi.size(); i++) {
+//        for (Node y : pi) {
+            Node y = pi.get(i);
+            Set<Node> parents = getParents(y);
+            if (parents.contains(target) && parents.contains(x)) {
+                return true;
+            }
+        }
+
+        return false;
+//
+//
+//        Set<Node> adjx = getParents(target);
+//
+//        if (parent(x, target)) return true;
+//
+//        if (adjx.contains(x)) return true;
+//
+//        for (Node y : adjx) {
+//            if (adjacent(x, y)) return true;
+//        }
+//
+//        return false;
+    }
+
+    public double remove(Node x) {
+        Set<Node> adj = getAdjacentNodes(x);
+
+        int index = index(x);
+        this.scores.remove(index);
+        this.pi.remove(x);
+        this.orderHash.remove(x);
+        this.variables.remove(x);
+        this.variablesHash.remove(x);
+//        this.prefixes.clear();
+//        for (int i = 0; i < pi.size(); i++) prefixes.add(null);
+
+        for (int i = index; i < pi.size(); i++) {
+            if (adj.contains(get(i))) {
+                recalculate(i);
+                this.orderHash.put(this.pi.get(i), i);
+            }
+        }
+
+        updateScores(index, pi.size() - 1);
+        clearBookmarks();
+        return score();
+    }
+
+    public static class Pair {
         private final Set<Node> parents;
         private final float score;
 

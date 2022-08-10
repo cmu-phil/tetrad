@@ -3370,13 +3370,13 @@ tabs will not appear.</p> -->
 
     <p><a href="#targetName">targetName</a></p>
 
-    <h3>The MBFS Algorithm</h3>
+    <h3>The PC-MB Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="mbfs">
+    <div id="pc-mb">
 
-        <p>Markov blanket fan search. Similar to FGES-MB (see FGES,
+        <p>PC-MB. Similar to FGES-MB (see FGES,
             2016) but using PC as the basic search instead of FGES. The rules of
             the PC search are restricted to just the variables in the Markov
             blanket of a target T, including T; the result is a graph that is a
@@ -4693,21 +4693,21 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="targetNames">targetNames</h3>
-        <ul class="targetNames_list">
-            <li>Short Description: <span id="targetNames_short_desc">Target names
+            id="targets">targets</h3>
+        <ul class="targets_list">
+            <li>Short Description: <span id="targets_short_desc">Target names
         (comma separated)</span></li>
             <li>Long Description: <span
-                    id="targetNames_long_desc">Target names (comma separated).</span>
+                    id="targets_long_desc">Target names (comma separated).</span>
             </li>
             <li>Default Value: <span
-                    id="targetNames_default_value"></span></li>
+                    id="targets_default_value"></span></li>
             <li>Lower Bound: <span
-                    id="targetNames_lower_bound"></span></li>
+                    id="targets_lower_bound"></span></li>
             <li>Upper Bound: <span
-                    id="targetNames_upper_bound"></span></li>
+                    id="targets_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="targetNames_value_type">String</span></li>
+                    id="targets_value_type">String</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -4944,6 +4944,23 @@ tabs will not appear.</p> -->
                 <span id="differentGraphs_upper_bound"></span></li>
             <li>Value Type:
                 <span id="differentGraphs_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="mb">mb</h3>
+        <ul class="mb_list">
+            <li>Short Description: <span id="mb_short_desc">Find Markov blanket(s)</span></li>
+            <li>Long Description: <span
+                    id="mb_long_desc">Looks for the graph over the Markov blanket(s) and target(s) if true</span>
+            </li>
+            <li>Default Value: <span
+                    id="mb_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="mb_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="mb_upper_bound"></span></li>
+            <li>Value Type: <span
+                    id="mb_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="discretize">discretize</h3>
@@ -5510,7 +5527,8 @@ tabs will not appear.</p> -->
             <li>Short Description: <span
                     id="imagesMetaAlg_short_desc">IMaGES "meta" algorithm. 1 = FGES, 2 = BOSS-Tuck</span></li>
             <li>Long
-                Description: <span id="imagesMetaAlg_long_desc"> Sets the meta algorithm to be optimized using the IMaGES (average BIC) score.</span></li>
+                Description: <span id="imagesMetaAlg_long_desc"> Sets the meta algorithm to be optimized using the IMaGES (average BIC) score.</span>
+            </li>
             <li>Default Value:
                 <span id="imagesMetaAlg_default_value">1</span></li>
             <li>Lower Bound: <span
@@ -6040,6 +6058,18 @@ tabs will not appear.</p> -->
                     id="maxIndegree_upper_bound">2147483647</span></li>
             <li>Value Type:
                 <span id="maxIndegree_value_type">Integer</span></li>
+        </ul>
+
+        <h3 id="zsMaxIndegree" class="parameter_description">zsMaxIndegree</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="zsMaxIndegree_short_desc">Maximum indegree of true graph (min = 0)</span>
+            </li>
+            <li>Long Description: <span id="zsMaxIndegree_long_desc">This is the maximum number of parents one expects any node to have in the true model.</span>
+            </li>
+            <li>Default Value: <span id="zsMaxIndegree_default_value">4</span></li>
+            <li>Lower Bound: <span id="zsMaxIndegree_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="zsMaxIndegree_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="zsMaxIndegree_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7158,6 +7188,18 @@ tabs will not appear.</p> -->
                         id="penaltyDiscount_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span
                     id="penaltyDiscount_value_type">Double</span></li>
+        </ul>
+
+        <h3 id="zSRiskBound" class="parameter_description">zSRiskBound</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="zSRiskBound_short_desc">Risk bound</span></li>
+            <li>Long Description: <span id="zSRiskBound_long_desc">
+                This is the probability of getting the true model if a correct model is discovered. Could underfit.</span>
+            </li>
+            <li>Default Value: <span id="zSRiskBound_default_value">0.001</span></li>
+            <li>Lower Bound: <span id="zSRiskBound_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="zSRiskBound_upper_bound">1</span></li>
+            <li>Value Type: <span id="zSRiskBound_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description" id="ebicGamma">ebicGamma</h3>

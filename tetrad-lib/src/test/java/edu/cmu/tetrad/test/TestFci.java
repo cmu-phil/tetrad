@@ -209,11 +209,15 @@ public class TestFci {
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
-        Fci fci = new Fci(independence);
-        fci.setPossibleDsepSearchDone(true);
-        fci.setCompleteRuleSetUsed(true);
-        fci.setKnowledge(knowledge);
-        fci.setMaxPathLength(-1);
+//        Fci fci = new Fci(independence);
+//        fci.setPossibleDsepSearchDone(true);
+//        fci.setCompleteRuleSetUsed(true);
+//        fci.setKnowledge(knowledge);
+//        fci.setMaxPathLength(-1);
+
+        GraspFci fci = new GraspFci(independence, null);
+        fci.setUseRaskuttiUhler(true);
+        fci.setUseScore(false);
 
         // Run search
         Graph resultGraph = fci.search();

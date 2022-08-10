@@ -189,6 +189,7 @@ public final class Params {
     // System prameters that are not supposed to put in the HTML manual documentation
     public static final String PRINT_STREAM = "printStream";
     public static final String SEM_BIC_RULE = "semBicRule";
+    public static final String SEM_GIC_RULE = "semGicRule";
     public static final String SEM_BIC_STRUCTURE_PRIOR = "semBicStructurePrior";
     public static final String NUM_STARTS = "numStarts";
     public static final String CACHE_SCORES = "cacheScores";
@@ -220,7 +221,8 @@ public final class Params {
     public static final String SIMULATION_PARAM2 = "simulationParam2";
     public static final String SELECTION_MIN_EFFECT = "selectionMinEffect";
     public static final String NUM_SUBSAMPLES = "numSubsamples";
-    public static final String TARGET_NAMES = "targetNames";
+    public static final String TARGETS = "targets";
+    public static final String MB = "mb";
     public static final String CSTAR_Q = "cstarQ";
     public static final String TIME_LAG = "timeLag";
     public static final String PRECOMPUTE_COVARIANCES = "precomputeCovariances";

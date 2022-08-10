@@ -20,6 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.util.Params;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -1331,13 +1333,30 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public void reorientAllWith(Endpoint endpoint) {
-        for (Edge edge : new ArrayList<>(this.edgesSet)) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i; j < nodes.size(); j++) {
+                if (isAdjacentTo(nodes.get(i), nodes.get(j))) {
+                    removeEdges(nodes.get(i), nodes.get(j));
 
-            setEndpoint(a, b, endpoint);
-            setEndpoint(b, a, endpoint);
+                    if (endpoint == Endpoint.ARROW) {
+                        addBidirectedEdge(nodes.get(i), nodes.get(j));
+                    } else if (endpoint == Endpoint.CIRCLE) {
+                        addNondirectedEdge(nodes.get(i), nodes.get(j));
+                    } else if (endpoint == Endpoint.TAIL) {
+                        addUndirectedEdge(nodes.get(i), nodes.get(j));
+                    }
+                }
+            }
         }
+//
+//
+//        for (Edge edge : new ArrayList<>(this.edgesSet)) {
+//            Node a = edge.getNode1();
+//            Node b = edge.getNode2();
+//
+//            setEndpoint(a, b, endpoint);
+//            setEndpoint(b, a, endpoint);
+//        }
     }
 
     /**

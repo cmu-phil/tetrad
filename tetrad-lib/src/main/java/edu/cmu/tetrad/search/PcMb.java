@@ -39,7 +39,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class Mbfs implements MbSearch, GraphSearch {
+public final class PcMb implements MbSearch, GraphSearch {
 
     /**
      * The independence test used to perform the search.
@@ -54,7 +54,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
     /**
      * The target variable.
      */
-    private Node target;
+    private List<Node> targets;
 
     /**
      * The depth to which independence tests should be performed--i.e. the maximum number of conditioning variables for
@@ -124,6 +124,9 @@ public final class Mbfs implements MbSearch, GraphSearch {
      */
     private final TetradLogger logger = TetradLogger.getInstance();
 
+    private boolean findMb = false;
+
+
     //==============================CONSTRUCTORS==========================//
 
     /**
@@ -132,7 +135,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
      * @param test  The source of conditional independence information for the search.
      * @param depth The maximum number of variables conditioned on for any
      */
-    public Mbfs(IndependenceTest test, int depth) {
+    public PcMb(IndependenceTest test, int depth) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -162,45 +165,31 @@ public final class Mbfs implements MbSearch, GraphSearch {
     }
 
     /**
-     * Searches for the MB CPDAG for the given target.
+     * Searches for the MB CPDAG for the given targets.
      *
-     * @param targetName The name of the target variable.
+     * @param targets The targets variable.
      */
-    public Graph search(String targetName) {
-        if (targetName == null) {
-            throw new IllegalArgumentException("Target variable name needs to be provided.");
-        }
-
-        this.target = getVariableForName(targetName);
-        return search(this.target);
-    }
-
-    /**
-     * Searches for the MB CPDAG for the given target.
-     *
-     * @param target The target variable.
-     */
-    public Graph search(Node target) {
+    public Graph search(List<Node> targets) {
         long start = System.currentTimeMillis();
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
 
-        if (target == null) {
+        if (targets == null) {
             throw new IllegalArgumentException(
-                    "Null target name not permitted");
+                    "Null targets name not permitted");
         }
 
-        this.target = target;
+        this.targets = targets;
 
-        this.logger.log("info", "Target = " + target);
+        this.logger.log("info", "Target = " + targets);
 
         // Some statistics.
         this.maxRemainingAtDepth = new int[20];
         Arrays.fill(this.maxRemainingAtDepth, -1);
 
-        this.logger.log("info", "target = " + getTarget());
+        this.logger.log("info", "targets = " + getTargets());
 
         Graph graph = new EdgeListGraph();
 
@@ -214,85 +203,91 @@ public final class Mbfs implements MbSearch, GraphSearch {
         // jdramsey 8/6/04
         this.a = new HashSet<>();
 
-        // Step 1. Get associates for the target.
-        this.logger.log("info", "BEGINNING step 1 (prune target).");
+        // Step 1. Get associates for the targets.
+        this.logger.log("info", "BEGINNING step 1 (prune targets).");
 
-        graph.addNode(getTarget());
-        constructFan(getTarget(), graph);
+        for (Node target : getTargets()) {
+            graph.addNode(target);
+            constructFan(target, graph);
 
-        this.logger.log("graph", "After step 1 (prune target)" + graph);
-        this.logger.log("graph", "After step 1 (prune target)" + graph);
+            this.logger.log("graph", "After step 1 (prune targets)" + graph);
+            this.logger.log("graph", "After step 1 (prune targets)" + graph);
+        }
 
-        // Step 2. Get associates for each variable adjacent to the target,
+        // Step 2. Get associates for each variable adjacent to the targets,
         // removing edges based on those associates where possible. After this
-        // step, adjacencies to the target are parents or children of the target.
+        // step, adjacencies to the targets are parents or children of the targets.
         // Call this set PC.
         this.logger.log("info", "BEGINNING step 2 (prune PC).");
 
 //        variables = graph.getNodes();
 
-        for (Node v : graph.getAdjacentNodes(getTarget())) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            constructFan(v, graph);
-
-            // Optimization: For t---v---w, toss out w if <t, v, w> can't
-            // be an unambiguous collider, judging from the side of t alone.
-            // Look at adjacencies w of v. If w is not in A, and there is no
-            // S in adj(t) containing v s.g. t _||_ v | S, then remove v.
-
-            W:
-            for (Node w : graph.getAdjacentNodes(v)) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                if (this.a.contains(w)) {
-                    continue;
-                }
-
-                List<Node> _a = new LinkedList<>(this.a);
-                _a.retainAll(graph.getAdjacentNodes(w));
-                if (_a.size() > 1) continue;
-
-                List<Node> adjT = graph.getAdjacentNodes(getTarget());
-                DepthChoiceGenerator cg = new DepthChoiceGenerator(
-                        adjT.size(), this.depth);
-                int[] choice;
-
-                while ((choice = cg.next()) != null) {
+        if (findMb) {
+            for (Node target : getTargets()) {
+                for (Node v : graph.getAdjacentNodes(target)) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
 
-                    List<Node> s = GraphUtils.asList(choice, adjT);
-                    if (!s.contains(v)) continue;
+                    constructFan(v, graph);
 
-                    if (independent(getTarget(), w, s)) {
-                        graph.removeEdge(v, w);
-                        continue W;
+                    // Optimization: For t---v---w, toss out w if <t, v, w> can't
+                    // be an unambiguous collider, judging from the side of t alone.
+                    // Look at adjacencies w of v. If w is not in A, and there is no
+                    // S in adj(t) containing v s.g. t _||_ v | S, then remove v.
+
+                    W:
+                    for (Node w : graph.getAdjacentNodes(v)) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
+                        if (this.a.contains(w)) {
+                            continue;
+                        }
+
+                        List<Node> _a = new LinkedList<>(this.a);
+                        _a.retainAll(graph.getAdjacentNodes(w));
+                        if (_a.size() > 1) continue;
+
+                        List<Node> adjT = graph.getAdjacentNodes(target);
+                        DepthChoiceGenerator cg = new DepthChoiceGenerator(
+                                adjT.size(), this.depth);
+                        int[] choice;
+
+                        while ((choice = cg.next()) != null) {
+                            if (Thread.currentThread().isInterrupted()) {
+                                break;
+                            }
+
+                            List<Node> s = GraphUtils.asList(choice, adjT);
+                            if (!s.contains(v)) continue;
+
+                            if (independent(target, w, s)) {
+                                graph.removeEdge(v, w);
+                                continue W;
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        this.logger.log("graph", "After step 2 (prune PC)" + graph);
+                this.logger.log("graph", "After step 2 (prune PC)" + graph);
 
-        // Step 3. Get associates for each node now two links away from the
-        // target, removing edges based on those associates where possible.
-        // After this step, adjacencies to adjacencies of the target are parents
-        // or children of adjacencies to the target. Call this set PCPC.
-        this.logger.log("info", "BEGINNING step 3 (prune PCPC).");
+                // Step 3. Get associates for each node now two links away from the
+                // targets, removing edges based on those associates where possible.
+                // After this step, adjacencies to adjacencies of the targets are parents
+                // or children of adjacencies to the targets. Call this set PCPC.
+                this.logger.log("info", "BEGINNING step 3 (prune PCPC).");
 
-        for (Node v : graph.getAdjacentNodes(getTarget())) {
-            for (Node w : graph.getAdjacentNodes(v)) {
-                if (getA().contains(w)) {
-                    continue;
+                for (Node v : graph.getAdjacentNodes(target)) {
+                    for (Node w : graph.getAdjacentNodes(v)) {
+                        if (getA().contains(w)) {
+                            continue;
+                        }
+
+                        constructFan(w, graph);
+                    }
                 }
-
-                constructFan(w, graph);
             }
         }
 
@@ -315,16 +310,49 @@ public final class Mbfs implements MbSearch, GraphSearch {
         this.logger.log("info", "BEGINNING step 5 (Trim graph to {T} U PC U " +
                 "{Parents(Children(T))}).");
 
-        MbUtils.trimToMbNodes(graph, getTarget(), false);
+        if (findMb) {
+            Set<Node> mb = new HashSet<>();
 
-        this.logger.log("graph",
-                "After step 5 (Trim graph to {T} U PC U {Parents(Children(T))})" +
-                        graph);
+            for (Node n : graph.getNodes()) {
+                for (Node t : targets) {
+                    if (graph.isAdjacentTo(t, n)) {
+                        mb.add(n);
+                    } else {
+                        for (Node m : graph.getChildren(t)) {
+                            if (graph.isParentOf(n, m)) {
+                                mb.add(n);
+                            }
+                        }
+                    }
+                }
+            }
 
-        this.logger.log("info", "BEGINNING step 6 (Remove edges among P and P of C).");
+            N:
+            for (Node n : graph.getNodes()) {
+                for (Node t : targets) {
+                    if (t == n) continue N;
+                }
 
-        MbUtils.trimEdgesAmongParents(graph, getTarget());
-        MbUtils.trimEdgesAmongParentsOfChildren(graph, getTarget());
+                if (!mb.contains(n)) graph.removeNode(n);
+            }
+        } else {
+            for (Edge e : graph.getEdges()) {
+                if (!(targets.contains( e.getNode1()) || targets.contains(e.getNode2()))) {
+                    graph.removeEdge(e);
+                }
+            }
+        }
+
+//        MbUtils.trimToMbNodes(graph, getTargets(), false);
+//
+//        this.logger.log("graph",
+//                "After step 5 (Trim graph to {T} U PC U {Parents(Children(T))})" +
+//                        graph);
+//
+//        this.logger.log("info", "BEGINNING step 6 (Remove edges among P and P of C).");
+//
+//        MbUtils.trimEdgesAmongParents(graph, getTargets());
+//        MbUtils.trimEdgesAmongParentsOfChildren(graph, getTargets());
 
         this.logger.log("graph", "After step 6 (Remove edges among P and P of C)" + graph);
 
@@ -424,8 +452,8 @@ public final class Mbfs implements MbSearch, GraphSearch {
     /**
      * @return the target of the most recent search.
      */
-    public Node getTarget() {
-        return this.target;
+    public List<Node> getTargets() {
+        return this.targets;
     }
 
     /**
@@ -436,10 +464,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
     }
 
     /**
-     * @return "MBFS."
+     * @return "PC-MB."
      */
     public String getAlgorithmName() {
-        return "MBFS";
+        return "PC-MB";
     }
 
     /**
@@ -473,10 +501,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
     /**
      * @return just the Markov blanket (not the Markov blanket DAG).
      */
-    public List<Node> findMb(String targetName) {
-        Graph graph = search(targetName);
+    public List<Node> findMb(Node target) {
+        Graph graph = search(Collections.singletonList(target));
         List<Node> nodes = graph.getNodes();
-        nodes.remove(this.target);
+        nodes.remove(target);
         return nodes;
     }
 
@@ -596,7 +624,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
                     graph.removeEdge(node, y);
 
                     // The target itself must not be removed.
-                    if (graph.getEdges(y).isEmpty() && y != getTarget()) {
+                    if (graph.getEdges(y).isEmpty() && y != getTargets()) {
                         graph.removeNode(y);
                     }
 
@@ -615,7 +643,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
         double seconds = this.elapsedTime / 1000d;
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        this.logger.log("info", "MB fan search took " + nf.format(seconds) + " seconds.");
+        this.logger.log("info", "PC-MB took " + nf.format(seconds) + " seconds.");
         this.logger.log("info", "Number of independence tests performed = " +
                 getNumIndependenceTests());
 
@@ -748,7 +776,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
                     break;
                 }
 
-                List<Node> condSet = Mbfs.asList(choice, _nodes);
+                List<Node> condSet = PcMb.asList(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -784,7 +812,7 @@ public final class Mbfs implements MbSearch, GraphSearch {
                     break;
                 }
 
-                List<Node> condSet = Mbfs.asList(choice, _nodes);
+                List<Node> condSet = PcMb.asList(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -858,8 +886,8 @@ public final class Mbfs implements MbSearch, GraphSearch {
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
-        return Mbfs.isArrowpointAllowed1(x, y, knowledge) &&
-                Mbfs.isArrowpointAllowed1(z, y, knowledge);
+        return PcMb.isArrowpointAllowed1(x, y, knowledge) &&
+                PcMb.isArrowpointAllowed1(z, y, knowledge);
     }
 
     private static boolean isArrowpointAllowed1(Node from, Node to,
@@ -874,6 +902,10 @@ public final class Mbfs implements MbSearch, GraphSearch {
 
     public void setVariables(List<Node> variables) {
         this.variables = variables;
+    }
+
+    public void setFindMb(boolean findMb) {
+        this.findMb = findMb;
     }
 
 

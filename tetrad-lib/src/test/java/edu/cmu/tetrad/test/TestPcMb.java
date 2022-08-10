@@ -26,20 +26,17 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MbUtils;
-import edu.cmu.tetrad.search.Mbfs;
+import edu.cmu.tetrad.search.PcMb;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TestMbfs {
+public class TestPcMb {
 
     /**
      * Tests to make sure the algorithm for generating MB DAGs from an MB CPDAG works, at least for one kind of tricky
@@ -50,11 +47,12 @@ public class TestMbfs {
         Graph graph = GraphConverter.convert("T-->X1,T-->X2,X1-->X2,T-->X3,X4-->T");
 
         IndTestDSep test = new IndTestDSep(graph);
-        Mbfs search = new Mbfs(test, -1);
-        Graph resultGraph = search.search("T");
+        PcMb search = new PcMb(test, -1);
+        Node t = test.getGraph().getNode("T");
+        Graph resultGraph = search.search(Collections.singletonList(t));
 
-        List mbDags = MbUtils.generateMbDags(resultGraph, true,
-                search.getTest(), search.getDepth(), search.getTarget());
+        List<Graph> mbDags = MbUtils.generateMbDags(resultGraph, true,
+                search.getTest(), search.getDepth(), t);
 
         assertTrue(mbDags.size() == 9);
         assertTrue(mbDags.contains(graph));
@@ -74,12 +72,12 @@ public class TestMbfs {
                 5, 5, 5, false));
 
         IndependenceTest test = new IndTestDSep(dag);
-        Mbfs search = new Mbfs(test, -1);
+        PcMb search = new PcMb(test, -1);
 
         List<Node> nodes = dag.getNodes();
 
         for (Node node : nodes) {
-            Graph resultMb = search.search(node.getName());
+            Graph resultMb = search.search(Collections.singletonList(node));
             Graph trueMb = GraphUtils.markovBlanketDag(node, dag);
 
             List<Node> resultNodes = resultMb.getNodes();

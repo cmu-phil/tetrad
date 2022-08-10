@@ -27,23 +27,23 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "KIND_OF_BRIDGES",
-        command = "kind_of_bridges",
+        name = "SIMPLE_DEMO_GA",
+        command = "simple-demo-ga",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class KIND_OF_BRIDGES implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class SIMPLE_DEMO_GA implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public KIND_OF_BRIDGES() {
+    public SIMPLE_DEMO_GA() {
         // Used in reflection; do not delete.
     }
 
-    public KIND_OF_BRIDGES(ScoreWrapper score, IndependenceWrapper test) {
+    public SIMPLE_DEMO_GA(ScoreWrapper score, IndependenceWrapper test) {
         this.score = score;
         this.test = test;
     }
@@ -65,19 +65,10 @@ public class KIND_OF_BRIDGES implements Algorithm, UsesScoreWrapper, TakesIndepe
             IndependenceTest test = this.test.getTest(dataModel, parameters);
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            KindOfBridges alg = new KindOfBridges(score);
-
-            alg.setDepth(parameters.getInt(Params.GRASP_DEPTH));
-            alg.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            alg.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
-            alg.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            alg.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
-
-            alg.setKnowledge(this.knowledge);
-            alg.bestOrder(score.getVariables());
-            return alg.getGraph();
+            SimpleDemoGA boss = new SimpleDemoGA(score, 10);
+            return boss.search();
         } else {
-            KIND_OF_BRIDGES algorithm = new KIND_OF_BRIDGES(this.score, this.test);
+            SIMPLE_DEMO_GA algorithm = new SIMPLE_DEMO_GA(this.score, this.test);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -97,7 +88,7 @@ public class KIND_OF_BRIDGES implements Algorithm, UsesScoreWrapper, TakesIndepe
 
     @Override
     public String getDescription() {
-        return "KING_OF_BRIDGES (Better Order Score Search) using " + this.test.getDescription()
+        return "SIMPLE_DEMO_GA using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
@@ -112,6 +103,7 @@ public class KIND_OF_BRIDGES implements Algorithm, UsesScoreWrapper, TakesIndepe
 
         // Flags
         params.add(Params.GRASP_DEPTH);
+        params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.CACHE_SCORES);

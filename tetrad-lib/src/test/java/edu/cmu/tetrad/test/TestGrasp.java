@@ -537,8 +537,8 @@ public final class TestGrasp {
     public void doNewAgsHeadToHead(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
 //        if (doPcFges) {
@@ -817,13 +817,13 @@ public final class TestGrasp {
     //    @Test
     public void testGrasp2() {
         Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 50);
-        params.set(Params.AVG_DEGREE, 10);
-        params.set(Params.SAMPLE_SIZE, 1000);
+        params.set(Params.NUM_MEASURES, 200);
+        params.set(Params.AVG_DEGREE, 5);
+        params.set(Params.SAMPLE_SIZE, 6000);
         params.set(Params.NUM_RUNS, 1);
         params.set(Params.COEF_LOW, 0);
-        params.set(Params.COEF_HIGH, .8);
-        params.set(Params.NUM_STARTS, 5);
+        params.set(Params.COEF_HIGH, 1);
+        params.set(Params.NUM_STARTS, 1);
         params.set(Params.ALPHA, 0.001);
         params.set(Params.VERBOSE, true);
         params.set(Params.PARALLELIZED, true);
@@ -832,29 +832,31 @@ public final class TestGrasp {
         params.set(Params.GRASP_SINGULAR_DEPTH, 1);
         params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
 
-        params.set(Params.PENALTY_DISCOUNT, 2);
+        params.set(Params.PENALTY_DISCOUNT, 4);
+        params.set(Params.FAITHFULNESS_ASSUMED, true);
+        params.set(Params.ZS_RISK_BOUND, 1e-10);
+        params.set(Params.SEM_GIC_RULE, 6);
 
         // use defaults.
 //        params.set(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE, 10);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(
-                new edu.cmu.tetrad.algcomparison.independence.FisherZ()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
-                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(
+//                new edu.cmu.tetrad.algcomparison.independence.FisherZ()));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
+//                new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-//        algorithms.add(new BRIDGES_OLD(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new BRIDGES2(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new KIND_OF_BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-//        algorithms.add(new BOSS3(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+//        algorithms.add(new KING_OF_BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new SIMPLE_DEMO_GA(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
 
         Statistics statistics = new Statistics();
+        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.NUM_MEASURES));
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
@@ -864,6 +866,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
+        statistics.add(new BicEst());
         statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();

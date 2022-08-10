@@ -38,6 +38,7 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.util.Collections.shuffle;
 
 /**
  * GesSearch is an implementation of the GES algorithm, as specified in
@@ -209,19 +210,16 @@ public final class Bridges implements GraphSearch, GraphScorer {
             if (Thread.interrupted()) break;
 
             flag = false;
-            Iterator<Edge> edges = new EdgeListGraph((EdgeListGraph) g0).getEdges().iterator();
-            int count = 0;
+            List<Edge> edges = new ArrayList<>(g0.getEdges());
+            shuffle(edges);
+            Iterator<Edge> edgeItr = edges.iterator();
 
-            while (!flag && edges.hasNext()) {
-
-                Edge edge = edges.next();
+            while (!flag && edgeItr.hasNext()) {
+                Edge edge = edgeItr.next();
                 if (edge.isDirected()) {
                     Graph g = new EdgeListGraph((EdgeListGraph) g0);
                     Node a = Edges.getDirectedEdgeHead(edge);
                     Node b = Edges.getDirectedEdgeTail(edge);
-
-                    change.add(a);
-                    change.add(b);
 
                     // This code performs "pre-tuck" operation
                     // that makes anterior nodes of the distal
@@ -231,6 +229,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
                         if (existsSemidirectedPath(c, a, g)) {
                             g.removeEdge(g.getEdge(b, c));
                             g.addDirectedEdge(c, b);
+                            change.add(b);
                             change.add(c);
                         }
                     }
@@ -248,7 +247,6 @@ public final class Bridges implements GraphSearch, GraphScorer {
 
                     if (s1 > s0) {
                         flag = true;
-                        ++count;
                         g0 = g;
                         s0 = s1;
                         getOut().println(g0.getNumEdges());

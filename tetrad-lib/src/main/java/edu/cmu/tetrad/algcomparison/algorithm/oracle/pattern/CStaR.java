@@ -55,7 +55,7 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
 
         List<Node> possibleEffects = new ArrayList<>();
 
-        String targetName = parameters.getString(Params.TARGET_NAMES);
+        String targetName = parameters.getString(Params.TARGETS);
 
         if (targetName.trim().equalsIgnoreCase("")) {
             throw new IllegalStateException("Please specify target name(s).");
@@ -113,7 +113,7 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
         parameters.add(Params.SELECTION_MIN_EFFECT);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.NUM_SUBSAMPLES);
-        parameters.add(Params.TARGET_NAMES);
+        parameters.add(Params.TARGETS);
         parameters.add(Params.CSTAR_Q);
         parameters.add(Params.PARALLELIZED);
         parameters.add(Params.VERBOSE);
