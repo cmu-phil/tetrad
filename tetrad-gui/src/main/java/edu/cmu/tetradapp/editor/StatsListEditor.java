@@ -34,7 +34,7 @@ public class StatsListEditor extends JPanel {
         this.comparison = comparison;
         this.params = comparison.getParams();
         this.targetGraph = comparison.getTargetGraph();
-        this.referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), this.params);
+        this.referenceGraph = comparison.getReferenceGraph();
         this.dataModel = comparison.getDataModel();
         setup();
     }

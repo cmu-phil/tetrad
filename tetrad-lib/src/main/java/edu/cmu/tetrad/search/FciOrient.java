@@ -442,9 +442,9 @@ public final class FciOrient {
                         continue;
                     }
 
-                    if (!this.sepsets.isNoncollider(A, D, C)) {
-                        continue;
-                    }
+//                    if (!this.sepsets.isNoncollider(A, D, C)) {
+//                        continue;
+//                    }
 
                     if (graph.getEndpoint(A, D) != Endpoint.CIRCLE) {
                         continue;

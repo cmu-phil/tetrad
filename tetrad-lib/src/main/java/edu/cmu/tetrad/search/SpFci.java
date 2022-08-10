@@ -130,9 +130,9 @@ public final class SpFci implements GraphSearch {
         }
 
 
-        TeyssierScorer scorer;
+        TeyssierScorer2 scorer;
 
-        scorer = new TeyssierScorer(this.test, this.score);
+        scorer = new TeyssierScorer2(this.score);
 
         scorer.score(perm);
 
@@ -147,10 +147,9 @@ public final class SpFci implements GraphSearch {
                     for (Node d : perm) {
                         if (configuration(scorer, a, b, c, d)) {
                             scorer.bookmark();
-                            double score = scorer.score();
                             scorer.swap(b, c);
 
-                            if (configuration(scorer, d, c, b, a) && score == scorer.score()) {
+                            if (configuration(scorer, d, c, b, a)) {
                                 triples.add(new Triple(b, c, d));
                             }
 
@@ -201,7 +200,7 @@ public final class SpFci implements GraphSearch {
         return graph;
     }
 
-    private boolean configuration(TeyssierScorer scorer, Node a, Node b, Node c, Node d) {
+    private boolean configuration(TeyssierScorer2 scorer, Node a, Node b, Node c, Node d) {
         if (!distinct(a, b, c, d)) return false;
 
         return scorer.adjacent(a, b)
