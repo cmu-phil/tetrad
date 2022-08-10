@@ -35,11 +35,11 @@ import java.util.List;
  */
 public class SepsetsTeyssier implements SepsetProducer {
     private final Graph graph;
-    private final TeyssierScorer2 scorer;
+    private final TeyssierScorer scorer;
     private final SepsetMap extraSepsets;
     private final int sepsetsDepth;
 
-    public SepsetsTeyssier(Graph graph, TeyssierScorer2 scorer, SepsetMap extraSepsets, int sepsetsDepth) {
+    public SepsetsTeyssier(Graph graph, TeyssierScorer scorer, SepsetMap extraSepsets, int sepsetsDepth) {
         this.graph = graph;
         this.scorer = scorer;
         this.extraSepsets = extraSepsets;
@@ -110,9 +110,10 @@ public class SepsetsTeyssier implements SepsetProducer {
 
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
-        List<Node> nodes = new ArrayList<>(c);
+        List<Node> nodes = new ArrayList<>();
         nodes.add(a);
         nodes.add(b);
+        nodes.addAll(c);
         this.scorer.score(nodes);
         boolean adjacent = this.scorer.getGraph(false).isAdjacentTo(a, b);
 

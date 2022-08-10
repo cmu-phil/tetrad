@@ -11,7 +11,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.BossTuckFci;
+import edu.cmu.tetrad.search.GraspFci;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -23,7 +23,7 @@ import java.util.List;
 
 
 /**
- * Adjusts GFCI to use a permutation algorithm (such as BOSS_TUCK) to do the initial
+ * Adjusts GFCI to use a permutation algorithm (such as GRaSP) to do the initial
  * steps of finding adjacencies and unshielded colliders.
  * <p>
  * GFCI reference is this:
@@ -34,23 +34,23 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-TUCK-FCI",
-        command = "boss-tuck-fci",
+        name = "GRaSP-FCI",
+        command = "graspfci",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class BOSS_TUCK_FCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BOSS_TUCK_FCI() {
+    public GRaSPFCI() {
         // Used for reflection; do not delete.
     }
 
-    public BOSS_TUCK_FCI(ScoreWrapper score, IndependenceWrapper test) {
+    public GRaSPFCI(ScoreWrapper score, IndependenceWrapper test) {
         this.test = test;
         this.score = score;
     }
@@ -68,13 +68,20 @@ public class BOSS_TUCK_FCI implements Algorithm, UsesScoreWrapper, TakesIndepend
                 knowledge = timeSeries.getKnowledge();
             }
 
-            BossTuckFci search = new BossTuckFci(this.score.getScore(dataModel, parameters));
+            GraspFci search = new GraspFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
             search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
             search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
+            search.setUncoveredDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
+            search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
+            search.setToleranceDepth(parameters.getInt(Params.GRASP_TOLERANCE_DEPTH));
+            search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
+            search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
+            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
+            search.setAllowRandomnessInsideAlgorithm(parameters.getBoolean(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
@@ -89,7 +96,7 @@ public class BOSS_TUCK_FCI implements Algorithm, UsesScoreWrapper, TakesIndepend
 
             return search.search();
         } else {
-            BOSS_TUCK_FCI algorithm = new BOSS_TUCK_FCI(this.score, this.test);
+            GRaSPFCI algorithm = new GRaSPFCI(this.score, this.test);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
@@ -106,7 +113,7 @@ public class BOSS_TUCK_FCI implements Algorithm, UsesScoreWrapper, TakesIndepend
 
     @Override
     public String getDescription() {
-        return "BOSS_TUCK-FCI (BOSS_TUCK-based FCI) using " + this.test.getDescription()
+        return "GRASP-FCI (GRaSP-based FCI) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 

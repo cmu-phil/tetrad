@@ -42,7 +42,7 @@ public class TestMarkovBlanketSearches {
         IndTestDSep test = new IndTestDSep(graph);
 
         MbSearch search = new GrowShrink(test);
-        List<Node> blanket = search.findMb(test.getVariable("T"));
+        List<Node> blanket = search.findMb("T");
 
         List<Node> b = new ArrayList<>();
         b.add(graph.getNode("X"));
@@ -62,7 +62,7 @@ public class TestMarkovBlanketSearches {
 
         IndTestDSep test = new IndTestDSep(graph);
         MbSearch mbSearch = new GrowShrink(test);
-        List<Node> blanket = mbSearch.findMb(test.getVariable("T"));
+        List<Node> blanket = mbSearch.findMb("T");
 
         List<Node> mbd = GraphUtils.markovBlanketDag(graph.getNode("T"), graph).getNodes();
         mbd.remove(graph.getNode("T"));
@@ -82,12 +82,12 @@ public class TestMarkovBlanketSearches {
         Dag dag = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
                 5, 5, 5, false));
         IndependenceTest test = new IndTestDSep(dag);
-        PcMb search = new PcMb(test, -1);
+        Mbfs search = new Mbfs(test, -1);
 
         List<Node> nodes = dag.getNodes();
 
         for (Node node : nodes) {
-            List<Node> resultNodes = search.findMb(node);
+            List<Node> resultNodes = search.findMb(node.getName());
             Graph trueMb = GraphUtils.markovBlanketDag(node, dag);
             List<Node> trueNodes = trueMb.getNodes();
             trueNodes.remove(node);

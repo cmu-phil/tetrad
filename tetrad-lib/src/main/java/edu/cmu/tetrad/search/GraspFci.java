@@ -48,7 +48,7 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public final class  GraspFci implements GraphSearch {
+public final class GraspFci implements GraphSearch {
 
     // The score used, if GS is used to build DAGs.
     private final Score score;
