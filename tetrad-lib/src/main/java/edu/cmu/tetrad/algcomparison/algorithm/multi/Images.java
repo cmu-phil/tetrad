@@ -108,7 +108,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 //                search.bestOrder(score.getVariables());
 //                return search.getGraph();
 //            }
-            else if (meta == 5) {
+            else if (meta == 3) {
                 BridgesOld search = new edu.cmu.tetrad.search.BridgesOld(score);
                 search.setKnowledge(this.knowledge);
                 search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -149,6 +149,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(dataSets.get(0).getKnowledge());
+            search.setScoreWrapper(score);
             return search.search();
         }
     }
@@ -168,8 +169,13 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 //            search.setKnowledge(this.knowledge);
 
+            if (score == null) {
+                System.out.println();
+            }
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setScoreWrapper(score);
             return search.search();
         }
     }

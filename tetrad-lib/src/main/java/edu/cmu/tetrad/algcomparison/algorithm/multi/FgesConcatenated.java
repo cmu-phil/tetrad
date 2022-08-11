@@ -95,11 +95,17 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
+            search.setScoreWrapper(score);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+
     }
 
     @Override
@@ -117,6 +123,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
+            search.setScoreWrapper(score);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));

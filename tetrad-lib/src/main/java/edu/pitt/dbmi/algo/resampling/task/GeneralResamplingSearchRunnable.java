@@ -2,6 +2,7 @@ package edu.pitt.dbmi.algo.resampling.task;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
@@ -40,6 +41,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     private IKnowledge knowledge = new Knowledge2();
 
     private PrintStream out = System.out;
+    private ScoreWrapper scoreWrapper;
 
     public GeneralResamplingSearchRunnable(DataModel dataModel, Algorithm algorithm, Parameters parameters,
                                            GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
@@ -142,6 +144,8 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
                     }
                 }
 
+                this.multiDataSetAlgorithm.setScoreWrapper(this.scoreWrapper);
+
                 graph = this.multiDataSetAlgorithm.search(this.dataModels, this.parameters);
             }
 
@@ -157,5 +161,9 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
 //            e.printStackTrace();
             return null;
         }
+    }
+
+    public void setScoreWrapper(ScoreWrapper scoreWrapper) {
+        this.scoreWrapper = scoreWrapper;
     }
 }

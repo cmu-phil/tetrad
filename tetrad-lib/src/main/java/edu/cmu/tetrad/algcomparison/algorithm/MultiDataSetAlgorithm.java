@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -21,4 +22,6 @@ public interface MultiDataSetAlgorithm extends Algorithm {
      * @return The result graph.
      */
     Graph search(List<DataModel> dataSets, Parameters parameters);
+
+    void setScoreWrapper(ScoreWrapper score);
 }

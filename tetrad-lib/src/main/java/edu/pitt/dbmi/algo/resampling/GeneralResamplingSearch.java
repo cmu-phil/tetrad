@@ -2,6 +2,7 @@ package edu.pitt.dbmi.algo.resampling;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -51,6 +52,7 @@ public class GeneralResamplingSearch {
      */
     private Graph externalGraph;
     private int numNograph = 0;
+    private ScoreWrapper scoreWrapper;
 
     public GeneralResamplingSearch(DataSet data, int numberResampling) {
         this.data = data;
@@ -161,6 +163,7 @@ public class GeneralResamplingSearch {
                 task.setExternalGraph(this.externalGraph);
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);
+                task.setScoreWrapper(scoreWrapper);
             }
 
             if (addOriginalDataset) {
@@ -170,6 +173,7 @@ public class GeneralResamplingSearch {
                 task.setExternalGraph(this.externalGraph);
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);
+                task.setScoreWrapper(scoreWrapper);
             }
         } else {
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
@@ -193,6 +197,7 @@ public class GeneralResamplingSearch {
                         this.verbose);
                 task.setExternalGraph(this.externalGraph);
                 task.setKnowledge(dataModels.get(0).getKnowledge());
+                task.setScoreWrapper(scoreWrapper);
 
                 tasks.add(task);
             }
@@ -240,5 +245,9 @@ public class GeneralResamplingSearch {
 
     public int getNumNograph() {
         return numNograph;
+    }
+
+    public void setScoreWrapper(ScoreWrapper scoreWrapper) {
+        this.scoreWrapper = scoreWrapper;
     }
 }
