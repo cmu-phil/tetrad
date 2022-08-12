@@ -14,6 +14,7 @@ import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.Boss2;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -112,6 +113,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, HasKnowledge {
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.CACHE_SCORES);
+        params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 
         // Parameters
