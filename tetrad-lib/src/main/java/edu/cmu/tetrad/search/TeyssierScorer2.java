@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import org.jetbrains.annotations.NotNull;
 
+import java.rmi.MarshalledObject;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
@@ -25,14 +26,14 @@ import static java.lang.Math.floor;
  * @author bryanandrews
  */
 public class TeyssierScorer2 {
-    private final List<Node> variables;
-    private final Map<Node, Integer> variablesHash;
-    private final Score score;
-    private final Map<Object, ArrayList<Node>> bookmarkedOrders = new HashMap<>();
-    private final Map<Object, ArrayList<Pair>> bookmarkedScores = new HashMap<>();
-    private final Map<Object, Map<Node, Integer>> bookmarkedOrderHashes = new HashMap<>();
-    private final Map<Object, Float> bookmarkedRunningScores = new HashMap<>();
-    private final Map<Node, Integer> orderHash;
+    private List<Node> variables;
+    private Map<Node, Integer> variablesHash;
+    private Score score;
+    private Map<Object, ArrayList<Node>> bookmarkedOrders = new HashMap<>();
+    private Map<Object, ArrayList<Pair>> bookmarkedScores = new HashMap<>();
+    private Map<Object, Map<Node, Integer>> bookmarkedOrderHashes = new HashMap<>();
+    private Map<Object, Float> bookmarkedRunningScores = new HashMap<>();
+    private Map<Node, Integer> orderHash;
     private List<Node> pi; // The current permutation.
     private List<Pair> scores;
     private IKnowledge knowledge = new Knowledge2();
@@ -43,13 +44,42 @@ public class TeyssierScorer2 {
     private boolean useBackwardScoring;
     private boolean cachingScores = true;
     private float runningScore = 0f;
+    private int maxIndegree = -1;
 
     public TeyssierScorer2(TeyssierScorer2 scorer) {
-        this.score = scorer.score;
         this.variables = new ArrayList<>(scorer.variables);
-        this.variablesHash = new HashMap<>(scorer.variablesHash);
+        this.variablesHash = new HashMap<>();
+
+        for (Node key : scorer.variablesHash.keySet()) {
+            this.variablesHash.put(key, scorer.variablesHash.get(key));
+        }
+
+        this.score = scorer.score;
+
+        this.bookmarkedOrders = new HashMap<>();
+
+        for (Object key : scorer.bookmarkedOrders.keySet()) {
+            this.bookmarkedOrders.put(key, scorer.bookmarkedOrders.get(key));
+        }
+
+        this.bookmarkedScores = new HashMap<>();
+
+        for (Object key : scorer.bookmarkedScores.keySet()) {
+            this.bookmarkedScores.put(key, new ArrayList<>(scorer.bookmarkedScores.get(key)));
+        }
+
+        this.bookmarkedOrderHashes = new HashMap<>();
+
+        for (Object key : scorer.bookmarkedOrderHashes.keySet()) {
+            this.bookmarkedOrderHashes.put(key, new HashMap<>(scorer.bookmarkedOrderHashes.get(key)));
+        }
+
+        this.bookmarkedRunningScores = new HashMap<>(scorer.bookmarkedRunningScores);
+
         this.orderHash = new HashMap<>(scorer.orderHash);
+
         this.pi = new ArrayList<>(scorer.pi);
+
         this.scores = new ArrayList<>(scorer.scores);
         this.knowledge = scorer.knowledge;
 //        this.prefixes = new ArrayList<>(scorer.prefixes);
@@ -58,7 +88,7 @@ public class TeyssierScorer2 {
         this.useBackwardScoring = scorer.useBackwardScoring;
         this.cachingScores = scorer.cachingScores;
         this.runningScore = scorer.runningScore;
-
+        this.maxIndegree = scorer.maxIndegree;
     }
 
     public TeyssierScorer2(Score score) {
@@ -154,8 +184,8 @@ public class TeyssierScorer2 {
      * @return The score of the current permutation.
      */
     public float score() {
-//        return sum();
-        return runningScore;
+        return sum();
+//        return runningScore;
     }
 
     private float sum() {
@@ -600,26 +630,40 @@ public class TeyssierScorer2 {
     }
 
     public void updateScores(int i1, int i2) {
-        int chunk = getChunkSize(i2 - i1 + 1);
-        List<MyTask> tasks = new ArrayList<>();
-
-        for (int w = 0; w < size(); w += chunk) {
-            tasks.add(new MyTask(pi, this, chunk, orderHash, w, w + chunk));
+        for (int i = i1; i <= i2; i++) {
+            this.orderHash.put(this.pi.get(i), i);
         }
 
-        ForkJoinPool.commonPool().invokeAll(tasks);
-
-
-//        for (int i = i1; i <= i2; i++) {
-//            recalculate(i);
-//            this.orderHash.put(this.pi.get(i), i);
+//        int chunk = getChunkSize(i2 - i1 + 1);
+//        List<MyTask> tasks = new ArrayList<>();
+//
+//        for (int w = 0; w < size(); w += chunk) {
+//            tasks.add(new MyTask(pi, this, chunk, orderHash, w, w + chunk));
 //        }
+//
+//        ForkJoinPool.commonPool().invokeAll(tasks);
+
+
+        try {
+            for (int i = i1; i <= i2; i++) {
+                //            System.out.print("\r" + i);
+                recalculate(i);
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+//        System.out.println();
     }
 
     private int getChunkSize(int n) {
         int chunk = n / Runtime.getRuntime().availableProcessors();
         if (chunk < 100) chunk = 100;
         return chunk;
+    }
+
+    public void setMaxIndegree(int maxIndegree) {
+        this.maxIndegree = maxIndegree;
     }
 
     class MyTask implements Callable<Boolean> {
@@ -630,7 +674,8 @@ public class TeyssierScorer2 {
         private final int from;
         private final int to;
 
-        MyTask(List<Node> pi, TeyssierScorer2 scorer, int chunk, Map<Node, Integer> orderHash, int from, int to) {
+        MyTask(List<Node> pi, TeyssierScorer2 scorer, int chunk, Map<Node, Integer> orderHash,
+               int from, int to) {
             this.pi = pi;
             this.scorer = scorer;
             this.chunk = chunk;
@@ -640,11 +685,12 @@ public class TeyssierScorer2 {
         }
 
         @Override
-        public Boolean call() {
+        public Boolean call() throws InterruptedException {
             for (int i = from; i <= to; i++) {
-                if (Thread.currentThread().isInterrupted()) break;
-                recalculate(i);
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                System.out.print("\r" + i);
                 this.orderHash.put(this.pi.get(i), i);
+                recalculate(i);
             }
 
             return true;
@@ -674,7 +720,7 @@ public class TeyssierScorer2 {
         return prefix;
     }
 
-    private void recalculate(int p) {
+    private void recalculate(int p) throws InterruptedException {
         Pair p2 = getGrowShrinkScore(p);
 
         if (scores.get(p) == null) {
@@ -713,7 +759,7 @@ public class TeyssierScorer2 {
 //    }
 
     @NotNull
-    private Pair getGrowShrinkScore(int p) {
+    private Pair getGrowShrinkScore(int p) throws InterruptedException {
         Node n = this.pi.get(p);
 
         Set<Node> parents = new HashSet<>();
@@ -738,6 +784,8 @@ public class TeyssierScorer2 {
             Node z = null;
 
             for (Node z0 : prefix) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
                 if (parents.contains(z0)) continue;
 
                 if (!knowledge.isEmpty() && this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
@@ -745,19 +793,25 @@ public class TeyssierScorer2 {
 
                 float s2 = score(n, parents);
 
-                if (s2 >= sMax) {
+                if (s2 > sMax) {
                     sMax = s2;
                     z = z0;
-                }
+//
+//                    changed = true;
+//                    System.out.print("+");
 
+                }
+//                else {
                 parents.remove(z0);
+//                }
             }
 
             if (z != null) {
                 parents.add(z);
+                if (maxIndegree > 0 && parents.size() > maxIndegree) break;
                 changed = true;
+//                System.out.print("+");
             }
-
         }
 
         boolean changed2 = true;
@@ -768,13 +822,16 @@ public class TeyssierScorer2 {
             Node w = null;
 
             for (Node z0 : new HashSet<>(parents)) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
                 parents.remove(z0);
 
                 float s2 = score(n, parents);
 
-                if (s2 >= sMax) {
+                if (s2 > sMax) {
                     sMax = s2;
                     w = z0;
+//                    System.out.print("-");
                 }
 
                 parents.add(z0);
@@ -901,11 +958,15 @@ public class TeyssierScorer2 {
 //        this.prefixes.clear();
 //        for (int i = 0; i < pi.size(); i++) prefixes.add(null);
 
-        for (int i = index; i < pi.size(); i++) {
-            if (adj.contains(get(i))) {
-                recalculate(i);
-                this.orderHash.put(this.pi.get(i), i);
+        try {
+            for (int i = index; i < pi.size(); i++) {
+                if (adj.contains(get(i))) {
+                    recalculate(i);
+                    this.orderHash.put(this.pi.get(i), i);
+                }
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
         updateScores(index, pi.size() - 1);

@@ -1,9 +1,11 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSSTuck;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.Function;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +14,12 @@ import java.util.concurrent.*;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.compare;
+import static java.lang.Float.NaN;
+import static java.lang.Math.PI;
 import static java.lang.Math.min;
+import static java.util.Collections.shuffle;
+import static java.util.Collections.sort;
 
 
 /**
@@ -25,107 +32,185 @@ public class BossMB2 {
     private final List<Node> variables;
     private final Score score;
     private IKnowledge knowledge = new Knowledge2();
-    private TeyssierScorer2 scorer;
     private long start;
     private boolean useDataOrder = true;
     private boolean verbose = true;
     private int depth = 4;
     private int numStarts = 1;
     private boolean findMb = false;
+    private int maxIndegree = -1;
 
     public BossMB2(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
     }
 
-    public List<Graph> search(@NotNull List<Node> order, List<Node> targets) {
-        this.start = System.currentTimeMillis();
+    public void setMaxIndegree(int maxIndegree) {
+        this.maxIndegree = maxIndegree;
+    }
+
+    class MyTask2 implements Callable<Graph> {
+        final List<Node> order;
+        final TeyssierScorer2 scorer0;
+        final Node target;
+
+        MyTask2(List<Node> order, TeyssierScorer2 scorer0, Node target) {
+            this.order = order;
+            this.scorer0 = scorer0;
+            this.target = target;
+        }
+
+        @Override
+        public Graph call() throws InterruptedException {
+            return targetVisit(order, scorer0, target);
+        }
+    }
+
+    /**
+     * Prints local graphs for all variables and returns the one of them.
+     */
+    public Graph search(@NotNull List<Node> order) {
+        long start = System.currentTimeMillis();
         order = new ArrayList<>(order);
 
-        this.scorer = new TeyssierScorer2(this.score);
+        TeyssierScorer2 scorer0 = new TeyssierScorer2(this.score);
+//        scorer0.setMaxIndegree(this.maxIndegree);
 
-        this.scorer.setKnowledge(this.knowledge);
-        this.scorer.clearBookmarks();
+        scorer0.setKnowledge(this.knowledge);
+//        scorer0.clearBookmarks();
 
-        List<Node> bestPerm = null;
-        int bestSize = scorer.size();
-        double bestScore = NEGATIVE_INFINITY;
-
-        this.scorer.score(order);
-
-        System.out.println("Initial score = " + scorer.score());
+        scorer0.score(order);
 
         this.start = System.currentTimeMillis();
 
         makeValidKnowledgeOrder(order);
 
-        for (Node target : targets) {
-            List<Node> pi2 = order;
-            List<Node> pi1;
+        System.out.println("Initial score = " + scorer0.score());
 
-            float s1, s2;
+        List<Node> _targets = new ArrayList<>(scorer0.getPi());
+        sort(_targets);
 
-            do {
-                pi1 = scorer.getPi();
+        Graph combinedGraph = new EdgeListGraph(_targets);
 
-                scorer.score(pi2);
-                betterMutationBossTuck(scorer, target);
-                pi2 = besOrder(scorer);
-            } while (pi2.size() > pi1.size());
+        List<MyTask2> tasks = new ArrayList<>();
 
-            bestPerm = scorer.getPi();
+        try {
+            for (Node node : _targets) {
+                tasks.add(new MyTask2(order, scorer0, node));
+            }
 
-            this.scorer.score(bestPerm);
-            Graph graph = scorer.getGraph(false);
+            List<Future<Graph>> futures = ForkJoinPool.commonPool().invokeAll(tasks);
 
-            if (findMb) {
-                Set<Node> mb = new HashSet<>();
+            for (Future<Graph> future : futures) {
+                Graph g = future.get();
+                this.graphs.add(g);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
 
-                for (Node n : graph.getNodes()) {
-                    for (Node t : targets) {
-                        if (graph.isAdjacentTo(t, n)) {
+//        for (Node target : _targets) {
+//            try {
+//                this.graphs.add(targetVisit(order, scorer0, target));
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+
+        for (Graph g : this.graphs) {
+            for (Edge e : g.getEdges()) {
+                Edge e2 = combinedGraph.getEdge(e.getNode1(), e.getNode2());
+
+                if (e.isDirected() && !GraphUtils.existsSemiDirectedPath(Edges.getDirectedEdgeHead(e), Edges.getDirectedEdgeTail(e), combinedGraph)) {
+                    combinedGraph.removeEdge(e2);
+                    combinedGraph.addEdge(e);
+                }
+            }
+        }
+
+//                for (Edge e : g.getEdges()) {
+//                    Edge e2 = combinedGraph.getEdge(e.getNode1(), e.getNode2());
+//
+//                    if (e2 == null && Edges.isUndirectedEdge(e)) {
+//                        combinedGraph.addEdge(e);
+//                    }
+//                }
+
+        long stop = System.currentTimeMillis();
+
+        System.out.println("Elapsed time = " + (stop - start) / 1000.0 + " s");
+//        System.out.println();
+//        return graphs.get(0);
+
+//        MeekRules rules = new MeekRules();
+//        rules.setKnowledge(knowledge);
+//        rules.orientImplied(combinedGraph);
+//
+        return combinedGraph;
+    }
+
+    private Graph targetVisit(@NotNull List<Node> order, TeyssierScorer2 scorer0, Node target) throws InterruptedException {
+        TeyssierScorer2 scorer = new TeyssierScorer2(scorer0);
+//        scorer.clearBookmarks();
+
+        List<Node> pi2 = order;
+        List<Node> pi1;
+
+        float s1, s2;
+
+        do {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+            pi1 = scorer.getPi();
+            s1 = scorer.score();
+
+            betterMutationBossTuck(scorer, Collections.singletonList(target));
+            pi2 = besOrder(scorer);
+            s2 = scorer.score();
+        } while (!pi1.equals(pi2));
+
+        scorer.score(pi2);
+        Graph graph = scorer.getGraph(true);
+
+//        Graph graph2 = SearchGraphUtils.cpdagForDag(graph);
+
+        if (findMb) {
+            Set<Node> mb = new HashSet<>();
+
+            for (Node n : graph.getNodes()) {
+                if (graph.isAdjacentTo(target, n)) {
+                    mb.add(n);
+                } else {
+                    for (Node m : graph.getChildren(target)) {
+                        if (graph.isParentOf(n, m)) {
                             mb.add(n);
-                        } else {
-                            for (Node m : graph.getChildren(t)) {
-                                if (graph.isParentOf(n, m)) {
-                                    mb.add(n);
-                                }
-                            }
                         }
-                    }
-                }
-
-                N:
-                for (Node n : graph.getNodes()) {
-                    for (Node t : targets) {
-                        if (t == n) continue N;
-                    }
-
-                    if (!mb.contains(n)) graph.removeNode(n);
-                }
-            } else {
-                for (Edge e : graph.getEdges()) {
-                    if (!(targets.contains(e.getNode1()) || targets.contains(e.getNode2()))) {
-                        graph.removeEdge(e);
                     }
                 }
             }
 
-            graph = SearchGraphUtils.cpdagForDag(graph);
+            N:
+            for (Node n : graph.getNodes()) {
+                if (target == n) continue N;
+                if (!mb.contains(n)) graph.removeNode(n);
+            }
+        } else {
+            for (Edge e : graph.getEdges()) {
+                Node n1 = e.getNode1();
+                Node n2 = e.getNode2();
 
-            this.graphs.add(graph);
+                if (graph.isAdjacentTo(target, n1) && graph.isAdjacentTo(target, n2)) {
+                    graph.removeEdge(e);
+                }
+            }
         }
 
+        System.out.println("Graph for " + target + " = " + graph);
 
-        long stop = System.currentTimeMillis();
+        System.out.println();
 
-        if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
-        }
-
-        return graphs;
+        return graph;
     }
+
 
     public void setFindMb(boolean findMb) {
         this.findMb = findMb;
@@ -184,17 +269,22 @@ public class BossMB2 {
         return ret;
     }
 
-    public void betterMutationBossTuck(@NotNull TeyssierScorer2 scorer, Node target) {
+    public void betterMutationBossTuck(@NotNull TeyssierScorer2 scorer, List<Node> targets) throws InterruptedException {
+        double s;
+        double sp = scorer.score();
 
         List<Node> p1, p2;
 
         do {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+            s = sp;
             p1 = scorer.getPi();
 
             Graph g = scorer.getGraph(false);
-            Set<Node> keep = new HashSet<>();
-            keep.add(target);
-            keep.addAll(g.getAdjacentNodes(target));
+            Set<Node> keep = new HashSet<>(targets);
+            for (Node n : targets) {
+                keep.addAll(g.getAdjacentNodes(n));
+            }
 
             if (findMb) {
                 for (Node k : new HashSet<>(keep)) {
@@ -208,31 +298,29 @@ public class BossMB2 {
                 if (keep.contains(n)) _pi.add(n);
             }
 
-            double sp = scorer.score(_pi);
+            sp = scorer.score(_pi);
 
             scorer.bookmark();
 
-            System.out.println("After snips: # vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges()
-                    + " Score = " + scorer.score()
-                    + " (betterMutation)"
-                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s") + " order = " + scorer.getPi());
+            if (verbose) {
+                System.out.println("After snips: # vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s") + " order = " + scorer.getPi());
+            }
 
 
             for (Node x : scorer.getPi()) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
                 int i = scorer.index(x);
 
                 for (int j = i - 1; j >= 0; j--) {
+                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
                     if (scorer.tuck(x, j)) {
                         if (scorer.score() > sp && !violatesKnowledge(scorer.getPi())) {
                             sp = scorer.score();
                             scorer.bookmark();
 
-//                            if (verbose) {
-                            System.out.println("# vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges()
-                                    + " Score = " + scorer.score()
-                                    + " (betterMutation)"
-                                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-//                            }
+                            if (verbose) {
+                                System.out.println("# vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                            }
                         } else {
                             scorer.goToBookmark();
                         }
@@ -242,11 +330,12 @@ public class BossMB2 {
 
             p2 = scorer.getPi();
         } while (!p1.equals(p2));
+//    } while (sp > s);
     }
 
     public List<Node> besOrder(TeyssierScorer2 scorer) {
         Graph graph = scorer.getGraph(true);
-        bes(graph);
+        bes(graph, scorer.getPi());
         return causalOrder(scorer.getPi(), graph);
     }
 
@@ -268,10 +357,6 @@ public class BossMB2 {
         return found;
     }
 
-
-    public int getNumEdges() {
-        return this.scorer.getNumEdges();
-    }
 
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
@@ -341,27 +426,32 @@ public class BossMB2 {
         this.useDataOrder = useDataOrder;
     }
 
-    private List<Graph> graphs;
-    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
-    private Map<Node, Integer> hashIndices;
-    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
-    private int arrowIndex = 0;
+    private final List<Graph> graphs = new ArrayList<>();
+//    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
+//    private Map<Node, Integer> hashIndices;
+//    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
+//    private int arrowIndex = 0;
 
 
-    private void buildIndexing(List<Node> nodes) {
-        this.hashIndices = new HashMap<>();
+    private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
+//        hashIndices = new HashMap<>();
 
         int i = -1;
 
         for (Node n : nodes) {
-            this.hashIndices.put(n, ++i);
+            hashIndices.put(n, ++i);
         }
     }
 
-    private void bes(Graph graph) {
-        buildIndexing(variables);
+    private void bes(Graph graph, List<Node> variables) {
+        Map<Node, Integer> hashIndices = new HashMap<>();
+        SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
+        Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
+        int[] arrowIndex = new int[1];
 
-        reevaluateBackward(new HashSet<>(variables), graph);
+        buildIndexing(variables, hashIndices);
+
+        reevaluateBackward(new HashSet<>(variables), graph, hashIndices, arrowIndex, sortedArrowsBack, arrowsMapBackward);
 
         while (!sortedArrowsBack.isEmpty()) {
             Arrow arrow = sortedArrowsBack.first();
@@ -395,8 +485,7 @@ public class BossMB2 {
             Set<Node> complement = new HashSet<>(arrow.getNaYX());
             complement.removeAll(arrow.getHOrT());
 
-            double _bump = deleteEval(x, y, complement,
-                    arrow.parents, hashIndices);
+            double _bump = deleteEval(x, y, complement, arrow.parents, hashIndices);
 
             delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX(), graph);
 
@@ -406,7 +495,7 @@ public class BossMB2 {
             process.addAll(graph.getAdjacentNodes(x));
             process.addAll(graph.getAdjacentNodes(y));
 
-            reevaluateBackward(new HashSet<>(process), graph);
+            reevaluateBackward(new HashSet<>(process), graph, hashIndices, arrowIndex, sortedArrowsBack, arrowsMapBackward);
         }
     }
 
@@ -426,12 +515,7 @@ public class BossMB2 {
         if (verbose) {
             int cond = diff.size() + graph.getParents(y).size();
 
-            String message = (graph.getNumEdges()) + ". DELETE " + x + " --> " + y
-                    + " H = " + H + " NaYX = " + naYX
-                    + " degree = " + GraphUtils.getDegree(graph)
-                    + " indegree = " + GraphUtils.getIndegree(graph)
-                    + " diff = " + diff + " (" + bump + ") "
-                    + " cond = " + cond;
+            String message = (graph.getNumEdges()) + ". DELETE " + x + " --> " + y + " H = " + H + " NaYX = " + naYX + " degree = " + GraphUtils.getDegree(graph) + " indegree = " + GraphUtils.getIndegree(graph) + " diff = " + diff + " (" + bump + ") " + " cond = " + cond;
             TetradLogger.getInstance().forceLogMessage(message);
         }
 
@@ -447,8 +531,7 @@ public class BossMB2 {
             graph.addEdge(directedEdge(y, h));
 
             if (verbose) {
-                TetradLogger.getInstance().forceLogMessage("--- Directing " + oldyh + " to "
-                        + graph.getEdge(y, h));
+                TetradLogger.getInstance().forceLogMessage("--- Directing " + oldyh + " to " + graph.getEdge(y, h));
             }
 
             Edge oldxh = graph.getEdge(x, h);
@@ -459,16 +542,14 @@ public class BossMB2 {
                 graph.addEdge(directedEdge(x, h));
 
                 if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage("--- Directing " + oldxh + " to "
-                            + graph.getEdge(x, h));
+                    TetradLogger.getInstance().forceLogMessage("--- Directing " + oldxh + " to " + graph.getEdge(x, h));
                 }
             }
         }
     }
 
 
-    private double deleteEval(Node x, Node y, Set<Node> complement, Set<Node> parents,
-                              Map<Node, Integer> hashIndices) {
+    private double deleteEval(Node x, Node y, Set<Node> complement, Set<Node> parents, Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(complement);
         set.addAll(parents);
         set.remove(x);
@@ -476,8 +557,7 @@ public class BossMB2 {
         return -scoreGraphChange(x, y, set, hashIndices);
     }
 
-    private double scoreGraphChange(Node x, Node y, Set<Node> parents,
-                                    Map<Node, Integer> hashIndices) {
+    private double scoreGraphChange(Node x, Node y, Set<Node> parents, Map<Node, Integer> hashIndices) {
         int xIndex = hashIndices.get(x);
         int yIndex = hashIndices.get(y);
 
@@ -570,7 +650,8 @@ public class BossMB2 {
         return nayx;
     }
 
-    private void reevaluateBackward(Set<Node> toProcess, Graph graph) {
+    private void reevaluateBackward(Set<Node> toProcess, Graph graph, Map<Node, Integer> hashIndices, int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack,
+                                    Map<Edge, ArrowConfigBackward> arrowsMapBackward) {
         class BackwardTask extends RecursiveTask<Boolean> {
             private final Node r;
             private final List<Node> adj;
@@ -578,15 +659,19 @@ public class BossMB2 {
             private final int chunk;
             private final int from;
             private final int to;
+            private final SortedSet<Arrow> sortedArrowsBack;
+            final Map<Edge, ArrowConfigBackward> arrowsMapBackward;
 
-            private BackwardTask(Node r, List<Node> adj, int chunk, int from, int to,
-                                 Map<Node, Integer> hashIndices) {
+            private BackwardTask(Node r, List<Node> adj, int chunk, int from, int to, Map<Node, Integer> hashIndices, SortedSet<Arrow> sortedArrowsBack,
+                                 Map<Edge, ArrowConfigBackward> arrowsMapBackward) {
                 this.adj = adj;
                 this.hashIndices = hashIndices;
                 this.chunk = chunk;
                 this.from = from;
                 this.to = to;
                 this.r = r;
+                this.sortedArrowsBack = sortedArrowsBack;
+                this.arrowsMapBackward = arrowsMapBackward;
             }
 
             @Override
@@ -598,12 +683,28 @@ public class BossMB2 {
 
                         if (e != null) {
                             if (e.pointsTowards(r)) {
-                                calculateArrowsBackward(w, r, graph);
+                                calculateArrowsBackward(w, r, graph,
+                                        arrowsMapBackward,
+                                       hashIndices,
+                                        arrowIndex,
+                                        sortedArrowsBack);
                             } else if (e.pointsTowards(w)) {
-                                calculateArrowsBackward(r, w, graph);
+                                calculateArrowsBackward(r, w, graph,
+                                        arrowsMapBackward,
+                                        hashIndices,
+                                        arrowIndex,
+                                        sortedArrowsBack);
                             } else {
-                                calculateArrowsBackward(w, r, graph);
-                                calculateArrowsBackward(r, w, graph);
+                                calculateArrowsBackward(w, r, graph,
+                                        arrowsMapBackward,
+                                        hashIndices,
+                                        arrowIndex,
+                                        sortedArrowsBack);
+                                calculateArrowsBackward(r, w, graph,
+                                        arrowsMapBackward,
+                                        hashIndices,
+                                        arrowIndex,
+                                        sortedArrowsBack);
                             }
                         }
                     }
@@ -613,8 +714,8 @@ public class BossMB2 {
 
                     List<BackwardTask> tasks = new ArrayList<>();
 
-                    tasks.add(new BackwardTask(r, adj, chunk, from, from + mid, hashIndices));
-                    tasks.add(new BackwardTask(r, adj, chunk, from + mid, to, hashIndices));
+                    tasks.add(new BackwardTask(r, adj, chunk, from, from + mid, hashIndices, sortedArrowsBack, arrowsMapBackward));
+                    tasks.add(new BackwardTask(r, adj, chunk, from + mid, to, hashIndices, sortedArrowsBack, arrowsMapBackward));
 
                     invokeAll(tasks);
                 }
@@ -626,7 +727,7 @@ public class BossMB2 {
         for (Node r : toProcess) {
             List<Node> adjacentNodes = new ArrayList<>(toProcess);
             ForkJoinPool.commonPool().invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
-                    adjacentNodes.size(), hashIndices));
+                    adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
         }
     }
 
@@ -636,7 +737,11 @@ public class BossMB2 {
         return chunk;
     }
 
-    private void calculateArrowsBackward(Node a, Node b, Graph graph) {
+    private void calculateArrowsBackward(Node a, Node b, Graph graph,
+                                         Map<Edge, ArrowConfigBackward> arrowsMapBackward,
+                                         Map<Node, Integer> hashIndices,
+                                         int[] arrowIndex,
+                                         SortedSet<Arrow> sortedArrowsBack) {
         if (existsKnowledge()) {
             if (!getKnowledge().noEdgeRequired(a.getName(), b.getName())) {
                 return;
@@ -673,13 +778,13 @@ public class BossMB2 {
         if (maxBump > 0) {
             Set<Node> _H = new HashSet<>(naYX);
             _H.removeAll(maxComplement);
-            addArrowBackward(a, b, _H, naYX, parents, maxBump);
+            addArrowBackward(a, b, _H, naYX, parents, maxBump, arrowIndex, sortedArrowsBack);
         }
     }
 
-    private void addArrowBackward(Node a, Node b, Set<Node> hOrT, Set<Node> naYX,
-                                  Set<Node> parents, double bump) {
-        Arrow arrow = new Arrow(bump, a, b, hOrT, null, naYX, parents, arrowIndex++);
+    private void addArrowBackward(Node a, Node b, Set<Node> hOrT, Set<Node> naYX, Set<Node> parents,
+                                  double bump, int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) {
+        Arrow arrow = new Arrow(bump, a, b, hOrT, null, naYX, parents, arrowIndex[0]++);
         sortedArrowsBack.add(arrow);
     }
 
@@ -730,8 +835,7 @@ public class BossMB2 {
         private final int index;
         private Set<Node> TNeighbors;
 
-        Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> capTorH, Set<Node> naYX,
-              Set<Node> parents, int index) {
+        Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> capTorH, Set<Node> naYX, Set<Node> parents, int index) {
             this.bump = bump;
             this.a = a;
             this.b = b;
@@ -780,11 +884,7 @@ public class BossMB2 {
         }
 
         public String toString() {
-            return "Arrow<" + a + "->" + b + " bump = " + bump
-                    + " t/h = " + hOrT
-                    + " TNeighbors = " + getTNeighbors()
-                    + " parents = " + parents
-                    + " naYX = " + naYX + ">";
+            return "Arrow<" + a + "->" + b + " bump = " + bump + " t/h = " + hOrT + " TNeighbors = " + getTNeighbors() + " parents = " + parents + " naYX = " + naYX + ">";
         }
 
         public int getIndex() {

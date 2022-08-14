@@ -2115,11 +2115,11 @@ public final class DataUtils {
     public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet) {
         ICovarianceMatrix cov;
 
-        if (dataSet.getNumRows() < 1000) {
-            cov = new CovarianceMatrixOnTheFly(dataSet);
-        } else {
+//        if (dataSet.getNumRows() < 1000) {
+//            cov = new CovarianceMatrixOnTheFly(dataSet);
+//        } else {
             cov = new CovarianceMatrix(dataSet);
-        }
+//        }
 
         return cov;
     }
@@ -2128,11 +2128,11 @@ public final class DataUtils {
     public static ICovarianceMatrix getCorrelationMatrix(DataSet dataSet) {
         ICovarianceMatrix cov;
 
-        if (dataSet.getNumRows() < 1000) {
-            cov = new CorrelationMatrixOnTheFly(new CovarianceMatrixOnTheFly(dataSet));
-        } else {
+//        if (dataSet.getNumRows() < 1000) {
+//            cov = new CorrelationMatrixOnTheFly(new CovarianceMatrixOnTheFly(dataSet));
+//        } else {
             cov = new CovarianceMatrix(dataSet);
-        }
+//        }
 
         return cov;
     }

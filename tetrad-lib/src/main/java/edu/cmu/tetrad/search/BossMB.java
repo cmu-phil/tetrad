@@ -78,7 +78,6 @@ public class BossMB {
                 pi1 = scorer.getPi();
                 s1 = scorer.score();
 
-                scorer.score(pi2);
                 betterMutationBossTuck(scorer, targets);
                 pi2 = besOrder(scorer);
                 s2 = scorer.score();
