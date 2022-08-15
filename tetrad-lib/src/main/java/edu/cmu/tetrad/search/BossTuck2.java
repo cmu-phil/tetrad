@@ -315,7 +315,6 @@ public class BossTuck2 {
         }
     }
 
-
     private double deleteEval(Node x, Node
             y, Set<Node> complement, Set<Node> parents, Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(complement);
