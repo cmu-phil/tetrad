@@ -686,7 +686,7 @@ public class TeyssierScorer2 {
             for (int i = from; i <= to; i++) {
                 if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
 //                System.out.print("\r" + i);
-                this.orderHash.put(this.pi.get(i), i);
+//                this.orderHash.put(this.pi.get(i), i);
                 recalculate(i);
             }
 

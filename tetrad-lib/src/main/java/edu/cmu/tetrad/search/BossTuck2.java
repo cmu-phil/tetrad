@@ -94,8 +94,6 @@ public class BossTuck2 {
 
         keeps.put(target, _keep);
 
-//        List<Node> _keep = new ArrayList<>(keep);
-
         scorer.bookmark();
 
         for (Node x : _keep) {

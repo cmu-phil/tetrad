@@ -38,7 +38,6 @@ public class BOSS_TUCK2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
-    private String targets;
 
     public BOSS_TUCK2() {
     }
@@ -74,8 +73,7 @@ public class BOSS_TUCK2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        Node target = graph.getNode(this.targets);
-        return GraphUtils.markovBlanketDag(target, new EdgeListGraph(graph));
+        return new EdgeListGraph(graph);
     }
 
     @Override
