@@ -2,18 +2,18 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
-import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
-import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Math.min;
 import static java.util.Collections.shuffle;
 
@@ -52,7 +52,6 @@ public class BossMB {
 
         List<Node> bestPerm = null;
         int bestSize = scorer.size();
-        double bestScore = NEGATIVE_INFINITY;
 
         this.scorer.score(order);
 
@@ -69,19 +68,14 @@ public class BossMB {
 
             makeValidKnowledgeOrder(order);
 
-            List<Node> pi2 = order;
+            List<Node> pi2;
             List<Node> pi1;
-
-            float s1, s2;
 
             do {
                 pi1 = scorer.getPi();
-                s1 = scorer.score();
-
                 betterMutationBossTuck(scorer, targets);
                 pi2 = besOrder(scorer);
-                s2 = scorer.score();
-            } while (pi2.size() > pi1.size());
+            } while (!pi2.equals(pi1));
 
             if (this.scorer.size() <= bestSize) {
                 bestSize = this.scorer.size();
@@ -119,7 +113,7 @@ public class BossMB {
             }
         } else {
             for (Edge e : graph.getEdges()) {
-                if (!(targets.contains( e.getNode1()) || targets.contains(e.getNode2()))) {
+                if (!(targets.contains(e.getNode1()) || targets.contains(e.getNode2()))) {
                     graph.removeEdge(e);
                 }
             }
@@ -141,67 +135,12 @@ public class BossMB {
         this.findMb = findMb;
     }
 
-    class MyTask implements Callable<Ret> {
-
-        Node k;
-        TeyssierScorer2 scorer;
-        double _sp;
-        int _k;
-        int chunk;
-        int w;
-
-        MyTask(Node k, TeyssierScorer2 scorer, double _sp, int _k, int chunk, int w) {
-            this.scorer = scorer;
-            this.k = k;
-            this._sp = _sp;
-            this._k = _k;
-            this.chunk = chunk;
-            this.w = w;
-        }
-
-        @Override
-        public Ret call() {
-            return relocateVisit(k, scorer, _sp, _k, chunk, w);
-        }
-    }
-
-    static class Ret {
-        double _sp;
-        //        List<Node> pi;
-        int _k;
-    }
-
-    private Ret relocateVisit(Node k, @NotNull TeyssierScorer2 scorer, double _sp, int _k, int chunk, int w) {
-        TeyssierScorer2 scorer2 = new TeyssierScorer2(scorer);
-        scorer2.score(scorer.getPi());
-        scorer2.bookmark(scorer2);
-
-        for (int j = w; j < min(w + chunk, scorer.size()); j++) {
-            scorer2.moveTo(k, j);
-
-            if (scorer2.score() >= _sp) {
-                if (!violatesKnowledge(scorer.getPi())) {
-                    _sp = scorer2.score();
-                    _k = j;
-                }
-            }
-        }
-
-        Ret ret = new Ret();
-        ret._sp = _sp;
-        ret._k = _k;
-
-        return ret;
-    }
-
     public void betterMutationBossTuck(@NotNull TeyssierScorer2 scorer, List<Node> targets) {
-        double s;
-        double sp = scorer.score();
+        double sp;
 
         List<Node> p1, p2;
 
         do {
-            s = sp;
             p1 = scorer.getPi();
 
             Graph g = scorer.getGraph(false);
@@ -241,12 +180,12 @@ public class BossMB {
                             sp = scorer.score();
                             scorer.bookmark();
 
-//                            if (verbose) {
-                            System.out.println("# vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges()
-                                    + " Score = " + scorer.score()
-                                    + " (betterMutation)"
-                                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-//                            }
+                            if (verbose) {
+                                System.out.println("# vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges()
+                                        + " Score = " + scorer.score()
+                                        + " (betterMutation)"
+                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                            }
                         } else {
                             scorer.goToBookmark();
                         }
@@ -256,7 +195,6 @@ public class BossMB {
 
             p2 = scorer.getPi();
         } while (!p1.equals(p2));
-//    } while (sp > s);
     }
 
     public List<Node> besOrder(TeyssierScorer2 scorer) {
@@ -779,7 +717,7 @@ public class BossMB {
 
         // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
         // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
-        // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
+        // bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
         // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
         // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
         // not equal to zero by keeping a list. This last part is commened out by default.
