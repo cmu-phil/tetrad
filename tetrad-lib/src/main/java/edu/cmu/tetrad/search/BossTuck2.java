@@ -46,9 +46,8 @@ public class BossTuck2 {
 
         TeyssierScorer2 scorer0 = new TeyssierScorer2(this.score);
         scorer0.setKnowledge(this.knowledge);
-        scorer0.score(order);
-
         makeValidKnowledgeOrder(order);
+        scorer0.score(order);
 
         if (verbose) {
             System.out.println("Initial score = " + scorer0.score() + " Elapsed = " + (System.currentTimeMillis() - start) / 1000.0 + " s");
