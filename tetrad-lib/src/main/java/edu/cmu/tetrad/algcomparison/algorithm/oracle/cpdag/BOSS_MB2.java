@@ -10,9 +10,6 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.BossMB;
 import edu.cmu.tetrad.search.BossMB2;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
@@ -39,7 +36,6 @@ public class BOSS_MB2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
-    private String targets;
 
     public BOSS_MB2() {
     }
@@ -51,27 +47,13 @@ public class BOSS_MB2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-//            this.targets = parameters.getString(Params.TARGETS);
-//
-//            String[] tokens = this.targets.split(",");
-//            List<Node> targets = new ArrayList<>();
-
             Score score = this.score.getScore(dataSet, parameters);
-
-//            for (String t : tokens) {
-//                String name = t.trim();
-//                targets.add(score.getVariable(name));
-//            }
 
             BossMB2 boss = new BossMB2(score);
 
             boss.setDepth(parameters.getInt(Params.DEPTH));
-            boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
             boss.setFindMb(parameters.getBoolean(Params.MB));
-//            boss.setMaxIndegree(parameters.getInt(Params.MAX_INDEGREE));
-
-            boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             boss.setKnowledge(this.knowledge);
 
             return boss.search(score.getVariables());
@@ -89,8 +71,7 @@ public class BOSS_MB2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        Node target = graph.getNode(this.targets);
-        return GraphUtils.markovBlanketDag(target, new EdgeListGraph(graph));
+        return new EdgeListGraph(graph);
     }
 
     @Override
@@ -106,18 +87,12 @@ public class BOSS_MB2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-//        params.add(Params.TARGETS);
         params.add(Params.MB);
-//        params.add(Params.MAX_INDEGREE);
 
         // Flags
         params.add(Params.DEPTH);
-//        params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.CACHE_SCORES);
         params.add(Params.VERBOSE);
-
-        // Parameters
-//        params.add(Params.NUM_STARTS);
 
         return params;
     }

@@ -26,20 +26,13 @@ public class BossMB2 {
     private final Score score;
     private IKnowledge knowledge = new Knowledge2();
     private long start;
-    private boolean useDataOrder = true;
     private boolean verbose = true;
     private int depth = 4;
-    private int numStarts = 1;
     private boolean findMb = false;
-    private int maxIndegree = -1;
 
     public BossMB2(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
-    }
-
-    public void setMaxIndegree(int maxIndegree) {
-        this.maxIndegree = maxIndegree;
     }
 
     class MyTask2 implements Callable<Graph> {
@@ -100,14 +93,6 @@ public class BossMB2 {
             throw new RuntimeException(e);
         }
 
-//        for (Node target : _targets) {
-//            try {
-//                this.graphs.add(targetVisit(scorer0, target));
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-
         for (Graph graph : graphs) {
             for (Edge e : graph.getEdges()) {
                 combinedGraph.addEdge(e);
@@ -135,39 +120,25 @@ public class BossMB2 {
         long stop = System.currentTimeMillis();
 
         System.out.println("Elapsed time = " + (stop - start) / 1000.0 + " s");
-//        System.out.println();
-//        return graphs.get(0);
 
-//        MeekRules rules = new MeekRules();
-//        rules.setKnowledge(knowledge);
-//        rules.orientImplied(combinedGraph);
-//
         return combinedGraph;
     }
 
     private Graph targetVisit(TeyssierScorer2 scorer0, Node target) throws InterruptedException {
         TeyssierScorer2 scorer = new TeyssierScorer2(scorer0);
-//        scorer.clearBookmarks();
 
         List<Node> pi2 = scorer.getPi();
         List<Node> pi1;
 
-        float s1, s2;
-
         do {
             if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
             pi1 = pi2;
-            s1 = scorer.score();
-
             betterMutationBossTuck(scorer, Collections.singletonList(target));
             pi2 = besOrder(scorer);
-            s2 = scorer.score();
         } while (!pi1.equals(pi2));
 
         scorer.score(pi2);
         Graph graph = scorer.getGraph(true);
-
-//        Graph graph2 = SearchGraphUtils.cpdagForDag(graph);
 
         if (findMb) {
             Set<Node> mb = new HashSet<>();
@@ -184,9 +155,8 @@ public class BossMB2 {
                 }
             }
 
-            N:
             for (Node n : graph.getNodes()) {
-                if (target == n) continue N;
+                if (target == n) continue;
                 if (!mb.contains(n)) graph.removeNode(n);
             }
         } else {
@@ -212,69 +182,14 @@ public class BossMB2 {
         this.findMb = findMb;
     }
 
-    class MyTask implements Callable<Ret> {
-
-        Node k;
-        TeyssierScorer2 scorer;
-        double _sp;
-        int _k;
-        int chunk;
-        int w;
-
-        MyTask(Node k, TeyssierScorer2 scorer, double _sp, int _k, int chunk, int w) {
-            this.scorer = scorer;
-            this.k = k;
-            this._sp = _sp;
-            this._k = _k;
-            this.chunk = chunk;
-            this.w = w;
-        }
-
-        @Override
-        public Ret call() {
-            return relocateVisit(k, scorer, _sp, _k, chunk, w);
-        }
-    }
-
-    static class Ret {
-        double _sp;
-        //        List<Node> pi;
-        int _k;
-    }
-
-    private Ret relocateVisit(Node k, @NotNull TeyssierScorer2 scorer, double _sp, int _k, int chunk, int w) {
-        TeyssierScorer2 scorer2 = new TeyssierScorer2(scorer);
-        scorer2.score(scorer.getPi());
-        scorer2.bookmark(scorer2);
-
-        for (int j = w; j < min(w + chunk, scorer.size()); j++) {
-            scorer2.moveTo(k, j);
-
-            if (scorer2.score() >= _sp) {
-                if (!violatesKnowledge(scorer.getPi())) {
-                    _sp = scorer2.score();
-                    _k = j;
-                }
-            }
-        }
-
-        Ret ret = new Ret();
-        ret._sp = _sp;
-        ret._k = _k;
-
-        return ret;
-    }
-
     public void betterMutationBossTuck(@NotNull TeyssierScorer2 scorer, List<Node> targets) throws
             InterruptedException {
-        double s;
-        double sp = scorer.score();
+        double sp;
 
         List<Node> p1, p2;
 
         do {
             if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-            s = sp;
             p1 = scorer.getPi();
 
             Graph g = scorer.getGraph(false);
@@ -380,10 +295,6 @@ public class BossMB2 {
         return graphs;
     }
 
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
     public List<Node> getVariables() {
         return this.variables;
     }
@@ -419,18 +330,7 @@ public class BossMB2 {
         return false;
     }
 
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
     private final List<Graph> graphs = new ArrayList<>();
-
-    private final List<List<Node>> orders = new ArrayList<>();
-//    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
-//    private Map<Node, Integer> hashIndices;
-//    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
-//    private int arrowIndex = 0;
-
 
     private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
 //        hashIndices = new HashMap<>();
@@ -849,7 +749,7 @@ public class BossMB2 {
 
         // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
         // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
-        // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
+        // bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
         // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
         // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
         // not equal to zero by keeping a list. This last part is commened out by default.
