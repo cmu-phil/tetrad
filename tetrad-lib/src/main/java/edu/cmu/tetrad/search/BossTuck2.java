@@ -8,7 +8,10 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
 import static java.lang.Math.min;
@@ -21,40 +24,16 @@ import static java.util.Collections.sort;
  * @author bryanandrews
  * @author josephramsey
  */
-public class BossMB2 {
+public class BossTuck2 {
     private final List<Node> variables;
     private final Score score;
     private IKnowledge knowledge = new Knowledge2();
-    private long start;
-    private boolean useDataOrder = true;
     private boolean verbose = true;
     private int depth = 4;
-    private int numStarts = 1;
-    private boolean findMb = false;
-    private int maxIndegree = -1;
 
-    public BossMB2(@NotNull Score score) {
+    public BossTuck2(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
-    }
-
-    public void setMaxIndegree(int maxIndegree) {
-        this.maxIndegree = maxIndegree;
-    }
-
-    class MyTask2 implements Callable<Graph> {
-        final TeyssierScorer2 scorer0;
-        final Node target;
-
-        MyTask2(TeyssierScorer2 scorer0, Node target) {
-            this.scorer0 = scorer0;
-            this.target = target;
-        }
-
-        @Override
-        public Graph call() throws InterruptedException {
-            return targetVisit(scorer0, target);
-        }
     }
 
     /**
@@ -63,271 +42,78 @@ public class BossMB2 {
     public Graph search(@NotNull List<Node> order) {
         long start = System.currentTimeMillis();
         order = new ArrayList<>(order);
+        Map<Node, List<Node>> keeps = new HashMap<>();
 
         TeyssierScorer2 scorer0 = new TeyssierScorer2(this.score);
-//        scorer0.setMaxIndegree(this.maxIndegree);
-
         scorer0.setKnowledge(this.knowledge);
-//        scorer0.clearBookmarks();
-
         scorer0.score(order);
-
-        this.start = System.currentTimeMillis();
 
         makeValidKnowledgeOrder(order);
 
-        System.out.println("Initial score = " + scorer0.score() + " Elapsed = " + (System.currentTimeMillis() - start) / 1000.0 + " s");
+        if (verbose) {
+            System.out.println("Initial score = " + scorer0.score() + " Elapsed = " + (System.currentTimeMillis() - start) / 1000.0 + " s");
+        }
 
         List<Node> _targets = new ArrayList<>(scorer0.getPi());
         sort(_targets);
 
-        Graph combinedGraph = new EdgeListGraph(_targets);
+        List<Node> pi1, pi2 = order;
 
-        List<MyTask2> tasks = new ArrayList<>();
+        do {
+            pi1 = pi2;
 
-        try {
-            for (Node node : _targets) {
-                tasks.add(new MyTask2(scorer0, node));
+            for (Node target : _targets) {
+                betterMutationBossTarget(scorer0, target, keeps);
             }
 
-            List<Future<Graph>> futures = ForkJoinPool.commonPool().invokeAll(tasks);
+            pi2 = besOrder(scorer0);
 
-            for (Future<Graph> future : futures) {
-                Graph g = future.get();
-                this.graphs.add(g);
+            if (verbose) {
+                System.out.println("# vars = " + scorer0.getPi().size() + " # Edges = " + scorer0.getNumEdges() + " Score = " + scorer0.score() + " (betterMutationBoss3)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
             }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-
-//        for (Node target : _targets) {
-//            try {
-//                this.graphs.add(targetVisit(scorer0, target));
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-
-        for (Graph graph : graphs) {
-            for (Edge e : graph.getEdges()) {
-                combinedGraph.addEdge(e);
-            }
-        }
-
-        for (Edge e : combinedGraph.getEdges()) {
-            if (e.isDirected()) {
-                if (combinedGraph.containsEdge(e) && combinedGraph.containsEdge(e.reverse())) {
-                    combinedGraph.removeEdge(e);
-                    combinedGraph.removeEdge(e.reverse());
-                }
-            } else if (Edges.isUndirectedEdge(e)) {
-                Node n1 = e.getNode1();
-                Node n2 = e.getNode2();
-
-                List<Edge> edges = combinedGraph.getEdges(n1, n2);
-
-                for (Edge _e : edges) {
-                    if (e != _e) combinedGraph.removeEdge(e);
-                }
-            }
-        }
+        } while (!pi1.equals(pi2));
 
         long stop = System.currentTimeMillis();
 
         System.out.println("Elapsed time = " + (stop - start) / 1000.0 + " s");
-//        System.out.println();
-//        return graphs.get(0);
 
-//        MeekRules rules = new MeekRules();
-//        rules.setKnowledge(knowledge);
-//        rules.orientImplied(combinedGraph);
-//
-        return combinedGraph;
+        return scorer0.getGraph(false);
     }
 
-    private Graph targetVisit(TeyssierScorer2 scorer0, Node target) throws InterruptedException {
-        TeyssierScorer2 scorer = new TeyssierScorer2(scorer0);
-//        scorer.clearBookmarks();
-
-        List<Node> pi2 = scorer.getPi();
-        List<Node> pi1;
-
-        float s1, s2;
-
-        do {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-            pi1 = pi2;
-            s1 = scorer.score();
-
-            betterMutationBossTuck(scorer, Collections.singletonList(target));
-            pi2 = besOrder(scorer);
-            s2 = scorer.score();
-        } while (!pi1.equals(pi2));
-
-        scorer.score(pi2);
-        Graph graph = scorer.getGraph(true);
-
-//        Graph graph2 = SearchGraphUtils.cpdagForDag(graph);
-
-        if (findMb) {
-            Set<Node> mb = new HashSet<>();
-
-            for (Node n : graph.getNodes()) {
-                if (graph.isAdjacentTo(target, n)) {
-                    mb.add(n);
-                } else {
-                    for (Node m : graph.getChildren(target)) {
-                        if (graph.isParentOf(n, m)) {
-                            mb.add(n);
-                        }
-                    }
-                }
-            }
-
-            N:
-            for (Node n : graph.getNodes()) {
-                if (target == n) continue N;
-                if (!mb.contains(n)) graph.removeNode(n);
-            }
-        } else {
-            for (Edge e : graph.getEdges()) {
-                Node n1 = e.getNode1();
-                Node n2 = e.getNode2();
-
-                if (graph.isAdjacentTo(target, n1) && graph.isAdjacentTo(target, n2)) {
-                    graph.removeEdge(e);
-                }
-            }
-        }
-
-        System.out.println("Graph for " + target + " = " + graph);
-
-        System.out.println();
-
-        return graph;
-    }
-
-
-    public void setFindMb(boolean findMb) {
-        this.findMb = findMb;
-    }
-
-    class MyTask implements Callable<Ret> {
-
-        Node k;
-        TeyssierScorer2 scorer;
-        double _sp;
-        int _k;
-        int chunk;
-        int w;
-
-        MyTask(Node k, TeyssierScorer2 scorer, double _sp, int _k, int chunk, int w) {
-            this.scorer = scorer;
-            this.k = k;
-            this._sp = _sp;
-            this._k = _k;
-            this.chunk = chunk;
-            this.w = w;
-        }
-
-        @Override
-        public Ret call() {
-            return relocateVisit(k, scorer, _sp, _k, chunk, w);
-        }
-    }
-
-    static class Ret {
-        double _sp;
-        //        List<Node> pi;
-        int _k;
-    }
-
-    private Ret relocateVisit(Node k, @NotNull TeyssierScorer2 scorer, double _sp, int _k, int chunk, int w) {
-        TeyssierScorer2 scorer2 = new TeyssierScorer2(scorer);
-        scorer2.score(scorer.getPi());
-        scorer2.bookmark(scorer2);
-
-        for (int j = w; j < min(w + chunk, scorer.size()); j++) {
-            scorer2.moveTo(k, j);
-
-            if (scorer2.score() >= _sp) {
-                if (!violatesKnowledge(scorer.getPi())) {
-                    _sp = scorer2.score();
-                    _k = j;
-                }
-            }
-        }
-
-        Ret ret = new Ret();
-        ret._sp = _sp;
-        ret._k = _k;
-
-        return ret;
-    }
-
-    public void betterMutationBossTuck(@NotNull TeyssierScorer2 scorer, List<Node> targets) throws
-            InterruptedException {
-        double s;
+    public void betterMutationBossTarget(@NotNull TeyssierScorer2 scorer, Node target, Map<Node, List<Node>> keeps) {
         double sp = scorer.score();
 
-        List<Node> p1, p2;
+        Set<Node> keep = new HashSet<>();
+        keep.add(target);
+        keep.addAll(scorer.getAdjacentNodes(target));
 
-        do {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-            s = sp;
-            p1 = scorer.getPi();
+        List<Node> _keep = new ArrayList<>();
+        for (Node p : scorer.getPi()) if (keep.contains(p)) _keep.add(p);
 
-            Graph g = scorer.getGraph(false);
-            Set<Node> keep = new HashSet<>(targets);
-            for (Node n : targets) {
-                keep.addAll(g.getAdjacentNodes(n));
-            }
+        if (keeps.containsKey(target) && new HashSet<>(keeps.get(target)).equals(new HashSet<>(_keep))) return;
 
-            if (findMb) {
-                for (Node k : new HashSet<>(keep)) {
-                    keep.addAll(g.getAdjacentNodes(k));
-                }
-            }
+        keeps.put(target, _keep);
 
-            List<Node> _pi = new ArrayList<>();
+//        List<Node> _keep = new ArrayList<>(keep);
 
-            for (Node n : scorer.getPi()) {
-                if (keep.contains(n)) _pi.add(n);
-            }
+        scorer.bookmark();
 
-            sp = scorer.score(_pi);
+        for (Node x : _keep) {
+            int i = scorer.index(x);
 
-            scorer.bookmark();
+            for (int j = i - 1; j >= 0; j--) {
+                if (!keep.contains(scorer.get(j))) continue;
 
-            if (verbose) {
-                System.out.println("After snips: # vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s") + " order = " + scorer.getPi());
-            }
-
-
-            for (Node x : scorer.getPi()) {
-                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-                int i = scorer.index(x);
-
-                for (int j = i - 1; j >= 0; j--) {
-                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-                    if (scorer.tuck(x, j)) {
-                        if (scorer.score() > sp && !violatesKnowledge(scorer.getPi())) {
-                            sp = scorer.score();
-                            scorer.bookmark();
-
-                            if (verbose) {
-                                System.out.println("# vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-                            }
-                        } else {
-                            scorer.goToBookmark();
-                        }
+                if (scorer.tuck(x, j)) {
+                    if (scorer.score() > sp && !violatesKnowledge(scorer.getPi())) {
+                        sp = scorer.score();
+                        scorer.bookmark();
+                    } else {
+                        scorer.goToBookmark();
                     }
                 }
             }
-
-            p2 = scorer.getPi();
-        } while (!p1.equals(p2));
-//    } while (sp > s);
+        }
     }
 
     public List<Node> besOrder(TeyssierScorer2 scorer) {
@@ -380,10 +166,6 @@ public class BossMB2 {
         return graphs;
     }
 
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
     public List<Node> getVariables() {
         return this.variables;
     }
@@ -419,21 +201,9 @@ public class BossMB2 {
         return false;
     }
 
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
     private final List<Graph> graphs = new ArrayList<>();
 
-    private final List<List<Node>> orders = new ArrayList<>();
-//    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
-//    private Map<Node, Integer> hashIndices;
-//    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
-//    private int arrowIndex = 0;
-
-
     private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
-//        hashIndices = new HashMap<>();
 
         int i = -1;
 
@@ -849,7 +619,7 @@ public class BossMB2 {
 
         // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
         // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
-        // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
+        // bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
         // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
         // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
         // not equal to zero by keeping a list. This last part is commened out by default.
@@ -884,6 +654,4 @@ public class BossMB2 {
             return parents;
         }
     }
-
-    public enum AlgType {BOSS, BOSS_TUCK, KING_OF_BRIDGES}
 }

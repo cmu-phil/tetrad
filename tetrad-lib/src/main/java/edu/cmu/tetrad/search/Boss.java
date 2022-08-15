@@ -64,75 +64,80 @@ public class Boss {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
-        long start = System.currentTimeMillis();
-        order = new ArrayList<>(order);
-
-        this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseRaskuttiUhler(this.usePearl);
-
-        if (this.usePearl) {
-            this.scorer.setUseScore(false);
-        } else {
-            this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
-        }
-
-        this.scorer.setKnowledge(this.knowledge);
-        this.scorer.clearBookmarks();
-
-        this.scorer.setCachingScores(this.cachingScores);
-
         List<Node> bestPerm = null;
-        double best = NEGATIVE_INFINITY;
+        try {
+            long start = System.currentTimeMillis();
+            order = new ArrayList<>(order);
 
-        this.scorer.score(order);
+            this.scorer = new TeyssierScorer(this.test, this.score);
+            this.scorer.setUseRaskuttiUhler(this.usePearl);
 
-        for (int r = 0; r < this.numStarts; r++) {
-            if (Thread.interrupted()) break;
-
-            if ((r == 0 && !this.useDataOrder) || r > 0) {
-                shuffle(order);
+            if (this.usePearl) {
+                this.scorer.setUseScore(false);
+            } else {
+                this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
             }
 
-            this.start = System.currentTimeMillis();
+            this.scorer.setKnowledge(this.knowledge);
+            this.scorer.clearBookmarks();
 
-            makeValidKnowledgeOrder(order);
+            this.scorer.setCachingScores(this.cachingScores);
 
-            List<Node> pi2 = order;// causalOrder(scorer.getPi(), graph);
-            List<Node> pi1;
+            bestPerm = null;
+            double best = NEGATIVE_INFINITY;
 
-            do {
-                scorer.score(pi2);
+            this.scorer.score(order);
 
-                if (algType == AlgType.BOSS) {
-                    betterMutation(scorer);
-                } else {
-                    betterMutationTuck(scorer);
+            for (int r = 0; r < this.numStarts; r++) {
+                if (Thread.interrupted()) break;
+
+                if ((r == 0 && !this.useDataOrder) || r > 0) {
+                    shuffle(order);
                 }
 
-                pi1 = scorer.getPi();
+                this.start = System.currentTimeMillis();
 
-                if (algType == AlgType.KING_OF_BRIDGES) {
-                    pi2 = fgesOrder(scorer);
-                } else {
-                    pi2 = besOrder(scorer);
+                makeValidKnowledgeOrder(order);
+
+                List<Node> pi2 = order;// causalOrder(scorer.getPi(), graph);
+                List<Node> pi1;
+
+                do {
+                    scorer.score(pi2);
+
+                    if (algType == AlgType.BOSS) {
+                        betterMutation(scorer);
+                    } else {
+                        betterMutationTuck(scorer);
+                    }
+
+                    pi1 = scorer.getPi();
+
+                    if (algType == AlgType.KING_OF_BRIDGES) {
+                        pi2 = fgesOrder(scorer);
+                    } else {
+                        pi2 = besOrder(scorer);
+                    }
+
+                } while (!pi1.equals(pi2));
+
+                if (this.scorer.score() > best) {
+                    best = this.scorer.score();
+                    bestPerm = scorer.getPi();
                 }
-
-            } while (!pi1.equals(pi2));
-
-            if (this.scorer.score() > best) {
-                best = this.scorer.score();
-                bestPerm = scorer.getPi();
             }
-        }
 
-        this.scorer.score(bestPerm);
-        this.graph = scorer.getGraph(true);
+            this.scorer.score(bestPerm);
+            this.graph = scorer.getGraph(true);
 
-        long stop = System.currentTimeMillis();
+            long stop = System.currentTimeMillis();
 
-        if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
+            if (this.verbose) {
+                TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
+                TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
         return bestPerm;
@@ -301,7 +306,7 @@ public class Boss {
         return ret;
     }
 
-    public void betterMutationTuck(@NotNull TeyssierScorer scorer) {
+    public void betterMutationTuck(@NotNull TeyssierScorer scorer) throws InterruptedException {
         double s1, s2;
         double sp = scorer.score();
         scorer.bookmark();
@@ -316,6 +321,8 @@ public class Boss {
 
                 Node x = scorer.get(i);
                 for (int j = i - 1; j >= 0; j--) {
+                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
                     if (tuck(x, j, scorer)) {
                         if (scorer.score() < sp || violatesKnowledge(scorer.getPi())) {
                             scorer.goToBookmark();
@@ -323,9 +330,9 @@ public class Boss {
                             sp = scorer.score();
 
                             if (verbose) {
-                                System.out.print("\r# Edges = " + scorer.getNumEdges()
+                                System.out.println("# Edges = " + scorer.getNumEdges()
                                         + " Score = " + scorer.score()
-                                        + " (betterMutation)"
+                                        + " (betterMutationTuck)"
                                         + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                             }
                         }
@@ -341,8 +348,6 @@ public class Boss {
         } while (s2 > s1);
 //
         scorer.goToBookmark(1);
-
-        System.out.println();
     }
 
     private boolean tuck(Node k, int j, TeyssierScorer scorer) {

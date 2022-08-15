@@ -62,7 +62,7 @@ public class TetradLogger {
      * States whether events should be logged, this allows one to turn off all loggers at once.
      * (Note, a field is used, since fast lookups are important)
      */
-    private boolean logging = Preferences.userRoot().getBoolean("loggingActivated", false);
+    private boolean logging = Preferences.userRoot().getBoolean("loggingActivated", true);
 
 
     /**

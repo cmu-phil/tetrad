@@ -3,14 +3,11 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ParamDescriptions;
 import org.jetbrains.annotations.NotNull;
 
-import java.rmi.MarshalledObject;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
 
 import static java.lang.Math.floor;
 
@@ -634,24 +631,24 @@ public class TeyssierScorer2 {
             this.orderHash.put(this.pi.get(i), i);
         }
 
-//        int chunk = getChunkSize(i2 - i1 + 1);
-//        List<MyTask> tasks = new ArrayList<>();
-//
-//        for (int w = 0; w < size(); w += chunk) {
-//            tasks.add(new MyTask(pi, this, chunk, orderHash, w, w + chunk));
-//        }
-//
-//        ForkJoinPool.commonPool().invokeAll(tasks);
+        int chunk = getChunkSize(i2 - i1 + 1);
+        List<MyTask> tasks = new ArrayList<>();
 
-
-        try {
-            for (int i = i1; i <= i2; i++) {
-                //            System.out.print("\r" + i);
-                recalculate(i);
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        for (int w = 0; w < size(); w += chunk) {
+            tasks.add(new MyTask(pi, this, chunk, orderHash, w, w + chunk));
         }
+
+        ForkJoinPool.commonPool().invokeAll(tasks);
+
+
+//        try {
+//            for (int i = i1; i <= i2; i++) {
+//                //            System.out.print("\r" + i);
+//                recalculate(i);
+//            }
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
 
 //        System.out.println();
     }
@@ -688,7 +685,7 @@ public class TeyssierScorer2 {
         public Boolean call() throws InterruptedException {
             for (int i = from; i <= to; i++) {
                 if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-                System.out.print("\r" + i);
+//                System.out.print("\r" + i);
                 this.orderHash.put(this.pi.get(i), i);
                 recalculate(i);
             }
@@ -796,21 +793,15 @@ public class TeyssierScorer2 {
                 if (s2 > sMax) {
                     sMax = s2;
                     z = z0;
-//
-//                    changed = true;
-//                    System.out.print("+");
-
                 }
-//                else {
+
                 parents.remove(z0);
-//                }
             }
 
             if (z != null) {
                 parents.add(z);
                 if (maxIndegree > 0 && parents.size() > maxIndegree) break;
                 changed = true;
-//                System.out.print("+");
             }
         }
 
@@ -831,7 +822,6 @@ public class TeyssierScorer2 {
                 if (s2 > sMax) {
                     sMax = s2;
                     w = z0;
-//                    System.out.print("-");
                 }
 
                 parents.add(z0);

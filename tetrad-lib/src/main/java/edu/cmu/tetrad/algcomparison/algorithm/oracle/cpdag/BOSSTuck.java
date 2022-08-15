@@ -10,6 +10,7 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.Boss2;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
@@ -27,7 +28,7 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS_TUCK",
+        name = "BOSS-Tuck",
         command = "boss-tuck",
         algoType = AlgType.forbid_latent_common_causes
 )
@@ -61,8 +62,8 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, HasKnowledge {
 
             Score score = this.score.getScore(dataModel, parameters);
 
-            Boss2 boss = new Boss2(score);
-            boss.setAlgType(Boss2.AlgType.BOSS_TUCK);
+            Boss boss = new Boss(score);
+            boss.setAlgType(Boss.AlgType.BOSS_TUCK);
 
             boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
