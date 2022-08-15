@@ -42,7 +42,7 @@ public class BossTuck2 {
     public Graph search(@NotNull List<Node> order) {
         long start = System.currentTimeMillis();
         order = new ArrayList<>(order);
-        Map<Node, List<Node>> keeps = new HashMap<>();
+        Map<Node, Set<Node>> keeps = new HashMap<>();
 
         TeyssierScorer2 scorer0 = new TeyssierScorer2(this.score);
         scorer0.setKnowledge(this.knowledge);
@@ -79,19 +79,19 @@ public class BossTuck2 {
         return scorer0.getGraph(false);
     }
 
-    public void betterMutationBossTarget(@NotNull TeyssierScorer2 scorer, Node target, Map<Node, List<Node>> keeps) {
+    public void betterMutationBossTarget(@NotNull TeyssierScorer2 scorer, Node target, Map<Node, Set<Node>> keeps) {
         double sp = scorer.score();
 
         Set<Node> keep = new HashSet<>();
         keep.add(target);
         keep.addAll(scorer.getAdjacentNodes(target));
 
+        if (keeps.containsKey(target) && keeps.get(target).equals(keep)) return;
+
         List<Node> _keep = new ArrayList<>();
         for (Node p : scorer.getPi()) if (keep.contains(p)) _keep.add(p);
 
-        if (keeps.containsKey(target) && new HashSet<>(keeps.get(target)).equals(new HashSet<>(_keep))) return;
-
-        keeps.put(target, _keep);
+        keeps.put(target, keep);
 
         scorer.bookmark();
 
