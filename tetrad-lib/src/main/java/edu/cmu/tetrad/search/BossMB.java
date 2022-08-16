@@ -57,8 +57,6 @@ public class BossMB {
         System.out.println("Initial score = " + scorer.score());
 
         for (int r = 0; r < this.numStarts; r++) {
-            if (Thread.interrupted()) break;
-
             if ((r == 0 && !this.useDataOrder) || r > 0) {
                 shuffle(order);
             }

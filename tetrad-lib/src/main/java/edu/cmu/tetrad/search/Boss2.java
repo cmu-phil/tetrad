@@ -48,82 +48,76 @@ public class Boss2 {
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
         List<Node> bestPerm;
-        try {
-            long start = System.currentTimeMillis();
-            order = new ArrayList<>(order);
+        long start = System.currentTimeMillis();
+        order = new ArrayList<>(order);
 
-            this.scorer = new TeyssierScorer2(this.score);
+        this.scorer = new TeyssierScorer2(this.score);
 
-            if (this.usePearl) {
-                this.scorer.setUseScore(false);
-            } else {
-                this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
+        if (this.usePearl) {
+            this.scorer.setUseScore(false);
+        } else {
+            this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
+        }
+
+        this.scorer.setKnowledge(this.knowledge);
+        this.scorer.clearBookmarks();
+
+        bestPerm = null;
+        double best = NEGATIVE_INFINITY;
+
+        this.scorer.score(order);
+
+        for (int r = 0; r < this.numStarts; r++) {
+            if ((r == 0 && !this.useDataOrder) || r > 0) {
+                shuffle(order);
             }
 
-            this.scorer.setKnowledge(this.knowledge);
-            this.scorer.clearBookmarks();
+            this.start = System.currentTimeMillis();
 
-            bestPerm = null;
-            double best = NEGATIVE_INFINITY;
+            makeValidKnowledgeOrder(order);
 
-            this.scorer.score(order);
+            List<Node> pi2 = order;// causalOrder(scorer.getPi(), graph);
+            List<Node> pi1;
 
-            for (int r = 0; r < this.numStarts; r++) {
-                if (Thread.interrupted()) break;
+            do {
+                scorer.score(pi2);
 
-                if ((r == 0 && !this.useDataOrder) || r > 0) {
-                    shuffle(order);
+                if (algType == AlgType.BOSS) {
+                    betterMutation(scorer);
+                } else {
+                    betterMutationTuck(scorer);
                 }
 
-                this.start = System.currentTimeMillis();
+                pi1 = scorer.getPi();
 
-                makeValidKnowledgeOrder(order);
-
-                List<Node> pi2 = order;// causalOrder(scorer.getPi(), graph);
-                List<Node> pi1;
-
-                do {
-                    scorer.score(pi2);
-
-                    if (algType == AlgType.BOSS) {
-                        betterMutation(scorer);
-                    } else {
-                        betterMutationTuck(scorer);
-                    }
-
-                    pi1 = scorer.getPi();
-
-                    if (algType == AlgType.KING_OF_BRIDGES) {
-                        pi2 = fgesOrder(scorer);
-                    } else {
-                        pi2 = besOrder(scorer);
-                    }
-
-                } while (!pi1.equals(pi2));
-
-                if (this.scorer.score() > best) {
-                    best = this.scorer.score();
-                    bestPerm = scorer.getPi();
+                if (algType == AlgType.KING_OF_BRIDGES) {
+                    pi2 = fgesOrder(scorer);
+                } else {
+                    pi2 = besOrder(scorer);
                 }
+
+            } while (!pi1.equals(pi2));
+
+            if (this.scorer.score() > best) {
+                best = this.scorer.score();
+                bestPerm = scorer.getPi();
             }
+        }
 
-            this.scorer.score(bestPerm);
-            this.graph = scorer.getGraph(true);
+        this.scorer.score(bestPerm);
+        this.graph = scorer.getGraph(true);
 
-            long stop = System.currentTimeMillis();
+        long stop = System.currentTimeMillis();
 
-            if (this.verbose) {
-                TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
-                TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if (this.verbose) {
+            TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
+            TetradLogger.getInstance().forceLogMessage("Elapcsed time = " + (stop - start) / 1000.0 + " s");
         }
 
         return bestPerm;
     }
 
-    public void betterMutation(@NotNull TeyssierScorer2 scorer) throws InterruptedException {
+    public void betterMutation(@NotNull TeyssierScorer2 scorer) {
         scorer.bookmark();
         float sp;
 
@@ -137,8 +131,6 @@ public class Boss2 {
                 scorer.bookmark();
 
                 for (int j = 0; j < scorer.size(); j++) {
-                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-
                     scorer.moveTo(k, j);
 
                     if (scorer.score() >= _sp) {
@@ -165,14 +157,12 @@ public class Boss2 {
         scorer.score();
     }
 
-    private void betterMutationTuck(@NotNull TeyssierScorer2 scorer) throws InterruptedException {
+    private void betterMutationTuck(@NotNull TeyssierScorer2 scorer) {
         double sp = scorer.score();
         scorer.bookmark();
         List<Node> pi1, pi2;
 
         do {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-
             pi1 = scorer.getPi();
 
             for (int i = 1; i < scorer.size(); i++) {
@@ -180,8 +170,6 @@ public class Boss2 {
 
                 Node x = scorer.get(i);
                 for (int j = i - 1; j >= 0; j--) {
-                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-
                     if (tuck(x, j, scorer)) {
                         if (scorer.score() < sp || violatesKnowledge(scorer.getPi())) {
                             scorer.goToBookmark();
@@ -339,10 +327,6 @@ public class Boss2 {
 
     public void orientbk(IKnowledge bk, Graph graph, List<Node> variables) {
         for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
@@ -362,10 +346,6 @@ public class Boss2 {
         }
 
         for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.

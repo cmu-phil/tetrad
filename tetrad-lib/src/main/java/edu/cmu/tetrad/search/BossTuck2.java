@@ -61,7 +61,9 @@ public class BossTuck2 {
                 betterMutationBossTarget(scorer0, target, keeps, pairs);
             }
 
-            pi2 = besOrder(scorer0);
+            pi2 = scorer0.getPi();
+
+//            pi2 = besOrder(scorer0);
 
             if (verbose) {
                 System.out.println("# vars = " + scorer0.getPi().size() + " # Edges = " + scorer0.getNumEdges()
@@ -69,6 +71,8 @@ public class BossTuck2 {
                         + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
             }
         } while (!pi1.equals(pi2));
+
+        scorer0.score(besOrder(scorer0));
 
         long stop = System.currentTimeMillis();
 
