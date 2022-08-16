@@ -27,7 +27,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "BOSS-Tuck2",
         command = "boss-tuck2",
-        algoType = AlgType.search_for_Markov_blankets
+        algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 @Experimental
