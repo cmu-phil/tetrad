@@ -61,8 +61,10 @@ public class BossTuck2 {
         do {
             pi1 = pi2;
 
+            Set<NodePair> pairs = new HashSet<>();
+
             for (Node target : _targets) {
-                betterMutationBossTarget(scorer0, target, keeps);
+                betterMutationBossTarget(scorer0, target, keeps, pairs);
             }
 
             pi2 = besOrder(scorer0);
@@ -79,7 +81,7 @@ public class BossTuck2 {
         return scorer0.getGraph(false);
     }
 
-    public void betterMutationBossTarget(@NotNull TeyssierScorer2 scorer, Node target, Map<Node, Set<Node>> keeps) {
+    public void betterMutationBossTarget(@NotNull TeyssierScorer2 scorer, Node target, Map<Node, Set<Node>> keeps, Set<NodePair> pairs) {
         double sp = scorer.score();
 
         Set<Node> keep = new HashSet<>();
@@ -99,12 +101,14 @@ public class BossTuck2 {
             int i = scorer.index(x);
 
             for (int j = i - 1; j >= 0; j--) {
+                if (pairs.contains(new NodePair(x, scorer.get(j)))) continue;
                 if (!keep.contains(scorer.get(j))) continue;
 
                 if (scorer.tuck(x, j)) {
                     if (scorer.score() > sp && !violatesKnowledge(scorer.getPi())) {
                         sp = scorer.score();
                         scorer.bookmark();
+                        pairs.add(new NodePair(x, scorer.get(j)));
                     } else {
                         scorer.goToBookmark();
                     }

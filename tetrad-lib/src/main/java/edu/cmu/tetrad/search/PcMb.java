@@ -33,7 +33,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Searches for a CPDAG representing all of the Markov blankets for a given target T consistent with the given
+ * Searches for a CPDAG representing all the Markov blankets for a given target T consistent with the given
  * independence information. This CPDAG may be used to generate the actual list of DAG's that might be Markov
  * blankets. Note that this code has been converted to be consistent with the CPC algorithm.
  *
@@ -343,17 +343,6 @@ public final class PcMb implements MbSearch, GraphSearch {
             }
         }
 
-//        MbUtils.trimToMbNodes(graph, getTargets(), false);
-//
-//        this.logger.log("graph",
-//                "After step 5 (Trim graph to {T} U PC U {Parents(Children(T))})" +
-//                        graph);
-//
-//        this.logger.log("info", "BEGINNING step 6 (Remove edges among P and P of C).");
-//
-//        MbUtils.trimEdgesAmongParents(graph, getTargets());
-//        MbUtils.trimEdgesAmongParentsOfChildren(graph, getTargets());
-
         this.logger.log("graph", "After step 6 (Remove edges among P and P of C)" + graph);
 
         finishUp(start, graph);
@@ -595,7 +584,7 @@ public final class PcMb implements MbSearch, GraphSearch {
         this.logger.log("pruning", "Trying to remove edges adjacent to node " + node +
                 ", depth = " + depth + ".");
 
-        // Otherwise, try removing all other edges adjacent node node. Return
+        // Otherwise, try removing all other edges adjacent node. Return
         // true if more edges could be removed at the next depth.
         List<Node> a = new LinkedList<>(graph.getAdjacentNodes(node));
 
@@ -624,7 +613,7 @@ public final class PcMb implements MbSearch, GraphSearch {
                     graph.removeEdge(node, y);
 
                     // The target itself must not be removed.
-                    if (graph.getEdges(y).isEmpty() && y != getTargets()) {
+                    if (graph.getEdges(y).isEmpty() && !getTargets().contains(y)) {
                         graph.removeNode(y);
                     }
 
@@ -663,24 +652,6 @@ public final class PcMb implements MbSearch, GraphSearch {
         }
 
         graph.addUndirectedEdge(v, w);
-    }
-
-    private Node getVariableForName(String targetVariableName) {
-        Node target = null;
-
-        for (Node V : this.variables) {
-            if (V.getName().equals(targetVariableName)) {
-                target = V;
-                break;
-            }
-        }
-
-        if (target == null) {
-            throw new IllegalArgumentException(
-                    "Target variable not in dataset: " + targetVariableName);
-        }
-
-        return target;
     }
 
     private void noteMaxAtDepth(int depth, int numAdjacents) {
