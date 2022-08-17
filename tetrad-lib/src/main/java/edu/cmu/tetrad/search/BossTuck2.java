@@ -72,13 +72,13 @@ public class BossTuck2 {
             }
         } while (!pi1.equals(pi2));
 
-        scorer0.score(besOrder(scorer0));
+//        scorer0.score(besOrder(scorer0));
 
         long stop = System.currentTimeMillis();
 
         System.out.println("Elapsed time = " + (stop - start) / 1000.0 + " s");
 
-        return scorer0.getGraph(false);
+        return scorer0.getGraph(true);
     }
 
     public void betterMutationBossTarget(@NotNull TeyssierScorer2 scorer, Node target, Map<Node, Set<Node>> keeps, Set<NodePair> pairs) {
