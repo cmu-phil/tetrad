@@ -57,7 +57,12 @@ public class BossTuck2 {
 
             Set<NodePair> pairs = new HashSet<>();
 
-            for (Node target : _pi) {
+
+            List<Node> pi3 = new ArrayList<>(_pi);
+
+            pi3.sort(Comparator.comparingInt(o -> scorer0.getAdjacentNodes(o).size()));
+
+            for (Node target : pi3) {
                 betterMutationBossTarget(scorer0, target, keeps, pairs);
             }
 
@@ -73,6 +78,9 @@ public class BossTuck2 {
         } while (!pi1.equals(pi2));
 
 //        scorer0.score(besOrder(scorer0));
+//
+//        bes(scorer0);
+
 
         long stop = System.currentTimeMillis();
 
@@ -122,6 +130,16 @@ public class BossTuck2 {
         bes.setKnowledge(knowledge);
         bes.bes(graph, scorer.getPi());
         return causalOrder(scorer.getPi(), graph);
+    }
+
+    public void bes(TeyssierScorer2 scorer) {
+        Graph graph = scorer.getGraph(true);
+        Bes bes = new Bes(score);
+        bes.setDepth(depth);
+        bes.setVerbose(verbose);
+        bes.setKnowledge(knowledge);
+        bes.bes(graph, scorer.getPi());
+//        return causalOrder(scorer.getPi(), graph);
     }
 
     private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
