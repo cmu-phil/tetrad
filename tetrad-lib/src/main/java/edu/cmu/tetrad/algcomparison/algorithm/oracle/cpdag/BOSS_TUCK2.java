@@ -50,18 +50,15 @@ public class BOSS_TUCK2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
             Score score = this.score.getScore(dataSet, parameters);
 
             BossTuck2 boss = new BossTuck2(score);
-
-            boss.setDepth(parameters.getInt(Params.DEPTH));
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
             boss.setKnowledge(this.knowledge);
 
             return boss.search(score.getVariables());
         } else {
-            BOSS_TUCK2 fgesMb = new BOSS_TUCK2(this.score);
+            BOSS_TUCK2 alg = new BOSS_TUCK2(this.score);
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, fgesMb, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, alg, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -89,7 +86,6 @@ public class BOSS_TUCK2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
         List<String> params = new ArrayList<>();
 
         // Flags
-        params.add(Params.DEPTH);
         params.add(Params.CACHE_SCORES);
         params.add(Params.VERBOSE);
 

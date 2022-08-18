@@ -23,7 +23,6 @@ public class BossTuck2 {
     private final Score score;
     private IKnowledge knowledge = new Knowledge2();
     private boolean verbose = true;
-    private int depth = 4;
 
     public BossTuck2(@NotNull Score score) {
         this.score = score;
@@ -109,45 +108,6 @@ public class BossTuck2 {
         }
     }
 
-//    public List<Node> besOrder(TeyssierScorer2 scorer) {
-//        Graph graph = scorer.getGraph(true);
-//        Bes bes = new Bes(score);
-//        bes.setDepth(depth);
-//        bes.setVerbose(verbose);
-//        bes.setKnowledge(knowledge);
-//        bes.bes(graph, scorer.getPi());
-//        return causalOrder(scorer.getPi(), graph);
-//    }
-//
-//    public void bes(TeyssierScorer2 scorer) {
-//        Graph graph = scorer.getGraph(true);
-//        Bes bes = new Bes(score);
-//        bes.setDepth(depth);
-//        bes.setVerbose(verbose);
-//        bes.setKnowledge(knowledge);
-//        bes.bes(graph, scorer.getPi());
-////        return causalOrder(scorer.getPi(), graph);
-//    }
-
-//    private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
-//        List<Node> found = new ArrayList<>();
-//        boolean _found = true;
-//
-//        while (_found) {
-//            _found = false;
-//
-//            for (Node node : initialOrder) {
-//                HashSet<Node> __found = new HashSet<>(found);
-//                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-//                    found.add(node);
-//                    _found = true;
-//                }
-//            }
-//        }
-//        return found;
-//    }
-
-
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
             order.sort((o1, o2) -> {
@@ -187,11 +147,6 @@ public class BossTuck2 {
 
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-        this.depth = depth;
     }
 
     private boolean violatesKnowledge(List<Node> order) {
