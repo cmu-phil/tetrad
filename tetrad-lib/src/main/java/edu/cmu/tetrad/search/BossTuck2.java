@@ -108,6 +108,43 @@ public class BossTuck2 {
         }
     }
 
+
+
+    @NotNull
+    public List<Node> getVariables() {
+        return this.variables;
+    }
+
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
+    public IKnowledge getKnowledge() {
+        return knowledge;
+    }
+
+    private boolean violatesKnowledge(List<Node> order) {
+        if (!this.knowledge.isEmpty()) {
+            for (int i = 0; i < order.size(); i++) {
+                for (int j = i + 1; j < order.size(); j++) {
+                    if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
             order.sort((o1, o2) -> {
@@ -126,46 +163,5 @@ public class BossTuck2 {
                 }
             });
         }
-    }
-
-    @NotNull
-    public List<Graph> getGraphs() {
-        return graphs;
-    }
-
-    public List<Node> getVariables() {
-        return this.variables;
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
-    }
-
-    private boolean violatesKnowledge(List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
-            for (int i = 0; i < order.size(); i++) {
-                for (int j = i + 1; j < order.size(); j++) {
-                    if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName())) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private final List<Graph> graphs = new ArrayList<>();
-
-    public IKnowledge getKnowledge() {
-        return knowledge;
     }
 }
