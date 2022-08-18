@@ -63,8 +63,8 @@ public class BOSS implements Algorithm, UsesScoreWrapper, HasKnowledge {
 
             Score score = this.score.getScore(dataModel, parameters);
 
-            Boss2 boss = new Boss2(score);
-            boss.setAlgType(Boss2.AlgType.BOSS);
+            Boss boss = new Boss(score);
+            boss.setAlgType(Boss.AlgType.BOSS);
 
             boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));

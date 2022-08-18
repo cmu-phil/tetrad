@@ -96,7 +96,7 @@ public class BossTuck2 {
             for (int j = i - 1; j >= 0; j--) {
                 if (!keep.contains(scorer.get(j))) continue;
 
-                if (scorer.tuck(x, j)) {
+                if (tuck(x, j, scorer)) {
                     if (scorer.score() > sp && !violatesKnowledge(scorer.getPi())) {
                         sp = scorer.score();
                         scorer.bookmark();
@@ -160,5 +160,27 @@ public class BossTuck2 {
                 }
             });
         }
+    }
+
+    private boolean tuck(Node k, int j, TeyssierScorer2 scorer) {
+        if (!scorer.adjacent(k, scorer.get(j))) return false;
+//        if (coveredEdge(k, get(j))) return false;
+        if (j >= scorer.index(k)) return false;
+        int _j = j;
+        int _k = scorer.index(k);
+
+        scorer.bookmark(-55);
+
+        Set<Node> ancestors = scorer.getAncestors(k);
+
+        for (int i = j + 1; i <= scorer.index(k); i++) {
+            if (ancestors.contains(scorer.get(i))) {
+                scorer.moveToNoUpdate(scorer.get(i), j++);
+            }
+        }
+
+        scorer.updateScores(_j, _k);
+
+        return true;
     }
 }
