@@ -131,7 +131,7 @@ public final class TestGrasp {
 
     }
 
-        @Test
+    @Test
     public void testGrasp1() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 200);
@@ -1189,7 +1189,7 @@ public final class TestGrasp {
         }
     }
 
-    //    @Test
+    @Test
     public void bryanCheckDensityClaims() {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
@@ -1202,7 +1202,7 @@ public final class TestGrasp {
 //            String path = "/Users/josephramsey/Downloads/grasp/out_80_0index/out_80.txt";
 //            String path = "/Users/josephramsey/Downloads/studeny_out.txt";
 //            String path = "/Users/josephramsey/Downloads/udags4.txt";
-            String path = "/Users/josephramsey/Downloads/udags5.txt";
+            String path = "/Users/josephramsey/Downloads/udags5/udags5.txt";
 //            String path = "/Users/josephramsey/Downloads/udags6.txt";
             File file = new File(path);
             System.out.println(file.getAbsolutePath());
