@@ -818,9 +818,9 @@ public final class TestGrasp {
     public void testGrasp2() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 100);
-        params.set(Params.AVG_DEGREE, 7);
+        params.set(Params.AVG_DEGREE, 8);
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 3);
+        params.set(Params.NUM_RUNS, 1);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1.0);
         params.set(Params.NUM_STARTS, 1);

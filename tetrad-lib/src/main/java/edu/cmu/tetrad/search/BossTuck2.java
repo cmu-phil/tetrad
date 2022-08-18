@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodePair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -54,14 +55,20 @@ public class BossTuck2 {
         do {
             pi1 = pi2;
 
-            List<Node> targets = new ArrayList<>(_pi);
-            reverse(targets);
+            Set<NodePair> pairs = new HashSet<>();
 
-            for (Node target : targets) {
-                betterMutationBossTarget(scorer0, target, keeps);
+            List<Node> pi3 = new ArrayList<>(_pi);
+            reverse(pi3);
+//
+//            pi3.sort(Comparator.comparingInt(o -> scorer0.getAdjacentNodes(o).size()));
+
+            for (Node target : pi3) {
+                betterMutationBossTarget(scorer0, target, keeps, pairs);
             }
 
             pi2 = scorer0.getPi();
+
+//            pi2 = besOrder(scorer0);
 
             if (verbose) {
                 System.out.println("# vars = " + scorer0.getPi().size() + " # Edges = " + scorer0.getNumEdges()
@@ -70,6 +77,11 @@ public class BossTuck2 {
             }
         } while (!pi1.equals(pi2));
 
+//        scorer0.score(besOrder(scorer0));
+//
+//        bes(scorer0);
+
+
         long stop = System.currentTimeMillis();
 
         System.out.println("Elapsed time = " + (stop - start) / 1000.0 + " s");
@@ -77,7 +89,7 @@ public class BossTuck2 {
         return scorer0.getGraph(true);
     }
 
-    public void betterMutationBossTarget(@NotNull TeyssierScorer2 scorer, Node target, Map<Node, Set<Node>> keeps) {
+    public void betterMutationBossTarget(@NotNull TeyssierScorer2 scorer, Node target, Map<Node, Set<Node>> keeps, Set<NodePair> pairs) {
         double sp = scorer.score();
 
         Set<Node> keep = new HashSet<>();
@@ -92,14 +104,17 @@ public class BossTuck2 {
 
         for (Node x : keep) {
             int i = scorer.index(x);
+//            scorer.bookmark(1);
 
             for (int j = i - 1; j >= 0; j--) {
                 if (!keep.contains(scorer.get(j))) continue;
+                if (pairs.contains(new NodePair(x, scorer.get(j)))) continue;
 
                 if (tuck(x, j, scorer)) {
                     if (scorer.score() > sp && !violatesKnowledge(scorer.getPi())) {
                         sp = scorer.score();
                         scorer.bookmark();
+                        pairs.add(new NodePair(x, scorer.get(j)));
                     } else {
                         scorer.goToBookmark();
                     }
