@@ -108,10 +108,7 @@ public class BossTuck2 {
         }
     }
 
-
-
-    @NotNull
-    public List<Node> getVariables() {
+    @NotNull    public List<Node> getVariables() {
         return this.variables;
     }
 
