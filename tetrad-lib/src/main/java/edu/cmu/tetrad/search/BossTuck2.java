@@ -4,11 +4,11 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodePair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static java.util.Collections.reverse;
 import static java.util.Collections.sort;
 
 
@@ -55,20 +55,14 @@ public class BossTuck2 {
         do {
             pi1 = pi2;
 
-            Set<NodePair> pairs = new HashSet<>();
+            List<Node> targets = new ArrayList<>(_pi);
+            reverse(targets);
 
-
-            List<Node> pi3 = new ArrayList<>(_pi);
-
-            pi3.sort(Comparator.comparingInt(o -> scorer0.getAdjacentNodes(o).size()));
-
-            for (Node target : pi3) {
-                betterMutationBossTarget(scorer0, target, keeps, pairs);
+            for (Node target : targets) {
+                betterMutationBossTarget(scorer0, target, keeps);
             }
 
             pi2 = scorer0.getPi();
-
-//            pi2 = besOrder(scorer0);
 
             if (verbose) {
                 System.out.println("# vars = " + scorer0.getPi().size() + " # Edges = " + scorer0.getNumEdges()
@@ -77,11 +71,6 @@ public class BossTuck2 {
             }
         } while (!pi1.equals(pi2));
 
-//        scorer0.score(besOrder(scorer0));
-//
-//        bes(scorer0);
-
-
         long stop = System.currentTimeMillis();
 
         System.out.println("Elapsed time = " + (stop - start) / 1000.0 + " s");
@@ -89,7 +78,7 @@ public class BossTuck2 {
         return scorer0.getGraph(true);
     }
 
-    public void betterMutationBossTarget(@NotNull TeyssierScorer2 scorer, Node target, Map<Node, Set<Node>> keeps, Set<NodePair> pairs) {
+    public void betterMutationBossTarget(@NotNull TeyssierScorer2 scorer, Node target, Map<Node, Set<Node>> keeps) {
         double sp = scorer.score();
 
         Set<Node> keep = new HashSet<>();
@@ -106,14 +95,12 @@ public class BossTuck2 {
             int i = scorer.index(x);
 
             for (int j = i - 1; j >= 0; j--) {
-                if (pairs.contains(new NodePair(x, scorer.get(j)))) continue;
                 if (!keep.contains(scorer.get(j))) continue;
 
                 if (scorer.tuck(x, j)) {
                     if (scorer.score() > sp && !violatesKnowledge(scorer.getPi())) {
                         sp = scorer.score();
                         scorer.bookmark();
-                        pairs.add(new NodePair(x, scorer.get(j)));
                     } else {
                         scorer.goToBookmark();
                     }
@@ -122,43 +109,43 @@ public class BossTuck2 {
         }
     }
 
-    public List<Node> besOrder(TeyssierScorer2 scorer) {
-        Graph graph = scorer.getGraph(true);
-        Bes bes = new Bes(score);
-        bes.setDepth(depth);
-        bes.setVerbose(verbose);
-        bes.setKnowledge(knowledge);
-        bes.bes(graph, scorer.getPi());
-        return causalOrder(scorer.getPi(), graph);
-    }
-
-    public void bes(TeyssierScorer2 scorer) {
-        Graph graph = scorer.getGraph(true);
-        Bes bes = new Bes(score);
-        bes.setDepth(depth);
-        bes.setVerbose(verbose);
-        bes.setKnowledge(knowledge);
-        bes.bes(graph, scorer.getPi());
+//    public List<Node> besOrder(TeyssierScorer2 scorer) {
+//        Graph graph = scorer.getGraph(true);
+//        Bes bes = new Bes(score);
+//        bes.setDepth(depth);
+//        bes.setVerbose(verbose);
+//        bes.setKnowledge(knowledge);
+//        bes.bes(graph, scorer.getPi());
 //        return causalOrder(scorer.getPi(), graph);
-    }
+//    }
+//
+//    public void bes(TeyssierScorer2 scorer) {
+//        Graph graph = scorer.getGraph(true);
+//        Bes bes = new Bes(score);
+//        bes.setDepth(depth);
+//        bes.setVerbose(verbose);
+//        bes.setKnowledge(knowledge);
+//        bes.bes(graph, scorer.getPi());
+////        return causalOrder(scorer.getPi(), graph);
+//    }
 
-    private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
-        List<Node> found = new ArrayList<>();
-        boolean _found = true;
-
-        while (_found) {
-            _found = false;
-
-            for (Node node : initialOrder) {
-                HashSet<Node> __found = new HashSet<>(found);
-                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-                    found.add(node);
-                    _found = true;
-                }
-            }
-        }
-        return found;
-    }
+//    private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
+//        List<Node> found = new ArrayList<>();
+//        boolean _found = true;
+//
+//        while (_found) {
+//            _found = false;
+//
+//            for (Node node : initialOrder) {
+//                HashSet<Node> __found = new HashSet<>(found);
+//                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
+//                    found.add(node);
+//                    _found = true;
+//                }
+//            }
+//        }
+//        return found;
+//    }
 
 
     private void makeValidKnowledgeOrder(List<Node> order) {
