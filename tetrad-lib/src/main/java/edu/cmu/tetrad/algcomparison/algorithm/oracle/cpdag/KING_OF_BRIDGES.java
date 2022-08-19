@@ -10,7 +10,7 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Boss2;
+import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -61,8 +61,8 @@ public class KING_OF_BRIDGES implements Algorithm, UsesScoreWrapper, HasKnowledg
 
             Score score = this.score.getScore(dataModel, parameters);
 
-            Boss2 boss = new Boss2(score);
-            boss.setAlgType(Boss2.AlgType.KING_OF_BRIDGES);
+            Boss boss = new Boss(score);
+            boss.setAlgType(Boss.AlgType.KING_OF_BRIDGES);
 
             boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));

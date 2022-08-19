@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import static java.lang.Math.floor;
 import static java.util.Collections.shuffle;
@@ -27,11 +28,12 @@ public class TeyssierScorer {
     private final Map<Node, Integer> variablesHash;
     private final Score score;
     private final IndependenceTest test;
-    private final Map<Integer, ArrayList<Node>> bookmarkedOrders = new HashMap<>();
-    private final Map<Integer, ArrayList<Pair>> bookmarkedScores = new HashMap<>();
-    private final Map<Integer, Map<Node, Integer>> bookmarkedOrderHashes = new HashMap<>();
-    private final Map<Integer, Float> bookmarkedRunningScores = new HashMap<>();
-    private Map<Node, Map<Set<Node>, Float>> cache = new HashMap<>();
+    private int maxIndegree;
+    private Map<Object, ArrayList<Node>> bookmarkedOrders = new HashMap<>();
+    private Map<Object, ArrayList<Pair>> bookmarkedScores = new HashMap<>();
+    private Map<Object, Map<Node, Integer>> bookmarkedOrderHashes = new HashMap<>();
+    private Map<Object, Float> bookmarkedRunningScores = new HashMap<>();
+//    private Map<Node, Map<Set<Node>, Float>> cache = new HashMap<>();
     private Map<Node, Integer> orderHash;
     private ArrayList<Node> pi; // The current permutation.
     private ArrayList<Pair> scores;
@@ -69,6 +71,53 @@ public class TeyssierScorer {
         if (score instanceof GraphScore) {
             this.useScore = false;
         }
+    }
+
+    public TeyssierScorer(TeyssierScorer scorer) {
+        this.variables = new ArrayList<>(scorer.variables);
+        this.variablesHash = new HashMap<>();
+
+        for (Node key : scorer.variablesHash.keySet()) {
+            this.variablesHash.put(key, scorer.variablesHash.get(key));
+        }
+
+        this.score = scorer.score;
+        this.test = scorer.test;
+
+        this.bookmarkedOrders = new HashMap<>();
+
+        for (Object key : scorer.bookmarkedOrders.keySet()) {
+            this.bookmarkedOrders.put(key, scorer.bookmarkedOrders.get(key));
+        }
+
+        this.bookmarkedScores = new HashMap<>();
+
+        for (Object key : scorer.bookmarkedScores.keySet()) {
+            this.bookmarkedScores.put(key, new ArrayList<>(scorer.bookmarkedScores.get(key)));
+        }
+
+        this.bookmarkedOrderHashes = new HashMap<>();
+
+        for (Object key : scorer.bookmarkedOrderHashes.keySet()) {
+            this.bookmarkedOrderHashes.put(key, new HashMap<>(scorer.bookmarkedOrderHashes.get(key)));
+        }
+
+        this.bookmarkedRunningScores = new HashMap<>(scorer.bookmarkedRunningScores);
+
+        this.orderHash = new HashMap<>(scorer.orderHash);
+
+        this.pi = new ArrayList<>(scorer.pi);
+
+        this.scores = new ArrayList<>(scorer.scores);
+        this.knowledge = scorer.knowledge;
+        this.useScore = scorer.useScore;
+        this.useRaskuttiUhler = scorer.useRaskuttiUhler;
+        this.useBackwardScoring = scorer.useBackwardScoring;
+        this.cachingScores = scorer.cachingScores;
+        this.runningScore = scorer.runningScore;
+        this.maxIndegree = scorer.maxIndegree;
+
+        this.prefixes = new ArrayList<>(scorer.prefixes);
     }
 
     /**
@@ -447,41 +496,10 @@ public class TeyssierScorer {
      *            This bookmark will be stored until it is retrieved and then removed.
      */
     public void bookmark(int key) {
-//        if (!bookmarkedOrders.containsKey(key)) {
-            this.bookmarkedOrders.put(key, new ArrayList<>(this.pi));
-            this.bookmarkedScores.put(key, new ArrayList<>(this.scores));
-            this.bookmarkedOrderHashes.put(key, new HashMap<>(this.orderHash));
-            this.bookmarkedRunningScores.put(key, runningScore);
-//        } else {
-//            List<Node> pi2 = this.bookmarkedOrders.get(key);
-//            List<Pair> scores2 = this.bookmarkedScores.get(key);
-//            Map<Node, Integer> hashes2 = this.bookmarkedOrderHashes.get(key);
-//
-//            int first = 0;
-//            int last = size() - 1;
-//
-//            for (int i = 0; i < size(); i++) {
-//                if (this.pi.get(i) != pi2.get(i)) {
-//                    first = i;
-//                    break;
-//                }
-//            }
-//
-//            for (int i = size() - 1; i >= 0; i--) {
-//                if (this.pi.get(i) != pi2.get(i)) {
-//                    last = i;
-//                    break;
-//                }
-//            }
-//
-//            for (int i = first; i <= last; i++) {
-//                pi2.set(i, pi.get(i));
-//                scores2.set(i, scores.get(i));
-//                hashes2.put(pi2.get(i), orderHash.get(pi2.get(i)));
-//            }
-//
-//            this.bookmarkedRunningScores.put(key, runningScore);
-//        }
+        this.bookmarkedOrders.put(key, new ArrayList<>(this.pi));
+        this.bookmarkedScores.put(key, new ArrayList<>(this.scores));
+        this.bookmarkedOrderHashes.put(key, new HashMap<>(this.orderHash));
+        this.bookmarkedRunningScores.put(key, runningScore);
     }
 
     /**
@@ -498,50 +516,9 @@ public class TeyssierScorer {
      */
     public void goToBookmark(int key) {
         if (!this.bookmarkedOrders.containsKey(key)) {
-//            throw new IllegalArgumentException("That key was not bookmarked recently.");
             bookmark(key);
             return;
         }
-
-
-//        List<Node> pi2 = this.bookmarkedOrders.get(key);
-//        List<Pair> scores2 = this.bookmarkedScores.get(key);
-//        Map<Node, Integer> hashes2 = this.bookmarkedOrderHashes.get(key);
-//        Float runningScore2 = this.bookmarkedRunningScores.get(key);
-//
-//        int first = size();
-//        int last = -1;
-//
-//        for (int i = 0; i < size(); i++) {
-//            if (this.pi.get(i) != pi2.get(i)) {
-//                first = i;
-//                break;
-//            }
-//        }
-//
-//        for (int i = size() - 1; i >= 0; i--) {
-//            if (this.pi.get(i) != pi2.get(i)) {
-//                last = i;
-//                break;
-//            }
-//        }
-//
-//        for (int i = first; i <= last; i++) {
-//            this.pi.set(i, pi2.get(i));
-//            this.scores.set(i, scores2.get(i));
-//            this.orderHash.put(pi.get(i), hashes2.get(pi.get(i)));
-//        }
-//
-//        this.runningScore = runningScore2;
-//
-//        //        for (int i = 0; i < pi.size(); i++) {
-////            if (this.pi.get(i) != pi2.get(i)) {
-////                this.pi.set(i, pi2.get(i));
-////                this.scores.set(i, scores2.get(i));
-////                this.orderHash.put(pi.get(i), hashes2.get(pi.get(i)));
-////                this.runningScore = runningScore2;
-////            }
-////        }
 
         this.pi = this.bookmarkedOrders.remove(key);
         this.scores = this.bookmarkedScores.remove(key);
@@ -643,20 +620,20 @@ public class TeyssierScorer {
         return true;
     }
 
-    /**
-     * A convenience method to reset the score cache if it becomes larger than a certain
-     * size.
-     *
-     * @param maxSize The maximum size of the score cache; it the if the score cache is
-     *                larger than this it will be cleared.
-     */
-    public void resetCacheIfTooBig(int maxSize) {
-        if (this.cache.size() > maxSize) {
-            this.cache = new HashMap<>();
-            System.out.println("Clearing cacche...");
-            System.gc();
-        }
-    }
+//    /**
+//     * A convenience method to reset the score cache if it becomes larger than a certain
+//     * size.
+//     *
+//     * @param maxSize The maximum size of the score cache; it the if the score cache is
+//     *                larger than this it will be cleared.
+//     */
+//    public void resetCacheIfTooBig(int maxSize) {
+//        if (this.cache.size() > maxSize) {
+//            this.cache = new HashMap<>();
+//            System.out.println("Clearing cacche...");
+//            System.gc();
+//        }
+//    }
 
     private boolean violatesKnowledge(List<Node> order) {
         if (!knowledge.isEmpty()) {
@@ -679,10 +656,29 @@ public class TeyssierScorer {
 
     public void updateScores(int i1, int i2) {
         for (int i = i1; i <= i2; i++) {
-            recalculate(i);
             this.orderHash.put(this.pi.get(i), i);
+            recalculate(i);
         }
+
+//        for (int i = i1; i <= i2; i++) {
+//            this.orderHash.put(this.pi.get(i), i);
+//        }
+//
+//        int chunk = getChunkSize(i2 - i1 + 1);
+//        List<MyTask> tasks = new ArrayList<>();
+//
+//        for (int w = 0; w < size(); w += chunk) {
+//            tasks.add(new MyTask(pi, this, chunk, orderHash, w, w + chunk));
+//        }
+//
+//        ForkJoinPool.commonPool().invokeAll(tasks);
     }
+
+//    private int getChunkSize(int n) {
+//        int chunk = n / Runtime.getRuntime().availableProcessors();
+//        if (chunk < 100) chunk = 100;
+//        return chunk;
+//    }
 
     private float score(Node n, Set<Node> pi) {
 //        if (this.cachingScores) {
@@ -720,6 +716,35 @@ public class TeyssierScorer {
         }
 
         return prefix;
+    }
+
+    class MyTask implements Callable<Boolean> {
+        final List<Node> pi;
+        final Map<Node, Integer> orderHash;
+        TeyssierScorer scorer;
+        int chunk;
+        private final int from;
+        private final int to;
+
+        MyTask(List<Node> pi, TeyssierScorer scorer, int chunk, Map<Node, Integer> orderHash,
+               int from, int to) {
+            this.pi = pi;
+            this.scorer = scorer;
+            this.chunk = chunk;
+            this.orderHash = orderHash;
+            this.from = from;
+            this.to = to;
+        }
+
+        @Override
+        public Boolean call() throws InterruptedException {
+            for (int i = from; i <= to; i++) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                recalculate(i);
+            }
+
+            return true;
+        }
     }
 
     private void recalculate(int p) {

@@ -245,7 +245,6 @@ public class OtherPermAlgs {
             int numPairs = pairs.size();
 
             for (OrderedPair<Node> pair : pairs) {
-                scorer.resetCacheIfTooBig(100000);
                 visited++;
 
                 Node x = pair.getFirst();
@@ -292,7 +291,6 @@ public class OtherPermAlgs {
             }
 
             for (OrderedPair<Node> pair : pairs) {
-                scorer.resetCacheIfTooBig(100000);
                 visited++;
 
                 Node x = pair.getFirst();
