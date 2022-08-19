@@ -818,9 +818,9 @@ public final class TestGrasp {
     public void testGrasp2() {
         Parameters params = new Parameters();
         params.set(Params.NUM_MEASURES, 100);
-        params.set(Params.AVG_DEGREE, 8);
+        params.set(Params.AVG_DEGREE, 7);
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 5);
+        params.set(Params.NUM_RUNS, 3);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1.0);
         params.set(Params.NUM_STARTS, 1);
@@ -850,6 +850,7 @@ public final class TestGrasp {
 //        algorithms.add(new KING_OF_BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BOSS_TUCK2(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new SIMPLE_DEMO_GA(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 
         Simulations simulations = new Simulations();
