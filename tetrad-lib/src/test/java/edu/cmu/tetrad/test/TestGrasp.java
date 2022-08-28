@@ -817,10 +817,10 @@ public final class TestGrasp {
     //    @Test
     public void testGrasp2() {
         Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 100);
-        params.set(Params.AVG_DEGREE, 7);
-        params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 3);
+        params.set(Params.NUM_MEASURES, 1000);
+        params.set(Params.AVG_DEGREE, 8);
+        params.set(Params.SAMPLE_SIZE, 6000);
+        params.set(Params.NUM_RUNS, 1);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1.0);
         params.set(Params.NUM_STARTS, 1);
@@ -843,14 +843,14 @@ public final class TestGrasp {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(
 //                new edu.cmu.tetrad.algcomparison.independence.FisherZ()));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
-//                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
+                new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new KING_OF_BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BOSS_TUCK2(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new BOSSTuck2(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new SIMPLE_DEMO_GA(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 
         Simulations simulations = new Simulations();

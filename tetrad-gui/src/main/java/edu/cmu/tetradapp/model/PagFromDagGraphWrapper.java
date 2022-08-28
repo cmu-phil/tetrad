@@ -42,7 +42,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
 
 
     public PagFromDagGraphWrapper(Graph graph) {
-        super(new EdgeListGraph());
+        super(graph);
 
         // make sure the given graph is a dag.
         try {

@@ -1571,7 +1571,7 @@ public final class SearchGraphUtils {
         List<Edge> nonTwoCycles = new ArrayList<>();
 
         for (Edge edge : correctAdjacies) {
-            if (graph2.containsEdge(edge) && graph2.containsEdge(edge.reverse())) {
+            if (edge.isDirected() && graph2.containsEdge(edge) && graph2.containsEdge(edge.reverse())) {
                 twoCycles.add(edge);
             } else if (graph2.containsEdge(edge) && graph1.containsEdge(edge)) {
                 nonTwoCycles.add(edge);

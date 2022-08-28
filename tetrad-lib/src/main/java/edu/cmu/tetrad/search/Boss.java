@@ -172,7 +172,9 @@ public class Boss {
 
         scorer.goToBookmark(1);
 
-        System.out.println();
+        if (verbose) {
+            System.out.println();
+        }
 
         scorer.score();
     }
@@ -206,7 +208,9 @@ public class Boss {
                 }
             }
 
-            System.out.println();
+            if (verbose) {
+                System.out.println();
+            }
 
             s2 = scorer.score();
         } while (s2 > s1);

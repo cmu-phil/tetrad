@@ -1,8 +1,10 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -11,6 +13,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -33,9 +36,10 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class BOSSTuck implements Algorithm, UsesScoreWrapper, HasKnowledge {
+public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
+    private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
     public BOSSTuck() {
@@ -60,8 +64,9 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, HasKnowledge {
             }
 
             Score score = this.score.getScore(dataModel, parameters);
+            IndependenceTest test = this.test.getTest(dataModel, parameters);
 
-            Boss boss = new Boss(score);
+            Boss boss = new Boss(test, score);
             boss.setAlgType(Boss.AlgType.BOSS_TUCK);
 
             boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
@@ -138,5 +143,15 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, HasKnowledge {
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge.copy();
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
+    }
+
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
     }
 }

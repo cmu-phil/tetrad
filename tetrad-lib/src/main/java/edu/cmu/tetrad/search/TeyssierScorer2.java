@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ForkJoinPool;
 
 import static java.lang.Math.floor;
 
@@ -615,16 +614,21 @@ public class TeyssierScorer2 {
     public void updateScores(int i1, int i2) {
         for (int i = i1; i <= i2; i++) {
             this.orderHash.put(this.pi.get(i), i);
+            recalculate(i);
         }
 
-        int chunk = getChunkSize(i2 - i1 + 1);
-        List<MyTask> tasks = new ArrayList<>();
-
-        for (int w = 0; w < size(); w += chunk) {
-            tasks.add(new MyTask(pi, this, chunk, orderHash, w, w + chunk));
-        }
-
-        ForkJoinPool.commonPool().invokeAll(tasks);
+//        for (int i = i1; i <= i2; i++) {
+//            this.orderHash.put(this.pi.get(i), i);
+//        }
+//
+//        int chunk = getChunkSize(i2 - i1 + 1);
+//        List<MyTask> tasks = new ArrayList<>();
+//
+//        for (int w = 0; w < size(); w += chunk) {
+//            tasks.add(new MyTask(pi, this, chunk, orderHash, w, w + chunk));
+//        }
+//
+//        ForkJoinPool.commonPool().invokeAll(tasks);
     }
 
     private int getChunkSize(int n) {
@@ -689,7 +693,7 @@ public class TeyssierScorer2 {
         return prefix;
     }
 
-    private void recalculate(int p) throws InterruptedException {
+    private void recalculate(int p) {
         Pair p2 = getGrowShrinkScore(p);
 
         if (scores.get(p) == null) {
@@ -708,7 +712,7 @@ public class TeyssierScorer2 {
     }
 
     @NotNull
-    private Pair getGrowShrinkScore(int p) throws InterruptedException {
+    private Pair getGrowShrinkScore(int p) {
         Node n = this.pi.get(p);
 
         Set<Node> parents = new HashSet<>();
@@ -733,8 +737,6 @@ public class TeyssierScorer2 {
             Node z = null;
 
             for (Node z0 : prefix) {
-                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-
                 if (parents.contains(z0)) continue;
 
                 if (!knowledge.isEmpty() && this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
@@ -765,8 +767,6 @@ public class TeyssierScorer2 {
             Node w = null;
 
             for (Node z0 : new HashSet<>(parents)) {
-                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-
                 parents.remove(z0);
 
                 float s2 = score(n, parents);
@@ -839,15 +839,11 @@ public class TeyssierScorer2 {
         this.variables.remove(x);
         this.variablesHash.remove(x);
 
-        try {
-            for (int i = index; i < pi.size(); i++) {
-                if (adj.contains(get(i))) {
-                    recalculate(i);
-                    this.orderHash.put(this.pi.get(i), i);
-                }
+        for (int i = index; i < pi.size(); i++) {
+            if (adj.contains(get(i))) {
+                recalculate(i);
+                this.orderHash.put(this.pi.get(i), i);
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
 
         updateScores(index, pi.size() - 1);

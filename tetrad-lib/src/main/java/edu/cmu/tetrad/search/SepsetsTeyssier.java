@@ -111,13 +111,13 @@ public class SepsetsTeyssier implements SepsetProducer {
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
         List<Node> nodes = new ArrayList<>();
+        nodes.addAll(c);
         nodes.add(a);
         nodes.add(b);
-        nodes.addAll(c);
         this.scorer.score(nodes);
         boolean adjacent = this.scorer.getGraph(false).isAdjacentTo(a, b);
 
-        System.out.println("Testing " + SearchLogUtils.independenceFact(a, b, c) + ": " + !adjacent);
+//        System.out.println("Testing " + SearchLogUtils.independenceFact(a, b, c) + ": " + !adjacent);
 
         return !adjacent;
     }

@@ -186,6 +186,8 @@ public class StatsListEditor extends JPanel {
 
         menubar.add(menu);
 
+        this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
+
         switch (this.params.getString("graphComparisonType")) {
             case "CPDAG":
                 menu.setText("Compare to CPDAG...");

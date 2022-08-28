@@ -76,7 +76,7 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             search.setUncoveredDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
             search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
-            search.setToleranceDepth(parameters.getInt(Params.GRASP_TOLERANCE_DEPTH));
+//            search.setToleranceDepth(parameters.getInt(Params.GRASP_TOLERANCE_DEPTH));
             search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
@@ -131,14 +131,14 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.MAX_PATH_LENGTH);
 
         // Flags
-        params.add(Params.GRASP_SINGULAR_DEPTH);
-        params.add(Params.GRASP_NONSINGULAR_DEPTH);
-        params.add(Params.GRASP_TOLERANCE_DEPTH);
-        params.add(Params.GRASP_ORDERED_ALG);
+//        params.add(Params.GRASP_SINGULAR_DEPTH);
+//        params.add(Params.GRASP_NONSINGULAR_DEPTH);
+////        params.add(Params.GRASP_TOLERANCE_DEPTH);
+//        params.add(Params.GRASP_ORDERED_ALG);
 //        params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
+//        params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 

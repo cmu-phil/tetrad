@@ -115,6 +115,9 @@ public final class GFci implements GraphSearch {
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
         this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxDegree);
+//
+//        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
+//        this.sepsets = new SepsetsTeyssier(fgesGraph, scorer, null, -1);
 
         // "Extra" GFCI rule...
         for (Node b : nodes) {
@@ -148,8 +151,6 @@ public final class GFci implements GraphSearch {
         }
 
         modifiedR0(fgesGraph);
-
-        if (true) return graph;
 
         FciOrient fciOrient = new FciOrient(this.sepsets);
         fciOrient.setVerbose(this.verbose);

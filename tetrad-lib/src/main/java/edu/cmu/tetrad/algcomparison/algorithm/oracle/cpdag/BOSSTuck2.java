@@ -31,16 +31,16 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class BOSS_TUCK2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
+public class BOSSTuck2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BOSS_TUCK2() {
+    public BOSSTuck2() {
     }
 
-    public BOSS_TUCK2(ScoreWrapper score) {
+    public BOSSTuck2(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -55,7 +55,7 @@ public class BOSS_TUCK2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
             return boss.search(score.getVariables());
         } else {
-            BOSS_TUCK2 alg = new BOSS_TUCK2(this.score);
+            BOSSTuck2 alg = new BOSSTuck2(this.score);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, alg, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));

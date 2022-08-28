@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static java.lang.Math.abs;
 import static java.util.Collections.reverse;
 import static java.util.Collections.sort;
 
@@ -46,20 +47,22 @@ public class BossTuck2 {
             System.out.println("Initial score = " + scorer0.score() + " Elapsed = " + (System.currentTimeMillis() - start) / 1000.0 + " s");
         }
 
-        List<Node> _pi = new ArrayList<>(scorer0.getPi());
-        sort(_pi);
-
-        List<Node> pi1, pi2 = order;
+        List<Node> pi1, pi2 = scorer0.getPi();
 
         do {
+            int count = 1;
             pi1 = pi2;
 
-            List<Node> targets = new ArrayList<>(_pi);
-            reverse(targets);
+            List<Node> targets = scorer0.getPi();
+
+//            targets.sort(Comparator.comparingInt(o -> scorer0.getParents(o).size()));
 
             for (Node target : targets) {
+                System.out.print("\r" + count++);
                 betterMutationBossTarget(scorer0, target, keeps);
             }
+
+            System.out.println();
 
             pi2 = scorer0.getPi();
 
@@ -80,11 +83,11 @@ public class BossTuck2 {
     public void betterMutationBossTarget(@NotNull TeyssierScorer2 scorer, Node target, Map<Node, Set<Node>> keeps) {
         double sp = scorer.score();
 
-        Set<Node> keep = new HashSet<>();
-        keep.add(target);
-        keep.addAll(scorer.getAdjacentNodes(target));
+        Set<Node> keep = getKeep(scorer, target);
 
-        if (keeps.containsKey(target) && keeps.get(target).equals(keep)) return;
+        if (keep.equals(keeps.get(target))) return;
+
+        System.out.print("\t" + keep.size());
 
         keeps.put(target, keep);
 
@@ -95,6 +98,7 @@ public class BossTuck2 {
 
             for (int j = i - 1; j >= 0; j--) {
                 if (!keep.contains(scorer.get(j))) continue;
+//                if (!scorer.adjacent(x, scorer.get(j))) continue;
 
                 if (tuck(x, j, scorer)) {
                     if (scorer.score() > sp && !violatesKnowledge(scorer.getPi())) {
@@ -106,6 +110,14 @@ public class BossTuck2 {
                 }
             }
         }
+    }
+
+    @NotNull
+    private static Set<Node> getKeep(@NotNull TeyssierScorer2 scorer, Node target) {
+        Set<Node> keep = new HashSet<>();
+        keep.add(target);
+        keep.addAll(scorer.getAdjacentNodes(target));
+        return keep;
     }
 
     @NotNull    public List<Node> getVariables() {
@@ -164,16 +176,14 @@ public class BossTuck2 {
 
     private boolean tuck(Node k, int j, TeyssierScorer2 scorer) {
         if (!scorer.adjacent(k, scorer.get(j))) return false;
-//        if (coveredEdge(k, get(j))) return false;
-        if (j >= scorer.index(k)) return false;
-        int _j = j;
         int _k = scorer.index(k);
-
-        scorer.bookmark(-55);
+        if (j >= _k) return false;
+//        if (abs(_k - j) > 50) return false;
+        int _j = j;
 
         Set<Node> ancestors = scorer.getAncestors(k);
 
-        for (int i = j + 1; i <= scorer.index(k); i++) {
+        for (int i = j + 1; i <= _k; i++) {
             if (ancestors.contains(scorer.get(i))) {
                 scorer.moveToNoUpdate(scorer.get(i), j++);
             }
