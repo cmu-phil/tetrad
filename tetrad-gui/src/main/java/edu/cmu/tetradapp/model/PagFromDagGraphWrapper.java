@@ -52,7 +52,10 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
         }
 
         DagToPag p = new DagToPag(graph);
+        p.setCompleteRuleSetUsed(true);
+        p.setMaxPathLength(-1);
         Graph pag = p.convert();
+        pag.setPag(true);
         setGraph(pag);
 
         TetradLogger.getInstance().log("info", "\nGenerating allow_latent_common_causes from DAG.");

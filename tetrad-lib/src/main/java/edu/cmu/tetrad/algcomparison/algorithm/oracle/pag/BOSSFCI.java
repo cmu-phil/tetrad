@@ -11,7 +11,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.GraspFci;
+import edu.cmu.tetrad.search.BossFci;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -23,7 +23,7 @@ import java.util.List;
 
 
 /**
- * Adjusts GFCI to use a permutation algorithm (such as GRaSP) to do the initial
+ * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial
  * steps of finding adjacencies and unshielded colliders.
  * <p>
  * GFCI reference is this:
@@ -34,23 +34,23 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "GRaSP-FCI",
-        command = "graspfci",
+        name = "BOSS-FCI",
+        command = "bossfci",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class BOSSFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public GRaSPFCI() {
+    public BOSSFCI() {
         // Used for reflection; do not delete.
     }
 
-    public GRaSPFCI(ScoreWrapper score, IndependenceWrapper test) {
+    public BOSSFCI(ScoreWrapper score, IndependenceWrapper test) {
         this.test = test;
         this.score = score;
     }
@@ -68,22 +68,16 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
                 knowledge = timeSeries.getKnowledge();
             }
 
-            GraspFci search = new GraspFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            BossFci search = new BossFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
             search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-            search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
-            search.setUncoveredDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
-            search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
-//            search.setToleranceDepth(parameters.getInt(Params.GRASP_TOLERANCE_DEPTH));
-            search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
+            search.setDepth(parameters.getInt(Params.DEPTH));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
-            search.setAllowRandomnessInsideAlgorithm(parameters.getBoolean(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             search.setKnowledge(search.getKnowledge());
@@ -96,7 +90,7 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
             return search.search();
         } else {
-            GRaSPFCI algorithm = new GRaSPFCI(this.score, this.test);
+            BOSSFCI algorithm = new BOSSFCI(this.score, this.test);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
@@ -113,7 +107,7 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public String getDescription() {
-        return "GRASP-FCI (GRaSP-based FCI) using " + this.test.getDescription()
+        return "BOSS-FCI (BOSS-Tuck-based FCI) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
@@ -128,23 +122,15 @@ public class GRaSPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.MAX_PATH_LENGTH);
-
-        // Flags
-//        params.add(Params.GRASP_SINGULAR_DEPTH);
-//        params.add(Params.GRASP_NONSINGULAR_DEPTH);
-////        params.add(Params.GRASP_TOLERANCE_DEPTH);
-//        params.add(Params.GRASP_ORDERED_ALG);
-//        params.add(Params.GRASP_USE_SCORE);
+        params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
-//        params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
+        params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 
         // Parameters
         params.add(Params.NUM_STARTS);
-        params.add(Params.GRASP_DEPTH);
 
         return params;
     }

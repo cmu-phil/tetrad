@@ -294,5 +294,5 @@ public class BossMB {
         return knowledge;
     }
 
-    public enum AlgType {BOSS, BOSS_TUCK, KING_OF_BRIDGES}
+    public enum AlgType {BOSS, BOSS_TUCK}
 }

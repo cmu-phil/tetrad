@@ -25,13 +25,14 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GRaSPFCI;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.BOSSFCI;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -75,7 +76,8 @@ public final class TestGrasp {
     public static void main(String[] args) {
 //        new TestGrasp().testLuFigure3();
 //        new TestGrasp().testLuFigure6();
-        new TestGrasp().testGrasp2();
+//        new TestGrasp().testGrasp2();
+        new TestGrasp().testBossFci();
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
     }
@@ -847,7 +849,6 @@ public final class TestGrasp {
                 new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new KING_OF_BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BOSSTuck2(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
@@ -1173,7 +1174,7 @@ public final class TestGrasp {
                 grasp.setVerbose(false);
 
                 grasp.bestOrder(pi);
-                Graph estCpdagGrasp = grasp.getGraph();
+                Graph estCpdagGrasp = grasp.getGraph(true);
 
                 if (estCpdagGrasp.getNumEdges() == facts.truth) {
                     count1++;
@@ -2225,7 +2226,7 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.001);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSPFCI(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new BOSSFCI(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
         algorithms.add(new FciMax(new FisherZ()));
         algorithms.add(new Rfci(new FisherZ()));
         algorithms.add(new Gfci(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
@@ -2249,6 +2250,38 @@ public final class TestGrasp {
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testPfci", simulations,
                 algorithms, statistics, params);
+    }
+
+    public void testBossFci() {
+        Graph graph = GraphUtils.randomGraph(14, 4, 20, 10, 10, 10, false);
+        Graph truePag = new DagToPag(graph).convert();
+
+        DSeparationTest test = new DSeparationTest(graph);
+        DSeparationScore score = new DSeparationScore(graph);
+
+        Parameters parameters = new Parameters();
+
+        BossFci alg = new BossFci(test.getTest(null, parameters), score.getScore(null, parameters));
+//        alg.setMaxPathLength(-1);
+//        alg.setCompleteRuleSetUsed(true);
+
+        alg.setDepth(-1);
+        alg.setUseScore(false);
+        alg.setUseRaskuttiUhler(true);
+        alg.setUseDataOrder(false);
+        alg.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+        Graph estPag = alg.search();
+
+        System.out.println("true = " + truePag);
+        System.out.println("est = " + estPag);
+
+        boolean equal = truePag.equals(estPag);
+
+        System.out.println(equal);
+
+
+
     }
 
     //    @Test

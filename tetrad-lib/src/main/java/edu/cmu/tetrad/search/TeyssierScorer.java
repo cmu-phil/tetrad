@@ -347,6 +347,18 @@ public class TeyssierScorer {
         return adj;
     }
 
+    public Set<Node> getAncestralNodes(Node v) {
+        Set<Node> adj = new HashSet<>();
+
+        for (Node w : this.pi) {
+            if (getAncestors(v).contains(w) || getAncestors(w).contains(v)) {
+                adj.add(w);
+            }
+        }
+
+        return adj;
+    }
+
     /**
      * Returns the DAG build for the current permutation, or its CPDAG.
      *
@@ -578,6 +590,11 @@ public class TeyssierScorer {
         return getParents(a).contains(b) || getParents(b).contains(a);
     }
 
+    public boolean ancestorAdjacent(Node a, Node b) {
+        if (a == b) return false;
+        return getAncestors(a).contains(b) || getAncestors(b).contains(a);
+    }
+
     /**
      * Returns true iff [a, b, c] is a collider.
      *
@@ -588,6 +605,10 @@ public class TeyssierScorer {
      */
     public boolean collider(Node a, Node b, Node c) {
         return getParents(b).contains(a) && getParents(b).contains(c);
+    }
+
+    public boolean ancestralCollider(Node a, Node b, Node c) {
+        return getAncestors(b).contains(a) && getAncestors(b).contains(c);
     }
 
     /**
@@ -716,6 +737,14 @@ public class TeyssierScorer {
         }
 
         return prefix;
+    }
+
+    public Score getScoreObject() {
+        return this.score;
+    }
+
+    public IndependenceTest getTestObject() {
+        return this.test;
     }
 
     class MyTask implements Callable<Boolean> {

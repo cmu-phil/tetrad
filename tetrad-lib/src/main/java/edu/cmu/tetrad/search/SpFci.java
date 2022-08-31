@@ -65,7 +65,7 @@ public final class SpFci implements GraphSearch {
     private IndependenceTest test;
 
     // Flag for complete rule set, true if you should use complete rule set, false otherwise.
-    private boolean completeRuleSetUsed;
+    private boolean completeRuleSetUsed = true;
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;

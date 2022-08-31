@@ -30,7 +30,7 @@ public class Boss {
     private long start;
     // flags
     private boolean useScore = true;
-    private boolean usePearl;
+    private boolean useRaskuttiUhler;
     private boolean useDataOrder = true;
 
     private boolean verbose = true;
@@ -45,18 +45,28 @@ public class Boss {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
+        this.scorer = new TeyssierScorer(this.test, this.score);
     }
 
     public Boss(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
+        this.scorer = new TeyssierScorer(this.test, this.score);
     }
 
     public Boss(IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
+        this.scorer = new TeyssierScorer(this.test, this.score);
+    }
+
+    public Boss(TeyssierScorer scorer) {
+        this.scorer = scorer;
+        this.test = scorer.getTestObject();
+        this.score = scorer.getScoreObject();
+        this.variables = new ArrayList<>(scorer.getPi());
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
@@ -64,10 +74,9 @@ public class Boss {
         long start = System.currentTimeMillis();
         order = new ArrayList<>(order);
 
-        this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseRaskuttiUhler(this.usePearl);
+        this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
 
-        if (this.usePearl) {
+        if (this.useRaskuttiUhler) {
             this.scorer.setUseScore(false);
         } else {
             this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
@@ -88,18 +97,19 @@ public class Boss {
 
             if ((r == 0 && !this.useDataOrder) || r > 0) {
                 shuffle(order);
+                System.out.println("order = " + order);
             }
 
             this.start = System.currentTimeMillis();
 
             makeValidKnowledgeOrder(order);
 
-            List<Node> pi2 = order;
-
+            List<Node> pi, pi2;
             float s1, s2;
 
             do {
-                scorer.score(pi2);
+                pi = scorer.getPi();
+                s1 = scorer.score();
 
                 if (algType == AlgType.BOSS) {
                     betterMutation(scorer);
@@ -107,16 +117,12 @@ public class Boss {
                     betterMutationTuck(scorer);
                 }
 
-                s1 = scorer.score();
-
-                if (algType == AlgType.KING_OF_BRIDGES) {
-                    pi2 = fgesOrder(scorer);
-                } else {
-                    pi2 = besOrder(scorer);
-                }
-
-                s2 = scorer.score();
+                pi2 = besOrder(scorer);
+                s2 = scorer.score(pi2);
+//                s2 = scorer.score();
             } while (s2 > s1);
+
+            scorer.score(pi);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -243,16 +249,6 @@ public class Boss {
         return causalOrder(scorer.getPi(), graph);
     }
 
-    public List<Node> fgesOrder(TeyssierScorer scorer) {
-        Fges fges = new Fges(score);
-        fges.setKnowledge(knowledge);
-        Graph graph = scorer.getGraph(true);
-        fges.setExternalGraph(graph);
-        fges.setVerbose(false);
-        graph = fges.search();
-        return causalOrder(scorer.getPi(), graph);
-    }
-
     private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
         List<Node> found = new ArrayList<>();
         boolean _found = true;
@@ -268,6 +264,7 @@ public class Boss {
                 }
             }
         }
+
         return found;
     }
 
@@ -297,13 +294,8 @@ public class Boss {
     }
 
     @NotNull
-    public Graph getGraph() {
-        orientbk(knowledge, graph, variables);
-        MeekRules meekRules = new MeekRules();
-        meekRules.setRevertToUnshieldedColliders(false);
-        meekRules.orientImplied(graph);
-
-        return this.graph;
+    public Graph getGraph(boolean cpdag) {
+        return scorer.getGraph(cpdag);
     }
 
     public void orientbk(IKnowledge bk, Graph graph, List<Node> variables) {
@@ -392,8 +384,8 @@ public class Boss {
         return false;
     }
 
-    public void setUseRaskuttiUhler(boolean usePearl) {
-        this.usePearl = usePearl;
+    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
+        this.useRaskuttiUhler = useRaskuttiUhler;
     }
 
     public void setUseDataOrder(boolean useDataOrder) {
@@ -406,5 +398,5 @@ public class Boss {
         this.algType = algType;
     }
 
-    public enum AlgType {BOSS, BOSS_TUCK, KING_OF_BRIDGES}
+    public enum AlgType {BOSS, BOSS_TUCK}
 }

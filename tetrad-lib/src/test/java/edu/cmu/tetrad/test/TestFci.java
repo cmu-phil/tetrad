@@ -215,7 +215,7 @@ public class TestFci {
 //        fci.setKnowledge(knowledge);
 //        fci.setMaxPathLength(-1);
 
-        GraspFci fci = new GraspFci(independence, null);
+        BossFci fci = new BossFci(independence, null);
         fci.setUseRaskuttiUhler(true);
         fci.setUseScore(false);
 

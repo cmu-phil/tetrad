@@ -228,7 +228,8 @@ public final class DagToPag {
 
         for (Node b : graph.getAdjacentNodes(x)) {
             Edge edge = graph.getEdge(x, b);
-            if (!edge.pointsTowards(x)) continue;
+            if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
+//            if (!edge.pointsTowards(x)) continue;
 
             if (GraphUtils.existsInducingPathVisit(graph, x, b, x, y, path)) {
                 return true;

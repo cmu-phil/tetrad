@@ -70,7 +70,7 @@ public final class Fci implements GraphSearch {
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
      */
-    private boolean completeRuleSetUsed;
+    private boolean completeRuleSetUsed = true;
 
     /**
      * True iff the possible dsep search is done.

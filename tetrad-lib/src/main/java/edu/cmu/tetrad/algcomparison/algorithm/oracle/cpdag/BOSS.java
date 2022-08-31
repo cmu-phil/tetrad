@@ -71,7 +71,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, HasKnowledge {
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             boss.setKnowledge(this.knowledge);
             boss.bestOrder(score.getVariables());
-            return boss.getGraph();
+            return boss.getGraph(true);
         } else {
             BOSS algorithm = new BOSS(this.score);
 
