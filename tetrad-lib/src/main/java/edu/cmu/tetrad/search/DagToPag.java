@@ -102,11 +102,11 @@ public final class DagToPag {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting final orientation");
         }
 
-        FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setChangeFlag(false);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.doFinalOrientation(graph);
+//        FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
+//        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+//        fciOrient.setChangeFlag(false);
+//        fciOrient.setMaxPathLength(this.maxPathLength);
+//        fciOrient.doFinalOrientation(graph);
 
         if (this.verbose) {
             System.out.println("Finishing final orientation");

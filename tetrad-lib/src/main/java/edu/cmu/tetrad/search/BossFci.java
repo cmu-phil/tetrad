@@ -32,11 +32,8 @@ import java.io.PrintStream;
 import java.util.*;
 
 /**
- * Adjusts GFCI to use a permutation algorithm (such as GRaSP) to do the initial
- * steps of finding adjacencies and unshielded colliders. Adjusts the GFCI rule
- * for finding bidirected edges to use permutation reasoning.
- * <p>
- * GFCI reference is this:
+ * Does a FCI-style latent variable search using mostly permutation-based reasoning. Follows GFCI to
+ * an extent; the GFCI reference is this:
  * <p>
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016.
@@ -92,21 +89,12 @@ public final class BossFci implements GraphSearch {
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getTest() + ".");
 
-//        Boss boss = new Boss(test, score);
-//        boss.setAlgType(Boss.AlgType.BOSS_TUCK);
-//        boss.setNumStarts(numStarts);
-//        boss.setUseDataOrder(useDataOrder);
-//        boss.setUseRaskuttiUhler(useRaskuttiUhler);
-//        boss.setUseScore(useScore);
-//        boss.setDepth(depth);
-//        boss.setKnowledge(this.knowledge);
-//        boss.bestOrder(score.getVariables());
-
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
+        // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss alg = new Boss(scorer);
-        alg.setAlgType(Boss.AlgType.BOSS);
-//        alg.setUseScore(useScore);
+        alg.setAlgType(Boss.AlgType.BOSS_TUCK);
+        alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
         alg.setDepth(depth);
@@ -114,30 +102,50 @@ public final class BossFci implements GraphSearch {
         alg.setKnowledge(knowledge);
         alg.setVerbose(false);
 
-        Graph graph;
+        List<Node> variables = this.score.getVariables();
+        assert variables != null;
 
-//        Bridges2 alg = new Bridges2(score);
-//        alg.setKnowledge(this.knowledge);
-//        alg.setMaxDegree(-1);
-
-        List<Node> variables = alg.bestOrder(score.getVariables());
-
-//        List<Node> variables = this.score.getVariables();
-//        assert variables != null;
-
-//        alg.bestOrder(variables);
-
+        alg.bestOrder(variables);
         this.graph = alg.getGraph(true);
 
-//        if (true) return this.graph;
-
+        // Keep a copy of this CPDAG.
         Graph cpdag = new EdgeListGraph(this.graph);
 
-        List<NodePair> possDsepRemoved = new ArrayList<>();
+        // Orient the CPDAG with all circle endpoints...
+        this.graph.reorientAllWith(Endpoint.CIRCLE);
 
-        copyColliders(cpdag, possDsepRemoved);
-        reduce(cpdag, scorer, possDsepRemoved);
+        // Copy the unshielded colliders from the copy of the CPDAG into the o-o graph.
+        copyUnshieldedColliders(cpdag);
 
+        // Remove as many edges as possible using the "reduce" rule, orienting as many arrowheads this way as possible.
+        reduce(scorer);
+
+        // Remove edges using the possible dsep rule.
+        removeEdgesByPossibleDsep();
+
+        // Keep only unshielded colliders from this graph.
+        Graph g2 = new EdgeListGraph(this.graph);
+        this.graph.reorientAllWith(Endpoint.CIRCLE);
+        copyUnshieldedColliders(g2);
+
+        // Apply final FCI orientation rules.
+
+//        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, -1);
+        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, 3);
+
+//        FciOrient fciOrient = new FciOrient(sepsets);
+//        fciOrient.setVerbose(this.verbose);
+//        fciOrient.setKnowledge(getKnowledge());
+//        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+//        fciOrient.setMaxPathLength(this.maxPathLength);
+//        fciOrient.doFinalOrientation(this.graph);
+
+        this.graph.setPag(true);
+
+        return this.graph;
+    }
+
+    private void removeEdgesByPossibleDsep() {
         SepsetsPossibleDsep sp = new SepsetsPossibleDsep(this.graph, test, this.knowledge, this.depth, this.maxPathLength);
 
         for (Edge edge : this.graph.getEdges()) {
@@ -147,81 +155,46 @@ public final class BossFci implements GraphSearch {
             List<Node> nodes = sp.getSepset(n1, n2);
 
             if (nodes != null) {
-                System.out.println("possible dsep set " + n1 + " " + n2 + " = " + nodes);
+                System.out.println("example possible dsep(" + n1 + ", " + n2 + ") = " + nodes);
                 this.graph.removeEdge(edge);
-                possDsepRemoved.add(new NodePair(n1, n2));
             }
         }
-
-        copyColliders(cpdag, possDsepRemoved);
-        reduce(cpdag, scorer, possDsepRemoved);
-
-
-
-        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, -1);
-//        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, 3);
-        FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(getKnowledge());
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.doFinalOrientation(this.graph);
-
-        this.graph.setPag(true);
-
-        return this.graph;
     }
 
-    private void reduce(Graph cpdag, TeyssierScorer scorer, List<NodePair> possDsepRemoved) {
-        for (Node b : graph.getNodes()) {
-            Set<Node> parents = scorer.getParents(b);
+    private void reduce(TeyssierScorer scorer) {
+        for (OrderedPair<Node> edge : scorer.getEdges()) {
+            visit(scorer, edge.getFirst(), edge.getSecond());
+            visit(scorer, edge.getSecond(), edge.getFirst());
+        }
+    }
 
-            for (Node a : parents) {
-                if (possDsepRemoved.contains(new NodePair(a, b))) continue;
+    private void visit(TeyssierScorer scorer, Node d, Node b) {
+        Set<Node> adj = scorer.getAdjacentNodes(d);
+        adj.retainAll(scorer.getAdjacentNodes(b));
 
-                for (Node c : parents) {
-//                    List<Node> dd = new ArrayList<>();
-
-                    if (possDsepRemoved.contains(new NodePair(b, c))) continue;
-
-                    for (Node d : scorer.getAdjacentNodes(c)) {
-                        if (possDsepRemoved.contains(new NodePair(c, d))) continue;
-                        if (possDsepRemoved.contains(new NodePair(b, d))) continue;
-                        if (possDsepRemoved.contains(new NodePair(a, d))) continue;
-                        if (possDsepRemoved.contains(new NodePair(a, c))) continue;
-
-                        if (configuration(scorer, a, b, c, d)) {
-                            System.out.println("Found " + a + " " + b + " " + c + " " + d);
-
-                            scorer.bookmark();
-                            scorer.swap(b, c);
-
-                            if (configuration(scorer, d, c, b, a)) {
-                                System.out.println("Found reversed " + d + " " + c + " " + b + " " + a);
-//                                dd.add(d)
-//
-                                graph.removeEdge(b, d);
-                                graph.setEndpoint(d, c, Endpoint.ARROW);
-                                graph.setEndpoint(b, c, Endpoint.ARROW);
-
-                                scorer.goToBookmark();
-                                break;
-                            }
-
-                            scorer.goToBookmark();
-                        }
-                    }
-
-//                    for (Node _d : dd) {
-//                        graph.removeEdge(b, _d);
-//                        graph.setEndpoint(_d, c, Endpoint.ARROW);
-//                    }
-//
-//                    if (!dd.isEmpty()) {
-//                        graph.setEndpoint(b, c, Endpoint.ARROW);
-//                    }
-                }
+        for (Node c : adj) {
+            for (Node a : scorer.getAdjacentNodes(b)) {
+                tryToRemove(scorer, a, b, c, d);
             }
+        }
+    }
+
+    private void tryToRemove(TeyssierScorer scorer, Node a, Node b, Node c, Node d) {
+
+        if (configuration(scorer, a, b, c, d)) {
+            System.out.println("Found " + a + " " + b + " " + c + " " + d);
+
+            scorer.swap(b, c);
+
+            if (configuration(scorer, d, c, b, a)) {
+                System.out.println("Found reversed " + d + " " + c + " " + b + " " + a);
+
+                graph.removeEdge(b, d);
+                graph.setEndpoint(b, c, Endpoint.ARROW);
+                graph.setEndpoint(d, c, Endpoint.ARROW);
+            }
+
+            scorer.swap(b, c);
         }
     }
 
@@ -236,17 +209,9 @@ public final class BossFci implements GraphSearch {
                 && scorer.collider(a, b, c);
     }
 
-    public void copyColliders(Graph cpdag, List<NodePair> possDsepRemoved) {
-        this.graph = new EdgeListGraph(cpdag);
-        this.graph.reorientAllWith(Endpoint.CIRCLE);
-
-        for (NodePair pair : possDsepRemoved) {
-            this.graph.removeEdge(pair.getFirst(), pair.getSecond());
-        }
-
-        fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
-
+    public void copyUnshieldedColliders(Graph cpdag) {
         List<Node> nodes = this.graph.getNodes();
+        fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
 
         for (Node b : nodes) {
             List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
@@ -262,10 +227,7 @@ public final class BossFci implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (possDsepRemoved.contains(new NodePair(a, b))) continue;
-                if (possDsepRemoved.contains(new NodePair(b, c))) continue;
-
-                if (this.graph.isAdjacentTo(a, b) && this.graph.isAdjacentTo(b, c) && cpdag.isDefCollider(a, b, c)) {
+                if (cpdag.isDefCollider(a, b, c) && !cpdag.isAdjacentTo(a, c)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 }
