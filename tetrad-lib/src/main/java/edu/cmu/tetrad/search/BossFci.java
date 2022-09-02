@@ -21,16 +21,13 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -121,17 +118,24 @@ public final class BossFci implements GraphSearch {
         // arrowheads this way as possible.
         reduce(scorer);
 
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
+        orientCollidersBySepset(cpdag, sepsets);
+
+
         // Optimally remove edges using the possible dsep rule. (Needed for correctness but
         // very heavy-handed.)
         if (possibleDsepDone) {
             removeEdgesByPossibleDsep();
+            orientCollidersBySepset(cpdag, sepsets);
         }
 
         // Orient some edges using sepset reasoning. These are only for unshielded triples
         // in this.graph that are shielded in cpdag.
 //        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
-        orientCollidersBySepset(cpdag, sepsets);
+//        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
+//        orientCollidersBySepset(cpdag, sepsets);
+
+        removeEdgesByPossibleDsep();
 
         // Apply final FCI orientation rules.
         FciOrient fciOrient = new FciOrient(sepsets);
@@ -193,6 +197,7 @@ public final class BossFci implements GraphSearch {
 
         if (configuration(scorer, a, b, c, d)) {
             scorer.swap(b, c);
+            float s1 = scorer.score();
 
             if (configuration(scorer, d, c, b, a)) {
                 System.out.println("Found by reduce rule: " + c + "<->" + d);
@@ -201,7 +206,11 @@ public final class BossFci implements GraphSearch {
                 remove = true;
             }
 
-            scorer.swap(b, c);
+            float s2 = scorer.score();
+
+            if (s2 <= s1) {
+                scorer.swap(b, c);
+            }
         }
 
         return remove;
@@ -215,7 +224,8 @@ public final class BossFci implements GraphSearch {
                 && scorer.adjacent(b, d)
                 && !scorer.adjacent(a, c)
                 && !scorer.adjacent(a, d)
-                && scorer.collider(a, b, c);
+                && scorer.collider(a, b, c)
+                && scorer.collider(a, b, d);
     }
 
     public void copyColliders(Graph cpdag) {
