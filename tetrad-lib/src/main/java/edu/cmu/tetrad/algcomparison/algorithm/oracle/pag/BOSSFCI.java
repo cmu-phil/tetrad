@@ -77,6 +77,7 @@ public class BOSSFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWr
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
+            search.setPossibleDsepDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
@@ -125,6 +126,7 @@ public class BOSSFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWr
         params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
+        params.add(Params.POSSIBLE_DSEP_DONE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);

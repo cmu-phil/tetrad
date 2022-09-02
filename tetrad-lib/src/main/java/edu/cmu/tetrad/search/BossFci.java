@@ -80,6 +80,7 @@ public final class BossFci implements GraphSearch {
     private boolean useDataOrder = true;
     private boolean useScore = true;
     private Graph graph;
+    private boolean possibleDsepDone = false;
 
     //============================CONSTRUCTORS============================//
     public BossFci(IndependenceTest test, Score score) {
@@ -125,7 +126,9 @@ public final class BossFci implements GraphSearch {
         reduce(scorer);
 
         // Remove edges using the possible dsep rule.
-//        removeEdgesByPossibleDsep();
+        if (possibleDsepDone) {
+            removeEdgesByPossibleDsep();
+        }
 //
 //        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
@@ -159,7 +162,7 @@ public final class BossFci implements GraphSearch {
 
             List<Node> nodes = sp.getSepset(n1, n2);
 
-            if (nodes != null) {
+            if (nodes != null && nodes.size() > 0) {
                 System.out.println("example possible dsep(" + n1 + ", " + n2 + ") = " + nodes);
                 this.graph.removeEdge(edge);
             }
@@ -295,7 +298,7 @@ public final class BossFci implements GraphSearch {
                     if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
                         List<Node> sepset = sepsets.getSepset(a, c);
 
-                        if (sepset != null && !sepset.contains(b)) {
+                        if (sepset != null && !sepset.isEmpty() && !sepset.contains(b)) {
                             System.out.println("Orienting by sepsets: " + a + "->" + b + "<-" + c);
                             this.graph.setEndpoint(a, b, Endpoint.ARROW);
                             this.graph.setEndpoint(c, b, Endpoint.ARROW);
@@ -545,4 +548,7 @@ public final class BossFci implements GraphSearch {
         return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
     }
 
+    public void setPossibleDsepDone(boolean possibleDsepDone) {
+        this.possibleDsepDone = possibleDsepDone;
+    }
 }
