@@ -119,15 +119,16 @@ public final class BossFci implements GraphSearch {
         reduce(scorer);
 
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
-        orientCollidersBySepset(cpdag, sepsets);
+//        orientCollidersBySepset(cpdag, sepsets);
 
 
         // Optimally remove edges using the possible dsep rule. (Needed for correctness but
         // very heavy-handed.)
-        if (possibleDsepDone) {
+//        if (possibleDsepDone) {
             removeEdgesByPossibleDsep();
-            orientCollidersBySepset(cpdag, sepsets);
-        }
+//        }
+
+        orientCollidersBySepset(cpdag, sepsets);
 
         // Orient some edges using sepset reasoning. These are only for unshielded triples
         // in this.graph that are shielded in cpdag.
@@ -196,6 +197,8 @@ public final class BossFci implements GraphSearch {
         boolean remove = false;
 
         if (configuration(scorer, a, b, c, d)) {
+            scorer.bookmark();
+//            scorer.tuck(c, d);
             scorer.swap(b, c);
             float s1 = scorer.score();
 
@@ -208,9 +211,10 @@ public final class BossFci implements GraphSearch {
 
             float s2 = scorer.score();
 
-            if (s2 <= s1) {
+//            if (s2 <= s1) {
                 scorer.swap(b, c);
-            }
+//                scorer.goToBookmark();
+//            }
         }
 
         return remove;
