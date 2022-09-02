@@ -29,7 +29,10 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Does a FCI-style latent variable search using mostly permutation-based reasoning. Follows GFCI to
@@ -123,23 +126,25 @@ public final class BossFci implements GraphSearch {
 
         // Remove edges using the possible dsep rule.
         removeEdgesByPossibleDsep();
+//
+//        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
+//
+        orientCollidersBySepset(cpdag, sepsets);
 
         // Keep only unshielded colliders from this graph.
-        Graph g2 = new EdgeListGraph(this.graph);
-        this.graph.reorientAllWith(Endpoint.CIRCLE);
-        copyUnshieldedColliders(g2);
+//        Graph g2 = new EdgeListGraph(this.graph);
+//        this.graph.reorientAllWith(Endpoint.CIRCLE);
+//        copyUnshieldedColliders(g2);
 
         // Apply final FCI orientation rules.
-
-//        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, -1);
-        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, 3);
-
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(graph);
+
         this.graph.setPag(true);
 
         return this.graph;
@@ -162,15 +167,13 @@ public final class BossFci implements GraphSearch {
     }
 
     private void reduce(TeyssierScorer scorer) {
-        for (OrderedPair<Node> edge : scorer.getEdges()) {
-            boolean remove = false;
-
-            remove = remove || visit(scorer, edge.getFirst(), edge.getSecond());
-            remove = remove || visit(scorer, edge.getSecond(), edge.getFirst());
+        for (Edge edge : graph.getEdges()) {
+            boolean remove = visit(scorer, edge.getNode1(), edge.getNode2());
+            remove = remove || visit(scorer, edge.getNode2(), edge.getNode1());
 
             if (remove) {
-                graph.removeEdge(edge.getFirst(), edge.getSecond());
-//                graph.addBidirectedEdge(edge.getFirst(), edge.getSecond());
+                System.out.println("Removing " + edge + " by reduce rule");
+                graph.removeEdge(edge.getNode1(), edge.getNode2());
             }
         }
     }
@@ -193,16 +196,12 @@ public final class BossFci implements GraphSearch {
         boolean remove = false;
 
         if (configuration(scorer, a, b, c, d)) {
-            System.out.println("Found " + a + " " + b + " " + c + " " + d);
-
             float s1 = scorer.score();
             scorer.swap(b, c);
             float s2 = scorer.score();
 
             if (configuration(scorer, d, c, b, a)) {
-                System.out.println("Found reversed " + d + " " + c + " " + b + " " + a);
-
-//                graph.removeEdge(b, d); // we will remove this later/
+                System.out.println("Found by reduce rule: " + c + "<->" + d);
                 graph.setEndpoint(b, c, Endpoint.ARROW);
                 graph.setEndpoint(d, c, Endpoint.ARROW);
                 remove = true;
@@ -272,6 +271,39 @@ public final class BossFci implements GraphSearch {
                 if (cpdag.isDefCollider(a, b, c) && !cpdag.isAdjacentTo(a, c)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                }
+            }
+        }
+    }
+
+    public void orientCollidersBySepset(Graph fgesGraph, SepsetProducer sepsets) {
+        List<Node> nodes = this.graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (!fgesGraph.isDefCollider(a, b, c) && !this.graph.isDefCollider(a, b, c)) {
+                    if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
+                        List<Node> sepset = sepsets.getSepset(a, c);
+
+                        if (sepset != null && !sepset.contains(b)) {
+                            System.out.println("Orienting by sepsets: " + a + "->" + b + "<-" + c);
+                            this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                            this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                        }
+
+                    }
                 }
             }
         }
