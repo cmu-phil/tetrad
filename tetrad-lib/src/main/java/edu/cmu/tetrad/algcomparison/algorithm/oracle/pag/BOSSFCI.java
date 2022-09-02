@@ -69,7 +69,6 @@ public class BOSSFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWr
             }
 
             BossFci search = new BossFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
-            search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
@@ -81,7 +80,6 @@ public class BOSSFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWr
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            search.setKnowledge(search.getKnowledge());
 
             Object obj = parameters.get(Params.PRINT_STREAM);
 

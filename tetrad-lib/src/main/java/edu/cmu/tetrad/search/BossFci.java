@@ -55,9 +55,6 @@ public final class BossFci implements GraphSearch {
     // no used by the algorithm but can be retrieved by another method if desired
     ICovarianceMatrix covarianceMatrix;
 
-    // The background knowledge.
-    private IKnowledge knowledge = new Knowledge2();
-
     // The test used if Pearl's method is used ot build DAGs
     private IndependenceTest test;
 
@@ -103,7 +100,6 @@ public final class BossFci implements GraphSearch {
         alg.setUseDataOrder(useDataOrder);
         alg.setDepth(depth);
         alg.setNumStarts(numStarts);
-        alg.setKnowledge(knowledge);
         alg.setVerbose(false);
 
         List<Node> variables = this.score.getVariables();
@@ -139,7 +135,6 @@ public final class BossFci implements GraphSearch {
 
         // Apply final FCI orientation rules.
         FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setKnowledge(knowledge);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(this.maxPathLength);
@@ -151,7 +146,8 @@ public final class BossFci implements GraphSearch {
     }
 
     private void removeEdgesByPossibleDsep() {
-        SepsetsPossibleDsep sp = new SepsetsPossibleDsep(this.graph, test, this.knowledge, this.depth, this.maxPathLength);
+        SepsetsPossibleDsep sp = new SepsetsPossibleDsep(this.graph, test, new Knowledge2(), this.depth,
+                this.maxPathLength);
 
         for (Edge edge : this.graph.getEdges()) {
             Node n1 = edge.getNode1();
@@ -224,7 +220,6 @@ public final class BossFci implements GraphSearch {
 
     public void copyColliders(Graph cpdag) {
         List<Node> nodes = this.graph.getNodes();
-        fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
 
         for (Node b : nodes) {
             List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
@@ -241,32 +236,6 @@ public final class BossFci implements GraphSearch {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (cpdag.isDefCollider(a, b, c)) {
-                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                }
-            }
-        }
-    }
-
-    public void copyUnshieldedColliders(Graph cpdag) {
-        List<Node> nodes = this.graph.getNodes();
-        fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (cpdag.isDefCollider(a, b, c) && !cpdag.isAdjacentTo(a, c)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 }
@@ -307,52 +276,6 @@ public final class BossFci implements GraphSearch {
         }
     }
 
-    private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {
-        this.logger.log("info", "Starting BK Orientation.");
-
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*->from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        this.logger.log("info", "Finishing BK Orientation.");
-    }
-
     private static boolean distinct(Node a, Node b, Node c, Node d) {
         Set<Node> nodes = new HashSet<>();
 
@@ -362,18 +285,6 @@ public final class BossFci implements GraphSearch {
         nodes.add(d);
 
         return nodes.size() == 4;
-    }
-
-    public IKnowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
     }
 
     /**
@@ -458,55 +369,6 @@ public final class BossFci implements GraphSearch {
 
     //===========================================PRIVATE METHODS=======================================//
 
-    /**
-     * Orients according to background knowledge
-     */
-    private void fciOrientBk(IKnowledge knowledge, Graph graph, List<Node> variables) {
-        this.logger.log("info", "Starting BK Orientation.");
-
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*->from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        this.logger.log("info", "Finishing BK Orientation.");
-    }
-
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
@@ -525,24 +387,6 @@ public final class BossFci implements GraphSearch {
 
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
-    }
-
-    private boolean isArrowpointAllowed(Node x, Node y, Graph graph) {
-        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
-
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            return !this.knowledge.isForbidden(x.getName(), y.getName());
-        } else if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            return !this.knowledge.isForbidden(x.getName(), y.getName());
-        }
-
-        return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
     }
 
     public void setPossibleDsepDone(boolean possibleDsepDone) {
