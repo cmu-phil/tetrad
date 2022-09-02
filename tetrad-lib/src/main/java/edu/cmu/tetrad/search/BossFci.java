@@ -125,7 +125,7 @@ public final class BossFci implements GraphSearch {
         reduce(scorer);
 
         // Remove edges using the possible dsep rule.
-        removeEdgesByPossibleDsep();
+//        removeEdgesByPossibleDsep();
 //
 //        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
