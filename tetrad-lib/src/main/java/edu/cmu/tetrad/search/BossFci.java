@@ -118,7 +118,7 @@ public final class BossFci implements GraphSearch {
         // Orient the CPDAG with all circle endpoints...
         this.graph.reorientAllWith(Endpoint.CIRCLE);
 
-        // Copy the unshielded colliders from the copy of the CPDAG into the o-o graph.
+        // Copy the colliders from the copy of the CPDAG into the o-o graph.
         copyColliders(cpdag);
 
         // Remove as many edges as possible using the "reduce" rule, orienting as many
@@ -126,11 +126,13 @@ public final class BossFci implements GraphSearch {
         reduce(scorer);
 
         // Optimally remove edges using the possible dsep rule. (Needed for correctness but
-        // very heavy-handed.
+        // very heavy-handed.)
         if (possibleDsepDone) {
             removeEdgesByPossibleDsep();
         }
 
+        // Orient some edges using sepset reasoning. These are only for unshielded triples
+        // in this.graph that are shielded in cpdag.
 //        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
         orientCollidersBySepset(cpdag, sepsets);
@@ -272,7 +274,7 @@ public final class BossFci implements GraphSearch {
         }
     }
 
-    public void orientCollidersBySepset(Graph fgesGraph, SepsetProducer sepsets) {
+    public void orientCollidersBySepset(Graph cpdag, SepsetProducer sepsets) {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node b : nodes) {
@@ -289,8 +291,8 @@ public final class BossFci implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (!fgesGraph.isDefCollider(a, b, c) && !this.graph.isDefCollider(a, b, c)) {
-                    if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
+                if (!cpdag.isDefCollider(a, b, c) && !this.graph.isDefCollider(a, b, c)) {
+                    if (cpdag.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
                         List<Node> sepset = sepsets.getSepset(a, c);
 
                         if (sepset != null && !sepset.isEmpty() && !sepset.contains(b)) {
