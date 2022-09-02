@@ -170,6 +170,7 @@ public final class BossFci implements GraphSearch {
 
             if (remove) {
                 graph.removeEdge(edge.getFirst(), edge.getSecond());
+//                graph.addBidirectedEdge(edge.getFirst(), edge.getSecond());
             }
         }
     }
