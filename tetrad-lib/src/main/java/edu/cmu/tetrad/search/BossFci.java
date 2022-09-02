@@ -196,9 +196,7 @@ public final class BossFci implements GraphSearch {
         boolean remove = false;
 
         if (configuration(scorer, a, b, c, d)) {
-            float s1 = scorer.score();
             scorer.swap(b, c);
-            float s2 = scorer.score();
 
             if (configuration(scorer, d, c, b, a)) {
                 System.out.println("Found by reduce rule: " + c + "<->" + d);
