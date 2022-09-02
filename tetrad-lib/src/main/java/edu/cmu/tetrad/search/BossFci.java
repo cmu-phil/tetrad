@@ -125,20 +125,15 @@ public final class BossFci implements GraphSearch {
         // arrowheads this way as possible.
         reduce(scorer);
 
-        // Remove edges using the possible dsep rule.
+        // Optimally remove edges using the possible dsep rule. (Needed for correctness but
+        // very heavy-handed.
         if (possibleDsepDone) {
             removeEdgesByPossibleDsep();
         }
 
 //        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
-//
         orientCollidersBySepset(cpdag, sepsets);
-
-        // Keep only unshielded colliders from this graph.
-//        Graph g2 = new EdgeListGraph(this.graph);
-//        this.graph.reorientAllWith(Endpoint.CIRCLE);
-//        copyUnshieldedColliders(g2);
 
         // Apply final FCI orientation rules.
         FciOrient fciOrient = new FciOrient(sepsets);
