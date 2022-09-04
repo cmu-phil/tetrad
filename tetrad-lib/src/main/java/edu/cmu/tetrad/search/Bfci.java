@@ -114,7 +114,7 @@ public final class Bfci implements GraphSearch {
 
         // Remove as many edges as possible using the "reduce" rule, orienting as many
         // arrowheads this way as possible.
-        reduce(scorer, scorer.getPi());
+        reduce(scorer);
 
         retainUnshieldedColliders();
 
@@ -132,10 +132,8 @@ public final class Bfci implements GraphSearch {
         return this.graph;
     }
 
-    private void reduce(TeyssierScorer scorer, List<Node> pi) {
+    private void reduce(TeyssierScorer scorer) {
         for (Edge edge : graph.getEdges()) {
-            scorer.score(pi);
-
             Node a = edge.getNode1();
             Node b = edge.getNode2();
 
