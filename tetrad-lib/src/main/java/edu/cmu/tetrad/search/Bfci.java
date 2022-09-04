@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Does a FCI-style latent variable search using mostly permutation-based reasoning. Follows GFCI to
+ * Does a FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
  * an extent; the GFCI reference is this:
  * <p>
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
@@ -116,7 +116,7 @@ public final class Bfci implements GraphSearch {
         // arrowheads this way as possible.
         reduce(scorer, scorer.getPi());
 
-        copyUnshieldedColliders();
+        retainUnshieldedColliders();
 
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
 
@@ -135,11 +135,12 @@ public final class Bfci implements GraphSearch {
     private void reduce(TeyssierScorer scorer, List<Node> pi) {
         for (Edge edge : graph.getEdges()) {
             scorer.score(pi);
+
             Node a = edge.getNode1();
             Node b = edge.getNode2();
 
-            List<Node> inTriangle = new ArrayList<>(scorer.getAdjacentNodes(a));
-            inTriangle.retainAll(scorer.getAdjacentNodes(b));
+            List<Node> inTriangle = new ArrayList<>(graph.getAdjacentNodes(a));
+            inTriangle.retainAll(graph.getAdjacentNodes(b));
 
             reduceVisit(scorer, a, b, inTriangle);
         }
@@ -157,12 +158,13 @@ public final class Bfci implements GraphSearch {
             }
         }
 
+        W:
         while ((choice = gen.next()) != null) {
             List<Node> after = GraphUtils.asList(choice, inTriangle);
             List<Node> before = new ArrayList<>(inTriangle);
 
             for (Node x : curColl) {
-                if (!after.contains(x)) after.add(x);
+                if (!after.contains(x)) continue W;
             }
 
             before.removeAll(after);
@@ -193,7 +195,7 @@ public final class Bfci implements GraphSearch {
         }
     }
 
-    public void copyColliders(Graph cpdag) {
+    private void copyColliders(Graph cpdag) {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node b : nodes) {
@@ -218,7 +220,7 @@ public final class Bfci implements GraphSearch {
         }
     }
 
-    public void copyUnshieldedColliders() {
+    public void retainUnshieldedColliders() {
         Graph orig = new EdgeListGraph(graph);
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         List<Node> nodes = this.graph.getNodes();
@@ -324,8 +326,6 @@ public final class Bfci implements GraphSearch {
     public void setOut(PrintStream out) {
         this.out = out;
     }
-
-    //===========================================PRIVATE METHODS=======================================//
 
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
