@@ -1079,7 +1079,7 @@ public class EdgeListGraph implements Graph {
     @Override
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint)
             throws IllegalArgumentException {
-        if (!isAdjacentTo(from, to)) throw new IllegalArgumentException();
+        if (!isAdjacentTo(from, to)) throw new IllegalArgumentException("Not adjacent");
 
         Edge edge = getEdge(from, to);
         this.ancestors = null;
