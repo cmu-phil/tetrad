@@ -210,7 +210,7 @@ public final class Bfci implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (/*!cpdag.isAdjacentTo(a, c) &&*/ cpdag.isDefCollider(a, b, c)) {
+                if (cpdag.isDefCollider(a, b, c)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 }
