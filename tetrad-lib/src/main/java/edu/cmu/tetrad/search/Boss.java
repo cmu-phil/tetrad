@@ -39,7 +39,7 @@ public class Boss {
     private int depth = 4;
     private int numStarts = 1;
 
-    private AlgType algType = AlgType.BOSS;
+    private AlgType algType = AlgType.BOSS_OLD;
 
     public Boss(@NotNull Score score) {
         this.score = score;
@@ -111,7 +111,7 @@ public class Boss {
                 pi = scorer.getPi();
                 s1 = scorer.score();
 
-                if (algType == AlgType.BOSS) {
+                if (algType == AlgType.BOSS_OLD) {
                     betterMutation(scorer);
                 } else {
                     betterMutationTuck(scorer);
@@ -398,5 +398,5 @@ public class Boss {
         this.algType = algType;
     }
 
-    public enum AlgType {BOSS, BOSS_TUCK}
+    public enum AlgType {BOSS_OLD, BOSS}
 }

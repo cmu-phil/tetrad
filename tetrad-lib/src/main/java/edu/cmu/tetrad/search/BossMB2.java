@@ -334,5 +334,5 @@ public class BossMB2 {
         return knowledge;
     }
 
-    public enum AlgType {BOSS, BOSS_TUCK}
+    public enum AlgType {BOSS_OLD, BOSS}
 }

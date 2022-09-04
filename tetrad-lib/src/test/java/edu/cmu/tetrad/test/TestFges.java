@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSSTuck;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.CPC;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
@@ -98,29 +97,15 @@ public class TestFges {
 
         System.out.println("data done");
 
-//        LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, causalOrdering);
-//        simulator.setOut(this.out);
-//        DataSet data = simulator.simulateDataFisher(numCases);
-
-//        ICovarianceMatrix cov = new CovarianceMatrix(data);
         ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
-
-//        Boss2 alg = new Boss2(score);
-//        alg.setAlgType(Boss2.AlgType.BOSS_TUCK);
-//        alg.bestOrder(data.getVariables());
-//        alg.setVerbose(false);
-//        Graph estCPDAG = alg.getGraph();
 
         Fges alg = new Fges(score);
         alg.setVerbose(true);
         alg.setOut(this.out);
         alg.setFaithfulnessAssumed(true);
         Graph estCPDAG = alg.search();
-
-
-//        printDegreeDistribution(estCPDAG, out);
 
         Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
 

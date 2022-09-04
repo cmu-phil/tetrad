@@ -1,10 +1,8 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -13,7 +11,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -24,29 +21,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BOSS (Best Order Score Search)
+ * GRaSP (Greedy Relaxations of Sparsest Permutation)
  *
  * @author bryanandrews
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS",
-        command = "boss",
+        name = "BOSS-Old",
+        command = "boss-old",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class BOSS_OLD implements Algorithm, UsesScoreWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
-    private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BOSS() {
+    public BOSS_OLD() {
         // Used in reflection; do not delete.
     }
 
-    public BOSS(ScoreWrapper score) {
+    public BOSS_OLD(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -64,10 +60,9 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
             }
 
             Score score = this.score.getScore(dataModel, parameters);
-            IndependenceTest test = this.test.getTest(dataModel, parameters);
 
-            Boss boss = new Boss(test, score);
-            boss.setAlgType(Boss.AlgType.BOSS);
+            Boss boss = new Boss(score);
+            boss.setAlgType(Boss.AlgType.BOSS_OLD);
 
             boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
             boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
@@ -98,7 +93,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
     @Override
     public String getDescription() {
-        return "BOSS (Better Order Score Search) using " + this.score.getDescription();
+        return "BOSS-Old (Better Order Score Search) using " + this.score.getDescription();
     }
 
     @Override
@@ -143,15 +138,5 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
     @Override
     public void setKnowledge(IKnowledge knowledge) {
         this.knowledge = knowledge.copy();
-    }
-
-    @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
-        this.test = test;
-    }
-
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
     }
 }

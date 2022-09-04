@@ -70,7 +70,7 @@ public class BossMB {
 
             do {
                 pi1 = scorer.getPi();
-                betterMutationBossTuck(scorer, targets);
+                betterMutationBoss(scorer, targets);
                 pi2 = besOrder(scorer);
             } while (!pi2.equals(pi1));
 
@@ -132,7 +132,7 @@ public class BossMB {
         this.findMb = findMb;
     }
 
-    public void betterMutationBossTuck(@NotNull TeyssierScorer2 scorer, List<Node> targets) {
+    public void betterMutationBoss(@NotNull TeyssierScorer2 scorer, List<Node> targets) {
         double sp;
 
         List<Node> p1, p2;
@@ -294,5 +294,5 @@ public class BossMB {
         return knowledge;
     }
 
-    public enum AlgType {BOSS, BOSS_TUCK}
+    public enum AlgType {BOSS_OLD, BOSS}
 }

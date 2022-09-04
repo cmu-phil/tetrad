@@ -94,8 +94,8 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 //                return search.getGraph(true);
 //            }
             else if (meta == 2) {
-                Boss search = new edu.cmu.tetrad.search.Boss(score);
-                search.setAlgType(Boss.AlgType.BOSS_TUCK);
+                Boss search = new Boss(score);
+                search.setAlgType(Boss.AlgType.BOSS);
                 search.setKnowledge(this.knowledge);
                 search.setVerbose(parameters.getBoolean(Params.VERBOSE));
                 search.bestOrder(score.getVariables());

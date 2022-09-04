@@ -11,7 +11,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.BossFci;
+import edu.cmu.tetrad.search.Bfci;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -34,23 +34,23 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-FCI",
-        command = "bossfci",
+        name = "BFCI",
+        command = "bfci",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class BOSSFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BOSSFCI() {
+    public BFCI() {
         // Used for reflection; do not delete.
     }
 
-    public BOSSFCI(ScoreWrapper score, IndependenceWrapper test) {
+    public BFCI(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -68,7 +68,7 @@ public class BOSSFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWr
                 knowledge = timeSeries.getKnowledge();
             }
 
-            BossFci search = new BossFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            Bfci search = new Bfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
@@ -89,7 +89,7 @@ public class BOSSFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWr
 
             return search.search();
         } else {
-            BOSSFCI algorithm = new BOSSFCI(this.score, this.test);
+            BFCI algorithm = new BFCI(this.test, this.score);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
@@ -106,7 +106,7 @@ public class BOSSFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWr
 
     @Override
     public String getDescription() {
-        return "BOSS-FCI (BOSS-Tuck-based FCI) using " + this.test.getDescription()
+        return "BFCI (Bost-order FCI) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 

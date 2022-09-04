@@ -24,9 +24,11 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,7 +42,7 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public final class BossFci implements GraphSearch {
+public final class Bfci implements GraphSearch {
 
     // The score used, if GS is used to build DAGs.
     private final Score score;
@@ -77,7 +79,7 @@ public final class BossFci implements GraphSearch {
     private boolean possibleDsepDone = false;
 
     //============================CONSTRUCTORS============================//
-    public BossFci(IndependenceTest test, Score score) {
+    public Bfci(IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
     }
@@ -91,7 +93,7 @@ public final class BossFci implements GraphSearch {
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss alg = new Boss(scorer);
-        alg.setAlgType(Boss.AlgType.BOSS_TUCK);
+        alg.setAlgType(Boss.AlgType.BOSS);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
@@ -103,7 +105,7 @@ public final class BossFci implements GraphSearch {
         assert variables != null;
 
         alg.bestOrder(variables);
-        this.graph = alg.getGraph(true);
+        this.graph = alg.getGraph(false);
 
         // Keep a copy of this CPDAG.
         Graph cpdag = new EdgeListGraph(this.graph);
@@ -116,27 +118,29 @@ public final class BossFci implements GraphSearch {
 
         // Remove as many edges as possible using the "reduce" rule, orienting as many
         // arrowheads this way as possible.
-        reduce(scorer);
+        reduce2(scorer, scorer.getPi());
+
+        copyUnshieldedColliders();
 
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
+////        orientCollidersBySepset(cpdag, sepsets);
+//
+//
+//        // Optimally remove edges using the possible dsep rule. (Needed for correctness but
+//        // very heavy-handed.)
+////        if (possibleDsepDone) {
+//            removeEdgesByPossibleDsep();
+////        }
+//
 //        orientCollidersBySepset(cpdag, sepsets);
-
-
-        // Optimally remove edges using the possible dsep rule. (Needed for correctness but
-        // very heavy-handed.)
-//        if (possibleDsepDone) {
-            removeEdgesByPossibleDsep();
-//        }
-
-        orientCollidersBySepset(cpdag, sepsets);
-
-        // Orient some edges using sepset reasoning. These are only for unshielded triples
-        // in this.graph that are shielded in cpdag.
-//        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
-//        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
-//        orientCollidersBySepset(cpdag, sepsets);
-
-        removeEdgesByPossibleDsep();
+//
+//        // Orient some edges using sepset reasoning. These are only for unshielded triples
+//        // in this.graph that are shielded in cpdag.
+////        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
+////        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
+////        orientCollidersBySepset(cpdag, sepsets);
+//
+//        removeEdgesByPossibleDsep();
 
         // Apply final FCI orientation rules.
         FciOrient fciOrient = new FciOrient(sepsets);
@@ -212,7 +216,7 @@ public final class BossFci implements GraphSearch {
             float s2 = scorer.score();
 
 //            if (s2 <= s1) {
-                scorer.swap(b, c);
+            scorer.swap(b, c);
 //                scorer.goToBookmark();
 //            }
         }
@@ -232,6 +236,131 @@ public final class BossFci implements GraphSearch {
                 && scorer.collider(a, b, d);
     }
 
+    private void reduce2(TeyssierScorer scorer, List<Node> pi) {
+        for (Edge edge : graph.getEdges()) {
+            scorer.score(pi);
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            List<Node> inTriangle = new ArrayList<>(scorer.getAdjacentNodes(a));
+            inTriangle.retainAll(scorer.getAdjacentNodes(b));
+
+            reduce2Visit(scorer, a, b, inTriangle);
+//            reduce2Visit(scorer, b, a, inTriangle);
+        }
+    }
+
+    private void reduce3(TeyssierScorer scorer, List<Node> pi) {
+        for (Edge edge : graph.getEdges()) {
+            scorer.score(pi);
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            reduce3Visit(scorer, a, b);
+            reduce3Visit(scorer, b, a);
+        }
+    }
+
+    private void reduce2Visit(TeyssierScorer scorer, Node a, Node b, List<Node> inTriangle) {
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(inTriangle.size(), inTriangle.size());
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> before = GraphUtils.asList(choice, inTriangle);
+            List<Node> after = new ArrayList<>(inTriangle);
+            after.removeAll(before);
+
+            List<Node> perm = new ArrayList<>(before);
+            perm.add(a);
+            perm.add(b);
+            perm.addAll(after);
+
+            scorer.score(perm);
+
+            if (!scorer.adjacent(a, b)) {
+                boolean removed = graph.removeEdge(a, b);
+
+                if (removed) {
+                    for (Node x : after) {
+                        if (graph.getEndpoint(x, a) == Endpoint.ARROW && graph.getEndpoint(x, b) == Endpoint.CIRCLE) {
+                            graph.setEndpoint(a, x, Endpoint.ARROW);
+                            graph.setEndpoint(b, x, Endpoint.ARROW);
+                        }
+
+                        if (graph.getEndpoint(x, b) == Endpoint.ARROW && graph.getEndpoint(x, a) == Endpoint.CIRCLE) {
+                            graph.setEndpoint(a, x, Endpoint.ARROW);
+                            graph.setEndpoint(b, x, Endpoint.ARROW);
+                        }
+                    }
+                }
+
+//                break;
+            }
+
+            scorer.goToBookmark();
+        }
+    }
+
+    private void reduce3Visit(TeyssierScorer scorer, Node a, Node b) {
+        List<Node> adj = graph.getAdjacentNodes(a);
+
+        DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> before = GraphUtils.asList(choice, adj);
+            List<Node> after = new ArrayList<>(adj);
+            after.removeAll(before);
+
+            List<Node> perm = new ArrayList<>(before);
+            perm.add(a);
+            perm.add(b);
+            perm.addAll(after);
+
+//            scorer.bookmark();
+
+            scorer.score(perm);
+
+            if (!scorer.adjacent(a, b)) {
+                boolean removed = graph.removeEdge(a, b);
+
+                if (removed) {
+                    for (Node x : adj) {
+                        if (!graph.isAdjacentTo(x, a) || !graph.isAdjacentTo(x, b)) continue;
+
+                        if (graph.getEndpoint(x, a) == Endpoint.ARROW && graph.getEndpoint(x, b) == Endpoint.CIRCLE) {
+                            graph.setEndpoint(a, x, Endpoint.ARROW);
+                            graph.setEndpoint(b, x, Endpoint.ARROW);
+                        } else if (graph.getEndpoint(x, b) == Endpoint.ARROW && graph.getEndpoint(x, a) == Endpoint.CIRCLE) {
+                            graph.setEndpoint(a, x, Endpoint.ARROW);
+                            graph.setEndpoint(b, x, Endpoint.ARROW);
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            scorer.goToBookmark();
+        }
+    }
+
+    private boolean isExistsUnshielded(Node b) {
+        List<Node> nodesInTo = graph.getNodesInTo(b, Endpoint.ARROW);
+
+        boolean existsUnshielded = false;
+
+        for (int i = 0; i < nodesInTo.size(); i++) {
+            for (int j = i + 1; j < nodesInTo.size(); j++) {
+                if (!graph.isAdjacentTo(nodesInTo.get(i), nodesInTo.get(j))) {
+                    existsUnshielded = true;
+                    break;
+                }
+            }
+        }
+        return existsUnshielded;
+    }
+
     public void copyColliders(Graph cpdag) {
         List<Node> nodes = this.graph.getNodes();
 
@@ -249,7 +378,34 @@ public final class BossFci implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (cpdag.isDefCollider(a, b, c)) {
+                if (!cpdag.isAdjacentTo(a, c) && cpdag.isDefCollider(a, b, c)) {
+                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                }
+            }
+        }
+    }
+
+    public void copyUnshieldedColliders() {
+        Graph orig = new EdgeListGraph(graph);
+        this.graph.reorientAllWith(Endpoint.CIRCLE);
+        List<Node> nodes = this.graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 }

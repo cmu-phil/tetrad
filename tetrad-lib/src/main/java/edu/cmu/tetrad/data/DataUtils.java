@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Vector;

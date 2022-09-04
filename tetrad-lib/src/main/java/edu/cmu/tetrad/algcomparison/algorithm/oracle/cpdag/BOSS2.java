@@ -10,7 +10,7 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BossTuck2;
+import edu.cmu.tetrad.search.Boss2;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -25,22 +25,22 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-Tuck2",
-        command = "boss-tuck2",
+        name = "BOSS2",
+        command = "boss2",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class BOSSTuck2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
+public class BOSS2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BOSSTuck2() {
+    public BOSS2() {
     }
 
-    public BOSSTuck2(ScoreWrapper score) {
+    public BOSS2(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -49,13 +49,13 @@ public class BOSSTuck2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             Score score = this.score.getScore(dataSet, parameters);
 
-            BossTuck2 boss = new BossTuck2(score);
+            Boss2 boss = new Boss2(score);
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
             boss.setKnowledge(this.knowledge);
 
             return boss.search(score.getVariables());
         } else {
-            BOSSTuck2 alg = new BOSSTuck2(this.score);
+            BOSS2 alg = new BOSS2(this.score);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, alg, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -73,7 +73,7 @@ public class BOSSTuck2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "BOSS-Tuck2 using " + this.score.getDescription();
+        return "BOSS2 using " + this.score.getDescription();
     }
 
     @Override

@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
+package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -8,45 +8,50 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.BFci0;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
- * GRaSP (Greedy Relaxations of Sparsest Permutation)
+ * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial
+ * steps of finding adjacencies and unshielded colliders.
+ * <p>
+ * GFCI reference is this:
+ * <p>
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
+ * for Latent Variable Models," JMLR 2016.
  *
- * @author bryanandrews
- * @author josephramsey
+ * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-Tuck",
-        command = "boss-tuck",
-        algoType = AlgType.forbid_latent_common_causes
+        name = "BFCI0",
+        command = "bfci0",
+        algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-@Experimental
-public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class BFCI0 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+
     static final long serialVersionUID = 23L;
-    private ScoreWrapper score;
     private IndependenceWrapper test;
+    private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BOSSTuck() {
-        // Used in reflection; do not delete.
+    public BFCI0() {
+        // Used for reflection; do not delete.
     }
 
-    public BOSSTuck(ScoreWrapper score) {
+    public BFCI0(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
         this.score = score;
     }
 
@@ -63,28 +68,30 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
                 knowledge = timeSeries.getKnowledge();
             }
 
-            Score score = this.score.getScore(dataModel, parameters);
-            IndependenceTest test = this.test.getTest(dataModel, parameters);
+            BFci0 search = new BFci0(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-            Boss boss = new Boss(test, score);
-            boss.setAlgType(Boss.AlgType.BOSS_TUCK);
+            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
+            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
+            search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-            boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
-            boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
-            boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
-            boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-            boss.setKnowledge(this.knowledge);
-            boss.bestOrder(score.getVariables());
-            return boss.getGraph(true);
+            Object obj = parameters.get(Params.PRINT_STREAM);
+
+            if (obj instanceof PrintStream) {
+                search.setOut((PrintStream) obj);
+            }
+
+            return search.search();
         } else {
-            BOSS algorithm = new BOSS(this.score);
-
+            BFCI0 algorithm = new BFCI0(this.test, this.score);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
-
-
+            search.setKnowledge(data.getKnowledge());
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -93,29 +100,31 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
+        return new DagToPag(graph).convert();
     }
 
     @Override
     public String getDescription() {
-        return "BOSS-Tuck (Better Order Score Search) using " + this.score.getDescription();
+        return "BFCI0 (Bost-order FCI Null Implementation) using " + this.test.getDescription()
+                + " and " + this.score.getDescription();
     }
 
     @Override
     public DataType getDataType() {
-        return this.score.getDataType();
+        return this.test.getDataType();
     }
 
     @Override
     public List<String> getParameters() {
-        ArrayList<String> params = new ArrayList<>();
+        List<String> params = new ArrayList<>();
 
-        // Flags
-        params.add(Params.GRASP_DEPTH);
+        params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.CACHE_SCORES);
+        params.add(Params.POSSIBLE_DSEP_DONE);
+        params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 
@@ -123,6 +132,27 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.NUM_STARTS);
 
         return params;
+    }
+
+
+    @Override
+    public IKnowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    @Override
+    public void setKnowledge(IKnowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
+    @Override
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 
     @Override
@@ -135,23 +165,4 @@ public class BOSSTuck implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         this.score = score;
     }
 
-    @Override
-    public IKnowledge getKnowledge() {
-        return this.knowledge.copy();
-    }
-
-    @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge.copy();
-    }
-
-    @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
-        this.test = test;
-    }
-
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
-    }
 }

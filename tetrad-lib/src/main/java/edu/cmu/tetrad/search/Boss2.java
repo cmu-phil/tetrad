@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 import static java.lang.Math.abs;
-import static java.util.Collections.reverse;
 import static java.util.Collections.sort;
 
 
@@ -19,13 +18,13 @@ import static java.util.Collections.sort;
  * @author bryanandrews
  * @author josephramsey
  */
-public class BossTuck2 {
+public class Boss2 {
     private final List<Node> variables;
     private final Score score;
     private IKnowledge knowledge = new Knowledge2();
     private boolean verbose = true;
 
-    public BossTuck2(@NotNull Score score) {
+    public Boss2(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
     }

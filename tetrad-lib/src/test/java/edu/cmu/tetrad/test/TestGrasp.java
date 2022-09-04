@@ -24,15 +24,13 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.BOSSFCI;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
-import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
+import edu.cmu.tetrad.algcomparison.independence.*;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -77,7 +75,7 @@ public final class TestGrasp {
 //        new TestGrasp().testLuFigure3();
 //        new TestGrasp().testLuFigure6();
 //        new TestGrasp().testGrasp2();
-        new TestGrasp().testBossFci();
+        new TestGrasp().testBFci();
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
     }
@@ -539,8 +537,8 @@ public final class TestGrasp {
     public void doNewAgsHeadToHead(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new BOSS_OLD(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
 //        if (doPcFges) {
@@ -849,9 +847,9 @@ public final class TestGrasp {
                 new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new BOSS_OLD(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new BOSSTuck2(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new BOSS2(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new SIMPLE_DEMO_GA(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 
         Simulations simulations = new Simulations();
@@ -2193,19 +2191,18 @@ public final class TestGrasp {
         return list;
     }
 
-    //    @Test
-    public void testPfci() {
+    public void testBFci() {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_MEASURES, 30);
-        params.set(Params.NUM_LATENTS, 6);
+        params.set(Params.NUM_MEASURES, 25);
+        params.set(Params.NUM_LATENTS, 4);
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.RANDOMIZE_COLUMNS, true);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.VAR_LOW, 1);
-        params.set(Params.VAR_HIGH, 1);
-        params.set(Params.VERBOSE, true);
+        params.set(Params.VAR_HIGH, 3);
+        params.set(Params.VERBOSE, false);
 
         params.set(Params.NUM_RUNS, 10);
 
@@ -2218,18 +2215,21 @@ public final class TestGrasp {
         params.set(Params.GRASP_SINGULAR_DEPTH, 3);
         params.set(Params.GRASP_FORWARD_TUCK_ONLY, false);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
+        params.set(Params.GRASP_USE_SCORE, true);
+        params.set(Params.GRASP_USE_DATA_ORDER, false);
         params.set(Params.TIMEOUT, 30);
         params.set(Params.NUM_STARTS, 1);
-        params.set(Params.GRASP_ALG, true, false);
 
         params.set(Params.PENALTY_DISCOUNT, 2);
-        params.set(Params.ALPHA, 0.001);
+        params.set(Params.ALPHA, 0.01);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new BOSSFCI(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new Fci(new FisherZ()));
         algorithms.add(new FciMax(new FisherZ()));
         algorithms.add(new Rfci(new FisherZ()));
-        algorithms.add(new Gfci(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Gfci(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BFCI0(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BFCI(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -2246,41 +2246,10 @@ public final class TestGrasp {
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testPfci", simulations,
                 algorithms, statistics, params);
-    }
-
-    public void testBossFci() {
-        Graph graph = GraphUtils.randomGraph(14, 4, 20, 10, 10, 10, false);
-        Graph truePag = new DagToPag(graph).convert();
-
-        DSeparationTest test = new DSeparationTest(graph);
-        DSeparationScore score = new DSeparationScore(graph);
-
-        Parameters parameters = new Parameters();
-
-        BossFci alg = new BossFci(test.getTest(null, parameters), score.getScore(null, parameters));
-//        alg.setMaxPathLength(-1);
-//        alg.setCompleteRuleSetUsed(true);
-
-        alg.setDepth(-1);
-        alg.setUseScore(false);
-        alg.setUseRaskuttiUhler(true);
-        alg.setUseDataOrder(false);
-        alg.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-        Graph estPag = alg.search();
-
-        System.out.println("true = " + truePag);
-        System.out.println("est = " + estPag);
-
-        boolean equal = truePag.equals(estPag);
-
-        System.out.println(equal);
-
-
 
     }
 
