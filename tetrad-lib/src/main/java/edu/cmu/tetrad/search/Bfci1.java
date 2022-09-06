@@ -176,7 +176,7 @@ public final class Bfci1 implements GraphSearch {
 
             scorer.score(perm);
 
-            if (!scorer.adjacent(a, b) && graph.isAdjacentTo(a, b)
+            if (!scorer.adjacent(a, b) && graph.isAdjacentTo(a, b)) {
                 graph.removeEdge(a, b);
 
                 for (Node x : after) {
