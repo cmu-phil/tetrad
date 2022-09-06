@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -67,11 +66,6 @@ public final class FciOrient {
     private boolean completeRuleSetUsed;
 
     /**
-     * True iff the possible dsep search is done.
-     */
-    private boolean possibleDsepSearchDone = true;
-
-    /**
      * The maximum length for any discriminating path. -1 if unlimited;
      * otherwise, a positive integer.
      */
@@ -89,7 +83,7 @@ public final class FciOrient {
 
     private Graph truePag;
     private Graph dag;
-    private boolean skipDiscriminatingPathRule;
+    private boolean doDiscriminatingPathRule = true;
 
     //============================CONSTRUCTORS============================//
 
@@ -485,7 +479,7 @@ public final class FciOrient {
      * This is Zhang's rule R4, discriminating undirectedPaths.
      */
     public void ruleR4B(Graph graph) {
-        if (this.skipDiscriminatingPathRule) {
+        if (!this.doDiscriminatingPathRule) {
             return;
         }
 
@@ -1233,14 +1227,6 @@ public final class FciOrient {
         return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
     }
 
-    public boolean isPossibleDsepSearchDone() {
-        return this.possibleDsepSearchDone;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
-    }
-
     /**
      * @return the maximum length of any discriminating path, or -1 of
      * unlimited.
@@ -1294,8 +1280,8 @@ public final class FciOrient {
         return this.changeFlag;
     }
 
-    public void skipDiscriminatingPathRule(boolean skip) {
-        this.skipDiscriminatingPathRule = skip;
+    public void setDoDiscriminatingPathRule(boolean skip) {
+        this.doDiscriminatingPathRule = skip;
     }
 
 }

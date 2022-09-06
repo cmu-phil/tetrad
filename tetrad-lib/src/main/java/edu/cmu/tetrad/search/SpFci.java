@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -76,6 +75,7 @@ public final class SpFci implements GraphSearch {
     // The print stream that output is directed to.
     private PrintStream out = System.out;
     private boolean useRaskuttiUhler;
+    private boolean doDiscriminatingPathRule = true;
 
     //============================CONSTRUCTORS============================//
     public SpFci(IndependenceTest test, Score score) {
@@ -188,7 +188,7 @@ public final class SpFci implements GraphSearch {
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setVerbose(this.verbose);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.skipDiscriminatingPathRule(false);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);

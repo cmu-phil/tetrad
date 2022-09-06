@@ -215,7 +215,7 @@ public class TestFci {
 //        fci.setKnowledge(knowledge);
 //        fci.setMaxPathLength(-1);
 
-        Bfci fci = new Bfci(independence, null);
+        Bfci1 fci = new Bfci1(independence, null);
         fci.setUseRaskuttiUhler(true);
         fci.setUseScore(false);
 

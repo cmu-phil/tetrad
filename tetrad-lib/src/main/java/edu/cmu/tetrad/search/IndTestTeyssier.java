@@ -201,7 +201,15 @@ public final class IndTestTeyssier implements IndependenceTest {
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
 
-        boolean independent = sepsets.isIndependent(x, y, z);
+        List<Node> perm = new ArrayList<>(z);
+        perm.add(x);
+        perm.add(y);
+
+        scorer.score(perm);
+
+        boolean independent = scorer.adjacent(x, y);
+
+//        boolean independent = sepsets.isIndependent(x, y, z);
 
 //        if (Double.isNaN(p)) {
 //            return new IndependenceResult(new IndependenceFact(x, y, z),

@@ -114,8 +114,13 @@ public class SepsetsTeyssier implements SepsetProducer {
         nodes.addAll(c);
         nodes.add(a);
         nodes.add(b);
-        this.scorer.score(nodes);
-        boolean adjacent = this.scorer.getGraph(false).isAdjacentTo(a, b);
+
+        Boss boss = new Boss(scorer);
+        boss.setAlgType(Boss.AlgType.BOSS);
+        boss.bestOrder(nodes);
+
+//        this.scorer.score(nodes);
+        boolean adjacent = this.scorer.adjacent(a, b);
 
 //        System.out.println("Testing " + SearchLogUtils.independenceFact(a, b, c) + ": " + !adjacent);
 

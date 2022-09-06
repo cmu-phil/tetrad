@@ -73,6 +73,7 @@ public final class TsDagToPag {
     private boolean verbose;
     private int maxPathLength = -1;
     private Graph truePag;
+    private boolean doDiscriminatingPathRule = false;
 
     //============================CONSTRUCTORS============================//
 
@@ -139,6 +140,7 @@ public final class TsDagToPag {
         FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
         System.out.println("Complete rule set is used? " + this.completeRuleSetUsed);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(this.knowledge);
@@ -367,6 +369,9 @@ public final class TsDagToPag {
     }
 
 
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
 }
 
 

@@ -47,6 +47,7 @@ public final class Params {
     public static final String COEF_SYMMETRIC = "coefSymmetric";
     public static final String COLLIDER_DISCOVERY_RULE = "colliderDiscoveryRule";
     public static final String COMPLETE_RULE_SET_USED = "completeRuleSetUsed";
+    public static final String DO_DISCRIMINATING_PATH_RULE = "doDiscriminatingPathRule";
     public static final String CONCURRENT_FAS = "concurrentFAS";
     public static final String CONFLICT_RULE = "conflictRule";
     public static final String CONNECTED = "connected";

@@ -2196,24 +2196,25 @@ public final class TestGrasp {
         params.set(Params.SAMPLE_SIZE, 1000);
         params.set(Params.NUM_MEASURES, 25);
         params.set(Params.NUM_LATENTS, 4);
-        params.set(Params.AVG_DEGREE, 6);
+        params.set(Params.AVG_DEGREE, 4);
         params.set(Params.RANDOMIZE_COLUMNS, true);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
-        params.set(Params.VAR_LOW, 1);
-        params.set(Params.VAR_HIGH, 3);
+        params.set(Params.VAR_LOW, .5);
+        params.set(Params.VAR_HIGH, 2);
         params.set(Params.VERBOSE, false);
 
         params.set(Params.NUM_RUNS, 10);
 
         params.set(Params.MAX_PATH_LENGTH, -1);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
+        params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
         params.set(Params.MAX_PATH_LENGTH, -1);
 
         // Flags
         params.set(Params.GRASP_DEPTH, 5);
         params.set(Params.GRASP_SINGULAR_DEPTH, 3);
-        params.set(Params.GRASP_FORWARD_TUCK_ONLY, false);
+        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_DATA_ORDER, false);
@@ -2229,7 +2230,8 @@ public final class TestGrasp {
         algorithms.add(new Rfci(new FisherZ()));
         algorithms.add(new Gfci(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new BFCI0(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BFCI(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BFCI1(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BFCI2(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));

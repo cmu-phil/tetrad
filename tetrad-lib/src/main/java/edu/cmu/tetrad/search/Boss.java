@@ -39,7 +39,7 @@ public class Boss {
     private int depth = 4;
     private int numStarts = 1;
 
-    private AlgType algType = AlgType.BOSS_OLD;
+    private AlgType algType = AlgType.BOSS;
 
     public Boss(@NotNull Score score) {
         this.score = score;

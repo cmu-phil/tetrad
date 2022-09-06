@@ -115,6 +115,7 @@ public final class FciMax implements GraphSearch {
      * FAS stable option.
      */
     private boolean stable;
+    private boolean doDiscriminatingPathRule = false;
 
     //============================CONSTRUCTORS============================//
 
@@ -238,6 +239,7 @@ public final class FciMax implements GraphSearch {
         FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
@@ -482,6 +484,10 @@ public final class FciMax implements GraphSearch {
      */
     public void setStable(boolean stable) {
         this.stable = stable;
+    }
+
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 }
 

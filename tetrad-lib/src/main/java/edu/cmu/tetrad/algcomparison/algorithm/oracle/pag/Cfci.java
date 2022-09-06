@@ -39,6 +39,7 @@ public class Cfci implements Algorithm, HasKnowledge {
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             return search.search();
         } else {
             Cfci algorithm = new Cfci(this.test);
@@ -76,6 +77,7 @@ public class Cfci implements Algorithm, HasKnowledge {
         }
         parameters.add(Params.DEPTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
 
         parameters.add(Params.VERBOSE);
         return parameters;

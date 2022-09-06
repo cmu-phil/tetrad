@@ -117,6 +117,7 @@ public final class Cfci implements GraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     private boolean verbose;
+    private boolean doDiscriminatingPathRule;
 
     //============================CONSTRUCTORS============================//
 
@@ -227,6 +228,7 @@ public final class Cfci implements GraphSearch {
                 new SepsetMap(), this.depth));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(-1);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(this.graph);
@@ -501,6 +503,10 @@ public final class Cfci implements GraphSearch {
 
     public int getMaxReachablePathLength() {
         return this.maxReachablePathLength;
+    }
+
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
     private enum TripleType {

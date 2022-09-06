@@ -85,6 +85,7 @@ public final class BFci0 implements GraphSearch {
     private boolean useRaskuttiUhler = false;
     private boolean useDataOrder = true;
     private boolean useScore = true;
+    private boolean doDiscriminatingPathRule = true;
 
     //============================CONSTRUCTORS============================//
     public BFci0(IndependenceTest test, Score score) {
@@ -138,7 +139,8 @@ public final class BFci0 implements GraphSearch {
 
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxDegree);
+//        this.sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
+       this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxDegree);
 //
 //        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
 //        this.sepsets = new SepsetsTeyssier(fgesGraph, scorer, null, -1);
@@ -176,7 +178,10 @@ public final class BFci0 implements GraphSearch {
 
         modifiedR0(fgesGraph);
 
+        retainUnshieldedColliders();
+
         FciOrient fciOrient = new FciOrient(this.sepsets);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
@@ -245,6 +250,33 @@ public final class BFci0 implements GraphSearch {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);
                         this.graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
+                }
+            }
+        }
+    }
+
+    public void retainUnshieldedColliders() {
+        Graph orig = new EdgeListGraph(graph);
+        this.graph.reorientAllWith(Endpoint.CIRCLE);
+        List<Node> nodes = this.graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
+                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 }
             }
         }
@@ -411,5 +443,9 @@ public final class BFci0 implements GraphSearch {
 
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;
+    }
+
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 }

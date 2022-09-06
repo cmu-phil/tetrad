@@ -10,8 +10,8 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.Bfci2;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.Bfci;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -34,23 +34,23 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BFCI",
-        command = "bfci",
+        name = "BFCI2",
+        command = "bfci2",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class BFCI2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BFCI() {
+    public BFCI2() {
         // Used for reflection; do not delete.
     }
 
-    public BFCI(IndependenceWrapper test, ScoreWrapper score) {
+    public BFCI2(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -68,9 +68,10 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
                 knowledge = timeSeries.getKnowledge();
             }
 
-            Bfci search = new Bfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            Bfci2 search = new Bfci2(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
 
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
@@ -88,7 +89,7 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
             return search.search();
         } else {
-            BFCI algorithm = new BFCI(this.test, this.score);
+            BFCI2 algorithm = new BFCI2(this.test, this.score);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
@@ -105,7 +106,7 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
     @Override
     public String getDescription() {
-        return "BFCI (Bost-order FCI) using " + this.test.getDescription()
+        return "BFCI2 (Bost-order FCI 2) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
@@ -120,6 +121,7 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
+        params.add(Params.DO_DISCRIMINATING_PATH_RULE);
         params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);

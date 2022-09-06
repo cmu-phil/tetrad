@@ -82,6 +82,7 @@ public final class GFci implements GraphSearch {
     private final Score score;
 
     private SepsetProducer sepsets;
+    private boolean doDiscriminatingPathRule = true;
 
     //============================CONSTRUCTORS============================//
     public GFci(IndependenceTest test, Score score) {
@@ -156,8 +157,10 @@ public final class GFci implements GraphSearch {
         fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(getKnowledge());
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(this.graph);
+
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 
@@ -373,4 +376,7 @@ public final class GFci implements GraphSearch {
         this.logger.log("info", "Finishing BK Orientation.");
     }
 
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
 }

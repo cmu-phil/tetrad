@@ -39,7 +39,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public final class Bfci implements GraphSearch {
+public final class Bfci2 implements GraphSearch {
 
     // The score used, if GS is used to build DAGs.
     private final Score score;
@@ -73,9 +73,10 @@ public final class Bfci implements GraphSearch {
     private boolean useDataOrder = true;
     private boolean useScore = true;
     private Graph graph;
+    private boolean doDiscriminatingPathRule = true;
 
     //============================CONSTRUCTORS============================//
-    public Bfci(IndependenceTest test, Score score) {
+    public Bfci2(IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
     }
@@ -114,15 +115,17 @@ public final class Bfci implements GraphSearch {
 
         // Remove as many edges as possible using the "reduce" rule, orienting as many
         // arrowheads this way as possible.
-        reduce(scorer);
+        reduce2(scorer, alg);
 
         retainUnshieldedColliders();
 
+//        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
 
         // Apply final FCI orientation rules.
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(graph);
@@ -190,6 +193,64 @@ public final class Bfci implements GraphSearch {
             }
 
             scorer.goToBookmark();
+        }
+    }
+
+    private void reduce2(TeyssierScorer scorer, Boss alg) {
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            reduceVisit2(scorer, a, b, alg);
+            reduceVisit2(scorer, b, a, alg);
+        }
+    }
+
+    private void reduceVisit2(TeyssierScorer scorer, Node a, Node b, Boss alg) {
+        List<Node> adj = new ArrayList<>();
+        List<Node> currCollider = new ArrayList<>();
+
+        for (Node x : graph.getAdjacentNodes(a)) {
+            if (graph.isDefCollider(a, x, b)) {
+                currCollider.add(x);
+            }
+        }
+
+        for (Node x : graph.getAdjacentNodes(a)) {
+            if (currCollider.contains(x)) continue;
+            if (x != a && x != b) adj.add(x);
+        }
+
+//        adj.addAll(adj);
+
+        adj.add(a);
+        adj.add(b);
+
+        adj.addAll(currCollider);
+
+
+//        scorer.score(adj);
+
+        adj = alg.bestOrder(adj);
+
+        System.out.println("a = " + a + " b = " + b + " adj = " + adj);
+
+        if (!scorer.adjacent(a, b)) {
+            graph.removeEdge(a, b);
+
+            List<Node> inTriangle = new ArrayList<>(graph.getAdjacentNodes(a));
+            inTriangle.retainAll(graph.getAdjacentNodes(b));
+            inTriangle.removeAll(currCollider);
+
+            for (Node x : inTriangle) {
+//                if (x == a) continue;
+//                if (x == b) continue;
+
+//                if (graph.isAdjacentTo(a, x) && graph.isAdjacentTo(b, x)) {
+                    graph.setEndpoint(a, x, Endpoint.ARROW);
+                    graph.setEndpoint(b, x, Endpoint.ARROW);
+//                }
+            }
         }
     }
 
@@ -343,5 +404,9 @@ public final class Bfci implements GraphSearch {
 
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
+    }
+
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 }

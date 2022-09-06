@@ -60,6 +60,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
             search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
@@ -97,6 +98,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
