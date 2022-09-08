@@ -74,6 +74,7 @@ public final class Bfci1 implements GraphSearch {
     private boolean useScore = true;
     private Graph graph;
     private boolean doDiscriminatingPathRule = true;
+    private Boss boss;
 
     //============================CONSTRUCTORS============================//
     public Bfci1(IndependenceTest test, Score score) {
@@ -98,6 +99,8 @@ public final class Bfci1 implements GraphSearch {
         boss.setNumStarts(numStarts);
         boss.setVerbose(false);
 
+        this.boss = boss;
+
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
@@ -116,13 +119,15 @@ public final class Bfci1 implements GraphSearch {
         // Remove as many edges as possible using the "reduce" rule, orienting as many
         // arrowheads this way as possible.
         reduce(scorer);
+        reduce(scorer);
+        reduce(scorer);
+        reduce(scorer);
 
         retainUnshieldedColliders();
 
 //        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
 
-        // Apply final FCI orientation rules.
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
@@ -145,48 +150,38 @@ public final class Bfci1 implements GraphSearch {
     }
 
     private void reduceVisit(TeyssierScorer scorer, Node a, Node b) {
+        if (!graph.isAdjacentTo(a, b)) return;
+
         List<Node> inTriangle = new ArrayList<>(graph.getAdjacentNodes(a));
         inTriangle.retainAll(graph.getAdjacentNodes(b));
 
         DepthChoiceGenerator gen = new DepthChoiceGenerator(inTriangle.size(), inTriangle.size());
         int[] choice;
 
-        List<Node> curColl = new ArrayList<>();
-
-        for (Node x : inTriangle) {
-            if (graph.isDefCollider(a, x, b)) {
-                curColl.add(x);
-            }
-        }
-
-        W:
         while ((choice = gen.next()) != null) {
             List<Node> after = GraphUtils.asList(choice, inTriangle);
             List<Node> before = new ArrayList<>(inTriangle);
-
-            for (Node x : curColl) {
-                if (!after.contains(x)) continue W;
-            }
-
             before.removeAll(after);
 
             List<Node> perm = new ArrayList<>(before);
             perm.add(a);
             perm.add(b);
+            perm.addAll(after);
 
             scorer.score(perm);
+            this.boss.betterMutation(scorer);
 
-            if (!scorer.adjacent(a, b) && graph.isAdjacentTo(a, b)) {
+            if (!scorer.adjacent(a, b)) {
                 graph.removeEdge(a, b);
 
-                for (Node x : after) {
-                    if (graph.isAdjacentTo(a, x) && graph.isAdjacentTo(b, x)) {
+                for (Node x : perm) {
+                    if (scorer.collider(a, x, b)) {
                         graph.setEndpoint(a, x, Endpoint.ARROW);
                         graph.setEndpoint(b, x, Endpoint.ARROW);
                     }
                 }
 
-                break;
+                return;
             }
 
             scorer.goToBookmark();

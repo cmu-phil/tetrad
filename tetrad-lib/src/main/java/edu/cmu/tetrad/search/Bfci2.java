@@ -23,12 +23,13 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Does a FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
@@ -74,6 +75,7 @@ public final class Bfci2 implements GraphSearch {
     private boolean useScore = true;
     private Graph graph;
     private boolean doDiscriminatingPathRule = true;
+    private Boss boss;
 
     //============================CONSTRUCTORS============================//
     public Bfci2(IndependenceTest test, Score score) {
@@ -89,20 +91,22 @@ public final class Bfci2 implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        Boss alg = new Boss(scorer);
-        alg.setAlgType(Boss.AlgType.BOSS);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-        alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(depth);
-        alg.setNumStarts(numStarts);
-        alg.setVerbose(false);
+        Boss boss = new Boss(scorer);
+        boss.setAlgType(Boss.AlgType.BOSS);
+        boss.setUseScore(useScore);
+        boss.setUseRaskuttiUhler(useRaskuttiUhler);
+        boss.setUseDataOrder(useDataOrder);
+        boss.setDepth(depth);
+        boss.setNumStarts(numStarts);
+        boss.setVerbose(false);
+
+        this.boss = boss;
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        alg.bestOrder(variables);
-        this.graph = alg.getGraph(false);
+        boss.bestOrder(variables);
+        this.graph = boss.getGraph(false);
 
         // Keep a copy of this CPDAG.
         Graph cpdag = new EdgeListGraph(this.graph);
@@ -115,7 +119,7 @@ public final class Bfci2 implements GraphSearch {
 
         // Remove as many edges as possible using the "reduce" rule, orienting as many
         // arrowheads this way as possible.
-        reduce2(scorer, alg);
+        reduce(scorer);
 
         retainUnshieldedColliders();
 
@@ -140,116 +144,37 @@ public final class Bfci2 implements GraphSearch {
             Node a = edge.getNode1();
             Node b = edge.getNode2();
 
-            List<Node> inTriangle = new ArrayList<>(graph.getAdjacentNodes(a));
-            inTriangle.retainAll(graph.getAdjacentNodes(b));
+            if (graph.isAdjacentTo(a, b)) {
+                reduceVisit(scorer, a, b);
+            }
 
-            reduceVisit(scorer, a, b, inTriangle);
+            if (graph.isAdjacentTo(a, b)) {
+                reduceVisit(scorer, b, a);
+            }
         }
     }
 
-    private void reduceVisit(TeyssierScorer scorer, Node a, Node b, List<Node> inTriangle) {
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(inTriangle.size(), inTriangle.size());
-        int[] choice;
+    private void reduceVisit(TeyssierScorer scorer, Node a, Node b) {
+        Set<Node> perm = new HashSet<>(graph.getAdjacentNodes(a));
+        perm.addAll(graph.getAdjacentNodes(b));
 
-        List<Node> curColl = new ArrayList<>();
+        perm.add(a);
 
-        for (Node x : inTriangle) {
-            if (graph.isDefCollider(a, x, b)) {
-                curColl.add(x);
-            }
-        }
-
-        W:
-        while ((choice = gen.next()) != null) {
-            List<Node> after = GraphUtils.asList(choice, inTriangle);
-            List<Node> before = new ArrayList<>(inTriangle);
-
-            for (Node x : curColl) {
-                if (!after.contains(x)) continue W;
-            }
-
-            before.removeAll(after);
-
-            List<Node> perm = new ArrayList<>(before);
-            perm.add(a);
-            perm.add(b);
-            perm.addAll(after);
-
-            scorer.score(perm);
-
-            if (!scorer.adjacent(a, b)) {
-                boolean removed = graph.removeEdge(a, b);
-
-                if (removed) {
-                    for (Node x : after) {
-                        if (graph.isAdjacentTo(a, x) && graph.isAdjacentTo(b, x)) {
-                            if (graph.getEndpoint(x, b) == Endpoint.ARROW || graph.getEndpoint(x, a) == Endpoint.ARROW) {
-                                graph.setEndpoint(a, x, Endpoint.ARROW);
-                                graph.setEndpoint(b, x, Endpoint.ARROW);
-                            }
-                        }
-                    }
-                }
-            }
-
-            scorer.goToBookmark();
-        }
-    }
-
-    private void reduce2(TeyssierScorer scorer, Boss alg) {
-        for (Edge edge : graph.getEdges()) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-
-            reduceVisit2(scorer, a, b, alg);
-            reduceVisit2(scorer, b, a, alg);
-        }
-    }
-
-    private void reduceVisit2(TeyssierScorer scorer, Node a, Node b, Boss alg) {
-        List<Node> adj = new ArrayList<>();
-        List<Node> currCollider = new ArrayList<>();
-
-        for (Node x : graph.getAdjacentNodes(a)) {
-            if (graph.isDefCollider(a, x, b)) {
-                currCollider.add(x);
-            }
-        }
-
-        for (Node x : graph.getAdjacentNodes(a)) {
-            if (currCollider.contains(x)) continue;
-            if (x != a && x != b) adj.add(x);
-        }
-
-//        adj.addAll(adj);
-
-        adj.add(a);
-        adj.add(b);
-
-        adj.addAll(currCollider);
-
-
-//        scorer.score(adj);
-
-        adj = alg.bestOrder(adj);
-
-        System.out.println("a = " + a + " b = " + b + " adj = " + adj);
+        scorer.score(new ArrayList<>(perm));
+        boss.betterMutationTuck(scorer);
 
         if (!scorer.adjacent(a, b)) {
             graph.removeEdge(a, b);
 
-            List<Node> inTriangle = new ArrayList<>(graph.getAdjacentNodes(a));
-            inTriangle.retainAll(graph.getAdjacentNodes(b));
-            inTriangle.removeAll(currCollider);
+            Set<Node> children = scorer.getParents(a);
+//            children.removeAll(scorer.getParents(a));
+//            children.remove(a);
 
-            for (Node x : inTriangle) {
-//                if (x == a) continue;
-//                if (x == b) continue;
-
-//                if (graph.isAdjacentTo(a, x) && graph.isAdjacentTo(b, x)) {
+            for (Node x : children) {
+                if (graph.isAdjacentTo(x, b)) {
                     graph.setEndpoint(a, x, Endpoint.ARROW);
                     graph.setEndpoint(b, x, Endpoint.ARROW);
-//                }
+                }
             }
         }
     }

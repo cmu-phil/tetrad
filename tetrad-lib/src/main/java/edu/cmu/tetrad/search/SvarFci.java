@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
@@ -33,7 +32,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -81,11 +79,6 @@ public final class SvarFci implements GraphSearch {
     private boolean completeRuleSetUsed;
 
     /**
-     * True iff the possible dsep search is done.
-     */
-    private boolean possibleDsepSearchDone = true;
-
-    /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
     private int maxPathLength = -1;
@@ -105,8 +98,6 @@ public final class SvarFci implements GraphSearch {
      */
     private boolean verbose;
     private double penaltyDiscount = 2;
-    private int possibleDsepDepth = -1;
-    private final CorrelationMatrix corr;
 
 
     //============================CONSTRUCTORS============================//
@@ -115,15 +106,13 @@ public final class SvarFci implements GraphSearch {
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
     public SvarFci(IndependenceTest independenceTest) {
-        if (independenceTest == null || this.knowledge == null) {
+        if (independenceTest == null) {
             throw new NullPointerException();
         }
 
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
         buildIndexing(independenceTest.getVariables());
-
-        this.corr = new CorrelationMatrix(independenceTest.getCov());
 
     }
 
@@ -132,7 +121,7 @@ public final class SvarFci implements GraphSearch {
      * search over.
      */
     public SvarFci(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null || this.knowledge == null) {
+        if (independenceTest == null) {
             throw new NullPointerException();
         }
 
@@ -153,8 +142,6 @@ public final class SvarFci implements GraphSearch {
         }
         this.variables.removeAll(remVars);
 
-        this.corr = new CorrelationMatrix(independenceTest.getCov());
-
     }
 
     //========================PUBLIC METHODS==========================//
@@ -173,10 +160,7 @@ public final class SvarFci implements GraphSearch {
     }
 
     public Graph search() {
-        return search(getIndependenceTest().getVariables());
-    }
-
-    public Graph search(List<Node> nodes) {
+        getIndependenceTest().getVariables();
         return search(new Fasts(getIndependenceTest()));
 //        return search(new Fas(getIndependenceTest()));
     }
@@ -299,11 +283,7 @@ public final class SvarFci implements GraphSearch {
     }
 
     public boolean isPossibleDsepSearchDone() {
-        return this.possibleDsepSearchDone;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
+        return true;
     }
 
     /**
@@ -353,79 +333,10 @@ public final class SvarFci implements GraphSearch {
     //===========================PRIVATE METHODS=========================//
 
     private void buildIndexing(List<Node> nodes) {
-        ConcurrentMap<Node, Integer> hashIndices = new ConcurrentHashMap<>();
+        ConcurrentHashMap<Object, Object> hashIndices = new ConcurrentHashMap<>();
         for (Node node : nodes) {
             hashIndices.put(node, this.variables.indexOf(node));
         }
-    }
-
-    /**
-     * Orients according to background knowledge
-     */
-    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
-        this.logger.log("info", "Starting BK Orientation.");
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.requiredEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        this.logger.log("info", "Finishing BK Orientation.");
-    }
-
-    public int getPossibleDsepDepth() {
-        return this.possibleDsepDepth;
-    }
-
-    public void setPossibleDsepDepth(int possibleDsepDepth) {
-        this.possibleDsepDepth = possibleDsepDepth;
     }
 
     // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
@@ -446,13 +357,12 @@ public final class SvarFci implements GraphSearch {
         int ntiers = this.knowledge.getNumTiers();
         int indx_tier = this.knowledge.isInWhichTier(x);
         int indy_tier = this.knowledge.isInWhichTier(y);
-        int max_tier = Math.max(indx_tier, indy_tier);
         int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        List tier_x = this.knowledge.getTier(indx_tier);
+        List<String> tier_x = this.knowledge.getTier(indx_tier);
 //            Collections.sort(tier_x);
-        List tier_y = this.knowledge.getTier(indy_tier);
+        List<String> tier_y = this.knowledge.getTier(indy_tier);
 //            Collections.sort(tier_y);
 
         int i;
@@ -483,12 +393,12 @@ public final class SvarFci implements GraphSearch {
             String B;
             Node y1;
             if (indx_tier >= indy_tier) {
-                List tmp_tier1 = this.knowledge.getTier(i + tier_diff);
+                List<String> tmp_tier1 = this.knowledge.getTier(i + tier_diff);
 //                   Collections.sort(tmp_tier1);
-                List tmp_tier2 = this.knowledge.getTier(i);
+                List<String> tmp_tier2 = this.knowledge.getTier(i);
 //                   Collections.sort(tmp_tier2);
-                A = (String) tmp_tier1.get(indx_comp);
-                B = (String) tmp_tier2.get(indy_comp);
+                A = tmp_tier1.get(indx_comp);
+                B = tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
                 if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
@@ -503,7 +413,7 @@ public final class SvarFci implements GraphSearch {
                     }
 
                     int ind_temptier = this.knowledge.isInWhichTier(tempNode);
-                    List temptier = this.knowledge.getTier(ind_temptier);
+                    List<String> temptier = this.knowledge.getTier(ind_temptier);
 //                       Collections.sort(temptier);
                     int ind_temp = -1;
                     for (int j = 0; j < temptier.size(); ++j) {
@@ -524,21 +434,21 @@ public final class SvarFci implements GraphSearch {
                                 + "of window, so not added to SepSet");
                         continue;
                     }
-                    List new_tier = this.knowledge.getTier(condAB_tier);
+                    List<String> new_tier = this.knowledge.getTier(condAB_tier);
 //                       Collections.sort(new_tier);
-                    String tempNode1 = (String) new_tier.get(ind_temp);
+                    String tempNode1 = new_tier.get(ind_temp);
                     System.out.println("adding variable " + tempNode1 + " to SepSet");
                     condSetAB.add(test.getVariable(tempNode1));
                 }
                 System.out.println("done");
                 getSepsets().set(x1, y1, condSetAB);
             } else {
-                List tmp_tier1 = this.knowledge.getTier(i);
+                List<String> tmp_tier1 = this.knowledge.getTier(i);
 //                   Collections.sort(tmp_tier1);
-                List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
+                List<String> tmp_tier2 = this.knowledge.getTier(i + tier_diff);
 //                   Collections.sort(tmp_tier2);
-                A = (String) tmp_tier1.get(indx_comp);
-                B = (String) tmp_tier2.get(indy_comp);
+                A = tmp_tier1.get(indx_comp);
+                B = tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
                 if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
@@ -553,7 +463,7 @@ public final class SvarFci implements GraphSearch {
                     }
 
                     int ind_temptier = this.knowledge.isInWhichTier(tempNode);
-                    List temptier = this.knowledge.getTier(ind_temptier);
+                    List<String> temptier = this.knowledge.getTier(ind_temptier);
 //                       Collections.sort(temptier);
                     int ind_temp = -1;
                     for (int j = 0; j < temptier.size(); ++j) {
@@ -571,9 +481,9 @@ public final class SvarFci implements GraphSearch {
                                 + "of window, so not added to SepSet");
                         continue;
                     }
-                    List new_tier = this.knowledge.getTier(condAB_tier);
+                    List<String> new_tier = this.knowledge.getTier(condAB_tier);
 //                       Collections.sort(new_tier);
-                    String tempNode1 = (String) new_tier.get(ind_temp);
+                    String tempNode1 = new_tier.get(ind_temp);
                     System.out.println("adding variable " + tempNode1 + " to SepSet");
                     condSetAB.add(test.getVariable(tempNode1));
                 }
