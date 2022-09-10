@@ -104,11 +104,12 @@ public final class DagToPag {
         }
 
         FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
-        fciOrient.setDoDiscriminatingPathRule(false);//this.doDiscriminatingPathRule);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setChangeFlag(false);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setKnowledge(this.knowledge);
         fciOrient.doFinalOrientation(graph);
+        graph.setPag(true);
 
         if (this.verbose) {
             System.out.println("Finishing final orientation");

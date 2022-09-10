@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
@@ -113,25 +114,30 @@ public final class Bfci1 implements GraphSearch {
         // Orient the CPDAG with all circle endpoints...
         this.graph.reorientAllWith(Endpoint.CIRCLE);
 
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
+
+
         // Copy the colliders from the copy of the CPDAG into the o-o graph.
         copyColliders(cpdag);
 
         // Remove as many edges as possible using the "reduce" rule, orienting as many
         // arrowheads this way as possible.
         reduce(scorer);
-        reduce(scorer);
-        reduce(scorer);
-        reduce(scorer);
 
         retainUnshieldedColliders();
 
+        // The original FCI, with or without JiJi Zhang's orientation rules
+        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
+//        removePossibleDsep();
+//
+//        retainUnshieldedColliders();
+
+
 //        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
-        fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(graph);
 
@@ -140,51 +146,77 @@ public final class Bfci1 implements GraphSearch {
         return this.graph;
     }
 
+    private void removePossibleDsep() {
+        SepsetsPossibleDsep sp = new SepsetsPossibleDsep(graph, this.test, new Knowledge2(), this.depth, this.maxPathLength);
+        sp.setVerbose(this.verbose);
+
+//            new FciOrient(sepsets).ruleR0(graph);
+
+        for (Edge edge : new ArrayList<>(graph.getEdges())) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            List<Node> sepset = sp.getSepset(x, y);
+
+            if (sepset != null) {
+                graph.removeEdge(x, y);
+
+                if (this.verbose) {
+                    System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
+                }
+            }
+        }
+
+        // Reorient all edges as o-o.
+        graph.reorientAllWith(Endpoint.CIRCLE);
+    }
+
     private void reduce(TeyssierScorer scorer) {
         for (Edge edge : graph.getEdges()) {
             Node a = edge.getNode1();
             Node b = edge.getNode2();
 
-            reduceVisit(scorer, a, b);
-        }
-    }
+            if (graph.isAdjacentTo(a, b)) {
+                List<Node> inTriangle = graph.getAdjacentNodes(a);
+                inTriangle.retainAll(graph.getAdjacentNodes(b));
+                inTriangle.remove(a);
+                inTriangle.remove(b);
 
-    private void reduceVisit(TeyssierScorer scorer, Node a, Node b) {
-        if (!graph.isAdjacentTo(a, b)) return;
+                DepthChoiceGenerator gen = new DepthChoiceGenerator(inTriangle.size(), inTriangle.size());
+                int[] choice;
 
-        List<Node> inTriangle = new ArrayList<>(graph.getAdjacentNodes(a));
-        inTriangle.retainAll(graph.getAdjacentNodes(b));
+                while ((choice = gen.next()) != null) {
+                    List<Node> after = GraphUtils.asList(choice, inTriangle);
+                    List<Node> before = new ArrayList<>(inTriangle);
+                    before.removeAll(after);
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(inTriangle.size(), inTriangle.size());
-        int[] choice;
+                    List<Node> perm = new ArrayList<>(before);
+                    perm.add(a);
+                    perm.add(b);
+                    perm.addAll(after);
 
-        while ((choice = gen.next()) != null) {
-            List<Node> after = GraphUtils.asList(choice, inTriangle);
-            List<Node> before = new ArrayList<>(inTriangle);
-            before.removeAll(after);
+                    scorer.score(perm);
+//                    this.boss.betterMutation(scorer);
 
-            List<Node> perm = new ArrayList<>(before);
-            perm.add(a);
-            perm.add(b);
-            perm.addAll(after);
+                    if (!scorer.adjacent(a, b)) {
+                        graph.removeEdge(a, b);
 
-            scorer.score(perm);
-            this.boss.betterMutation(scorer);
+                        for (Node x : perm) {
+                            if (x == a || x == b) continue;
+                            if (scorer.collider(a, x, b) && !graph.isDefCollider(a, x, b)) {
+                                graph.setEndpoint(a, x, Endpoint.ARROW);
+                                graph.setEndpoint(b, x, Endpoint.ARROW);
+                            }
+                        }
 
-            if (!scorer.adjacent(a, b)) {
-                graph.removeEdge(a, b);
-
-                for (Node x : perm) {
-                    if (scorer.collider(a, x, b)) {
-                        graph.setEndpoint(a, x, Endpoint.ARROW);
-                        graph.setEndpoint(b, x, Endpoint.ARROW);
+                        break;
                     }
                 }
-
-                return;
             }
-
-            scorer.goToBookmark();
         }
     }
 

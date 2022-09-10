@@ -65,6 +65,7 @@ public class MisclassificationsEditor extends JPanel {
             textPane.setText(compareString);
 
             textPane.setFont(font);
+            textPane.setPreferredSize(new Dimension(400, 400));
 
             JScrollPane scroll = new JScrollPane(textPane);
             scroll.setPreferredSize(new Dimension(400, 400));

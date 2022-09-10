@@ -2195,11 +2195,11 @@ public final class TestGrasp {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 1000);
         params.set(Params.NUM_MEASURES, 25);
-        params.set(Params.NUM_LATENTS, 4);
+        params.set(Params.NUM_LATENTS, 6);
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.RANDOMIZE_COLUMNS, true);
-        params.set(Params.COEF_LOW, 0.1);
-        params.set(Params.COEF_HIGH, 0.9);
+        params.set(Params.COEF_LOW, 0);
+        params.set(Params.COEF_HIGH, 1);
         params.set(Params.VAR_LOW, .5);
         params.set(Params.VAR_HIGH, 2);
         params.set(Params.VERBOSE, false);
@@ -2209,7 +2209,6 @@ public final class TestGrasp {
         params.set(Params.MAX_PATH_LENGTH, -1);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
-        params.set(Params.MAX_PATH_LENGTH, -1);
 
         // Flags
         params.set(Params.GRASP_DEPTH, 5);

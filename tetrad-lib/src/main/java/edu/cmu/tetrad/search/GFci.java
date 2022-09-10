@@ -153,13 +153,15 @@ public final class GFci implements GraphSearch {
 
         modifiedR0(fgesGraph);
 
-        FciOrient fciOrient = new FciOrient(this.sepsets);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(getKnowledge());
+        FciOrient fciOrient = new FciOrient(sepsets);
+        fciOrient.setVerbose(verbose);
+
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.doFinalOrientation(this.graph);
+        fciOrient.setKnowledge(this.knowledge);
+        fciOrient.doFinalOrientation(graph);
+        graph.setPag(true);
 
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());

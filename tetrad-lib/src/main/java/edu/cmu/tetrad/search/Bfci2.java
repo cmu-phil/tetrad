@@ -167,11 +167,11 @@ public final class Bfci2 implements GraphSearch {
             graph.removeEdge(a, b);
 
             Set<Node> children = scorer.getParents(a);
-//            children.removeAll(scorer.getParents(a));
+            children.removeAll(scorer.getParents(a));
 //            children.remove(a);
 
             for (Node x : children) {
-                if (graph.isAdjacentTo(x, b)) {
+                if (graph.isAdjacentTo(x, a) && graph.isAdjacentTo(x, b)) {
                     graph.setEndpoint(a, x, Endpoint.ARROW);
                     graph.setEndpoint(b, x, Endpoint.ARROW);
                 }
