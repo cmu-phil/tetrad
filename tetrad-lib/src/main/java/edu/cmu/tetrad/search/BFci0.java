@@ -135,16 +135,11 @@ public final class BFci0 implements GraphSearch {
         this.graph = alg.getGraph(true);
 
         // Keep a copy of this CPDAG.
-        Graph cpdag = new EdgeListGraph(this.graph);
-
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
 //        this.sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxDegree);
 //
-//        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
-//        this.sepsets = new SepsetsTeyssier(fgesGraph, scorer, null, -1);
-
         // "Extra" GFCI rule...
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {

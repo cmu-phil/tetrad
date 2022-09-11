@@ -2243,6 +2243,7 @@ public final class TestGrasp {
         statistics.add(new ArrowheadRecall());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
+        statistics.add(new NumBidirectedEdges());
         statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();

@@ -85,13 +85,13 @@ public class MisclassificationsEditor extends JPanel {
 
             pane2.add("Comparison", scroll);
 
-            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getTargetGraphs().get(i)));
-            graphEditor.enableEditing(false);
-            pane2.add("Target Graph", graphEditor.getWorkbench());
-
-            graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getReferenceGraphs().get(i)));
-            graphEditor.enableEditing(false);
-            pane2.add("True Graph", graphEditor.getWorkbench());
+//            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getTargetGraphs().get(i)));
+//            graphEditor.enableEditing(false);
+//            pane2.add("Target Graph", graphEditor.getWorkbench());
+//
+//            graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getReferenceGraphs().get(i)));
+//            graphEditor.enableEditing(false);
+//            pane2.add("True Graph", graphEditor.getWorkbench());
 
             pane.add("" + (i + 1), pane2);
 
