@@ -163,11 +163,6 @@ public final class Bfci1 implements GraphSearch {
                 perm.add(b);
                 perm.addAll(after);
 
-//                Set<Node> N = new HashSet<>(inTriangle);
-//                before.forEach(N::remove);
-//
-//                if (!isClique(new HashSet<>(before), graph)) continue;
-
                 scorer.score(perm);
 
                 if (!scorer.getParents(b).contains(a)) {
@@ -185,19 +180,6 @@ public final class Bfci1 implements GraphSearch {
                 }
             }
         }
-    }
-
-    private boolean isClique(Set<Node> nodes, Graph graph) {
-        List<Node> _nodes = new ArrayList<>(nodes);
-        for (int i = 0; i < _nodes.size(); i++) {
-            for (int j = i + 1; j < _nodes.size(); j++) {
-                if (!graph.isAdjacentTo(_nodes.get(i), _nodes.get(j))) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     private void removeByPossibleDsep(Graph graph, IndependenceTest test) {
