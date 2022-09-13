@@ -142,11 +142,6 @@ public final class Bfci1 implements GraphSearch {
             Node a = edge.getNode1();
             Node b = edge.getNode2();
             reduceVisit(scorer, a, b);
-            reduceVisit(scorer, a, b);
-            reduceVisit(scorer, a, b);
-            reduceVisit(scorer, a, b);
-            reduceVisit(scorer, a, b);
-//            reduceVisit(scorer, b, a);
         }
     }
 

@@ -243,7 +243,7 @@ public class Boss {
         Graph graph = scorer.getGraph(true);
         Bes bes = new Bes(score);
         bes.setDepth(depth);
-        bes.setVerbose(verbose);
+        bes.setVerbose(false);
         bes.setKnowledge(knowledge);
         bes.bes(graph, scorer.getPi());
         return causalOrder(scorer.getPi(), graph);

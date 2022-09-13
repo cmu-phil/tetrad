@@ -127,7 +127,7 @@ public class Bes {
         graph.removeEdge(oldxy);
 
         int numEdges = graph.getNumEdges();
-        if (numEdges % 1000 == 0) {
+        if (numEdges % 1000 == 0 && numEdges > 0) {
             System.out.println("Num edges (backwards) = " + numEdges);
         }
 
