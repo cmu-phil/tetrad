@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Data;
@@ -4697,7 +4696,7 @@ public final class GraphUtils {
         return null;
     }
 
-    public static List<Node> possibleDsep(Node x, Node y, Graph graph, int maxPathLength, IndependenceTest test) {
+    public static List<Node> possibleDsep(Node x, Node y, Graph graph, int maxPathLength) {
         Set<Node> dsep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
@@ -4771,13 +4770,6 @@ public final class GraphUtils {
                     }
                 }
             }
-        }
-
-        Map<Node, Double> scores = new HashMap<>();
-
-        for (Node node : dsep) {
-            test.checkIndependence(x, y, Collections.singletonList(node));
-            scores.put(node, test.getScore());
         }
 
         dsep.remove(x);

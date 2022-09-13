@@ -2196,7 +2196,7 @@ public final class TestGrasp {
         params.set(Params.SAMPLE_SIZE, 1000);
         params.set(Params.NUM_MEASURES, 25);
         params.set(Params.NUM_LATENTS, 6);
-        params.set(Params.AVG_DEGREE, 6);
+        params.set(Params.AVG_DEGREE, 4);
         params.set(Params.RANDOMIZE_COLUMNS, true);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
@@ -2218,9 +2218,9 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_DATA_ORDER, false);
         params.set(Params.TIMEOUT, 30);
-        params.set(Params.NUM_STARTS, 1);
+        params.set(Params.NUM_STARTS, 4);
 
-        params.set(Params.PENALTY_DISCOUNT, 2);
+        params.set(Params.PENALTY_DISCOUNT, 1);
         params.set(Params.ALPHA, 0.01);
 
         Algorithms algorithms = new Algorithms();
@@ -2230,7 +2230,6 @@ public final class TestGrasp {
         algorithms.add(new Gfci(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new BFCI0(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new BFCI1(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BFCI2(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));

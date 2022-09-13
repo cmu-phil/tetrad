@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.DepthChoiceGenerator;
@@ -30,9 +29,10 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Does a FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
+ * Does an FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
  * an extent; the GFCI reference is this:
  * <p>
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
@@ -75,7 +75,6 @@ public final class Bfci1 implements GraphSearch {
     private boolean useScore = true;
     private Graph graph;
     private boolean doDiscriminatingPathRule = true;
-    private Boss boss;
 
     //============================CONSTRUCTORS============================//
     public Bfci1(IndependenceTest test, Score score) {
@@ -100,8 +99,6 @@ public final class Bfci1 implements GraphSearch {
         boss.setNumStarts(numStarts);
         boss.setVerbose(false);
 
-        this.boss = boss;
-
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
@@ -123,7 +120,7 @@ public final class Bfci1 implements GraphSearch {
         triangleReduce(scorer);
 
         // Remove edges using the possible dsep rule.
-        removeByPossibleDsep();
+        removeByPossibleDsep(graph, test);
 
         // Retain only the unshielded colliders.
         retainUnshieldedColliders();
@@ -144,32 +141,20 @@ public final class Bfci1 implements GraphSearch {
         for (Edge edge : graph.getEdges()) {
             Node a = edge.getNode1();
             Node b = edge.getNode2();
-            reduceVisit(scorer, edge, a, b);
+            reduceVisit(scorer, a, b);
+            reduceVisit(scorer, a, b);
+            reduceVisit(scorer, a, b);
+            reduceVisit(scorer, a, b);
+            reduceVisit(scorer, a, b);
+//            reduceVisit(scorer, b, a);
         }
     }
 
-    private void removeByPossibleDsep() {
-        for (Edge edge : graph.getEdges()) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-
-            SepsetProducer possDep = new SepsetsPossibleDsep(this.graph, test, new Knowledge2(), depth, -1);
-
-            List<Node> sepset = possDep.getSepset(a, b);
-
-            if (sepset != null) {
-                graph.removeEdge(edge);
-            }
-        }
-    }
-
-    private void reduceVisit(TeyssierScorer scorer, Edge edge, Node a, Node b) {
+    private void reduceVisit(TeyssierScorer scorer, Node a, Node b) {
         List<Node> inTriangle = graph.getAdjacentNodes(a);
         inTriangle.retainAll(graph.getAdjacentNodes(b));
 
         if (graph.isAdjacentTo(a, b)) {
-//            System.out.println("*** " + edge + ", in triangle = " + inTriangle);
-
             DepthChoiceGenerator gen = new DepthChoiceGenerator(inTriangle.size(), inTriangle.size());
             int[] choice;
 
@@ -183,7 +168,10 @@ public final class Bfci1 implements GraphSearch {
                 perm.add(b);
                 perm.addAll(after);
 
-//                System.out.println("before = " + before + " after = " + after + " perm = " + perm);
+//                Set<Node> N = new HashSet<>(inTriangle);
+//                before.forEach(N::remove);
+//
+//                if (!isClique(new HashSet<>(before), graph)) continue;
 
                 scorer.score(perm);
 
@@ -204,6 +192,76 @@ public final class Bfci1 implements GraphSearch {
         }
     }
 
+    private boolean isClique(Set<Node> nodes, Graph graph) {
+        List<Node> _nodes = new ArrayList<>(nodes);
+        for (int i = 0; i < _nodes.size(); i++) {
+            for (int j = i + 1; j < _nodes.size(); j++) {
+                if (!graph.isAdjacentTo(_nodes.get(i), _nodes.get(j))) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private void removeByPossibleDsep(Graph graph, IndependenceTest test) {
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            {
+                List<Node> possibleDsep = GraphUtils.possibleDsep(a, b, graph, -1);
+
+                DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    if (choice.length < 2) continue;
+                    List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                    if (test.checkIndependence(a, b, sepset).independent()) {
+                        graph.removeEdge(edge);
+                        break;
+                    }
+                }
+            }
+
+            if (graph.containsEdge(edge)) {
+                {
+                    List<Node> possibleDsep = GraphUtils.possibleDsep(b, a, graph, -1);
+
+                    DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
+                    int[] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        if (choice.length < 2) continue;
+                        List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                        if (test.checkIndependence(a, b, sepset).independent()) {
+                            graph.removeEdge(edge);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+//    private void removeByPossibleDsep() {
+//        for (Edge edge : graph.getEdges()) {
+//            Node a = edge.getNode1();
+//            Node b = edge.getNode2();
+//
+//            SepsetProducer possDep = new SepsetsPossibleDsep(this.graph, test, new Knowledge2(), depth, -1);
+//
+//            List<Node> sepset = possDep.getSepset(a, b);
+//
+//            if (sepset != null) {
+//                graph.removeEdge(edge);
+//            }
+//        }
+//    }
+
     private void copyColliders(Graph cpdag) {
         List<Node> nodes = this.graph.getNodes();
 
@@ -221,7 +279,7 @@ public final class Bfci1 implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (cpdag.isDefCollider(a, b, c)) {// && !graph.isAdjacentTo(a, c)) {
+                if (cpdag.isDefCollider(a, b, c)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 }

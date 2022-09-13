@@ -185,7 +185,7 @@ public class PossibleDsepFci {
      * </pre>
      */
     private List<Node> getPossibleDsep(Node node1, Node node2, int maxPathLength) {
-        List<Node> dsep = GraphUtils.possibleDsep(node1, node2, this.graph, maxPathLength, this.test);
+        List<Node> dsep = GraphUtils.possibleDsep(node1, node2, this.graph, maxPathLength);
 
         dsep.remove(node1);
         dsep.remove(node2);

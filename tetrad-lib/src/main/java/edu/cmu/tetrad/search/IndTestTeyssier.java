@@ -59,7 +59,7 @@ public final class IndTestTeyssier implements IndependenceTest {
      * The correlation matrix.
      */
     private final ICovarianceMatrix cor;
-    private SepsetsTeyssier sepsets;
+    private double penaltyDiscount = 0.5;
     private TeyssierScorer scorer;
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
@@ -77,6 +77,8 @@ public final class IndTestTeyssier implements IndependenceTest {
     private double p = NaN;
     private double r = NaN;
 
+    private Boss boss;
+
 
     //==========================CONSTRUCTORS=============================//
 
@@ -85,10 +87,11 @@ public final class IndTestTeyssier implements IndependenceTest {
      * given data set (must be continuous). The given significance level is used.
      *
      * @param dataSet A data set containing only continuous columns.
-     * @param alpha   The alpha level of the test.
+//     * @param alpha   The alpha level of the test.
      */
-    public IndTestTeyssier(DataSet dataSet, double alpha) {
+    public IndTestTeyssier(DataSet dataSet, double penaltyDiscount) {
         this.dataSet = dataSet;
+//        this.penaltyDiscount = penaltyDiscount;
 
         if (!(dataSet.isContinuous())) {
             throw new IllegalArgumentException("Data set must be continuous.");
@@ -131,21 +134,23 @@ public final class IndTestTeyssier implements IndependenceTest {
             this.nodesHash = nodesHash;
         }
 
-        this.scorer = new TeyssierScorer(null, new SemBicScore(dataSet));
+        SemBicScore score = new SemBicScore(dataSet);
+        score.setPenaltyDiscount(penaltyDiscount);
+        this.scorer = new TeyssierScorer(null, score);
         this.scorer.score(variables);
-        this.sepsets = new SepsetsTeyssier(new EdgeListGraph(variables), scorer, null, -1);
+        this.boss = new Boss(scorer);
     }
 
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
      */
-    public IndTestTeyssier(ICovarianceMatrix covMatrix, double alpha) {
+    public IndTestTeyssier(ICovarianceMatrix covMatrix, double penaltyDiscount) {
         this.cor = new CorrelationMatrix(covMatrix);
         this.variables = covMatrix.getVariables();
         this.indexMap = indexMap(this.variables);
         this.nameMap = nameMap(this.variables);
-        setAlpha(alpha);
+//        this.penaltyDiscount = penaltyDiscount;
 
         Map<Node, Integer> nodesHash = new HashMap<>();
 
@@ -155,9 +160,11 @@ public final class IndTestTeyssier implements IndependenceTest {
 
         this.nodesHash = nodesHash;
 
-        this.scorer = new TeyssierScorer(null, new SemBicScore(covMatrix));
+        SemBicScore score = new SemBicScore(covMatrix);
+        score.setPenaltyDiscount(penaltyDiscount);
+        this.scorer = new TeyssierScorer(null, score);
         scorer.score(variables);
-        this.sepsets = new SepsetsTeyssier(new EdgeListGraph(variables), scorer, null, -1);
+        this.boss = new Boss(scorer);
 
     }
 
@@ -205,7 +212,10 @@ public final class IndTestTeyssier implements IndependenceTest {
         perm.add(x);
         perm.add(y);
 
-        scorer.score(perm);
+        boss.bestOrder(perm);
+
+//        scorer.score(perm);
+//        boss.betterMutationTuck(scorer);
 
         boolean independent = scorer.adjacent(x, y);
 

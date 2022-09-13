@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,37 +77,37 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         boolean noEdgeRequired = this.knowledge.noEdgeRequired(node1.getName(), node2.getName());
 
         int _depth = this.depth == -1 ? 1000 : this.depth;
+        _depth = Math.min(_depth, possibleDsep.size());
 
-        for (int d = 0; d <= Math.min(_depth, possibleDsep.size()); d++) {
-            ChoiceGenerator cg = new ChoiceGenerator(possibleDsep.size(), d);
-            int[] choice;
+        DepthChoiceGenerator cg = new DepthChoiceGenerator(possibleDsep.size(), _depth);
+        int[] choice;
 
-            while ((choice = cg.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
+        while ((choice = cg.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            if (choice.length < 1) continue;
+
+            List<Node> condSet = GraphUtils.asList(choice, possibleDsep);
+
+            // check against bk knowledge added by DMalinsky 07/24/17 **/
+            //  if (knowledge.isForbidden(node1.getName(), node2.getName())) continue;
+            boolean flagForbid = false;
+            for (Node j : condSet) {
+                if (this.knowledge.isInWhichTier(j) > Math.max(this.knowledge.isInWhichTier(node1), this.knowledge.isInWhichTier(node2))) { // condSet cannot be in the future of both endpoints
+//                        if (knowledge.isForbidden(j.getName(), node1.getName()) && knowledge.isForbidden(j.getName(), node2.getName())) {
+                    flagForbid = true;
                     break;
                 }
+            }
+            if (flagForbid) continue;
 
-                if (choice.length == 0) continue;
+            IndependenceResult result = this.test.checkIndependence(node1, node2, condSet);
+            this.result = result;
 
-                List<Node> condSet = GraphUtils.asList(choice, possibleDsep);
-                // check against bk knowledge added by DMalinsky 07/24/17 **/
-                //                    if (knowledge.isForbidden(node1.getName(), node2.getName())) continue;
-                boolean flagForbid = false;
-                for (Node j : condSet) {
-                    if (this.knowledge.isInWhichTier(j) > Math.max(this.knowledge.isInWhichTier(node1), this.knowledge.isInWhichTier(node2))) { // condSet cannot be in the future of both endpoints
-//                        if (knowledge.isForbidden(j.getName(), node1.getName()) && knowledge.isForbidden(j.getName(), node2.getName())) {
-                        flagForbid = true;
-                        break;
-                    }
-                }
-                if (flagForbid) continue;
-
-                IndependenceResult result = this.test.checkIndependence(node1, node2, condSet);
-                this.result = result;
-
-                if (result.independent() && noEdgeRequired) {
-                    return condSet;
-                }
+            if (result.independent() && noEdgeRequired) {
+                return condSet;
             }
         }
 
@@ -115,14 +115,13 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     }
 
     private List<Node> getPossibleDsep(Node x, Node y, int maxPathLength) {
-        List<Node> dsep = GraphUtils.possibleDsep(x, y, this.graph, maxPathLength, this.test);
+        List<Node> dsep = GraphUtils.possibleDsep(x, y, this.graph, maxPathLength);
 
         if (this.verbose) {
             System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + dsep);
         }
 
         return dsep;
-
     }
 
     @Override

@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
@@ -198,33 +199,11 @@ public final class Fci implements GraphSearch {
 
         graph.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetsPossibleDsep sp = new SepsetsPossibleDsep(graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
-        sp.setVerbose(this.verbose);
-
         // The original FCI, with or without JiJi Zhang's orientation rules
-        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
+        // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
         if (isPossibleDsepSearchDone()) {
             new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest)).ruleR0(graph);
-
-            for (Edge edge : new ArrayList<>(graph.getEdges())) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                List<Node> sepset = sp.getSepset(x, y);
-
-                if (sepset != null) {
-                    graph.removeEdge(x, y);
-                    this.sepsets.set(x, y, sepset);
-
-                    if (this.verbose) {
-                        System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
-                    }
-                }
-            }
+            removeByPossibleDsep(graph, independenceTest, sepsets);
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
@@ -248,6 +227,49 @@ public final class Fci implements GraphSearch {
         this.elapsedTime = stop - start;
 
         return graph;
+    }
+
+    private void removeByPossibleDsep(Graph graph, IndependenceTest test, SepsetMap sepsets) {
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            {
+                List<Node> possibleDsep = GraphUtils.possibleDsep(a, b, graph, -1);
+
+               DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    if (choice.length < 2) continue;
+                    List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                    if (test.checkIndependence(a, b, sepset).independent()) {
+                        graph.removeEdge(edge);
+                        sepsets.set(a, b, sepset);
+                        break;
+                    }
+                }
+            }
+
+            if (graph.containsEdge(edge)) {
+                {
+                    List<Node> possibleDsep = GraphUtils.possibleDsep(b, a, graph, -1);
+
+                    DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
+                    int[] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        if (choice.length < 2) continue;
+                        List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                        if (test.checkIndependence(a, b, sepset).independent()) {
+                            graph.removeEdge(edge);
+                            sepsets.set(a, b, sepset);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

@@ -35,9 +35,9 @@ public class TeyssierTest implements IndependenceWrapper {
         double alpha = parameters.getDouble(Params.ALPHA);
 
         if (dataSet instanceof ICovarianceMatrix) {
-            return new IndTestTeyssier((ICovarianceMatrix) dataSet, alpha);
+            return new IndTestTeyssier((ICovarianceMatrix) dataSet, parameters.getDouble(Params.PENALTY_DISCOUNT));
         } else if (dataSet instanceof DataSet) {
-            return new IndTestTeyssier((DataSet) dataSet, alpha);
+            return new IndTestTeyssier((DataSet) dataSet, parameters.getDouble(Params.PENALTY_DISCOUNT));
         }
 
         throw new IllegalArgumentException("Expecting eithet a data set or a covariance matrix.");
@@ -56,7 +56,7 @@ public class TeyssierTest implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add(Params.ALPHA);
+//        params.add(Params.PENALTY_DISCOUNT);
         return params;
     }
 }
