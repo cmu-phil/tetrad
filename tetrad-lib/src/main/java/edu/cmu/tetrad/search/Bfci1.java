@@ -223,22 +223,6 @@ public final class Bfci1 implements GraphSearch {
         }
     }
 
-
-//    private void removeByPossibleDsep() {
-//        for (Edge edge : graph.getEdges()) {
-//            Node a = edge.getNode1();
-//            Node b = edge.getNode2();
-//
-//            SepsetProducer possDep = new SepsetsPossibleDsep(this.graph, test, new Knowledge2(), depth, -1);
-//
-//            List<Node> sepset = possDep.getSepset(a, b);
-//
-//            if (sepset != null) {
-//                graph.removeEdge(edge);
-//            }
-//        }
-//    }
-
     private void copyColliders(Graph cpdag) {
         List<Node> nodes = this.graph.getNodes();
 
