@@ -26,9 +26,11 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -86,6 +88,7 @@ public final class BFci0 implements GraphSearch {
     private boolean useDataOrder = true;
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
+    private boolean possibleDsepSearchDone = true;
 
     //============================CONSTRUCTORS============================//
     public BFci0(IndependenceTest test, Score score) {
@@ -175,6 +178,11 @@ public final class BFci0 implements GraphSearch {
 
         retainUnshieldedColliders();
 
+        if (this.possibleDsepSearchDone) {
+            // Remove edges using the possible dsep rule.
+            removeByPossibleDsep(graph, independenceTest);
+        }
+
         FciOrient fciOrient = new FciOrient(this.sepsets);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(this.verbose);
@@ -192,6 +200,51 @@ public final class BFci0 implements GraphSearch {
         this.graph.setPag(true);
 
         return this.graph;
+    }
+
+    private void removeByPossibleDsep(Graph graph, IndependenceTest test) {
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            {
+                List<Node> possibleDsep = GraphUtils.possibleDsep(a, b, graph, -1);
+
+                DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    if (choice.length < 2) continue;
+                    List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                    if (test.checkIndependence(a, b, sepset).independent()) {
+                        graph.removeEdge(edge);
+                        break;
+                    }
+                }
+            }
+
+            if (graph.containsEdge(edge)) {
+                {
+                    List<Node> possibleDsep = GraphUtils.possibleDsep(b, a, graph, -1);
+
+                    DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
+                    int[] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        if (choice.length < 2) continue;
+                        List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                        if (test.checkIndependence(a, b, sepset).independent()) {
+                            graph.removeEdge(edge);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -442,5 +495,9 @@ public final class BFci0 implements GraphSearch {
 
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 }

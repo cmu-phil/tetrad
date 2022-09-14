@@ -206,29 +206,10 @@ public final class FciMax implements GraphSearch {
         sp.setVerbose(this.verbose);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
+        // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
         if (isPossibleDsepSearchDone()) {
             new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest)).ruleR0(graph);
-
-            for (Edge edge : new ArrayList<>(graph.getEdges())) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                List<Node> sepset = sp.getSepset(x, y);
-
-                if (sepset != null) {
-                    graph.removeEdge(x, y);
-                    this.sepsets.set(x, y, sepset);
-
-                    if (this.verbose) {
-                        System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
-                    }
-                }
-            }
+            removeByPossibleDsep(graph, independenceTest, sepsets);
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
@@ -255,6 +236,54 @@ public final class FciMax implements GraphSearch {
 
         return graph;
     }
+
+    private void removeByPossibleDsep(Graph graph, IndependenceTest test, SepsetMap sepsets) {
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            {
+                List<Node> possibleDsep = GraphUtils.possibleDsep(a, b, graph, -1);
+
+                DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    if (choice.length < 2) continue;
+                    List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                    if (test.checkIndependence(a, b, sepset).independent()) {
+                        graph.removeEdge(edge);
+                        sepsets.set(a, b, sepset);
+                        break;
+                    }
+                }
+            }
+
+            if (graph.containsEdge(edge)) {
+                {
+                    List<Node> possibleDsep = GraphUtils.possibleDsep(b, a, graph, -1);
+
+                    DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
+                    int[] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        if (choice.length < 2) continue;
+                        List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                        if (test.checkIndependence(a, b, sepset).independent()) {
+                            graph.removeEdge(edge);
+                            sepsets.set(a, b, sepset);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     private void addColliders(Graph graph) {
         Map<Triple, Double> scores = new ConcurrentHashMap<>();

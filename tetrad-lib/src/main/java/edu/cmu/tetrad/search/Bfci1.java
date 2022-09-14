@@ -28,8 +28,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Does an FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
@@ -75,6 +75,7 @@ public final class Bfci1 implements GraphSearch {
     private boolean useScore = true;
     private Graph graph;
     private boolean doDiscriminatingPathRule = true;
+    private boolean possibleDsepSearchDone = true;
 
     //============================CONSTRUCTORS============================//
     public Bfci1(IndependenceTest test, Score score) {
@@ -119,9 +120,10 @@ public final class Bfci1 implements GraphSearch {
         // corresponding bidiricted edges.
         triangleReduce(scorer);
 
-        // Remove edges using the possible dsep rule.
-        removeByPossibleDsep(graph, test);
-
+        if (this.possibleDsepSearchDone) {
+            // Remove edges using the possible dsep rule.
+            removeByPossibleDsep(graph, test);
+        }
         // Retain only the unshielded colliders.
         retainUnshieldedColliders();
 
@@ -146,6 +148,7 @@ public final class Bfci1 implements GraphSearch {
     }
 
     private void reduceVisit(TeyssierScorer scorer, Node a, Node b) {
+        TeyssierScorer scorer2 = new TeyssierScorer(scorer);
         List<Node> inTriangle = graph.getAdjacentNodes(a);
         inTriangle.retainAll(graph.getAdjacentNodes(b));
 
@@ -159,18 +162,37 @@ public final class Bfci1 implements GraphSearch {
                 after.removeAll(before);
 
                 List<Node> perm = new ArrayList<>(before);
+//                perm.addAll(graph.getParents(a));
+
+                for (Node d : graph.getAdjacentNodes(a)) {
+                    if (graph.getEdge(a, d).pointsTowards(a)) {
+                        if (!perm.contains(d)) {
+                            perm.add(d);
+                        }
+                    }
+                }
+
+                perm.remove(a);
                 perm.add(a);
+                perm.remove(b);
                 perm.add(b);
-                perm.addAll(after);
 
-                scorer.score(perm);
+                for (Node node : after) {
+//                    if (!perm.contains(node)) {
+//                        perm.add(node);
+//                    }
+                    perm.remove(node);
+                    perm.add(node);
+                }
 
-                if (!scorer.getParents(b).contains(a)) {
+                scorer2.score(perm);
+
+                if (!scorer2.adjacent(a, b)) {
                     graph.removeEdge(a, b);
 
                     for (Node x : perm) {
                         if (x == a || x == b) continue;
-                        if (scorer.collider(a, x, b) && !graph.isDefCollider(a, x, b)) {
+                        if (scorer2.collider(a, x, b)) {
                             graph.setEndpoint(a, x, Endpoint.ARROW);
                             graph.setEndpoint(b, x, Endpoint.ARROW);
                         }
@@ -196,6 +218,8 @@ public final class Bfci1 implements GraphSearch {
                 while ((choice = gen.next()) != null) {
                     if (choice.length < 2) continue;
                     List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                     if (test.checkIndependence(a, b, sepset).independent()) {
                         graph.removeEdge(edge);
                         break;
@@ -213,6 +237,8 @@ public final class Bfci1 implements GraphSearch {
                     while ((choice = gen.next()) != null) {
                         if (choice.length < 2) continue;
                         List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                         if (test.checkIndependence(a, b, sepset).independent()) {
                             graph.removeEdge(edge);
                             break;
@@ -377,5 +403,9 @@ public final class Bfci1 implements GraphSearch {
 
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 }

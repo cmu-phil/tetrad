@@ -237,12 +237,14 @@ public final class Fci implements GraphSearch {
             {
                 List<Node> possibleDsep = GraphUtils.possibleDsep(a, b, graph, -1);
 
-               DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
+                DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
                     if (choice.length < 2) continue;
                     List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                     if (test.checkIndependence(a, b, sepset).independent()) {
                         graph.removeEdge(edge);
                         sepsets.set(a, b, sepset);
@@ -261,6 +263,8 @@ public final class Fci implements GraphSearch {
                     while ((choice = gen.next()) != null) {
                         if (choice.length < 2) continue;
                         List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                         if (test.checkIndependence(a, b, sepset).independent()) {
                             graph.removeEdge(edge);
                             sepsets.set(a, b, sepset);

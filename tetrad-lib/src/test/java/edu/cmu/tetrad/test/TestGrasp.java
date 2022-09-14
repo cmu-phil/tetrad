@@ -2193,10 +2193,10 @@ public final class TestGrasp {
 
     public void testBFci() {
         Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 1000);
+        params.set(Params.SAMPLE_SIZE, 5000);
         params.set(Params.NUM_MEASURES, 25);
+        params.set(Params.AVG_DEGREE, 6);
         params.set(Params.NUM_LATENTS, 6);
-        params.set(Params.AVG_DEGREE, 4);
         params.set(Params.RANDOMIZE_COLUMNS, true);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
@@ -2209,6 +2209,7 @@ public final class TestGrasp {
         params.set(Params.MAX_PATH_LENGTH, -1);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
+        params.set(Params.POSSIBLE_DSEP_DONE, false);
 
         // Flags
         params.set(Params.GRASP_DEPTH, 5);
