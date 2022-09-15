@@ -107,7 +107,7 @@ public class BFCI0 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
     @Override
     public String getDescription() {
-        return "BFCI0 (Bost-order FCI Null Implementation) using " + this.test.getDescription()
+        return "BFCI0 (Best-order FCI Null Implementation) using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 

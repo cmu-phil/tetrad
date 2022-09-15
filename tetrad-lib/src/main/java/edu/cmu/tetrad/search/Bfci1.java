@@ -124,6 +124,7 @@ public final class Bfci1 implements GraphSearch {
             // Remove edges using the possible dsep rule.
             removeByPossibleDsep(graph, test);
         }
+
         // Retain only the unshielded colliders.
         retainUnshieldedColliders();
 
@@ -161,7 +162,7 @@ public final class Bfci1 implements GraphSearch {
                 List<Node> after = new ArrayList<>(inTriangle);
                 after.removeAll(before);
 
-                List<Node> perm = new ArrayList<>(before);
+                List<Node> perm = new ArrayList<>(inTriangle);
 //                perm.addAll(graph.getParents(a));
 
                 for (Node d : graph.getAdjacentNodes(a)) {

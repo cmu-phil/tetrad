@@ -2193,15 +2193,15 @@ public final class TestGrasp {
 
     public void testBFci() {
         Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 5000);
-        params.set(Params.NUM_MEASURES, 25);
-        params.set(Params.AVG_DEGREE, 6);
-        params.set(Params.NUM_LATENTS, 6);
+        params.set(Params.SAMPLE_SIZE, 1000);
+        params.set(Params.NUM_MEASURES, 100);
+        params.set(Params.AVG_DEGREE, 4);
+        params.set(Params.NUM_LATENTS, 20);
         params.set(Params.RANDOMIZE_COLUMNS, true);
-        params.set(Params.COEF_LOW, 0);
-        params.set(Params.COEF_HIGH, 1);
-        params.set(Params.VAR_LOW, .5);
-        params.set(Params.VAR_HIGH, 2);
+        params.set(Params.COEF_LOW, 0.2);
+        params.set(Params.COEF_HIGH, 1.5);
+        params.set(Params.VAR_LOW, 1);
+        params.set(Params.VAR_HIGH, 3);
         params.set(Params.VERBOSE, false);
 
         params.set(Params.NUM_RUNS, 10);
@@ -2209,7 +2209,7 @@ public final class TestGrasp {
         params.set(Params.MAX_PATH_LENGTH, -1);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
-        params.set(Params.POSSIBLE_DSEP_DONE, false);
+        params.set(Params.POSSIBLE_DSEP_DONE, true);
 
         // Flags
         params.set(Params.GRASP_DEPTH, 5);
@@ -2221,7 +2221,7 @@ public final class TestGrasp {
         params.set(Params.TIMEOUT, 30);
         params.set(Params.NUM_STARTS, 4);
 
-        params.set(Params.PENALTY_DISCOUNT, 1);
+        params.set(Params.PENALTY_DISCOUNT, 4);
         params.set(Params.ALPHA, 0.01);
 
         Algorithms algorithms = new Algorithms();

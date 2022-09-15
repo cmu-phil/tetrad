@@ -99,8 +99,6 @@ public final class GFci implements GraphSearch {
 
     //========================PUBLIC METHODS==========================//
     public Graph search() {
-        long time1 = System.currentTimeMillis();
-
         List<Node> nodes = getIndependenceTest().getVariables();
 
         this.logger.log("info", "Starting FCI algorithm.");
@@ -172,8 +170,6 @@ public final class GFci implements GraphSearch {
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 
         long time2 = System.currentTimeMillis();
-
-        long elapsedTime = time2 - time1;
 
         this.graph.setPag(true);
 

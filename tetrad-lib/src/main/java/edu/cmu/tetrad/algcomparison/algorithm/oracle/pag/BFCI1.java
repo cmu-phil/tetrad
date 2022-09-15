@@ -107,7 +107,7 @@ public class BFCI1 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
     @Override
     public String getDescription() {
-        return "BFCI1 (Bost-order FCI 1) using " + this.test.getDescription()
+        return "BFCI1 (Best-order FCI 1) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
