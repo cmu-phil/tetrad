@@ -1,12 +1,11 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
 import edu.cmu.tetrad.algcomparison.statistic.utils.BidirectedConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * The bidirected false positives.
+ * The bidirected false negatives.
  *
  * @author jdramsey
  */
