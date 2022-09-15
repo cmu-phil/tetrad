@@ -34,10 +34,10 @@ public class MathewsCorrArrow implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        int arrowsTp = adjConfusion.getArrowsTp();
-        int arrowsFp = adjConfusion.getArrowsFp();
-        int arrowsFn = adjConfusion.getArrowsFn();
-        int arrowsTn = adjConfusion.getArrowsTn();
+        int arrowsTp = adjConfusion.getTp();
+        int arrowsFp = adjConfusion.getFp();
+        int arrowsFn = adjConfusion.getFn();
+        int arrowsTn = adjConfusion.getTn();
         return mcc(arrowsTp, arrowsFp, arrowsTn, arrowsFn);
     }
 

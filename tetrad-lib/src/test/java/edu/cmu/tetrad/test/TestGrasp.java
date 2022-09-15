@@ -2194,9 +2194,9 @@ public final class TestGrasp {
     public void testBFci() {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_MEASURES, 100);
+        params.set(Params.NUM_MEASURES, 50);
         params.set(Params.AVG_DEGREE, 4);
-        params.set(Params.NUM_LATENTS, 20);
+        params.set(Params.NUM_LATENTS, 10);
         params.set(Params.RANDOMIZE_COLUMNS, true);
         params.set(Params.COEF_LOW, 0.2);
         params.set(Params.COEF_HIGH, 1.5);

@@ -26,8 +26,8 @@ public class AdjacencyPrecision implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
-        int adjTp = adjConfusion.getAdjTp();
-        int adjFp = adjConfusion.getAdjFp();
+        int adjTp = adjConfusion.getTp();
+        int adjFp = adjConfusion.getFp();
         return adjTp / (double) (adjTp + adjFp);
     }
 

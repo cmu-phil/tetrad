@@ -29,7 +29,7 @@ public class ArrowheadTN implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion confusion = new ArrowConfusion(trueGraph, estGraph);
-        return confusion.getArrowsTn();
+        return confusion.getTn();
     }
 
     @Override

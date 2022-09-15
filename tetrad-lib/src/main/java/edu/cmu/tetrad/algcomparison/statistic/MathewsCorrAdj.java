@@ -30,10 +30,10 @@ public class MathewsCorrAdj implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
-        int adjTp = adjConfusion.getAdjTp();
-        int adjFp = adjConfusion.getAdjFp();
-        int adjFn = adjConfusion.getAdjFn();
-        int adjTn = adjConfusion.getAdjTn();
+        int adjTp = adjConfusion.getTp();
+        int adjFp = adjConfusion.getFp();
+        int adjFn = adjConfusion.getFn();
+        int adjTn = adjConfusion.getTn();
         return mcc(adjTp, adjFp, adjTn, adjFn);
     }
 

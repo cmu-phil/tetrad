@@ -26,8 +26,8 @@ public class AdjacencyTPR implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
-        int adjTp = adjConfusion.getAdjTp();
-        int adjFn = adjConfusion.getAdjFn();
+        int adjTp = adjConfusion.getTp();
+        int adjFn = adjConfusion.getFn();
 //        int adjTn = adjConfusion.getAdjTn();
         return adjTp / (double) (adjTp + adjFn);
     }

@@ -29,8 +29,8 @@ public class ArrowheadRecall implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion adjConfusion = new ArrowConfusion(trueGraph, estGraph);
-        double arrowsTp = adjConfusion.getArrowsTp();
-        double arrowsFn = adjConfusion.getArrowsFn();
+        double arrowsTp = adjConfusion.getTp();
+        double arrowsFn = adjConfusion.getFn();
         double den = arrowsTp + arrowsFn;
         return arrowsTp / den;
     }
