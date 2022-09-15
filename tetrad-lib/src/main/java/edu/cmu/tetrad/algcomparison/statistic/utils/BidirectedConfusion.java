@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A confusion matrix for adjacencies--i.e. TP, FP, TN, FN for counts of adjacencies.
+ * A confusion matrix for bidireced edges--i.e. TP, FP, TN, FN for counts of bidirected edges.
  *
  * @author jdramsey
  */
