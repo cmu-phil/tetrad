@@ -57,7 +57,8 @@ final class ContributorsAction extends AbstractAction {
                 "Kong Wongchakprasitti, and Harry Hochheiser. Additional work has been done by Bryan " +
                 "Andrews, Ruben Sanchez, Fattaneh Jabbari, Ricardo Silva, Dan Malinsky, Erich Kummerfeld, " +
                 "Biwei Huang, Juan Miguel Ogarrio, David Danks, Kevin Kelly, Eric Strobl, Shyam Visweswaran, " +
-                "Shuyan Wang, Madelyn Glymour, Frank Wimberly, Matt Easterday, and Tyler Gibson.";
+                "Shuyan Wang, Madelyn Glymour, Frank Wimberly, Matt Easterday, and Tyler Gibson, and " +
+                "Mike Konrad (Software Engineering Institute, CMU).";
 
         JTextArea textArea = new JTextArea(msg);
         textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));

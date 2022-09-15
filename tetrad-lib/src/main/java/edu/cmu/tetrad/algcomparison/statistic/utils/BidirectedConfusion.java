@@ -38,15 +38,15 @@ public class BidirectedConfusion {
         }
 
         for (Edge edge : allBidirected) {
-            if (Edges.isBidirectedEdge(edge) && est.containsEdge(edge) && !truth.containsEdge(edge)) {
+            if (est.containsEdge(edge) && !truth.containsEdge(edge)) {
                 this.fp++;
             }
 
-            if (Edges.isBidirectedEdge(edge) && truth.containsEdge(edge) && !est.containsEdge(edge)) {
+            if (truth.containsEdge(edge) && !est.containsEdge(edge)) {
                 this.fn++;
             }
 
-            if (Edges.isBidirectedEdge(edge) && truth.containsEdge(edge) && est.containsEdge(edge)) {
+            if (truth.containsEdge(edge) && est.containsEdge(edge)) {
                 this.tp++;
             }
         }

@@ -2193,7 +2193,7 @@ public final class TestGrasp {
 
     public void testBFci() {
         Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 10000);
+        params.set(Params.SAMPLE_SIZE, 1000);
         params.set(Params.NUM_MEASURES, 100);
         params.set(Params.AVG_DEGREE, 4);
         params.set(Params.NUM_LATENTS, 20);
@@ -2208,8 +2208,8 @@ public final class TestGrasp {
 
         params.set(Params.MAX_PATH_LENGTH, -1);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
-        params.set(Params.DO_DISCRIMINATING_PATH_RULE, false);
-        params.set(Params.POSSIBLE_DSEP_DONE, false);
+        params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
+        params.set(Params.POSSIBLE_DSEP_DONE, true);
 
         // Flags
         params.set(Params.GRASP_DEPTH, 5);
@@ -2221,7 +2221,7 @@ public final class TestGrasp {
         params.set(Params.TIMEOUT, 30);
         params.set(Params.NUM_STARTS, 4);
 
-        params.set(Params.PENALTY_DISCOUNT, 4);
+        params.set(Params.PENALTY_DISCOUNT, 2);
         params.set(Params.ALPHA, 0.01);
 
         Algorithms algorithms = new Algorithms();
@@ -2229,8 +2229,8 @@ public final class TestGrasp {
 //        algorithms.add(new FciMax(new FisherZ()));
 //        algorithms.add(new Rfci(new FisherZ()));
 //        algorithms.add(new Gfci(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new BFCI0(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BFCI1(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BFCI0(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new BFCI1(new TeyssierTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
