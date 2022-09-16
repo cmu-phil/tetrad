@@ -24,8 +24,8 @@ public class BidirectedTP implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        BidirectedConfusion adjConfusion = new BidirectedConfusion(trueGraph, estGraph);
-        return adjConfusion.getTp();
+        BidirectedConfusion confusion = new BidirectedConfusion(trueGraph, estGraph);
+        return confusion.getTp();
     }
 
     @Override

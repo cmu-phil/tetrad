@@ -2194,9 +2194,9 @@ public final class TestGrasp {
     public void testBFci() {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_MEASURES, 100);
+        params.set(Params.NUM_MEASURES, 50);
         params.set(Params.AVG_DEGREE, 4);
-        params.set(Params.NUM_LATENTS, 20);
+        params.set(Params.NUM_LATENTS, 5);
         params.set(Params.RANDOMIZE_COLUMNS, true);
         params.set(Params.COEF_LOW, 0.2);
         params.set(Params.COEF_HIGH, 1.0);
@@ -2221,16 +2221,16 @@ public final class TestGrasp {
         params.set(Params.TIMEOUT, 30);
         params.set(Params.NUM_STARTS, 4);
 
-        params.set(Params.PENALTY_DISCOUNT, 2);
+        params.set(Params.PENALTY_DISCOUNT, 1);
         params.set(Params.ALPHA, 0.01);
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new Fci(new FisherZ()));
 //        algorithms.add(new FciMax(new FisherZ()));
 //        algorithms.add(new Rfci(new FisherZ()));
-//        algorithms.add(new Gfci(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Gfci(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new BFCI0(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new BFCI1(new TeyssierTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BFCI1(new TeyssierTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -2245,6 +2245,7 @@ public final class TestGrasp {
         statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new BidirectedTP());
         statistics.add(new BidirectedFP());
+        statistics.add(new BidirectedPrecision());
         statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();

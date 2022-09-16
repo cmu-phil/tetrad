@@ -5,27 +5,27 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * The bidirected false negatives.
+ * The bidirected edge precision.
  *
  * @author jdramsey
  */
-public class BidirectedFP implements Statistic {
+public class BidirectedPrecision implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "BFP";
+        return "BP";
     }
 
     @Override
     public String getDescription() {
-        return "Bidirected False Positives";
+        return "Bidirected Edge Precision";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         BidirectedConfusion confusion = new BidirectedConfusion(trueGraph, estGraph);
-        return confusion.getFp();
+        return confusion.getTp() / (double) (confusion.getTp() + confusion.getFp());
     }
 
     @Override
