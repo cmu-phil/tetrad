@@ -214,7 +214,6 @@ public final class Fci implements GraphSearch {
         // Step CI C (Zhang's step F3.)
 
         FciOrient fciOrient = new FciOrient(sepsets1);
-        fciOrient.setVerbose(verbose);
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);

@@ -75,7 +75,7 @@ public final class TestGrasp {
 //        new TestGrasp().testLuFigure3();
 //        new TestGrasp().testLuFigure6();
 //        new TestGrasp().testGrasp2();
-//        new TestGrasp().testBFci();
+        new TestGrasp().testBFci();
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
     }

@@ -213,8 +213,8 @@ public class TestFci {
         fci.setPossibleDsepSearchDone(true);
         fci.setCompleteRuleSetUsed(true);
         fci.setDoDiscriminatingPathRule(true);
-        fci.setKnowledge(knowledge);
         fci.setMaxPathLength(-1);
+        fci.setKnowledge(knowledge);
 
         // Run search
         Graph resultGraph = fci.search();
