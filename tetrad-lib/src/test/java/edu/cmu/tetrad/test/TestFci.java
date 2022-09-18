@@ -209,15 +209,12 @@ public class TestFci {
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
-//        Fci fci = new Fci(independence);
-//        fci.setPossibleDsepSearchDone(true);
-//        fci.setCompleteRuleSetUsed(true);
-//        fci.setKnowledge(knowledge);
-//        fci.setMaxPathLength(-1);
-
-        Bfci2 fci = new Bfci2(independence, null);
-        fci.setUseRaskuttiUhler(true);
-        fci.setUseScore(false);
+        Fci fci = new Fci(independence);
+        fci.setPossibleDsepSearchDone(true);
+        fci.setCompleteRuleSetUsed(true);
+        fci.setDoDiscriminatingPathRule(true);
+        fci.setKnowledge(knowledge);
+        fci.setMaxPathLength(-1);
 
         // Run search
         Graph resultGraph = fci.search();
