@@ -27,13 +27,13 @@ import java.util.List;
  *
  * @author bryanandrews
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BRIDGES_OLD",
-        command = "bridges-old",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BRIDGES_OLD",
+//        command = "bridges-old",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class BRIDGES_OLD implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;

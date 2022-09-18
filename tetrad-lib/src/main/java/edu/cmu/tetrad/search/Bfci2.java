@@ -41,7 +41,7 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public final class Bfci1 implements GraphSearch {
+public final class Bfci2 implements GraphSearch {
 
     // The score used, if GS is used to build DAGs.
     private final Score score;
@@ -79,7 +79,7 @@ public final class Bfci1 implements GraphSearch {
     private boolean possibleDsepSearchDone = true;
 
     //============================CONSTRUCTORS============================//
-    public Bfci1(IndependenceTest test, Score score) {
+    public Bfci2(IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
     }
@@ -134,9 +134,13 @@ public final class Bfci1 implements GraphSearch {
 
         // Do final FCI orientation rules app
         FciOrient fciOrient = new FciOrient(sepsets);
+
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
+        fciOrient.setVerbose(this.verbose);
+//        fciOrient.setKnowledge(this.knowledge);
+
         fciOrient.doFinalOrientation(graph);
 
         this.graph.setPag(true);

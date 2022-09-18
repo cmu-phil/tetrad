@@ -3,7 +3,7 @@ package edu.cmu.tetrad.calibration;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.Bfci1;
+import edu.cmu.tetrad.search.Bfci2;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
@@ -131,7 +131,7 @@ public class DataForCalibration_RFCI {
 
         System.out.println("Starting search with all data");
 
-        Bfci1 fci = new Bfci1(test, score);
+        Bfci2 fci = new Bfci2(test, score);
         fci.setVerbose(false);
         fci.setCompleteRuleSetUsed(true);
         fci.setDepth(DFC.depth);
@@ -351,7 +351,7 @@ public class DataForCalibration_RFCI {
 
         System.out.println("Starting search with a bootstrap");
 
-        Bfci1 fci = new Bfci1(test, score);
+        Bfci2 fci = new Bfci2(test, score);
         fci.setVerbose(false);
         fci.setCompleteRuleSetUsed(true);
         fci.setDepth(depth);

@@ -19,18 +19,18 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * BOSS-MB.
- *
- * @author jdramsey
- */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-MB2",
-        command = "boss-mb2",
-        algoType = AlgType.search_for_Markov_blankets
-)
-@Bootstrapping
-@Experimental
+///**
+// * BOSS-MB.
+// *
+// * @author jdramsey
+// */
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BOSS-MB2",
+//        command = "boss-mb2",
+//        algoType = AlgType.search_for_Markov_blankets
+//)
+//@Bootstrapping
+//@Experimental
 public class BOSS_MB2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;

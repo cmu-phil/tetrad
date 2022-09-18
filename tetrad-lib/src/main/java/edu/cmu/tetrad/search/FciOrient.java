@@ -237,11 +237,11 @@ public final class FciOrient {
      * Zhang's step F4, rules R1-R10.
      */
     public void doFinalOrientation(Graph graph) {
-        if (this.completeRuleSetUsed) {
-            zhangFinalOrientation(graph);
-        } else {
+//        if (this.completeRuleSetUsed) {
+//            zhangFinalOrientation(graph);
+//        } else {
             spirtesFinalOrientation(graph);
-        }
+//        }
     }
 
     private void spirtesFinalOrientation(Graph graph) {
@@ -1280,8 +1280,8 @@ public final class FciOrient {
         return this.changeFlag;
     }
 
-    public void setDoDiscriminatingPathRule(boolean skip) {
-        this.doDiscriminatingPathRule = skip;
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
 }

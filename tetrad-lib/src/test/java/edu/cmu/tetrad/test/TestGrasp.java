@@ -2226,13 +2226,12 @@ public final class TestGrasp {
 
         Algorithms algorithms = new Algorithms();
         algorithms.add(new BOSS(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new Fci(new FisherZ()));
-//        algorithms.add(new FciMax(new FisherZ()));
-//        algorithms.add(new Rfci(new FisherZ()));
-//        algorithms.add(new Gfci(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new BFCI0(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BFCI1(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new BFCI1(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.MagSemBicScore()));
+        algorithms.add(new Fci(new FisherZ()));
+        algorithms.add(new FciMax(new FisherZ()));
+        algorithms.add(new Rfci(new FisherZ()));
+        algorithms.add(new Gfci(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BFCI(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BFCI(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.MagSemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));

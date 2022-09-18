@@ -217,9 +217,11 @@ public final class Fci implements GraphSearch {
         fciOrient.setVerbose(verbose);
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
+        fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(this.knowledge);
+
         fciOrient.ruleR0(graph);
         fciOrient.doFinalOrientation(graph);
         graph.setPag(true);

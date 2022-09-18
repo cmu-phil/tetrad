@@ -26,13 +26,13 @@ import java.util.List;
  * @author bryanandrews
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "SIMPLE_DEMO_GA",
-        command = "simple-demo-ga",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "SIMPLE_DEMO_GA",
+//        command = "simple-demo-ga",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class SIMPLE_DEMO_GA implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;

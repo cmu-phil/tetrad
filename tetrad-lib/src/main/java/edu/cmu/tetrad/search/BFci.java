@@ -36,13 +36,15 @@ import java.util.List;
 
 /**
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016.
+ * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
+ * FGES.
  *
  * @author Juan Miguel Ogarrio
  * @author ps7z
  * @author jdramsey
+ * @author bryan andrews
  */
-public final class BFci0 implements GraphSearch {
+public final class BFci implements GraphSearch {
 
     // The PAG being constructed.
     private Graph graph;
@@ -91,7 +93,7 @@ public final class BFci0 implements GraphSearch {
     private boolean possibleDsepSearchDone = true;
 
     //============================CONSTRUCTORS============================//
-    public BFci0(IndependenceTest test, Score score) {
+    public BFci(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -108,14 +110,6 @@ public final class BFci0 implements GraphSearch {
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
         this.graph = new EdgeListGraph(nodes);
-
-//        Fges fges = new Fges(this.score);
-//        fges.setKnowledge(getKnowledge());
-//        fges.setVerbose(this.verbose);
-//        fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
-//        fges.setMaxDegree(this.maxDegree);
-//        fges.setOut(this.out);
-//        this.graph = fges.search();
 
         TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
 
@@ -138,9 +132,8 @@ public final class BFci0 implements GraphSearch {
         // Keep a copy of this CPDAG.
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-//        this.sepsets = new SepsetsTeyssier(this.graph, scorer, null, depth);
        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxDegree);
-//
+
         // "Extra" GFCI rule...
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
@@ -182,16 +175,17 @@ public final class BFci0 implements GraphSearch {
         }
 
         FciOrient fciOrient = new FciOrient(this.sepsets);
-        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(getKnowledge());
+
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.doFinalOrientation(this.graph);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
+        fciOrient.setVerbose(this.verbose);
+        fciOrient.setKnowledge(this.knowledge);
+
+        fciOrient.doFinalOrientation(graph);
+        graph.setPag(true);
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
-
-        long time2 = System.currentTimeMillis();
 
         this.graph.setPag(true);
 
