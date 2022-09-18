@@ -204,7 +204,7 @@ public final class SvarFciOrient {
                     continue;
                 }
 
-                if (this.sepsets.isCollider(a, b, c)) {
+                if (this.sepsets.isUnshieldedCollider(a, b, c)) {
                     if (!isArrowpointAllowed(a, b, graph)) {
                         continue;
                     }
@@ -370,7 +370,7 @@ public final class SvarFciOrient {
     }
 
     private boolean isNoncollider(Node a, Node b, Node c) {
-        return this.sepsets.isNoncollider(a, b, c);
+        return this.sepsets.isUnshieldedNoncollider(a, b, c);
     }
 
     //if a*-oc and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c

@@ -204,7 +204,7 @@ public final class FciOrient {
                     continue;
                 }
 
-                if (this.sepsets.isCollider(a, b, c)) {
+                if (this.sepsets.isUnshieldedCollider(a, b, c)) {
                     if (!isArrowpointAllowed(a, b, graph)) {
                         continue;
                     }
@@ -436,7 +436,7 @@ public final class FciOrient {
                         continue;
                     }
 
-                    if (!this.sepsets.isNoncollider(A, D, C)) {
+                    if (!this.sepsets.isUnshieldedNoncollider(A, D, C)) {
                         continue;
                     }
 

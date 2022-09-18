@@ -1333,21 +1333,29 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public void reorientAllWith(Endpoint endpoint) {
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i; j < nodes.size(); j++) {
-                if (isAdjacentTo(nodes.get(i), nodes.get(j))) {
-                    removeEdges(nodes.get(i), nodes.get(j));
-
-                    if (endpoint == Endpoint.ARROW) {
-                        addBidirectedEdge(nodes.get(i), nodes.get(j));
-                    } else if (endpoint == Endpoint.CIRCLE) {
-                        addNondirectedEdge(nodes.get(i), nodes.get(j));
-                    } else if (endpoint == Endpoint.TAIL) {
-                        addUndirectedEdge(nodes.get(i), nodes.get(j));
-                    }
-                }
-            }
+        for (Edge edge : getEdges()) {
+            removeEdge(edge);
+            Edge edge2 = new Edge(edge);
+            edge2.setEndpoint1(endpoint);
+            edge2.setEndpoint2(endpoint);
+            addEdge(edge2);
         }
+
+//        for (int i = 0; i < nodes.size(); i++) {
+//            for (int j = i; j < nodes.size(); j++) {
+//                if (isAdjacentTo(nodes.get(i), nodes.get(j))) {
+//                    removeEdges(nodes.get(i), nodes.get(j));
+//
+//                    if (endpoint == Endpoint.ARROW) {
+//                        addBidirectedEdge(nodes.get(i), nodes.get(j));
+//                    } else if (endpoint == Endpoint.CIRCLE) {
+//                        addNondirectedEdge(nodes.get(i), nodes.get(j));
+//                    } else if (endpoint == Endpoint.TAIL) {
+//                        addUndirectedEdge(nodes.get(i), nodes.get(j));
+//                    }
+//                }
+//            }
+//        }
 //
 //
 //        for (Edge edge : new ArrayList<>(this.edgesSet)) {

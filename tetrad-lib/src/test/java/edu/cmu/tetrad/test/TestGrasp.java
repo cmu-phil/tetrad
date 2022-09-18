@@ -2204,12 +2204,12 @@ public final class TestGrasp {
         params.set(Params.VAR_HIGH, 3);
         params.set(Params.VERBOSE, false);
 
-        params.set(Params.NUM_RUNS, 10);
+        params.set(Params.NUM_RUNS, 20);
 
         params.set(Params.MAX_PATH_LENGTH, -1);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
-        params.set(Params.POSSIBLE_DSEP_DONE, true);
+        params.set(Params.POSSIBLE_DSEP_DONE, false);
 
         // Flags
         params.set(Params.GRASP_DEPTH, 5);
@@ -2219,18 +2219,20 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_DATA_ORDER, false);
         params.set(Params.TIMEOUT, 30);
-        params.set(Params.NUM_STARTS, 4);
+        params.set(Params.NUM_STARTS, 1);
 
-        params.set(Params.PENALTY_DISCOUNT, 1);
-        params.set(Params.ALPHA, 0.01);
+        params.set(Params.PENALTY_DISCOUNT, 3);
+        params.set(Params.ALPHA, 0.2);
 
         Algorithms algorithms = new Algorithms();
+        algorithms.add(new BOSS(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new Fci(new FisherZ()));
 //        algorithms.add(new FciMax(new FisherZ()));
 //        algorithms.add(new Rfci(new FisherZ()));
-        algorithms.add(new Gfci(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BFCI0(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BFCI1(new TeyssierTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new Gfci(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new BFCI0(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BFCI1(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new BFCI1(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.MagSemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -2252,7 +2254,7 @@ public final class TestGrasp {
         comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testPfci", simulations,
+        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testBfci", simulations,
                 algorithms, statistics, params);
 
     }

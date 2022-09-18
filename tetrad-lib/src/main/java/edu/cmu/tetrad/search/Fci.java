@@ -112,7 +112,7 @@ public final class Fci implements GraphSearch {
      * FAS stable option.
      */
     private boolean stable;
-    private boolean doDiscriminatingPathRule = false;
+    private boolean doDiscriminatingPathRule = true;
 
     //============================CONSTRUCTORS============================//
 
@@ -201,8 +201,10 @@ public final class Fci implements GraphSearch {
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
+        SepsetsSet sepsets1 = new SepsetsSet(this.sepsets, this.independenceTest);
+
         if (isPossibleDsepSearchDone()) {
-            new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest)).ruleR0(graph);
+            new FciOrient(sepsets1).ruleR0(graph);
             removeByPossibleDsep(graph, independenceTest, sepsets);
 
             // Reorient all edges as o-o.
@@ -211,7 +213,7 @@ public final class Fci implements GraphSearch {
 
         // Step CI C (Zhang's step F3.)
 
-        FciOrient fciOrient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
+        FciOrient fciOrient = new FciOrient(sepsets1);
         fciOrient.setVerbose(verbose);
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);

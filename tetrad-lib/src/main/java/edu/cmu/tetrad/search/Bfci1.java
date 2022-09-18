@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -88,10 +89,8 @@ public final class Bfci1 implements GraphSearch {
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getTest() + ".");
 
-        TeyssierScorer scorer = new TeyssierScorer(test, score);
-
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        Boss boss = new Boss(scorer);
+        Boss boss = new Boss(test, score);
         boss.setAlgType(Boss.AlgType.BOSS);
         boss.setUseScore(useScore);
         boss.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -103,8 +102,8 @@ public final class Bfci1 implements GraphSearch {
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        boss.bestOrder(variables);
-        this.graph = boss.getGraph(false);
+        List<Node> pi = boss.bestOrder(variables);
+        this.graph = boss.getGraph(true);
 
         // Keep a copy of this CPDAG.
         Graph cpdag = new EdgeListGraph(this.graph);
@@ -118,7 +117,12 @@ public final class Bfci1 implements GraphSearch {
 
         // Remove edges by conditioning on subsets of variables in triangles, orienting the
         // corresponding bidiricted edges.
+        TeyssierScorer scorer = new TeyssierScorer(test, score);
+        scorer.score(pi);
         triangleReduce(scorer);
+
+//        if (true) return this.graph;
+
 
         if (this.possibleDsepSearchDone) {
             // Remove edges using the possible dsep rule.
@@ -162,13 +166,12 @@ public final class Bfci1 implements GraphSearch {
                 List<Node> after = new ArrayList<>(inTriangle);
                 after.removeAll(before);
 
-                List<Node> perm = new ArrayList<>(inTriangle);
-//                perm.addAll(graph.getParents(a));
+                LinkedList<Node> perm = new LinkedList<>(inTriangle);
 
                 for (Node d : graph.getAdjacentNodes(a)) {
                     if (graph.getEdge(a, d).pointsTowards(a)) {
                         if (!perm.contains(d)) {
-                            perm.add(d);
+                            perm.addFirst(d);
                         }
                     }
                 }
@@ -179,9 +182,6 @@ public final class Bfci1 implements GraphSearch {
                 perm.add(b);
 
                 for (Node node : after) {
-//                    if (!perm.contains(node)) {
-//                        perm.add(node);
-//                    }
                     perm.remove(node);
                     perm.add(node);
                 }
@@ -189,17 +189,16 @@ public final class Bfci1 implements GraphSearch {
                 scorer2.score(perm);
 
                 if (!scorer2.adjacent(a, b)) {
-                    graph.removeEdge(a, b);
-
                     for (Node x : perm) {
                         if (x == a || x == b) continue;
                         if (scorer2.collider(a, x, b)) {
                             graph.setEndpoint(a, x, Endpoint.ARROW);
                             graph.setEndpoint(b, x, Endpoint.ARROW);
+                            graph.removeEdge(a, b);
                         }
                     }
 
-                    break;
+//                    break;
                 }
             }
         }

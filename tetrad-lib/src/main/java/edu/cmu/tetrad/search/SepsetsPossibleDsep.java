@@ -61,12 +61,12 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         return condSet;
     }
 
-    public boolean isCollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         List<Node> sepset = getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
 
-    public boolean isNoncollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
         List<Node> sepset = getSepset(i, k);
         return sepset != null && sepset.contains(j);
     }

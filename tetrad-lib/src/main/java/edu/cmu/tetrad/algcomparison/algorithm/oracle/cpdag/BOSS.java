@@ -50,6 +50,11 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
         this.score = score;
     }
 
+    public BOSS(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
+        this.score = score;
+    }
+
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -69,7 +74,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
             Boss boss = new Boss(test, score);
             boss.setAlgType(Boss.AlgType.BOSS);
 
-            boss.setDepth(parameters.getInt(Params.GRASP_DEPTH));
+            boss.setDepth(parameters.getInt(Params.DEPTH));
             boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -111,7 +116,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
         ArrayList<String> params = new ArrayList<>();
 
         // Flags
-        params.add(Params.GRASP_DEPTH);
+        params.add(Params.DEPTH);
         params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);

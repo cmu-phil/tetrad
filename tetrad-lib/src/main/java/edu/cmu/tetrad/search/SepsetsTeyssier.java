@@ -53,12 +53,12 @@ public class SepsetsTeyssier implements SepsetProducer {
         return getSepsetGreedy(i, k);
     }
 
-    public boolean isCollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         List<Node> set = getSepsetGreedy(i, k);
         return set != null && !set.contains(j);
     }
 
-    public boolean isNoncollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
         List<Node> set = getSepsetGreedy(i, k);
         return set != null && set.contains(j);
     }
