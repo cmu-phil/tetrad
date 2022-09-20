@@ -32,6 +32,7 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
+import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
 
 /**
@@ -116,38 +117,7 @@ public final class GFci implements GraphSearch {
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
-
-        // GFCI extra edge removal step...
-        for (Node b : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (this.graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
-                    if (sepset != null) {
-                        this.graph.removeEdge(a, c);
-                    }
-                }
-            }
-        }
+        gfciExtraEdgeRemovalStep(this.graph, fgesGraph, nodes, sepsets);
 
         modifiedR0(fgesGraph, sepsets);
 

@@ -24,10 +24,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
-import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.SepsetMap;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -5043,6 +5040,47 @@ public final class GraphUtils {
         } else {
             params.set("graphComparisonType", "DAG");
             return new EdgeListGraph(graph);
+        }
+    }
+
+    /**
+     * The extra edge removal step for GFCI. This removed edges in triangles in the reference graph by looking
+     * for sepsets for edge a--b among the adjacents of a or the adjacents of b.
+     * @param graph The graph being operated on and changed.
+     * @param referenceCpdag The reference graph, a CPDAG or a DAG obtained using such an algorithm.
+     * @param nodes The nodes in the graph.
+     * @param sepsets A SepsetProducer that will do the sepset search operation described.
+     */
+    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets) {
+        for (Node b : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> adjacentNodes = referenceCpdag.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (graph.isAdjacentTo(a, c) && referenceCpdag.isAdjacentTo(a, c)) {
+                    List<Node> sepset = sepsets.getSepset(a, c);
+                    if (sepset != null) {
+                        graph.removeEdge(a, c);
+                    }
+                }
+            }
         }
     }
 

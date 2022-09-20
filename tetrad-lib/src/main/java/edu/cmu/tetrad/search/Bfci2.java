@@ -131,51 +131,60 @@ public final class Bfci2 implements GraphSearch {
     }
 
     private void triangleReduce(TeyssierScorer scorer) {
-        for (Edge edge : graph.getEdges()) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-            reduceVisit(scorer, a, b);
-        }
-    }
+        boolean changed = true;
 
-    private void reduceVisit(TeyssierScorer scorer, Node a, Node b) {
-        TeyssierScorer scorer2 = new TeyssierScorer(scorer);
-        List<Node> inTriangle = this.graph.getAdjacentNodes(a);
-        inTriangle.retainAll(this.graph.getAdjacentNodes(b));
+        while (changed) {
+            changed = false;
 
-        if (this.graph.isAdjacentTo(a, b)) {
-            SublistGenerator gen = new SublistGenerator(inTriangle.size(), inTriangle.size());
-            int[] choice;
+            for (Edge edge : graph.getEdges()) {
+                Node a = edge.getNode1();
+                Node b = edge.getNode2();
+                List<Node> inTriangle = this.graph.getAdjacentNodes(a);
+                inTriangle.retainAll(this.graph.getAdjacentNodes(b));
 
-            while ((choice = gen.next()) != null) {
-                List<Node> before = GraphUtils.asList(choice, inTriangle);
-                List<Node> after = new ArrayList<>(inTriangle);
-                after.removeAll(before);
+                if (this.graph.isAdjacentTo(a, b)) {
+                    SublistGenerator gen = new SublistGenerator(inTriangle.size(), inTriangle.size());
+                    int[] choice;
 
-                List<Node> perm = new ArrayList<>(inTriangle);
+                    while ((choice = gen.next()) != null) {
+                        List<Node> before = GraphUtils.asList(choice, inTriangle);
+                        List<Node> after = new ArrayList<>(inTriangle);
+                        after.removeAll(before);
 
-                perm.add(a);
-                perm.add(b);
+                        List<Node> perm = new ArrayList<>(inTriangle);
 
-                for (Node node : after) {
-                    perm.remove(node);
-                    perm.add(node);
-                }
+                        perm.add(a);
+                        perm.add(b);
 
-                scorer2.score(perm);
+                        for (Node node : after) {
+                            perm.remove(node);
+                            perm.add(node);
+                        }
 
-                if (!scorer2.adjacent(a, b)) {
-                    graph.removeEdge(a, b);
+                        scorer.score(perm);
 
-                    for (Node x : perm) {
-                        if (x == a || x == b) continue;
-                        if (scorer2.collider(a, x, b)) {
-                            graph.setEndpoint(a, x, Endpoint.ARROW);
-                            graph.setEndpoint(b, x, Endpoint.ARROW);
+                        if (!scorer.adjacent(a, b)) {
+                            for (Node x : perm) {
+                                if (x == a || x == b) continue;
+
+                                // Only remove an edge and orient a new collider if it will create a bidirected edge.
+                                if (scorer.collider(a, x, b)) {
+                                    if (this.graph.getEndpoint(x, a) != Endpoint.ARROW && this.graph.getEndpoint(x, b) != Endpoint.ARROW) {
+                                        continue;
+                                    }
+
+                                    this.graph.removeEdge(a, b);
+
+                                    this.graph.setEndpoint(a, x, Endpoint.ARROW);
+                                    this.graph.setEndpoint(b, x, Endpoint.ARROW);
+
+                                    changed = true;
+                                }
+                            }
+
+                            break;
                         }
                     }
-
-                    break;
                 }
             }
         }
