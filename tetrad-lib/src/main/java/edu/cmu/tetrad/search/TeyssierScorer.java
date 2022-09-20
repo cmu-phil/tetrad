@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.score.MagSemBicScore;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
@@ -45,6 +46,7 @@ public class TeyssierScorer {
     private boolean useBackwardScoring;
     private boolean cachingScores = true;
     private float runningScore = 0f;
+    private Graph mag = null;
 
     public TeyssierScorer(IndependenceTest test, Score score) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
@@ -154,6 +156,11 @@ public class TeyssierScorer {
 
     public void setUseBackwardScoring(boolean useBackwardScoring) {
         this.useBackwardScoring = useBackwardScoring;
+    }
+
+    public float score(List<Node> order, Graph mag) {
+        this.mag = mag;
+        return score(order);
     }
 
     /**
@@ -717,6 +724,10 @@ public class TeyssierScorer {
 
         for (Node p : pi) {
             parentIndices[k++] = this.variablesHash.get(p);
+        }
+
+        if (mag != null) {
+            ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(mag);
         }
 
         float v = (float) this.score.localScore(this.variablesHash.get(n), parentIndices);

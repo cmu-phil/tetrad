@@ -2,10 +2,7 @@ package edu.cmu.tetrad.calibration;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.Bfci2;
-import edu.cmu.tetrad.search.IndTestFisherZ;
-import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 
 import java.io.File;
@@ -351,7 +348,7 @@ public class DataForCalibration_RFCI {
 
         System.out.println("Starting search with a bootstrap");
 
-        Bfci2 fci = new Bfci2(test, score);
+        Rfci fci = new Rfci(test);
         fci.setVerbose(false);
         fci.setCompleteRuleSetUsed(true);
         fci.setDepth(depth);
