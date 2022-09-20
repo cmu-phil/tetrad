@@ -5085,6 +5085,37 @@ public final class GraphUtils {
     }
 
     /**
+     * Retains only the unshielded colliders of the given graph.
+     * @param graph The graph to retain unshielded colliders in.
+     */
+    public static void retainUnshieldedColliders(Graph graph) {
+        Graph orig = new EdgeListGraph(graph);
+        graph.reorientAllWith(Endpoint.CIRCLE);
+        List<Node> nodes = graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
+                    graph.setEndpoint(a, b, Endpoint.ARROW);
+                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                }
+            }
+        }
+    }
+
+    /**
      * Check to see if a set of variables Z satisfies the back-door criterion
      * relative to node x and node y.
      *

@@ -22,7 +22,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -31,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
+import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
 
 /**
  * Does an FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
@@ -74,7 +74,6 @@ public final class Bfci2 implements GraphSearch {
     private boolean useRaskuttiUhler;
     private boolean useDataOrder = true;
     private boolean useScore = true;
-    private Graph graph;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
 
@@ -105,32 +104,32 @@ public final class Bfci2 implements GraphSearch {
         assert variables != null;
 
         boss.bestOrder(variables);
-        this.graph = boss.getGraph(false);
+        Graph graph = boss.getGraph(false);
 
         // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
-        triangleReduce(scorer); // Adds <-> edges to the DAG
+        triangleReduce(graph, scorer); // Adds <-> edges to the DAG
 
         if (this.possibleDsepSearchDone) {
-            removeByPossibleDsep(this.graph, test, null); // ...On the above graph with --> and <-> edges
+            removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
         }
 
         // Retain only the unshielded colliders.
-        retainUnshieldedColliders();
+        retainUnshieldedColliders(graph);
 
         // Do final FCI orientation rules app
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
+        SepsetProducer sepsets = new SepsetsGreedy(graph, test, null, depth);
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(graph);
 
-        this.graph.setPag(true);
+        graph.setPag(true);
 
-        return this.graph;
+        return graph;
     }
 
-    private void triangleReduce(TeyssierScorer scorer) {
+    private static void triangleReduce(Graph graph, TeyssierScorer scorer) {
         boolean changed = true;
 
         while (changed) {
@@ -139,10 +138,10 @@ public final class Bfci2 implements GraphSearch {
             for (Edge edge : graph.getEdges()) {
                 Node a = edge.getNode1();
                 Node b = edge.getNode2();
-                List<Node> inTriangle = this.graph.getAdjacentNodes(a);
-                inTriangle.retainAll(this.graph.getAdjacentNodes(b));
+                List<Node> inTriangle = graph.getAdjacentNodes(a);
+                inTriangle.retainAll(graph.getAdjacentNodes(b));
 
-                if (this.graph.isAdjacentTo(a, b)) {
+                if (graph.isAdjacentTo(a, b)) {
                     SublistGenerator gen = new SublistGenerator(inTriangle.size(), inTriangle.size());
                     int[] choice;
 
@@ -151,15 +150,10 @@ public final class Bfci2 implements GraphSearch {
                         List<Node> after = new ArrayList<>(inTriangle);
                         after.removeAll(before);
 
-                        List<Node> perm = new ArrayList<>(inTriangle);
-
+                        List<Node> perm = new ArrayList<>(before);
                         perm.add(a);
                         perm.add(b);
-
-                        for (Node node : after) {
-                            perm.remove(node);
-                            perm.add(node);
-                        }
+                        perm.addAll(after);
 
                         scorer.score(perm);
 
@@ -169,14 +163,14 @@ public final class Bfci2 implements GraphSearch {
 
                                 // Only remove an edge and orient a new collider if it will create a bidirected edge.
                                 if (scorer.collider(a, x, b)) {
-                                    if (this.graph.getEndpoint(x, a) != Endpoint.ARROW && this.graph.getEndpoint(x, b) != Endpoint.ARROW) {
+                                    if (graph.getEndpoint(x, a) != Endpoint.ARROW && graph.getEndpoint(x, b) != Endpoint.ARROW) {
                                         continue;
                                     }
 
-                                    this.graph.removeEdge(a, b);
+                                    graph.removeEdge(a, b);
 
-                                    this.graph.setEndpoint(a, x, Endpoint.ARROW);
-                                    this.graph.setEndpoint(b, x, Endpoint.ARROW);
+                                    graph.setEndpoint(a, x, Endpoint.ARROW);
+                                    graph.setEndpoint(b, x, Endpoint.ARROW);
 
                                     changed = true;
                                 }
@@ -185,33 +179,6 @@ public final class Bfci2 implements GraphSearch {
                             break;
                         }
                     }
-                }
-            }
-        }
-    }
-
-    public void retainUnshieldedColliders() {
-        Graph orig = new EdgeListGraph(graph);
-        this.graph.reorientAllWith(Endpoint.CIRCLE);
-        List<Node> nodes = this.graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
-                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 }
             }
         }

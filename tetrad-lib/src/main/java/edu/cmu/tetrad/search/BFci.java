@@ -32,8 +32,7 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
-import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
+import static edu.cmu.tetrad.graph.GraphUtils.*;
 
 /**
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
@@ -128,23 +127,22 @@ public final class BFci implements GraphSearch {
         this.graph = alg.getGraph(false);
 
         // Keep a copy of this CPDAG.
-        Graph fgesGraph = new EdgeListGraph(this.graph);
+        Graph referenceDag = new EdgeListGraph(this.graph);
 
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
 
         // GFCI extra edge removal step...
-        gfciExtraEdgeRemovalStep(this.graph, fgesGraph, nodes, sepsets);
+        gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
 
-        modifiedR0(fgesGraph, sepsets);
+        modifiedR0(referenceDag, sepsets);
 
         if (this.possibleDsepSearchDone) {
             removeByPossibleDsep(graph, independenceTest, null);
         }
 
-        retainUnshieldedColliders();
+        retainUnshieldedColliders(this.graph);
 
         FciOrient fciOrient = new FciOrient(sepsets);
-
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
@@ -213,33 +211,6 @@ public final class BFci implements GraphSearch {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);
                         this.graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
-                }
-            }
-        }
-    }
-
-    public void retainUnshieldedColliders() {
-        Graph orig = new EdgeListGraph(graph);
-        this.graph.reorientAllWith(Endpoint.CIRCLE);
-        List<Node> nodes = this.graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
-                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 }
             }
         }
