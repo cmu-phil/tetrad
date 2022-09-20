@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.HashSet;
@@ -222,7 +222,7 @@ public class PcLocal implements GraphSearch {
             List<Node> adj = this.graph.getAdjacentNodes(x);
             adj.remove(y);
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            SublistGenerator gen = new SublistGenerator(adj.size(), adj.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -239,7 +239,7 @@ public class PcLocal implements GraphSearch {
             List<Node> adj = this.graph.getAdjacentNodes(y);
             adj.remove(x);
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            SublistGenerator gen = new SublistGenerator(adj.size(), adj.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {

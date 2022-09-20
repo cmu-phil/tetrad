@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +79,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         int _depth = this.depth == -1 ? 1000 : this.depth;
         _depth = Math.min(_depth, possibleDsep.size());
 
-        DepthChoiceGenerator cg = new DepthChoiceGenerator(possibleDsep.size(), _depth);
+        SublistGenerator cg = new SublistGenerator(possibleDsep.size(), _depth);
         int[] choice;
 
         while ((choice = cg.next()) != null) {

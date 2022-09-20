@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -208,7 +208,7 @@ public class MultiFaskV1 {
 
         for (int i = 0; i < this.dataSets.size(); i++) {
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), this.depth);
+            SublistGenerator gen = new SublistGenerator(adj.size(), this.depth);
             int[] choice;
 
             boolean possibleTwoCycle = false;

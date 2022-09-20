@@ -819,7 +819,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
         clearArrow(a, b);
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(t.size(), _depth);
+        SublistGenerator gen = new SublistGenerator(t.size(), _depth);
 
         int[] choice;
 
@@ -930,7 +930,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         List<Node> _naYX = new ArrayList<>(naYX);
 //        final int _depth = Math.min(_naYX.size(), depth == -1 ? 1000 : depth);
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(_naYX.size(), _naYX.size());
+        SublistGenerator gen = new SublistGenerator(_naYX.size(), _naYX.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {
@@ -1677,7 +1677,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         List<Node> _parents = new ArrayList<>();
         for (int p : parents) _parents.add(this.variables.get(p));
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(_parents.size(), _parents.size());
+        SublistGenerator gen = new SublistGenerator(_parents.size(), _parents.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {

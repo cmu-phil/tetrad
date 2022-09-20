@@ -33,17 +33,17 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
+public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public Gfci() {
+    public GFCI() {
     }
 
-    public Gfci(IndependenceWrapper test, ScoreWrapper score) {
+    public GFCI(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -64,6 +64,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
             }
 
             GFci search = new GFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            search.setDepth(parameters.getInt(Params.DEPTH));
             search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -81,7 +82,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
             return search.search();
         } else {
-            Gfci algorithm = new Gfci(this.test, this.score);
+            GFCI algorithm = new GFCI(this.test, this.score);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -114,6 +115,7 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         List<String> parameters = new ArrayList<>();
 
         parameters.add(Params.FAITHFULNESS_ASSUMED);
+        parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_DEGREE);
 //        parameters.add("printStream");
         parameters.add(Params.MAX_PATH_LENGTH);

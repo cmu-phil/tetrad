@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
@@ -71,7 +71,7 @@ public final class TestSearchGraph {
                 theRest.remove(x);
                 theRest.remove(y);
 
-                DepthChoiceGenerator gen = new DepthChoiceGenerator(theRest.size(), depth);
+                SublistGenerator gen = new SublistGenerator(theRest.size(), depth);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
@@ -116,7 +116,7 @@ public final class TestSearchGraph {
 
                 List<Node> theRest = new ArrayList<>(nodes);
 
-                DepthChoiceGenerator gen = new DepthChoiceGenerator(theRest.size(), depth);
+                SublistGenerator gen = new SublistGenerator(theRest.size(), depth);
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {

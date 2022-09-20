@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestDSep;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.PermutationGenerator;
 
 import java.util.*;
@@ -54,7 +54,7 @@ public class IndependenceFacts implements DataModel {
 
         nodes = graph.getNodes();
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(nodes.size(), nodes.size());
+        SublistGenerator gen = new SublistGenerator(nodes.size(), nodes.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {

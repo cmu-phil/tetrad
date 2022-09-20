@@ -23,14 +23,14 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
+
+import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
 
 /**
  * Does an FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
@@ -89,58 +89,40 @@ public final class Bfci2 implements GraphSearch {
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getTest() + ".");
 
+        TeyssierScorer scorer = new TeyssierScorer(test, score);
+
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        Boss boss = new Boss(test, score);
+        Boss boss = new Boss(scorer);
         boss.setAlgType(Boss.AlgType.BOSS);
         boss.setUseScore(useScore);
         boss.setUseRaskuttiUhler(useRaskuttiUhler);
         boss.setUseDataOrder(useDataOrder);
         boss.setDepth(depth);
         boss.setNumStarts(numStarts);
-        boss.setVerbose(false);
+        boss.setVerbose(false); // Get the DAG
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        List<Node> pi = boss.bestOrder(variables);
-        this.graph = boss.getGraph(true);
+        boss.bestOrder(variables);
+        this.graph = boss.getGraph(false);
 
-        // Keep a copy of this CPDAG.
-        Graph cpdag = new EdgeListGraph(this.graph);
-
-        // Orient the CPDAG with all circle endpoints...
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
-
-        // Copy the colliders from the copy of the CPDAG into the o-o graph.
-        this.graph.reorientAllWith(Endpoint.CIRCLE);
-        copyColliders(cpdag);
-
-        // Remove edges by conditioning on subsets of variables in triangles, orienting the
-        // corresponding bidiricted edges.
-        TeyssierScorer scorer = new TeyssierScorer(test, score);
-        scorer.score(pi);
-        triangleReduce(scorer);
-
-//        if (true) return this.graph;
-
+        // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
+        triangleReduce(scorer); // Adds <-> edges to the DAG
 
         if (this.possibleDsepSearchDone) {
-            // Remove edges using the possible dsep rule.
-            removeByPossibleDsep(graph, test);
+            removeByPossibleDsep(this.graph, test, null); // ...On the above graph with --> and <-> edges
         }
 
         // Retain only the unshielded colliders.
         retainUnshieldedColliders();
 
         // Do final FCI orientation rules app
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, test, null, depth);
         FciOrient fciOrient = new FciOrient(sepsets);
-
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
-        fciOrient.setVerbose(this.verbose);
-//        fciOrient.setKnowledge(this.knowledge);
-
+        fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(graph);
 
         this.graph.setPag(true);
@@ -158,11 +140,11 @@ public final class Bfci2 implements GraphSearch {
 
     private void reduceVisit(TeyssierScorer scorer, Node a, Node b) {
         TeyssierScorer scorer2 = new TeyssierScorer(scorer);
-        List<Node> inTriangle = graph.getAdjacentNodes(a);
-        inTriangle.retainAll(graph.getAdjacentNodes(b));
+        List<Node> inTriangle = this.graph.getAdjacentNodes(a);
+        inTriangle.retainAll(this.graph.getAdjacentNodes(b));
 
-        if (graph.isAdjacentTo(a, b)) {
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(inTriangle.size(), inTriangle.size());
+        if (this.graph.isAdjacentTo(a, b)) {
+            SublistGenerator gen = new SublistGenerator(inTriangle.size(), inTriangle.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -170,19 +152,9 @@ public final class Bfci2 implements GraphSearch {
                 List<Node> after = new ArrayList<>(inTriangle);
                 after.removeAll(before);
 
-                LinkedList<Node> perm = new LinkedList<>(inTriangle);
+                List<Node> perm = new ArrayList<>(inTriangle);
 
-                for (Node d : graph.getAdjacentNodes(a)) {
-                    if (graph.getEdge(a, d).pointsTowards(a)) {
-                        if (!perm.contains(d)) {
-                            perm.addFirst(d);
-                        }
-                    }
-                }
-
-                perm.remove(a);
                 perm.add(a);
-                perm.remove(b);
                 perm.add(b);
 
                 for (Node node : after) {
@@ -193,86 +165,17 @@ public final class Bfci2 implements GraphSearch {
                 scorer2.score(perm);
 
                 if (!scorer2.adjacent(a, b)) {
+                    graph.removeEdge(a, b);
+
                     for (Node x : perm) {
                         if (x == a || x == b) continue;
                         if (scorer2.collider(a, x, b)) {
                             graph.setEndpoint(a, x, Endpoint.ARROW);
                             graph.setEndpoint(b, x, Endpoint.ARROW);
-                            graph.removeEdge(a, b);
                         }
                     }
 
-//                    break;
-                }
-            }
-        }
-    }
-
-    private void removeByPossibleDsep(Graph graph, IndependenceTest test) {
-        for (Edge edge : graph.getEdges()) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-
-            {
-                List<Node> possibleDsep = GraphUtils.possibleDsep(a, b, graph, -1);
-
-                DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    if (choice.length < 2) continue;
-                    List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
-                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
-                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                    if (test.checkIndependence(a, b, sepset).independent()) {
-                        graph.removeEdge(edge);
-                        break;
-                    }
-                }
-            }
-
-            if (graph.containsEdge(edge)) {
-                {
-                    List<Node> possibleDsep = GraphUtils.possibleDsep(b, a, graph, -1);
-
-                    DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
-                    int[] choice;
-
-                    while ((choice = gen.next()) != null) {
-                        if (choice.length < 2) continue;
-                        List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
-                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
-                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                        if (test.checkIndependence(a, b, sepset).independent()) {
-                            graph.removeEdge(edge);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void copyColliders(Graph cpdag) {
-        List<Node> nodes = this.graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (cpdag.isDefCollider(a, b, c)) {
-                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                    break;
                 }
             }
         }

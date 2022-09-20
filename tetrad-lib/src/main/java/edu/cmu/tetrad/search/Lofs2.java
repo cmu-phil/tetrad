@@ -360,7 +360,7 @@ public class Lofs2 {
                 adj.add(_node);
             }
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            SublistGenerator gen = new SublistGenerator(adj.size(), adj.size());
             int[] choice;
             double maxScore = Double.NEGATIVE_INFINITY;
             List<Node> parents = null;
@@ -467,7 +467,7 @@ public class Lofs2 {
         boolean left = false;
         boolean right = false;
 
-        DepthChoiceGenerator genx = new DepthChoiceGenerator(neighborsx.size(), neighborsx.size());
+        SublistGenerator genx = new SublistGenerator(neighborsx.size(), neighborsx.size());
         int[] choicex;
 
         while ((choicex = genx.next()) != null) {
@@ -510,7 +510,7 @@ public class Lofs2 {
                 }
             }
 
-            DepthChoiceGenerator geny = new DepthChoiceGenerator(neighborsy.size(), neighborsy.size());
+            SublistGenerator geny = new SublistGenerator(neighborsy.size(), neighborsy.size());
             int[] choicey;
 
             while ((choicey = geny.next()) != null) {

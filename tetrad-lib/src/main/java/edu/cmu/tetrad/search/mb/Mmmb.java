@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MbSearch;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -156,8 +156,8 @@ public final class Mmmb implements MbSearch {
             List<Node> s = null;
 
             // Find an S such PC such that x _||_ t | S
-            DepthChoiceGenerator generator =
-                    new DepthChoiceGenerator(pcpc.size(), this.depth);
+            SublistGenerator generator =
+                    new SublistGenerator(pcpc.size(), this.depth);
             int[] choice;
 
             while ((choice = generator.next()) != null) {
@@ -318,8 +318,8 @@ public final class Mmmb implements MbSearch {
         if (pc.contains(target)) throw new IllegalArgumentException();
         if (x == target) throw new IllegalArgumentException();
 
-        DepthChoiceGenerator generator =
-                new DepthChoiceGenerator(pc.size(), this.depth);
+        SublistGenerator generator =
+                new SublistGenerator(pc.size(), this.depth);
         int[] choice;
 
         while ((choice = generator.next()) != null) {

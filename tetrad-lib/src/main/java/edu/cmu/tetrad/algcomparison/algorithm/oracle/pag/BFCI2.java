@@ -11,7 +11,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BFci;
+import edu.cmu.tetrad.search.Bfci2;
 import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -70,7 +70,7 @@ public class BFCI2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
                 knowledge = timeSeries.getKnowledge();
             }
 
-            BFci search = new BFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            Bfci2 search = new Bfci2(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));

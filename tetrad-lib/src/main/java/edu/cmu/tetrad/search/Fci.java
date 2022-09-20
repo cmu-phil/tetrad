@@ -24,13 +24,14 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
 
 /**
  * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
@@ -232,52 +233,6 @@ public final class Fci implements GraphSearch {
         return graph;
     }
 
-    private void removeByPossibleDsep(Graph graph, IndependenceTest test, SepsetMap sepsets) {
-        for (Edge edge : graph.getEdges()) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-
-            {
-                List<Node> possibleDsep = GraphUtils.possibleDsep(a, b, graph, -1);
-
-                DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    if (choice.length < 2) continue;
-                    List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
-                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
-                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                    if (test.checkIndependence(a, b, sepset).independent()) {
-                        graph.removeEdge(edge);
-                        sepsets.set(a, b, sepset);
-                        break;
-                    }
-                }
-            }
-
-            if (graph.containsEdge(edge)) {
-                {
-                    List<Node> possibleDsep = GraphUtils.possibleDsep(b, a, graph, -1);
-
-                    DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
-                    int[] choice;
-
-                    while ((choice = gen.next()) != null) {
-                        if (choice.length < 2) continue;
-                        List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
-                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
-                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                        if (test.checkIndependence(a, b, sepset).independent()) {
-                            graph.removeEdge(edge);
-                            sepsets.set(a, b, sepset);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * Retrieves the sepset map from FAS.

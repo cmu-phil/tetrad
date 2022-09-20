@@ -3,7 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -360,7 +360,7 @@ public class Bes {
 
         int _depth = min(depth, _naYX.size());
 
-        final DepthChoiceGenerator gen = new DepthChoiceGenerator(_naYX.size(), _depth);//_naYX.size());
+        final SublistGenerator gen = new SublistGenerator(_naYX.size(), _depth);//_naYX.size());
         int[] choice;
         Set<Node> maxComplement = null;
         double maxBump = Double.NEGATIVE_INFINITY;

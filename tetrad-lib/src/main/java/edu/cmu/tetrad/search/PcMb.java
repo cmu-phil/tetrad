@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -251,7 +251,7 @@ public final class PcMb implements MbSearch, GraphSearch {
                         if (_a.size() > 1) continue;
 
                         List<Node> adjT = graph.getAdjacentNodes(target);
-                        DepthChoiceGenerator cg = new DepthChoiceGenerator(
+                        SublistGenerator cg = new SublistGenerator(
                                 adjT.size(), this.depth);
                         int[] choice;
 

@@ -28,7 +28,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -698,7 +698,7 @@ public final class Fask implements GraphSearch {
         adj.remove(X);
         adj.remove(Y);
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), Math.min(this.depth, adj.size()));
+        SublistGenerator gen = new SublistGenerator(adj.size(), Math.min(this.depth, adj.size()));
         int[] choice;
 
         while ((choice = gen.next()) != null) {

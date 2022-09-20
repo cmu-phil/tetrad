@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.Matrix;
 
 import java.io.OutputStream;
@@ -67,7 +67,7 @@ public class ShiftSearch {
 
         printShifts(bestshifts, b, nodes);
 
-        DepthChoiceGenerator generator = new DepthChoiceGenerator(nodes.size(), getMaxNumShifts());
+        SublistGenerator generator = new SublistGenerator(nodes.size(), getMaxNumShifts());
         int[] choice;
 
         while ((choice = generator.next()) != null) {

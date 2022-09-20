@@ -25,7 +25,9 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.SepsetMap;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -4782,6 +4784,70 @@ public final class GraphUtils {
 
         return _dsep;
     }
+
+    /**
+     * Remove edges by the possible d-separation rule.
+     * @param graph The graph from which edges should be removed.
+     * @param test The independence test to use to remove edges.
+     * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets
+     *                will not be recorded.
+     */
+    public static void removeByPossibleDsep(Graph graph, IndependenceTest test, SepsetMap sepsets) {
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            {
+                List<Node> possibleDsep = GraphUtils.possibleDsep(a, b, graph, -1);
+
+                SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    if (choice.length < 2) continue;
+                    List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                    if (test.checkIndependence(a, b, sepset).independent()) {
+                        graph.removeEdge(edge);
+
+                        if (sepsets != null) {
+                            sepsets.set(a, b, sepset);
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            if (graph.containsEdge(edge)) {
+                {
+                    List<Node> possibleDsep = GraphUtils.possibleDsep(b, a, graph, -1);
+
+                    SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                    int[] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        if (choice.length < 2) continue;
+                        List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                        if (test.checkIndependence(a, b, sepset).independent()) {
+                            graph.removeEdge(edge);
+
+                            if (sepsets != null) {
+                                sepsets.set(a, b, sepset);
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 
     private static boolean existOnePathWithPossibleParents(Map<Node, Set<Node>> previous, Node w, Node x, Node b, Graph graph) {
         if (w == x) {

@@ -26,13 +26,13 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+
+import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
 
 /**
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
@@ -81,9 +81,6 @@ public final class BFci implements GraphSearch {
 
     // The score.
     private final Score score;
-
-    private SepsetProducer sepsets;
-
     private int numStarts = 1;
     private int depth = -1;
     private boolean useRaskuttiUhler = false;
@@ -127,14 +124,14 @@ public final class BFci implements GraphSearch {
         assert variables != null;
 
         alg.bestOrder(variables);
-        this.graph = alg.getGraph(true);
+        this.graph = alg.getGraph(false);
 
         // Keep a copy of this CPDAG.
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-       this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxDegree);
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
 
-        // "Extra" GFCI rule...
+        // GFCI extra edge removal step...
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -158,23 +155,23 @@ public final class BFci implements GraphSearch {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (this.graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
-                    if (this.sepsets.getSepset(a, c) != null) {
+                    List<Node> sepset = sepsets.getSepset(a, c);
+                    if (sepset != null) {
                         this.graph.removeEdge(a, c);
                     }
                 }
             }
         }
 
-        modifiedR0(fgesGraph);
+        modifiedR0(fgesGraph, sepsets);
+
+        if (this.possibleDsepSearchDone) {
+            removeByPossibleDsep(graph, independenceTest, null);
+        }
 
         retainUnshieldedColliders();
 
-        if (this.possibleDsepSearchDone) {
-            // Remove edges using the possible dsep rule.
-            removeByPossibleDsep(graph, independenceTest);
-        }
-
-        FciOrient fciOrient = new FciOrient(this.sepsets);
+        FciOrient fciOrient = new FciOrient(sepsets);
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
@@ -192,50 +189,6 @@ public final class BFci implements GraphSearch {
         return this.graph;
     }
 
-    private void removeByPossibleDsep(Graph graph, IndependenceTest test) {
-        for (Edge edge : graph.getEdges()) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-
-            {
-                List<Node> possibleDsep = GraphUtils.possibleDsep(a, b, graph, -1);
-
-                DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
-                int[] choice;
-
-                while ((choice = gen.next()) != null) {
-                    if (choice.length < 2) continue;
-                    List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
-                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
-                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                    if (test.checkIndependence(a, b, sepset).independent()) {
-                        graph.removeEdge(edge);
-                        break;
-                    }
-                }
-            }
-
-            if (graph.containsEdge(edge)) {
-                {
-                    List<Node> possibleDsep = GraphUtils.possibleDsep(b, a, graph, -1);
-
-                    DepthChoiceGenerator gen = new DepthChoiceGenerator(possibleDsep.size(), possibleDsep.size());
-                    int[] choice;
-
-                    while ((choice = gen.next()) != null) {
-                        if (choice.length < 2) continue;
-                        List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
-                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
-                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                        if (test.checkIndependence(a, b, sepset).independent()) {
-                            graph.removeEdge(edge);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * @param maxDegree The maximum indegree of the output graph.
@@ -257,7 +210,7 @@ public final class BFci implements GraphSearch {
     }
 
     // Due to Spirtes.
-    public void modifiedR0(Graph fgesGraph) {
+    public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
         this.graph = new EdgeListGraph(graph);
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
@@ -282,7 +235,7 @@ public final class BFci implements GraphSearch {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = this.sepsets.getSepset(a, c);
+                    List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);

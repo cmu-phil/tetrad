@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -146,7 +146,7 @@ public final class OrientCollidersMaxP {
         double p = 0;
         List<Node> S = null;
 
-        DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), this.depth);
+        SublistGenerator cg1 = new SublistGenerator(adja.size(), this.depth);
         int[] comb2;
 
         while ((comb2 = cg1.next()) != null) {
@@ -165,7 +165,7 @@ public final class OrientCollidersMaxP {
             }
         }
 
-        DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adjc.size(), this.depth);
+        SublistGenerator cg2 = new SublistGenerator(adjc.size(), this.depth);
         int[] comb3;
 
         while ((comb3 = cg2.next()) != null) {

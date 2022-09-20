@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.*;
@@ -205,7 +205,7 @@ public class GraphoidAxioms {
 
             List<Node> YWList = new ArrayList<>(YW);
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(YWList.size(), YWList.size());
+            SublistGenerator gen = new SublistGenerator(YWList.size(), YWList.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -281,7 +281,7 @@ public class GraphoidAxioms {
 
             List<Node> YWList = new ArrayList<>(YW);
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(YW.size(), YW.size());
+            SublistGenerator gen = new SublistGenerator(YW.size(), YW.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -393,7 +393,7 @@ public class GraphoidAxioms {
 
             List<Node> ZWList = new ArrayList<>(ZW);
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(ZWList.size(), ZWList.size());
+            SublistGenerator gen = new SublistGenerator(ZWList.size(), ZWList.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
