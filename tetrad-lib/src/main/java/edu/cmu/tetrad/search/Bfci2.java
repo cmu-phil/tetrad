@@ -20,9 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.SplitCasesSpec;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -30,8 +33,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
-import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
+import static edu.cmu.tetrad.graph.GraphUtils.*;
 
 /**
  * Does an FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
@@ -77,6 +79,7 @@ public final class Bfci2 implements GraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
+    private IKnowledge knowledge =  new Knowledge2();
 
     //============================CONSTRUCTORS============================//
     public Bfci2(IndependenceTest test, Score score) {
@@ -107,8 +110,11 @@ public final class Bfci2 implements GraphSearch {
         boss.bestOrder(variables);
         Graph graph = boss.getGraph(false);
 
+        knowledge = new Knowledge2((Knowledge2) knowledge);
+        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
+
         // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
-        triangleReduce(graph, scorer); // Adds <-> edges to the DAG
+        triangleReduce(graph, scorer, knowledge); // Adds <-> edges to the DAG
 
         if (this.possibleDsepSearchDone) {
             removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
@@ -130,7 +136,7 @@ public final class Bfci2 implements GraphSearch {
         return graph;
     }
 
-    private static void triangleReduce(Graph graph, TeyssierScorer scorer) {
+    private static void triangleReduce(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
         boolean changed = true;
 
         while (changed) {
@@ -146,6 +152,10 @@ public final class Bfci2 implements GraphSearch {
                     SublistGenerator gen = new SublistGenerator(inTriangle.size(), inTriangle.size());
                     int[] choice;
 
+                    float maxScore = Float.NEGATIVE_INFINITY;
+                    List<Node> maxAfter = null;
+                    boolean remove = false;
+
                     while ((choice = gen.next()) != null) {
                         List<Node> before = GraphUtils.asList(choice, inTriangle);
                         List<Node> after = new ArrayList<>(inTriangle);
@@ -156,29 +166,37 @@ public final class Bfci2 implements GraphSearch {
                         perm.add(b);
                         perm.addAll(after);
 
-                        scorer.score(perm);
+                        float score = scorer.score(perm);
 
-                        if (!scorer.adjacent(a, b)) {
-                            for (Node x : perm) {
-                                if (x == a || x == b) continue;
-
-                                // Only remove an edge and orient a new collider if it will create a bidirected edge.
-                                if (scorer.collider(a, x, b)) {
-                                    if (graph.getEndpoint(x, a) != Endpoint.ARROW && graph.getEndpoint(x, b) != Endpoint.ARROW) {
-                                        continue;
-                                    }
-
-                                    graph.removeEdge(a, b);
-
-                                    graph.setEndpoint(a, x, Endpoint.ARROW);
-                                    graph.setEndpoint(b, x, Endpoint.ARROW);
-
-                                    changed = true;
-                                }
-                            }
-
-                            break;
+                        if (score > maxScore && !scorer.adjacent(a, b)) {
+                            maxScore = score;
+                            maxAfter = after;
+                            remove = true;//!scorer.adjacent(a, b);
                         }
+                    }
+
+                    if (remove) {
+                        for (Node x : maxAfter) {
+
+                            // Only remove an edge and orient a new collider if it will create a bidirected edge.
+                            if (graph.getEndpoint(x, a) == Endpoint.ARROW || graph.getEndpoint(x, b) == Endpoint.ARROW) {
+                                graph.removeEdge(a, b);
+                                graph.setEndpoint(a, x, Endpoint.ARROW);
+                                graph.setEndpoint(b, x, Endpoint.ARROW);
+
+                                if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
+                                    graph.setEndpoint(x, a, Endpoint.ARROW);
+                                }
+
+                                if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
+                                    graph.setEndpoint(x, b, Endpoint.ARROW);
+                                }
+
+                                changed = true;
+                            }
+                        }
+
+                        break;
                     }
                 }
             }
@@ -291,5 +309,10 @@ public final class Bfci2 implements GraphSearch {
 
     public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
+    }
+
+    public void setKnowledge(IKnowledge knowledge) {
+        if (knowledge == null) throw new NullPointerException("Knowledge was null");
+        this.knowledge = knowledge;
     }
 }

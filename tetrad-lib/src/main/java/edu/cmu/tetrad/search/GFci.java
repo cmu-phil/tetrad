@@ -32,8 +32,7 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
-import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
+import static edu.cmu.tetrad.graph.GraphUtils.*;
 
 /**
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
@@ -115,6 +114,9 @@ public final class GFci implements GraphSearch {
         this.graph = fges.search();
 
         Graph fgesGraph = new EdgeListGraph(this.graph);
+
+        knowledge = new Knowledge2((Knowledge2) knowledge);
+        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
 
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
         gfciExtraEdgeRemovalStep(this.graph, fgesGraph, nodes, sepsets);

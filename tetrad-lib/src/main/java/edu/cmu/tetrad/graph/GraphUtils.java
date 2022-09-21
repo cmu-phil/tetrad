@@ -22,6 +22,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.*;
@@ -5110,6 +5111,29 @@ public final class GraphUtils {
                 if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
+                }
+            }
+        }
+    }
+
+    public static void addForbiddenReverseEdgesForDirectedEdges(Graph graph, IKnowledge knowledge) {
+        List<Node> nodes = graph.getNodes();
+
+        int numOfNodes = nodes.size();
+        for (int i = 0; i < numOfNodes; i++) {
+            for (int j = i + 1; j < numOfNodes; j++) {
+                Node n1 = nodes.get(i);
+                Node n2 = nodes.get(j);
+
+                if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
+                    continue;
+                }
+
+                Edge edge = graph.getEdge(n1, n2);
+                if (edge != null && edge.isDirected()) {
+                    if (!knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
+                        knowledge.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
+                    }
                 }
             }
         }

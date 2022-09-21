@@ -126,6 +126,9 @@ public final class BFci implements GraphSearch {
         alg.bestOrder(variables);
         this.graph = alg.getGraph(false);
 
+        knowledge = new Knowledge2((Knowledge2) knowledge);
+        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
+
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);
 
@@ -204,12 +207,28 @@ public final class BFci implements GraphSearch {
                 if (fgesGraph.isDefCollider(a, b, c)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
+                        graph.setEndpoint(b, a, Endpoint.ARROW);
+                    }
+
+                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
+                        graph.setEndpoint(b, c, Endpoint.ARROW);
+                    }
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
                     List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);
                         this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                    }
+
+                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
+                        graph.setEndpoint(b, a, Endpoint.ARROW);
+                    }
+
+                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
+                        graph.setEndpoint(b, c, Endpoint.ARROW);
                     }
                 }
             }
@@ -222,7 +241,7 @@ public final class BFci implements GraphSearch {
 
     public void setKnowledge(IKnowledge knowledge) {
         if (knowledge == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Knowledge was null");
         }
 
         this.knowledge = knowledge;
@@ -386,4 +405,5 @@ public final class BFci implements GraphSearch {
     public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
+
 }

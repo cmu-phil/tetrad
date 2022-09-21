@@ -80,6 +80,8 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
             search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
+            search.setKnowledge(knowledge);
+
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
             Object obj = parameters.get(Params.PRINT_STREAM);

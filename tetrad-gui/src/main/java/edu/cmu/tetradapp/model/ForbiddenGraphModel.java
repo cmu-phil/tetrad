@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -35,6 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 
 /**
  * @author kaalpurush
@@ -157,35 +160,38 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
     }
 
     private void createKnowledge(Parameters params) {
-        IKnowledge knwl = getKnowledge();
-        if (knwl == null) {
+        IKnowledge knowledge = getKnowledge();
+        if (knowledge == null) {
             return;
         }
 
-        knwl.clear();
+        knowledge.clear();
 
         if (this.resultGraph == null) {
             throw new NullPointerException("I couldn't find a parent graph.");
         }
 
-        List<Node> nodes = this.resultGraph.getNodes();
+        addForbiddenReverseEdgesForDirectedEdges(resultGraph, knowledge);
 
-        int numOfNodes = nodes.size();
-        for (int i = 0; i < numOfNodes; i++) {
-            for (int j = i + 1; j < numOfNodes; j++) {
-                Node n1 = nodes.get(i);
-                Node n2 = nodes.get(j);
 
-                if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
-                    continue;
-                }
-
-                Edge edge = this.resultGraph.getEdge(n1, n2);
-                if (edge != null && edge.isDirected()) {
-                    knwl.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
-                }
-            }
-        }
+//        List<Node> nodes = this.resultGraph.getNodes();
+//
+//        int numOfNodes = nodes.size();
+//        for (int i = 0; i < numOfNodes; i++) {
+//            for (int j = i + 1; j < numOfNodes; j++) {
+//                Node n1 = nodes.get(i);
+//                Node n2 = nodes.get(j);
+//
+//                if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
+//                    continue;
+//                }
+//
+//                Edge edge = this.resultGraph.getEdge(n1, n2);
+//                if (edge != null && edge.isDirected()) {
+//                    knowledge.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
+//                }
+//            }
+//        }
     }
 
     /**

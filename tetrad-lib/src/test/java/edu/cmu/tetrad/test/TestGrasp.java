@@ -2193,12 +2193,12 @@ public final class TestGrasp {
     public void testBFci() {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_MEASURES, 50);
-        params.set(Params.AVG_DEGREE, 4);
-        params.set(Params.NUM_LATENTS, 5);
+        params.set(Params.NUM_MEASURES, 20);
+        params.set(Params.AVG_DEGREE, 6);
+        params.set(Params.NUM_LATENTS, 8);
         params.set(Params.RANDOMIZE_COLUMNS, true);
-        params.set(Params.COEF_LOW, 0.2);
-        params.set(Params.COEF_HIGH, 1.0);
+        params.set(Params.COEF_LOW, 0.);
+        params.set(Params.COEF_HIGH, 1.);
         params.set(Params.VAR_LOW, 1);
         params.set(Params.VAR_HIGH, 3);
         params.set(Params.VERBOSE, false);
@@ -2218,17 +2218,20 @@ public final class TestGrasp {
         params.set(Params.TIMEOUT, 30);
         params.set(Params.NUM_STARTS, 1);
 
-        params.set(Params.PENALTY_DISCOUNT, 3);
+        params.set(Params.PENALTY_DISCOUNT, 2);
         params.set(Params.ALPHA, 0.2);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new BOSS(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new Fci(new FisherZ()));
-        algorithms.add(new FciMax(new FisherZ()));
-        algorithms.add(new Rfci(new FisherZ()));
-        algorithms.add(new GFCI(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BFCI(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new BFCI2(new SemBicTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        edu.cmu.tetrad.algcomparison.score.SemBicScore score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+        SemBicTest test = new SemBicTest();
+
+        algorithms.add(new BOSS(test, score));
+        algorithms.add(new Fci(test));
+        algorithms.add(new FciMax(test));
+        algorithms.add(new Rfci(test));
+        algorithms.add(new GFCI(test, score));
+        algorithms.add(new BFCI(test, score));
+        algorithms.add(new BFCI2(test, score));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -2244,11 +2247,14 @@ public final class TestGrasp {
         statistics.add(new BidirectedTP());
         statistics.add(new BidirectedFP());
         statistics.add(new BidirectedPrecision());
+        statistics.add(new BidirectedCorrectLatentPredictions());
+        statistics.add(new BidirectedIncorrectLatentPredictions());
+        statistics.add(new BidirectedLatentPredictionsPrecision());
         statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testBfci", simulations,
                 algorithms, statistics, params);
