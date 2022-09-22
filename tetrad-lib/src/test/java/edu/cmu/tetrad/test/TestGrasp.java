@@ -31,6 +31,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -2197,8 +2198,8 @@ public final class TestGrasp {
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.NUM_LATENTS, 8);
         params.set(Params.RANDOMIZE_COLUMNS, true);
-        params.set(Params.COEF_LOW, 0.);
-        params.set(Params.COEF_HIGH, 1.);
+        params.set(Params.COEF_LOW, 0);
+        params.set(Params.COEF_HIGH, 1);
         params.set(Params.VAR_LOW, 1);
         params.set(Params.VAR_HIGH, 3);
         params.set(Params.VERBOSE, false);
@@ -2215,15 +2216,14 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_DATA_ORDER, false);
-        params.set(Params.TIMEOUT, 30);
         params.set(Params.NUM_STARTS, 1);
 
         params.set(Params.PENALTY_DISCOUNT, 2);
         params.set(Params.ALPHA, 0.2);
 
         Algorithms algorithms = new Algorithms();
-        edu.cmu.tetrad.algcomparison.score.SemBicScore score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
-        SemBicTest test = new SemBicTest();
+        ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.MagSemBicScore();
+        IndependenceWrapper test = new MagSemBicTest();
 
         algorithms.add(new BOSS(test, score));
         algorithms.add(new Fci(test));
@@ -2247,14 +2247,14 @@ public final class TestGrasp {
         statistics.add(new BidirectedTP());
         statistics.add(new BidirectedFP());
         statistics.add(new BidirectedPrecision());
-        statistics.add(new BidirectedCorrectLatentPredictions());
-        statistics.add(new BidirectedIncorrectLatentPredictions());
-        statistics.add(new BidirectedLatentPredictionsPrecision());
+        statistics.add(new BidirectedTruePositiveLatentPrediction());
+        statistics.add(new BidirectedFalsePositiveLatentPrediction());
+        statistics.add(new BidirectedPositiveLatentPrecision());
         statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testBfci", simulations,
                 algorithms, statistics, params);

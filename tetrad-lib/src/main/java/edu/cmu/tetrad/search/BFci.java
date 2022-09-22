@@ -126,6 +126,10 @@ public final class BFci implements GraphSearch {
         alg.bestOrder(variables);
         this.graph = alg.getGraph(false);
 
+        if (score instanceof  edu.cmu.tetrad.search.MagSemBicScore) {
+            ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
+        }
+
         knowledge = new Knowledge2((Knowledge2) knowledge);
         addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
 

@@ -12,22 +12,22 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public class BidirectedIncorrectLatentPredictions implements Statistic {
+public class BidirectedPositiveLatentPrecision implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "BILP";
+        return "BPLP";
     }
 
     @Override
     public String getDescription() {
-        return "Bidirected Incorrect Latent Predictions";
+        return "Bidirected Positive Latent Precision (BTPLP / (BTPLP + BFPLP)";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int count = 0;
+        int tp = 0;
         int all = 0;
 
         for (Edge edge : estGraph.getEdges()) {
@@ -41,14 +41,16 @@ public class BidirectedIncorrectLatentPredictions implements Statistic {
 
                 for (Node c : commonAncestors) {
                     if (c.getNodeType() == NodeType.LATENT) {
-                        count++;
+                        tp++;
                         break;
                     }
                 }
             }
         }
 
-        return all - count;
+        int fp = all - tp;
+
+        return tp / (double) (tp + fp);
     }
 
     @Override

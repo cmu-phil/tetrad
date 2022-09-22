@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.score.MagSemBicScore;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
@@ -109,6 +110,12 @@ public final class Bfci2 implements GraphSearch {
 
         boss.bestOrder(variables);
         Graph graph = boss.getGraph(false);
+
+        if (score instanceof  edu.cmu.tetrad.search.MagSemBicScore) {
+            ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
+        }
+
+        test = new IndTestScore(score);
 
         knowledge = new Knowledge2((Knowledge2) knowledge);
         addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
