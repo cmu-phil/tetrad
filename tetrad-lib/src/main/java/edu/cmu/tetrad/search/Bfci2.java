@@ -123,9 +123,9 @@ public final class Bfci2 implements GraphSearch {
         // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
         triangleReduce(graph, scorer, knowledge); // Adds <-> edges to the DAG
 
-        if (this.possibleDsepSearchDone) {
-            removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
-        }
+//        if (this.possibleDsepSearchDone) {
+//            removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
+//        }
 
         // Retain only the unshielded colliders.
         retainUnshieldedColliders(graph);
@@ -178,7 +178,7 @@ public final class Bfci2 implements GraphSearch {
                         if (score > maxScore && !scorer.adjacent(a, b)) {
                             maxScore = score;
                             maxAfter = after;
-                            remove = true;//!scorer.adjacent(a, b);
+                            remove = !scorer.adjacent(a, b);
                         }
                     }
 
@@ -186,7 +186,7 @@ public final class Bfci2 implements GraphSearch {
                         for (Node x : maxAfter) {
 
                             // Only remove an edge and orient a new collider if it will create a bidirected edge.
-                            if (graph.getEndpoint(x, a) == Endpoint.ARROW || graph.getEndpoint(x, b) == Endpoint.ARROW) {
+//                            if (graph.getEndpoint(x, a) == Endpoint.ARROW || graph.getEndpoint(x, b) == Endpoint.ARROW) {
                                 graph.removeEdge(a, b);
                                 graph.setEndpoint(a, x, Endpoint.ARROW);
                                 graph.setEndpoint(b, x, Endpoint.ARROW);
@@ -200,7 +200,7 @@ public final class Bfci2 implements GraphSearch {
                                 }
 
                                 changed = true;
-                            }
+//                            }
                         }
 
                         break;
