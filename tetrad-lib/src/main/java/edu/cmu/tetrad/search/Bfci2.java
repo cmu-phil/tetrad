@@ -54,7 +54,7 @@ public final class Bfci2 implements GraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     // The covariance matrix being searched over, if continuous data is supplied. This is
-    // no used by the algorithm but can be retrieved by another method if desired
+    // no used by the algorithm beut can be retrieved by another method if desired
     ICovarianceMatrix covarianceMatrix;
 
     // The test used if Pearl's method is used ot build DAGs

@@ -5090,6 +5090,17 @@ public final class GraphUtils {
      * @param graph The graph to retain unshielded colliders in.
      */
     public static void retainUnshieldedColliders(Graph graph) {
+        for (Edge edge : graph.getEdges()) {
+            if (edge.getEndpoint1() != Endpoint.ARROW) {
+                edge.setEndpoint1(Endpoint.CIRCLE);
+            }
+
+            if (edge.getEndpoint2() != Endpoint.ARROW) {
+                edge.setEndpoint2(Endpoint.CIRCLE);
+            }
+        }
+
+
         Graph orig = new EdgeListGraph(graph);
         graph.reorientAllWith(Endpoint.CIRCLE);
         List<Node> nodes = graph.getNodes();

@@ -293,8 +293,6 @@ public class LvBesJoe {
 
     private void addArrowBackward(Node a, Node b, Set<Node> hOrT, Set<Node> naYX, Set<Node> parents,
                                   double bump, int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) {
-        System.out.println("Adding " + a + " " + b + " to sortedArrowsBackw");
-
         Arrow arrow = new Arrow(bump, a, b, hOrT, null, naYX, parents, arrowIndex[0]++);
         sortedArrowsBack.add(arrow);
     }
