@@ -164,51 +164,6 @@ public class LvBesJoe {
         return knowledge;
     }
 
-    private void fciOrient(Graph graph) {
-        FciOrient rules = new FciOrient(new SepsetsGreedy(graph, new IndTestScore(score), null, depth));
-        rules.setKnowledge(getKnowledge());
-        boolean meekVerbose = false;
-        rules.setVerbose(meekVerbose);
-        rules.orient(graph);
-    }
-
-    private boolean validDelete(Node x, Node y, Set<Node> H, Set<Node> naYX, Graph graph) {
-        boolean violatesKnowledge = false;
-
-        if (existsKnowledge()) {
-            for (Node h : H) {
-                if (knowledge.isForbidden(x.getName(), h.getName())) {
-                    violatesKnowledge = true;
-                }
-
-                if (knowledge.isForbidden(y.getName(), h.getName())) {
-                    violatesKnowledge = true;
-                }
-            }
-        }
-
-        Set<Node> diff = new HashSet<>(naYX);
-        diff.removeAll(H);
-        return isClique(diff, graph) && !violatesKnowledge;
-    }
-
-    private boolean existsKnowledge() {
-        return !knowledge.isEmpty();
-    }
-
-    private boolean isClique(Set<Node> nodes, Graph graph) {
-        List<Node> _nodes = new ArrayList<>(nodes);
-        for (int i = 0; i < _nodes.size(); i++) {
-            for (int j = i + 1; j < _nodes.size(); j++) {
-                if (!graph.isAdjacentTo(_nodes.get(i), _nodes.get(j))) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
     private Set<Node> getCommonAdjacents(Node x, Node y, Graph graph) {
         List<Node> adj = graph.getAdjacentNodes(y);
         Set<Node> ca = new HashSet<>();
@@ -322,8 +277,6 @@ public class LvBesJoe {
         while ((choice = gen.next()) != null) {
             Set<Node> complement = GraphUtils.asSet(choice, _ca);
             double _bump = deleteEval(a, b, complement, parents, hashIndices);
-
-            System.out.println("complement = " + complement + " bump = " + _bump + " parent = " + parents);
 
             if (_bump > maxBump) {
                 maxBump = _bump;

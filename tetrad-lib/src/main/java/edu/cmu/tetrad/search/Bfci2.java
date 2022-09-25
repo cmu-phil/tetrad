@@ -123,7 +123,9 @@ public final class Bfci2 implements GraphSearch {
         // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
 //        triangleReduce2(graph, scorer, knowledge); // Adds <-> edges to the DAG
 
-        new LvBesJoe(score).bes(graph, variables);
+        LvBesJoe lvBesJoe = new LvBesJoe(score);
+        lvBesJoe.setKnowledge(knowledge);
+        lvBesJoe.bes(graph, variables);
 
 //        if (this.possibleDsepSearchDone) {
 //            removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
