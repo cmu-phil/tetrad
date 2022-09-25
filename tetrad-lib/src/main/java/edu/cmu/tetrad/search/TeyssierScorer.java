@@ -204,10 +204,7 @@ public class TeyssierScorer {
     }
 
     /**
-     * Performs a tuck operation. If pi[x] &lt; pi[y], moves y to index of x; otherwise moves x to index of y.
-     *
-     * @param x The first variable.
-     * @param y The second variable.
+     * Performs a tuck operation.
      */
     public void tuck(Node x, Node y) {
         if (index(x) < index(y)) {
@@ -215,6 +212,21 @@ public class TeyssierScorer {
         } else if (index(x) > index(y)) {
             moveTo(x, index(y));
         }
+    }
+
+    public boolean tuck(Node k, int j) {
+        if (adjacent(k, get(j))) return false;
+//        if (scorer.coveredEdge(k, scorer.get(j))) return false;
+        if (j >= index(k)) return false;
+
+        Set<Node> ancestors = getAncestors(k);
+        for (int i = j + 1; i <= index(k); i++) {
+            if (ancestors.contains(get(i))) {
+                moveTo(get(i), j++);
+            }
+        }
+
+        return true;
     }
 
     /**

@@ -20,21 +20,21 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.score.MagSemBicScore;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.data.SplitCasesSpec;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import static edu.cmu.tetrad.graph.GraphUtils.*;
+import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
+import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
 
 /**
  * Does an FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
@@ -80,7 +80,7 @@ public final class Bfci2 implements GraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
-    private IKnowledge knowledge =  new Knowledge2();
+    private IKnowledge knowledge = new Knowledge2();
 
     //============================CONSTRUCTORS============================//
     public Bfci2(IndependenceTest test, Score score) {
@@ -97,7 +97,7 @@ public final class Bfci2 implements GraphSearch {
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss boss = new Boss(scorer);
-        boss.setAlgType(Boss.AlgType.BOSS);
+        boss.setAlgType(Boss.AlgType.BOSS_OLD);
         boss.setUseScore(useScore);
         boss.setUseRaskuttiUhler(useRaskuttiUhler);
         boss.setUseDataOrder(useDataOrder);
@@ -111,7 +111,7 @@ public final class Bfci2 implements GraphSearch {
         boss.bestOrder(variables);
         Graph graph = boss.getGraph(false);
 
-        if (score instanceof  edu.cmu.tetrad.search.MagSemBicScore) {
+        if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
         }
 
@@ -121,7 +121,9 @@ public final class Bfci2 implements GraphSearch {
         addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
 
         // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
-        triangleReduce(graph, scorer, knowledge); // Adds <-> edges to the DAG
+//        triangleReduce2(graph, scorer, knowledge); // Adds <-> edges to the DAG
+
+        new LvBesJoe(score).bes(graph, variables);
 
 //        if (this.possibleDsepSearchDone) {
 //            removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
@@ -143,7 +145,7 @@ public final class Bfci2 implements GraphSearch {
         return graph;
     }
 
-    private static void triangleReduce(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
+    private static void triangleReduce1(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
         boolean changed = true;
 
         while (changed) {
@@ -152,11 +154,18 @@ public final class Bfci2 implements GraphSearch {
             for (Edge edge : graph.getEdges()) {
                 Node a = edge.getNode1();
                 Node b = edge.getNode2();
-                List<Node> inTriangle = graph.getAdjacentNodes(a);
-                inTriangle.retainAll(graph.getAdjacentNodes(b));
 
                 if (graph.isAdjacentTo(a, b)) {
-                    SublistGenerator gen = new SublistGenerator(inTriangle.size(), inTriangle.size());
+                    List<Node> inTriangle = graph.getAdjacentNodes(a);
+                    inTriangle.retainAll(graph.getAdjacentNodes(b));
+
+                    Set<Node> _all = new HashSet<>(inTriangle);
+                    _all.addAll(graph.getAdjacentNodes(a));
+                    _all.addAll(graph.getAdjacentNodes(b));
+
+                    List<Node> all = new ArrayList<>(_all);
+
+                    SublistGenerator gen = new SublistGenerator(all.size(), all.size());
                     int[] choice;
 
                     float maxScore = Float.NEGATIVE_INFINITY;
@@ -164,7 +173,7 @@ public final class Bfci2 implements GraphSearch {
                     boolean remove = false;
 
                     while ((choice = gen.next()) != null) {
-                        List<Node> before = GraphUtils.asList(choice, inTriangle);
+                        List<Node> before = GraphUtils.asList(choice, all);
                         List<Node> after = new ArrayList<>(inTriangle);
                         after.removeAll(before);
 
@@ -175,7 +184,7 @@ public final class Bfci2 implements GraphSearch {
 
                         float score = scorer.score(perm);
 
-                        if (score > maxScore && !scorer.adjacent(a, b)) {
+                        if (score >= maxScore && !scorer.adjacent(a, b)) {
                             maxScore = score;
                             maxAfter = after;
                             remove = !scorer.adjacent(a, b);
@@ -183,27 +192,263 @@ public final class Bfci2 implements GraphSearch {
                     }
 
                     if (remove) {
+
                         for (Node x : maxAfter) {
+                            changed = true;
 
                             // Only remove an edge and orient a new collider if it will create a bidirected edge.
 //                            if (graph.getEndpoint(x, a) == Endpoint.ARROW || graph.getEndpoint(x, b) == Endpoint.ARROW) {
-                                graph.removeEdge(a, b);
-                                graph.setEndpoint(a, x, Endpoint.ARROW);
-                                graph.setEndpoint(b, x, Endpoint.ARROW);
+                            graph.removeEdge(a, b);
+                            graph.setEndpoint(a, x, Endpoint.ARROW);
+                            graph.setEndpoint(b, x, Endpoint.ARROW);
 
-                                if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
-                                    graph.setEndpoint(x, a, Endpoint.ARROW);
-                                }
+                            if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
+                                graph.setEndpoint(x, a, Endpoint.ARROW);
+                            }
 
-                                if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
-                                    graph.setEndpoint(x, b, Endpoint.ARROW);
-                                }
+                            if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
+                                graph.setEndpoint(x, b, Endpoint.ARROW);
+                            }
 
-                                changed = true;
-//                            }
+                        }
+//                        }
+
+//                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private static void triangleReduce2(Graph graph, TeyssierScorer scorer0, IKnowledge knowledge) {
+        TeyssierScorer scorer = new TeyssierScorer(scorer0);
+
+        boolean changed = true;
+
+        while (changed) {
+            changed = false;
+
+            for (Edge edge : graph.getEdges()) {
+                Node a = edge.getNode1();
+                Node b = edge.getNode2();
+
+                if (graph.isAdjacentTo(a, b)) {
+                    changed = t2visit(graph, scorer0, knowledge, scorer, changed, a, b);
+                }
+
+                if (graph.isAdjacentTo(a, b)) {
+                    changed = t2visit(graph, scorer0, knowledge, scorer, changed, b, a);
+                }
+            }
+        }
+    }
+
+    private static boolean t2visit(Graph graph, TeyssierScorer scorer0, IKnowledge knowledge, TeyssierScorer scorer, boolean changed, Node a, Node b) {
+        List<Node> _inTriangle = graph.getAdjacentNodes(a);
+        _inTriangle.retainAll(graph.getAdjacentNodes(b));
+
+        List<Node> inTriangle = new ArrayList<>();
+        List<Node> all = new ArrayList<>();
+        for (Node n : scorer0.getPi()) {
+            if (_inTriangle.contains(n)) inTriangle.add(n);
+            if (_inTriangle.contains(n) || n == a || n == b
+                    || graph.isParentOf(n, a)) all.add(n);
+        }
+
+        SublistGenerator gen = new SublistGenerator(all.size(), all.size());
+        int[] choice;
+
+        float maxScore = Float.NEGATIVE_INFINITY;
+        List<Node> maxAfter = null;
+        boolean remove = false;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> before = GraphUtils.asList(choice, all);
+            List<Node> after = new ArrayList<>(inTriangle);
+            after.removeAll(before);
+
+            List<Node> perm = new ArrayList<>(all);
+
+            for (Node n : after) {
+                perm.remove(n);
+                perm.add(n);
+            }
+
+            float score = scorer.score(perm);
+
+            if (score >= maxScore && !scorer.adjacent(a, b)) {
+                maxScore = score;
+                maxAfter = after;
+                remove = !scorer.adjacent(a, b);
+            }
+        }
+
+        if (remove) {
+            for (Node x : maxAfter) {
+                changed = true;
+
+                // Only remove an edge and orient a new collider if it will create a bidirected edge.
+                graph.removeEdge(a, b);
+                graph.setEndpoint(a, x, Endpoint.ARROW);
+                graph.setEndpoint(b, x, Endpoint.ARROW);
+
+                if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
+                    graph.setEndpoint(x, a, Endpoint.ARROW);
+                }
+
+                if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
+                    graph.setEndpoint(x, b, Endpoint.ARROW);
+                }
+            }
+        }
+
+        return changed;
+    }
+
+    private static void triangleReduce3(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
+        boolean changed = true;
+
+        scorer.bookmark();
+
+        while (changed) {
+            changed = false;
+
+            for (Edge edge : graph.getEdges()) {
+                Node a = edge.getNode1();
+                Node b = edge.getNode2();
+
+                if (graph.isAdjacentTo(a, b)) {
+                    List<Node> inTriangle = graph.getAdjacentNodes(a);
+                    inTriangle.retainAll(graph.getAdjacentNodes(b));
+
+                    SublistGenerator gen = new SublistGenerator(inTriangle.size(), inTriangle.size());
+                    int[] choice;
+
+                    float maxScore = Float.NEGATIVE_INFINITY;
+                    List<Node> maxBefore = null;
+                    List<Node> maxAfter = null;
+                    boolean remove = false;
+
+                    while ((choice = gen.next()) != null) {
+                        List<Node> before = GraphUtils.asList(choice, inTriangle);
+                        List<Node> after = new ArrayList<>(inTriangle);
+                        after.removeAll(before);
+
+                        for (Node n : before) {
+                            scorer.tuck(n, Math.min(scorer.index(a), scorer.index(b)));
                         }
 
-                        break;
+                        float score = scorer.score();
+
+                        if (score >= maxScore && !scorer.adjacent(a, b)) {
+                            maxScore = score;
+                            maxBefore = before;
+                            maxAfter = after;
+                            remove = !scorer.adjacent(a, b);
+                        }
+
+                        scorer.goToBookmark();
+                    }
+
+                    if (remove) {
+
+                        for (Node n : maxBefore) {
+                            scorer.tuck(n, Math.min(scorer.index(a), scorer.index(b)));
+                        }
+
+                        for (Node x : maxAfter) {
+                            changed = true;
+
+                            // Only remove an edge and orient a new collider if it will create a bidirected edge.
+//                            if (graph.getEndpoint(x, a) == Endpoint.ARROW || graph.getEndpoint(x, b) == Endpoint.ARROW) {
+                            graph.removeEdge(a, b);
+                            graph.setEndpoint(a, x, Endpoint.ARROW);
+                            graph.setEndpoint(b, x, Endpoint.ARROW);
+
+                            if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
+                                graph.setEndpoint(x, a, Endpoint.ARROW);
+                            }
+
+                            if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
+                                graph.setEndpoint(x, b, Endpoint.ARROW);
+                            }
+
+                        }
+                    } else {
+                        scorer.goToBookmark();
+                    }
+                }
+            }
+        }
+    }
+
+    private static void triangleReduce4(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
+        boolean changed = true;
+
+        scorer.bookmark();
+
+        while (changed) {
+            changed = false;
+
+            for (Edge edge : graph.getEdges()) {
+                Node a = edge.getNode1();
+                Node b = edge.getNode2();
+
+                if (!graph.isAdjacentTo(a, b)) continue;
+
+                List<Node> inTriangle = graph.getAdjacentNodes(a);
+                inTriangle.retainAll(graph.getAdjacentNodes(b));
+
+                SublistGenerator gen = new SublistGenerator(inTriangle.size(), inTriangle.size());
+                int[] choice;
+
+                float maxScore = Float.NEGATIVE_INFINITY;
+                List<Node> maxAfter = null;
+                List<Node> maxBefore = null;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> before = GraphUtils.asList(choice, inTriangle);
+                    List<Node> after = new ArrayList<>(inTriangle);
+                    after.removeAll(before);
+
+                    for (Node n : before) {
+                        scorer.tuck(n, Math.min(scorer.index(a), scorer.index(b)));
+                    }
+
+                    float score = scorer.score();
+
+                    if (score >= maxScore) {// && !scorer.adjacent(a, b)) {
+                        maxScore = score;
+                        maxBefore = before;
+                        maxAfter = after;
+                    }
+
+                    scorer.goToBookmark();
+                }
+
+                if (maxBefore != null) {
+                    for (Node n : maxBefore) {
+                        scorer.tuck(n, Math.min(scorer.index(a), scorer.index(b)));
+                    }
+
+                    if (!scorer.adjacent(a, b)) {
+                        for (Node x : maxAfter) {
+                            changed = true;
+
+                            graph.removeEdge(a, b);
+                            graph.setEndpoint(a, x, Endpoint.ARROW);
+                            graph.setEndpoint(b, x, Endpoint.ARROW);
+
+                            if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
+                                graph.setEndpoint(x, a, Endpoint.ARROW);
+                            }
+
+                            if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
+                                graph.setEndpoint(x, b, Endpoint.ARROW);
+                            }
+                        }
+
+                        scorer.goToBookmark();
                     }
                 }
             }

@@ -1019,7 +1019,9 @@ public final class FciOrient {
             }
             // We have A-->B-->C or A--oB-->C: R8 applies!
 
-            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R8", graph.getEdge(c, a)));
+            if (verbose) {
+                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R8", graph.getEdge(c, a)));
+            }
 
             graph.setEndpoint(c, a, Endpoint.TAIL);
             this.changeFlag = true;

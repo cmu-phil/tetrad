@@ -2195,13 +2195,14 @@ public final class TestGrasp {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 1000);
         params.set(Params.NUM_MEASURES, 20);
-        params.set(Params.AVG_DEGREE, 6);
+        params.set(Params.AVG_DEGREE, 5);
         params.set(Params.NUM_LATENTS, 8);
         params.set(Params.RANDOMIZE_COLUMNS, true);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.VAR_LOW, 1);
         params.set(Params.VAR_HIGH, 3);
+//        params.set(Params.MAX_DEGREE, 8);
         params.set(Params.VERBOSE, false);
 
         params.set(Params.NUM_RUNS, 20);
@@ -2222,8 +2223,8 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.2);
 
         Algorithms algorithms = new Algorithms();
-        ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.MagSemBicScore();
-        IndependenceWrapper test = new MagSemBicTest();
+        ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.KimEtAlScores();
+        IndependenceWrapper test = new SemBicTest();
 
         algorithms.add(new BOSS(test, score));
         algorithms.add(new Fci(test));
