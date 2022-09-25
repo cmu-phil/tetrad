@@ -90,13 +90,13 @@ public class LvBesJoe {
 
             delete(x, y, arrow.getHOrT(), _bump, arrow.getCommonAdjacents(), graph);
 
-            Set<Node> process = new HashSet<>();
-            process.add(x);
-            process.add(y);
-            process.addAll(graph.getAdjacentNodes(x));
-            process.addAll(graph.getAdjacentNodes(y));
+//            Set<Node> process = new HashSet<>();
+//            process.add(x);
+//            process.add(y);
+//            process.addAll(graph.getAdjacentNodes(x));
+//            process.addAll(graph.getAdjacentNodes(y));
 
-            reevaluateBackward(new HashSet<>(process), graph, hashIndices, arrowIndex, sortedArrowsBack, arrowsMapBackward);
+//            reevaluateBackward(new HashSet<>(process), graph, hashIndices, arrowIndex, sortedArrowsBack, arrowsMapBackward);
         }
     }
 
