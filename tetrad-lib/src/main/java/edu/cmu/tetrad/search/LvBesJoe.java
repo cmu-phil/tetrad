@@ -89,14 +89,6 @@ public class LvBesJoe {
             double _bump = deleteEval(x, y, complement, arrow.parents, hashIndices);
 
             delete(x, y, arrow.getHOrT(), _bump, arrow.getCommonAdjacents(), graph);
-
-//            Set<Node> process = new HashSet<>();
-//            process.add(x);
-//            process.add(y);
-//            process.addAll(graph.getAdjacentNodes(x));
-//            process.addAll(graph.getAdjacentNodes(y));
-
-//            reevaluateBackward(new HashSet<>(process), graph, hashIndices, arrowIndex, sortedArrowsBack, arrowsMapBackward);
         }
     }
 
@@ -213,8 +205,8 @@ public class LvBesJoe {
                         Edge e = graph.getEdge(w, r);
 
                         if (e != null) {
-                            calculateArrowsBackward(w, r, graph, arrowsMapBackward, hashIndices, arrowIndex, sortedArrowsBack);
-                            calculateArrowsBackward(r, w, graph, arrowsMapBackward, hashIndices, arrowIndex, sortedArrowsBack);
+                            calculateArrowsBackward(w, r, graph, hashIndices, arrowIndex, sortedArrowsBack);
+                            calculateArrowsBackward(r, w, graph, hashIndices, arrowIndex, sortedArrowsBack);
                         }
                     }
 
@@ -246,18 +238,11 @@ public class LvBesJoe {
     }
 
     private void calculateArrowsBackward(Node a, Node b, Graph graph,
-                                         Map<Edge, ArrowConfigBackward> arrowsMapBackward, Map<Node, Integer> hashIndices,
+                                         Map<Node, Integer> hashIndices,
                                          int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) {
-//        if (existsKnowledge()) {
-//            if (!getKnowledge().noEdgeRequired(a.getName(), b.getName())) {
-//                return;
-//            }
-//        }
-
-
         Set<Node> ca = getCommonAdjacents(a, b, graph);
 
-        Set<Node> parents = new HashSet<>(graph.getAdjacentNodes(b));
+        Set<Node> parents = new HashSet<>(graph.getParents(b));
         parents.remove(a);
         parents.remove(b);
 

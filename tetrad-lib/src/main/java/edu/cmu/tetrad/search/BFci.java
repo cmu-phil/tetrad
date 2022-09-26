@@ -143,9 +143,9 @@ public final class BFci implements GraphSearch {
 
         modifiedR0(referenceDag, sepsets);
 
-        if (this.possibleDsepSearchDone) {
-            removeByPossibleDsep(graph, independenceTest, null);
-        }
+//        if (this.possibleDsepSearchDone) {
+//            removeByPossibleDsep(graph, independenceTest, null);
+//        }
 
         retainUnshieldedColliders(this.graph);
 
