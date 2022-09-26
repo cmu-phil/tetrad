@@ -17,7 +17,7 @@ public class BidirectedFalsePositiveLatentPrediction implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "BFPLP";
+        return "BFPL";
     }
 
     @Override

@@ -22,7 +22,7 @@ public class BidirectedPositiveLatentPrecision implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Bidirected Positive Latent Precision (BTPLP / (BTPLP + BFPLP)";
+        return "Bidirected Positive Latent Precision (BTPL / (BTPL + BFPL)";
     }
 
     @Override

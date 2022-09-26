@@ -2219,12 +2219,17 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_DATA_ORDER, false);
         params.set(Params.NUM_STARTS, 1);
 
-        params.set(Params.PENALTY_DISCOUNT, 2);
+        // default for kim et al. is gic = 4, pd = 1.
+        params.set(Params.SEM_GIC_RULE, 4);
+        params.set(Params.PENALTY_DISCOUNT, 1);
         params.set(Params.ALPHA, 0.2);
 
         Algorithms algorithms = new Algorithms();
+//        ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.MagSemBicScore();
+//        IndependenceWrapper test = new MagSemBicTest();
+//
         ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.KimEtAlScores();
-        IndependenceWrapper test = new SemBicTest();
+        IndependenceWrapper test = new KimEtAlScoreTests();
 
         algorithms.add(new BOSS(test, score));
         algorithms.add(new Fci(test));
@@ -2255,7 +2260,7 @@ public final class TestGrasp {
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.PAG_of_the_true_DAG);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testBfci", simulations,
                 algorithms, statistics, params);

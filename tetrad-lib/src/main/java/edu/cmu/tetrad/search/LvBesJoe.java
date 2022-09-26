@@ -105,12 +105,12 @@ public class LvBesJoe {
             System.out.println("Num edges (backwards) = " + numEdges);
         }
 
-        if (verbose) {
-            int cond = diff.size() + graph.getParents(y).size();
-
-            String message = (graph.getNumEdges()) + ". DELETE " + x + " --> " + y + " H = " + H + " NaYX = " + ca + " degree = " + GraphUtils.getDegree(graph) + " indegree = " + GraphUtils.getIndegree(graph) + " diff = " + diff + " (" + bump + ") " + " cond = " + cond;
-            TetradLogger.getInstance().forceLogMessage(message);
-        }
+//        if (verbose) {
+//            int cond = diff.size() + graph.getParents(y).size();
+//
+//            String message = (graph.getNumEdges()) + ". DELETE " + x + " --> " + y + " H = " + H + " NaYX = " + ca + " degree = " + GraphUtils.getDegree(graph) + " indegree = " + GraphUtils.getIndegree(graph) + " diff = " + diff + " (" + bump + ") " + " cond = " + cond;
+//            TetradLogger.getInstance().forceLogMessage(message);
+//        }
 
         for (Node h : H) {
             if (!graph.isAdjacentTo(x, h)) continue;
@@ -227,14 +227,16 @@ public class LvBesJoe {
 
         for (Node r : toProcess) {
             List<Node> adjacentNodes = new ArrayList<>(toProcess);
-            ForkJoinPool.commonPool().invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0, adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
+            ForkJoinPool.commonPool().invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()),
+                    0, adjacentNodes.size(), hashIndices, sortedArrowsBack, arrowsMapBackward));
         }
     }
 
     private int getChunkSize(int n) {
-        int chunk = n / Runtime.getRuntime().availableProcessors();
-        if (chunk < 100) chunk = 100;
-        return chunk;
+        return 5;
+//        int chunk = n / Runtime.getRuntime().availableProcessors();
+//        if (chunk < 100) chunk = 100;
+//        return chunk;
     }
 
     private void calculateArrowsBackward(Node a, Node b, Graph graph,

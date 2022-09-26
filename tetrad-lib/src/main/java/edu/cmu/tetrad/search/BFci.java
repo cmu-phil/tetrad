@@ -124,14 +124,14 @@ public final class BFci implements GraphSearch {
         assert variables != null;
 
         alg.bestOrder(variables);
-        this.graph = alg.getGraph(false);
+        this.graph = alg.getGraph(false); // Get the DAG
 
-        if (score instanceof  edu.cmu.tetrad.search.MagSemBicScore) {
+        if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
         }
 
         knowledge = new Knowledge2((Knowledge2) knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
+//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
 
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);
@@ -172,8 +172,7 @@ public final class BFci implements GraphSearch {
      */
     public void setMaxDegree(int maxDegree) {
         if (maxDegree < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + maxDegree);
+            throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + maxDegree);
         }
 
         this.maxDegree = maxDegree;
