@@ -6,9 +6,11 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
@@ -296,8 +298,24 @@ public class Boss {
     }
 
     @NotNull
-    public Graph getGraph(boolean cpdag) {
-        return scorer.getGraph(cpdag);
+//    public Graph getGraph(boolean cpdag) {
+//
+//
+//        return scorer.getGraph(cpdag);
+//    }
+
+    public Graph getGraph(boolean cpDag) {
+        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
+        Graph graph = this.scorer.getGraph(cpDag);
+
+        orientbk(knowledge, graph, variables);
+        MeekRules meekRules = new MeekRules();
+        meekRules.setRevertToUnshieldedColliders(false);
+        meekRules.orientImplied(graph);
+
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        graph.addAttribute("score ", nf.format(this.scorer.score()));
+        return graph;
     }
 
     public void orientbk(IKnowledge bk, Graph graph, List<Node> variables) {
@@ -377,6 +395,10 @@ public class Boss {
             for (int i = 0; i < order.size(); i++) {
                 for (int j = i + 1; j < order.size(); j++) {
                     if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName())) {
+                        return true;
+                    }
+
+                    if (this.knowledge.isRequired(order.get(j).getName(), order.get(i).getName())) {
                         return true;
                     }
                 }
