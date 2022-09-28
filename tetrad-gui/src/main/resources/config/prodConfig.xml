@@ -1160,6 +1160,14 @@
                 <model-class>edu.cmu.tetradapp.model.RequiredGraphModel</model-class>
                 <editor-class>edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor</editor-class>
             </model>
+            <model name="Remove Non-Skeleton Edges" acronym="Rem-Non-Skel-Graph" help="remove.non-sk.graph">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="knowledge" description="Knowledge" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.RemoveNonSkeletonEdgesModel</model-class>
+                <editor-class>edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor</editor-class>
+            </model>
 <!--            <model name="Independence Facts" acronym="IndFacts" help="indfacts">-->
 <!--                <logger>-->
 <!--                    <event id="info" description="Information" default="on"/>-->

@@ -286,12 +286,12 @@ public class Boss {
                     return 1;
                 } else if (this.knowledge.isRequired(o2.getName(), o1.getName())) {
                     return -1;
-                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
-                    return -1;
                 } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
+                    return -1;
+                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
                     return 1;
                 } else {
-                    return 1;
+                    return 0;
                 }
             });
         }

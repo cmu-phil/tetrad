@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.ForbiddenGraphModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
+import edu.cmu.tetradapp.model.RemoveNonSkeletonEdgesModel;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -75,6 +76,10 @@ public class KnowledgeBoxEditor extends JPanel {
     private int numTiers = 3;
 
     public KnowledgeBoxEditor(ForbiddenGraphModel knowledgeBoxModel) {
+        this((KnowledgeBoxModel) knowledgeBoxModel);
+    }
+
+    public KnowledgeBoxEditor(RemoveNonSkeletonEdgesModel knowledgeBoxModel) {
         this((KnowledgeBoxModel) knowledgeBoxModel);
     }
 

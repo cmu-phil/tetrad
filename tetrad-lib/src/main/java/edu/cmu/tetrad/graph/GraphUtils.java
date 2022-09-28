@@ -5150,6 +5150,32 @@ public final class GraphUtils {
         }
     }
 
+    public static void removeNonSkeletonEdges(Graph graph, IKnowledge knowledge) {
+        List<Node> nodes = graph.getNodes();
+
+        int numOfNodes = nodes.size();
+        for (int i = 0; i < numOfNodes; i++) {
+            for (int j = i + 1; j < numOfNodes; j++) {
+                Node n1 = nodes.get(i);
+                Node n2 = nodes.get(j);
+
+                if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
+                    continue;
+                }
+
+                if (!graph.isAdjacentTo(n1, n2)) {
+                    if (!knowledge.isForbidden(n1.getName(), n2.getName())) {
+                        knowledge.setForbidden(n1.getName(), n2.getName());
+                    }
+
+                    if (!knowledge.isForbidden(n2.getName(), n1.getName())) {
+                        knowledge.setForbidden(n2.getName(), n1.getName());
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Check to see if a set of variables Z satisfies the back-door criterion
      * relative to node x and node y.
