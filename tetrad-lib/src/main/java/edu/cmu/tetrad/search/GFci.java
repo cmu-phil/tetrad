@@ -127,6 +127,8 @@ public final class GFci implements GraphSearch {
             removeByPossibleDsep(graph, independenceTest, null);
         }
 
+//        retainUnshieldedColliders(this.graph);
+
         FciOrient fciOrient = new FciOrient(sepsets);
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);

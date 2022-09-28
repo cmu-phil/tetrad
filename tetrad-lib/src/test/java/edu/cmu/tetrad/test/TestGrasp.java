@@ -2231,13 +2231,12 @@ public final class TestGrasp {
         ScoreWrapper score2 = new edu.cmu.tetrad.algcomparison.score.KimEtAlScores();
         IndependenceWrapper test2 = new KimEtAlScoreTests();
 
-        algorithms.add(new BOSS(test2, score2));
+//        algorithms.add(new BOSS(test2, score2));
         algorithms.add(new Fci(test2));
         algorithms.add(new FciMax(test2));
         algorithms.add(new Rfci(test2));
         algorithms.add(new GFCI(test2, score2));
         algorithms.add(new BFCI(test2, score2));
-        algorithms.add(new BFCI2(test2, score2));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));

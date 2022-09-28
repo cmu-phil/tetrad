@@ -48,7 +48,7 @@ public class BidirectedFalsePositiveLatentPrediction implements Statistic {
             }
         }
 
-        if (tp == 0) return Double.NaN;
+//        if (tp == 0) return Double.NaN;
 
         return all - tp;
     }

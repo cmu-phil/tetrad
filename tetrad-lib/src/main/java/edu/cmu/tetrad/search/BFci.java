@@ -131,7 +131,7 @@ public final class BFci implements GraphSearch {
         }
 
         IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
+        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);
@@ -141,28 +141,6 @@ public final class BFci implements GraphSearch {
         // GFCI extra edge removal step...
         gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
         modifiedR0(referenceDag, sepsets);
-
-//        if (this.possibleDsepSearchDone) {
-//            removeByPossibleDsep(graph, independenceTest, null);
-//        }
-
-//        for (Edge edge : graph.getEdges()) {
-//            if (Edges.isPartiallyOrientedEdge(edge)) {
-//                if (edge.pointsTowards(edge.getNode2()) && knowledge2.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
-//                    graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.ARROW);
-//                } else if (edge.pointsTowards(edge.getNode1()) && knowledge2.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
-//                    graph.setEndpoint(edge.getNode2(), edge.getNode2(), Endpoint.ARROW);
-//                }
-//            }
-//        }
-
-//        this.graph = SearchGraphUtils.cpdagForDag(this.graph);
-//
-//        for (Edge edge : this.graph.getEdges()) {
-//            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
-//            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
-//        }
-
         retainUnshieldedColliders(this.graph);
 
         FciOrient fciOrient = new FciOrient(sepsets);
