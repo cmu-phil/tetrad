@@ -2194,7 +2194,7 @@ public final class TestGrasp {
     public void testBFci() {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_MEASURES, 20);
+        params.set(Params.NUM_MEASURES, 17);
         params.set(Params.AVG_DEGREE, 5);
         params.set(Params.NUM_LATENTS, 8);
         params.set(Params.RANDOMIZE_COLUMNS, true);
@@ -2205,7 +2205,7 @@ public final class TestGrasp {
 //        params.set(Params.MAX_DEGREE, 8);
         params.set(Params.VERBOSE, false);
 
-        params.set(Params.NUM_RUNS, 20);
+        params.set(Params.NUM_RUNS, 50);
 
         params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, -1);
@@ -2225,19 +2225,19 @@ public final class TestGrasp {
         params.set(Params.ALPHA, 0.2);
 
         Algorithms algorithms = new Algorithms();
-//        ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.MagSemBicScore();
-//        IndependenceWrapper test = new MagSemBicTest();
-//
-        ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.KimEtAlScores();
-        IndependenceWrapper test = new KimEtAlScoreTests();
+        ScoreWrapper score1 = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+        IndependenceWrapper test1 = new SemBicTest();
 
-        algorithms.add(new BOSS(test, score));
-        algorithms.add(new Fci(test));
-        algorithms.add(new FciMax(test));
-        algorithms.add(new Rfci(test));
-        algorithms.add(new GFCI(test, score));
-        algorithms.add(new BFCI(test, score));
-        algorithms.add(new BFCI2(test, score));
+        ScoreWrapper score2 = new edu.cmu.tetrad.algcomparison.score.KimEtAlScores();
+        IndependenceWrapper test2 = new KimEtAlScoreTests();
+
+        algorithms.add(new BOSS(test2, score2));
+        algorithms.add(new Fci(test2));
+        algorithms.add(new FciMax(test2));
+        algorithms.add(new Rfci(test2));
+        algorithms.add(new GFCI(test2, score2));
+        algorithms.add(new BFCI(test2, score2));
+        algorithms.add(new BFCI2(test2, score2));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));

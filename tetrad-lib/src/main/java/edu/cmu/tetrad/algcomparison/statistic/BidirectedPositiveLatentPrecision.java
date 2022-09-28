@@ -50,7 +50,11 @@ public class BidirectedPositiveLatentPrecision implements Statistic {
 
         int fp = all - tp;
 
-        return tp / (double) (tp + fp);
+        double prec = tp / (double) (tp + fp);
+
+        if (prec == 0) prec = Double.NaN;
+
+        return prec;
     }
 
     @Override

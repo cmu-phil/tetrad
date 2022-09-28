@@ -27,7 +27,7 @@ public class BidirectedFalsePositiveLatentPrediction implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int count = 0;
+        int tp = 0;
         int all = 0;
 
         for (Edge edge : estGraph.getEdges()) {
@@ -41,14 +41,16 @@ public class BidirectedFalsePositiveLatentPrediction implements Statistic {
 
                 for (Node c : commonAncestors) {
                     if (c.getNodeType() == NodeType.LATENT) {
-                        count++;
+                        tp++;
                         break;
                     }
                 }
             }
         }
 
-        return all - count;
+        if (tp == 0) return Double.NaN;
+
+        return all - tp;
     }
 
     @Override

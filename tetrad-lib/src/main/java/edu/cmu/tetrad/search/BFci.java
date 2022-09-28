@@ -112,7 +112,7 @@ public final class BFci implements GraphSearch {
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss alg = new Boss(scorer);
-        alg.setAlgType(Boss.AlgType.BOSS);
+        alg.setAlgType(Boss.AlgType.BOSS_OLD);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
@@ -130,8 +130,8 @@ public final class BFci implements GraphSearch {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
         }
 
-        knowledge = new Knowledge2((Knowledge2) knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
+        IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
+//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);
@@ -140,11 +140,27 @@ public final class BFci implements GraphSearch {
 
         // GFCI extra edge removal step...
         gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
-
         modifiedR0(referenceDag, sepsets);
 
 //        if (this.possibleDsepSearchDone) {
 //            removeByPossibleDsep(graph, independenceTest, null);
+//        }
+
+//        for (Edge edge : graph.getEdges()) {
+//            if (Edges.isPartiallyOrientedEdge(edge)) {
+//                if (edge.pointsTowards(edge.getNode2()) && knowledge2.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
+//                    graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.ARROW);
+//                } else if (edge.pointsTowards(edge.getNode1()) && knowledge2.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
+//                    graph.setEndpoint(edge.getNode2(), edge.getNode2(), Endpoint.ARROW);
+//                }
+//            }
+//        }
+
+//        this.graph = SearchGraphUtils.cpdagForDag(this.graph);
+//
+//        for (Edge edge : this.graph.getEdges()) {
+//            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
+//            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
 //        }
 
         retainUnshieldedColliders(this.graph);
@@ -154,7 +170,7 @@ public final class BFci implements GraphSearch {
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(this.verbose);
-        fciOrient.setKnowledge(this.knowledge);
+        fciOrient.setKnowledge(knowledge2);
 
         fciOrient.doFinalOrientation(graph);
         graph.setPag(true);

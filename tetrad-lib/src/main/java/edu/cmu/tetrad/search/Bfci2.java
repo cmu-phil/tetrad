@@ -23,12 +23,15 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
@@ -93,7 +96,7 @@ public final class Bfci2 implements GraphSearch {
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss boss = new Boss(scorer);
-        boss.setAlgType(Boss.AlgType.BOSS);
+        boss.setAlgType(Boss.AlgType.BOSS_OLD);
         boss.setUseScore(useScore);
         boss.setUseRaskuttiUhler(useRaskuttiUhler);
         boss.setUseDataOrder(useDataOrder);
@@ -111,13 +114,33 @@ public final class Bfci2 implements GraphSearch {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
         }
 
-        knowledge = new Knowledge2((Knowledge2) knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
+        IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
+//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 
         // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
+//        triangleReduce2(graph, scorer, knowledge); // Adds <-> edges to the DAG
+
         LvBesJoe lvBesJoe = new LvBesJoe(score);
-        lvBesJoe.setKnowledge(knowledge);
+        lvBesJoe.setDepth(depth);
+        lvBesJoe.setKnowledge(knowledge2);
         lvBesJoe.bes(graph, variables);
+//
+//        for (Edge edge : graph.getEdges()) {
+//            if (Edges.isPartiallyOrientedEdge(edge)) {
+//                if (edge.pointsTowards(edge.getNode2()) && knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
+//                    graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.ARROW);
+//                } else if (edge.pointsTowards(edge.getNode1()) && knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
+//                    graph.setEndpoint(edge.getNode2(), edge.getNode2(), Endpoint.ARROW);
+//                }
+//            }
+//        }
+
+//        graph = SearchGraphUtils.cpdagForDag(graph);
+//
+//        for (Edge edge : graph.getEdges()) {
+//            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
+//            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
+//        }
 
         // Retain only the unshielded colliders.
         retainUnshieldedColliders(graph);
@@ -128,6 +151,7 @@ public final class Bfci2 implements GraphSearch {
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setKnowledge(knowledge2);
         fciOrient.doFinalOrientation(graph);
 
         graph.setPag(true);
@@ -135,6 +159,181 @@ public final class Bfci2 implements GraphSearch {
         return graph;
     }
 
+    private static void triangleReduce1(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
+        boolean changed = true;
+
+        while (changed) {
+            changed = false;
+
+            for (Edge edge : graph.getEdges()) {
+                Node a = edge.getNode1();
+                Node b = edge.getNode2();
+
+                if (graph.isAdjacentTo(a, b)) {
+                    List<Node> inTriangle = graph.getAdjacentNodes(a);
+                    inTriangle.retainAll(graph.getAdjacentNodes(b));
+
+                    Set<Node> _all = new HashSet<>(inTriangle);
+                    _all.addAll(graph.getAdjacentNodes(a));
+                    _all.addAll(graph.getAdjacentNodes(b));
+
+                    List<Node> all = new ArrayList<>(_all);
+
+                    SublistGenerator gen = new SublistGenerator(all.size(), all.size());
+                    int[] choice;
+
+                    float maxScore = Float.NEGATIVE_INFINITY;
+                    List<Node> maxAfter = null;
+                    boolean remove = false;
+
+                    while ((choice = gen.next()) != null) {
+                        List<Node> before = GraphUtils.asList(choice, all);
+                        List<Node> after = new ArrayList<>(inTriangle);
+                        after.removeAll(before);
+
+                        List<Node> perm = new ArrayList<>(before);
+                        perm.add(a);
+                        perm.add(b);
+                        perm.addAll(after);
+
+                        float score = scorer.score(perm);
+
+                        if (score >= maxScore && !scorer.adjacent(a, b)) {
+                            maxScore = score;
+                            maxAfter = after;
+                            remove = !scorer.adjacent(a, b);
+                        }
+                    }
+
+                    if (remove) {
+
+                        for (Node x : maxAfter) {
+                            changed = true;
+
+                            // Only remove an edge and orient a new collider if it will create a bidirected edge.
+//                            if (graph.getEndpoint(x, a) == Endpoint.ARROW || graph.getEndpoint(x, b) == Endpoint.ARROW) {
+                            graph.removeEdge(a, b);
+                            graph.setEndpoint(a, x, Endpoint.ARROW);
+                            graph.setEndpoint(b, x, Endpoint.ARROW);
+
+                            if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
+                                graph.setEndpoint(x, a, Endpoint.ARROW);
+                            }
+
+                            if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
+                                graph.setEndpoint(x, b, Endpoint.ARROW);
+                            }
+
+                        }
+//                        }
+
+//                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private static void triangleReduce2(Graph graph, TeyssierScorer scorer0, IKnowledge knowledge) {
+        TeyssierScorer scorer = new TeyssierScorer(scorer0);
+        Graph origGaph = new EdgeListGraph(graph);
+
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+            t2visit(origGaph, graph, scorer0, knowledge, scorer, a, b);
+            t2visit(origGaph, graph, scorer0, knowledge, scorer, b, a);
+        }
+    }
+
+    private static boolean t2visit(Graph origGraph, Graph graph, TeyssierScorer scorer0, IKnowledge knowledge, TeyssierScorer scorer,
+                                   Node a, Node b) {
+        if (!graph.isAdjacentTo(a, b)) return false;
+        boolean changed = false;
+        List<Node> _inTriangle = origGraph.getAdjacentNodes(a);
+        _inTriangle.retainAll(origGraph.getAdjacentNodes(b));
+        List<Node> parents = origGraph.getParents(a);
+        parents.remove(b);
+        for (Node n : _inTriangle) {
+            parents.remove(n);
+        }
+
+        List<Node> inTriangle = new ArrayList<>();
+        List<Node> all = new ArrayList<>();
+        for (Node n : scorer0.getPi()) {
+            if (_inTriangle.contains(n)) inTriangle.add(n);
+            if (_inTriangle.contains(n) || n == a || n == b) all.add(n);
+        }
+
+        if (_inTriangle.isEmpty()) return false;
+
+        SublistGenerator gen = new SublistGenerator(all.size(), all.size());
+        int[] choice;
+
+        float maxScore = Float.NEGATIVE_INFINITY;
+        List<Node> maxAfter = null;
+        boolean remove = false;
+
+        while ((choice = gen.next()) != null) {
+            List<Node> before = GraphUtils.asList(choice, all);
+            List<Node> after = new ArrayList<>(inTriangle);
+            after.removeAll(before);
+
+            SublistGenerator gen2 = new SublistGenerator(parents.size(), -1);
+            int[] choice2;
+
+            while ((choice2 = gen2.next()) != null) {
+                List<Node> p = GraphUtils.asList(choice2, parents);
+
+                List<Node> perm = new ArrayList<>(p);
+
+                for (Node n : all) {
+                    perm.remove(n);
+                    perm.add(n);
+                }
+
+                for (Node n : after) {
+                    perm.remove(n);
+                    perm.add(n);
+                }
+
+                float score = scorer.score(perm);
+
+                if (score >= maxScore && !scorer.adjacent(a, b)) {
+                    maxScore = score;
+                    maxAfter = after;
+                    remove = !scorer.adjacent(a, b);
+                }
+            }
+        }
+
+        if (remove) {
+            for (Node x : maxAfter) {
+                changed = true;
+
+                // Only remove an edge and orient a new collider if it will create a bidirected edge.
+                graph.removeEdge(a, b);
+
+                if (graph.isAdjacentTo(a, x)) {
+                    graph.setEndpoint(a, x, Endpoint.ARROW);
+
+//                    if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
+//                        graph.setEndpoint(x, a, Endpoint.ARROW);
+//                    }
+                }
+
+                if (graph.isAdjacentTo(b, x)) {
+                    graph.setEndpoint(b, x, Endpoint.ARROW);
+
+//                    if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
+//                        graph.setEndpoint(x, b, Endpoint.ARROW);
+//                    }
+                }
+            }
+        }
+
+        return changed;
+    }
 
     /**
      * @return true if Zhang's complete rule set should be used, false if only

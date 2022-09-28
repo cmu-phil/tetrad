@@ -4,7 +4,6 @@ import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.SublistGenerator;
-import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -26,8 +25,8 @@ public class LvBesJoe {
     private final List<Node> variables;
     private final Score score;
     private IKnowledge knowledge = new Knowledge2();
-    private boolean verbose = true;
-    private int depth = 4;
+    private int depth = -1;
+    private EdgeListGraph origGraph = null;
 
     public LvBesJoe(@NotNull Score score) {
         this.score = score;
@@ -37,10 +36,6 @@ public class LvBesJoe {
     @NotNull
     public List<Node> getVariables() {
         return this.variables;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -62,6 +57,8 @@ public class LvBesJoe {
     }
 
     public void bes(Graph graph, List<Node> variables) {
+        origGraph = new EdgeListGraph(graph);
+
         Map<Node, Integer> hashIndices = new HashMap<>();
         SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
         Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
@@ -113,11 +110,12 @@ public class LvBesJoe {
 //        }
 
         for (Node h : H) {
-            if (!graph.isAdjacentTo(x, h)) continue;
-            if (!graph.isAdjacentTo(y, h)) continue;
-
-            graph.setEndpoint(x, h, Endpoint.ARROW);
-            graph.setEndpoint(y, h, Endpoint.ARROW);
+            if (graph.isAdjacentTo(x, h)) {
+                graph.setEndpoint(x, h, Endpoint.ARROW);
+            }
+            if (graph.isAdjacentTo(y, h)) {
+                graph.setEndpoint(y, h, Endpoint.ARROW);
+            }
         }
     }
 
@@ -156,21 +154,10 @@ public class LvBesJoe {
         return knowledge;
     }
 
-    private Set<Node> getCommonAdjacents(Node x, Node y, Graph graph) {
-        List<Node> adj = graph.getAdjacentNodes(y);
-        Set<Node> ca = new HashSet<>();
-
-        for (Node z : adj) {
-            if (z == x) {
-                continue;
-            }
-            if (!graph.isAdjacentTo(z, x)) {
-                continue;
-            }
-            ca.add(z);
-        }
-
-        return ca;
+    private Set<Node> getCommonAdjacents(Node x, Node y) {
+        List<Node> ca = origGraph.getAdjacentNodes(x);
+        ca.retainAll(origGraph.getAdjacentNodes(y));
+        return new HashSet<>(ca);
     }
 
     private void reevaluateBackward(Set<Node> toProcess, Graph graph, Map<Node, Integer> hashIndices,
@@ -242,11 +229,11 @@ public class LvBesJoe {
     private void calculateArrowsBackward(Node a, Node b, Graph graph,
                                          Map<Node, Integer> hashIndices,
                                          int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) {
-        Set<Node> ca = getCommonAdjacents(a, b, graph);
+        Set<Node> ca = getCommonAdjacents(a, b);
 
-        Set<Node> parents = new HashSet<>(graph.getParents(b));
-        parents.remove(a);
-        parents.remove(b);
+        List<Node> parents = origGraph.getAdjacentNodes(b);
+        for (Node n : ca) parents.remove(n);
+//        parents.remove(a);
 
         for (Node n : ca) {
             parents.remove(n);
@@ -254,27 +241,37 @@ public class LvBesJoe {
 
         List<Node> _ca = new ArrayList<>(ca);
 
-        int _depth = min(depth, _ca.size());
+        int _depth = min(depth == -1 ? 100000 : depth, _ca.size());
 
-        final SublistGenerator gen = new SublistGenerator(_ca.size(), _depth);//_ca.size());
+        final SublistGenerator gen = new SublistGenerator(_ca.size(), _depth);
         int[] choice;
         Set<Node> maxComplement = null;
         double maxBump = Double.NEGATIVE_INFINITY;
+        Set<Node> maxParents = new HashSet<>();
 
         while ((choice = gen.next()) != null) {
             Set<Node> complement = GraphUtils.asSet(choice, _ca);
-            double _bump = deleteEval(a, b, complement, parents, hashIndices);
 
-            if (_bump > maxBump) {
-                maxBump = _bump;
-                maxComplement = complement;
+            SublistGenerator gen2 = new SublistGenerator(parents.size(), -1);
+            int[] choice2;
+
+            while ((choice2 = gen2.next()) != null) {
+                Set<Node> p = GraphUtils.asSet(choice2, parents);
+
+                double _bump = deleteEval(a, b, complement, p, hashIndices);
+
+                if (_bump > maxBump) {
+                    maxBump = _bump;
+                    maxComplement = complement;
+                    maxParents = p;
+                }
             }
         }
 
         if (maxBump > 0) {
             Set<Node> _H = new HashSet<>(ca);
             _H.removeAll(maxComplement);
-            addArrowBackward(a, b, _H, ca, parents, maxBump, arrowIndex, sortedArrowsBack);
+            addArrowBackward(a, b, _H, ca, maxParents, maxBump, arrowIndex, sortedArrowsBack);
         }
     }
 
