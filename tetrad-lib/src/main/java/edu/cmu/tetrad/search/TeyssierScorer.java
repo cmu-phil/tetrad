@@ -865,7 +865,10 @@ public class TeyssierScorer {
                 if (parents.contains(z0)) continue;
 
                 if (!knowledge.isEmpty() && this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
+
                 parents.add(z0);
+
+                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
 
                 float s2 = score(n, parents);
 
@@ -892,6 +895,8 @@ public class TeyssierScorer {
             Node w = null;
 
             for (Node z0 : new HashSet<>(parents)) {
+                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
+
                 parents.remove(z0);
 
                 float s2 = score(n, parents);
@@ -933,6 +938,11 @@ public class TeyssierScorer {
                 if (parents.contains(z0)) continue;
                 if (!knowledge.isEmpty() && this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
 
+                if (!knowledge.isEmpty() && this.knowledge.isRequired(z0.getName(), n.getName())) {
+                    parents.add(z0);
+                    continue;
+                }
+
                 if (this.test.checkIndependence(n, z0, new ArrayList<>(parents)).dependent()) {
                     parents.add(z0);
                     changed1 = true;
@@ -946,6 +956,10 @@ public class TeyssierScorer {
             changed2 = false;
 
             for (Node z1 : new HashSet<>(parents)) {
+                if (!knowledge.isEmpty() && this.knowledge.isRequired(z1.getName(), n.getName())) {
+                    continue;
+                }
+
                 Set<Node> _p = new HashSet<>(parents);
                 _p.remove(z1);
 

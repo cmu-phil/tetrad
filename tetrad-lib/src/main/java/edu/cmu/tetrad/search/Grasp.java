@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
+import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -68,6 +69,7 @@ public class Grasp {
 
         this.scorer = new TeyssierScorer(this.test, this.score);
         this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
+        this.scorer.setKnowledge(knowledge);
 
         if (this.useRaskuttiUhler) {
             this.scorer.setUseScore(false);
@@ -76,7 +78,6 @@ public class Grasp {
             this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
         }
 
-        this.scorer.setKnowledge(this.knowledge);
         this.scorer.clearBookmarks();
 
         this.scorer.setCachingScores(this.cachingScores);
@@ -235,7 +236,10 @@ public class Grasp {
                     continue;
                 }
 
-                if (violatesKnowledge(scorer.getPi())) continue;
+                if (violatesKnowledge(scorer.getPi())) {
+                    scorer.goToBookmark(currentDepth);
+                    continue;
+                }
 
                 double sNew = scorer.score();
                 if (sNew > sOld) {
@@ -334,6 +338,10 @@ public class Grasp {
                     if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName())) {
                         return true;
                     }
+
+                    if (this.knowledge.isRequired(order.get(j).getName(), order.get(i).getName())) {
+                        return true;
+                    }
                 }
             }
         }
@@ -408,6 +416,83 @@ public class Grasp {
 //            graph.setEndpoint(from, to, Endpoint.CIRCLE);
 //            this.changeFlag = true;
 //            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+    }
+
+    private void addRequiredEdges(Graph graph) {
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext() && !Thread.currentThread().isInterrupted(); ) {
+            KnowledgeEdge next = it.next();
+
+            Node nodeA = graph.getNode(next.getFrom());
+            Node nodeB = graph.getNode(next.getTo());
+
+            if (!graph.isAncestorOf(nodeB, nodeA)) {
+                graph.removeEdges(nodeA, nodeB);
+                graph.addDirectedEdge(nodeA, nodeB);
+
+                if (verbose) {
+                    TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
+                }
+            }
+        }
+        for (Edge edge : graph.getEdges()) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            final String A = edge.getNode1().getName();
+            final String B = edge.getNode2().getName();
+
+            if (knowledge.isForbidden(A, B)) {
+                Node nodeA = edge.getNode1();
+                Node nodeB = edge.getNode2();
+
+                if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
+                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                        graph.removeEdges(nodeA, nodeB);
+                        graph.addDirectedEdge(nodeB, nodeA);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        }
+                    }
+                }
+
+                if (!graph.isChildOf(nodeA, nodeB) && knowledge.isForbidden(nodeA.getName(), nodeB.getName())) {
+                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                        graph.removeEdges(nodeA, nodeB);
+                        graph.addDirectedEdge(nodeB, nodeA);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        }
+                    }
+                }
+            } else if (knowledge.isForbidden(B, A)) {
+                Node nodeA = edge.getNode2();
+                Node nodeB = edge.getNode1();
+
+                if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
+                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                        graph.removeEdges(nodeA, nodeB);
+                        graph.addDirectedEdge(nodeB, nodeA);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        }
+                    }
+                }
+                if (!graph.isChildOf(nodeA, nodeB) && knowledge.isForbidden(nodeA.getName(), nodeB.getName())) {
+                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                        graph.removeEdges(nodeA, nodeB);
+                        graph.addDirectedEdge(nodeB, nodeA);
+
+                        if (verbose) {
+                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
+                        }
+                    }
+                }
+            }
         }
     }
 

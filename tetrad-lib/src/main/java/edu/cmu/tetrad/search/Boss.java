@@ -70,6 +70,8 @@ public class Boss {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
+        scorer.setKnowledge(knowledge);
+
         List<Node> bestPerm;
         long start = System.currentTimeMillis();
         order = new ArrayList<>(order);
