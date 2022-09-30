@@ -12,17 +12,17 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public class BidirectedFalsePositiveLatentPrediction implements Statistic {
+public class ActualFalsePositiveBidirected implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "BFPL";
+        return "AFPB";
     }
 
     @Override
     public String getDescription() {
-        return "Bidirected False Positive Latent Predictions";
+        return "Actual False Positive Bidirected";
     }
 
     @Override

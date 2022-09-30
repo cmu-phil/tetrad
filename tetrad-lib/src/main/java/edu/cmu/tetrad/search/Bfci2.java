@@ -121,10 +121,10 @@ public final class Bfci2 implements GraphSearch {
 //        triangleReduce2(graph, scorer, knowledge); // Adds <-> edges to the DAG
 
 
-        LvBesJoe lvBesJoe = new LvBesJoe(score);
-        lvBesJoe.setDepth(depth);
-        lvBesJoe.setKnowledge(knowledge2);
-        lvBesJoe.bes(graph, variables);
+//        LvBesJoe lvBesJoe = new LvBesJoe(score);
+//        lvBesJoe.setDepth(depth);
+//        lvBesJoe.setKnowledge(knowledge2);
+//        lvBesJoe.bes(graph, variables);
 //
 //        for (Edge edge : graph.getEdges()) {
 //            if (Edges.isPartiallyOrientedEdge(edge)) {
@@ -137,7 +137,7 @@ public final class Bfci2 implements GraphSearch {
 //        }
 
 //        graph = SearchGraphUtils.cpdagForDag(graph);
-//
+////
 //        for (Edge edge : graph.getEdges()) {
 //            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
 //            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);

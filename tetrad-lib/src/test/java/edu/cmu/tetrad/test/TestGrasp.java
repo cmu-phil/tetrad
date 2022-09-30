@@ -2221,22 +2221,23 @@ public final class TestGrasp {
 
         // default for kim et al. is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
-        params.set(Params.PENALTY_DISCOUNT, 1);
-        params.set(Params.ALPHA, 0.2);
+        params.set(Params.PENALTY_DISCOUNT, 2);
+        params.set(Params.ALPHA, 0.05);
 
         Algorithms algorithms = new Algorithms();
         ScoreWrapper score1 = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
         IndependenceWrapper test1 = new SemBicTest();
 
-        ScoreWrapper score2 = new edu.cmu.tetrad.algcomparison.score.KimEtAlScores();
-        IndependenceWrapper test2 = new KimEtAlScoreTests();
+        ScoreWrapper score2 = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+        IndependenceWrapper test2 = new FisherZ();
 
-//        algorithms.add(new BOSS(test2, score2));
+        algorithms.add(new BOSS(test2, score2));
         algorithms.add(new Fci(test2));
         algorithms.add(new FciMax(test2));
         algorithms.add(new Rfci(test2));
         algorithms.add(new GFCI(test2, score2));
         algorithms.add(new BFCI(test2, score2));
+        algorithms.add(new BFCI2(test2, score2));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -2245,16 +2246,15 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.GRASP_ALG));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
-        statistics.add(new ArrowheadPrecision());
-        statistics.add(new ArrowheadRecall());
-        statistics.add(new ArrowheadPrecisionCommonEdges());
-        statistics.add(new ArrowheadRecallCommonEdges());
-        statistics.add(new BidirectedTP());
-        statistics.add(new BidirectedFP());
-        statistics.add(new BidirectedPrecision());
-        statistics.add(new BidirectedTruePositiveLatentPrediction());
-        statistics.add(new BidirectedFalsePositiveLatentPrediction());
-        statistics.add(new BidirectedPositiveLatentPrecision());
+        statistics.add(new ActualTruePositiveArrow());
+        statistics.add(new ActualFalsePositiveArrow());
+        statistics.add(new ActualPrecisionArrow());
+        statistics.add(new ActualTruePositiveTails());
+        statistics.add(new ActualFalsePositiveTails());
+        statistics.add(new ActualPrecisionTails());
+        statistics.add(new ActualTruePositiveBidirected());
+        statistics.add(new ActualFalsePositiveBidirected());
+        statistics.add(new ActualPrecisionBidirected());
         statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();
