@@ -58,7 +58,10 @@ final class ContributorsAction extends AbstractAction {
                 "Andrews, Ruben Sanchez, Fattaneh Jabbari, Ricardo Silva, Dan Malinsky, Erich Kummerfeld, " +
                 "Biwei Huang, Juan Miguel Ogarrio, David Danks, Kevin Kelly, Eric Strobl, Shyam Visweswaran, " +
                 "Shuyan Wang, Madelyn Glymour, Frank Wimberly, Matt Easterday, and Tyler Gibson, and " +
-                "Mike Konrad (Software Engineering Institute, CMU).";
+                "Mike Konrad (Software Engineering Institute, CMU). " +
+                "This material is based, in part, upon work funded and supported by the Department of Defense under " +
+                "Contract No. FA8702-15-D-0002 with Carnegie Mellon University for the operation of the " +
+                "Software Engineering Institute, a federally funded research and development center.";
 
         JTextArea textArea = new JTextArea(msg);
         textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
