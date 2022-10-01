@@ -8,23 +8,23 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class ActualPrecisionBidirected implements Statistic {
+public class CommonAncestorPrecisionBidirected implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "APB";
+        return "CAPB";
     }
 
     @Override
     public String getDescription() {
-        return "Actual Precision Arrow (ATPB / (ATPB + AFPB)";
+        return "Actual Precision Arrow (CATPB / (CATPB + CAFPB)";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double tp = new ActualTruePositiveBidirected().getValue(trueGraph, estGraph, dataModel);
-        double fp = new ActualFalsePositiveBidirected().getValue(trueGraph, estGraph, dataModel);
+        double tp = new CommonAncestorTruePositiveBidirected().getValue(trueGraph, estGraph, dataModel);
+        double fp = new CommonAncestorFalsePositiveBidirected().getValue(trueGraph, estGraph, dataModel);
         return tp / (tp + fp);
     }
 

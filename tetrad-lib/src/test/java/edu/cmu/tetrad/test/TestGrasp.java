@@ -2222,7 +2222,9 @@ public final class TestGrasp {
         // default for kim et al. is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
         params.set(Params.PENALTY_DISCOUNT, 2);
-        params.set(Params.ALPHA, 0.05);
+        params.set(Params.ALPHA, 0.01);
+
+        params.set(Params.DIFFERENT_GRAPHS, true);
 
         Algorithms algorithms = new Algorithms();
         ScoreWrapper score1 = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
@@ -2252,9 +2254,16 @@ public final class TestGrasp {
         statistics.add(new ActualTruePositiveTails());
         statistics.add(new ActualFalsePositiveTails());
         statistics.add(new ActualPrecisionTails());
-        statistics.add(new ActualTruePositiveBidirected());
-        statistics.add(new ActualFalsePositiveBidirected());
-        statistics.add(new ActualPrecisionBidirected());
+        statistics.add(new BidirectedTrue());
+        statistics.add(new BidirectedEst());
+        statistics.add(new BidirectedTP());
+        statistics.add(new BidirectedPrecision());
+        statistics.add(new LatentCommonAncestorTruePositiveBidirected());
+        statistics.add(new LatentCommonAncestorFalsePositiveBidirected());
+        statistics.add(new LatentCommonAncestorPrecisionBidirected());
+        statistics.add(new CommonAncestorTruePositiveBidirected());
+        statistics.add(new CommonAncestorFalsePositiveBidirected());
+        statistics.add(new CommonAncestorPrecisionBidirected());
         statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();

@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -12,45 +15,52 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public class ActualFalsePositiveBidirected implements Statistic {
+public class CommonAncestorTruePositiveBidirected implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "AFPB";
+        return "CATPB";
     }
 
     @Override
     public String getDescription() {
-        return "Actual False Positive Bidirected";
+        return "Common Ancestor True Positive Bidirected";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
-        int all = 0;
+
+//        for (Edge edge : estGraph.getEdges()) {
+//            if (Edges.isBidirectedEdge(edge)) {
+//                if (!trueGraph.isAncestorOf(edge.getNode1(), edge.getNode2())
+//                        && !trueGraph.isAncestorOf(edge.getNode2(), edge.getNode1())) {
+//                    tp++;
+//                }
+//            }
+//        }
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                all++;
 
                 Set<Node> commonAncestors = new HashSet<>(trueGraph.getAncestors(Collections.singletonList(edge.getNode1())));
                 commonAncestors.retainAll(trueGraph.getAncestors(Collections.singletonList(edge.getNode2())));
                 commonAncestors.remove(edge.getNode1());
                 commonAncestors.remove(edge.getNode2());
 
-                for (Node c : commonAncestors) {
-                    if (c.getNodeType() == NodeType.LATENT) {
-                        tp++;
-                        break;
-                    }
-                }
+                if (!commonAncestors.isEmpty()) tp++;
+
+//                for (Node c : commonAncestors) {
+////                    if (c.getNodeType() == NodeType.LATENT) {
+//                        tp++;
+//                        break;
+////                    }
+//                }
             }
         }
 
-//        if (tp == 0) return Double.NaN;
-
-        return all - tp;
+        return tp;
     }
 
     @Override

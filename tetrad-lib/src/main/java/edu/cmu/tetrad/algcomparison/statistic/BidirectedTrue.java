@@ -1,0 +1,47 @@
+package edu.cmu.tetrad.algcomparison.statistic;
+
+import edu.cmu.tetrad.algcomparison.statistic.utils.BidirectedConfusion;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.DagToPag;
+
+/**
+ * The bidirected true positives.
+ *
+ * @author jdramsey
+ */
+public class BidirectedTrue implements Statistic {
+    static final long serialVersionUID = 23L;
+
+    @Override
+    public String getAbbreviation() {
+        return "BT";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Bidirected True";
+    }
+
+    @Override
+    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        Graph pag = new DagToPag(trueGraph).convert();
+
+        int t = 0;
+
+        for (Edge edge : pag.getEdges()) {
+            if (Edges.isBidirectedEdge(edge)) t++;
+        }
+
+        System.out.println("True # bidirected edges = " + t);
+
+        return t;
+    }
+
+    @Override
+    public double getNormValue(double value) {
+        return value;
+    }
+}

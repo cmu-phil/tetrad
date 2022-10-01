@@ -153,8 +153,8 @@ public class StatsListEditor extends JPanel {
         statistics.add(new BidirectedTP());
         statistics.add(new BidirectedFP());
         statistics.add(new BidirectedPrecision());
-        statistics.add(new ActualTruePositiveBidirected());
-        statistics.add(new ActualFalsePositiveBidirected());
+        statistics.add(new LatentCommonAncestorTruePositiveBidirected());
+        statistics.add(new LatentCommonAncestorFalsePositiveBidirected());
         statistics.add(new ActualPrecisionArrow());
         statistics.add(new TailPrecision());
         statistics.add(new TailRecall());
