@@ -20,7 +20,7 @@ public class BidirectedEst implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Bidirected Est";
+        return "Number of True Bidirected Edges";
     }
 
     @Override

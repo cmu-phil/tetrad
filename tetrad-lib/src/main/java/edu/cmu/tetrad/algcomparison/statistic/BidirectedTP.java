@@ -20,7 +20,7 @@ public class BidirectedTP implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Bidirected True Positives";
+        return "Number of true positive bidirected edges";
     }
 
     @Override

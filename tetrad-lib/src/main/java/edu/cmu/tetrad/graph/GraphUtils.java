@@ -4293,6 +4293,79 @@ public final class GraphUtils {
         return R;
     }
 
+//    private static boolean isDConnectedTo4(Node x, Node y, List<Node> z, Graph graph) {
+//        class EdgeNode {
+//
+//            private final Edge edge;
+//            private final Node nodeFrom;
+//            private final Node nodeTo;
+//
+//            public EdgeNode(Edge edge, Node nodeFrom, Node nodeTo) {
+//                this.edge = edge;
+//                this.nodeFrom = nodeFrom;
+//                this.nodeTo = nodeTo;
+//            }
+//
+//            public int hashCode() {
+//                return this.edge.hashCode() + this.nodeFrom.hashCode();
+//            }
+//
+//            public boolean equals(Object o) {
+//                if (!(o instanceof EdgeNode)) {
+//                    throw new IllegalArgumentException();
+//                }
+//                EdgeNode _o = (EdgeNode) o;
+//                return _o.edge == this.edge && _o.nodeFrom == this.nodeFrom;
+//            }
+//        }
+//
+//        Queue<EdgeNode> Q = new ArrayDeque<>();
+//        Set<EdgeNode> V = new HashSet<>();
+//
+//        if (x == y) {
+//            return true;
+//        }
+//
+//        for (Edge edge : graph.getEdges(x)) {
+//            if (edge.getDistalNode(x) == y) {
+//                return true;
+//            }
+//            EdgeNode edgeNode = new EdgeNode(edge, x);
+//            Q.offer(edgeNode);
+//            V.add(edgeNode);
+//        }
+//
+//        while (!Q.isEmpty()) {
+//            EdgeNode t = Q.poll();
+//
+//            Edge edge1 = t.edge;
+//            Node a = t.nodeFrom;
+//            Node b = edge1.getDistalNode(a);
+//
+//            for (Edge edge2 : graph.getEdges(b)) {
+//                Node c = edge2.getDistalNode(b);
+//                if (c == a) {
+//                    continue;
+//                }
+//
+//                if (GraphUtils.reachable(edge1, edge2, a, z, graph)) {
+//                    if (c == y) {
+//                        return true;
+//                    }
+//
+//                    EdgeNode u = new EdgeNode(edge2, b);
+//
+//                    if (!V.contains(u)) {
+//                        V.add(u);
+//                        Q.offer(u);
+//                    }
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
+
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
     public static List<Node> getSepset(Node x, Node y, Graph graph) {
         List<Node> sepset = GraphUtils.getSepsetVisit(x, y, graph);

@@ -33,19 +33,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
 
 /**
- * Does an FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
- * an extent; the GFCI reference is this:
- * <p>
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016.
+ * Does BOSS + retain unshielded colliders + final FCI orientation rules
  *
  * @author jdramsey
  */
-public final class Bfci2 implements GraphSearch {
+public final class BfciFoo implements GraphSearch {
 
     // The score used, if GS is used to build DAGs.
     private final Score score;
@@ -82,7 +77,7 @@ public final class Bfci2 implements GraphSearch {
     private IKnowledge knowledge = new Knowledge2();
 
     //============================CONSTRUCTORS============================//
-    public Bfci2(IndependenceTest test, Score score) {
+    public BfciFoo(IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
     }

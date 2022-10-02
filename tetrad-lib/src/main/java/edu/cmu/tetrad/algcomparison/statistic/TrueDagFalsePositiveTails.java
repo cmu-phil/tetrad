@@ -10,17 +10,17 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class ActualFalsePositiveArrow implements Statistic {
+public class TrueDagFalsePositiveTails implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "AFPA";
+        return "DFPT";
     }
 
     @Override
     public String getDescription() {
-        return "Actual False Positives for Arrow";
+        return "False Positives for Tails compared to true DAG";
     }
 
     @Override
@@ -28,14 +28,14 @@ public class ActualFalsePositiveArrow implements Statistic {
         int fp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
-            if (edge.getEndpoint1() == Endpoint.ARROW) {
-                if (trueGraph.isAncestorOf(edge.getNode1(), edge.getNode2())) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                if (!trueGraph.isAncestorOf(edge.getNode1(), edge.getNode2())) {
                     fp++;
                 }
             }
 
-            if (edge.getEndpoint2() == Endpoint.ARROW) {
-                if (trueGraph.isAncestorOf(edge.getNode2(), edge.getNode1())) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                if (!trueGraph.isAncestorOf(edge.getNode2(), edge.getNode1())) {
                     fp++;
                 }
             }

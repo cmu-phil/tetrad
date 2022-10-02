@@ -8,23 +8,23 @@ import edu.cmu.tetrad.graph.*;
  *
  * @author jdramsey
  */
-public class ActualPrecisionArrow implements Statistic {
+public class TrueDagPrecisionArrow implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "APA";
+        return "DPA";
     }
 
     @Override
     public String getDescription() {
-        return "Actual Precision Arrow (ATPA / (ATPA + AFPA)";
+        return "Precision for Arrows (DTPA / (DTPA + DFPA) compared to true DAG";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double tp = new ActualTruePositiveArrow().getValue(trueGraph, estGraph, dataModel);
-        double fp = new ActualFalsePositiveArrow().getValue(trueGraph, estGraph, dataModel);
+        double tp = new TrueDagTruePositiveArrow().getValue(trueGraph, estGraph, dataModel);
+        double fp = new TrueDagFalsePositiveArrow().getValue(trueGraph, estGraph, dataModel);
         return tp / (tp + fp);
     }
 

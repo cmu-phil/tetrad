@@ -3,6 +3,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
+import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
+
 /**
  * The bidirected true positives.
  *
@@ -23,41 +25,15 @@ public class LatentCommonAncestorFalsePositiveBidirected implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int tp = 0;
-        int all = 0;
+        int fp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                all++;
-
-                if (!trueGraph.isAncestorOf(edge.getNode1(), edge.getNode2())
-                        && !trueGraph.isAncestorOf(edge.getNode2(), edge.getNode1())) {
-                    tp++;
-                }
+                if (!existsLatentCommonAncestor(trueGraph, edge)) fp++;
             }
         }
 
-//        for (Edge edge : estGraph.getEdges()) {
-//            if (Edges.isBidirectedEdge(edge)) {
-//                all++;
-//
-//                Set<Node> commonAncestors = new HashSet<>(trueGraph.getAncestors(Collections.singletonList(edge.getNode1())));
-//                commonAncestors.retainAll(trueGraph.getAncestors(Collections.singletonList(edge.getNode2())));
-//                commonAncestors.remove(edge.getNode1());
-//                commonAncestors.remove(edge.getNode2());
-//
-//                if (!commonAncestors.isEmpty()) tp++;
-//
-////                for (Node c : commonAncestors) {
-//////                    if (c.getNodeType() == NodeType.LATENT) {
-////                        tp++;
-////                        break;
-//////                    }
-////                }
-//            }
-//        }
-
-        return all - tp;
+        return fp;
     }
 
     @Override

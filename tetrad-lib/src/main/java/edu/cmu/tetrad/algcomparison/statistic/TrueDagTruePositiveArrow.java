@@ -1,47 +1,45 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.*;
 
 /**
  * The bidirected true positives.
  *
  * @author jdramsey
  */
-public class ActualFalsePositiveTails implements Statistic {
+public class TrueDagTruePositiveArrow implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "AFPT";
+        return "DTPA";
     }
 
     @Override
     public String getDescription() {
-        return "Actual False Positives for Tails";
+        return "True Positives for Arrows compared to true DAG";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int fp = 0;
+        int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
+            if (edge.getEndpoint1() == Endpoint.ARROW) {
                 if (!trueGraph.isAncestorOf(edge.getNode1(), edge.getNode2())) {
-                    fp++;
+                    tp++;
                 }
             }
 
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
+            if (edge.getEndpoint2() == Endpoint.ARROW) {
                 if (!trueGraph.isAncestorOf(edge.getNode2(), edge.getNode1())) {
-                    fp++;
+                    tp++;
                 }
             }
         }
 
-        return fp;
+        return tp;
     }
 
     @Override

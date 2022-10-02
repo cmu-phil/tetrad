@@ -8,23 +8,23 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class ActualPrecisionTails implements Statistic {
+public class TrueDagPrecisionTails implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "APT";
+        return "DPT";
     }
 
     @Override
     public String getDescription() {
-        return "Actual Precision Arrow (ATPT / (ATPT + AFPT)";
+        return "Precision for Tails (DTPT / (DTPT + DFPT) compared to true DAG";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double tp = new ActualTruePositiveTails().getValue(trueGraph, estGraph, dataModel);
-        double fp = new ActualFalsePositiveTails().getValue(trueGraph, estGraph, dataModel);
+        double tp = new TrueDagTruePositiveTails().getValue(trueGraph, estGraph, dataModel);
+        double fp = new TrueDagFalsePositiveTails().getValue(trueGraph, estGraph, dataModel);
         return tp / (tp + fp);
     }
 

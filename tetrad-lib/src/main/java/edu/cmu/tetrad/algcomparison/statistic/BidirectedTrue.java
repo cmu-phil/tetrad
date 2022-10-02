@@ -22,7 +22,7 @@ public class BidirectedTrue implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Bidirected True";
+        return "Number of estimated bidirected edges";
     }
 
     @Override

@@ -2193,10 +2193,10 @@ public final class TestGrasp {
 
     public void testBFci() {
         Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 1000);
+        params.set(Params.SAMPLE_SIZE, 10000);
         params.set(Params.NUM_MEASURES, 17);
-        params.set(Params.AVG_DEGREE, 5);
-        params.set(Params.NUM_LATENTS, 8);
+        params.set(Params.AVG_DEGREE, 6);
+        params.set(Params.NUM_LATENTS, 7);
         params.set(Params.RANDOMIZE_COLUMNS, true);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
@@ -2205,7 +2205,7 @@ public final class TestGrasp {
 //        params.set(Params.MAX_DEGREE, 8);
         params.set(Params.VERBOSE, false);
 
-        params.set(Params.NUM_RUNS, 50);
+        params.set(Params.NUM_RUNS, 20);
 
         params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, -1);
@@ -2239,32 +2239,37 @@ public final class TestGrasp {
         algorithms.add(new Rfci(test2));
         algorithms.add(new GFCI(test2, score2));
         algorithms.add(new BFCI(test2, score2));
-        algorithms.add(new BFCI2(test2, score2));
+        algorithms.add(new BFCIFinalOrientationOnly(test2, score2));
+        algorithms.add(new BFCITR(test2, score2));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
 
         Statistics statistics = new Statistics();
-        statistics.add(new ParameterColumn(Params.GRASP_ALG));
-        statistics.add(new AdjacencyPrecision());
-        statistics.add(new AdjacencyRecall());
-        statistics.add(new ActualTruePositiveArrow());
-        statistics.add(new ActualFalsePositiveArrow());
-        statistics.add(new ActualPrecisionArrow());
-        statistics.add(new ActualTruePositiveTails());
-        statistics.add(new ActualFalsePositiveTails());
-        statistics.add(new ActualPrecisionTails());
+        statistics.add(new PagAdjacencyPrecision());
+        statistics.add(new PagAdjacencyRecall());
+        statistics.add(new TrueDagTruePositiveArrow());
+        statistics.add(new TrueDagFalsePositiveArrow());
+        statistics.add(new TrueDagPrecisionArrow());
+        statistics.add(new TrueDagTruePositiveTails());
+        statistics.add(new TrueDagFalsePositiveTails());
+        statistics.add(new TrueDagPrecisionTails());
         statistics.add(new BidirectedTrue());
         statistics.add(new BidirectedEst());
         statistics.add(new BidirectedTP());
         statistics.add(new BidirectedPrecision());
+        statistics.add(new BidirectedRecall());
         statistics.add(new LatentCommonAncestorTruePositiveBidirected());
         statistics.add(new LatentCommonAncestorFalsePositiveBidirected());
+        statistics.add(new LatentCommonAncestorFalseNegativeBidirected());
         statistics.add(new LatentCommonAncestorPrecisionBidirected());
+        statistics.add(new LatentCommonAncestorRecallBidirected());
         statistics.add(new CommonAncestorTruePositiveBidirected());
         statistics.add(new CommonAncestorFalsePositiveBidirected());
+        statistics.add(new CommonAncestorFalseNegativeBidirected());
         statistics.add(new CommonAncestorPrecisionBidirected());
-        statistics.add(new ElapsedTime());
+        statistics.add(new CommonAncestorRecallBidirected());
+//        statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);

@@ -6,28 +6,28 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 
 /**
- * The bidirected false negatives.
+ * The bidirected edge precision.
  *
  * @author jdramsey
  */
-public class BidirectedFP implements Statistic {
+public class BidirectedRecall implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "BFP";
+        return "BR";
     }
 
     @Override
     public String getDescription() {
-        return "Number of false positive bidirected edges";
+        return "Recall of bidirected edges compared to the true PAG";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = new DagToPag(trueGraph).convert();
         BidirectedConfusion confusion = new BidirectedConfusion(pag, estGraph);
-        return confusion.getFp();
+        return confusion.getTp() / (double) (confusion.getTp() + confusion.getFn());
     }
 
     @Override

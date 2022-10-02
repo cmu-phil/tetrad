@@ -32,35 +32,24 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
 
-//        for (Edge edge : estGraph.getEdges()) {
-//            if (Edges.isBidirectedEdge(edge)) {
-//                if (!trueGraph.isAncestorOf(edge.getNode1(), edge.getNode2())
-//                        && !trueGraph.isAncestorOf(edge.getNode2(), edge.getNode1())) {
-//                    tp++;
-//                }
-//            }
-//        }
-
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-
-                Set<Node> commonAncestors = new HashSet<>(trueGraph.getAncestors(Collections.singletonList(edge.getNode1())));
-                commonAncestors.retainAll(trueGraph.getAncestors(Collections.singletonList(edge.getNode2())));
-                commonAncestors.remove(edge.getNode1());
-                commonAncestors.remove(edge.getNode2());
-
-                if (!commonAncestors.isEmpty()) tp++;
-
-//                for (Node c : commonAncestors) {
-////                    if (c.getNodeType() == NodeType.LATENT) {
-//                        tp++;
-//                        break;
-////                    }
-//                }
+                if (existsCommonAncestor(trueGraph, edge)) tp++;
             }
         }
 
         return tp;
+    }
+
+    public static boolean existsCommonAncestor(Graph trueGraph, Edge edge) {
+
+        // edge X*-*Y where there is a common ancestor of X and Y in the graph.
+
+        Set<Node> commonAncestors = new HashSet<>(trueGraph.getAncestors(Collections.singletonList(edge.getNode1())));
+        commonAncestors.retainAll(trueGraph.getAncestors(Collections.singletonList(edge.getNode2())));
+        commonAncestors.remove(edge.getNode1());
+        commonAncestors.remove(edge.getNode2());
+        return !commonAncestors.isEmpty();
     }
 
     @Override

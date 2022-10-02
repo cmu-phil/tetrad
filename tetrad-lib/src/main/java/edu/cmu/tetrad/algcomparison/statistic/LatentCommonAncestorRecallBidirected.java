@@ -1,33 +1,31 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.BidirectedConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
 
 /**
- * The bidirected false negatives.
+ * The bidirected true positives.
  *
  * @author jdramsey
  */
-public class BidirectedFP implements Statistic {
+public class LatentCommonAncestorRecallBidirected implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "BFP";
+        return "LCARB";
     }
 
     @Override
     public String getDescription() {
-        return "Number of false positive bidirected edges";
+        return "Latent Common Ancesotor Bidirected (LCATPB / (LCATPB + LCAFNB)";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = new DagToPag(trueGraph).convert();
-        BidirectedConfusion confusion = new BidirectedConfusion(pag, estGraph);
-        return confusion.getFp();
+        double tp = new LatentCommonAncestorTruePositiveBidirected().getValue(trueGraph, estGraph, dataModel);
+        double fn = new LatentCommonAncestorFalseNegativeBidirected().getValue(trueGraph, estGraph, dataModel);
+        return tp / (tp + fn);
     }
 
     @Override

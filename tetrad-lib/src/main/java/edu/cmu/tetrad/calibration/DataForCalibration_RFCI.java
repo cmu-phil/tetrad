@@ -128,7 +128,7 @@ public class DataForCalibration_RFCI {
 
         System.out.println("Starting search with all data");
 
-        Bfci2 fci = new Bfci2(test, score);
+        BfciFoo fci = new BfciFoo(test, score);
         fci.setVerbose(false);
         fci.setCompleteRuleSetUsed(true);
         fci.setDepth(DFC.depth);

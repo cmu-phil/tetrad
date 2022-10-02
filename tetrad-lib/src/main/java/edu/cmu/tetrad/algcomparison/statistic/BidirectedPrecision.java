@@ -20,7 +20,7 @@ public class BidirectedPrecision implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Bidirected Edge Precision";
+        return "Precision of bidirected edges compared to true PAG";
     }
 
     @Override

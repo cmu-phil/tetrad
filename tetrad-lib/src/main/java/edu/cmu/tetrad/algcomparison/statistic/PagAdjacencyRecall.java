@@ -1,33 +1,37 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.BidirectedConfusion;
+import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 
 /**
- * The bidirected false negatives.
+ * The adjacency recall. The true positives are the number of adjacencies in both
+ * the true and estimated graphs.
  *
  * @author jdramsey
  */
-public class BidirectedFP implements Statistic {
+public class PagAdjacencyRecall implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "BFP";
+        return "PAR";
     }
 
     @Override
     public String getDescription() {
-        return "Number of false positive bidirected edges";
+        return "Adjacency Recall compared to true PAG";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = new DagToPag(trueGraph).convert();
-        BidirectedConfusion confusion = new BidirectedConfusion(pag, estGraph);
-        return confusion.getFp();
+
+        AdjacencyConfusion adjConfusion = new AdjacencyConfusion(pag, estGraph);
+        int adjTp = adjConfusion.getTp();
+        int adjFn = adjConfusion.getFn();
+        return adjTp / (double) (adjTp + adjFn);
     }
 
     @Override
