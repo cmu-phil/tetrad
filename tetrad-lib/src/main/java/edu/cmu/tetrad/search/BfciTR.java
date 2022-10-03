@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
 
 /**
@@ -117,7 +118,7 @@ public final class BfciTR implements GraphSearch {
 //        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 
         // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
-        triangleReduce2(graph, scorer, knowledge); // Adds <-> edges to the DAG
+        triangleReduce2(graph, scorer, knowledge2); // Adds <-> edges to the DAG
 //
 //
 //        LvBesJoe lvBesJoe = new LvBesJoe(score);
@@ -282,6 +283,7 @@ public final class BfciTR implements GraphSearch {
             SublistGenerator gen2 = new SublistGenerator(parents.size(), -1);
             int[] choice2;
 
+            W:
             while ((choice2 = gen2.next()) != null) {
                 List<Node> p = GraphUtils.asList(choice2, parents);
 
@@ -293,6 +295,12 @@ public final class BfciTR implements GraphSearch {
                 }
 
                 for (Node n : after) {
+//                    if (!FciOrient.isArrowpointAllowed(a, n, graph, knowledge)) continue W;
+//                    if (!FciOrient.isArrowpointAllowed(b, n, graph, knowledge)) continue W;
+//
+                    if (knowledge.isForbidden(a.getName(), n.getName())) continue W;
+                    if (knowledge.isForbidden(b.getName(), n.getName())) continue W;
+
                     perm.remove(n);
                     perm.add(n);
                 }

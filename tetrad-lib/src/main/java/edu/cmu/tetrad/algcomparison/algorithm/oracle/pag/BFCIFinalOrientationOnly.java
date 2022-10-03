@@ -111,7 +111,7 @@ public class BFCIFinalOrientationOnly implements Algorithm, UsesScoreWrapper, Ta
 
     @Override
     public String getDescription() {
-        return "BFCI2 (Best-order FCI 2 using " + this.test.getDescription()
+        return "BFCIFOO (BOSS + FINAL FCI ORIENTATION ONLY using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 

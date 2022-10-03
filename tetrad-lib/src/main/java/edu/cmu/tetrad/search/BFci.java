@@ -131,7 +131,7 @@ public final class BFci implements GraphSearch {
         }
 
         IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
+//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);

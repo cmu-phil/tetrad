@@ -4858,8 +4858,9 @@ public final class GraphUtils {
 
     /**
      * Remove edges by the possible d-separation rule.
-     * @param graph The graph from which edges should be removed.
-     * @param test The independence test to use to remove edges.
+     *
+     * @param graph   The graph from which edges should be removed.
+     * @param test    The independence test to use to remove edges.
      * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets
      *                will not be recorded.
      */
@@ -4917,7 +4918,6 @@ public final class GraphUtils {
             }
         }
     }
-
 
 
     private static boolean existOnePathWithPossibleParents(Map<Node, Set<Node>> previous, Node w, Node x, Node b, Graph graph) {
@@ -5120,10 +5120,11 @@ public final class GraphUtils {
     /**
      * The extra edge removal step for GFCI. This removed edges in triangles in the reference graph by looking
      * for sepsets for edge a--b among the adjacents of a or the adjacents of b.
-     * @param graph The graph being operated on and changed.
+     *
+     * @param graph          The graph being operated on and changed.
      * @param referenceCpdag The reference graph, a CPDAG or a DAG obtained using such an algorithm.
-     * @param nodes The nodes in the graph.
-     * @param sepsets A SepsetProducer that will do the sepset search operation described.
+     * @param nodes          The nodes in the graph.
+     * @param sepsets        A SepsetProducer that will do the sepset search operation described.
      */
     public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets) {
         for (Node b : nodes) {
@@ -5160,6 +5161,7 @@ public final class GraphUtils {
 
     /**
      * Retains only the unshielded colliders of the given graph.
+     *
      * @param graph The graph to retain unshielded colliders in.
      */
     public static void retainUnshieldedColliders(Graph graph) {
@@ -5213,10 +5215,24 @@ public final class GraphUtils {
                     continue;
                 }
 
+//                if (graph.existsDirectedPathFromTo(n1, n2)) {
+//                    if (!knowledge.isForbidden(n2.getName(), n1.getName())) {
+//                        knowledge.setForbidden(n2.getName(), n1.getName());
+//                    }
+//                } else if (graph.existsDirectedPathFromTo(n2, n1)) {
+//                    if (!knowledge.isForbidden(n1.getName(), n2.getName())) {
+//                        knowledge.setForbidden(n1.getName(), n2.getName());
+//                    }
+//                }
+
                 Edge edge = graph.getEdge(n1, n2);
-                if (edge != null && edge.isDirected()) {
+                if (edge != null && edge.pointsTowards(n2)) {
                     if (!knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
                         knowledge.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
+                    }
+                } else if (edge != null && edge.pointsTowards(n1)) {
+                    if (!knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
+                        knowledge.setForbidden(edge.getNode1().getName(), edge.getNode2().getName());
                     }
                 }
             }

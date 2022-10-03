@@ -43,6 +43,8 @@ public class CommonAncestorFalseNegativeBidirected implements Statistic {
                     if (existsCommonAncestor(trueGraph, new Edge(x, y, Endpoint.CIRCLE, Endpoint.CIRCLE))) {
                         Edge edge2 = estGraph.getEdge(x, y);
 
+                        if (edge2 == null) continue;
+
                         if (!(edge2 != null && Edges.isBidirectedEdge(edge2)
                                 && existsCommonAncestor(trueGraph, edge2))) {
                             fn++;

@@ -2223,24 +2223,23 @@ public final class TestGrasp {
         params.set(Params.SEM_GIC_RULE, 4);
         params.set(Params.PENALTY_DISCOUNT, 2);
         params.set(Params.ALPHA, 0.01);
+        params.set(Params.ZS_RISK_BOUND, 0.001);
 
         params.set(Params.DIFFERENT_GRAPHS, true);
 
         Algorithms algorithms = new Algorithms();
-        ScoreWrapper score1 = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
-        IndependenceWrapper test1 = new SemBicTest();
 
-        ScoreWrapper score2 = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
-        IndependenceWrapper test2 = new FisherZ();
+        IndependenceWrapper test = new FisherZ();
+        ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
 
-        algorithms.add(new BOSS(test2, score2));
-        algorithms.add(new Fci(test2));
-        algorithms.add(new FciMax(test2));
-        algorithms.add(new Rfci(test2));
-        algorithms.add(new GFCI(test2, score2));
-        algorithms.add(new BFCI(test2, score2));
-        algorithms.add(new BFCIFinalOrientationOnly(test2, score2));
-        algorithms.add(new BFCITR(test2, score2));
+        algorithms.add(new BOSS(test, score));
+        algorithms.add(new Fci(test));
+        algorithms.add(new FciMax(test));
+        algorithms.add(new Rfci(test));
+        algorithms.add(new GFCI(test, score));
+        algorithms.add(new BFCI(test, score));
+        algorithms.add(new BFCIFinalOrientationOnly(test, score));
+        algorithms.add(new BFCITR(test, score));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -2250,10 +2249,14 @@ public final class TestGrasp {
         statistics.add(new PagAdjacencyRecall());
         statistics.add(new TrueDagTruePositiveArrow());
         statistics.add(new TrueDagFalsePositiveArrow());
+        statistics.add(new TrueDagFalseNegativesArrows());
         statistics.add(new TrueDagPrecisionArrow());
+        statistics.add(new TrueDagRecallArrows());
         statistics.add(new TrueDagTruePositiveTails());
         statistics.add(new TrueDagFalsePositiveTails());
+        statistics.add(new TrueDagFalseNegativesArrows());
         statistics.add(new TrueDagPrecisionTails());
+        statistics.add(new TrueDagRecallTails());
         statistics.add(new BidirectedTrue());
         statistics.add(new BidirectedEst());
         statistics.add(new BidirectedTP());
