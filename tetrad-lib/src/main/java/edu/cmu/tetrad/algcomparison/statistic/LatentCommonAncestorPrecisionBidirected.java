@@ -13,7 +13,7 @@ public class LatentCommonAncestorPrecisionBidirected implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "LCAPB";
+        return "LCABP";
     }
 
     @Override

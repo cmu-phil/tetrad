@@ -13,7 +13,7 @@ public class CommonAncestorPrecisionBidirected implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "CAPB";
+        return "CABP";
     }
 
     @Override

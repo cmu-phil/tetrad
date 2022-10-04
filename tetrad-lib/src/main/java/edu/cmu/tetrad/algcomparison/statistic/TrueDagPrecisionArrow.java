@@ -13,7 +13,7 @@ public class TrueDagPrecisionArrow implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "DPA";
+        return "DAP";
     }
 
     @Override

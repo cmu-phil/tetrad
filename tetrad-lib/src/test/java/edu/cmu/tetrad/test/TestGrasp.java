@@ -2269,7 +2269,7 @@ public final class TestGrasp {
 //        params.set(Params.MAX_DEGREE, 8);
         params.set(Params.VERBOSE, false);
 
-        params.set(Params.NUM_RUNS, 20);
+        params.set(Params.NUM_RUNS, 100);
 
         params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, -1);
@@ -2309,6 +2309,8 @@ public final class TestGrasp {
         simulations.add(new SemSimulation(new RandomForward()));
 
         Statistics statistics = new Statistics();
+        statistics.add(new ParameterColumn(Params.ALPHA));
+        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new PagAdjacencyPrecision());
         statistics.add(new PagAdjacencyRecall());
 //        statistics.add(new TrueDagTruePositiveArrow());
@@ -2326,16 +2328,16 @@ public final class TestGrasp {
 //        statistics.add(new BidirectedTP());
         statistics.add(new BidirectedPrecision());
         statistics.add(new BidirectedRecall());
-//        statistics.add(new LatentCommonAncestorTruePositiveBidirected());
-//        statistics.add(new LatentCommonAncestorFalsePositiveBidirected());
-//        statistics.add(new LatentCommonAncestorFalseNegativeBidirected());
-        statistics.add(new LatentCommonAncestorPrecisionBidirected());
-        statistics.add(new LatentCommonAncestorRecallBidirected());
 //        statistics.add(new CommonAncestorTruePositiveBidirected());
 //        statistics.add(new CommonAncestorFalsePositiveBidirected());
 //        statistics.add(new CommonAncestorFalseNegativeBidirected());
         statistics.add(new CommonAncestorPrecisionBidirected());
         statistics.add(new CommonAncestorRecallBidirected());
+//        statistics.add(new LatentCommonAncestorTruePositiveBidirected());
+//        statistics.add(new LatentCommonAncestorFalsePositiveBidirected());
+//        statistics.add(new LatentCommonAncestorFalseNegativeBidirected());
+        statistics.add(new LatentCommonAncestorPrecisionBidirected());
+        statistics.add(new LatentCommonAncestorRecallBidirected());
 //        statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();

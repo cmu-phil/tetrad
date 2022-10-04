@@ -13,7 +13,7 @@ public class CommonAncestorRecallBidirected implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "CARB";
+        return "CABR";
     }
 
     @Override

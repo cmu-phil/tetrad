@@ -13,7 +13,7 @@ public class TrueDagPrecisionTails implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "DPT";
+        return "DTP";
     }
 
     @Override

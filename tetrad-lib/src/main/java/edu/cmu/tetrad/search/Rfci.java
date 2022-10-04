@@ -174,6 +174,7 @@ public final class Rfci implements GraphSearch {
 
     public Graph search(IFas fas, List<Node> nodes) {
         long beginTime = System.currentTimeMillis();
+        independenceTest.setVerbose(verbose);
 
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");

@@ -98,6 +98,7 @@ public final class GFci implements GraphSearch {
 
     //========================PUBLIC METHODS==========================//
     public Graph search() {
+        this.independenceTest.setVerbose(verbose);
         List<Node> nodes = getIndependenceTest().getVariables();
 
         this.logger.log("info", "Starting FCI algorithm.");
