@@ -1699,7 +1699,7 @@ public final class SearchGraphUtils {
 
     @NotNull
     public static Graph dagToPag(Graph trueGraph) {
-        return dagToPag(trueGraph);
+        return new DagToPag(trueGraph).convert();
     }
 
     public enum CpcTripleType {
