@@ -20,6 +20,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 
 /**
  * Adjusts GFCI to use a permutation algorithm (in this case SP) to do the initial
@@ -85,7 +87,7 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(graph).convert();
+        return dagToPag(graph);
     }
 
     @Override

@@ -18,7 +18,7 @@ public class CommonAncestorPrecisionBidirected implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Actual Precision Arrow (CATPB / (CATPB + CAFPB)";
+        return "Proportion of X<->Y in estimaged graph where  X<-Z->Y for X*-*Y in true DAG";
     }
 
     @Override

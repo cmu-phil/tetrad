@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 import static java.lang.Math.min;
 import static java.util.Collections.shuffle;
 
@@ -5110,7 +5111,7 @@ public final class GraphUtils {
             return SearchGraphUtils.cpdagForDag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
-            return new DagToPag(graph).convert();
+            return dagToPag(graph);
         } else {
             params.set("graphComparisonType", "DAG");
             return new EdgeListGraph(graph);

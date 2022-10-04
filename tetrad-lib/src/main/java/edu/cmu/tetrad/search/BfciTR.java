@@ -136,15 +136,15 @@ public final class BfciTR implements GraphSearch {
 //            }
 //        }
 
-//        graph = SearchGraphUtils.cpdagForDag(graph);
-////
-//        for (Edge edge : graph.getEdges()) {
-//            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
-//            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
-//        }
+        graph = SearchGraphUtils.cpdagForDag(graph);
+//
+        for (Edge edge : graph.getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
+            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
+        }
 
         // Retain only the unshielded colliders.
-        retainUnshieldedColliders(graph);
+//        retainUnshieldedColliders(graph);
 
         // Do final FCI orientation rules app
         SepsetProducer sepsets = new SepsetsGreedy(graph, test, null, depth);

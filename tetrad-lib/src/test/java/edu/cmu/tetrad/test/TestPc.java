@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -683,7 +684,7 @@ public class TestPc {
             DataSet data = im.simulateData(10000, false);
 
 //            Graph comparison = dag;
-            Graph comparison = new DagToPag(dag).convert();
+            Graph comparison = dagToPag(dag);
 //            Graph comparison = new Pc(new IndTestDSep(dag)).search();
 
             IndTestFisherZ test = new IndTestFisherZ(data, 0.1);

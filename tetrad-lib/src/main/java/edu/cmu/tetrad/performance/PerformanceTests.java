@@ -39,6 +39,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
  * Runs some basic performance tests of various algorithm.
  *
@@ -689,7 +691,7 @@ public class PerformanceTests {
 
         this.out.println(outGraph);
 
-        System.out.println(MisclassificationUtils.edgeMisclassifications(outGraph, new DagToPag(dag).convert()));
+        System.out.println(MisclassificationUtils.edgeMisclassifications(outGraph, dagToPag(dag)));
 
         long time4 = System.currentTimeMillis();
 

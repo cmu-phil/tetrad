@@ -124,7 +124,7 @@ public final class BFci implements GraphSearch {
         assert variables != null;
 
         alg.bestOrder(variables);
-        this.graph = alg.getGraph(false); // Get the DAG
+        this.graph = alg.getGraph(true); // Get the DAG
 
         if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
@@ -141,7 +141,14 @@ public final class BFci implements GraphSearch {
         // GFCI extra edge removal step...
         gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
         modifiedR0(referenceDag, sepsets);
-        retainUnshieldedColliders(this.graph);
+//        retainUnshieldedColliders(this.graph);
+
+//        graph = SearchGraphUtils.cpdagForDag(graph);
+////
+//        for (Edge edge : graph.getEdges()) {
+//            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
+//            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
+//        }
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);

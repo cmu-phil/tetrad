@@ -53,6 +53,8 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics
  * and a list of parameters and their values.
@@ -534,7 +536,7 @@ public class Comparison {
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(new DagToPag(graph).convert(), file4, false);
+                        GraphUtils.saveGraph(dagToPag(graph), file4, false);
                     }
 
                 }
@@ -621,7 +623,7 @@ public class Comparison {
 
                 if (isSavePags()) {
                     File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                    GraphUtils.saveGraph(new DagToPag(graph).convert(), file4, false);
+                    GraphUtils.saveGraph(dagToPag(graph), file4, false);
                 }
             }
         } catch (IOException e) {
@@ -1198,7 +1200,7 @@ public class Comparison {
             } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
                 comparisonGraph = SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueGraph));
             } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
-                comparisonGraph = new DagToPag(new EdgeListGraph(trueGraph)).convert();
+                comparisonGraph = dagToPag(new EdgeListGraph(trueGraph));
             } else {
                 throw new IllegalArgumentException("Unrecognized graph type.");
             }

@@ -5,6 +5,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
  * The adjacency recall. The true positives are the number of adjacencies in both
  * the true and estimated graphs.
@@ -26,7 +28,7 @@ public class PagAdjacencyRecall implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = new DagToPag(trueGraph).convert();
+        Graph pag = dagToPag(trueGraph);
 
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(pag, estGraph);
         int adjTp = adjConfusion.getTp();

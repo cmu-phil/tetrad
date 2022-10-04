@@ -19,6 +19,8 @@ import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
  * Jan 4, 2019 4:32:05 PM
  *
@@ -75,7 +77,7 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(new EdgeListGraph(graph)).convert();
+        return dagToPag(new EdgeListGraph(graph));
     }
 
     @Override

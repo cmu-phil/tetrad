@@ -5,6 +5,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.DagToPag;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
  * The bidirected true positives.
  *
@@ -25,7 +27,7 @@ public class BidirectedTP implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = new DagToPag(trueGraph).convert();
+        Graph pag = dagToPag(trueGraph);
         BidirectedConfusion confusion = new BidirectedConfusion(pag, estGraph);
         return confusion.getTp();
     }

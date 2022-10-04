@@ -15,6 +15,8 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import java.util.LinkedList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
  * Conserative FCI.
  *
@@ -56,7 +58,7 @@ public class Cfci implements Algorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(new EdgeListGraph(graph)).convert();
+        return dagToPag(new EdgeListGraph(graph));
     }
 
     @Override

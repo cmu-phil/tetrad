@@ -18,7 +18,7 @@ public class LatentCommonAncestorRecallBidirected implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Latent Common Ancesotor Bidirected (LCATPB / (LCATPB + LCAFNB)";
+        return "Proportion X<-Z->Y with latent Z for X*-*Y in estimated graph that are marked as bidirected edge";
     }
 
     @Override

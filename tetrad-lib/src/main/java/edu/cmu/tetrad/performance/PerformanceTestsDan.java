@@ -41,6 +41,8 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
  * Contains some tests for Dan Malinsky, that might be of interest to others.
  *
@@ -203,7 +205,7 @@ public class PerformanceTestsDan {
             out10.println(data);
 
             out11.println("True PAG_of_the_true_DAG");
-            Graph truePag = new DagToPag(dag).convert();
+            Graph truePag = dagToPag(dag);
             out11.println(truePag);
             printDanMatrix(_vars, truePag, out12);
 

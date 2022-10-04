@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -281,7 +282,7 @@ public final class TestGraphUtils {
     @Test
     public void testPagColoring() {
         Graph dag = GraphUtils.randomGraph(30, 5, 50, 10, 10, 10, false);
-        Graph pag = new DagToPag(dag).convert();
+        Graph pag = dagToPag(dag);
 
         GraphUtils.addPagColoring(pag);
 

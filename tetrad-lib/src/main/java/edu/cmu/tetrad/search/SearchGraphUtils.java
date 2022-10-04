@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -1694,6 +1695,11 @@ public final class SearchGraphUtils {
         }
 
         throw new IllegalStateException("Can do that that reorientation.");
+    }
+
+    @NotNull
+    public static Graph dagToPag(Graph trueGraph) {
+        return dagToPag(trueGraph);
     }
 
     public enum CpcTripleType {

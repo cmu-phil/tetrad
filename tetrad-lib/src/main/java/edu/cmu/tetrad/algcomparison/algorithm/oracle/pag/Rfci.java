@@ -18,6 +18,8 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
  * RFCI.
  *
@@ -76,7 +78,7 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(new EdgeListGraph(graph)).convert();
+        return dagToPag(new EdgeListGraph(graph));
     }
 
     public String getDescription() {

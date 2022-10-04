@@ -21,6 +21,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 
 /**
  * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial
@@ -104,7 +106,7 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(graph).convert();
+        return dagToPag(graph);
     }
 
     @Override

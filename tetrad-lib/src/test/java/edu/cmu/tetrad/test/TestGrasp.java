@@ -31,6 +31,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.*;
+import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
@@ -79,6 +80,9 @@ public final class TestGrasp {
         new TestGrasp().testBFci();
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
+
+
+//        new TestGrasp().testForWayne();
     }
 
     @NotNull
@@ -1496,6 +1500,66 @@ public final class TestGrasp {
         }
     }
 
+    private void testForWayne() {
+        List<Node> nodes = new ArrayList<>();
+        Node x1 = new ContinuousVariable("X1");
+        Node x2 = new ContinuousVariable("X2");
+        Node x3 = new ContinuousVariable("X3");
+        Node x4 = new ContinuousVariable("X4");
+        Node x5 = new ContinuousVariable("X5");
+
+        nodes.add(x1);
+        nodes.add(x2);
+        nodes.add(x3);
+        nodes.add(x4);
+        nodes.add(x5);
+
+        Graph graph = new EdgeListGraph(nodes);
+        graph.addDirectedEdge(x1, x5);
+        graph.addDirectedEdge(x2, x5);
+        graph.addDirectedEdge(x3, x5);
+        graph.addDirectedEdge(x4, x5);
+        graph.addDirectedEdge(x1, x4);
+
+        System.out.println(graph);
+
+//        IndTestDSep dsep = new IndTestDSep(graph);
+//        GraphScore score = new GraphScore(graph);
+        List<Node> order = list(x1, x2, x3, x4, x5);
+
+        GRaSP boss = new GRaSP(new DSeparationScore(graph), new DSeparationTest(graph));
+
+        Parameters parameters = new Parameters();
+        parameters.set(Params.GRASP_USE_RASKUTTI_UHLER, true);
+
+//        Boss boss = new Boss(dsep, score);
+//        boss.setUseRaskuttiUhler(true);
+//        boss.setUseScore(false);
+//        boss.setDepth(3);
+//        boss.setNumStarts(1);
+        Graph best = boss.search(null, parameters);
+        System.out.println("best = " + best);
+
+//        TeyssierScorer scorer = new TeyssierScorer(dsep, score);
+////        scorer.setUseScore(false);
+//        scorer.setUseRaskuttiUhler(true);
+//
+//        scorer.score(order);
+//        System.out.println(scorer.score());
+//        System.out.println(scorer.getGraph(false));
+
+    }
+
+    private List<Node> list(ContinuousVariable...s) {
+        List<Node> l = new ArrayList<>();
+
+        for (Node n : s) {
+            l.add(n);
+        }
+
+        return l;
+    }
+
     private void printExistsNonfrugalCase(String line, int index, IndependenceFacts facts, List<Node> spPi, Graph spGraph, List<Node> failingInitialPi, Graph failingDag, List<Node> failingEstPi) {
         System.out.println("Failed, line " + index + " " + line);
         System.out.println("Elementary facts = " + facts);
@@ -2247,29 +2311,29 @@ public final class TestGrasp {
         Statistics statistics = new Statistics();
         statistics.add(new PagAdjacencyPrecision());
         statistics.add(new PagAdjacencyRecall());
-        statistics.add(new TrueDagTruePositiveArrow());
-        statistics.add(new TrueDagFalsePositiveArrow());
-        statistics.add(new TrueDagFalseNegativesArrows());
+//        statistics.add(new TrueDagTruePositiveArrow());
+//        statistics.add(new TrueDagFalsePositiveArrow());
+//        statistics.add(new TrueDagFalseNegativesArrows());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagRecallArrows());
-        statistics.add(new TrueDagTruePositiveTails());
-        statistics.add(new TrueDagFalsePositiveTails());
-        statistics.add(new TrueDagFalseNegativesArrows());
+//        statistics.add(new TrueDagTruePositiveTails());
+//        statistics.add(new TrueDagFalsePositiveTails());
+//        statistics.add(new TrueDagFalseNegativesArrows());
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagRecallTails());
         statistics.add(new BidirectedTrue());
         statistics.add(new BidirectedEst());
-        statistics.add(new BidirectedTP());
+//        statistics.add(new BidirectedTP());
         statistics.add(new BidirectedPrecision());
         statistics.add(new BidirectedRecall());
-        statistics.add(new LatentCommonAncestorTruePositiveBidirected());
-        statistics.add(new LatentCommonAncestorFalsePositiveBidirected());
-        statistics.add(new LatentCommonAncestorFalseNegativeBidirected());
+//        statistics.add(new LatentCommonAncestorTruePositiveBidirected());
+//        statistics.add(new LatentCommonAncestorFalsePositiveBidirected());
+//        statistics.add(new LatentCommonAncestorFalseNegativeBidirected());
         statistics.add(new LatentCommonAncestorPrecisionBidirected());
         statistics.add(new LatentCommonAncestorRecallBidirected());
-        statistics.add(new CommonAncestorTruePositiveBidirected());
-        statistics.add(new CommonAncestorFalsePositiveBidirected());
-        statistics.add(new CommonAncestorFalseNegativeBidirected());
+//        statistics.add(new CommonAncestorTruePositiveBidirected());
+//        statistics.add(new CommonAncestorFalsePositiveBidirected());
+//        statistics.add(new CommonAncestorFalseNegativeBidirected());
         statistics.add(new CommonAncestorPrecisionBidirected());
         statistics.add(new CommonAncestorRecallBidirected());
 //        statistics.add(new ElapsedTime());

@@ -21,6 +21,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 
 /**
  * GFCI.
@@ -96,7 +98,7 @@ public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(graph).convert();
+        return dagToPag(graph);
     }
 
     @Override

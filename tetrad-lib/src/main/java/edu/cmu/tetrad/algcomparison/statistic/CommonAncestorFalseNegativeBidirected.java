@@ -7,6 +7,7 @@ import edu.cmu.tetrad.search.DagToPag;
 import java.util.List;
 
 import static edu.cmu.tetrad.algcomparison.statistic.CommonAncestorTruePositiveBidirected.existsCommonAncestor;
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 /**
  * The bidirected true positives.
@@ -28,7 +29,7 @@ public class CommonAncestorFalseNegativeBidirected implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = new DagToPag(trueGraph).convert();
+        Graph pag = dagToPag(trueGraph);
 
         int fn = 0;
 

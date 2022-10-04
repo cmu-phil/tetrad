@@ -53,6 +53,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
  * Nov 14, 2017 12:00:31 PM
  *
@@ -511,7 +513,7 @@ public class TimeoutComparison {
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(new DagToPag(graph).convert(), file4, false);
+                        GraphUtils.saveGraph(dagToPag(graph), file4, false);
                     }
                 }
 
@@ -1147,7 +1149,7 @@ public class TimeoutComparison {
         } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
             comparisonGraph = SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueGraph));
         } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
-            comparisonGraph = new DagToPag(new EdgeListGraph(trueGraph)).convert();
+            comparisonGraph = dagToPag(new EdgeListGraph(trueGraph));
         } else {
             throw new IllegalArgumentException("Unrecognized graph type.");
         }
