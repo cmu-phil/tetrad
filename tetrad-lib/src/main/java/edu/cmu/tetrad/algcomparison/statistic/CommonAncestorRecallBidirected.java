@@ -18,7 +18,7 @@ public class CommonAncestorRecallBidirected implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion X<-Z->Y for X*-*Y in estimated graph that are marked as bidirected edges";
+        return "Proportion of X<-...<-Z->...>Y for X*-*Y in estimated graph that are marked as bidirected edges";
     }
 
     @Override

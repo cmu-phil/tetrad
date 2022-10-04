@@ -394,7 +394,7 @@ public class Comparison {
             }
 
             this.out.println("Graphs are being compared to the " + this.comparisonGraph.toString().replace("_", " ") + ".");
-            this.out.println("All statistics are being summarized over " + numRuns + " runs using the indicated statistic.");
+            this.out.println("All statistics are individually summarized over " + numRuns + " runs using the indicated statistic.");
 
             this.out.println();
 

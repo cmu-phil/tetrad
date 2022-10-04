@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author jdramseyHow
  */
 public class LatentCommonAncestorRecallBidirected implements Statistic {
     static final long serialVersionUID = 23L;
@@ -18,7 +18,7 @@ public class LatentCommonAncestorRecallBidirected implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion X<-Z->Y with latent Z for X*-*Y in estimated graph that are marked as bidirected edge";
+        return "Proportion of X<-...<-Z->...->Y with latent Z for X*-*Y in estimated graph that are marked as bidirected edge";
     }
 
     @Override

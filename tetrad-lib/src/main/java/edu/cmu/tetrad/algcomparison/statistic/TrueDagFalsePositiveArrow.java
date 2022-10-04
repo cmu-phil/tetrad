@@ -4,6 +4,10 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The bidirected true positives.
@@ -26,6 +30,20 @@ public class TrueDagFalsePositiveArrow implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int fp = 0;
+
+        List<Node> nodes = trueGraph.getNodes();
+//
+//        for (Node x : nodes) {
+//            for (Node y : nodes) {
+//                if (x == y) continue;
+//
+//                if (estGraph.existsDirectedPathFromTo(x, y)) {
+//                    if (trueGraph.existsDirectedPathFromTo(y, x)) {
+//                        fp++;
+//                    }
+//                }
+//            }
+//        }
 
         for (Edge edge : estGraph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.ARROW) {

@@ -18,7 +18,7 @@ public class LatentCommonAncestorPrecisionBidirected implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of X<->Y in estimaged graph where  X<-Z->Y with latent Z for X*-*Y in true DAG";
+        return "Proportion of X<->Y in estimaged graph where  X<-...<-Z->...->Y with latent Z for X*-*Y in true DAG";
     }
 
     @Override

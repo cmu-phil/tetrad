@@ -2318,6 +2318,9 @@ public final class TestGrasp {
 //        statistics.add(new TrueDagFalseNegativesArrows());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagRecallArrows());
+        statistics.add(new ProportionDirectedPathsNotReversedEst());
+        statistics.add(new NumDirectedPathsNotReversedEst());
+        statistics.add(new ProportionDirectedPathsNotReversedTrue());
 //        statistics.add(new TrueDagTruePositiveTails());
 //        statistics.add(new TrueDagFalsePositiveTails());
 //        statistics.add(new TrueDagFalseNegativesArrows());
