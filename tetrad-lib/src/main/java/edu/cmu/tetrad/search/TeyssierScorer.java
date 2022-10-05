@@ -1005,7 +1005,6 @@ public class TeyssierScorer {
 
             if (this.test.checkIndependence(x, y, z).dependent()) {
                 parents.add(y);
-                System.out.println("DEP");
             }
         }
 
