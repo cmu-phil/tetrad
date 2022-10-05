@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import static edu.cmu.tetrad.graph.GraphUtils.*;
@@ -150,6 +151,9 @@ public final class BFci implements GraphSearch {
 //            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
 //        }
 
+
+//        removeByPossibleDsep(graph, independenceTest, null);
+
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
@@ -167,6 +171,27 @@ public final class BFci implements GraphSearch {
         return this.graph;
     }
 
+    private List<Node> possibleParents(Node x, List<Node> adjx,
+                                       IKnowledge knowledge, Node y) {
+        List<Node> possibleParents = new LinkedList<>();
+        String _x = x.getName();
+
+        for (Node z : adjx) {
+            if (z == x) continue;
+            if (z == y) continue;
+            String _z = z.getName();
+
+            if (possibleParentOf(_z, _x, knowledge)) {
+                possibleParents.add(z);
+            }
+        }
+
+        return possibleParents;
+    }
+
+    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+        return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
+    }
 
     /**
      * @param maxDegree The maximum indegree of the output graph.

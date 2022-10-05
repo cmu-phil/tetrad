@@ -2257,7 +2257,7 @@ public final class TestGrasp {
 
     public void testBFci() {
         Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 10000);
+        params.set(Params.SAMPLE_SIZE, 5000);
         params.set(Params.NUM_MEASURES, 17);
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.NUM_LATENTS, 7);
@@ -2269,7 +2269,7 @@ public final class TestGrasp {
 //        params.set(Params.MAX_DEGREE, 8);
         params.set(Params.VERBOSE, false);
 
-        params.set(Params.NUM_RUNS, 5);
+        params.set(Params.NUM_RUNS, 50);
 
         params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, -1);
@@ -2303,12 +2303,13 @@ public final class TestGrasp {
         algorithms.add(new GFCI(test, score));
         algorithms.add(new BFCI(test, score));
         algorithms.add(new BFCIFinalOrientationOnly(test, score));
-        algorithms.add(new BFCITR(test, score));
+//        algorithms.add(new BFCITR(test, score));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
 
         Statistics statistics = new Statistics();
+        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.ALPHA));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new PagAdjacencyPrecision());
@@ -2332,6 +2333,7 @@ public final class TestGrasp {
 //        statistics.add(new BidirectedTP());
         statistics.add(new BidirectedPrecision());
         statistics.add(new BidirectedRecall());
+        statistics.add(new BidirectedNeitherAncestor());
 //        statistics.add(new CommonAncestorTruePositiveBidirected());
 //        statistics.add(new CommonAncestorFalsePositiveBidirected());
 //        statistics.add(new CommonAncestorFalseNegativeBidirected());

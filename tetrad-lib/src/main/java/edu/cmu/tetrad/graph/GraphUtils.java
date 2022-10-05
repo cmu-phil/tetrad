@@ -25,7 +25,10 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.SepsetMap;
+import edu.cmu.tetrad.search.SepsetProducer;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -5127,7 +5130,8 @@ public final class GraphUtils {
      * @param nodes          The nodes in the graph.
      * @param sepsets        A SepsetProducer that will do the sepset search operation described.
      */
-    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets) {
+    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes,
+                                                SepsetProducer sepsets) {
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -5166,17 +5170,6 @@ public final class GraphUtils {
      * @param graph The graph to retain unshielded colliders in.
      */
     public static void retainUnshieldedColliders(Graph graph) {
-        for (Edge edge : graph.getEdges()) {
-            if (edge.getEndpoint1() != Endpoint.ARROW) {
-                edge.setEndpoint1(Endpoint.CIRCLE);
-            }
-
-            if (edge.getEndpoint2() != Endpoint.ARROW) {
-                edge.setEndpoint2(Endpoint.CIRCLE);
-            }
-        }
-
-
         Graph orig = new EdgeListGraph(graph);
         graph.reorientAllWith(Endpoint.CIRCLE);
         List<Node> nodes = graph.getNodes();
@@ -5206,38 +5199,29 @@ public final class GraphUtils {
     public static void addForbiddenReverseEdgesForDirectedEdges(Graph graph, IKnowledge knowledge) {
         List<Node> nodes = graph.getNodes();
 
-        int numOfNodes = nodes.size();
-        for (int i = 0; i < numOfNodes; i++) {
-            for (int j = i + 1; j < numOfNodes; j++) {
-                Node n1 = nodes.get(i);
-                Node n2 = nodes.get(j);
-
-                if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
-                    continue;
-                }
-
-//                if (graph.existsDirectedPathFromTo(n1, n2)) {
-//                    if (!knowledge.isForbidden(n2.getName(), n1.getName())) {
-//                        knowledge.setForbidden(n2.getName(), n1.getName());
-//                    }
-//                } else if (graph.existsDirectedPathFromTo(n2, n1)) {
-//                    if (!knowledge.isForbidden(n1.getName(), n2.getName())) {
-//                        knowledge.setForbidden(n1.getName(), n2.getName());
-//                    }
-//                }
-
-                Edge edge = graph.getEdge(n1, n2);
-                if (edge != null && edge.pointsTowards(n2)) {
-                    if (!knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
-                        knowledge.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
-                    }
-                } else if (edge != null && edge.pointsTowards(n1)) {
-                    if (!knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
-                        knowledge.setForbidden(edge.getNode1().getName(), edge.getNode2().getName());
+        for (Node x : nodes) {
+            for (Node y : nodes) {
+                if (x == y) continue;
+                if (graph.existsDirectedPathFromTo(x, y)) {
+                    if (!knowledge.isForbidden(y.getName(), x.getName())) {
+                        knowledge.setForbidden(y.getName(), x.getName());
                     }
                 }
             }
         }
+
+//                Edge edge = graph.getEdge(n1, n2);
+//                if (edge != null && edge.pointsTowards(n2)) {
+//                    if (!knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
+//                        knowledge.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
+//                    }
+//                } else if (edge != null && edge.pointsTowards(n1)) {
+//                    if (!knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
+//                        knowledge.setForbidden(edge.getNode1().getName(), edge.getNode2().getName());
+//                    }
+//                }
+//    }
+//        }
     }
 
     public static void removeNonSkeletonEdges(Graph graph, IKnowledge knowledge) {
