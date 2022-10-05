@@ -11,17 +11,17 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class NumDirectedPathsNotReversedEst implements Statistic {
+public class NumDirectedPathsNotReversedTrue implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#DPE";
+        return "#DPT";
     }
 
     @Override
     public String getDescription() {
-        return "Number of <X, Y> for which there is a path X->...->Y in the estimated graph";
+        return "Number of <X, Y> for which there is a path X->...->Y in the true graph";
     }
 
     @Override
@@ -33,7 +33,7 @@ public class NumDirectedPathsNotReversedEst implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (estGraph.existsDirectedPathFromTo(x, y)) {
+                if (trueGraph.existsDirectedPathFromTo(x, y)) {
                     count++;
                 }
             }

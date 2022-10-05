@@ -2269,7 +2269,7 @@ public final class TestGrasp {
 //        params.set(Params.MAX_DEGREE, 8);
         params.set(Params.VERBOSE, false);
 
-        params.set(Params.NUM_RUNS, 100);
+        params.set(Params.NUM_RUNS, 5);
 
         params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, -1);
@@ -2319,8 +2319,9 @@ public final class TestGrasp {
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagRecallArrows());
         statistics.add(new ProportionDirectedPathsNotReversedEst());
-        statistics.add(new NumDirectedPathsNotReversedEst());
         statistics.add(new ProportionDirectedPathsNotReversedTrue());
+        statistics.add(new NumDirectedPathsNotReversedEst());
+        statistics.add(new NumDirectedPathsNotReversedTrue());
 //        statistics.add(new TrueDagTruePositiveTails());
 //        statistics.add(new TrueDagFalsePositiveTails());
 //        statistics.add(new TrueDagFalseNegativesArrows());
