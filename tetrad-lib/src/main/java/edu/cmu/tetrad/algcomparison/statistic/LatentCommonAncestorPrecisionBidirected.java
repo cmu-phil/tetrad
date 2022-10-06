@@ -1,7 +1,11 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
+
+import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 
 /**
  * The bidirected true positives.
@@ -23,10 +27,22 @@ public class LatentCommonAncestorPrecisionBidirected implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double tp = new LatentCommonAncestorTruePositiveBidirected().getValue(trueGraph, estGraph, dataModel);
-        double fp = new LatentCommonAncestorFalsePositiveBidirected().getValue(trueGraph, estGraph, dataModel);
-        return tp / (tp + fp);
+        int tp = 0;
+        int fp = 0;
+
+        for (Edge edge : estGraph.getEdges()) {
+            if (Edges.isBidirectedEdge(edge)) {
+                if (existsLatentCommonAncestor(trueGraph, edge)) {
+                    tp++;
+                } else {
+                    fp++;
+                }
+            }
+        }
+
+        return tp / (double) (tp + fp);
     }
+
 
     @Override
     public double getNormValue(double value) {

@@ -1,7 +1,12 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+
+import java.util.List;
 
 /**
  * The bidirected true positives.
@@ -13,19 +18,40 @@ public class TrueDagRecallArrows implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "DAR";
+        return "DAHR";
     }
 
     @Override
     public String getDescription() {
-        return "Recall for Tails (DTPA / (DTPA + DFNA) compared to true DAG";
+        return "Proportion of cases in the true graph where not Y->...->X for which there is an edge X*->Y in the estimated graph";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double tp = new TrueDagTruePositiveArrow().getValue(trueGraph, estGraph, dataModel);
-        double fn = new TrueDagFalseNegativesArrows().getValue(trueGraph, estGraph, dataModel);
-        return tp / (tp + fn);
+        int tp = 0;
+        int fp = 0;
+
+        List<Node> nodes = estGraph.getNodes();
+
+        for (Node x : nodes) {
+            for (Node y : nodes) {
+                if (x == y) continue;
+
+                if (!trueGraph.existsDirectedPathFromTo(x, y)) {
+                    Edge edge2 = estGraph.getEdge(x, y);
+
+                    if (edge2 != null) {
+                        if (edge2.getProximalEndpoint(x) == Endpoint.ARROW) {
+                            tp++;
+                        } else {
+                            fp++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return tp / (double) (tp + fp);
     }
 
     @Override

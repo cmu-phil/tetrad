@@ -2,8 +2,12 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.algcomparison.statistic.utils.BidirectedConfusion;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 /**
  * The bidirected edge precision.
@@ -25,9 +29,23 @@ public class BidirectedRecall implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = SearchGraphUtils.dagToPag(trueGraph);
-        BidirectedConfusion confusion = new BidirectedConfusion(pag, estGraph);
-        return confusion.getTp() / (double) (confusion.getTp() + confusion.getFn());
+        Graph pag = dagToPag(trueGraph);
+        int tp = 0;
+        int fn = 0;
+
+        for (Edge edge : pag.getEdges()) {
+            if (Edges.isBidirectedEdge(edge)) {
+                Edge edge2 = estGraph.getEdge(edge.getNode1(), edge.getNode2());
+
+                if (edge2 != null && Edges.isBidirectedEdge(edge2)) {
+                    tp++;
+                } else {
+                    fn++;
+                }
+            }
+        }
+
+        return tp / (double) (tp + fn);
     }
 
     @Override

@@ -16,7 +16,7 @@ public class ProportionDirectedPathsNotReversedTrue implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "NRT";
+        return "NRTE";
     }
 
     @Override

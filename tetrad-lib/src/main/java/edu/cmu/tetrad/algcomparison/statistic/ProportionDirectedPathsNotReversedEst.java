@@ -16,7 +16,7 @@ public class ProportionDirectedPathsNotReversedEst implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "NRE";
+        return "NRET";
     }
 
     @Override
@@ -43,8 +43,6 @@ public class ProportionDirectedPathsNotReversedEst implements Statistic {
                 }
             }
         }
-
-        System.out.println("NRE TP = " + tp);
 
         return tp / (double) (tp + fp);
     }

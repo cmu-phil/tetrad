@@ -30,10 +30,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-
-import static edu.cmu.tetrad.graph.GraphUtils.*;
 
 /**
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
@@ -45,7 +42,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.*;
  * @author jdramsey
  * @author bryan andrews
  */
-public final class BFci implements GraphSearch {
+public final class BFci2 implements GraphSearch {
 
     // The PAG being constructed.
     private Graph graph;
@@ -91,7 +88,7 @@ public final class BFci implements GraphSearch {
     private boolean possibleDsepSearchDone = true;
 
     //============================CONSTRUCTORS============================//
-    public BFci(IndependenceTest test, Score score) {
+    public BFci2(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
@@ -109,8 +106,41 @@ public final class BFci implements GraphSearch {
 
         this.graph = new EdgeListGraph(nodes);
 
+        List<Node> variables = this.score.getVariables();
+        assert variables != null;
+
         TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
 
+        this.graph = getBossCpdag(variables, scorer);
+
+        if (score instanceof MagSemBicScore) {
+            ((MagSemBicScore) score).setMag(graph);
+        }
+
+        IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
+//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
+
+        // Keep a copy of this CPDAG.
+        Graph reference = new EdgeListGraph(this.graph);
+
+        // GFCI extra edge removal step...
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
+//        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, this.depth);
+
+        keepArrows(reference);
+        removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(this.graph, reference, nodes, sepsets);
+        doFinalOrientation(knowledge2, sepsets);
+
+        graph.setPag(true);
+
+        GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
+
+        this.graph.setPag(true);
+
+        return this.graph;
+    }
+
+    private Graph getBossCpdag(List<Node> variables, TeyssierScorer scorer) {
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss alg = new Boss(scorer);
         alg.setAlgType(Boss.AlgType.BOSS);
@@ -121,76 +151,18 @@ public final class BFci implements GraphSearch {
         alg.setNumStarts(numStarts);
         alg.setVerbose(false);
 
-        List<Node> variables = this.score.getVariables();
-        assert variables != null;
-
         alg.bestOrder(variables);
-        this.graph = alg.getGraph(true); // Get the DAG
+        return alg.getGraph(true);
+    }
 
-        if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
-            ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
-        }
-
-        IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
-
-        // Keep a copy of this CPDAG.
-        Graph referenceDag = new EdgeListGraph(this.graph);
-
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
-
-        // GFCI extra edge removal step...
-        gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
-        modifiedR0(referenceDag, sepsets);
-//        retainUnshieldedColliders(this.graph);
-
-//        graph = SearchGraphUtils.cpdagForDag(graph);
-////
-//        for (Edge edge : graph.getEdges()) {
-//            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
-//            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
-//        }
-
-
-//        removeByPossibleDsep(graph, independenceTest, null);
-
+    private void doFinalOrientation(IKnowledge knowledge2, SepsetProducer sepsets) {
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(knowledge2);
-
         fciOrient.doFinalOrientation(graph);
-        graph.setPag(true);
-
-        GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
-
-        this.graph.setPag(true);
-
-        return this.graph;
-    }
-
-    private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       IKnowledge knowledge, Node y) {
-        List<Node> possibleParents = new LinkedList<>();
-        String _x = x.getName();
-
-        for (Node z : adjx) {
-            if (z == x) continue;
-            if (z == y) continue;
-            String _z = z.getName();
-
-            if (possibleParentOf(_z, _x, knowledge)) {
-                possibleParents.add(z);
-            }
-        }
-
-        return possibleParents;
-    }
-
-    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
-        return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
     /**
@@ -212,15 +184,29 @@ public final class BFci implements GraphSearch {
     }
 
     // Due to Spirtes.
-    public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
+    private void keepArrows(Graph fgesGraph) {
         this.graph = new EdgeListGraph(graph);
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
 
-        List<Node> nodes = this.graph.getNodes();
+        for (Edge edge : fgesGraph.getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.ARROW) {
+                this.graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.ARROW);
+            }
 
+            if (edge.getEndpoint2() == Endpoint.ARROW) {
+                this.graph.setEndpoint(edge.getNode1(), edge.getNode2(), Endpoint.ARROW);
+            }
+        }
+    }
+
+    private void removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets) {
         for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> adjacentNodes = referenceCpdag.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -230,39 +216,79 @@ public final class BFci implements GraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (fgesGraph.isDefCollider(a, b, c)) {
-                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
-                        graph.setEndpoint(b, a, Endpoint.ARROW);
-                    }
-
-                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
-                        graph.setEndpoint(b, c, Endpoint.ARROW);
-                    }
-                } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
+                if (graph.isAdjacentTo(a, c) && referenceCpdag.isAdjacentTo(a, c)) {
                     List<Node> sepset = sepsets.getSepset(a, c);
 
-                    if (sepset != null && !sepset.contains(b)) {
-                        this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                        this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                    }
+                    if (sepset != null) {
+                        graph.removeEdge(a, c);
 
-                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
-                        graph.setEndpoint(b, a, Endpoint.ARROW);
-                    }
-
-                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
-                        graph.setEndpoint(b, c, Endpoint.ARROW);
+                        if (graph.isAdjacentTo(a, b) && graph.isAdjacentTo(c, b)) {
+                            if (this.graph.getEndpoint(b, a) == Endpoint.ARROW || this.graph.getEndpoint(b, c) == Endpoint.ARROW) {
+                                if (!sepset.contains(b)) {
+                                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
+
+    private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {
+        this.logger.log("info", "Starting BK Orientation.");
+
+        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*->from
+            graph.setEndpoint(to, from, Endpoint.ARROW);
+            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in this graph
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            graph.setEndpoint(to, from, Endpoint.TAIL);
+            graph.setEndpoint(from, to, Endpoint.ARROW);
+            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        this.logger.log("info", "Finishing BK Orientation.");
+    }
+
 
     public IKnowledge getKnowledge() {
         return this.knowledge;
@@ -358,54 +384,6 @@ public final class BFci implements GraphSearch {
 
     //===========================================PRIVATE METHODS=======================================//
 
-    /**
-     * Orients according to background knowledge
-     */
-    private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {
-        this.logger.log("info", "Starting BK Orientation.");
-
-        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*->from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        this.logger.log("info", "Finishing BK Orientation.");
-    }
 
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
@@ -435,4 +413,6 @@ public final class BFci implements GraphSearch {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
+
 }
+

@@ -1,30 +1,27 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.BidirectedConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
-
 /**
  * The bidirected edge precision.
  *
  * @author jdramsey
  */
-public class BidirectedNeitherAncestor implements Statistic {
+public class BidirectedBothNonancestorAncestor implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "BNA";
+        return "BBNA";
     }
 
     @Override
     public String getDescription() {
-        return "Number of X<->Y where neither X nor Y is an ancestor of the other in the true graph";
+        return "Number of X<->Y where both X and Y are nonancestors of the other in the true graph";
     }
 
     @Override

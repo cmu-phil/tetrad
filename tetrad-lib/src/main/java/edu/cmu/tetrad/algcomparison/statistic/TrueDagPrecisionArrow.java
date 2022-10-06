@@ -13,19 +13,38 @@ public class TrueDagPrecisionArrow implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "DAP";
+        return "DAHP";
     }
 
     @Override
     public String getDescription() {
-        return "Precision for Arrows (DTPA / (DTPA + DFPA) compared to true DAG";
+        return "Proportion of X*->Y in the estimated graph for which there is no path Y->...->X in the true graph";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double tp = new TrueDagTruePositiveArrow().getValue(trueGraph, estGraph, dataModel);
-        double fp = new TrueDagFalsePositiveArrow().getValue(trueGraph, estGraph, dataModel);
-        return tp / (tp + fp);
+        int tp = 0;
+        int fp = 0;
+
+        for (Edge edge : estGraph.getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.ARROW) {
+                if (!trueGraph.existsDirectedPathFromTo(edge.getNode1(), edge.getNode2())) {
+                    tp++;
+                } else {
+                    fp++;
+                }
+            }
+
+            if (edge.getEndpoint2() == Endpoint.ARROW) {
+                if (!trueGraph.existsDirectedPathFromTo(edge.getNode2(), edge.getNode1())) {
+                    tp++;
+                } else {
+                    fp++;
+                }
+            }
+        }
+
+        return tp / (double) (tp + fp);
     }
 
     @Override

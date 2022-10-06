@@ -1515,6 +1515,7 @@ public final class TestGrasp {
         nodes.add(x5);
 
         Graph graph = new EdgeListGraph(nodes);
+
         graph.addDirectedEdge(x1, x5);
         graph.addDirectedEdge(x2, x5);
         graph.addDirectedEdge(x3, x5);
@@ -2257,7 +2258,7 @@ public final class TestGrasp {
 
     public void testBFci() {
         Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 5000);
+        params.set(Params.SAMPLE_SIZE, 20000);
         params.set(Params.NUM_MEASURES, 17);
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.NUM_LATENTS, 7);
@@ -2269,7 +2270,7 @@ public final class TestGrasp {
 //        params.set(Params.MAX_DEGREE, 8);
         params.set(Params.VERBOSE, false);
 
-        params.set(Params.NUM_RUNS, 50);
+        params.set(Params.NUM_RUNS, 20);
 
         params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, -1);
@@ -2286,7 +2287,7 @@ public final class TestGrasp {
         // default for kim et al. is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
         params.set(Params.PENALTY_DISCOUNT, 2);
-        params.set(Params.ALPHA, 0.01);
+        params.set(Params.ALPHA, 0.05);
         params.set(Params.ZS_RISK_BOUND, 0.001);
 
         params.set(Params.DIFFERENT_GRAPHS, true);
@@ -2303,7 +2304,7 @@ public final class TestGrasp {
         algorithms.add(new GFCI(test, score));
         algorithms.add(new BFCI(test, score));
         algorithms.add(new BFCIFinalOrientationOnly(test, score));
-//        algorithms.add(new BFCITR(test, score));
+        algorithms.add(new BFCI2(test, score));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -2333,7 +2334,7 @@ public final class TestGrasp {
 //        statistics.add(new BidirectedTP());
         statistics.add(new BidirectedPrecision());
         statistics.add(new BidirectedRecall());
-        statistics.add(new BidirectedNeitherAncestor());
+        statistics.add(new BidirectedBothNonancestorAncestor());
 //        statistics.add(new CommonAncestorTruePositiveBidirected());
 //        statistics.add(new CommonAncestorFalsePositiveBidirected());
 //        statistics.add(new CommonAncestorFalseNegativeBidirected());
