@@ -29,7 +29,7 @@ public class TrueDagRecallArrows implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
-        int fp = 0;
+        int fn = 0;
 
         List<Node> nodes = estGraph.getNodes();
 
@@ -37,21 +37,21 @@ public class TrueDagRecallArrows implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!trueGraph.existsDirectedPathFromTo(x, y)) {
+                if (!trueGraph.isAncestorOf(x, y)) {
                     Edge edge2 = estGraph.getEdge(x, y);
 
                     if (edge2 != null) {
                         if (edge2.getProximalEndpoint(x) == Endpoint.ARROW) {
                             tp++;
                         } else {
-                            fp++;
+                            fn++;
                         }
                     }
                 }
             }
         }
 
-        return tp / (double) (tp + fp);
+        return tp / (double) (tp + fn);
     }
 
     @Override

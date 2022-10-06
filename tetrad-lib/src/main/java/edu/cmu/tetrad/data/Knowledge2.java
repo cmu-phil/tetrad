@@ -536,6 +536,8 @@ public final class Knowledge2 implements IKnowledge {
      */
     @Override
     public void setForbidden(String var1, String var2) {
+        if (isForbidden(var1, var2)) return;
+
         addVariable(var1);
         addVariable(var2);
 

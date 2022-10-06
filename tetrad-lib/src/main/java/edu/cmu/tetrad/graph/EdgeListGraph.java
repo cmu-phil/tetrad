@@ -689,7 +689,8 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean isAncestorOf(Node node1, Node node2) {
-        return getAncestors(Collections.singletonList(node2)).contains(node1);
+        return node1 == node2 || existsDirectedPathFromTo(node1, node2);
+//        return getAncestors(Collections.singletonList(node2)).contains(node1);
     }
 
     @Override

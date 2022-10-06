@@ -34,8 +34,8 @@ public class ProportionDirectedPathsNotReversedTrue implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.existsDirectedPathFromTo(x, y)) {
-                    if (!estGraph.existsDirectedPathFromTo(y, x)) {
+                if (trueGraph.isAncestorOf(x, y)) {
+                    if (!estGraph.isAncestorOf(y, x)) {
                         tp++;
                     } else {
                         fn++;

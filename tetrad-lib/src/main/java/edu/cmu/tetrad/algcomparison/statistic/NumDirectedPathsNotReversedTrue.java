@@ -33,7 +33,7 @@ public class NumDirectedPathsNotReversedTrue implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.existsDirectedPathFromTo(x, y)) {
+                if (trueGraph.isAncestorOf(x, y)) {
                     count++;
                 }
             }

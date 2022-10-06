@@ -5203,9 +5203,7 @@ public final class GraphUtils {
             for (Node y : nodes) {
                 if (x == y) continue;
                 if (graph.existsDirectedPathFromTo(x, y)) {
-                    if (!knowledge.isForbidden(y.getName(), x.getName())) {
-                        knowledge.setForbidden(y.getName(), x.getName());
-                    }
+                    knowledge.setForbidden(y.getName(), x.getName());
                 }
             }
         }

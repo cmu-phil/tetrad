@@ -32,6 +32,8 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
+import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
+
 /**
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
@@ -118,7 +120,7 @@ public final class BFci2 implements GraphSearch {
         }
 
         IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
+        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
         Graph reference = new EdgeListGraph(this.graph);

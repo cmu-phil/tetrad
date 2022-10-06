@@ -33,7 +33,7 @@ public class NumDirectedPathsNotReversedEst implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (estGraph.existsDirectedPathFromTo(x, y)) {
+                if (estGraph.isAncestorOf(x, y)) {
                     count++;
                 }
             }

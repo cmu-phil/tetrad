@@ -2287,7 +2287,7 @@ public final class TestGrasp {
         // default for kim et al. is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
         params.set(Params.PENALTY_DISCOUNT, 2);
-        params.set(Params.ALPHA, 0.05);
+        params.set(Params.ALPHA, 0.01);
         params.set(Params.ZS_RISK_BOUND, 0.001);
 
         params.set(Params.DIFFERENT_GRAPHS, true);

@@ -39,21 +39,32 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
     }
 
     public static boolean existsLatentCommonAncestor(Graph trueGraph, Edge edge) {
-
-        // edge X*-*Y where there is a common ancestor of X and Y in the graph.
-
-        Set<Node> commonAncestors = new HashSet<>(trueGraph.getAncestors(Collections.singletonList(edge.getNode1())));
-        commonAncestors.retainAll(trueGraph.getAncestors(Collections.singletonList(edge.getNode2())));
-        commonAncestors.remove(edge.getNode1());
-        commonAncestors.remove(edge.getNode2());
-
-        for (Node n : commonAncestors) {
-            if (n.getNodeType() == NodeType.LATENT) {
-                return true;
+        for (Node c : trueGraph.getNodes()) {
+            if (c == edge.getNode1() || c == edge.getNode2()) continue;
+            if (c.getNodeType() == NodeType.LATENT) {
+                if (trueGraph.isAncestorOf(c, edge.getNode1())
+                        && trueGraph.isAncestorOf(c, edge.getNode2())) {
+                    return true;
+                }
             }
         }
 
         return false;
+
+        // edge X*-*Y where there is a common ancestor of X and Y in the graph.
+
+//        Set<Node> commonAncestors = new HashSet<>(trueGraph.getAncestors(Collections.singletonList(edge.getNode1())));
+//        commonAncestors.retainAll(trueGraph.getAncestors(Collections.singletonList(edge.getNode2())));
+//        commonAncestors.remove(edge.getNode1());
+//        commonAncestors.remove(edge.getNode2());
+//
+//        for (Node n : commonAncestors) {
+//            if (n.getNodeType() == NodeType.LATENT) {
+//                return true;
+//            }
+//        }
+//
+//        return false;
     }
 
     @Override

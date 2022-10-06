@@ -3,6 +3,8 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
+import java.util.List;
+
 /**
  * The bidirected true positives.
  *
@@ -26,20 +28,20 @@ public class TrueDagPrecisionArrow implements Statistic {
         int tp = 0;
         int fp = 0;
 
-        for (Edge edge : estGraph.getEdges()) {
-            if (edge.getEndpoint1() == Endpoint.ARROW) {
-                if (!trueGraph.existsDirectedPathFromTo(edge.getNode1(), edge.getNode2())) {
-                    tp++;
-                } else {
-                    fp++;
-                }
-            }
+        List<Node> nodes = estGraph.getNodes();
 
-            if (edge.getEndpoint2() == Endpoint.ARROW) {
-                if (!trueGraph.existsDirectedPathFromTo(edge.getNode2(), edge.getNode1())) {
-                    tp++;
-                } else {
-                    fp++;
+        for (Node x : nodes) {
+            for (Node y : nodes) {
+                if (x == y) continue;
+
+                Edge e = estGraph.getEdge(x, y);
+
+                if (e != null && e.getProximalEndpoint(x) == Endpoint.ARROW) {
+                    if (trueGraph.isAncestorOf(x, y)) {
+                        fp++;
+                    } else {
+                        tp++;
+                    }
                 }
             }
         }

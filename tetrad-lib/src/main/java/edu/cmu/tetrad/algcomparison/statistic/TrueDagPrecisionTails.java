@@ -4,6 +4,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+
+import java.util.List;
 
 /**
  * The bidirected true positives.
@@ -27,6 +30,8 @@ public class TrueDagPrecisionTails implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
         int fp = 0;
+
+        List<Node> nodes = estGraph.getNodes();
 
         for (Edge edge : estGraph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
