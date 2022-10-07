@@ -24,19 +24,24 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.independence.*;
+import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
+import edu.cmu.tetrad.bayes.BayesIm;
+import edu.cmu.tetrad.bayes.BayesPm;
+import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
@@ -77,12 +82,11 @@ public final class TestGrasp {
 //        new TestGrasp().testLuFigure3();
 //        new TestGrasp().testLuFigure6();
 //        new TestGrasp().testGrasp2();
-        new TestGrasp().testBFci();
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
 
-
-//        new TestGrasp().testForWayne();
+        new TestGrasp().testBFci();
+//        new TestGrasp().testForWayne3();
     }
 
     @NotNull
@@ -1551,7 +1555,195 @@ public final class TestGrasp {
 
     }
 
-    private List<Node> list(ContinuousVariable...s) {
+    private void testForWayne2() {
+        List<Node> nodes = new ArrayList<>();
+        Node x1 = new ContinuousVariable("X1");
+        Node x2 = new ContinuousVariable("X2");
+        Node x3 = new ContinuousVariable("X3");
+        Node x4 = new ContinuousVariable("X4");
+
+        nodes.add(x1);
+        nodes.add(x2);
+        nodes.add(x3);
+        nodes.add(x4);
+
+        Graph graph = new EdgeListGraph(nodes);
+
+        graph.addDirectedEdge(x1, x2);
+        graph.addDirectedEdge(x2, x3);
+        graph.addDirectedEdge(x3, x4);
+        graph.addDirectedEdge(x1, x4);
+
+        System.out.println(graph);
+
+        BayesPm pm = new BayesPm(graph);
+
+        pm.setNumCategories(x1, 2);
+        pm.setNumCategories(x2, 2);
+        pm.setNumCategories(x3, 2);
+        pm.setNumCategories(x4, 3);
+
+        BayesIm im = new MlBayesIm(pm);
+
+        im.setProbability(0, 0, 0, 0.5);
+        im.setProbability(0, 0, 1, 0.5);
+
+        im.setProbability(1, 0, 0, 0.6);
+        im.setProbability(1, 0, 1, 0.4);
+        im.setProbability(1, 1, 0, 0.1);
+        im.setProbability(1, 1, 1, 0.9);
+
+        im.setProbability(2, 0, 0, 0.7);
+        im.setProbability(2, 0, 1, 0.3);
+        im.setProbability(2, 1, 0, 0.2);
+        im.setProbability(2, 1, 1, 0.8);
+
+        //--
+
+        im.setProbability(3, 0, 0, 0.1);
+        im.setProbability(3, 0, 1, 0.1);
+        im.setProbability(3, 0, 2, 0.8);
+
+        im.setProbability(3, 1, 0, 0.05);
+        im.setProbability(3, 1, 1, 0.05);
+        im.setProbability(3, 1, 2, 0.9);
+
+        im.setProbability(3, 2, 0, 0.1125);
+        im.setProbability(3, 2, 1, 0.1125);
+        im.setProbability(3, 2, 2, 0.775);
+
+        im.setProbability(3, 3, 0, 0.0625);
+        im.setProbability(3, 3, 1, 0.0625);
+        im.setProbability(3, 3, 2, 0.875);
+
+
+        System.out.println(im);
+
+        DataSet data = im.simulateData(1000000, false);
+
+        graph = GraphUtils.replaceNodes(graph, data.getVariables());
+
+        x1 = graph.getNode("X1");
+        x2 = graph.getNode("X2");
+        x3 = graph.getNode("X3");
+        x4 = graph.getNode("X4");
+
+        System.out.println(data);
+
+        IndependenceTest chiSq = new IndTestChiSquare(data, 0.01);
+
+//        chiSq.checkIndependence(x1, x2);
+
+        extractedWayne(x1, x2, x3, x4, chiSq);
+        extractedWayne(x1, x3, x2, x4, chiSq);
+        extractedWayne(x1, x4, x2, x3, chiSq);
+        extractedWayne(x2, x3, x1, x4, chiSq);
+        extractedWayne(x2, x4, x1, x3, chiSq);
+        extractedWayne(x3, x4, x1, x2, chiSq);
+
+
+    }
+
+    private void testForWayne3() {
+        List<Node> nodes = new ArrayList<>();
+        Node x1 = new ContinuousVariable("X1");
+        Node x2 = new ContinuousVariable("X2");
+        Node x3 = new ContinuousVariable("X3");
+        Node x4 = new ContinuousVariable("X4");
+
+        nodes.add(x1);
+        nodes.add(x2);
+        nodes.add(x3);
+        nodes.add(x4);
+
+        Graph graph = new EdgeListGraph(nodes);
+
+        graph.addDirectedEdge(x1, x2);
+        graph.addDirectedEdge(x1, x3);
+        graph.addDirectedEdge(x2, x4);
+        graph.addDirectedEdge(x3, x4);
+
+        System.out.println(graph);
+
+        BayesPm pm = new BayesPm(graph);
+
+        pm.setNumCategories(x1, 2);
+        pm.setNumCategories(x2, 2);
+        pm.setNumCategories(x3, 2);
+        pm.setNumCategories(x4, 2);
+
+        BayesIm im = new MlBayesIm(pm);
+
+        im.setProbability(0, 0, 0, 0.5);
+        im.setProbability(0, 0, 1, 0.5);
+
+        im.setProbability(1, 0, 0, 0.3);
+        im.setProbability(1, 0, 1, 0.7);
+        im.setProbability(1, 1, 0, 0.4);
+        im.setProbability(1, 1, 1, 0.6);
+
+        im.setProbability(2, 0, 0, 0.4);
+        im.setProbability(2, 0, 1, 0.6);
+        im.setProbability(2, 1, 0, 0.3);
+        im.setProbability(2, 1, 1, 0.7);
+
+        //--
+
+        im.setProbability(3, 0, 0, 0.1);
+        im.setProbability(3, 0, 1, 0.9);
+
+        im.setProbability(3, 1, 0, 0.7);
+        im.setProbability(3, 1, 1, 0.3);
+
+        im.setProbability(3, 2, 0, 0.7);
+        im.setProbability(3, 2, 1, 0.3);
+
+        im.setProbability(3, 3, 0, 0.8);
+        im.setProbability(3, 3, 1, 0.2);
+
+
+        System.out.println(im);
+
+        DataSet data = im.simulateData(1000000, false);
+
+        graph = GraphUtils.replaceNodes(graph, data.getVariables());
+
+        x1 = graph.getNode("X1");
+        x2 = graph.getNode("X2");
+        x3 = graph.getNode("X3");
+        x4 = graph.getNode("X4");
+
+//        System.out.println(data);
+
+        IndependenceTest chiSq = new IndTestChiSquare(data, 0.01);
+
+//        chiSq.checkIndependence(x1, x2);
+
+        extractedWayne(x1, x2, x3, x4, chiSq);
+        extractedWayne(x1, x3, x2, x4, chiSq);
+        extractedWayne(x1, x4, x2, x3, chiSq);
+        extractedWayne(x2, x3, x1, x4, chiSq);
+        extractedWayne(x2, x4, x1, x3, chiSq);
+        extractedWayne(x3, x4, x1, x2, chiSq);
+
+
+    }
+
+    private static void extractedWayne(Node x1, Node x2, Node x3, Node x4, IndependenceTest chiSq) {
+        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList()) + " " + chiSq.checkIndependence(x1, x2).independent());
+        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).independent());
+        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).independent());
+        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).independent());
+    }
+
+    @NotNull
+    private static List<Node> nodeList(Node...n) {
+        List<Node> list = new ArrayList<>();
+        for (Node m : n) list.add(m);
+        return list;
+    }
+
+    private List<Node> list(ContinuousVariable... s) {
         List<Node> l = new ArrayList<>();
 
         for (Node n : s) {
@@ -2259,7 +2451,7 @@ public final class TestGrasp {
     public void testBFci() {
         Parameters params = new Parameters();
         params.set(Params.SAMPLE_SIZE, 20000);
-        params.set(Params.NUM_MEASURES, 17);
+        params.set(Params.NUM_MEASURES, 20);
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.NUM_LATENTS, 7);
         params.set(Params.RANDOMIZE_COLUMNS, true);
@@ -2292,6 +2484,8 @@ public final class TestGrasp {
 
         params.set(Params.DIFFERENT_GRAPHS, true);
 
+//        params.set(Params.SIMULATION_ERROR_TYPE, 1);
+
         Algorithms algorithms = new Algorithms();
 
         IndependenceWrapper test = new FisherZ();
@@ -2315,34 +2509,21 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new PagAdjacencyPrecision());
         statistics.add(new PagAdjacencyRecall());
-//        statistics.add(new TrueDagTruePositiveArrow());
-//        statistics.add(new TrueDagFalsePositiveArrow());
-//        statistics.add(new TrueDagFalseNegativesArrows());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagRecallArrows());
         statistics.add(new ProportionDirectedPathsNotReversedEst());
         statistics.add(new ProportionDirectedPathsNotReversedTrue());
         statistics.add(new NumDirectedPathsNotReversedEst());
         statistics.add(new NumDirectedPathsNotReversedTrue());
-//        statistics.add(new TrueDagTruePositiveTails());
-//        statistics.add(new TrueDagFalsePositiveTails());
-//        statistics.add(new TrueDagFalseNegativesArrows());
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagRecallTails());
         statistics.add(new BidirectedTrue());
         statistics.add(new BidirectedEst());
-//        statistics.add(new BidirectedTP());
         statistics.add(new BidirectedPrecision());
         statistics.add(new BidirectedRecall());
         statistics.add(new BidirectedBothNonancestorAncestor());
-//        statistics.add(new CommonAncestorTruePositiveBidirected());
-//        statistics.add(new CommonAncestorFalsePositiveBidirected());
-//        statistics.add(new CommonAncestorFalseNegativeBidirected());
         statistics.add(new CommonAncestorPrecisionBidirected());
         statistics.add(new CommonAncestorRecallBidirected());
-//        statistics.add(new LatentCommonAncestorTruePositiveBidirected());
-//        statistics.add(new LatentCommonAncestorFalsePositiveBidirected());
-//        statistics.add(new LatentCommonAncestorFalseNegativeBidirected());
         statistics.add(new LatentCommonAncestorPrecisionBidirected());
         statistics.add(new LatentCommonAncestorRecallBidirected());
 //        statistics.add(new ElapsedTime());

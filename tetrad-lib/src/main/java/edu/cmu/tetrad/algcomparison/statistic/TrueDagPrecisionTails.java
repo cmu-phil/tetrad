@@ -31,8 +31,6 @@ public class TrueDagPrecisionTails implements Statistic {
         int tp = 0;
         int fp = 0;
 
-        List<Node> nodes = estGraph.getNodes();
-
         for (Edge edge : estGraph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
                 if (trueGraph.isAncestorOf(edge.getNode1(), edge.getNode2())) {

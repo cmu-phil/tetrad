@@ -125,13 +125,12 @@ public final class BFci2 implements GraphSearch {
         // Keep a copy of this CPDAG.
         Graph reference = new EdgeListGraph(this.graph);
 
+        keepArrows(reference);
+
         // GFCI extra edge removal step...
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
-//        SepsetProducer sepsets = new SepsetsTeyssier(this.graph, scorer, null, this.depth);
-
-        keepArrows(reference);
-        removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(this.graph, reference, nodes, sepsets);
-        doFinalOrientation(knowledge2, sepsets);
+        removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(this.graph, reference, nodes, sepsets, knowledge2);
+        doFinalOrientation(sepsets, knowledge2);
 
         graph.setPag(true);
 
@@ -157,7 +156,7 @@ public final class BFci2 implements GraphSearch {
         return alg.getGraph(true);
     }
 
-    private void doFinalOrientation(IKnowledge knowledge2, SepsetProducer sepsets) {
+    private void doFinalOrientation(SepsetProducer sepsets, IKnowledge knowledge2) {
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
@@ -202,7 +201,7 @@ public final class BFci2 implements GraphSearch {
         }
     }
 
-    private void removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets) {
+    private void removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets, IKnowledge knowledge) {
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -226,14 +225,15 @@ public final class BFci2 implements GraphSearch {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (graph.isAdjacentTo(a, c) && referenceCpdag.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
+                    if (graph.isAdjacentTo(a, b) && graph.isAdjacentTo(c, b)) {
+                        List<Node> sepset = sepsets.getSepset(a, c);
 
-                    if (sepset != null) {
-                        graph.removeEdge(a, c);
+                        if (sepset != null) {
+                            graph.removeEdge(a, c);
 
-                        if (graph.isAdjacentTo(a, b) && graph.isAdjacentTo(c, b)) {
-                            if (this.graph.getEndpoint(b, a) == Endpoint.ARROW || this.graph.getEndpoint(b, c) == Endpoint.ARROW) {
-                                if (!sepset.contains(b)) {
+                            if (!sepset.contains(b)) {
+                                if (FciOrient.isArrowpointAllowed(a, b, graph, knowledge)
+                                        && FciOrient.isArrowpointAllowed(c, b, graph, knowledge)) {
                                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                                 }

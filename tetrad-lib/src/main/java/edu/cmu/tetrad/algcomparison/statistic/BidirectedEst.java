@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
 /**
  * The bidirected true positives.
@@ -28,6 +29,11 @@ public class BidirectedEst implements Statistic {
         int e = 0;
 
         for (Edge edge : estGraph.getEdges()) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+
+            if (x == y) continue;
+
             if (Edges.isBidirectedEdge(edge)) e++;
         }
 

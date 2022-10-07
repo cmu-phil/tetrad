@@ -88,8 +88,6 @@ public class SepsetsGreedy implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adji);
 
-//                    v = possibleParents(i, v, knowledge, k);
-
                     if (getIndependenceTest().checkIndependence(i, k, v).independent()) {
                         return v;
                     }

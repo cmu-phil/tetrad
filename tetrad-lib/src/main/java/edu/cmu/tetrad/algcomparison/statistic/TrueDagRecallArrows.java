@@ -23,7 +23,7 @@ public class TrueDagRecallArrows implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of cases in the true graph where not Y->...->X for which there is an edge X*->Y in the estimated graph";
+        return "Proportion of <Y, X> where there is no Y->...->X in the true graph for which and X*->Y in the estimated graph";
     }
 
     @Override
