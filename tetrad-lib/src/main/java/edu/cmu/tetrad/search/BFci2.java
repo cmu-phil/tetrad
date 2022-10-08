@@ -111,13 +111,13 @@ public final class BFci2 implements GraphSearch {
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
-
-        this.graph = getBossCpdag(variables, scorer);
-
         if (score instanceof MagSemBicScore) {
             ((MagSemBicScore) score).setMag(graph);
         }
+
+        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
+
+        this.graph = getBossCpdag(variables, scorer);
 
         IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
         addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
@@ -130,6 +130,7 @@ public final class BFci2 implements GraphSearch {
         // GFCI extra edge removal step...
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
         removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(this.graph, reference, nodes, sepsets, knowledge2);
+//        removeByPossibleDsep(graph, independenceTest, null);
         doFinalOrientation(sepsets, knowledge2);
 
         graph.setPag(true);
