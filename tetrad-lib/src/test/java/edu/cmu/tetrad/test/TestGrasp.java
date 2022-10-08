@@ -2491,6 +2491,7 @@ public final class TestGrasp {
         IndependenceWrapper test = new FisherZ();
         ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
 
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score));
         algorithms.add(new BOSS(test, score));
         algorithms.add(new Fci(test));
         algorithms.add(new FciMax(test));
