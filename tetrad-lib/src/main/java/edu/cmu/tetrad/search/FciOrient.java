@@ -206,7 +206,7 @@ public final class FciOrient {
                     continue;
                 }
 
-                if (this.sepsets.isUnshieldedCollider(a, b, c)) {
+//                if (this.sepsets.isUnshieldedCollider(a, b, c)) {
                     if (!isArrowpointAllowed(a, b, graph, knowledge)) {
                         continue;
                     }
@@ -223,7 +223,7 @@ public final class FciOrient {
                         printWrongColliderMessage(a, b, c, graph);
                     }
                 }
-            }
+//            }
         }
     }
 
@@ -438,9 +438,9 @@ public final class FciOrient {
                         continue;
                     }
 
-                    if (!this.sepsets.isUnshieldedNoncollider(A, D, C)) {
-                        continue;
-                    }
+//                    if (!this.sepsets.isUnshieldedNoncollider(A, D, C)) {
+//                        continue;
+//                    }
 
                     if (graph.getEndpoint(A, D) != Endpoint.CIRCLE) {
                         continue;

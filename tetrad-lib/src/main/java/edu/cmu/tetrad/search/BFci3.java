@@ -29,10 +29,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.Iterator;
-import java.util.List;
-
-import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
+import java.util.*;
 
 /**
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
@@ -117,19 +114,40 @@ public final class BFci3 implements GraphSearch {
 
         TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
 
-        this.graph = getBossCpdag(variables, scorer);
+//        this.graph = getBossCpdag(variables, scorer, knowledge);
 
         IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
+//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
-        Graph reference = new EdgeListGraph(this.graph);
+        List<Node> _vars = new ArrayList<>(variables);
+
+        Map<Edge, Integer> counts = new HashMap<>();
+
+        for (int i = 0; i < 20; i++) {
+            Collections.shuffle(_vars);
+            Graph graph = getBossCpdag(_vars, scorer, knowledge2);
+            addCounts(graph, counts);
+        }
+
+        this.graph = new EdgeListGraph(variables);
+
+        for (Edge edge : counts.keySet()) {
+            if (counts.get(edge) > numStarts) {
+                this.graph.addEdge(edge);
+            }
+        }
+
+        Graph reference = new EdgeListGraph(graph);
 
         keepArrows(reference);
 
-        // GFCI extra edge removal step...
+//
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
-//        removeByPossibleDsep(graph, independenceTest, null);
+//        removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(this.graph, reference, nodes, sepsets, knowledge2);
+//
+        // GFCI extra edge removal step...
+        //        removeByPossibleDsep(graph, independenceTest, null);
         doFinalOrientation(sepsets, knowledge2);
 
         graph.setPag(true);
@@ -141,7 +159,15 @@ public final class BFci3 implements GraphSearch {
         return this.graph;
     }
 
-    private Graph getBossCpdag(List<Node> variables, TeyssierScorer scorer) {
+    private void addCounts(Graph graph, Map<Edge, Integer> counts) {
+        for (Edge edge : graph.getEdges()) {
+//            Edge e = Edges.undirectedEdge(edge.getNode1(), edge.getNode2());
+            counts.putIfAbsent(edge, 0);
+            counts.put(edge, counts.get(edge) + 1);
+        }
+    }
+
+    private Graph getBossCpdag(List<Node> variables, TeyssierScorer scorer, IKnowledge knowledge) {
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss alg = new Boss(scorer);
         alg.setAlgType(Boss.AlgType.BOSS);
@@ -149,7 +175,8 @@ public final class BFci3 implements GraphSearch {
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
         alg.setDepth(depth);
-        alg.setNumStarts(numStarts);
+        alg.setNumStarts(1);
+        alg.setKnowledge(knowledge);
         alg.setVerbose(false);
 
         alg.bestOrder(variables);
@@ -191,8 +218,9 @@ public final class BFci3 implements GraphSearch {
         fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
 
         for (Edge edge : fgesGraph.getEdges()) {
-            if (edge.getEndpoint1() == Endpoint.ARROW) {
-                this.graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.ARROW);
+            if (this.graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                if (edge.getEndpoint1() == Endpoint.ARROW)
+                    this.graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.ARROW);
             }
 
             if (edge.getEndpoint2() == Endpoint.ARROW) {

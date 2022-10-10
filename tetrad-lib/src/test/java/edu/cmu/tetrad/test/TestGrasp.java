@@ -2500,6 +2500,7 @@ public final class TestGrasp {
         algorithms.add(new BFCI(test, score));
         algorithms.add(new BFCIFinalOrientationOnly(test, score));
         algorithms.add(new BFCI2(test, score));
+//        algorithms.add(new BFCI3(test, score));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
