@@ -29,8 +29,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 
@@ -128,10 +127,9 @@ public final class BFci2 implements GraphSearch {
         keepArrows(reference);
 
         // GFCI extra edge removal step...
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
-        removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(this.graph, reference, nodes, sepsets, knowledge2);
+        removeSomeMoreEdgesAndOrientSomeCollidersByTesting(this.graph, reference, knowledge2, scorer);
 //        removeByPossibleDsep(graph, independenceTest, null);
-        doFinalOrientation(sepsets, knowledge2);
+        doFinalOrientation(new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth), knowledge2);
 
         graph.setPag(true);
 
@@ -202,48 +200,116 @@ public final class BFci2 implements GraphSearch {
         }
     }
 
-    private void removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets, IKnowledge knowledge) {
-        for (Node b : nodes) {
+    private void removeSomeMoreEdgesAndOrientSomeCollidersByTesting(Graph graph, Graph referenceCpdag, IKnowledge knowledge, TeyssierScorer scorer) {
+        Set<Edge> removed = new HashSet<>();
+        Map<Edge, Set<Node>> sepsets = new HashMap<>();
+        Map<Edge, Set<Node>> Bs = new HashMap<>();
+
+        for (Edge edge : graph.getEdges()) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            List<Node> adjacentNodes = referenceCpdag.getAdjacentNodes(b);
+            Node a = edge.getNode1();
+            Node c = edge.getNode2();
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
+            List<Node> B = graph.getAdjacentNodes(a);
+            B.retainAll(graph.getAdjacentNodes(c));
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
+            Bs.put(edge, new HashSet<>(B));
 
-            while ((combination = cg.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
+            if (referenceCpdag.isAdjacentTo(a, c)) {
+                List<Node> sepset = getSepsetGreedy(graph, a, c, scorer);
+
+                if (sepset != null) {
+                    sepsets.put(edge, new HashSet<>(sepset));
+
+                    graph.removeEdge(edge);
+                    removed.add(edge);
+
+//                    for (Node b : B) {
+//                        if (graph.isAdjacentTo(a, b) && graph.isAdjacentTo(c, b)) {
+//                            if (!sepset.contains(b)) {
+//                                if (FciOrient.isArrowpointAllowed(a, b, graph, knowledge)
+//                                        && FciOrient.isArrowpointAllowed(c, b, graph, knowledge)) {
+//                                    graph.setEndpoint(a, b, Endpoint.ARROW);
+//                                    graph.setEndpoint(c, b, Endpoint.ARROW);
+//                                }
+//                            }
+//                        }
+//                    }
                 }
+            }
+        }
 
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
+        for (Edge edge : removed) {
+            Node a = edge.getNode1();
+            Node c = edge.getNode2();
 
-                if (graph.isAdjacentTo(a, c) && referenceCpdag.isAdjacentTo(a, c)) {
-                    if (graph.isAdjacentTo(a, b) && graph.isAdjacentTo(c, b)) {
-                        List<Node> sepset = sepsets.getSepset(a, c);
+            Set<Node> B = new HashSet<>(graph.getAdjacentNodes(a));
+            B.retainAll(graph.getAdjacentNodes(c));
+            if (!Bs.get(edge).equals(B)) continue;
 
-                        if (sepset != null) {
-                            graph.removeEdge(a, c);
+            Set<Node> sepset = sepsets.get(edge);
 
-                            if (!sepset.contains(b)) {
-                                if (FciOrient.isArrowpointAllowed(a, b, graph, knowledge)
-                                        && FciOrient.isArrowpointAllowed(c, b, graph, knowledge)) {
-                                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                                }
-                            }
+            for (Node b : B) {
+                if (graph.isAdjacentTo(a, b) && graph.isAdjacentTo(c, b)) {
+                    if (!sepset.contains(b)) {
+                        if (FciOrient.isArrowpointAllowed(a, b, graph, knowledge)
+                                && FciOrient.isArrowpointAllowed(c, b, graph, knowledge)) {
+                            graph.setEndpoint(a, b, Endpoint.ARROW);
+                            graph.setEndpoint(c, b, Endpoint.ARROW);
                         }
                     }
                 }
             }
         }
+    }
+
+    private boolean inTriangle(Graph graph, Node a, Node b) {
+        List<Node> adj = graph.getAdjacentNodes(a);
+        adj.retainAll(graph.getAdjacentNodes(b));
+        return !adj.isEmpty();
+    }
+
+    private List<Node> getSepsetGreedy(Graph graph, Node i, Node k, TeyssierScorer scorer) {
+
+        List<Node> adji = graph.getAdjacentNodes(i);
+        List<Node> adjk = graph.getAdjacentNodes(k);
+        adji.remove(k);
+        adjk.remove(i);
+
+        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), Math.max(adji.size(), adjk.size())); d++) {
+            if (d <= adji.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> v = GraphUtils.asList(choice, adji);
+
+                    if (getIndependenceTest().checkIndependence(i, k, v).independent()) {
+                        return v;
+                    }
+                }
+            }
+        }
+
+        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), Math.max(adji.size(), adjk.size())); d++) {
+            if (d <= adjk.size()) {
+                ChoiceGenerator gen = new ChoiceGenerator(adjk.size(), d);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    List<Node> v = GraphUtils.asList(choice, adjk);
+
+                    if (getIndependenceTest().checkIndependence(i, k, v).independent()) {
+                        return v;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {

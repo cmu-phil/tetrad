@@ -56,7 +56,7 @@ public class CommonAncestorPrecisionBidirected implements Statistic {
         // edge X*-*Y where there is a common ancestor of X and Y in the graph.
 
         for (Node c : trueGraph.getNodes()) {
-//            if (c == edge.getNode1() || c == edge.getNode2()) continue;
+//            if (c == edge.getNode1() && c == edge.getNode2()) continue;
             if (trueGraph.isAncestorOf(c, edge.getNode1())
                     && trueGraph.isAncestorOf(c, edge.getNode2())) {
                 return true;
