@@ -903,17 +903,17 @@
                 <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor
                 </editor-class>
             </model>
-            <model name="CPT Invariant Exact Updater" acronym="CPT Inv"
-                   help="cpt_updater">
-                <logger>
-                    <event id="info" description="Information" default="on"/>
-                    <event id="details" description="Details"/>
-                </logger>
-                <model-class>edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper
-                </model-class>
-                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor
-                </editor-class>
-            </model>
+<!--            <model name="CPT Invariant Exact Updater" acronym="CPT Inv"-->
+<!--                   help="cpt_updater">-->
+<!--                <logger>-->
+<!--                    <event id="info" description="Information" default="on"/>-->
+<!--                    <event id="details" description="Details"/>-->
+<!--                </logger>-->
+<!--                <model-class>edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper-->
+<!--                </model-class>-->
+<!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
+<!--                </editor-class>-->
+<!--            </model>-->
             <model name="SEM Updater" acronym="SEM Up" help="sem_updater">
                 <model-class>edu.cmu.tetradapp.model.SemUpdaterWrapper
                 </model-class>

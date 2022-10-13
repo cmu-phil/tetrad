@@ -2448,9 +2448,10 @@ public final class TestGrasp {
         return list;
     }
 
+    @Test
     public void testBFci() {
         Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 20000);
+        params.set(Params.SAMPLE_SIZE, 5000);
         params.set(Params.NUM_MEASURES, 20);
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.NUM_LATENTS, 7);
@@ -2464,8 +2465,8 @@ public final class TestGrasp {
 
         params.set(Params.NUM_RUNS, 20);
 
-        params.set(Params.DEPTH, -1);
-        params.set(Params.MAX_PATH_LENGTH, -1);
+        params.set(Params.DEPTH, 3);
+        params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
         params.set(Params.POSSIBLE_DSEP_DONE, true);
@@ -2479,7 +2480,7 @@ public final class TestGrasp {
         // default for kim et al. is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
         params.set(Params.PENALTY_DISCOUNT, 2);
-        params.set(Params.ALPHA, 0.01);
+        params.set(Params.ALPHA, 0.001);
         params.set(Params.ZS_RISK_BOUND, 0.001);
 
         params.set(Params.DIFFERENT_GRAPHS, true);
@@ -2515,8 +2516,8 @@ public final class TestGrasp {
         statistics.add(new TrueDagRecallArrows());
         statistics.add(new ProportionDirectedPathsNotReversedEst());
         statistics.add(new ProportionDirectedPathsNotReversedTrue());
-        statistics.add(new NumDirectedPathsNotReversedEst());
-        statistics.add(new NumDirectedPathsNotReversedTrue());
+        statistics.add(new NumDirectedPathsEst());
+        statistics.add(new NumDirectedPathsTrue());
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagRecallTails());
         statistics.add(new BidirectedTrue());
@@ -2524,6 +2525,7 @@ public final class TestGrasp {
         statistics.add(new BidirectedPrecision());
         statistics.add(new BidirectedRecall());
         statistics.add(new BidirectedBothNonancestorAncestor());
+//        statistics.add(new BidirectedBothNonancestorAncestorOr());
         statistics.add(new CommonAncestorPrecisionBidirected());
         statistics.add(new CommonAncestorRecallBidirected());
         statistics.add(new LatentCommonAncestorPrecisionBidirected());

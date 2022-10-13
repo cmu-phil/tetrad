@@ -144,7 +144,7 @@ public final class BFci3 implements GraphSearch {
 
 //
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
-//        removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(this.graph, reference, nodes, sepsets, knowledge2);
+        removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(this.graph, reference, nodes, sepsets, knowledge2);
 //
         // GFCI extra edge removal step...
         //        removeByPossibleDsep(graph, independenceTest, null);

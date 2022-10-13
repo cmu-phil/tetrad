@@ -237,13 +237,13 @@ public final class BFci implements GraphSearch {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
 
-                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
-                        graph.setEndpoint(b, a, Endpoint.ARROW);
-                    }
-
-                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
-                        graph.setEndpoint(b, c, Endpoint.ARROW);
-                    }
+//                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
+//                        graph.setEndpoint(b, a, Endpoint.ARROW);
+//                    }
+//
+//                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
+//                        graph.setEndpoint(b, c, Endpoint.ARROW);
+//                    }
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
                     List<Node> sepset = sepsets.getSepset(a, c);
 
@@ -252,13 +252,13 @@ public final class BFci implements GraphSearch {
                         this.graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
 
-                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
-                        graph.setEndpoint(b, a, Endpoint.ARROW);
-                    }
-
-                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
-                        graph.setEndpoint(b, c, Endpoint.ARROW);
-                    }
+//                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
+//                        graph.setEndpoint(b, a, Endpoint.ARROW);
+//                    }
+//
+//                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
+//                        graph.setEndpoint(b, c, Endpoint.ARROW);
+//                    }
                 }
             }
         }

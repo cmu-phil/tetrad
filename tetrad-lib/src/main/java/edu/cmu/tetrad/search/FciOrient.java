@@ -106,9 +106,7 @@ public final class FciOrient {
     //========================PUBLIC METHODS==========================//
     public Graph orient(Graph graph) {
 
-        if (verbose) {
-            this.logger.forceLogMessage("Starting FCI algorithm.");
-        }
+        this.logger.forceLogMessage("Starting FCI algorithm.");
 
         ruleR0(graph);
 
@@ -206,7 +204,7 @@ public final class FciOrient {
                     continue;
                 }
 
-//                if (this.sepsets.isUnshieldedCollider(a, b, c)) {
+                if (this.sepsets.isUnshieldedCollider(a, b, c)) {
                     if (!isArrowpointAllowed(a, b, graph, knowledge)) {
                         continue;
                     }
@@ -223,7 +221,7 @@ public final class FciOrient {
                         printWrongColliderMessage(a, b, c, graph);
                     }
                 }
-//            }
+            }
         }
     }
 
@@ -438,9 +436,9 @@ public final class FciOrient {
                         continue;
                     }
 
-//                    if (!this.sepsets.isUnshieldedNoncollider(A, D, C)) {
-//                        continue;
-//                    }
+                    if (!this.sepsets.isUnshieldedNoncollider(A, D, C)) {
+                        continue;
+                    }
 
                     if (graph.getEndpoint(A, D) != Endpoint.CIRCLE) {
                         continue;
@@ -631,7 +629,7 @@ public final class FciOrient {
         path2.remove(b);
 
         boolean ind2 = getSepsets().isIndependent(d, c, path2);
-
+//
         if (!ind && !ind2) {
             List<Node> sepset = getSepsets().getSepset(d, c);
 
@@ -1019,9 +1017,7 @@ public final class FciOrient {
             }
             // We have A-->B-->C or A--oB-->C: R8 applies!
 
-            if (verbose) {
-                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R8", graph.getEdge(c, a)));
-            }
+            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R8", graph.getEdge(c, a)));
 
             graph.setEndpoint(c, a, Endpoint.TAIL);
             this.changeFlag = true;
@@ -1057,9 +1053,7 @@ public final class FciOrient {
             }
             // We know u is as required: R9 applies!
 
-            if (verbose) {
-                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R9", graph.getEdge(c, a)));
-            }
+            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R9", graph.getEdge(c, a)));
 
             graph.setEndpoint(c, a, Endpoint.TAIL);
             this.changeFlag = true;
@@ -1136,9 +1130,7 @@ public final class FciOrient {
                         }
                         // We know B,D,u1,u2 as required: R10 applies!
 
-                        if (verbose) {
-                            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R10", graph.getEdge(c, a)));
-                        }
+                        this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R10", graph.getEdge(c, a)));
 
                         graph.setEndpoint(c, a, Endpoint.TAIL);
                         this.changeFlag = true;
@@ -1154,9 +1146,7 @@ public final class FciOrient {
      * Orients according to background knowledge
      */
     public void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
-        if (verbose) {
-            this.logger.forceLogMessage("Starting BK Orientation.");
-        }
+        this.logger.forceLogMessage("Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it
              = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -1181,10 +1171,7 @@ public final class FciOrient {
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
             this.changeFlag = true;
-
-            if (verbose) {
-                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-            }
+            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         for (Iterator<KnowledgeEdge> it
@@ -1210,15 +1197,10 @@ public final class FciOrient {
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
             this.changeFlag = true;
-
-            if (verbose) {
-                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-            }
+            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
-        if (verbose) {
-            this.logger.forceLogMessage("Finishing BK Orientation.");
-        }
+        this.logger.forceLogMessage("Finishing BK Orientation.");
     }
 
     public static boolean isArrowpointAllowed(Node x, Node y, Graph graph, IKnowledge knowledge) {
@@ -1298,8 +1280,8 @@ public final class FciOrient {
         return this.changeFlag;
     }
 
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathRule(boolean skip) {
+        this.doDiscriminatingPathRule = skip;
     }
 
 }

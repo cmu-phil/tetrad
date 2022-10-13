@@ -943,6 +943,8 @@ public final class GraphUtils {
      *               this DAG.
      */
     public static Graph markovBlanketDag(Node target, Graph dag) {
+        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
+
         if (dag.getNode(target.getName()) == null) {
             throw new NullPointerException("Target node not in graph: " + target);
         }

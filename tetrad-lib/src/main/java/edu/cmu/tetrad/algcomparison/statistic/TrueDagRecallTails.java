@@ -28,30 +28,25 @@ public class TrueDagRecallTails implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        List<Node> nodes = trueGraph.getNodes();
         int tp = 0;
-        int fn = 0;
-
-        List<Node> nodes = estGraph.getNodes();
+        int fp = 0;
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.isAncestorOf(x, y)) {
-                    Edge edge2 = estGraph.getEdge(x, y);
-
-                    if (edge2 != null) {
-                        if (edge2.getProximalEndpoint(x) == Endpoint.TAIL) {
-                            tp++;
-                        } else {
-                            fn++;
-                        }
+                if (trueGraph.isAncestorOf(x, y) && estGraph.isAdjacentTo(x, y)) {
+                    if (estGraph.getEdge(x, y). getProximalEndpoint(x) == Endpoint.TAIL) {
+                        tp++;
+                    } else {
+                        fp++;
                     }
                 }
             }
         }
 
-        return tp / (double) (tp + fn);
+        return tp / (double) (tp + fp);
     }
 
     @Override

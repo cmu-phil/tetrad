@@ -716,9 +716,19 @@ public class EdgeListGraph implements Graph {
     public List<Node> getAncestors(List<Node> nodes) {
         Set<Node> ancestors = new HashSet<>();
 
-        for (Node node : nodes) {
-            collectAncestorsVisit(node, ancestors);
+        for (Node n : getNodes()) {
+            for (Node m : nodes) {
+                if (isAncestorOf(n, m)) {
+                    ancestors.add(n);
+                }
+            }
         }
+
+//        Set<Node> ancestors = new HashSet<>();
+
+//        for (Node node : nodes) {
+//            collectAncestorsVisit(node, ancestors);
+//        }
 
         return new ArrayList<>(ancestors);
     }

@@ -207,18 +207,24 @@ public class TestFci {
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert(inputGraph);
 
+        System.out.println("Graph = " + graph);
+
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
+
         Fci fci = new Fci(independence);
         fci.setPossibleDsepSearchDone(true);
         fci.setCompleteRuleSetUsed(true);
         fci.setDoDiscriminatingPathRule(true);
         fci.setMaxPathLength(-1);
         fci.setKnowledge(knowledge);
+        fci.setVerbose(true);
 
         // Run search
         Graph resultGraph = fci.search();
         Graph pag = GraphConverter.convert(outputGraph);
+
+        resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
 
         assertEquals(pag, resultGraph);
     }
