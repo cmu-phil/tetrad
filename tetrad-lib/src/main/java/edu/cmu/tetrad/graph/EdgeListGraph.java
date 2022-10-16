@@ -156,8 +156,8 @@ public class EdgeListGraph implements Graph {
             this.namesHash.put(node.getName(), node);
         }
 
-        this.pag = graph.isPag();
-        this.cpdag = graph.isCPDAG();
+        setPag(graph.isPag());
+        setCPDAG(graph.isCPDAG());
     }
 
     public EdgeListGraph(EdgeListGraph graph) throws IllegalArgumentException {
@@ -185,8 +185,8 @@ public class EdgeListGraph implements Graph {
 
         this.highlightedEdges = new HashSet<>(graph.highlightedEdges);
 
-        this.pag = graph.isPag();
-        this.cpdag = graph.isCPDAG();
+        setPag(graph.isPag());
+        setCPDAG(graph.isCPDAG());
     }
 
     /**
@@ -368,6 +368,9 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean defVisible(Edge edge) {
+        if (!isPag()) return true;
+        if (!edge.isDirected()) return false;
+
         if (containsEdge(edge)) {
 
             Node A = Edges.getDirectedEdgeTail(edge);
@@ -437,17 +440,22 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * @return true iff there is a directed path from node1 to node2. a
+     * @return true iff there is a (nonempty) directed path from node1 to node2. a
      */
     @Override
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
 
-        for (Node c : getChildren(node1)) {
-            Q.add(c);
-            V.add(c);
-        }
+        Q.add(node1);
+        V.add(node1);
+
+//        for (Node c : getChildren(node1)) {
+//            if (c == node2) return true;
+//
+//            Q.add(c);
+//            V.add(c);
+//        }
 
         while (!Q.isEmpty()) {
             Node t = Q.remove();

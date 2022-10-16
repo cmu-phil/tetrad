@@ -111,7 +111,7 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
     @Override
     public String getDescription() {
-        return "BFCI (Best-order FCI using " + this.test.getDescription()
+        return "BFCI (Best-order FCI) using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 

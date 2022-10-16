@@ -3,34 +3,44 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
-import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
+import java.awt.*;
+import java.util.List;
 
 /**
  * The bidirected true positives.
  *
  * @author jdramsey
  */
-public class LatentCommonAncestorPrecisionBidirected implements Statistic {
+public class NumGreenAncestors implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "LCABP";
+        return "#VisA";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of X<->Y in estimaged graph where  X<-...<-Z->...->Y with latent Z for X*-*Y in true DAG";
+        return "Number green (visible) edges X-->Y in estimates for which X is an ancestor of Y in true";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+//        if (!estGraph.isPag()) return 0;
+
+        GraphUtils.addPagColoring(estGraph);
+
         int tp = 0;
         int fp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
-            if (Edges.isBidirectedEdge(edge)) {
-                if (existsLatentCommonAncestor(trueGraph, edge)) {
+            if (!Edges.isDirectedEdge(edge)) continue;
+
+            if (edge.getProperties().contains(Edge.Property.nl)) {
+                Node x = Edges.getDirectedEdgeTail(edge);
+                Node y = Edges.getDirectedEdgeHead(edge);
+
+                if (trueGraph.isAncestorOf(x, y)) {
                     tp++;
                 } else {
                     fp++;
@@ -38,9 +48,8 @@ public class LatentCommonAncestorPrecisionBidirected implements Statistic {
             }
         }
 
-        return tp / (double) (tp + fp);
+        return tp;
     }
-
 
     @Override
     public double getNormValue(double value) {

@@ -4,46 +4,42 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
 
 /**
- * The bidirected edge precision.
+ * The adjacency precision. The true positives are the number of adjacencies in both
+ * the true and estimated graphs.
  *
  * @author jdramsey
  */
-public class BidirectedBothNonancestorAncestorOr implements Statistic {
+public class NumBidirectedEdgesTrue implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "BBNA-OR";
+        return "BIDT";
     }
 
     @Override
     public String getDescription() {
-        return "Number of X<->Y where one or the other of X and Y is nonancestors of the other in the true graph";
+        return "Num Bidirected Edges in True";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int count = 0;
+        int numBidirected = 0;
 
-        for (Edge edge : estGraph.getEdges()) {
+        for (Edge edge : trueGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                if (!trueGraph.isAncestorOf(x, y) || !trueGraph.isAncestorOf(y, x)) {
-                    count++;
-                }
+                numBidirected++;
             }
+
         }
 
-        return count;
+        return numBidirected;
     }
 
     @Override
     public double getNormValue(double value) {
-        return value;
+        return 1.0 - value;
     }
 }

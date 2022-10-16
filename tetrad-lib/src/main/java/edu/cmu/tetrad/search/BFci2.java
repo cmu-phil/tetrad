@@ -121,7 +121,7 @@ public final class BFci2 implements GraphSearch {
 
         IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
         addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
-
+//
         // Keep a copy of this CPDAG.
         Graph reference = new EdgeListGraph(this.graph);
 
@@ -161,7 +161,7 @@ public final class BFci2 implements GraphSearch {
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
-        fciOrient.setVerbose(this.verbose);
+        fciOrient.setVerbose(true);
         fciOrient.setKnowledge(knowledge2);
         fciOrient.doFinalOrientation(graph);
     }

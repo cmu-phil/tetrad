@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -363,7 +364,7 @@ public final class FciOrient {
             this.changeFlag = true;
 
             if (this.verbose) {
-                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Away from collider", graph.getEdge(b, c)));
+                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R1: Away from collider", graph.getEdge(b, c)));
             }
         }
     }
@@ -385,7 +386,7 @@ public final class FciOrient {
                 graph.setEndpoint(a, c, Endpoint.ARROW);
 
                 if (this.verbose) {
-                    this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Away from ancestor", graph.getEdge(a, c)));
+                    this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R2: Away from ancestor", graph.getEdge(a, c)));
                 }
 
                 this.changeFlag = true;
@@ -455,7 +456,7 @@ public final class FciOrient {
                     graph.setEndpoint(D, B, Endpoint.ARROW);
 
                     if (this.verbose) {
-                        this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Double triangle", graph.getEdge(D, B)));
+                        this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R3: Double triangle", graph.getEdge(D, B)));
                     }
 
                     this.changeFlag = true;
@@ -609,6 +610,10 @@ public final class FciOrient {
 
                 graph.setEndpoint(a, b, Endpoint.ARROW);
                 graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                if (verbose) {
+                    this.logger.forceLogMessage("R4: DDP Collider, d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
+                }
             }
 
             this.changeFlag = true;
@@ -629,7 +634,7 @@ public final class FciOrient {
         path2.remove(b);
 
         boolean ind2 = getSepsets().isIndependent(d, c, path2);
-//
+
         if (!ind && !ind2) {
             List<Node> sepset = getSepsets().getSepset(d, c);
 
@@ -648,12 +653,6 @@ public final class FciOrient {
         }
 
         if (ind) {
-            graph.setEndpoint(c, b, Endpoint.TAIL);
-
-            if (this.verbose) {
-                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
-            }
-        } else {
             if (!isArrowpointAllowed(a, b, graph, knowledge)) {
                 return false;
             }
@@ -666,9 +665,18 @@ public final class FciOrient {
             graph.setEndpoint(c, b, Endpoint.ARROW);
 
             if (this.verbose) {
-                this.logger.forceLogMessage(SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
+                this.logger.forceLogMessage(
+                        "Definite discriminating path.. d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
             }
 
+
+        } else {
+            graph.setEndpoint(c, b, Endpoint.TAIL);
+
+            if (this.verbose) {
+                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg(
+                        "R4: Definite discriminating path d = " + d, graph.getEdge(b, c)));
+            }
         }
         this.changeFlag = true;
         return true;
@@ -738,10 +746,15 @@ public final class FciOrient {
                     }
                     // We know u is as required: R5 applies!
 
-                    this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Orient circle path", graph.getEdge(a, b)));
 
                     graph.setEndpoint(a, b, Endpoint.TAIL);
                     graph.setEndpoint(b, a, Endpoint.TAIL);
+
+                    if (verbose) {
+                        this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg(
+                                "R5: Orient circle path", graph.getEdge(a, b)));
+                    }
+
                     orientTailPath(u, graph);
                     this.changeFlag = true;
                 }
@@ -784,6 +797,7 @@ public final class FciOrient {
                 if (!(graph.getEndpoint(c, b) == Endpoint.CIRCLE)) {
                     continue;
                 }
+
                 // We know A--*Bo-*C.
 
                 if (graph.getEndpoint(a, b) == Endpoint.TAIL) {
@@ -791,7 +805,10 @@ public final class FciOrient {
                     // We know A---Bo-*C: R6 applies!
                     graph.setEndpoint(c, b, Endpoint.TAIL);
 
-                    this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
+                    if (verbose) {
+                        this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg(
+                                "R6: Single tails (tail)", graph.getEdge(c, b)));
+                    }
 
                     this.changeFlag = true;
                 }
@@ -799,10 +816,13 @@ public final class FciOrient {
                 if (graph.getEndpoint(a, b) == Endpoint.CIRCLE) {
 //                    if (graph.isAdjacentTo(a, c)) continue;
 
-                    this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Single tails (tail)", graph.getEdge(c, b)));
+                    graph.setEndpoint(c, b, Endpoint.TAIL);
+
+                    if (verbose) {
+                        this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R7: Single tails (tail)", graph.getEdge(c, b)));
+                    }
 
                     // We know A--oBo-*C and A,C nonadjacent: R7 applies!
-                    graph.setEndpoint(c, b, Endpoint.TAIL);
                     this.changeFlag = true;
                 }
 
@@ -865,7 +885,10 @@ public final class FciOrient {
             graph.setEndpoint(n2, n1, Endpoint.TAIL);
             this.changeFlag = true;
 
-            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Orient circle undirectedPaths", graph.getEdge(n1, n2)));
+            if (verbose) {
+                this.logger.forceLogMessage("R8: Orient circle undirectedPaths " +
+                        GraphUtils.pathString(graph, n1, n2));
+            }
         }
     }
 
@@ -1003,7 +1026,7 @@ public final class FciOrient {
                 continue;
             }
 
-            // We have A*-*B*-&gt;C.
+            // We have A*-*B*->C.
             if (!(graph.getEndpoint(b, a) == Endpoint.TAIL)) {
                 continue;
             }
@@ -1017,9 +1040,12 @@ public final class FciOrient {
             }
             // We have A-->B-->C or A--oB-->C: R8 applies!
 
-            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R8", graph.getEdge(c, a)));
-
             graph.setEndpoint(c, a, Endpoint.TAIL);
+
+            if (verbose) {
+                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R8: ", graph.getEdge(c, a)));
+            }
+
             this.changeFlag = true;
             return true;
         }
@@ -1053,9 +1079,13 @@ public final class FciOrient {
             }
             // We know u is as required: R9 applies!
 
-            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R9", graph.getEdge(c, a)));
 
             graph.setEndpoint(c, a, Endpoint.TAIL);
+
+            if (verbose) {
+                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R9: ", graph.getEdge(c, a)));
+            }
+
             this.changeFlag = true;
             return true;
         }
@@ -1130,9 +1160,12 @@ public final class FciOrient {
                         }
                         // We know B,D,u1,u2 as required: R10 applies!
 
-                        this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R10", graph.getEdge(c, a)));
-
                         graph.setEndpoint(c, a, Endpoint.TAIL);
+
+                        if (verbose) {
+                            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
+                        }
+
                         this.changeFlag = true;
                         return;
                     }

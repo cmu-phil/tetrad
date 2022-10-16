@@ -181,7 +181,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * The width of the stroke.
      */
-    private float strokeWidth = 1f;
+    private float strokeWidth = 1.2f;
 
     /**
      * True iff this edge is highlighted.
@@ -198,7 +198,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
     private final PropertyChangeHandler propertyChangeHandler =
             new PropertyChangeHandler();
-    private boolean bold;
+    private boolean solid = true;
+    private boolean thick = false;
 
     //==========================CONSTRUCTORS============================//
 
@@ -425,12 +426,16 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         // width <= 1.0 seems to cause the problem, so we pick a stroke
         // width slightly greater than 1.0. jdramsey 4/16/2005
 //        g2d.setStroke(new BasicStroke(1.000001f));
-        BasicStroke s;
+        Stroke s;
+        float width = thick ? 2.5f : 1.1f;
 
-        if (this.bold) {
-            s = new BasicStroke(3.0f);
+        Stroke solid = new BasicStroke(width);
+        Stroke dashed = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{9}, 0);
+
+        if (this.solid) {
+            s = solid;
         } else {
-            s = new BasicStroke(getStrokeWidth() + 0.000001f);
+            s = dashed;
         }
 
         g2d.setStroke(s);
@@ -1029,12 +1034,17 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         }
     }
 
-    public boolean getBold() {
-        return this.bold;
+    public boolean getSolid() {
+        return this.solid;
     }
 
-    public void setBold(boolean bold) {
-        this.bold = bold;
+    public void setSolid(boolean solid) {
+        this.solid = solid;
+    }
+
+    @Override
+    public void setThick(boolean thick) {
+        this.thick = thick;
     }
 
     public Color getSelectedColor() {

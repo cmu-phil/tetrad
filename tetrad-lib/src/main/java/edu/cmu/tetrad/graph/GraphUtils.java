@@ -1672,6 +1672,9 @@ public final class GraphUtils {
             convertedGraph.addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
+        convertedGraph.setPag(originalGraph.isPag());
+        convertedGraph.setCPDAG(originalGraph.isCPDAG());
+
         return convertedGraph;
     }
 
@@ -3460,6 +3463,8 @@ public final class GraphUtils {
 
     public static void addPagColoring(Graph graph) {
         for (Edge edge : graph.getEdges()) {
+            edge.getProperties().clear();
+
             if (!Edges.isDirectedEdge(edge)) {
                 continue;
             }
@@ -3476,15 +3481,15 @@ public final class GraphUtils {
             if (!GraphUtils.existsSemiDirectedPath(x, y, graph)) {
                 edge.addProperty(Property.dd); // green.
             } else {
-                edge.addProperty(Property.pd);
+                edge.addProperty(Property.pd); // blue
             }
 
             graph.addEdge(xyEdge);
 
             if (graph.defVisible(edge)) {
-                edge.addProperty(Property.nl); // bold.
+                edge.addProperty(Property.nl); // solid.
             } else {
-                edge.addProperty(Property.pl);
+                edge.addProperty(Property.pl); // dashed
             }
         }
     }

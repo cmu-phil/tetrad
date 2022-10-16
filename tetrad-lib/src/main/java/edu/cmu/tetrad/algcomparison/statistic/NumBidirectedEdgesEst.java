@@ -11,17 +11,17 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class NumBidirectedEdges implements Statistic {
+public class NumBidirectedEdgesEst implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "BID";
+        return "BE";
     }
 
     @Override
     public String getDescription() {
-        return "Percent Bidirected Edges";
+        return "Num Bidirected Edges in Estimated";
     }
 
     @Override

@@ -34,8 +34,8 @@ public class TrueDagTruePositiveDirectedPathNonancestor implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (estGraph.existsDirectedPathFromTo(x, y)) {
-                    if (!trueGraph.existsDirectedPathFromTo(y, x)) {
+                if (estGraph.isAncestorOf(x, y)) {
+                    if (!trueGraph.isAncestorOf(y, x)) {
                         tp++;
                     }
                 }

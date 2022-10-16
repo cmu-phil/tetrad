@@ -35,6 +35,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Math.max;
+import static java.util.Collections.sort;
 
 /**
  * Graph utilities for search algorithm. Lots of orientation method, for
@@ -739,7 +740,7 @@ public final class SearchGraphUtils {
         ySpace = max(ySpace, 50);
 
         List<String> notInTier = knowledge.getVariablesNotInTiers();
-        Collections.sort(notInTier);
+        sort(notInTier);
 
         int x = 0;
         int y = 50 - ySpace;
@@ -760,7 +761,7 @@ public final class SearchGraphUtils {
 
         for (int i = 0; i < knowledge.getNumTiers(); i++) {
             List<String> tier = knowledge.getTier(i);
-            Collections.sort(tier);
+            sort(tier);
             y += ySpace;
             x = -25;
 
@@ -810,7 +811,7 @@ public final class SearchGraphUtils {
         }
 
         for (int i = 0; i <= maxLag; i++) {
-            Collections.sort(tiers.get(i));
+            sort(tiers.get(i));
         }
 
         int ySpace = maxLag == 0 ? 150 : 150 / maxLag;
@@ -1458,21 +1459,21 @@ public final class SearchGraphUtils {
         List<Edge> edgesReorientedFrom = comparison.getEdgesReorientedFrom();
         List<Edge> edgesReorientedTo = comparison.getEdgesReorientedTo();
 
-        for (int i = 0; i < edgesAdded.size(); i++) {
-            Edge e1 = edgesAdded.get(i);
-
+        for (Edge e1 : edgesAdded) {
             Node n1 = e1.getNode1();
             Node n2 = e1.getNode2();
 
             boolean twoCycle1 = graph1.getDirectedEdge(n1, n2) != null && graph1.getDirectedEdge(n2, n1) != null;
             boolean twoCycle2 = graph2.getDirectedEdge(n1, n2) != null && graph2.getDirectedEdge(n2, n1) != null;
 
-            if (!(twoCycle1 || twoCycle2) && !edgesReorientedTo.contains(e1)) {
+            if (!(twoCycle1 || twoCycle2) && !graph2.isAdjacentTo(e1.getNode1(), e1.getNode2())) {
                 edgesAdded2.add(e1);
             }
         }
 
-        builder.append("\nEdges added (not involving 2-cycles and not reoriented):");
+        sort(edgesAdded2);
+
+        builder.append("\nAdjacencies added (not involving 2-cycles and not reoriented):");
 
         if (edgesAdded2.isEmpty()) {
             builder.append("\n  --NONE--");
@@ -1503,8 +1504,9 @@ public final class SearchGraphUtils {
             }
         }
 
-        builder.append("\n\nEdges removed:");
+        builder.append("\n\nAdjacencies removed:");
         List<Edge> edgesRemoved = comparison.getEdgesRemoved();
+        sort(edgesRemoved);
 
         if (edgesRemoved.isEmpty()) {
             builder.append("\n  --NONE--");
@@ -1535,76 +1537,189 @@ public final class SearchGraphUtils {
             }
         }
 
-        builder.append("\n\n" + "Edges reoriented (not involving two-cycles):");
-        List<Edge> edgesReorientedFrom2 = new ArrayList<>();
-        List<Edge> edgesReorientedTo2 = new ArrayList<>();
+//        builder.append("\n\n" + "Edges reoriented (not involving two-cycles):");
+//        List<Edge> edgesReorientedFrom2 = new ArrayList<>();
+//        List<Edge> edgesReorientedTo2 = new ArrayList<>();
+//
+//        for (int i = 0; i < edgesReorientedFrom.size(); i++) {
+//            Edge e1 = edgesReorientedFrom.get(i);
+//            Edge e2 = edgesReorientedTo.get(i);
+//
+//            Node n1 = e1.getNode1();
+//            Node n2 = e1.getNode2();
+//
+//            boolean twoCycle1 = graph1.getDirectedEdge(n1, n2) != null && graph1.getDirectedEdge(n2, n1) != null;
+//            boolean twoCycle2 = graph2.getDirectedEdge(n1, n2) != null && graph2.getDirectedEdge(n2, n1) != null;
+//
+//            if (!(twoCycle1 || twoCycle2) && !e1.equals(e2)) {
+//                edgesReorientedFrom2.add(e1);
+//                edgesReorientedTo2.add(e2);
+//            }
+//        }
+//
+//        if (edgesReorientedFrom2.isEmpty()) {
+//            builder.append("\n  --NONE--");
+//        } else {
+//            for (int i = 0; i < edgesReorientedFrom2.size(); i++) {
+//                Edge from = edgesReorientedFrom2.get(i);
+//                Edge to = edgesReorientedTo2.get(i);
+//                builder.append("\n").append(i + 1).append(". ").append(from)
+//                        .append(" ====> ").append(to);
+//            }
+//        }
 
-        for (int i = 0; i < edgesReorientedFrom.size(); i++) {
-            Edge e1 = edgesReorientedFrom.get(i);
-            Edge e2 = edgesReorientedTo.get(i);
-
-            Node n1 = e1.getNode1();
-            Node n2 = e1.getNode2();
-
-            boolean twoCycle1 = graph1.getDirectedEdge(n1, n2) != null && graph1.getDirectedEdge(n2, n1) != null;
-            boolean twoCycle2 = graph2.getDirectedEdge(n1, n2) != null && graph2.getDirectedEdge(n2, n1) != null;
-
-            if (!(twoCycle1 || twoCycle2) && e1.isDirected() && e2.isDirected()) {
-                edgesReorientedFrom2.add(e1);
-                edgesReorientedTo2.add(e2);
-            }
-        }
-
-        if (edgesReorientedFrom2.isEmpty()) {
-            builder.append("\n  --NONE--");
-        } else {
-            for (int i = 0; i < edgesReorientedFrom2.size(); i++) {
-                Edge from = edgesReorientedFrom2.get(i);
-                Edge to = edgesReorientedTo2.get(i);
-                builder.append("\n").append(i + 1).append(". ").append(from)
-                        .append(" ====> ").append(to);
-            }
-        }
-
-         List<Edge> correctAdjacies = comparison.getCorrectAdjacencies();
+        List<Edge> edges1 = new ArrayList<>(graph1.getEdges());
 
         List<Edge> twoCycles = new ArrayList<>();
-        List<Edge> nonTwoCycles = new ArrayList<>();
+        List<Edge> allSingleEdges = new ArrayList<>();
 
-        for (Edge edge : correctAdjacies) {
+        for (Edge edge : edges1) {
             if (edge.isDirected() && graph2.containsEdge(edge) && graph2.containsEdge(edge.reverse())) {
                 twoCycles.add(edge);
-            } else if (graph2.containsEdge(edge) && graph1.containsEdge(edge)) {
-                nonTwoCycles.add(edge);
+            } else if (graph1.containsEdge(edge)) {
+                allSingleEdges.add(edge);
             }
         }
 
         builder.append("\n\n"
                 + "Two-cycles in true correctly adjacent in estimated");
 
+        sort(allSingleEdges);
+
         if (twoCycles.isEmpty()) {
             builder.append("\n  --NONE--");
         } else {
             for (int i = 0; i < twoCycles.size(); i++) {
-                Edge adj = twoCycles.get(i);
+                Edge adj = edges1.get(i);
                 builder.append("\n").append(i + 1).append(". ").append(adj).append(" ").append(adj.reverse())
                         .append(" ====> ").append(graph1.getEdge(twoCycles.get(i).getNode1(), twoCycles.get(i).getNode2()));
             }
         }
 
-        builder.append("\n\n"
-                + "Non-two-cycles correctly oriented");
+        List<Edge> incorrect = new ArrayList<>();
+        List<Edge> compatible = new ArrayList<>();
+        List<Edge> incompatible = new ArrayList<>();
 
-        if (edgesReorientedFrom.isEmpty()) {
+        for (Edge adj : allSingleEdges) {
+            Edge edge1 = graph1.getEdge(adj.getNode1(), adj.getNode2());
+            Edge edge2 = graph2.getEdge(adj.getNode1(), adj.getNode2());
+
+            if (!edge1.equals(edge2)) {
+                incorrect.add(adj);
+
+                if (graph1.isPag() && graph2.isPag()) {
+                    if (edge2 == null) continue;
+
+                    if (compatible(edge1, edge2)) {
+                        compatible.add(edge1);
+                    } else {
+                        incompatible.add(edge1);
+                    }
+                }
+            }
+        }
+
+        if (graph1.isPag() && graph2.isPag()) {
+
+            builder.append("\n\n" + "Edges incorrectly oriented (incompatible)");
+
+            sort(incompatible);
+
+            if (incompatible.isEmpty()) {
+                builder.append("\n  --NONE--");
+            } else {
+                int j1 = 0;
+
+                for (Edge adj : incompatible) {
+                    Edge edge1 = graph1.getEdge(adj.getNode1(), adj.getNode2());
+                    Edge edge2 = graph2.getEdge(adj.getNode1(), adj.getNode2());
+                    if (edge1 == null || edge2 == null) continue;
+                    builder.append("\n").append(++j1).append(". ").append(edge2).append(" ====> ").append(edge1);
+                }
+            }
+
+            builder.append("\n\n" + "Edges incorrectly oriented (compatible)");
+
+            sort(compatible);
+
+            if (compatible.isEmpty()) {
+                builder.append("\n  --NONE--");
+            } else {
+                int j1 = 0;
+
+                for (Edge adj : compatible) {
+                    Edge edge1 = graph1.getEdge(adj.getNode1(), adj.getNode2());
+                    Edge edge2 = graph2.getEdge(adj.getNode1(), adj.getNode2());
+                    if (edge1 == null || edge2 == null) continue;
+                    builder.append("\n").append(++j1).append(". ").append(edge2).append(" ====> ").append(edge1);
+                }
+            }
+        } else {
+            builder.append("\n\n" + "Edges incorrectly oriented");
+
+            sort(incorrect);
+
+            if (incorrect.isEmpty()) {
+                builder.append("\n  --NONE--");
+            } else {
+                int j1 = 0;
+
+                for (Edge adj : incorrect) {
+                    Edge edge1 = graph1.getEdge(adj.getNode1(), adj.getNode2());
+                    Edge edge2 = graph2.getEdge(adj.getNode1(), adj.getNode2());
+                    if (edge1 == null || edge2 == null) continue;
+                    builder.append("\n").append(++j1).append(". ").append(edge2).append(" ====> ").append(edge1);
+                }
+            }
+        }
+
+
+        builder.append("\n\n" + "Edges correctly oriented");
+
+        List<Edge> correct = new ArrayList<>();
+
+        for (Edge adj : allSingleEdges) {
+            Edge edge1 = graph1.getEdge(adj.getNode1(), adj.getNode2());
+            Edge edge2 = graph2.getEdge(adj.getNode1(), adj.getNode2());
+            if (edge1.equals(edge2)) {
+                correct.add(edge2);
+            }
+        }
+
+        sort(correct);
+
+        if (correct.isEmpty()) {
             builder.append("\n  --NONE--");
         } else {
-            for (int i = 0; i < nonTwoCycles.size(); i++) {
-                Edge adj = nonTwoCycles.get(i);
-                builder.append("\n").append(i + 1).append(". ").append(adj);
+            int j2 = 0;
+
+            for (Edge adj : correct) {
+                builder.append("\n").append(++j2).append(". ").append(adj);
             }
         }
 
         return builder.toString();
+    }
+
+    private static boolean compatible(Edge edge1, Edge edge2) {
+        if (edge1 == null || edge2 == null) return false;
+
+        Node x = edge1.getNode1();
+        Node y = edge1.getNode2();
+
+        Endpoint ex1 = edge1.getProximalEndpoint(x);
+        Endpoint ey1 = edge1.getProximalEndpoint(y);
+
+        Endpoint ex2 = edge2.getProximalEndpoint(x);
+        Endpoint ey2 = edge2.getProximalEndpoint(y);
+
+        if (ex1 == ex2 && ey1 == ey2) return true;
+        if (ex1 == Endpoint.CIRCLE && ey1 == Endpoint.CIRCLE) return true;
+        if (ex2 == Endpoint.CIRCLE && ey2 == Endpoint.CIRCLE) return true;
+        if (ex1 == ex2 && (ey1 == Endpoint.CIRCLE || ey2 == Endpoint.CIRCLE)) return true;
+        if (ey1 == ey2 && (ex1 == Endpoint.CIRCLE || ex2 == Endpoint.CIRCLE)) return true;
+
+        return false;
     }
 
     public static int[][] graphComparison(Graph estCpdag, Graph trueCpdag, PrintStream out) {

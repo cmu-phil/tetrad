@@ -71,7 +71,7 @@ import static java.util.Collections.shuffle;
 
 
 /**
- * Tests to make sure the DelimiterType enumeration hasn't been tampered with.
+ *
  *
  * @author Joseph Ramsey
  */
@@ -2451,10 +2451,10 @@ public final class TestGrasp {
     @Test
     public void testBFci() {
         Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 5000);
-        params.set(Params.NUM_MEASURES, 20);
+        params.set(Params.SAMPLE_SIZE, 2000);
+        params.set(Params.NUM_MEASURES, 17);
         params.set(Params.AVG_DEGREE, 6);
-        params.set(Params.NUM_LATENTS, 7);
+        params.set(Params.NUM_LATENTS, 6);
         params.set(Params.RANDOMIZE_COLUMNS, true);
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
@@ -2480,10 +2480,12 @@ public final class TestGrasp {
         // default for kim et al. is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
         params.set(Params.PENALTY_DISCOUNT, 2);
-        params.set(Params.ALPHA, 0.001);
+        params.set(Params.ALPHA, 0.2);
         params.set(Params.ZS_RISK_BOUND, 0.001);
 
         params.set(Params.DIFFERENT_GRAPHS, true);
+
+        params.set(Params.ADD_ORIGINAL_DATASET, false);
 
 //        params.set(Params.SIMULATION_ERROR_TYPE, 1);
 
@@ -2492,7 +2494,7 @@ public final class TestGrasp {
         IndependenceWrapper test = new FisherZ();
         ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
 
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score));
         algorithms.add(new BOSS(test, score));
         algorithms.add(new Fci(test));
         algorithms.add(new FciMax(test));
@@ -2501,6 +2503,8 @@ public final class TestGrasp {
         algorithms.add(new BFCI(test, score));
         algorithms.add(new BFCIFinalOrientationOnly(test, score));
         algorithms.add(new BFCI2(test, score));
+        algorithms.add(new BFCITR(test, score));
+        algorithms.add(new BFCISwapRule(test, score));
 //        algorithms.add(new BFCI3(test, score));
 
         Simulations simulations = new Simulations();
@@ -2512,6 +2516,8 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new PagAdjacencyPrecision());
         statistics.add(new PagAdjacencyRecall());
+        statistics.add(new NumGreenAncestors());
+        statistics.add(new NumGreenNonancestors());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagRecallArrows());
         statistics.add(new ProportionDirectedPathsNotReversedEst());
@@ -2520,15 +2526,14 @@ public final class TestGrasp {
         statistics.add(new NumDirectedPathsTrue());
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagRecallTails());
-        statistics.add(new BidirectedTrue());
-        statistics.add(new BidirectedEst());
+        statistics.add(new NumBidirectedEdgesEst());
         statistics.add(new BidirectedPrecision());
         statistics.add(new BidirectedRecall());
         statistics.add(new BidirectedBothNonancestorAncestor());
 //        statistics.add(new BidirectedBothNonancestorAncestorOr());
-        statistics.add(new CommonAncestorPrecisionBidirected());
+        statistics.add(new CommonAncestorBidirectedPrecision());
         statistics.add(new CommonAncestorRecallBidirected());
-        statistics.add(new LatentCommonAncestorPrecisionBidirected());
+        statistics.add(new LatentCommonAncestorBidirectedPrecision());
         statistics.add(new LatentCommonAncestorRecallBidirected());
 //        statistics.add(new ElapsedTime());
 

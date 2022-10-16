@@ -47,13 +47,13 @@ public class TrueDagFalsePositiveArrow implements Statistic {
 
         for (Edge edge : estGraph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.ARROW) {
-                if (trueGraph.existsDirectedPathFromTo(edge.getNode1(), edge.getNode2())) {
+                if (trueGraph.isAncestorOf(edge.getNode1(), edge.getNode2())) {
                     fp++;
                 }
             }
 
             if (edge.getEndpoint2() == Endpoint.ARROW) {
-                if (trueGraph.existsDirectedPathFromTo(edge.getNode2(), edge.getNode1())) {
+                if (trueGraph.isAncestorOf(edge.getNode2(), edge.getNode1())) {
                     fp++;
                 }
             }

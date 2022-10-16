@@ -65,9 +65,11 @@ public interface IDisplayEdge {
 
     void setLineColor(Color lineColor);
 
-    boolean getBold();
+    boolean getSolid();
 
-    void setBold(boolean bold);
+    void setSolid(boolean solid);
+
+    void setThick(boolean thick);
 
     Color getSelectedColor();
 

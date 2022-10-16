@@ -8,15 +8,12 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.BFci;
-import edu.cmu.tetrad.search.BFci2;
-import edu.cmu.tetrad.search.SepsetProducer;
+import edu.cmu.tetrad.search.BfciFoo;
+import edu.cmu.tetrad.search.BfciSwapRule;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -40,23 +37,24 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BFCI2",
-        command = "bfci2",
+        name = "BFCI Swap",
+        command = "bfciswap",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class BFCI2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+@Experimental
+public class BFCISwapRule implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BFCI2() {
+    public BFCISwapRule() {
         // Used for reflection; do not delete.
     }
 
-    public BFCI2(IndependenceWrapper test, ScoreWrapper score) {
+    public BFCISwapRule(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -74,7 +72,7 @@ public class BFCI2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
                 knowledge = timeSeries.getKnowledge();
             }
 
-            BFci2 search = new BFci2(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            BfciSwapRule search = new BfciSwapRule(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
@@ -98,15 +96,9 @@ public class BFCI2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
             return search.search();
         } else {
-            BFCI2 algorithm = new BFCI2(this.test, this.score);
+            BFCISwapRule algorithm = new BFCISwapRule(this.test, this.score);
             DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    data, algorithm,
-                    parameters.getInt(Params.NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT),
-                    parameters.getInt(Params.RESAMPLING_ENSEMBLE),
-                    parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -121,7 +113,7 @@ public class BFCI2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
     @Override
     public String getDescription() {
-        return "BFCI2 (Best-order FCI 2 using " + this.test.getDescription()
+        return "BFCI-swap (BOSS + swap rule) using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 
@@ -140,7 +132,7 @@ public class BFCI2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
-//        params.add(Params.POSSIBLE_DSEP_DONE);
+        params.add(Params.POSSIBLE_DSEP_DONE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
@@ -181,46 +173,5 @@ public class BFCI2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
-
-    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes,
-                                                SepsetProducer sepsets) {
-        for (Node b : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            List<Node> adjacentNodes = referenceCpdag.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (graph.isAdjacentTo(a, c) && referenceCpdag.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
-                    if (sepset != null) {
-                        graph.removeEdge(a, c);
-
-                        if (!sepset.contains(b)
-                                && (graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW)) {
-                            graph.setEndpoint(a, b, Endpoint.ARROW);
-                            graph.setEndpoint(c, b, Endpoint.ARROW);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
 
 }

@@ -21,7 +21,7 @@ public class BidirectedBothNonancestorAncestor implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number of X<->Y where both X and Y are nonancestors of the other in the true graph";
+        return "Number of X<->Y in estimated where neither X nor Y is an ancestor of the other in true";
     }
 
     @Override
@@ -33,10 +33,20 @@ public class BidirectedBothNonancestorAncestor implements Statistic {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                if (x == y) continue;
-
                 if (!trueGraph.isAncestorOf(x, y) && !trueGraph.isAncestorOf(y, x)) {
                     count++;
+                } else {
+                    System.out.print("BBNA check: ");
+
+                    if (trueGraph.isAncestorOf(x, y)) {
+                        System.out.print("Ancestor(" + x + ", " + y + ")");
+                    }
+
+                    if (trueGraph.isAncestorOf(y, x)) {
+                        System.out.print(" Ancestor(" + y + ", " + x + ")");
+                    }
+
+                    System.out.println();
                 }
             }
         }

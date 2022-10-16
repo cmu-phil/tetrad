@@ -427,14 +427,6 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         return this.lineColor;
     }
 
-    public boolean isBold() {
-        return this.bold;
-    }
-
-    public void setBold(boolean bold) {
-        this.bold = bold;
-    }
-
     public void addProperty(Property property) {
         if (!this.properties.contains(property)) {
             this.properties.add(property);
