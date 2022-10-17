@@ -1479,19 +1479,20 @@ public final class SearchGraphUtils {
             builder.append("\n  --NONE--");
         } else {
             for (int i = 0; i < edgesAdded2.size(); i++) {
-                Edge edge = edgesAdded2.get(i);
+                Edge _edge = edgesAdded2.get(i);
+                Edge edge1 = graph1.getEdge(_edge.getNode1(), _edge.getNode2());
 
-                Node node1 = graph1.getNode(edge.getNode1().getName());
-                Node node2 = graph1.getNode(edge.getNode2().getName());
+                Node node1 = graph1.getNode(edge1.getNode1().getName());
+                Node node2 = graph1.getNode(edge1.getNode2().getName());
 
-                builder.append("\n").append(i + 1).append(". ").append(edge);
+                builder.append("\n").append(i + 1).append(". ").append(edge1);
 
                 if (printStars) {
                     boolean directedInGraph2 = false;
 
-                    if (Edges.isDirectedEdge(edge) && GraphUtils.existsSemidirectedPath(node1, node2, graph2)) {
+                    if (Edges.isDirectedEdge(edge1) && GraphUtils.existsSemidirectedPath(node1, node2, graph2)) {
                         directedInGraph2 = true;
-                    } else if ((Edges.isUndirectedEdge(edge) || Edges.isBidirectedEdge(edge))
+                    } else if ((Edges.isUndirectedEdge(edge1) || Edges.isBidirectedEdge(edge1))
                             && (GraphUtils.existsSemidirectedPath(node1, node2, graph2)
                             || GraphUtils.existsSemidirectedPath(node2, node1, graph2))) {
                         directedInGraph2 = true;
@@ -1608,6 +1609,8 @@ public final class SearchGraphUtils {
                 incorrect.add(adj);
 
                 if (graph1.isPag() && graph2.isPag()) {
+                    GraphUtils.addPagColoring(graph1);
+
                     if (edge2 == null) continue;
 
                     if (compatible(edge1, edge2)) {
@@ -1668,7 +1671,7 @@ public final class SearchGraphUtils {
                     Edge edge1 = graph1.getEdge(adj.getNode1(), adj.getNode2());
                     Edge edge2 = graph2.getEdge(adj.getNode1(), adj.getNode2());
                     if (edge1 == null || edge2 == null) continue;
-                    builder.append("\n").append(++j1).append(". ").append(edge2).append(" ====> ").append(edge1);
+                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge1);
                 }
             }
         }
@@ -1682,7 +1685,7 @@ public final class SearchGraphUtils {
             Edge edge1 = graph1.getEdge(adj.getNode1(), adj.getNode2());
             Edge edge2 = graph2.getEdge(adj.getNode1(), adj.getNode2());
             if (edge1.equals(edge2)) {
-                correct.add(edge2);
+                correct.add(edge1);
             }
         }
 
@@ -1693,8 +1696,8 @@ public final class SearchGraphUtils {
         } else {
             int j2 = 0;
 
-            for (Edge adj : correct) {
-                builder.append("\n").append(++j2).append(". ").append(adj);
+            for (Edge edge : correct) {
+                builder.append("\n").append(++j2).append(". ").append(edge);
             }
         }
 
@@ -1713,13 +1716,7 @@ public final class SearchGraphUtils {
         Endpoint ex2 = edge2.getProximalEndpoint(x);
         Endpoint ey2 = edge2.getProximalEndpoint(y);
 
-        if (ex1 == ex2 && ey1 == ey2) return true;
-        if (ex1 == Endpoint.CIRCLE && ey1 == Endpoint.CIRCLE) return true;
-        if (ex2 == Endpoint.CIRCLE && ey2 == Endpoint.CIRCLE) return true;
-        if (ex1 == ex2 && (ey1 == Endpoint.CIRCLE || ey2 == Endpoint.CIRCLE)) return true;
-        if (ey1 == ey2 && (ex1 == Endpoint.CIRCLE || ex2 == Endpoint.CIRCLE)) return true;
-
-        return false;
+        return (ex1 == Endpoint.CIRCLE || (ex1 == ex2 || ex2 == Endpoint.CIRCLE)) && (ey1 == Endpoint.CIRCLE || (ey1 == ey2 || ey2 == Endpoint.CIRCLE));
     }
 
     public static int[][] graphComparison(Graph estCpdag, Graph trueCpdag, PrintStream out) {

@@ -136,6 +136,8 @@ public final class DagToPag {
                 Node n1 = measured.get(i);
                 Node n2 = measured.get(j);
 
+                if (graph.isAdjacentTo(n1, n2)) continue;
+
                 List<Node> inducingPath = GraphUtils.getInducingPath(n1, n2, this.dag);
 
                 boolean exists = inducingPath != null;

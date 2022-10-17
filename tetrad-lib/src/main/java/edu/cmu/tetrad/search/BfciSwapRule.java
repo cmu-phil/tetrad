@@ -28,7 +28,9 @@ import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Does BOSS + retain unshielded colliders + final FCI orientation rules
@@ -113,6 +115,7 @@ public final class BfciSwapRule implements GraphSearch {
             changed = removeBySwapRule(graph, scorer);
         } while (changed);
 
+
         for (Edge edge : graph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
             if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
@@ -121,15 +124,21 @@ public final class BfciSwapRule implements GraphSearch {
         // Retain only the unshielded colliders.
 //        retainUnshieldedColliders(graph);
 
+//        removeByPossibleDsep(graph, test,null);
+
+
         // Do final FCI orientation rules app
         SepsetProducer sepsets = new SepsetsGreedy(graph, test, null, depth);
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathRule(false);//this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(knowledge2);
         fciOrient.setVerbose(true);
         fciOrient.doFinalOrientation(graph);
+
+//        } while (changed);
+
 
         graph.setPag(true);
 
@@ -146,30 +155,18 @@ public final class BfciSwapRule implements GraphSearch {
             for (Node y : nodes) {
                 for (Node z : nodes) {
                     for (Node w : nodes) {
-                        if (config(graph, z, x, y, w)) {
-                            scorer.bookmark();
-                            float s0 = scorer.score();
-                            scorer.swap(x, y);
-//                            if (scorer.score() < s0) {
-//                                scorer.goToBookmark();
-//                                continue;
-//                            }
+                        if (x == y || x == z || x == w || y == z || y == w || z == w) continue;
+                        if (scorer.index(w) > scorer.index(x)) continue;
+                        if (scorer.index(w) > scorer.index(y)) continue;
+                        if (scorer.index(z) > scorer.index(x)) continue;
+                        if (scorer.index(z) > scorer.index(y)) continue;
 
-//                            Node x2 = scorer.index(x) < scorer.index(y) ? x : y;
-//                            Node y2 = scorer.index(y) > scorer.index(x) ? y : x;
-//
-//                            int i = Math.min(scorer.index(x), scorer.index(y));
-//
-//                            scorer.tuck(y2, i);
+                        if (config(graph, z, x, y, w) /*&& config(scorer, z, x, y, w)*/) {
+                            scorer.bookmark();
+                            scorer.tuck(x, y);
 
                             if (config(scorer, w, y, x, z)) {
-                                Edge edge = graph.getEdge(w, x);
-                                graph.removeEdge(edge);
-
                                 toRemove.add(list(z, x, y, w));
-
-                                System.out.println("Swap removing : " + edge);
-                                changed = true;
                             }
 
                             scorer.goToBookmark();
@@ -185,14 +182,40 @@ public final class BfciSwapRule implements GraphSearch {
             Node y = l.get(2);
             Node w = l.get(3);
 
+//            if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)) {
+            if (graph.isAdjacentTo(w, x)) {
+                Edge edge = graph.getEdge(w, x);
+                graph.removeEdge(edge);
+                System.out.println("Swap removing : " + edge);
+                changed = true;
+            }
+//            }
+        }
+
+        for (List<Node> l : toRemove) {
+            Node z = l.get(0);
+            Node x = l.get(1);
+            Node y = l.get(2);
+            Node w = l.get(3);
+
             if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)) {
-                graph.setEndpoint(w, y, Endpoint.ARROW);
-                graph.setEndpoint(x, y, Endpoint.ARROW);
-                System.out.println("Swap orienting " + GraphUtils.pathString(graph, z, x, y, w));
+                if (!graph.isDefCollider(w, y, x)) {
+                    graph.setEndpoint(w, y, Endpoint.ARROW);
+                    graph.setEndpoint(x, y, Endpoint.ARROW);
+                    System.out.println("Swap orienting " + GraphUtils.pathString(graph, z, x, y, w));
+                }
             }
         }
 
         return changed;
+    }
+
+    public void tuck(TeyssierScorer scorer, Node x, Node y) {
+        if (scorer.index(y) > scorer.index(x)) {
+            scorer.moveTo(x, scorer.index(y));
+        } else if (scorer.index(x) > scorer.index(y)) {
+            scorer.moveTo(y, scorer.index(x));
+        }
     }
 
     private List<Node> list(Node... nodes) {
@@ -205,7 +228,7 @@ public final class BfciSwapRule implements GraphSearch {
         if (scorer.adjacent(z, x) && scorer.adjacent(x, y) && scorer.adjacent(y, w)) {
             if (scorer.adjacent(w, x) && !scorer.adjacent(z, y)) {
 //                if (!scorer.adjacent(z, w)) {
-                return scorer.collider(z, x, y);
+                    return scorer.collider(z, x, y);
 //                }
             }
         }
@@ -217,87 +240,12 @@ public final class BfciSwapRule implements GraphSearch {
         if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)) {
             if (graph.isAdjacentTo(w, x) && !graph.isAdjacentTo(z, y)) {
 //                if (!graph.isAdjacentTo(z, w)) {
-                return graph.isDefCollider(z, x, y);
+                    return graph.isDefCollider(z, x, y);
 //                }
             }
         }
 
         return false;
-    }
-
-    private static void triangleReduce1(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
-        boolean changed = true;
-
-        while (changed) {
-            changed = false;
-
-            for (Edge edge : graph.getEdges()) {
-                Node a = edge.getNode1();
-                Node b = edge.getNode2();
-
-                if (graph.isAdjacentTo(a, b)) {
-                    List<Node> inTriangle = graph.getAdjacentNodes(a);
-                    inTriangle.retainAll(graph.getAdjacentNodes(b));
-
-                    Set<Node> _all = new HashSet<>(inTriangle);
-                    _all.addAll(graph.getAdjacentNodes(a));
-                    _all.addAll(graph.getAdjacentNodes(b));
-
-                    List<Node> all = new ArrayList<>(_all);
-
-                    SublistGenerator gen = new SublistGenerator(all.size(), all.size());
-                    int[] choice;
-
-                    float maxScore = Float.NEGATIVE_INFINITY;
-                    List<Node> maxAfter = null;
-                    boolean remove = false;
-
-                    while ((choice = gen.next()) != null) {
-                        List<Node> before = GraphUtils.asList(choice, all);
-                        List<Node> after = new ArrayList<>(inTriangle);
-                        after.removeAll(before);
-
-                        List<Node> perm = new ArrayList<>(before);
-                        perm.add(a);
-                        perm.add(b);
-                        perm.addAll(after);
-
-                        float score = scorer.score(perm);
-
-                        if (score >= maxScore && !scorer.adjacent(a, b)) {
-                            maxScore = score;
-                            maxAfter = after;
-                            remove = !scorer.adjacent(a, b);
-                        }
-                    }
-
-                    if (remove) {
-
-                        for (Node x : maxAfter) {
-                            changed = true;
-
-                            // Only remove an edge and orient a new collider if it will create a bidirected edge.
-//                            if (graph.getEndpoint(x, a) == Endpoint.ARROW || graph.getEndpoint(x, b) == Endpoint.ARROW) {
-                            graph.removeEdge(a, b);
-                            graph.setEndpoint(a, x, Endpoint.ARROW);
-                            graph.setEndpoint(b, x, Endpoint.ARROW);
-
-                            if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
-                                graph.setEndpoint(x, a, Endpoint.ARROW);
-                            }
-
-                            if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
-                                graph.setEndpoint(x, b, Endpoint.ARROW);
-                            }
-
-                        }
-//                        }
-
-//                        break;
-                    }
-                }
-            }
-        }
     }
 
     private static void triangleReduce2(Graph graph, TeyssierScorer scorer0, IKnowledge knowledge) {

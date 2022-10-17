@@ -649,7 +649,7 @@ public final class FciOrient {
                 return false;
             }
 
-            ind = sepset.contains(b);
+//            ind = sepset.contains(b);
         }
 
         if (ind) {
@@ -668,8 +668,6 @@ public final class FciOrient {
                 this.logger.forceLogMessage(
                         "Definite discriminating path.. d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
             }
-
-
         } else {
             graph.setEndpoint(c, b, Endpoint.TAIL);
 
