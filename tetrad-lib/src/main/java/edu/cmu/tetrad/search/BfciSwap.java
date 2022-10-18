@@ -24,17 +24,15 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 /**
- * Does BOSS + retain unshielded colliders + final FCI orientation rules
+ * Does BOSS, followed by the swap rule, then final FCI orientation.
  *
  * @author jdramsey
  */
@@ -134,7 +132,6 @@ public final class BfciSwap implements GraphSearch {
     private Graph removeBySwapRule(Graph graph, TeyssierScorer scorer) {
         graph = new EdgeListGraph(graph);
         List<Node> nodes = graph.getNodes();
-        boolean changed = false;
 
         List<List<Node>> toRemove = new ArrayList<>();
 
@@ -155,7 +152,6 @@ public final class BfciSwap implements GraphSearch {
 
                             if (config(scorer, w, y, x, z)) {
                                 toRemove.add(list(z, x, y, w));
-                                changed = true;
                             }
 
                             scorer.goToBookmark();
@@ -166,9 +162,7 @@ public final class BfciSwap implements GraphSearch {
         }
 
         for (List<Node> l : toRemove) {
-            Node z = l.get(0);
             Node x = l.get(1);
-            Node y = l.get(2);
             Node w = l.get(3);
 
             if (graph.isAdjacentTo(w, x)) {
