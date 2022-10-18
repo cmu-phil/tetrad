@@ -11,8 +11,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BfciTR;
-import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.search.BfciTr;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -37,8 +36,8 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BFCITR",
-        command = "bfcitr",
+        name = "BFCI-TR",
+        command = "bfci-tr",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
@@ -72,7 +71,7 @@ public class BFCITR implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
                 knowledge = timeSeries.getKnowledge();
             }
 
-            BfciTR search = new BfciTR(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            BfciTr search = new BfciTr(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));

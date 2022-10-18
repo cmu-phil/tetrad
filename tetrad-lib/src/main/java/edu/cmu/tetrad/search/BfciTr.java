@@ -29,15 +29,21 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
+import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
+
 /**
- * Does BOSS + retain unshielded colliders + final FCI orientation rules
+ * Does an FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
+ * an extent; the GFCI reference is this:
+ * <p>
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
+ * for Latent Variable Models," JMLR 2016.
  *
  * @author jdramsey
  */
-public final class BfciSwapRule implements GraphSearch {
+public final class BfciTr implements GraphSearch {
 
     // The score used, if GS is used to build DAGs.
     private final Score score;
@@ -46,7 +52,7 @@ public final class BfciSwapRule implements GraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     // The covariance matrix being searched over, if continuous data is supplied. This is
-    // no used by the algorithm beut can be retrieved by another method if desired
+    // no used by the algorithm but can be retrieved by another method if desired
     ICovarianceMatrix covarianceMatrix;
 
     // The test used if Pearl's method is used ot build DAGs
@@ -66,15 +72,16 @@ public final class BfciSwapRule implements GraphSearch {
 
     // GRaSP parameters
     private int numStarts = 1;
-    private int depth = -1;
+    private int depth = 4;
     private boolean useRaskuttiUhler;
     private boolean useDataOrder = true;
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
+    private boolean possibleDsepSearchDone = true;
     private IKnowledge knowledge = new Knowledge2();
 
     //============================CONSTRUCTORS============================//
-    public BfciSwapRule(IndependenceTest test, Score score) {
+    public BfciTr(IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
     }
@@ -88,44 +95,38 @@ public final class BfciSwapRule implements GraphSearch {
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss boss = new Boss(scorer);
-        boss.setAlgType(Boss.AlgType.BOSS_OLD);
+        boss.setAlgType(Boss.AlgType.BOSS);
         boss.setUseScore(useScore);
         boss.setUseRaskuttiUhler(useRaskuttiUhler);
         boss.setUseDataOrder(useDataOrder);
         boss.setDepth(depth);
         boss.setNumStarts(numStarts);
-        boss.setVerbose(false);
+        boss.setVerbose(false); // Get the DAG
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
         boss.bestOrder(variables);
-        Graph graph = boss.getGraph(true);  // Get the DAG
+        Graph graph = boss.getGraph(false);
 
-        if (score instanceof MagSemBicScore) {
-            ((MagSemBicScore) score).setMag(graph);
+        if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
+            ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
         }
 
-        IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
+        test = new IndTestScore(score);
 
-        boolean changed;
+        knowledge = new Knowledge2((Knowledge2) knowledge);
+        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
 
-        do {
-            changed = removeBySwapRule(graph, scorer);
-        } while (changed);
+        // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
+        triangleReduce(graph, scorer, knowledge); // Adds <-> edges to the DAG
 
-
-        for (Edge edge : graph.getEdges()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
-            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
-        }
+//        if (this.possibleDsepSearchDone) {
+//            removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
+//        }
 
         // Retain only the unshielded colliders.
-//        retainUnshieldedColliders(graph);
-
-//        removeByPossibleDsep(graph, test,null);
-
+        retainUnshieldedColliders(graph);
 
         // Do final FCI orientation rules app
         SepsetProducer sepsets = new SepsetsGreedy(graph, test, null, depth);
@@ -133,178 +134,69 @@ public final class BfciSwapRule implements GraphSearch {
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setKnowledge(knowledge2);
-        fciOrient.setVerbose(true);
         fciOrient.doFinalOrientation(graph);
-
-//        } while (changed);
-
 
         graph.setPag(true);
 
         return graph;
     }
 
-    private boolean removeBySwapRule(Graph graph, TeyssierScorer scorer) {
-        List<Node> nodes = graph.getNodes();
-        boolean changed = false;
+    private static void triangleReduce(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
+        boolean changed = true;
 
-        List<List<Node>> toRemove = new ArrayList<>();
+        while (changed) {
+            changed = false;
 
-        for (Node x : nodes) {
-            for (Node y : nodes) {
-                for (Node z : nodes) {
-                    for (Node w : nodes) {
-                        if (x == y || x == z || x == w || y == z || y == w || z == w) continue;
-                        if (scorer.index(w) > scorer.index(x)) continue;
-                        if (scorer.index(w) > scorer.index(y)) continue;
-                        if (scorer.index(z) > scorer.index(x)) continue;
-                        if (scorer.index(z) > scorer.index(y)) continue;
+            for (Edge edge : graph.getEdges()) {
+                Node a = edge.getNode1();
+                Node b = edge.getNode2();
 
-                        if (config(graph, z, x, y, w) /*&& config(scorer, z, x, y, w)*/) {
-                            scorer.bookmark();
-                            scorer.tuck(x, y);
+                changed = changed || triangleReduceVisit(graph, scorer, knowledge, a, b);
+                changed = changed || triangleReduceVisit(graph, scorer, knowledge, b, a);
+            }
+        }
 
-                            if (config(scorer, w, y, x, z)) {
-                                toRemove.add(list(z, x, y, w));
-                            }
+    }
 
-                            scorer.goToBookmark();
-                        }
+    private static boolean triangleReduceVisit(Graph graph, TeyssierScorer scorer, IKnowledge knowledge, Node a, Node b) {
+        List<Node> inTriangle = graph.getAdjacentNodes(a);
+        inTriangle.retainAll(graph.getAdjacentNodes(b));
+
+        if (graph.isAdjacentTo(a, b)) {
+            SublistGenerator gen = new SublistGenerator(inTriangle.size(), inTriangle.size());
+            int[] choice;
+
+            float maxScore = Float.NEGATIVE_INFINITY;
+            List<Node> maxAfter = null;
+            boolean remove = false;
+
+            W:
+            while ((choice = gen.next()) != null) {
+                List<Node> before = GraphUtils.asList(choice, inTriangle);
+                List<Node> after = new ArrayList<>(inTriangle);
+
+                for (Node x : after) {
+                    if (knowledge.isForbidden(a.getName(), x.getName())) {
+                        continue W;
+                    }
+
+                    if (knowledge.isForbidden(b.getName(), x.getName())) {
+                        continue W;
                     }
                 }
-            }
-        }
 
-        for (List<Node> l : toRemove) {
-            Node z = l.get(0);
-            Node x = l.get(1);
-            Node y = l.get(2);
-            Node w = l.get(3);
+                after.removeAll(before);
 
-//            if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)) {
-            if (graph.isAdjacentTo(w, x)) {
-                Edge edge = graph.getEdge(w, x);
-                graph.removeEdge(edge);
-                System.out.println("Swap removing : " + edge);
-                changed = true;
-            }
-//            }
-        }
+                List<Node> perm = new ArrayList<>(graph.getParents(a));
 
-        for (List<Node> l : toRemove) {
-            Node z = l.get(0);
-            Node x = l.get(1);
-            Node y = l.get(2);
-            Node w = l.get(3);
-
-            if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)) {
-                if (!graph.isDefCollider(w, y, x)) {
-                    graph.setEndpoint(w, y, Endpoint.ARROW);
-                    graph.setEndpoint(x, y, Endpoint.ARROW);
-                    System.out.println("Swap orienting " + GraphUtils.pathString(graph, z, x, y, w));
-                }
-            }
-        }
-
-        return changed;
-    }
-
-    public void tuck(TeyssierScorer scorer, Node x, Node y) {
-        if (scorer.index(y) > scorer.index(x)) {
-            scorer.moveTo(x, scorer.index(y));
-        } else if (scorer.index(x) > scorer.index(y)) {
-            scorer.moveTo(y, scorer.index(x));
-        }
-    }
-
-    private List<Node> list(Node... nodes) {
-        List<Node> list = new ArrayList<>();
-        Collections.addAll(list, nodes);
-        return list;
-    }
-
-    private static boolean config(TeyssierScorer scorer, Node z, Node x, Node y, Node w) {
-        if (scorer.adjacent(z, x) && scorer.adjacent(x, y) && scorer.adjacent(y, w)) {
-            if (scorer.adjacent(w, x) && !scorer.adjacent(z, y)) {
-//                if (!scorer.adjacent(z, w)) {
-                    return scorer.collider(z, x, y);
-//                }
-            }
-        }
-
-        return false;
-    }
-
-    private static boolean config(Graph graph, Node z, Node x, Node y, Node w) {
-        if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)) {
-            if (graph.isAdjacentTo(w, x) && !graph.isAdjacentTo(z, y)) {
-//                if (!graph.isAdjacentTo(z, w)) {
-                    return graph.isDefCollider(z, x, y);
-//                }
-            }
-        }
-
-        return false;
-    }
-
-    private static void triangleReduce2(Graph graph, TeyssierScorer scorer0, IKnowledge knowledge) {
-        TeyssierScorer scorer = new TeyssierScorer(scorer0);
-        Graph origGaph = new EdgeListGraph(graph);
-
-        for (Edge edge : graph.getEdges()) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-            t2visit(origGaph, graph, scorer0, knowledge, scorer, a, b);
-            t2visit(origGaph, graph, scorer0, knowledge, scorer, b, a);
-        }
-    }
-
-    private static boolean t2visit(Graph origGraph, Graph graph, TeyssierScorer scorer0, IKnowledge knowledge, TeyssierScorer scorer,
-                                   Node a, Node b) {
-        if (!graph.isAdjacentTo(a, b)) return false;
-        boolean changed = false;
-        List<Node> _inTriangle = origGraph.getAdjacentNodes(a);
-        _inTriangle.retainAll(origGraph.getAdjacentNodes(b));
-        List<Node> parents = origGraph.getParents(a);
-        parents.remove(b);
-        for (Node n : _inTriangle) {
-            parents.remove(n);
-        }
-
-        List<Node> inTriangle = new ArrayList<>();
-        List<Node> all = new ArrayList<>();
-        for (Node n : scorer0.getPi()) {
-            if (_inTriangle.contains(n)) inTriangle.add(n);
-            if (_inTriangle.contains(n) || n == a || n == b) all.add(n);
-        }
-
-        if (_inTriangle.isEmpty()) return false;
-
-        SublistGenerator gen = new SublistGenerator(all.size(), all.size());
-        int[] choice;
-
-        float maxScore = Float.NEGATIVE_INFINITY;
-        List<Node> maxAfter = null;
-        boolean remove = false;
-
-        while ((choice = gen.next()) != null) {
-            List<Node> before = GraphUtils.asList(choice, all);
-            List<Node> after = new ArrayList<>(inTriangle);
-            after.removeAll(before);
-
-            SublistGenerator gen2 = new SublistGenerator(parents.size(), -1);
-            int[] choice2;
-
-            while ((choice2 = gen2.next()) != null) {
-                List<Node> p = GraphUtils.asList(choice2, parents);
-
-                List<Node> perm = new ArrayList<>(p);
-
-                for (Node n : all) {
+                for (Node n : before) {
                     perm.remove(n);
                     perm.add(n);
                 }
+
+
+                perm.add(a);
+                perm.add(b);
 
                 for (Node n : after) {
                     perm.remove(n);
@@ -313,40 +205,34 @@ public final class BfciSwapRule implements GraphSearch {
 
                 float score = scorer.score(perm);
 
-                if (score >= maxScore && !scorer.adjacent(a, b)) {
+                if (score > maxScore && !scorer.adjacent(a, b)) {
                     maxScore = score;
                     maxAfter = after;
                     remove = !scorer.adjacent(a, b);
                 }
             }
-        }
 
-        if (remove) {
-            for (Node x : maxAfter) {
-                changed = true;
-
-                // Only remove an edge and orient a new collider if it will create a bidirected edge.
-                graph.removeEdge(a, b);
-
-                if (graph.isAdjacentTo(a, x)) {
+            if (remove) {
+                for (Node x : maxAfter) {
+                    // Only remove an edge and orient a new collider if it will create a bidirected edge.
+                    graph.removeEdge(a, b);
                     graph.setEndpoint(a, x, Endpoint.ARROW);
-
-//                    if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
-//                        graph.setEndpoint(x, a, Endpoint.ARROW);
-//                    }
-                }
-
-                if (graph.isAdjacentTo(b, x)) {
                     graph.setEndpoint(b, x, Endpoint.ARROW);
 
-//                    if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
-//                        graph.setEndpoint(x, b, Endpoint.ARROW);
-//                    }
+                    if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
+                        graph.setEndpoint(x, a, Endpoint.ARROW);
+                    }
+
+                    if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
+                        graph.setEndpoint(x, b, Endpoint.ARROW);
+                    }
+
+                    return true;
                 }
             }
         }
 
-        return changed;
+        return false;
     }
 
     /**
@@ -451,6 +337,10 @@ public final class BfciSwapRule implements GraphSearch {
 
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
     public void setKnowledge(IKnowledge knowledge) {

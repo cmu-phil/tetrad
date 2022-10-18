@@ -11,8 +11,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BfciFoo;
-import edu.cmu.tetrad.search.BfciSwapRule;
+import edu.cmu.tetrad.search.BfciSwap;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -37,24 +36,24 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BFCI Swap",
-        command = "bfciswap",
+        name = "BFCI-Swap",
+        command = "bfci-swap",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class BFCISwapRule implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class BFCISwap implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private IKnowledge knowledge = new Knowledge2();
 
-    public BFCISwapRule() {
+    public BFCISwap() {
         // Used for reflection; do not delete.
     }
 
-    public BFCISwapRule(IndependenceWrapper test, ScoreWrapper score) {
+    public BFCISwap(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -72,7 +71,7 @@ public class BFCISwapRule implements Algorithm, UsesScoreWrapper, TakesIndepende
                 knowledge = timeSeries.getKnowledge();
             }
 
-            BfciSwapRule search = new BfciSwapRule(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            BfciSwap search = new BfciSwap(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
@@ -96,7 +95,7 @@ public class BFCISwapRule implements Algorithm, UsesScoreWrapper, TakesIndepende
 
             return search.search();
         } else {
-            BFCISwapRule algorithm = new BFCISwapRule(this.test, this.score);
+            BFCISwap algorithm = new BFCISwap(this.test, this.score);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());

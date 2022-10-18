@@ -4875,7 +4875,9 @@ public final class GraphUtils {
      * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets
      *                will not be recorded.
      */
-    public static void removeByPossibleDsep(Graph graph, IndependenceTest test, SepsetMap sepsets) {
+    public static boolean removeByPossibleDsep(Graph graph, IndependenceTest test, SepsetMap sepsets) {
+        boolean changed = false;
+
         for (Edge edge : graph.getEdges()) {
             Node a = edge.getNode1();
             Node b = edge.getNode2();
@@ -4893,6 +4895,7 @@ public final class GraphUtils {
                     if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                     if (test.checkIndependence(a, b, sepset).independent()) {
                         graph.removeEdge(edge);
+                        changed = true;
 
                         if (sepsets != null) {
                             sepsets.set(a, b, sepset);
@@ -4917,6 +4920,7 @@ public final class GraphUtils {
                         if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                         if (test.checkIndependence(a, b, sepset).independent()) {
                             graph.removeEdge(edge);
+                            changed = true;
 
                             if (sepsets != null) {
                                 sepsets.set(a, b, sepset);
@@ -4928,6 +4932,8 @@ public final class GraphUtils {
                 }
             }
         }
+
+        return changed;
     }
 
 
