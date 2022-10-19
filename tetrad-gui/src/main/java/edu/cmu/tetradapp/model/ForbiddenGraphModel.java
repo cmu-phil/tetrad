@@ -172,7 +172,11 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
 
         int numOfNodes = nodes.size();
         for (int i = 0; i < numOfNodes; i++) {
-            for (int j = i + 1; j < numOfNodes; j++) {
+            for (int j = 0; j < numOfNodes; j++) {
+                if (i == j) {
+                    continue;
+                }
+
                 Node n1 = nodes.get(i);
                 Node n2 = nodes.get(j);
 
@@ -180,9 +184,9 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
                     continue;
                 }
 
-                Edge edge = this.resultGraph.getEdge(n1, n2);
-                if (edge != null && edge.isDirected()) {
-                    knwl.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
+                Edge edge = this.resultGraph.getDirectedEdge(n1, n2);
+                if (edge != null) {
+                    knwl.setForbidden(edge.getNode1().getName(), edge.getNode2().getName());
                 }
             }
         }
