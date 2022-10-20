@@ -1613,7 +1613,7 @@ public final class SearchGraphUtils {
 
                     if (edge2 == null) continue;
 
-                    if (compatible(edge1, edge2)) {
+                    if (GraphUtils.compatible(edge1, edge2)) {
                         compatible.add(edge1);
                     } else {
                         incompatible.add(edge1);
@@ -1702,21 +1702,6 @@ public final class SearchGraphUtils {
         }
 
         return builder.toString();
-    }
-
-    private static boolean compatible(Edge edge1, Edge edge2) {
-        if (edge1 == null || edge2 == null) return false;
-
-        Node x = edge1.getNode1();
-        Node y = edge1.getNode2();
-
-        Endpoint ex1 = edge1.getProximalEndpoint(x);
-        Endpoint ey1 = edge1.getProximalEndpoint(y);
-
-        Endpoint ex2 = edge2.getProximalEndpoint(x);
-        Endpoint ey2 = edge2.getProximalEndpoint(y);
-
-        return (ex1 == Endpoint.CIRCLE || (ex1 == ex2 || ex2 == Endpoint.CIRCLE)) && (ey1 == Endpoint.CIRCLE || (ey1 == ey2 || ey2 == Endpoint.CIRCLE));
     }
 
     public static int[][] graphComparison(Graph estCpdag, Graph trueCpdag, PrintStream out) {

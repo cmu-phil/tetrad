@@ -2,50 +2,48 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
-import java.awt.*;
+import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 
 /**
  * The bidirected true positives.
  *
  * @author jdramsey
  */
-public class NumGreenNonancestors implements Statistic {
+public class NumCompatiblePossiblyDirectedEdgeNonAncestors implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#VisNA";
+        return "#CPDENA";
     }
 
     @Override
     public String getDescription() {
-        return "Number green (visible) edges X-->Y in estimates for which X is not an ancestor of Y in true";
+        return "Number compatible PD X-->Y for which X is not an ancestor of Y in true";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-//        if (!estGraph.isPag()) return 0;
+        GraphUtils.addPagColoring(estGraph);
+
+        Graph pag = SearchGraphUtils.dagToPag(trueGraph);
+
         int tp = 0;
         int fp = 0;
 
-        GraphUtils.addPagColoring(estGraph);
-
         for (Edge edge : estGraph.getEdges()) {
-            if (!Edges.isDirectedEdge(edge)) continue;
+            Edge trueEdge = pag.getEdge(edge.getNode1(), edge.getNode2());
+            if (!compatible(edge, trueEdge)) continue;
 
-            if (edge.getProperties().contains(Edge.Property.nl)) {
+            if (edge.getProperties().contains(Edge.Property.pd)) {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
                 if (trueGraph.isAncestorOf(x, y)) {
-                    System.out.println("Ancestor(x, y): " + Edges.directedEdge(x, y));
                     tp++;
                 } else {
-                    System.out.println("Not Ancestor(x, y): " + Edges.directedEdge(x, y));
-
-                    trueGraph.isAncestorOf(x, y);
-
                     fp++;
                 }
             }

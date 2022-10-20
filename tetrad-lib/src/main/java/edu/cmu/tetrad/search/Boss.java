@@ -111,20 +111,45 @@ public class Boss {
             List<Node> pi, pi2;
             float s1, s2;
 
+            int e1, e2 = scorer.getNumEdges();
+
+
             do {
                 pi = scorer.getPi();
                 s1 = scorer.score();
 
+                e1 = e2;//scorer.getNumEdges();
+
                 if (algType == AlgType.BOSS_OLD) {
                     betterMutation(scorer);
                 } else {
-                    betterMutationTuck(scorer);
+                    do {
+                        pi = scorer.getPi();
+                        e1 = e2;
+
+                        betterMutationTuck(scorer, true);
+                        betterMutationTuck(scorer, false);
+
+                        s2 = scorer.score();
+                        e2 = scorer.getNumEdges();
+
+//                    if (s2 > s1) continue;
+//                        if (e2 > e1) continue;
+                    } while (e2 < e1);
+//                    betterMutationTuck(scorer, true);
                 }
 
+                List<Node> pi3 = scorer.getPi();
+
+//                betterMutationTuck(scorer, true);
                 pi2 = besOrder(scorer);
                 s2 = scorer.score(pi2);
 //                s2 = scorer.score();
-            } while (s2 > s1);
+
+                if (pi2.equals(pi3)) break;
+
+                e2 = scorer.getNumEdges();
+            } while (e2 < e1);// s2 > s1);
 
             scorer.score(pi);
 
@@ -189,24 +214,34 @@ public class Boss {
         scorer.score();
     }
 
-    public void betterMutationTuck(@NotNull TeyssierScorer scorer) {
+    public void betterMutationTuck(@NotNull TeyssierScorer scorer, boolean skipUncovered) {
         double sp = scorer.score();
         scorer.bookmark();
         float s1, s2;
 
+        if (verbose) {
+            System.out.print("\r# Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+        }
+
+        int max = scorer.size() - 1;
+
         do {
             s1 = scorer.score();
 
-            for (int i = 1; i < scorer.size(); i++) {
+            for (int i = max; i > 0; i--) {
+//                for (int i = scorer.size() - 1; i > 0; i--) {
+//                for (int i = 1; i < scorer.size(); i++) {
                 scorer.bookmark(1);
-
                 Node x = scorer.get(i);
+
                 for (int j = i - 1; j >= 0; j--) {
-                    if (tuck(x, j, scorer)) {
+                    if (tuck(x, j, scorer, skipUncovered)) {
                         if (scorer.score() < sp || violatesKnowledge(scorer.getPi())) {
                             scorer.goToBookmark();
                         } else {
                             sp = scorer.score();
+
+                            max = i;
 
                             if (verbose) {
                                 System.out.print("\r# Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
@@ -228,17 +263,29 @@ public class Boss {
         scorer.goToBookmark(1);
     }
 
-    private boolean tuck(Node k, int j, TeyssierScorer scorer) {
-        if (!scorer.adjacent(k, scorer.get(j))) return false;
-//        if (scorer.coveredEdge(k, scorer.get(j))) return false;
+    private boolean tuck(Node k, int j, TeyssierScorer scorer, boolean skipUncovered) {
         if (j >= scorer.index(k)) return false;
+        if (!scorer.adjacent(k, scorer.get(j))) return false;
+
+        if (skipUncovered) {
+            if (!scorer.coveredEdge(k, scorer.get(j))) return false;
+        }
+//
+//        if (skipUncovered == scorer.coveredEdge(k, scorer.get(j))) return false;
 
         Set<Node> ancestors = scorer.getAncestors(k);
+
+        int minIndex = j;
+
         for (int i = j + 1; i <= scorer.index(k); i++) {
             if (ancestors.contains(scorer.get(i))) {
-                scorer.moveTo(scorer.get(i), j++);
+//                scorer.moveTo(scorer.get(i), j++);
+
+                scorer.moveToNoUpdate(scorer.get(i), j++);
             }
         }
+
+        scorer.updateScores(minIndex, scorer.index(k));
 
         return true;
     }
@@ -255,15 +302,16 @@ public class Boss {
 
     private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
         List<Node> found = new ArrayList<>();
+        HashSet<Node> __found = new HashSet<>();
         boolean _found = true;
 
         while (_found) {
             _found = false;
 
             for (Node node : initialOrder) {
-                HashSet<Node> __found = new HashSet<>(found);
                 if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
                     found.add(node);
+                    __found.add(node);
                     _found = true;
                 }
             }

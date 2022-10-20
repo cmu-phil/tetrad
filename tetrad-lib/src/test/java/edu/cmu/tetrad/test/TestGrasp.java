@@ -2451,9 +2451,9 @@ public final class TestGrasp {
     @Test
     public void testBFci() {
         Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 2000);
-        params.set(Params.NUM_MEASURES, 17);
-        params.set(Params.AVG_DEGREE, 6);
+        params.set(Params.SAMPLE_SIZE, 5000);
+        params.set(Params.NUM_MEASURES, 18);
+        params.set(Params.AVG_DEGREE, 7);
         params.set(Params.NUM_LATENTS, 6);
         params.set(Params.RANDOMIZE_COLUMNS, true);
         params.set(Params.COEF_LOW, 0);
@@ -2479,8 +2479,8 @@ public final class TestGrasp {
 
         // default for kim et al. is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
-        params.set(Params.PENALTY_DISCOUNT, 2);
-        params.set(Params.ALPHA, 0.2);
+        params.set(Params.PENALTY_DISCOUNT, 1);
+        params.set(Params.ALPHA, 0.05);
         params.set(Params.ZS_RISK_BOUND, 0.001);
 
         params.set(Params.DIFFERENT_GRAPHS, true);
@@ -2516,8 +2516,16 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new PagAdjacencyPrecision());
         statistics.add(new PagAdjacencyRecall());
-        statistics.add(new NumGreenAncestors());
-        statistics.add(new NumGreenNonancestors());
+        statistics.add(new NumCompatibleEdges());
+        statistics.add(new NumIncompatibleEdges());
+        statistics.add(new NumCompatibleDirectedEdgeAncestors());
+        statistics.add(new NumCompatibleDirectedEdgeNonAncestors());
+        statistics.add(new NumCompatibleVisibleAncestors());
+        statistics.add(new NumCompatibleVisibleNonancestors());
+        statistics.add(new NumCompatibleDefiniteDirectedEdgeAncestors());
+        statistics.add(new NumCompatibleDefiniteDirectedEdgeNonAncestors());
+        statistics.add(new NumCompatiblePossiblyDirectedEdgeAncestors());
+        statistics.add(new NumCompatiblePossiblyDirectedEdgeNonAncestors());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagRecallArrows());
         statistics.add(new ProportionDirectedPathsNotReversedEst());

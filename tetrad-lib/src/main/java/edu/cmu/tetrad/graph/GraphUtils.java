@@ -5261,6 +5261,21 @@ public final class GraphUtils {
         }
     }
 
+    public static boolean compatible(Edge edge1, Edge edge2) {
+        if (edge1 == null || edge2 == null) return true;
+
+        Node x = edge1.getNode1();
+        Node y = edge1.getNode2();
+
+        Endpoint ex1 = edge1.getProximalEndpoint(x);
+        Endpoint ey1 = edge1.getProximalEndpoint(y);
+
+        Endpoint ex2 = edge2.getProximalEndpoint(x);
+        Endpoint ey2 = edge2.getProximalEndpoint(y);
+
+        return (ex1 == Endpoint.CIRCLE || (ex1 == ex2 || ex2 == Endpoint.CIRCLE)) && (ey1 == Endpoint.CIRCLE || (ey1 == ey2 || ey2 == Endpoint.CIRCLE));
+    }
+
     /**
      * Check to see if a set of variables Z satisfies the back-door criterion
      * relative to node x and node y.

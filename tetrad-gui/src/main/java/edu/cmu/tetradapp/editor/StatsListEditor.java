@@ -121,9 +121,9 @@ public class StatsListEditor extends JPanel {
     private List<Statistic> statistics() {
         List<Statistic> statistics = new ArrayList<>();
 
-        statistics.add(new BicTrue());
-        statistics.add(new BicEst());
-        statistics.add(new BicDiff());
+//        statistics.add(new BicTrue());
+//        statistics.add(new BicEst());
+//        statistics.add(new BicDiff());
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -144,19 +144,19 @@ public class StatsListEditor extends JPanel {
         statistics.add(new F1Arrow());
         statistics.add(new MathewsCorrAdj());
         statistics.add(new MathewsCorrArrow());
-        statistics.add(new SHD());
+//        statistics.add(new SHD());
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new NumberOfEdgesTrue());
-        statistics.add(new NumAmbiguousTriples());
-        statistics.add(new PercentAmbiguous());
+//        statistics.add(new NumAmbiguousTriples());
+//        statistics.add(new PercentAmbiguous());
         statistics.add(new PercentBidirectedEdges());
-        statistics.add(new BidirectedTP());
-        statistics.add(new BidirectedFP());
-        statistics.add(new BidirectedPrecision());
+//        statistics.add(new BidirectedTP());
+//        statistics.add(new BidirectedFP());
+//        statistics.add(new BidirectedPrecision());
 //        statistics.add(new NumGreenAncestors());
 //        statistics.add(new NumGreenNonancestors());
-        statistics.add(new NumBidirectedEdgesEst());
-        statistics.add(new BidirectedBothNonancestorAncestor());
+//        statistics.add(new NumBidirectedEdgesEst());
+//        statistics.add(new BidirectedBothNonancestorAncestor());
 //        statistics.add(new LatentCommonAncestorTruePositiveBidirected());
 //        statistics.add(new LatentCommonAncestorFalsePositiveBidirected());
 //        statistics.add(new TrueDagPrecisionArrow());
