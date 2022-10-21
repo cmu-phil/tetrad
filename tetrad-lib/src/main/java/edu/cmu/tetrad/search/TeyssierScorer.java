@@ -34,7 +34,7 @@ public class TeyssierScorer {
     private Map<Object, ArrayList<Pair>> bookmarkedScores = new HashMap<>();
     private Map<Object, Map<Node, Integer>> bookmarkedOrderHashes = new HashMap<>();
     private Map<Object, Float> bookmarkedRunningScores = new HashMap<>();
-//    private Map<Node, Map<Set<Node>, Float>> cache = new HashMap<>();
+    private Map<Node, Map<Set<Node>, Float>> cache = new HashMap<>();
     private Map<Node, Integer> orderHash;
     private ArrayList<Node> pi; // The current permutation.
     private ArrayList<Pair> scores;
@@ -721,14 +721,14 @@ public class TeyssierScorer {
 //    }
 
     private float score(Node n, Set<Node> pi) {
-//        if (this.cachingScores) {
-//            this.cache.computeIfAbsent(n, w -> new HashMap<>());
-//            Float score = this.cache.get(n).get(pi);
-//
-//            if (score != null) {
-//                return score;
-//            }
-//        }
+        if (this.cachingScores) {
+            this.cache.computeIfAbsent(n, w -> new HashMap<>());
+            Float score = this.cache.get(n).get(pi);
+
+            if (score != null) {
+                return score;
+            }
+        }
 
         int[] parentIndices = new int[pi.size()];
 
@@ -744,10 +744,10 @@ public class TeyssierScorer {
 
         float v = (float) this.score.localScore(this.variablesHash.get(n), parentIndices);
 
-//        if (this.cachingScores) {
-//            this.cache.computeIfAbsent(n, w -> new HashMap<>());
-//            this.cache.get(n).put(new HashSet<>(pi), v);
-//        }
+        if (this.cachingScores) {
+            this.cache.computeIfAbsent(n, w -> new HashMap<>());
+            this.cache.get(n).put(new HashSet<>(pi), v);
+        }
 
         return v;
     }
@@ -1031,16 +1031,22 @@ public class TeyssierScorer {
     public void moveToNoUpdate(Node v, int toIndex) {
         bookmark(-55);
 
-        if (!this.pi.contains(v)) return;
+//        if (!this.pi.contains(v)) return;
 
         int vIndex = index(v);
 
         if (vIndex == toIndex) return;
 
+        // seems to slow it down actually
         if (lastMoveSame(vIndex, toIndex)) return;
 
-        this.pi.remove(v);
-        this.pi.add(toIndex, v);
+        if (vIndex < toIndex) {
+            for (int i = vIndex; i < toIndex; i++) this.pi.set(i, this.pi.get(i + 1));
+            this.pi.set(toIndex, v);
+        } else {
+            for (int i = vIndex; i > toIndex; i--) this.pi.set(i, this.pi.get(i - 1));
+            this.pi.set(toIndex, v);
+        }
 
         if (violatesKnowledge(this.pi)) {
             goToBookmark(-55);

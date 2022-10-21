@@ -297,19 +297,19 @@ public class SemBicScore implements Score {
         _all.add(i);
         for (int value : parents) _all.add(value);
 
-        if (cache.containsKey(_all)) {
-            lik = cache.get(_all);
-        } else {
+//        if (cache.containsKey(_all)) {
+//            lik = cache.get(_all);
+//        } else {
             try {
                 double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
                 lik = -(double) this.sampleSize * log(varey);
-                cache.put(_all, lik);
+//                cache.put(_all, lik);
             } catch (SingularMatrixException e) {
                 lik = NaN;
             }
 
-            cache.put(_all, lik);
-        }
+//            cache.put(_all, lik);
+//        }
 
         double c = getPenaltyDiscount();
 

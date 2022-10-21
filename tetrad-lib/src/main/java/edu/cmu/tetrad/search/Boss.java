@@ -36,6 +36,7 @@ public class Boss {
     private int depth = -1;
     private int numStarts = 1;
     private AlgType algType = AlgType.BOSS;
+    private boolean caching = true;
 
     public Boss(@NotNull Score score) {
         this.score = score;
@@ -66,6 +67,7 @@ public class Boss {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
+        scorer.setCachingScores(caching);
         scorer.setKnowledge(knowledge);
 
         List<Node> bestPerm;
@@ -101,42 +103,26 @@ public class Boss {
 
             makeValidKnowledgeOrder(order);
 
-            List<Node> pi, pi2;
-            int e1, e2 = scorer.getNumEdges();
+            List<Node> pi;
+            float s1, s2;
 
             do {
                 if (algType == AlgType.BOSS_OLD) {
                     betterMutationOrig(scorer);
-
-                    do {
-                        pi = scorer.getPi();
-                        e1 = e2;
-
-                        betterMutationOrig(scorer);
-
-                        e2 = scorer.getNumEdges();
-                    } while (e2 < e1);
                 } else {
-                    do {
-                        pi = scorer.getPi();
-                        e1 = e2;
-
-                        betterMutationTuck(scorer, true);
-                        betterMutationTuck(scorer, false);
-
-                        e2 = scorer.getNumEdges();
-                    } while (e2 < e1);
+                    betterMutationTuck(scorer, false);
                 }
 
-                List<Node> pi3 = scorer.getPi();
+                pi = scorer.getPi();
 
-                e1 = scorer.getNumEdges();
+                s1 = scorer.score();
+                besMutation(scorer);
+                s2 = scorer.score();
 
-                pi2 = besOrder(scorer);
-                if (pi2.equals(pi3)) break;
-
-                e2 = scorer.getNumEdges();
-            } while (e2 < e1);
+                if (s2 >= s1) {
+                    pi = scorer.getPi();
+                }
+            } while (s2 > s1);
 
             scorer.score(pi);
 
@@ -205,34 +191,27 @@ public class Boss {
         scorer.bookmark();
         float s1, s2;
 
-        if (verbose) {
-            System.out.print("\r# Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-        }
-
-        int max = scorer.size() - 1;
-
         do {
             s1 = scorer.score();
-
-            for (int i = max; i > 0; i--) {
+            for (int i = 1; i < scorer.size(); i++) {
                 scorer.bookmark(1);
                 Node x = scorer.get(i);
 
                 for (int j = i - 1; j >= 0; j--) {
+                    if (!scorer.adjacent(scorer.get(i), scorer.get(j))) continue;
+
                     if (tuck(x, j, scorer, skipUncovered)) {
                         if (scorer.score() < sp || violatesKnowledge(scorer.getPi())) {
                             scorer.goToBookmark();
                         } else {
                             sp = scorer.score();
-
-                            max = i;
-
-                            if (verbose) {
-                                System.out.print("\r# Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-                            }
                         }
 
                         scorer.bookmark();
+                    }
+
+                    if (verbose) {
+                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                     }
                 }
             }
@@ -249,7 +228,7 @@ public class Boss {
 
     private boolean tuck(Node k, int j, TeyssierScorer scorer, boolean skipUncovered) {
         if (j >= scorer.index(k)) return false;
-        if (!scorer.adjacent(k, scorer.get(j))) return false;
+//        if (!scorer.adjacent(k, scorer.get(j))) return false;
 
         if (skipUncovered) {
             if (!scorer.coveredEdge(k, scorer.get(j))) return false;
@@ -270,14 +249,15 @@ public class Boss {
         return true;
     }
 
-    public List<Node> besOrder(TeyssierScorer scorer) {
+    public void besMutation(TeyssierScorer scorer) {
         Graph graph = scorer.getGraph(true);
         Bes bes = new Bes(score);
         bes.setDepth(depth);
         bes.setVerbose(false);
         bes.setKnowledge(knowledge);
         bes.bes(graph, scorer.getPi());
-        return causalOrder(scorer.getPi(), graph);
+        List<Node> pi = causalOrder(scorer.getPi(), graph);
+        scorer.score(pi);
     }
 
     private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
@@ -446,6 +426,10 @@ public class Boss {
 
     public void setAlgType(AlgType algType) {
         this.algType = algType;
+    }
+
+    public void setCachingScore(boolean caching) {
+        this.caching = caching;
     }
 
     public enum AlgType {BOSS_OLD, BOSS}
