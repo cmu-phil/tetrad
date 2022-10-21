@@ -213,8 +213,6 @@ public class Boss {
             s1 = scorer.score();
 
             for (int i = max; i > 0; i--) {
-//                for (int i = scorer.size() - 1; i > 0; i--) {
-//                for (int i = 1; i < scorer.size(); i++) {
                 scorer.bookmark(1);
                 Node x = scorer.get(i);
 
