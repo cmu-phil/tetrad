@@ -14,7 +14,6 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.lang.Double.min;
 import static java.util.Collections.shuffle;
 
 /**
@@ -191,17 +190,15 @@ public class Boss {
 
         int max = scorer.size();
 
-        Set<Node> changed1 = new HashSet<>();
-        Set<Node> changed2 = new HashSet<>(scorer.getPi());
-
+        Set<Node> introns1;
+        Set<Node> introns2 = new HashSet<>(scorer.getPi());
         int[] range = new int[2];
-
 
         do {
             s1 = scorer.score();
 
-            changed1 = changed2;
-            changed2 = new HashSet<>();
+            introns1 = introns2;
+            introns2 = new HashSet<>();
 
             System.out.println("max = " + max);
 
@@ -209,14 +206,13 @@ public class Boss {
             max = 0;
 
             for (int i = 1; i < _max; i++) {
-
                 scorer.bookmark(1);
                 Node x = scorer.get(i);
 
-                if (!changed1.contains(x)) continue;
+                if (!introns1.contains(x)) continue;
 
                 for (int j = i - 1; j >= 0; j--) {
-                    if (!scorer.adjacent(x, scorer.get(j))) continue;
+                    if (!scorer.parent(scorer.get(j), x)) continue;
 
                     if (tuck(x, j, scorer, skipUncovered, range)) {
                         if (scorer.score() < sp || violatesKnowledge(scorer.getPi())) {
@@ -226,10 +222,9 @@ public class Boss {
                             sp = scorer.score();
 
                             for (int l = range[0]; l <= range[1]; l++) {
-                                changed2.add(scorer.get(l));
+                                introns2.add(scorer.get(l));
                             }
                         }
-
 
                         scorer.bookmark();
                     }
