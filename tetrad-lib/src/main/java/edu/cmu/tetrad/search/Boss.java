@@ -14,6 +14,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.min;
 import static java.util.Collections.shuffle;
 
 /**
@@ -84,9 +85,6 @@ public class Boss {
 
         this.scorer.setKnowledge(this.knowledge);
         this.scorer.clearBookmarks();
-
-        boolean cachingScores = true;
-        this.scorer.setCachingScores(cachingScores);
 
         bestPerm = null;
         double best = NEGATIVE_INFINITY;
@@ -191,27 +189,54 @@ public class Boss {
         scorer.bookmark();
         float s1, s2;
 
+        int max = scorer.size();
+
+        Set<Node> changed1 = new HashSet<>();
+        Set<Node> changed2 = new HashSet<>(scorer.getPi());
+
+        int[] range = new int[2];
+
+
         do {
             s1 = scorer.score();
-            for (int i = 1; i < scorer.size(); i++) {
+
+            changed1 = changed2;
+            changed2 = new HashSet<>();
+
+            System.out.println("max = " + max);
+
+            int _max = max;
+            max = 0;
+
+            for (int i = 1; i < _max; i++) {
+
                 scorer.bookmark(1);
                 Node x = scorer.get(i);
 
-                for (int j = i - 1; j >= 0; j--) {
-                    if (!scorer.adjacent(scorer.get(i), scorer.get(j))) continue;
+                if (!changed1.contains(x)) continue;
 
-                    if (tuck(x, j, scorer, skipUncovered)) {
+                for (int j = i - 1; j >= 0; j--) {
+                    if (!scorer.adjacent(x, scorer.get(j))) continue;
+
+                    if (tuck(x, j, scorer, skipUncovered, range)) {
                         if (scorer.score() < sp || violatesKnowledge(scorer.getPi())) {
                             scorer.goToBookmark();
                         } else {
+                            max = i + 1;
                             sp = scorer.score();
+
+                            for (int l = range[0]; l <= range[1]; l++) {
+                                changed2.add(scorer.get(l));
+                            }
                         }
+
 
                         scorer.bookmark();
                     }
 
                     if (verbose) {
-                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+//                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                     }
                 }
             }
@@ -226,8 +251,8 @@ public class Boss {
         scorer.goToBookmark(1);
     }
 
-    private boolean tuck(Node k, int j, TeyssierScorer scorer, boolean skipUncovered) {
-        if (j >= scorer.index(k)) return false;
+    private boolean tuck(Node k, int j, TeyssierScorer scorer, boolean skipUncovered, int[] range) {
+//        if (j >= scorer.index(k)) return false;
 //        if (!scorer.adjacent(k, scorer.get(j))) return false;
 
         if (skipUncovered) {
@@ -240,11 +265,16 @@ public class Boss {
 
         for (int i = j + 1; i <= scorer.index(k); i++) {
             if (ancestors.contains(scorer.get(i))) {
+
+                // package scope no checks
                 scorer.moveToNoUpdate(scorer.get(i), j++);
             }
         }
 
         scorer.updateScores(minIndex, scorer.index(k));
+
+        range[0] = minIndex;
+        range[1] = scorer.index(k);
 
         return true;
     }
