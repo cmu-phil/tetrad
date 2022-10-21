@@ -238,7 +238,7 @@ public class TeyssierScorer {
     public void moveTo(Node v, int toIndex) {
         int vIndex = index(v);
         if (vIndex == toIndex) return;
-        if (lastMoveSame(vIndex, toIndex)) return;
+//        if (lastMoveSame(vIndex, toIndex)) return;
 
         this.pi.remove(v);
         this.pi.add(toIndex, v);

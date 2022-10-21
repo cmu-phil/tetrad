@@ -28,7 +28,7 @@ public class Boss {
     private Score score;
     private IndependenceTest test;
     private IKnowledge knowledge = new Knowledge2();
-    private TeyssierScorer scorer;
+    private final TeyssierScorer scorer;
     private long start;
     // flags
     private boolean useScore = true;
@@ -109,16 +109,10 @@ public class Boss {
             makeValidKnowledgeOrder(order);
 
             List<Node> pi, pi2;
-            float s1, s2;
-
             int e1, e2 = scorer.getNumEdges();
-
 
             do {
                 pi = scorer.getPi();
-                s1 = scorer.score();
-
-                e1 = e2;//scorer.getNumEdges();
 
                 if (algType == AlgType.BOSS_OLD) {
                     betterMutation(scorer);
@@ -130,26 +124,17 @@ public class Boss {
                         betterMutationTuck(scorer, true);
                         betterMutationTuck(scorer, false);
 
-                        s2 = scorer.score();
                         e2 = scorer.getNumEdges();
-
-//                    if (s2 > s1) continue;
-//                        if (e2 > e1) continue;
                     } while (e2 < e1);
-//                    betterMutationTuck(scorer, true);
                 }
 
                 List<Node> pi3 = scorer.getPi();
 
-//                betterMutationTuck(scorer, true);
                 pi2 = besOrder(scorer);
-                s2 = scorer.score(pi2);
-//                s2 = scorer.score();
-
                 if (pi2.equals(pi3)) break;
 
                 e2 = scorer.getNumEdges();
-            } while (e2 < e1);// s2 > s1);
+            } while (true);
 
             scorer.score(pi);
 
@@ -160,7 +145,6 @@ public class Boss {
         }
 
         this.scorer.score(bestPerm);
-        this.graph = scorer.getGraph(true);
 
         long stop = System.currentTimeMillis();
 
@@ -270,8 +254,6 @@ public class Boss {
         if (skipUncovered) {
             if (!scorer.coveredEdge(k, scorer.get(j))) return false;
         }
-//
-//        if (skipUncovered == scorer.coveredEdge(k, scorer.get(j))) return false;
 
         Set<Node> ancestors = scorer.getAncestors(k);
 
@@ -279,8 +261,6 @@ public class Boss {
 
         for (int i = j + 1; i <= scorer.index(k); i++) {
             if (ancestors.contains(scorer.get(i))) {
-//                scorer.moveTo(scorer.get(i), j++);
-
                 scorer.moveToNoUpdate(scorer.get(i), j++);
             }
         }
@@ -463,8 +443,6 @@ public class Boss {
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
     }
-
-    private Graph graph;
 
     public void setAlgType(AlgType algType) {
         this.algType = algType;
