@@ -16,7 +16,6 @@ import java.util.*;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.util.Collections.shuffle;
 
-
 /**
  * Implements the GRASP algorithms, with various execution flags.
  *
@@ -30,17 +29,12 @@ public class Boss {
     private IKnowledge knowledge = new Knowledge2();
     private final TeyssierScorer scorer;
     private long start;
-    // flags
     private boolean useScore = true;
     private boolean useRaskuttiUhler;
     private boolean useDataOrder = true;
-
     private boolean verbose = true;
-
-    // other params
-    private int depth = 4;
+    private int depth = -1;
     private int numStarts = 1;
-
     private AlgType algType = AlgType.BOSS;
 
     public Boss(@NotNull Score score) {
@@ -98,7 +92,6 @@ public class Boss {
         this.scorer.score(order);
 
         for (int r = 0; r < this.numStarts; r++) {
-
             if ((r == 0 && !this.useDataOrder) || r > 0) {
                 shuffle(order);
                 System.out.println("order = " + order);
@@ -112,10 +105,17 @@ public class Boss {
             int e1, e2 = scorer.getNumEdges();
 
             do {
-                pi = scorer.getPi();
-
                 if (algType == AlgType.BOSS_OLD) {
-                    betterMutation(scorer);
+                    betterMutationOrig(scorer);
+
+                    do {
+                        pi = scorer.getPi();
+                        e1 = e2;
+
+                        betterMutationOrig(scorer);
+
+                        e2 = scorer.getNumEdges();
+                    } while (e2 < e1);
                 } else {
                     do {
                         pi = scorer.getPi();
@@ -130,11 +130,13 @@ public class Boss {
 
                 List<Node> pi3 = scorer.getPi();
 
+                e1 = scorer.getNumEdges();
+
                 pi2 = besOrder(scorer);
                 if (pi2.equals(pi3)) break;
 
                 e2 = scorer.getNumEdges();
-            } while (true);
+            } while (e2 < e1);
 
             scorer.score(pi);
 
@@ -156,7 +158,7 @@ public class Boss {
         return bestPerm;
     }
 
-    public void betterMutation(@NotNull TeyssierScorer scorer) {
+    public void betterMutationOrig(@NotNull TeyssierScorer scorer) {
         scorer.bookmark();
         float s1, s2;
 
