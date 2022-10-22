@@ -308,13 +308,6 @@ public class Boss {
         }
     }
 
-    @NotNull
-//    public Graph getGraph(boolean cpdag) {
-//
-//
-//        return scorer.getGraph(cpdag);
-//    }
-
     public Graph getGraph(boolean cpDag) {
         if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
         Graph graph = this.scorer.getGraph(cpDag);
