@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge2;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -86,7 +87,7 @@ public final class BfciSwap implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss boss = new Boss(scorer);
-        boss.setAlgType(Boss.AlgType.BOSS_OLD);
+        boss.setAlgType(Boss.AlgType.BOSS);
         boss.setUseScore(useScore);
         boss.setUseRaskuttiUhler(useRaskuttiUhler);
         boss.setUseDataOrder(useDataOrder);
@@ -99,6 +100,8 @@ public final class BfciSwap implements GraphSearch {
 
         boss.bestOrder(variables);
         Graph G1 = boss.getGraph(true);  // Get the DAG
+
+        retainUnshieldedColliders(G1);
 
         IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
 //        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
@@ -128,6 +131,34 @@ public final class BfciSwap implements GraphSearch {
 
         return G4;
     }
+
+    public static void retainUnshieldedColliders(Graph graph) {
+        Graph orig = new EdgeListGraph(graph);
+        graph.reorientAllWith(Endpoint.CIRCLE);
+        List<Node> nodes = graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
+                    graph.setEndpoint(a, b, Endpoint.ARROW);
+                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                }
+            }
+        }
+    }
+
 
     private Graph removeBySwapRule(Graph graph, TeyssierScorer scorer) {
         graph = new EdgeListGraph(graph);

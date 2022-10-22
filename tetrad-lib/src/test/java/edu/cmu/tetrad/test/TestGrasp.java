@@ -2463,7 +2463,7 @@ public final class TestGrasp {
 //        params.set(Params.MAX_DEGREE, 8);
         params.set(Params.VERBOSE, false);
 
-        params.set(Params.NUM_RUNS, 20);
+        params.set(Params.NUM_RUNS, 10);
 
         params.set(Params.DEPTH, 3);
         params.set(Params.MAX_PATH_LENGTH, 2);
@@ -2479,7 +2479,7 @@ public final class TestGrasp {
 
         // default for kim et al. is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
-        params.set(Params.PENALTY_DISCOUNT, 1);
+        params.set(Params.PENALTY_DISCOUNT, 2);
         params.set(Params.ALPHA, 0.05);
         params.set(Params.ZS_RISK_BOUND, 0.001);
 
@@ -2495,15 +2495,15 @@ public final class TestGrasp {
         ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
 
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score));
-        algorithms.add(new BOSS(test, score));
-        algorithms.add(new Fci(test));
-        algorithms.add(new FciMax(test));
-        algorithms.add(new Rfci(test));
-        algorithms.add(new GFCI(test, score));
-        algorithms.add(new BFCI(test, score));
-        algorithms.add(new BFCIFinalOrientationOnly(test, score));
-        algorithms.add(new BFCI2(test, score));
-        algorithms.add(new BFCITR(test, score));
+//        algorithms.add(new BOSS(test, score));
+//        algorithms.add(new Fci(test));
+//        algorithms.add(new FciMax(test));
+//        algorithms.add(new Rfci(test));
+//        algorithms.add(new GFCI(test, score));
+//        algorithms.add(new BFCI(test, score));
+//        algorithms.add(new BFCIFinalOrientationOnly(test, score));
+//        algorithms.add(new BFCI2(test, score));
+//        algorithms.add(new BFCITR(test, score));
         algorithms.add(new BFCISwap(test, score));
 //        algorithms.add(new BFCI3(test, score));
 

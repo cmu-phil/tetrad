@@ -36,10 +36,10 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class BOSS_OLD implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class BOSS_OLD implements Algorithm, UsesScoreWrapper/*, TakesIndependenceWrapper*/, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
-    private IndependenceWrapper test;
+//    private IndependenceWrapper test;
     private IKnowledge knowledge = new Knowledge2();
 
     public BOSS_OLD() {
@@ -50,10 +50,10 @@ public class BOSS_OLD implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         this.score = score;
     }
 
-    public BOSS_OLD(IndependenceWrapper test, ScoreWrapper score) {
-        this.test = test;
-        this.score = score;
-    }
+//    public BOSS_OLD(IndependenceWrapper test, ScoreWrapper score) {
+//        this.test = test;
+//        this.score = score;
+//    }
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
@@ -69,14 +69,14 @@ public class BOSS_OLD implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             }
 
             Score score = this.score.getScore(dataModel, parameters);
-            IndependenceTest test = this.test.getTest(dataModel, parameters);
+//            IndependenceTest test = this.test.getTest(dataModel, parameters);
 
-            Boss boss = new Boss(test, score);
+            Boss boss = new Boss(score);
             boss.setAlgType(Boss.AlgType.BOSS_OLD);
 
             boss.setDepth(parameters.getInt(Params.DEPTH));
             boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
-            boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
+//            boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
@@ -84,7 +84,7 @@ public class BOSS_OLD implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             boss.bestOrder(score.getVariables());
             return boss.getGraph(true);
         } else {
-            BOSS algorithm = new BOSS(this.test, this.score);
+            BOSS algorithm = new BOSS(this.score);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(
@@ -125,8 +125,8 @@ public class BOSS_OLD implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
         // Flags
         params.add(Params.DEPTH);
-        params.add(Params.GRASP_USE_SCORE);
-        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
+//        params.add(Params.GRASP_USE_SCORE);
+//        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
@@ -157,13 +157,13 @@ public class BOSS_OLD implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         this.knowledge = knowledge.copy();
     }
 
-    @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
-        this.test = test;
-    }
-
-    @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
-    }
+//    @Override
+//    public void setIndependenceWrapper(IndependenceWrapper test) {
+//        this.test = test;
+//    }
+//
+//    @Override
+//    public IndependenceWrapper getIndependenceWrapper() {
+//        return this.test;
+//    }
 }

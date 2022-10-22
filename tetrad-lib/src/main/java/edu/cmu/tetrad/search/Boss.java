@@ -24,8 +24,8 @@ import static java.util.Collections.shuffle;
  */
 public class Boss {
     private final List<Node> variables;
-    private Score score;
-    private IndependenceTest test;
+    private final Score score;
+//    private IndependenceTest test;
     private IKnowledge knowledge = new Knowledge2();
     private final TeyssierScorer scorer;
     private long start;
@@ -36,37 +36,23 @@ public class Boss {
     private int depth = -1;
     private int numStarts = 1;
     private AlgType algType = AlgType.BOSS;
-    private boolean caching = true;
 
     public Boss(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
-        this.scorer = new TeyssierScorer(this.test, this.score);
-    }
-
-    public Boss(@NotNull IndependenceTest test) {
-        this.test = test;
-        this.variables = new ArrayList<>(test.getVariables());
-        this.useScore = false;
-        this.scorer = new TeyssierScorer(this.test, this.score);
-    }
-
-    public Boss(IndependenceTest test, Score score) {
-        this.test = test;
-        this.score = score;
-        this.variables = new ArrayList<>(test.getVariables());
-        this.scorer = new TeyssierScorer(this.test, this.score);
+        this.scorer = new TeyssierScorer(null, this.score);
     }
 
     public Boss(TeyssierScorer scorer) {
         this.scorer = scorer;
-        this.test = scorer.getTestObject();
+//        this.test = scorer.getTestObject();
         this.score = scorer.getScoreObject();
         this.variables = new ArrayList<>(scorer.getPi());
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
+        boolean caching = true;
         scorer.setCachingScores(caching);
         scorer.setKnowledge(knowledge);
 
@@ -188,8 +174,6 @@ public class Boss {
         scorer.bookmark();
         float s1, s2;
 
-        int max = scorer.size();
-
         Set<Node> introns1;
         Set<Node> introns2 = new HashSet<>(scorer.getPi());
         int[] range = new int[2];
@@ -200,16 +184,11 @@ public class Boss {
             introns1 = introns2;
             introns2 = new HashSet<>();
 
-            System.out.println("max = " + max);
-
-            int _max = max;
-            max = 0;
-
-            for (int i = 1; i < _max; i++) {
-                scorer.bookmark(1);
+            for (int i = 1; i < scorer.size(); i++) {
                 Node x = scorer.get(i);
-
                 if (!introns1.contains(x)) continue;
+
+                scorer.bookmark(1);
 
                 for (int j = i - 1; j >= 0; j--) {
                     if (!scorer.parent(scorer.get(j), x)) continue;
@@ -218,7 +197,6 @@ public class Boss {
                         if (scorer.score() < sp || violatesKnowledge(scorer.getPi())) {
                             scorer.goToBookmark();
                         } else {
-                            max = i + 1;
                             sp = scorer.score();
 
                             for (int l = range[0]; l <= range[1]; l++) {
@@ -405,9 +383,6 @@ public class Boss {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        if (this.test != null) {
-            this.test.setVerbose(verbose);
-        }
     }
 
     public void setKnowledge(IKnowledge knowledge) {
@@ -451,10 +426,6 @@ public class Boss {
 
     public void setAlgType(AlgType algType) {
         this.algType = algType;
-    }
-
-    public void setCachingScore(boolean caching) {
-        this.caching = caching;
     }
 
     public enum AlgType {BOSS_OLD, BOSS}
