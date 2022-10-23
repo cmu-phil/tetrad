@@ -25,7 +25,7 @@ import static java.util.Collections.shuffle;
 public class Boss {
     private final List<Node> variables;
     private final Score score;
-//    private IndependenceTest test;
+    //    private IndependenceTest test;
     private IKnowledge knowledge = new Knowledge2();
     private final TeyssierScorer scorer;
     private long start;
@@ -46,7 +46,6 @@ public class Boss {
 
     public Boss(TeyssierScorer scorer) {
         this.scorer = scorer;
-//        this.test = scorer.getTestObject();
         this.score = scorer.getScoreObject();
         this.variables = new ArrayList<>(scorer.getPi());
     }
@@ -90,21 +89,17 @@ public class Boss {
             float s1, s2;
 
             do {
+                pi = scorer.getPi();
+                s1 = scorer.score();
+
                 if (algType == AlgType.BOSS_OLD) {
                     betterMutationOrig(scorer);
                 } else {
                     betterMutationTuck(scorer, false);
                 }
 
-                pi = scorer.getPi();
-
-                s1 = scorer.score();
                 besMutation(scorer);
                 s2 = scorer.score();
-
-                if (s2 >= s1) {
-                    pi = scorer.getPi();
-                }
             } while (s2 > s1);
 
             scorer.score(pi);
