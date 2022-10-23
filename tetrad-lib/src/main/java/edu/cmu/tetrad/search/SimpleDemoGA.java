@@ -97,7 +97,7 @@ public class SimpleDemoGA {
 
 class Individual implements Comparable<Individual> {
 
-    private final float fitness;
+    private final double fitness;
     private final List<Node> genes;
     private final TeyssierScorer scorer;
 
@@ -110,7 +110,7 @@ class Individual implements Comparable<Individual> {
     }
 
     //Calculate fitness
-    public float getFitness() {
+    public double getFitness() {
         return fitness;
     }
 

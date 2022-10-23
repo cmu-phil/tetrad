@@ -32,8 +32,8 @@ public class TeyssierScorer {
     private Map<Object, ArrayList<Node>> bookmarkedOrders = new HashMap<>();
     private Map<Object, ArrayList<Pair>> bookmarkedScores = new HashMap<>();
     private Map<Object, Map<Node, Integer>> bookmarkedOrderHashes = new HashMap<>();
-    private Map<Object, Float> bookmarkedRunningScores = new HashMap<>();
-    private Map<Node, Map<Set<Node>, Float>> cache = new HashMap<>();
+    private Map<Object, Double> bookmarkedRunningScores = new HashMap<>();
+    private Map<Node, Map<Set<Node>, Double>> cache = new HashMap<>();
     private Map<Node, Integer> orderHash;
     private ArrayList<Node> pi; // The current permutation.
     private ArrayList<Pair> scores;
@@ -44,7 +44,7 @@ public class TeyssierScorer {
     private boolean useRaskuttiUhler;
     private boolean useBackwardScoring;
     private boolean cachingScores = true;
-    private float runningScore = 0f;
+    private double runningScore = 0f;
     private Graph mag = null;
 
     public TeyssierScorer(IndependenceTest test, Score score) {
@@ -157,7 +157,7 @@ public class TeyssierScorer {
         this.useBackwardScoring = useBackwardScoring;
     }
 
-    public float score(List<Node> order, Graph mag) {
+    public double score(List<Node> order, Graph mag) {
         this.mag = mag;
         return score(order);
     }
@@ -169,7 +169,7 @@ public class TeyssierScorer {
      * @param order The permutation to score.
      * @return The score of it.
      */
-    public float score(List<Node> order) {
+    public double score(List<Node> order) {
         this.pi = new ArrayList<>(order);
         this.scores = new ArrayList<>();
 
@@ -186,16 +186,16 @@ public class TeyssierScorer {
     /**
      * @return The score of the current permutation.
      */
-    public float score() {
+    public double score() {
         return sum();
 //        return runningScore;
     }
 
-    private float sum() {
-        float score = 0;
+    private double sum() {
+        double score = 0;
 
         for (int i = 0; i < this.pi.size(); i++) {
-            float score1 = this.scores.get(i).getScore();
+            double score1 = this.scores.get(i).getScore();
             score += score1;
         }
 
@@ -720,10 +720,10 @@ public class TeyssierScorer {
 //        return chunk;
 //    }
 
-    private float score(Node n, Set<Node> pi) {
+    private double score(Node n, Set<Node> pi) {
         if (this.cachingScores) {
             this.cache.computeIfAbsent(n, w -> new HashMap<>());
-            Float score = this.cache.get(n).get(pi);
+            Double score = this.cache.get(n).get(pi);
 
             if (score != null) {
                 return score;
@@ -742,7 +742,7 @@ public class TeyssierScorer {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(mag);
         }
 
-        float v = (float) this.score.localScore(this.variablesHash.get(n), parentIndices);
+        double v = (double) this.score.localScore(this.variablesHash.get(n), parentIndices);
 
         if (this.cachingScores) {
             this.cache.computeIfAbsent(n, w -> new HashMap<>());
@@ -844,7 +844,7 @@ public class TeyssierScorer {
         Set<Node> parents = new HashSet<>();
         boolean changed = true;
 
-        float sMax = score(n, new HashSet<>());
+        double sMax = score(n, new HashSet<>());
         Set<Node> _prefix = getPrefix(p);
 //        if (_prefix.equals(prefixes.get(p))) return scores.get(p);
         List<Node> prefix = new ArrayList<>(_prefix);
@@ -875,7 +875,7 @@ public class TeyssierScorer {
 
                 if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
 
-                float s2 = score(n, parents);
+                double s2 = score(n, parents);
 
                 if (s2 >= sMax) {
                     sMax = s2;
@@ -906,7 +906,7 @@ public class TeyssierScorer {
 
             parents.remove(z0);
 
-            float s2 = score(n, parents);
+            double s2 = score(n, parents);
 
             if (s2 >= sMax) {
                 sMax = s2;
@@ -929,7 +929,7 @@ public class TeyssierScorer {
 //        }
 
         if (this.useScore) {
-            return new Pair(parents, Float.isNaN(sMax) ? Float.NEGATIVE_INFINITY : sMax);
+            return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
         } else {
             return new Pair(parents, -parents.size());
         }
@@ -1071,9 +1071,9 @@ public class TeyssierScorer {
 
     private static class Pair {
         private final Set<Node> parents;
-        private final float score;
+        private final double score;
 
-        private Pair(Set<Node> parents, float score) {
+        private Pair(Set<Node> parents, double score) {
             this.parents = parents;
             this.score = score;
         }
@@ -1082,7 +1082,7 @@ public class TeyssierScorer {
             return this.parents;
         }
 
-        public float getScore() {
+        public double getScore() {
             return this.score;
         }
 

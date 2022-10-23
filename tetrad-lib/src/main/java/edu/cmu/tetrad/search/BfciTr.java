@@ -166,7 +166,7 @@ public final class BfciTr implements GraphSearch {
             SublistGenerator gen = new SublistGenerator(inTriangle.size(), inTriangle.size());
             int[] choice;
 
-            float maxScore = Float.NEGATIVE_INFINITY;
+            double maxScore = Float.NEGATIVE_INFINITY;
             List<Node> maxAfter = null;
             boolean remove = false;
 
@@ -203,7 +203,7 @@ public final class BfciTr implements GraphSearch {
                     perm.add(n);
                 }
 
-                float score = scorer.score(perm);
+                double score = scorer.score(perm);
 
                 if (score > maxScore && !scorer.adjacent(a, b)) {
                     maxScore = score;

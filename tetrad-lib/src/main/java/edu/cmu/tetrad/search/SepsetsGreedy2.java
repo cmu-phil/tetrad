@@ -85,7 +85,7 @@ public class SepsetsGreedy2 implements SepsetProducer {
         allCond.addAll(adjk);
 
         List<Node> maxCond =  null;
-        float maxScore = Float.NEGATIVE_INFINITY;
+        double maxScore = Float.NEGATIVE_INFINITY;
 
         for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), Math.max(adji.size(), adjk.size())); d++) {
             if (d <= adji.size()) {
@@ -103,7 +103,7 @@ public class SepsetsGreedy2 implements SepsetProducer {
                     perm.add(k);
                     perm.addAll(after);
 
-                    float score = scorer.score(perm);
+                    double score = scorer.score(perm);
 
                     if (!scorer.adjacent(i, k)) {
                         if (score > maxScore) {
@@ -135,7 +135,7 @@ public class SepsetsGreedy2 implements SepsetProducer {
                     perm.add(k);
                     perm.addAll(after);
 
-                    float score = scorer.score(perm);
+                    double score = scorer.score(perm);
 
                     if (!scorer.adjacent(i, k)) {
                         if (score > maxScore) {

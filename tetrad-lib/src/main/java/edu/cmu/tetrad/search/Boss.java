@@ -86,7 +86,7 @@ public class Boss {
             makeValidKnowledgeOrder(order);
 
             List<Node> pi;
-            float s1, s2;
+            double s1, s2;
 
             do {
                 pi = scorer.getPi();
@@ -124,7 +124,7 @@ public class Boss {
 
     public void betterMutationOrig(@NotNull TeyssierScorer scorer) {
         scorer.bookmark();
-        float s1, s2;
+        double s1, s2;
 
         do {
             s1 = scorer.score();
@@ -167,7 +167,7 @@ public class Boss {
     public void betterMutationTuck(@NotNull TeyssierScorer scorer, boolean skipUncovered) {
         double sp = scorer.score();
         scorer.bookmark();
-        float s1, s2;
+        double s1, s2;
 
         Set<Node> introns1;
         Set<Node> introns2 = new HashSet<>(scorer.getPi());
