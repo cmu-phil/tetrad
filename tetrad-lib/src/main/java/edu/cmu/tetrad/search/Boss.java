@@ -165,7 +165,7 @@ public class Boss {
     }
 
     public void betterMutationTuck(@NotNull TeyssierScorer scorer, boolean skipUncovered) {
-        double sp = scorer.score();
+        double bestScore = scorer.score();
         scorer.bookmark();
         double s1, s2;
 
@@ -189,10 +189,10 @@ public class Boss {
                     if (!scorer.parent(scorer.get(j), x)) continue;
 
                     if (tuck(x, j, scorer, skipUncovered, range)) {
-                        if (scorer.score() < sp || violatesKnowledge(scorer.getPi())) {
+                        if (scorer.score() < bestScore || violatesKnowledge(scorer.getPi())) {
                             scorer.goToBookmark();
                         } else {
-                            sp = scorer.score();
+                            bestScore = scorer.score();
 
                             for (int l = range[0]; l <= range[1]; l++) {
                                 introns2.add(scorer.get(l));
