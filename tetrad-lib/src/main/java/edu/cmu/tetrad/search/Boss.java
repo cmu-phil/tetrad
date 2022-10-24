@@ -100,6 +100,7 @@ public class Boss {
 
                 besMutation(scorer);
                 s2 = scorer.score();
+
             } while (s2 > s1);
 
             scorer.score(pi);
@@ -170,7 +171,10 @@ public class Boss {
         double s1, s2;
 
         Set<Node> introns1;
-        Set<Node> introns2 = new HashSet<>(scorer.getPi());
+        Set<Node> introns2;
+
+        introns2 = new HashSet<>(scorer.getPi());
+
         int[] range = new int[2];
 
         do {
@@ -188,19 +192,19 @@ public class Boss {
                 for (int j = i - 1; j >= 0; j--) {
                     if (!scorer.parent(scorer.get(j), x)) continue;
 
-                    if (tuck(x, j, scorer, skipUncovered, range)) {
-                        if (scorer.score() < bestScore || violatesKnowledge(scorer.getPi())) {
-                            scorer.goToBookmark();
-                        } else {
-                            bestScore = scorer.score();
+                    tuck(x, j, scorer, skipUncovered, range);
 
-                            for (int l = range[0]; l <= range[1]; l++) {
-                                introns2.add(scorer.get(l));
-                            }
+                    if (scorer.score() < bestScore || violatesKnowledge(scorer.getPi())) {
+                        scorer.goToBookmark();
+                    } else {
+                        bestScore = scorer.score();
+
+                        for (int l = range[0]; l <= range[1]; l++) {
+                            introns2.add(scorer.get(l));
                         }
-
-                        scorer.bookmark();
                     }
+
+                    scorer.bookmark();
 
                     if (verbose) {
                         System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
@@ -219,12 +223,9 @@ public class Boss {
         scorer.goToBookmark(1);
     }
 
-    private boolean tuck(Node k, int j, TeyssierScorer scorer, boolean skipUncovered, int[] range) {
-//        if (j >= scorer.index(k)) return false;
-//        if (!scorer.adjacent(k, scorer.get(j))) return false;
-
+    private void tuck(Node k, int j, TeyssierScorer scorer, boolean skipUncovered, int[] range) {
         if (skipUncovered) {
-            if (!scorer.coveredEdge(k, scorer.get(j))) return false;
+            if (!scorer.coveredEdge(k, scorer.get(j))) return;
         }
 
         Set<Node> ancestors = scorer.getAncestors(k);
@@ -244,7 +245,6 @@ public class Boss {
         range[0] = minIndex;
         range[1] = scorer.index(k);
 
-        return true;
     }
 
     public void besMutation(TeyssierScorer scorer) {
