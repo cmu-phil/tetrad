@@ -161,8 +161,6 @@ public class Boss {
         if (verbose) {
             System.out.println();
         }
-
-        scorer.score();
     }
 
     public void betterMutationTuck(@NotNull TeyssierScorer scorer, boolean skipUncovered) {
