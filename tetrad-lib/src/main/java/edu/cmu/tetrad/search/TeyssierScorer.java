@@ -526,10 +526,14 @@ public class TeyssierScorer {
      *            This bookmark will be stored until it is retrieved and then removed.
      */
     public void bookmark(int key) {
-        this.bookmarkedOrders.put(key, new ArrayList<>(this.pi));
-        this.bookmarkedScores.put(key, new ArrayList<>(this.scores));
-        this.bookmarkedOrderHashes.put(key, new HashMap<>(this.orderHash));
-        this.bookmarkedRunningScores.put(key, runningScore);
+        try {
+            this.bookmarkedOrders.put(key, new ArrayList<>(this.pi));
+            this.bookmarkedScores.put(key, new ArrayList<>(this.scores));
+            this.bookmarkedOrderHashes.put(key, new HashMap<>(this.orderHash));
+            this.bookmarkedRunningScores.put(key, runningScore);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

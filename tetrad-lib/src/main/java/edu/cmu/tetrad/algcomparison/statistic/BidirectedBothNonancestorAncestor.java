@@ -36,17 +36,17 @@ public class BidirectedBothNonancestorAncestor implements Statistic {
                 if (!trueGraph.isAncestorOf(x, y) && !trueGraph.isAncestorOf(y, x)) {
                     count++;
                 } else {
-                    System.out.print("BBNA check: ");
-
-                    if (trueGraph.isAncestorOf(x, y)) {
-                        System.out.print("Ancestor(" + x + ", " + y + ")");
-                    }
-
-                    if (trueGraph.isAncestorOf(y, x)) {
-                        System.out.print(" Ancestor(" + y + ", " + x + ")");
-                    }
-
-                    System.out.println();
+//                    System.out.print("BBNA check: ");
+//
+//                    if (trueGraph.isAncestorOf(x, y)) {
+//                        System.out.print("Ancestor(" + x + ", " + y + ")");
+//                    }
+//
+//                    if (trueGraph.isAncestorOf(y, x)) {
+//                        System.out.print(" Ancestor(" + y + ", " + x + ")");
+//                    }
+//
+//                    System.out.println();
                 }
             }
         }

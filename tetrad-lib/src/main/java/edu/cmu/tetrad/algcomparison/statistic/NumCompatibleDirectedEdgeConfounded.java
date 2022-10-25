@@ -4,6 +4,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
+import static edu.cmu.tetrad.algcomparison.statistic.CommonAncestorBidirectedPrecision.existsCommonAncestor;
+import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 
 /**
@@ -11,21 +13,23 @@ import static edu.cmu.tetrad.graph.GraphUtils.compatible;
  *
  * @author jdramsey
  */
-public class NumCompatibleVisibleNonancestors implements Statistic {
+public class NumCompatibleDirectedEdgeConfounded implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#CVNA";
+        return "#CompDConf";
     }
 
     @Override
     public String getDescription() {
-        return "Number compatible visible X-->Y for which X is not an ancestor of Y in true";
+        return "Number compatible X-->Y for which X and Y are confounded by a latent";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        GraphUtils.addPagColoring(estGraph);
+
         Graph pag = SearchGraphUtils.dagToPag(trueGraph);
 
         int tp = 0;
@@ -35,21 +39,19 @@ public class NumCompatibleVisibleNonancestors implements Statistic {
             Edge trueEdge = pag.getEdge(edge.getNode1(), edge.getNode2());
             if (!compatible(edge, trueEdge)) continue;
 
-            if (edge.getProperties().contains(Edge.Property.nl)) {
+            if (edge.getProperties().contains(Edge.Property.dd) || edge.getProperties().contains(Edge.Property.pd)) {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.isAncestorOf(x, y)) {
-//                    System.out.println("Ancestor(x, y): " + Edges.directedEdge(x, y));
+                if (existsLatentCommonAncestor(trueGraph, edge)) {
                     tp++;
                 } else {
-//                    System.out.println("Not Ancestor(x, y): " + Edges.directedEdge(x, y));
                     fp++;
                 }
             }
         }
 
-        return fp;
+        return tp;
     }
 
     @Override

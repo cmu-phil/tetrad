@@ -1610,6 +1610,7 @@ public final class SearchGraphUtils {
 
                 if (graph1.isPag() && graph2.isPag()) {
                     GraphUtils.addPagColoring(graph1);
+                    GraphUtils.addPagColoring(graph2);
 
                     if (edge2 == null) continue;
 

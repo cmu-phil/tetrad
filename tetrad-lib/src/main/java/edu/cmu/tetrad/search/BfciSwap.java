@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
+
 /**
  * Does BOSS, followed by the swap rule, then final FCI orientation.
  *
@@ -86,25 +88,26 @@ public final class BfciSwap implements GraphSearch {
 
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        Boss boss = new Boss(scorer);
-        boss.setAlgType(Boss.AlgType.BOSS);
-        boss.setUseScore(useScore);
-        boss.setUseRaskuttiUhler(useRaskuttiUhler);
+        Boss boss = new Boss(score);
+        boss.setAlgType(Boss.AlgType.BOSS_OLD);
+        boss.setUseScore(true);
+        boss.setUseRaskuttiUhler(false);
         boss.setUseDataOrder(useDataOrder);
         boss.setDepth(depth);
         boss.setNumStarts(numStarts);
+        boss.setKnowledge(knowledge);
         boss.setVerbose(false);
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        boss.bestOrder(variables);
-        Graph G1 = boss.getGraph(true);  // Get the DAG
+        List<Node> pi = boss.bestOrder(variables);
+        Graph G1 = boss.getGraph(true);
 
-        retainUnshieldedColliders(G1);
+        scorer.score(pi);
 
         IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
+//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(G1), knowledge2);
 
         Graph G2 = removeBySwapRule(G1, scorer);
 
@@ -114,6 +117,8 @@ public final class BfciSwap implements GraphSearch {
             if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
             if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
         }
+
+        retainUnshieldedColliders(G1, knowledge2);
 
         // Do final FCI orientation rules app
         Graph G4 = new EdgeListGraph(G3);
@@ -132,7 +137,7 @@ public final class BfciSwap implements GraphSearch {
         return G4;
     }
 
-    public static void retainUnshieldedColliders(Graph graph) {
+    public static void retainUnshieldedColliders(Graph graph, IKnowledge knowledge) {
         Graph orig = new EdgeListGraph(graph);
         graph.reorientAllWith(Endpoint.CIRCLE);
         List<Node> nodes = graph.getNodes();
@@ -152,8 +157,11 @@ public final class BfciSwap implements GraphSearch {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                    if (FciOrient.isArrowpointAllowed(a, b, graph, knowledge)
+                            && FciOrient.isArrowpointAllowed(c, b, graph, knowledge)) {
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                    }
                 }
             }
         }
@@ -177,7 +185,7 @@ public final class BfciSwap implements GraphSearch {
                         if (scorer.index(y) == scorer.index(w)) continue;
                         if (scorer.index(z) == scorer.index(w)) continue;
 
-                        if (config(graph, z, x, y, w)) {// && config(scorer, z, x, y, w)) {
+                        if (config(graph, z, x, y, w)) {
                             scorer.bookmark();
                             scorer.swap(x, y);
 
@@ -211,9 +219,12 @@ public final class BfciSwap implements GraphSearch {
 
             if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)) {
                 if (!graph.isDefCollider(w, y, x)) {
-                    graph.setEndpoint(w, y, Endpoint.ARROW);
-                    graph.setEndpoint(x, y, Endpoint.ARROW);
-                    System.out.println("Swap orienting " + GraphUtils.pathString(graph, z, x, y, w));
+                    if (FciOrient.isArrowpointAllowed(w, y, graph, knowledge)
+                            && FciOrient.isArrowpointAllowed(x, y, graph, knowledge)) {
+                        graph.setEndpoint(w, y, Endpoint.ARROW);
+                        graph.setEndpoint(x, y, Endpoint.ARROW);
+                        System.out.println("Swap orienting " + GraphUtils.pathString(graph, z, x, y, w));
+                    }
                 }
             }
         }

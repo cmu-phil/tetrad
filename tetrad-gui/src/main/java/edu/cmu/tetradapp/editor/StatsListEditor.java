@@ -147,6 +147,8 @@ public class StatsListEditor extends JPanel {
 //        statistics.add(new SHD());
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new NumberOfEdgesTrue());
+        statistics.add(new NumCorrectVisibleAncestors());
+//        statistics.add(new NumIncorrectVisibleEstimatedEdges());
 //        statistics.add(new NumAmbiguousTriples());
 //        statistics.add(new PercentAmbiguous());
         statistics.add(new PercentBidirectedEdges());

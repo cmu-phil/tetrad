@@ -16,12 +16,12 @@ public class NumCompatibleDirectedEdgeAncestors implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "#CDEA";
+        return "#CompDA";
     }
 
     @Override
     public String getDescription() {
-        return "Number compatible X-->Y for which X is an ancestor of Y in true";
+        return "Number compatible X-->Y for which X->...->Y in true";
     }
 
     @Override

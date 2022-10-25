@@ -113,7 +113,7 @@ public final class BFci implements GraphSearch {
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss alg = new Boss(scorer);
-        alg.setAlgType(Boss.AlgType.BOSS);
+        alg.setAlgType(Boss.AlgType.BOSS_OLD);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);

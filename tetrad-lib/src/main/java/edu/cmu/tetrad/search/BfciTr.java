@@ -95,7 +95,7 @@ public final class BfciTr implements GraphSearch {
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss boss = new Boss(scorer);
-        boss.setAlgType(Boss.AlgType.BOSS);
+        boss.setAlgType(Boss.AlgType.BOSS_OLD);
         boss.setUseScore(useScore);
         boss.setUseRaskuttiUhler(useRaskuttiUhler);
         boss.setUseDataOrder(useDataOrder);

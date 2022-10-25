@@ -1172,7 +1172,7 @@ public final class TestGrasp {
             while ((perm = gen.next()) != null) {
                 List<Node> pi = GraphUtils.asList(perm, variables);
 
-                Boss grasp = new Boss(new IndTestDSep(facts.getFacts()), new GraphScore(facts.getFacts()));
+                Boss grasp = new Boss(new GraphScore(facts.getFacts()));
 
                 grasp.setUseRaskuttiUhler(true);
                 grasp.setDepth(100);
@@ -2495,17 +2495,17 @@ public final class TestGrasp {
         ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
 
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score));
-//        algorithms.add(new BOSS(test, score));
-//        algorithms.add(new Fci(test));
-//        algorithms.add(new FciMax(test));
-//        algorithms.add(new Rfci(test));
-//        algorithms.add(new GFCI(test, score));
-//        algorithms.add(new BFCI(test, score));
-//        algorithms.add(new BFCIFinalOrientationOnly(test, score));
-//        algorithms.add(new BFCI2(test, score));
-//        algorithms.add(new BFCITR(test, score));
+        algorithms.add(new BOSS(score));
+        algorithms.add(new BOSS_OLD(score));
+        algorithms.add(new Fci(test));
+        algorithms.add(new FciMax(test));
+        algorithms.add(new Rfci(test));
+        algorithms.add(new GFCI(test, score));
+        algorithms.add(new BFCI(test, score));
+        algorithms.add(new BFCIFinalOrientationOnly(test, score));
+        algorithms.add(new BFCI2(test, score));
+        algorithms.add(new BFCITR(test, score));
         algorithms.add(new BFCISwap(test, score));
-//        algorithms.add(new BFCI3(test, score));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -2514,18 +2514,27 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.ALPHA));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
-        statistics.add(new PagAdjacencyPrecision());
-        statistics.add(new PagAdjacencyRecall());
-        statistics.add(new NumCompatibleEdges());
-        statistics.add(new NumIncompatibleEdges());
+//        statistics.add(new PagAdjacencyPrecision());
+//        statistics.add(new PagAdjacencyRecall());
+//        statistics.add(new NumCompatibleEdges());
+//        statistics.add(new NumIncompatibleEdges());
         statistics.add(new NumCompatibleDirectedEdgeAncestors());
         statistics.add(new NumCompatibleDirectedEdgeNonAncestors());
-        statistics.add(new NumCompatibleVisibleAncestors());
-        statistics.add(new NumCompatibleVisibleNonancestors());
-        statistics.add(new NumCompatibleDefiniteDirectedEdgeAncestors());
-        statistics.add(new NumCompatibleDefiniteDirectedEdgeNonAncestors());
-        statistics.add(new NumCompatiblePossiblyDirectedEdgeAncestors());
-        statistics.add(new NumCompatiblePossiblyDirectedEdgeNonAncestors());
+        statistics.add(new NumCompatibleDirectedEdgeConfounded());
+//        statistics.add(new NumCompatibleVisibleAncestors());
+//        statistics.add(new NumCompatibleVisibleNonancestors());
+        statistics.add(new NumVisibleAncestors());
+        statistics.add(new NumVisibleNonAncestors());
+        statistics.add(new NumCorrectVisibleAncestors());
+        statistics.add(new NumIncorrectVisibleAncestors());
+        statistics.add(new NumCorrectDDAncestors());
+        statistics.add(new NumIncorrectDDAncestors());
+        statistics.add(new NumCorrectPDAncestors());
+        statistics.add(new NumIncorrectPDAncestors());
+//        statistics.add(new NumCompatibleDefiniteDirectedEdgeAncestors());
+//        statistics.add(new NumCompatibleDefiniteDirectedEdgeNonAncestors());
+//        statistics.add(new NumCompatiblePossiblyDirectedEdgeAncestors());
+//        statistics.add(new NumCompatiblePossiblyDirectedEdgeNonAncestors());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagRecallArrows());
         statistics.add(new ProportionDirectedPathsNotReversedEst());
@@ -2537,7 +2546,7 @@ public final class TestGrasp {
         statistics.add(new NumBidirectedEdgesEst());
         statistics.add(new BidirectedPrecision());
         statistics.add(new BidirectedRecall());
-        statistics.add(new BidirectedBothNonancestorAncestor());
+//        statistics.add(new BidirectedBothNonancestorAncestor());
 //        statistics.add(new BidirectedBothNonancestorAncestorOr());
         statistics.add(new CommonAncestorBidirectedPrecision());
         statistics.add(new CommonAncestorRecallBidirected());
