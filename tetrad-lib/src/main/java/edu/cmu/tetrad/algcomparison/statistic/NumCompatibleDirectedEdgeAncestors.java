@@ -2,9 +2,6 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-
-import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 
 /**
  * The bidirected true positives.
@@ -28,16 +25,16 @@ public class NumCompatibleDirectedEdgeAncestors implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         GraphUtils.addPagColoring(estGraph);
 
-        Graph pag = SearchGraphUtils.dagToPag(trueGraph);
+//        Graph pag = SearchGraphUtils.dagToPag(trueGraph);
 
         int tp = 0;
         int fp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
-            Edge trueEdge = pag.getEdge(edge.getNode1(), edge.getNode2());
-            if (!compatible(edge, trueEdge)) continue;
+//            Edge trueEdge = pag.getEdge(edge.getNode1(), edge.getNode2());
+//            if (!compatible(edge, trueEdge)) continue;
 
-            if (edge.getProperties().contains(Edge.Property.dd) || edge.getProperties().contains(Edge.Property.pd)) {
+            if (Edges.isDirectedEdge(edge)) {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 

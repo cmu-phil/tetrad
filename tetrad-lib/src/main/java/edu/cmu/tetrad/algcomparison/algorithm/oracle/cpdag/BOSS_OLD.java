@@ -111,7 +111,7 @@ public class BOSS_OLD implements Algorithm, UsesScoreWrapper/*, TakesIndependenc
 
     @Override
     public String getDescription() {
-        return "BOSS (Better Order Score Search) using " + this.score.getDescription();
+        return "BOSS-OLD (Better Order Score Search) using " + this.score.getDescription();
     }
 
     @Override

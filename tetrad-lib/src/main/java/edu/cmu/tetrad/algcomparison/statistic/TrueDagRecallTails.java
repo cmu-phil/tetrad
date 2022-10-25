@@ -1,12 +1,14 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
+
+import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 
 /**
  * The bidirected true positives.
@@ -36,8 +38,9 @@ public class TrueDagRecallTails implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.isAncestorOf(x, y) && estGraph.isAdjacentTo(x, y)) {
-                    if (estGraph.getEdge(x, y). getProximalEndpoint(x) == Endpoint.TAIL) {
+                if (trueGraph.isAncestorOf(x, y) && estGraph.isAdjacentTo(x, y)
+                        && !existsLatentCommonAncestor(trueGraph, Edges.undirectedEdge(x, y))) {
+                    if (estGraph.getEdge(x, y).getProximalEndpoint(x) == Endpoint.TAIL) {
                         tp++;
                     } else {
                         fp++;

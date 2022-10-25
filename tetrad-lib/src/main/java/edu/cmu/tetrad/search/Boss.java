@@ -88,9 +88,17 @@ public class Boss {
             List<Node> pi;
             double s1, s2;
 
+            if (algType == AlgType.BOSS_OLD) {
+                betterMutationOrig(scorer);
+            } else {
+                betterMutationTuck(scorer, false);
+            }
+
             do {
                 pi = scorer.getPi();
                 s1 = scorer.score();
+
+                besMutation(scorer);
 
                 if (algType == AlgType.BOSS_OLD) {
                     betterMutationOrig(scorer);
@@ -98,7 +106,7 @@ public class Boss {
                     betterMutationTuck(scorer, false);
                 }
 
-                besMutation(scorer);
+//                besMutation(scorer);
                 s2 = scorer.score();
 
             } while (s2 > s1);
