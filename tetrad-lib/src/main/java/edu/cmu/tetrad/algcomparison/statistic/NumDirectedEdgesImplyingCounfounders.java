@@ -22,7 +22,7 @@ public class NumDirectedEdgesImplyingCounfounders implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number compatible X-->Y for which X<-...<-L->...->Y in true";
+        return "Number X-->Y for which X<-...<-L->...->Y in true";
     }
 
     @Override

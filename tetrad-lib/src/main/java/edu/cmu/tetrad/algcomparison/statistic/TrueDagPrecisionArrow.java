@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ public class TrueDagPrecisionArrow implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of X*->Y in the estimated graph for which there is no path Y->...->X in the true graph";
+        return "Proportion of X*->Y in the estimated graph for which there is no semidirected(Y, X)) in the true graph";
     }
 
     @Override
@@ -37,7 +38,7 @@ public class TrueDagPrecisionArrow implements Statistic {
                 Edge e = estGraph.getEdge(x, y);
 
                 if (e != null && e.getProximalEndpoint(x) == Endpoint.ARROW) {
-                    if (trueGraph.isAncestorOf(x, y)) {
+                    if (trueGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
                         fp++;
                     } else {
                         tp++;
