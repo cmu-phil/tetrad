@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
@@ -13,40 +11,41 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class TrueDagPrecisionTails implements Statistic {
+public class AncestralRecall implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "DTP";
+        return "AncR";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of X->Y for which X->...->Y in true";
+        return "Proportion of X->...->Y in true for which X->...->Y in est";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int tp = 0;
-        int fp = 0;
+        int tp = 0, fn = 0;
 
-        for (Edge edge : estGraph.getEdges()) {
-            if (edge.isDirected()) {
-                Node x = Edges.getDirectedEdgeTail(edge);
-                Node y = Edges.getDirectedEdgeHead(edge);
+        List<Node> nodes = trueGraph.getNodes();
+
+        for (Node x : nodes) {
+            for (Node y : nodes) {
+                if (x == y) continue;
 
                 if (trueGraph.isAncestorOf(x, y)) {
-                    tp++;
-                } else {
-                    fp++;
+                    if (estGraph.isAncestorOf(x, y)) {
+                        tp++;
+                    } else {
+                        fn++;
+                    }
                 }
             }
         }
 
-        return tp / (double) (tp + fp);
+        return tp / (double) (tp + fn);
     }
-
 
     @Override
     public double getNormValue(double value) {

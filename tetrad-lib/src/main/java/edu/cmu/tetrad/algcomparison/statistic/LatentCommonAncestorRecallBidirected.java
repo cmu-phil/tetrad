@@ -25,7 +25,7 @@ public class LatentCommonAncestorRecallBidirected implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of X<-...<-Z->...->Y with latent Z for X*-*Y in estimated graph that are marked as bidirected edge";
+        return "Proportion of X<-...<-Z->...->Y with latent Z for X*-*Y in estimated that are marked as bidirected";
     }
 
     @Override

@@ -12,31 +12,31 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class ProportionDirectedPathsNotReversedTrue implements Statistic {
+public class NoSemidirectedRecall implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "NRTE";
+        return "NoSemiR";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of semidirected(Y, X) in true for which not semidirected(X, Y) in estimated";
+        return "Proportion of not exists semidirected(X, Y) in true for which not exists semidirected(X, Y) in est";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+        int tp = 0, fn = 0;
+
         List<Node> nodes = trueGraph.getNodes();
-        int tp = 0;
-        int fn = 0;
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
-                    if (!estGraph.existsSemiDirectedPathFromTo(y, Collections.singleton(x))) {
+                if (!trueGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
+                    if (!estGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
                         tp++;
                     } else {
                         fn++;

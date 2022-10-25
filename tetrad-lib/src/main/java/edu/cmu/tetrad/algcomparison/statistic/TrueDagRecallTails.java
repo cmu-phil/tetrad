@@ -25,7 +25,7 @@ public class TrueDagRecallTails implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Precision for Tails (DTPT / (DTPT + DFNT) compared to true DAG";
+        return "Proportion of X->Y for which X-...->Y in true (unconfounded) in true";
     }
 
     @Override

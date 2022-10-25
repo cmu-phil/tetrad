@@ -13,40 +13,41 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class TrueDagPrecisionTails implements Statistic {
+public class AncestralPrecision implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "DTP";
+        return "AncP";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of X->Y for which X->...->Y in true";
+        return "Proportion of X->...->Y for which X->...->Y in true";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int tp = 0;
-        int fp = 0;
+        int tp = 0, fp = 0;
 
-        for (Edge edge : estGraph.getEdges()) {
-            if (edge.isDirected()) {
-                Node x = Edges.getDirectedEdgeTail(edge);
-                Node y = Edges.getDirectedEdgeHead(edge);
+        List<Node> nodes = trueGraph.getNodes();
 
-                if (trueGraph.isAncestorOf(x, y)) {
-                    tp++;
-                } else {
-                    fp++;
+        for (Node x : nodes) {
+            for (Node y : nodes) {
+                if (x == y) continue;
+
+                if (estGraph.isAncestorOf(x, y)) {
+                    if (trueGraph.isAncestorOf(x, y)) {
+                        tp++;
+                    } else {
+                        fp++;
+                    }
                 }
             }
         }
 
         return tp / (double) (tp + fp);
     }
-
 
     @Override
     public double getNormValue(double value) {

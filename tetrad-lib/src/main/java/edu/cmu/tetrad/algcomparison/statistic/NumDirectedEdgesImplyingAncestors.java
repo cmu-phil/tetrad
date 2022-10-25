@@ -1,52 +1,43 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-
-import java.util.List;
+import edu.cmu.tetrad.graph.*;
 
 /**
  * The bidirected true positives.
  *
  * @author jdramsey
  */
-public class TrueDagPrecisionTails implements Statistic {
+public class NumDirectedEdgesImplyingAncestors implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "DTP";
+        return "#DEA";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of X->Y for which X->...->Y in true";
+        return "Number X-->Y for which X->...->Y in true";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
-        int fp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
-            if (edge.isDirected()) {
+            if (Edges.isDirectedEdge(edge)) {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
                 if (trueGraph.isAncestorOf(x, y)) {
                     tp++;
-                } else {
-                    fp++;
                 }
             }
         }
 
-        return tp / (double) (tp + fp);
+        return tp;
     }
-
 
     @Override
     public double getNormValue(double value) {

@@ -25,7 +25,7 @@ public class CommonAncestorRecallBidirected implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of X<-...<-Z->...>Y for X*-*Y in estimated graph that are marked as bidirected edges";
+        return "Proportion of X<-...<-Z->...>Y for X*-*Y in estimated that are marked as bidirected";
     }
 
     @Override
@@ -41,12 +41,6 @@ public class CommonAncestorRecallBidirected implements Statistic {
 
                 if (existsCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))) {
                     Edge edge2 = estGraph.getEdge(x, y);
-
-//                    if (edge2 != null && Edges.isBidirectedEdge(edge2)) {
-//                        tp++;
-//                    } else {
-//                        fn++;
-//                    }
 
                     if (edge2 != null) {
                         if (Edges.isBidirectedEdge(edge2)) {
