@@ -2514,12 +2514,13 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.ALPHA));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
-        statistics.add(new SemidirectedPrecision());
+        statistics.add(new PagAdjacencyPrecision());
+//        statistics.add(new SemidirectedPrecision());
         statistics.add(new SemidirectedRecall());
         statistics.add(new NoSemidirectedPrecision());
-        statistics.add(new NoSemidirectedRecall());
+//        statistics.add(new NoSemidirectedRecall());
         statistics.add(new NumDirectedEdgesImplyingAncestors());
-        statistics.add(new NumDirectedEdgesImplyingCounfounders());
+        statistics.add(new NumDirectedEdgesImplyingLatentCounfounders());
         statistics.add(new NumDirectedEdgesNotImplyingAncesorsOrCounfounders());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagRecallArrows());
@@ -2535,6 +2536,7 @@ public final class TestGrasp {
         statistics.add(new CommonAncestorRecallBidirected());
         statistics.add(new LatentCommonAncestorBidirectedPrecision());
         statistics.add(new LatentCommonAncestorRecallBidirected());
+        statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);

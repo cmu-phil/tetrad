@@ -62,7 +62,7 @@ public class StatsListEditor extends JPanel {
         this.area.setBorder(new EmptyBorder(5, 5, 5, 5));
 
         this.area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
-        this.area.setPreferredSize(new Dimension(700, 1200));
+        this.area.setPreferredSize(new Dimension(1200, 1800));
 
         JScrollPane pane = new JScrollPane(this.area);
         pane.setPreferredSize(new Dimension(700, 700));

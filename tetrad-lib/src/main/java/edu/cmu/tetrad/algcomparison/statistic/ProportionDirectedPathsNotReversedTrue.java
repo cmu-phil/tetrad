@@ -22,7 +22,7 @@ public class ProportionDirectedPathsNotReversedTrue implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of semidirected(Y, X) in true for which not semidirected(X, Y) in estimated";
+        return "Proportion of exists semidirected(Y, X) in true for which no semidirected(X, Y) in estimated";
     }
 
     @Override
