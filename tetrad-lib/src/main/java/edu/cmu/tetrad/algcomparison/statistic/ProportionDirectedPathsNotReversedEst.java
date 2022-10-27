@@ -4,7 +4,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,7 +21,7 @@ public class ProportionDirectedPathsNotReversedEst implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of exists semidirected(X, Y) in estimated for which there is no semidirected(Y, X) in true";
+        return "Proportion of X->..->Y in estimated graph for which there is no Y->...->X in true graph";
     }
 
     @Override
@@ -35,8 +34,8 @@ public class ProportionDirectedPathsNotReversedEst implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (estGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
-                    if (!trueGraph.existsSemiDirectedPathFromTo(y, Collections.singleton(x))) {
+                if (estGraph.isAncestorOf(x, y)) {
+                    if (!trueGraph.isAncestorOf(y, x)) {
                         tp++;
                     } else {
                         fp++;

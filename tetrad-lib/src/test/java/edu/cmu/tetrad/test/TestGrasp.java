@@ -2519,6 +2519,9 @@ public final class TestGrasp {
         statistics.add(new SemidirectedRecall());
         statistics.add(new NoSemidirectedPrecision());
 //        statistics.add(new NoSemidirectedRecall());
+        statistics.add(new DefiniteDirectedPathPrecision());
+        statistics.add(new PossiblyDirectedPathPrecision());
+        statistics.add(new DefiniteDirectedPathRecall());
         statistics.add(new NumDirectedEdgesImplyingAncestors());
         statistics.add(new NumDirectedEdgesImplyingLatentCounfounders());
         statistics.add(new NumDirectedEdgesNotImplyingAncesorsOrCounfounders());

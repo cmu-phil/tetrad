@@ -1,12 +1,8 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,7 +20,7 @@ public class TrueDagRecallArrows implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of <Y, X> where there is no semidirected(Y, X) in the true for which and X*->Y in the estimated graph";
+        return "Proportion of <Y, X> where there is no directed(Y, X) in the true for which and X*->Y in the estimated graph";
     }
 
     @Override
@@ -38,7 +34,7 @@ public class TrueDagRecallArrows implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!trueGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
+                if (!trueGraph.isAncestorOf(x, y)) {
                     Edge edge2 = estGraph.getEdge(x, y);
 
                     if (edge2 != null) {

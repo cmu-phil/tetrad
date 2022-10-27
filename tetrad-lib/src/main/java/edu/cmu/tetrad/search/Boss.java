@@ -290,31 +290,21 @@ public class Boss {
     }
 
     private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
-        initialOrder = new LinkedList<>(initialOrder);
         List<Node> found = new ArrayList<>();
         HashSet<Node> __found = new HashSet<>();
+        boolean _found = true;
 
-        while (!initialOrder.isEmpty()) {
-            for (Node node : new LinkedList<>(initialOrder)) {
-                if (__found.containsAll(graph.getParents(node))) {
+        while (_found) {
+            _found = false;
+
+            for (Node node : initialOrder) {
+                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
                     found.add(node);
                     __found.add(node);
-                    initialOrder.remove(node);
+                    _found = true;
                 }
             }
         }
-
-//        while (_found) {
-//            _found = false;
-//
-//            for (Node node : initialOrder) {
-//                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-//                    found.add(node);
-//                    __found.add(node);
-//                    _found = true;
-//                }
-//            }
-//        }
 
         return found;
     }
