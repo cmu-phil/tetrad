@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 
 import javax.swing.*;
 import java.util.List;
@@ -32,7 +32,7 @@ import java.util.List;
  * @author Shane Harwood
  */
 class TierList extends JScrollPane {
-    private final IKnowledge knowledge;
+    private final Knowledge knowledge;
 
     /**
      * Field TierListEditor
@@ -43,7 +43,7 @@ class TierList extends JScrollPane {
 
     private final Tier[] tiers;
 
-    public TierList(IKnowledge know, List<String> varNames,
+    public TierList(Knowledge know, List<String> varNames,
                     TemporalTierEditor tierListEditor) {
 
         super(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -135,7 +135,7 @@ class TierList extends JScrollPane {
     /**
      * @return modified knowledge allowing saving.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 }

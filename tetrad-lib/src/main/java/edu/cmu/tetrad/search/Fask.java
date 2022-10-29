@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
@@ -103,7 +102,7 @@ public final class Fask implements GraphSearch {
     private int depth = -1;
 
     // Knowledge the the search will obey, of forbidden and required edges.
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     // A threshold for including extra adjacencies due to skewness. Default is 0.3. For more edges, lower
     // this threshold.
@@ -488,14 +487,14 @@ public final class Fask implements GraphSearch {
     /**
      * @return the current knowledge.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     /**
      * @param knowledge Knowledge of forbidden and required edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

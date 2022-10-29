@@ -73,7 +73,7 @@ public class TestPcStableMax {
      */
     @Test
     public void testSearch4() {
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
@@ -99,7 +99,7 @@ public class TestPcStableMax {
         ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
                 '\"', "*");
 
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
 
         knowledge.addToTier(1, "ABILITY");
         knowledge.addToTier(2, "GPQ");
@@ -162,7 +162,7 @@ public class TestPcStableMax {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String input, IKnowledge knowledge) {
+    private void checkWithKnowledge(String input, Knowledge knowledge) {
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert(input);
 

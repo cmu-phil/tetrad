@@ -27,7 +27,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     private final RandomGraph randomGraph;
     private List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
-    private IKnowledge knowledge;
+    private Knowledge knowledge;
 
     public TimeSeriesSemSimulation(RandomGraph randomGraph) {
         if (randomGraph == null) {
@@ -124,12 +124,12 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

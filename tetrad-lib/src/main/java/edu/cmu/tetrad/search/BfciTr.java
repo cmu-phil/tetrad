@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -78,7 +77,7 @@ public final class BfciTr implements GraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     //============================CONSTRUCTORS============================//
     public BfciTr(IndependenceTest test, Score score) {
@@ -141,7 +140,7 @@ public final class BfciTr implements GraphSearch {
         return graph;
     }
 
-    private static void triangleReduce(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
+    private static void triangleReduce(Graph graph, TeyssierScorer scorer, Knowledge knowledge) {
         boolean changed = true;
 
         while (changed) {
@@ -158,7 +157,7 @@ public final class BfciTr implements GraphSearch {
 
     }
 
-    private static boolean triangleReduceVisit(Graph graph, TeyssierScorer scorer, IKnowledge knowledge, Node a, Node b) {
+    private static boolean triangleReduceVisit(Graph graph, TeyssierScorer scorer, Knowledge knowledge, Node a, Node b) {
         List<Node> inTriangle = graph.getAdjacentNodes(a);
         inTriangle.retainAll(graph.getAdjacentNodes(b));
 
@@ -343,7 +342,7 @@ public final class BfciTr implements GraphSearch {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

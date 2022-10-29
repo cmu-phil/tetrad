@@ -23,7 +23,6 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
@@ -68,7 +67,7 @@ public class TestCpc {
      */
     @Test
     public void testSearch3() {
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
@@ -134,7 +133,7 @@ public class TestCpc {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(String input, IKnowledge knowledge) {
+    private void checkWithKnowledge(String input, Knowledge knowledge) {
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert(input);
 

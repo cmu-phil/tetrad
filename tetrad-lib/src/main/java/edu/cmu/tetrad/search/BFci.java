@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -51,7 +50,7 @@ public final class BFci implements GraphSearch {
     private Graph graph;
 
     // The background knowledge.
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     // The conditional independence test.
     private IndependenceTest independenceTest;
@@ -131,7 +130,7 @@ public final class BFci implements GraphSearch {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
         }
 
-        IKnowledge knowledge2 = new Knowledge((Knowledge) knowledge);
+        Knowledge knowledge2 = new Knowledge((Knowledge) knowledge);
         addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
@@ -171,7 +170,7 @@ public final class BFci implements GraphSearch {
     }
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       IKnowledge knowledge, Node y) {
+                                       Knowledge knowledge, Node y) {
         List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
@@ -188,7 +187,7 @@ public final class BFci implements GraphSearch {
         return possibleParents;
     }
 
-    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
@@ -263,11 +262,11 @@ public final class BFci implements GraphSearch {
         }
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
@@ -356,7 +355,7 @@ public final class BFci implements GraphSearch {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {
+    private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         this.logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {

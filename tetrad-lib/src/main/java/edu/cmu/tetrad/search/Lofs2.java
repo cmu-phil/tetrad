@@ -63,7 +63,7 @@ public class Lofs2 {
 
     private Lofs.Score score = Lofs.Score.andersonDarling;
     private double epsilon = 1.0;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private Rule rule = Rule.R1;
     private double selfLoopStrength;
 
@@ -249,7 +249,7 @@ public class Lofs2 {
 
     private void ruleR1TimeLag(Graph skeleton, Graph graph) {
         List<DataSet> timeSeriesDataSets = new ArrayList<>();
-        IKnowledge knowledge = null;
+        Knowledge knowledge = null;
         List<Node> dataNodes = null;
 
         for (DataSet dataModel : this.dataSets) {
@@ -1243,7 +1243,7 @@ public class Lofs2 {
         this.epsilon = epsilon;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }

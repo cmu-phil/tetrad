@@ -35,7 +35,7 @@ public class BRIDGES implements Algorithm, HasKnowledge, UsesScoreWrapper {
     static final long serialVersionUID = 23L;
 
     private ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     public BRIDGES() {
 
@@ -127,12 +127,12 @@ public class BRIDGES implements Algorithm, HasKnowledge, UsesScoreWrapper {
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
@@ -59,7 +58,7 @@ public final class SvarFciOrient {
      */
     private final SepsetProducer sepsets;
 
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     private boolean changeFlag = true;
 
@@ -133,11 +132,11 @@ public final class SvarFciOrient {
     /**
      * The background knowledge.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -1160,7 +1159,7 @@ public final class SvarFciOrient {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+    private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         this.logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it =
@@ -1300,7 +1299,7 @@ public final class SvarFciOrient {
         return this.changeFlag;
     }
 
-    private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
+    private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y, Endpoint mark) {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return;
         }

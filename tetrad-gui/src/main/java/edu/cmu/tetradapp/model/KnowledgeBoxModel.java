@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.data.KnowledgeTransferable;
@@ -45,7 +44,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     private final Graph sourceGraph = new EdgeListGraph();
     private String name;
     private Parameters params;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private List<Node> variables = new ArrayList<>();
     private List<String> variableNames = new ArrayList<>();
     private int numTiers = 3;
@@ -102,10 +101,10 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         this.params = params;
 
         Object myKnowledge = params.get("__myKnowledge");
-        if (myKnowledge instanceof IKnowledge
-                && new HashSet<>(((IKnowledge) myKnowledge).getVariables())
+        if (myKnowledge instanceof Knowledge
+                && new HashSet<>(((Knowledge) myKnowledge).getVariables())
                 .equals(new HashSet<>(variableNames))) {
-            this.knowledge = (IKnowledge) myKnowledge;
+            this.knowledge = (Knowledge) myKnowledge;
         } else {
             this.knowledge = new Knowledge();
 
@@ -140,7 +139,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
         }
     }
 
-    private void createKnowledge(IKnowledge knowledge) {
+    private void createKnowledge(Knowledge knowledge) {
         knowledge.clear();
         this.variableNames.clear();
         for (String varName : knowledge.getVariables()) {
@@ -174,12 +173,12 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }

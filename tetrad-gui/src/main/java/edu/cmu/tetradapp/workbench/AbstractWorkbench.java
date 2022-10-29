@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.workbench;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.SessionWrapper;
@@ -838,7 +838,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         // setGraphWithoutNotify(graph);
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return null;
     }
 

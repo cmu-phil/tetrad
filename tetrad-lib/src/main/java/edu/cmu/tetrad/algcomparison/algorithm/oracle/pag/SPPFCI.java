@@ -44,7 +44,7 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     public SPPFCI() {
         // Used for reflection; do not delete.
@@ -118,12 +118,12 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

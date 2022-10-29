@@ -24,7 +24,7 @@ import java.util.List;
 public class FasLofs implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private final Lofs2.Rule rule;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     public FasLofs(Lofs2.Rule rule) {
         this.rule = rule;
@@ -83,12 +83,12 @@ public class FasLofs implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

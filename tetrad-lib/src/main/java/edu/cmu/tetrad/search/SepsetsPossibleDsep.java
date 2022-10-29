@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -33,13 +33,13 @@ import java.util.List;
 public class SepsetsPossibleDsep implements SepsetProducer {
     private final Graph graph;
     private final int maxPathLength;
-    private final IKnowledge knowledge;
+    private final Knowledge knowledge;
     private final int depth;
     private boolean verbose;
     private final IndependenceTest test;
     private IndependenceResult result;
 
-    public SepsetsPossibleDsep(Graph graph, IndependenceTest test, IKnowledge knowledge,
+    public SepsetsPossibleDsep(Graph graph, IndependenceTest test, Knowledge knowledge,
                                int depth, int maxPathLength) {
         this.graph = graph;
         this.test = test;

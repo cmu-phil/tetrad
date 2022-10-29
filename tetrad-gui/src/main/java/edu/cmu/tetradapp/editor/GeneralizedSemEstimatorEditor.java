@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
@@ -224,7 +224,7 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
         return graphicalEditor().getWorkbench().getModelNodesToDisplay();
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return graphicalEditor().getWorkbench().getKnowledge();
     }
 

@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -138,7 +137,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
         /*
          * @serial @deprecated
          */
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
 
         for (Node v : input.getVariables()) {
             knowledge.addVariable(v.getName());
@@ -152,13 +151,13 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
         // simulation or not. If in a simulation, I should print the knowledge.
         // If not, I should wait for resetParams to be called. For now I'm
         // printing the knowledge if it's not empty.
-        if (!((IKnowledge) params.get("knowledge", new Knowledge())).isEmpty()) {
+        if (!((Knowledge) params.get("knowledge", new Knowledge())).isEmpty()) {
             TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge()).toString());
         }
     }
 
     private void createKnowledge(Parameters params) {
-        IKnowledge knowledge = getKnowledge();
+        Knowledge knowledge = getKnowledge();
         if (knowledge == null) {
             return;
         }

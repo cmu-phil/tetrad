@@ -154,7 +154,7 @@ public class TimeSeriesUtils {
 
     public static VarResult structuralVar(DataSet timeSeries, int numLags) {
         DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
-        IKnowledge knowledge = timeLags.getKnowledge().copy();
+        Knowledge knowledge = timeLags.getKnowledge().copy();
 
         for (int i = 0; i <= numLags; i++) {
             knowledge.setTierForbiddenWithin(i, true);
@@ -370,7 +370,7 @@ public class TimeSeriesUtils {
         List<Node> variables = data.getVariables();
         int dataSize = variables.size();
         int laggedRows = data.getNumRows() - numLags;
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
         Node[][] laggedNodes = new Node[numLags + 1][dataSize];
         List<Node> newVariables = new ArrayList<>((numLags + 1) * dataSize + 1);
 
@@ -550,12 +550,12 @@ public class TimeSeriesUtils {
         return (Integer.parseInt(tmp));
     }
 
-    public static IKnowledge getKnowledge(Graph graph) {
+    public static Knowledge getKnowledge(Graph graph) {
 //        System.out.println("Entering getKnowledge ... ");
         int numLags = 1; // need to fix this!
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
         int lag;
         for (Node node : variables) {
             String varName = node.getName();

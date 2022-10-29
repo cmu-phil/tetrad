@@ -41,7 +41,7 @@ public class IndependenceFacts implements DataModel {
 
     private Set<IndependenceFact> unsortedFacts = new LinkedHashSet<>();
     private String name = "";
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     public IndependenceFacts() {
         // blank, used in reflection so don't delete.
@@ -197,11 +197,11 @@ public class IndependenceFacts implements DataModel {
         return found;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) throw new NullPointerException();
         this.knowledge = knowledge;
     }

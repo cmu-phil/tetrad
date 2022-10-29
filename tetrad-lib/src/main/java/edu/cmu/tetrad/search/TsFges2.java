@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -68,7 +67,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * List of variables in the data set, in order.
@@ -273,7 +272,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * @return the background knowledge.
      */
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
@@ -282,7 +281,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      *
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
@@ -1782,7 +1781,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     }
 
     // Runs Meek rules on just the changed adj.
-    private Set<Node> meekOrientRestricted(List<Node> nodes, IKnowledge knowledge) {
+    private Set<Node> meekOrientRestricted(List<Node> nodes, Knowledge knowledge) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
         return rules.orientImplied(this.graph);

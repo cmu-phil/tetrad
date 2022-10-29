@@ -122,7 +122,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         if (model instanceof Graph) {
             GraphScore gesScore = new GraphScore((Graph) model);
             this.fges = new Fges(gesScore);
-            this.fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge()));
+            this.fges.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
             this.fges.setVerbose(true);
         } else {
             double penaltyDiscount = params.getDouble("penaltyDiscount", 4);
@@ -201,15 +201,15 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         }
 
         this.fges.setExternalGraph(this.externalGraph);
-        this.fges.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge()));
+        this.fges.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         this.fges.setVerbose(true);
         this.fges.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
         Graph graph = this.fges.search();
 
         if (getSourceGraph() != null) {
             GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
-        } else if (((IKnowledge) getParams().get("knowledge", new Knowledge())).isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (IKnowledge) getParams().get("knowledge", new Knowledge()));
+        } else if (((Knowledge) getParams().get("knowledge", new Knowledge())).isDefaultToKnowledgeLayout()) {
+            SearchGraphUtils.arrangeByKnowledgeTiers(graph, (Knowledge) getParams().get("knowledge", new Knowledge()));
         } else {
             GraphUtils.circleLayout(graph, 200, 200, 150);
         }
@@ -344,7 +344,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge()));
+        rules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         return rules;
     }
 

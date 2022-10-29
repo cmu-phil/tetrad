@@ -41,7 +41,7 @@ import java.util.List;
 public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private Graph externalGraph;
     private ScoreWrapper score;
     private IndependenceWrapper test;
@@ -143,12 +143,12 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

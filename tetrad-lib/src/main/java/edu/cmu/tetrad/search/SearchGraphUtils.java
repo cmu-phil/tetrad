@@ -48,7 +48,7 @@ public final class SearchGraphUtils {
     /**
      * Orients according to background knowledge.
      */
-    public static void pcOrientbk(IKnowledge bk, Graph graph, List<Node> nodes) {
+    public static void pcOrientbk(Knowledge bk, Graph graph, List<Node> nodes) {
         TetradLogger.getInstance().log("details", "Staring BK Orientation.");
         for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
@@ -69,7 +69,7 @@ public final class SearchGraphUtils {
             graph.removeEdge(from, to);
             graph.addDirectedEdge(to, from);
 
-            TetradLogger.getInstance().log("knowledgeOrientations", SearchLogUtils.edgeOrientedMsg("IKnowledge", graph.getEdge(to, from)));
+            TetradLogger.getInstance().log("knowledgeOrientations", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(to, from)));
         }
 
         for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
@@ -91,7 +91,7 @@ public final class SearchGraphUtils {
             graph.removeEdges(from, to);
             graph.addDirectedEdge(from, to);
 
-            TetradLogger.getInstance().log("knowledgeOrientations", SearchLogUtils.edgeOrientedMsg("IKnowledge", graph.getEdge(from, to)));
+            TetradLogger.getInstance().log("knowledgeOrientations", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         TetradLogger.getInstance().log("details", "Finishing BK Orientation.");
@@ -103,7 +103,7 @@ public final class SearchGraphUtils {
      * *determined by* the sepset of (X, Y), rather than W just being *in* the
      * sepset of (X, Y).
      */
-    public static void pcdOrientC(IndependenceTest test, IKnowledge knowledge, Graph graph) {
+    public static void pcdOrientC(IndependenceTest test, Knowledge knowledge, Graph graph) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
         List<Node> nodes = graph.getNodes();
@@ -214,7 +214,7 @@ public final class SearchGraphUtils {
     /**
      * Orients using Meek rules, double checking noncolliders locally.
      */
-    public static void orientUsingMeekRulesLocally(IKnowledge knowledge,
+    public static void orientUsingMeekRulesLocally(Knowledge knowledge,
                                                    Graph graph, IndependenceTest test, int depth) {
         TetradLogger.getInstance().log("info", "Starting Orientation Step D.");
         boolean changed;
@@ -232,7 +232,7 @@ public final class SearchGraphUtils {
      * Step C of PC; orients colliders using specified sepset. That is, orients
      * x *-* y *-* z as x *-&gt; y &lt;-* z just in case y is in Sepset({x, z}).
      */
-    public static void orientCollidersUsingSepsets(SepsetMap set, IKnowledge knowledge, Graph graph, boolean verbose,
+    public static void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
                                                    boolean enforceCpdag) {
         TetradLogger.getInstance().log("details", "Starting Collider Orientation:");
         List<Node> nodes = graph.getNodes();
@@ -329,7 +329,7 @@ public final class SearchGraphUtils {
     /**
      * Orient away from collider.
      */
-    public static boolean meekR1Locally(Graph graph, IKnowledge knowledge,
+    public static boolean meekR1Locally(Graph graph, Knowledge knowledge,
                                         IndependenceTest test, int depth) {
         List<Node> nodes = graph.getNodes();
         boolean changed = true;
@@ -392,7 +392,7 @@ public final class SearchGraphUtils {
     /**
      * If
      */
-    public static boolean meekR2(Graph graph, IKnowledge knowledge) {
+    public static boolean meekR2(Graph graph, Knowledge knowledge) {
         List<Node> nodes = graph.getNodes();
         final boolean changed = false;
 
@@ -434,7 +434,7 @@ public final class SearchGraphUtils {
     /**
      * Meek's rule R3. If a--b, a--c, a--d, c--&gt;b, c--&gt;b, then orient a--&gt;b.
      */
-    public static boolean meekR3(Graph graph, IKnowledge knowledge) {
+    public static boolean meekR3(Graph graph, Knowledge knowledge) {
 
         List<Node> nodes = graph.getNodes();
         boolean changed = false;
@@ -490,7 +490,7 @@ public final class SearchGraphUtils {
         return changed;
     }
 
-    public static boolean meekR4(Graph graph, IKnowledge knowledge) {
+    public static boolean meekR4(Graph graph, Knowledge knowledge) {
         if (knowledge == null) {
             return false;
         }
@@ -557,7 +557,7 @@ public final class SearchGraphUtils {
      * Checks if an arrowpoint is allowed by background knowledge.
      */
     public static boolean isArrowpointAllowed(Object from, Object to,
-                                              IKnowledge knowledge) {
+                                              Knowledge knowledge) {
         if (knowledge == null) {
             return true;
         }
@@ -647,7 +647,7 @@ public final class SearchGraphUtils {
         return SearchGraphUtils.dagFromCPDAG(graph, null);
     }
 
-    public static Graph dagFromCPDAG(Graph graph, IKnowledge knowledge) {
+    public static Graph dagFromCPDAG(Graph graph, Knowledge knowledge) {
         Graph dag = new EdgeListGraph(graph);
 
         for (Edge edge : dag.getEdges()) {
@@ -731,7 +731,7 @@ public final class SearchGraphUtils {
     }
 
     public static void arrangeByKnowledgeTiers(Graph graph,
-                                               IKnowledge knowledge) {
+                                               Knowledge knowledge) {
         if (knowledge.getNumTiers() == 0) {
             throw new IllegalArgumentException("There are no Tiers to arrange.");
         }
@@ -940,7 +940,7 @@ public final class SearchGraphUtils {
      * Checks if an arrowpoint is allowed by background knowledge.
      */
     public static boolean isArrowpointAllowed1(Node from, Node to,
-                                               IKnowledge knowledge) {
+                                               Knowledge knowledge) {
         if (knowledge == null) {
             return true;
         }
@@ -960,7 +960,7 @@ public final class SearchGraphUtils {
         return SearchGraphUtils.getDagsInCpdagMeek(cpdag, new Knowledge());
     }
 
-    public static List<Graph> getDagsInCpdagMeek(Graph cpdag, IKnowledge knowledge) {
+    public static List<Graph> getDagsInCpdagMeek(Graph cpdag, Knowledge knowledge) {
         DagInCPDAGIterator iterator = new DagInCPDAGIterator(cpdag, knowledge);
         List<Graph> dags = new ArrayList<>();
 
@@ -1754,7 +1754,7 @@ public final class SearchGraphUtils {
         return counts;
     }
 
-    public static Graph reorient(Graph graph, DataModel dataModel, IKnowledge knowledge) {
+    public static Graph reorient(Graph graph, DataModel dataModel, Knowledge knowledge) {
         if (dataModel instanceof DataModelList) {
             DataModelList list = (DataModelList) dataModel;
             List<DataModel> dataSets = new ArrayList<>(list);

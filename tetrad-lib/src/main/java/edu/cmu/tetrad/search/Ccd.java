@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -42,7 +42,7 @@ import java.util.*;
 public final class Ccd implements GraphSearch {
     private final IndependenceTest independenceTest;
     private int depth = -1;
-    private IKnowledge knowledge;
+    private Knowledge knowledge;
     private final List<Node> nodes;
     private boolean applyR1;
 
@@ -98,7 +98,7 @@ public final class Ccd implements GraphSearch {
         }
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
@@ -110,7 +110,7 @@ public final class Ccd implements GraphSearch {
         this.depth = depth;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }

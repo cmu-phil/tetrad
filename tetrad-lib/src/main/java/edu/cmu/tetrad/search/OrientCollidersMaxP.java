@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -39,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class OrientCollidersMaxP {
     private final IndependenceTest independenceTest;
     private int depth = -1;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private boolean useHeuristic;
     private int maxPathLength = 3;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
@@ -225,11 +224,11 @@ public final class OrientCollidersMaxP {
         OrientCollidersMaxP.orientCollider(a, b, c, conflictRule, graph);
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 

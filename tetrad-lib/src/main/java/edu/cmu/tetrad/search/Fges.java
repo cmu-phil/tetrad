@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -81,7 +80,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     /**
      * List of variables in the data set, in order.
      */
@@ -233,7 +232,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * @return the background knowledge.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return knowledge;
     }
 
@@ -243,7 +242,7 @@ public final class Fges implements GraphSearch, GraphScorer {
      * @param knowledge the knowledge object, specifying forbidden and required
      *                  edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }

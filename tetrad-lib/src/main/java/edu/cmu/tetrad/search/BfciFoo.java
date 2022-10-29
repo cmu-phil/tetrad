@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -72,7 +71,7 @@ public final class BfciFoo implements GraphSearch {
     private boolean useDataOrder = true;
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     //============================CONSTRUCTORS============================//
     public BfciFoo(IndependenceTest test, Score score) {
@@ -107,7 +106,7 @@ public final class BfciFoo implements GraphSearch {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
         }
 
-        IKnowledge knowledge2 = new Knowledge((Knowledge) knowledge);
+        Knowledge knowledge2 = new Knowledge((Knowledge) knowledge);
 //        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 
         // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
@@ -153,7 +152,7 @@ public final class BfciFoo implements GraphSearch {
         return graph;
     }
 
-    private static void triangleReduce1(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
+    private static void triangleReduce1(Graph graph, TeyssierScorer scorer, Knowledge knowledge) {
         boolean changed = true;
 
         while (changed) {
@@ -228,7 +227,7 @@ public final class BfciFoo implements GraphSearch {
         }
     }
 
-    private static void triangleReduce2(Graph graph, TeyssierScorer scorer0, IKnowledge knowledge) {
+    private static void triangleReduce2(Graph graph, TeyssierScorer scorer0, Knowledge knowledge) {
         TeyssierScorer scorer = new TeyssierScorer(scorer0);
         Graph origGaph = new EdgeListGraph(graph);
 
@@ -240,7 +239,7 @@ public final class BfciFoo implements GraphSearch {
         }
     }
 
-    private static boolean t2visit(Graph origGraph, Graph graph, TeyssierScorer scorer0, IKnowledge knowledge, TeyssierScorer scorer,
+    private static boolean t2visit(Graph origGraph, Graph graph, TeyssierScorer scorer0, Knowledge knowledge, TeyssierScorer scorer,
                                    Node a, Node b) {
         if (!graph.isAdjacentTo(a, b)) return false;
         boolean changed = false;
@@ -433,7 +432,7 @@ public final class BfciFoo implements GraphSearch {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

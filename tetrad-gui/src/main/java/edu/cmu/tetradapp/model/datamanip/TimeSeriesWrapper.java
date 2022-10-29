@@ -35,7 +35,7 @@ public class TimeSeriesWrapper extends DataWrapper implements KnowledgeTransfera
     static final long serialVersionUID = 23L;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * Constructs a new time series dataset.

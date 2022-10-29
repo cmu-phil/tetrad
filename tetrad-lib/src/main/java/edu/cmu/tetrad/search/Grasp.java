@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge;
@@ -28,7 +27,7 @@ public class Grasp {
     private final List<Node> variables;
     private Score score;
     private IndependenceTest test;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private TeyssierScorer scorer;
     private long start;
     // flags
@@ -306,7 +305,7 @@ public class Grasp {
         }
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -363,7 +362,7 @@ public class Grasp {
         this.useDataOrder = useDataOrder;
     }
 
-    public void orientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+    public void orientbk(Knowledge bk, Graph graph, List<Node> variables) {
         for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
                 break;

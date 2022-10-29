@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -46,7 +45,7 @@ public class PcLocal implements GraphSearch {
     /**
      * Forbidden and required edges for the search.
      */
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
@@ -102,11 +101,11 @@ public class PcLocal implements GraphSearch {
         return this.independenceTest;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
@@ -311,7 +310,7 @@ public class PcLocal implements GraphSearch {
      * Checks if an arrowpoint is allowed by background knowledge.
      */
     public static boolean isArrowpointAllowed(Object from, Object to,
-                                              IKnowledge knowledge) {
+                                              Knowledge knowledge) {
         if (knowledge == null) {
             return true;
         }

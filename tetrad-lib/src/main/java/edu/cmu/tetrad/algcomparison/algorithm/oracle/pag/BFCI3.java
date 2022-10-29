@@ -49,7 +49,7 @@ public class BFCI3 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     public BFCI3() {
         // Used for reflection; do not delete.
@@ -146,12 +146,12 @@ public class BFCI3 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

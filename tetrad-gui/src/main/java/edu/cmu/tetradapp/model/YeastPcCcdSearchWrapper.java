@@ -25,7 +25,6 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -115,7 +114,7 @@ public class YeastPcCcdSearchWrapper {
             // read in variable name and set up DataSet.
 
             int ngenes = Integer.parseInt(args[2]);
-            IKnowledge bk = new Knowledge();
+            Knowledge bk = new Knowledge();
             bk.addToTiersByVarNames(listOfNames);
 
             //if(verbose) {
@@ -288,7 +287,7 @@ public class YeastPcCcdSearchWrapper {
     }
 
     private static int[] PCAccuracy(double alpha, int ngenes,
-                                    DataSet cds, IKnowledge bk, int[][] yeastReg, List<String> names,
+                                    DataSet cds, Knowledge bk, int[][] yeastReg, List<String> names,
                                     DataOutputStream d) {
 
         int[] falsePosNeg = new int[2];

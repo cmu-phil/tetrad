@@ -64,7 +64,7 @@ public class KnowledgeBoxEditor extends JPanel {
     private final List<String> firstTierVars = new LinkedList<>();
     private final List<String> secondTierVars = new LinkedList<>();
     private final KnowledgeBoxModel knowledgeBoxModel;
-    private IKnowledge knowledge;
+    private Knowledge knowledge;
     private KnowledgeWorkbench edgeWorkbench;
     private JPanel tiersPanel;
     private boolean showForbiddenExplicitly;
@@ -164,7 +164,7 @@ public class KnowledgeBoxEditor extends JPanel {
             Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
 
             try {
-                IKnowledge knowledge = DataUtils.loadKnowledge(selectedFile, DelimiterType.WHITESPACE, "//");
+                Knowledge knowledge = DataUtils.loadKnowledge(selectedFile, DelimiterType.WHITESPACE, "//");
                 setKnowledge(knowledge);
                 resetTabbedPane();
             } catch (Exception e1) {
@@ -536,7 +536,7 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     private void resetEdgeDisplay(JCheckBox checkBox) {
-        IKnowledge knowledge = getKnowledge();
+        Knowledge knowledge = getKnowledge();
         KnowledgeGraph graph = new KnowledgeGraph(getKnowledge());
         getVarNames().forEach(e -> {
             knowledge.addVariable(e);
@@ -701,11 +701,11 @@ public class KnowledgeBoxEditor extends JPanel {
         firePropertyChange("modelChanged", null, null);
     }
 
-    private IKnowledge getKnowledge() {
+    private Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -802,7 +802,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
                     JList<String> source = (JList<String>) info.getComponent();
                     DefaultListModel listModel = (DefaultListModel) source.getModel();
-                    IKnowledge knowledge = getKnowledge();
+                    Knowledge knowledge = getKnowledge();
 
                     Transferable transferable = info.getTransferable();
                     try {

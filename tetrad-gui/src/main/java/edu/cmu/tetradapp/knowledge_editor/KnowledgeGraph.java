@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.knowledge_editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
@@ -50,7 +49,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     /**
      * @serial
      */
-    private final IKnowledge knowledge;
+    private final Knowledge knowledge;
     private boolean pag;
     private boolean CPDAG;
 
@@ -61,7 +60,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     /**
      * Constructs a new directed acyclic graph (DAG).
      */
-    public KnowledgeGraph(IKnowledge knowledge) {
+    public KnowledgeGraph(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -558,7 +557,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().toString();
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 

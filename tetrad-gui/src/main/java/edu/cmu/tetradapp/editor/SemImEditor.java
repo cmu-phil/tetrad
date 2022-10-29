@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.Matrix;
@@ -155,7 +155,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.oneEditorPanel.getKnowledge();
     }
 
@@ -410,7 +410,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         @Override
-        public IKnowledge getKnowledge() {
+        public Knowledge getKnowledge() {
             return this.semImGraphicalEditor.getWorkbench().getKnowledge();
         }
 

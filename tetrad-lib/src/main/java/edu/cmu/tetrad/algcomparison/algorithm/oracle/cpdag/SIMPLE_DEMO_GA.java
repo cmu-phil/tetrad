@@ -34,7 +34,7 @@ public class SIMPLE_DEMO_GA implements Algorithm, UsesScoreWrapper, TakesIndepen
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     public SIMPLE_DEMO_GA() {
         // Used in reflection; do not delete.
@@ -133,12 +133,12 @@ public class SIMPLE_DEMO_GA implements Algorithm, UsesScoreWrapper, TakesIndepen
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge.copy();
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

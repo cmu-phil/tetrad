@@ -37,7 +37,7 @@ public class BOSS_OLD implements Algorithm, UsesScoreWrapper/*, TakesIndependenc
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
 //    private IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     public BOSS_OLD() {
         // Used in reflection; do not delete.
@@ -145,12 +145,12 @@ public class BOSS_OLD implements Algorithm, UsesScoreWrapper/*, TakesIndependenc
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge.copy();
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

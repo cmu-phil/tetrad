@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search.mb;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -52,7 +51,7 @@ public class Mmhc implements GraphSearch {
      */
     private int depth;
     private final DataSet data;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     //=============================CONSTRUCTORS==========================//
 
@@ -109,11 +108,11 @@ public class Mmhc implements GraphSearch {
         return graph;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

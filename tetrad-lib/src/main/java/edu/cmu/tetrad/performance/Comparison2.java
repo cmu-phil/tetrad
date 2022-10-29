@@ -164,7 +164,7 @@ public class Comparison2 {
                 result.setCorrectResult(dagToPag(trueDag));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                 SvarFci search = new SvarFci(test);
-                IKnowledge knowledge = getKnowledge(trueDag);
+                Knowledge knowledge = getKnowledge(trueDag);
                 search.setKnowledge(knowledge);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(new TsDagToPag(trueDag).convert());
@@ -429,7 +429,7 @@ public class Comparison2 {
             }
             SvarFci search = new SvarFci(test);
             assert trueDag != null;
-            IKnowledge knowledge = Comparison2.getKnowledge(trueDag);
+            Knowledge knowledge = Comparison2.getKnowledge(trueDag);
             search.setKnowledge(knowledge);
             result.setResultGraph(search.search());
             result.setCorrectResult(new TsDagToPag(trueDag).convert());
@@ -579,12 +579,12 @@ public class Comparison2 {
         return table;
     }
 
-    public static IKnowledge getKnowledge(Graph graph) {
+    public static Knowledge getKnowledge(Graph graph) {
 //        System.out.println("Entering getKnowledge ... ");
         int numLags; // need to fix this!
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
         int lag;
         for (Node node : variables) {
             String varName = node.getName();

@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
@@ -46,7 +46,7 @@ import java.util.*;
 
 public final class HbmsBeam implements Hbsms {
     private final CovarianceMatrix cov;
-    private IKnowledge knowledge;
+    private Knowledge knowledge;
     private final Graph externalGraph;
     private Graph graph;
     private double alpha = 0.05;
@@ -58,7 +58,7 @@ public final class HbmsBeam implements Hbsms {
     private final Scorer scorer;
     private int beamWidth = 1;
 
-    public HbmsBeam(Graph graph, DataSet data, IKnowledge knowledge) {
+    public HbmsBeam(Graph graph, DataSet data, Knowledge knowledge) {
         if (graph == null) graph = new EdgeListGraph(data.getVariables());
 
         this.knowledge = knowledge;
@@ -68,7 +68,7 @@ public final class HbmsBeam implements Hbsms {
         this.scorer = new DagScorer(this.cov);
     }
 
-    public HbmsBeam(Graph graph, CovarianceMatrix cov, IKnowledge knowledge) {
+    public HbmsBeam(Graph graph, CovarianceMatrix cov, Knowledge knowledge) {
         if (graph == null) graph = new EdgeListGraph(cov.getVariables());
 
         this.knowledge = knowledge;
@@ -468,7 +468,7 @@ public final class HbmsBeam implements Hbsms {
         return new Score(this.scorer);
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
 
         if (knowledge.isViolatedBy(this.graph)) {
@@ -489,7 +489,7 @@ public final class HbmsBeam implements Hbsms {
         this.beamWidth = beamWidth;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 

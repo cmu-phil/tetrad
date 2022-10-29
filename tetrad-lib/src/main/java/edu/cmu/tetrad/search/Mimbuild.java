@@ -62,7 +62,7 @@ public class Mimbuild {
     /**
      * Background knowledge for CPC.
      */
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * The estimated covariance matrix over the latents.
@@ -151,11 +151,11 @@ public class Mimbuild {
         return this.clustering;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 

@@ -2468,7 +2468,7 @@ public final class TestGrasp {
         params.set(Params.DEPTH, 3);
         params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
-        params.set(Params.DO_DISCRIMINATING_PATH_RULE, true, false);
+        params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
         params.set(Params.POSSIBLE_DSEP_DONE, true);
 
         // Flags
@@ -2529,7 +2529,7 @@ public final class TestGrasp {
         statistics.add(new NumInvisibleAncestors());
         statistics.add(new NumVisibleNonancestors());
         statistics.add(new NumDirectedEdgeBna());
-        statistics.add(new ParameterColumn(Params.DO_DISCRIMINATING_PATH_RULE));
+//        statistics.add(new ParameterColumn(Params.DO_DISCRIMINATING_PATH_RULE));
         statistics.add(new NumDirectedEdgeBnaMeasuredCounfounded());
         statistics.add(new NumDirectedEdgeBnaLatentCounfounded());
         statistics.add(new TrueDagPrecisionArrow());

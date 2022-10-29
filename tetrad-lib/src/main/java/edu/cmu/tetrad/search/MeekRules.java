@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
@@ -43,7 +42,7 @@ import java.util.*;
  */
 public class MeekRules implements ImpliedOrientation {
 
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     //True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
     //graphs).
@@ -126,7 +125,7 @@ public class MeekRules implements ImpliedOrientation {
         }
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
@@ -298,7 +297,7 @@ public class MeekRules implements ImpliedOrientation {
         return true;
     }
 
-    private static boolean isArrowpointAllowed(Node from, Node to, IKnowledge knowledge) {
+    private static boolean isArrowpointAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge.isEmpty()) return true;
         return !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());

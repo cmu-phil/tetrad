@@ -21,7 +21,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
@@ -566,7 +566,7 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         @Override
-        public IKnowledge getKnowledge() {
+        public Knowledge getKnowledge() {
             return this.semImGraphicalEditor.getWorkbench().getKnowledge();
         }
 

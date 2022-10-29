@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -55,7 +54,7 @@ public final class TsDagToPag {
     /*
      * The background knowledge.
      */
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * Glag for complete rule set, true if should use complete rule set, false otherwise.
@@ -85,7 +84,7 @@ public final class TsDagToPag {
         int numLags = 1; // need to fix this!
         List<Node> variables = dag.getNodes();
         List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
         int lag;
         for (Node node : variables) {
             String varName = node.getName();
@@ -258,7 +257,7 @@ public final class TsDagToPag {
         }
     }
 
-    public static boolean existsInducingPathInto(Node x, Node y, Graph graph, IKnowledge knowledge) {
+    public static boolean existsInducingPathInto(Node x, Node y, Graph graph, Knowledge knowledge) {
         if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
         if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
 
@@ -278,11 +277,11 @@ public final class TsDagToPag {
     }
 
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -335,7 +334,7 @@ public final class TsDagToPag {
 
 
     public static boolean existsInducingPathVisitts(Graph graph, Node a, Node b, Node x, Node y,
-                                                    LinkedList<Node> path, IKnowledge knowledge) {
+                                                    LinkedList<Node> path, Knowledge knowledge) {
         if (path.contains(b)) {
             return false;
         }

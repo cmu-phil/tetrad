@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndependenceResult;
@@ -51,7 +50,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
      *
      * @see TetradSerializableUtils
      */
-    public static IKnowledge serializableInstance() {
+    public static Knowledge serializableInstance() {
         return new Knowledge();
     }
 

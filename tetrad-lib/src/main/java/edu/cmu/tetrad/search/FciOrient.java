@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
@@ -56,7 +55,7 @@ public final class FciOrient {
      */
     private final SepsetProducer sepsets;
 
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     private boolean changeFlag = true;
 
@@ -133,11 +132,11 @@ public final class FciOrient {
     /**
      * The background knowledge.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -1176,7 +1175,7 @@ public final class FciOrient {
     /**
      * Orients according to background knowledge
      */
-    public void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+    public void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         this.logger.forceLogMessage("Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it
@@ -1234,7 +1233,7 @@ public final class FciOrient {
         this.logger.forceLogMessage("Finishing BK Orientation.");
     }
 
-    public static boolean isArrowpointAllowed(Node x, Node y, Graph graph, IKnowledge knowledge) {
+    public static boolean isArrowpointAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }
@@ -1251,6 +1250,7 @@ public final class FciOrient {
 
         if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
             if (knowledge.isForbidden(x.getName(), y.getName())) {
+                System.out.println("B");
                 return false;
             }
         }

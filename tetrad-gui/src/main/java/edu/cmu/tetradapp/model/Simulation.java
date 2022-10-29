@@ -26,7 +26,6 @@ import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -306,7 +305,7 @@ public class Simulation extends DataWrapper implements
         this.fixedGraph = fixedGraph;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         if (this.simulation instanceof HasKnowledge) {
             return ((HasKnowledge) this.simulation).getKnowledge();
         } else {

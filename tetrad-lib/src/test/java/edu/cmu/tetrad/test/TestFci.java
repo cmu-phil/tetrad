@@ -146,7 +146,7 @@ public class TestFci {
         varNames.add("X2");
         varNames.add("X3");
 
-        IKnowledge knowledge = new Knowledge(varNames);
+        Knowledge knowledge = new Knowledge(varNames);
         knowledge.addToTier(1, "X1");
         knowledge.addToTier(1, "X2");
         knowledge.addToTier(2, "X3");
@@ -199,7 +199,7 @@ public class TestFci {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkSearch(String inputGraph, String outputGraph, IKnowledge knowledge) {
+    private void checkSearch(String inputGraph, String outputGraph, Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }

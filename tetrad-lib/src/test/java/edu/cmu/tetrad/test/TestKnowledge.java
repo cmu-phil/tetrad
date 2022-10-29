@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Graph;
@@ -65,7 +64,7 @@ public final class TestKnowledge {
             varNames.add(node.getName());
         }
 
-        IKnowledge knowledge = new Knowledge(varNames);
+        Knowledge knowledge = new Knowledge(varNames);
 
         knowledge.addToTier(0, "X1.*1");
         knowledge.addToTier(0, "X2-1");
@@ -82,7 +81,7 @@ public final class TestKnowledge {
 
         assertTrue(knowledge.isRequired("X6", "X7"));
 
-        IKnowledge copy = knowledge.copy();
+        Knowledge copy = knowledge.copy();
 
         assertTrue(copy.isForbidden("X4", "X5"));
         assertFalse(copy.isForbidden("X1", "X2-1"));
@@ -150,7 +149,7 @@ public final class TestKnowledge {
             vars.add("X" + i);
         }
 
-        IKnowledge knowledge = new Knowledge(vars);
+        Knowledge knowledge = new Knowledge(vars);
 
         knowledge.setForbidden("X1*", "X2*");
         knowledge.setForbidden("X3*", "X4*");

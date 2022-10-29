@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -25,7 +24,7 @@ public class GraspTol {
     private final List<Node> variables;
     private Score score;
     private IndependenceTest test;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private TeyssierScorer scorer;
     private long start;
     // flags
@@ -405,7 +404,7 @@ public class GraspTol {
         this.test.setVerbose(verbose);
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 

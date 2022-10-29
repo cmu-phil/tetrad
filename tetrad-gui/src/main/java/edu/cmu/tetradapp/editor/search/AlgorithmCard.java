@@ -484,7 +484,7 @@ public class AlgorithmCard extends JPanel {
                     || cmd.equalsIgnoreCase("ts-gfci")
                     || cmd.equalsIgnoreCase("ts-imgs")) {
                 DataModel dataModel = this.algorithmRunner.getDataModel();
-                IKnowledge knowledge = this.algorithmRunner.getKnowledge();
+                Knowledge knowledge = this.algorithmRunner.getKnowledge();
                 if ((knowledge == null || knowledge.isEmpty())
                         && (dataModel.getKnowledge() == null || dataModel.getKnowledge().isEmpty())) {
                     firePropertyChange("algoFwdBtn", null, false);

@@ -34,7 +34,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     private boolean compareToTrue;
     private final IndependenceWrapper test;
     private final Algorithm externalGraph = null;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     public PcStableMaxConcatenated(IndependenceWrapper test, boolean compareToTrue) {
         this.test = test;
@@ -152,12 +152,12 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

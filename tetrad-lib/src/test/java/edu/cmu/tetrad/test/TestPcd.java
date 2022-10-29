@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphConverter;
@@ -65,7 +64,7 @@ public class TestPcd {
      */
 //    @Test
     public void testSearch3() {
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         checkWithKnowledge(
@@ -101,7 +100,7 @@ public class TestPcd {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(IKnowledge knowledge) {
+    private void checkWithKnowledge(Knowledge knowledge) {
 
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");

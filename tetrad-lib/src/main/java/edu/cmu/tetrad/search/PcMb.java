@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -91,7 +90,7 @@ public final class PcMb implements MbSearch, GraphSearch {
     /**
      * Knowledge.
      */
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * Set of unshielded colliders from the triple orientation step.
@@ -507,7 +506,7 @@ public final class PcMb implements MbSearch, GraphSearch {
     /**
      * @return Ibid.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
@@ -516,7 +515,7 @@ public final class PcMb implements MbSearch, GraphSearch {
      *
      * @param knowledge See the Knowledge class.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
@@ -661,7 +660,7 @@ public final class PcMb implements MbSearch, GraphSearch {
         }
     }
 
-    private void orientUnshieldedTriples(IKnowledge knowledge, Graph graph, int depth, List<Node> nodes) {
+    private void orientUnshieldedTriples(Knowledge knowledge, Graph graph, int depth, List<Node> nodes) {
         this.logger.log("info", "Starting Collider Orientation:");
 
         this.colliderTriples = new HashSet<>();
@@ -842,7 +841,7 @@ public final class PcMb implements MbSearch, GraphSearch {
      * @param knowledge The knowledge set--see the Knowledge class.
      * @return True just in case z is a possible parent of x.
      */
-    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
@@ -856,13 +855,13 @@ public final class PcMb implements MbSearch, GraphSearch {
         return list;
     }
 
-    private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
+    private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return PcMb.isArrowpointAllowed1(x, y, knowledge) &&
                 PcMb.isArrowpointAllowed1(z, y, knowledge);
     }
 
     private static boolean isArrowpointAllowed1(Node from, Node to,
-                                                IKnowledge knowledge) {
+                                                Knowledge knowledge) {
         if (knowledge == null) {
             return true;
         }

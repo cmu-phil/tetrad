@@ -125,7 +125,7 @@ public final class NumberObjectDataSet
      *
      * @serial
      */
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * The number formatter used for printing out continuous values.
@@ -527,14 +527,14 @@ public final class NumberObjectDataSet
      * @return a copy of the knowledge associated with this data set. (Cannot be
      * null.)
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge.copy();
     }
 
     /**
      * Sets knowledge to be associated with this data set. May not be null.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }

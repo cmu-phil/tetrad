@@ -29,7 +29,7 @@ import java.util.List;
 public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private final ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private Algorithm externalGraph;
     private boolean compareToTrue;
 
@@ -165,12 +165,12 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

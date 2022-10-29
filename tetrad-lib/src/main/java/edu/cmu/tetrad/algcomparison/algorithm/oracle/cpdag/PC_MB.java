@@ -36,7 +36,7 @@ public class PC_MB implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private List<Node> targets;
 
     public PC_MB() {
@@ -109,12 +109,12 @@ public class PC_MB implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

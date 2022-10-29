@@ -66,7 +66,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * List of variables in the data set, in order.
@@ -293,7 +293,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     /**
      * @return the background knowledge.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
@@ -302,7 +302,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
      *
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) throw new NullPointerException();
         this.knowledge = knowledge;
     }
@@ -1418,7 +1418,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // Runs Meek rules on just the changed nodes.
-    private Set<Node> meekOrientRestricted(Graph graph, List<Node> nodes, IKnowledge knowledge) {
+    private Set<Node> meekOrientRestricted(Graph graph, List<Node> nodes, Knowledge knowledge) {
         MeekRulesRestricted rules = new MeekRulesRestricted();
         rules.setKnowledge(knowledge);
         rules.orientImplied(graph, new HashSet<>(nodes));

@@ -41,7 +41,7 @@ public class ShiftSearch {
     private final List<DataModel> dataSets;
 
     private int maxShift = 2;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private int c = 4;
     private int maxNumShifts;
     private PrintStream out = System.out;
@@ -176,11 +176,11 @@ public class ShiftSearch {
         this.maxShift = maxShift;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

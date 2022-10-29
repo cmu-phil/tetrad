@@ -521,7 +521,7 @@ public class TestFges {
      */
     @Test
     public void testSearch4() {
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
@@ -532,7 +532,7 @@ public class TestFges {
 
     @Test
     public void testSearch5() {
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
         knowledge.setTier(1, Collections.singletonList("A"));
         knowledge.setTier(2, Collections.singletonList("B"));
 
@@ -554,7 +554,7 @@ public class TestFges {
         char[] citesChars = citesString.toCharArray();
         ICovarianceMatrix cov = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
-        IKnowledge knowledge = new Knowledge();
+        Knowledge knowledge = new Knowledge();
 
         knowledge.addToTier(1, "ABILITY");
         knowledge.addToTier(2, "GPQ");
@@ -633,7 +633,7 @@ public class TestFges {
      * graph.
      */
     private void checkWithKnowledge(String inputGraph, String answerGraph,
-                                    IKnowledge knowledge) {
+                                    Knowledge knowledge) {
         // Set up graph and node objects.
         Graph input = GraphConverter.convert(inputGraph);
 
@@ -750,7 +750,7 @@ public class TestFges {
             Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
 
-            IKnowledge knowledge = forbiddenKnowledge(knowledgeGraph);
+            Knowledge knowledge = forbiddenKnowledge(knowledgeGraph);
 
             Fges fges = new Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
@@ -784,7 +784,7 @@ public class TestFges {
             Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
 
-            IKnowledge knowledge = requiredKnowledge(knowledgeGraph);
+            Knowledge knowledge = requiredKnowledge(knowledgeGraph);
 
             Fges fges = new Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
@@ -805,8 +805,8 @@ public class TestFges {
     }
 
 
-    private IKnowledge forbiddenKnowledge(Graph graph) {
-        IKnowledge knowledge = new Knowledge(graph.getNodeNames());
+    private Knowledge forbiddenKnowledge(Graph graph) {
+        Knowledge knowledge = new Knowledge(graph.getNodeNames());
 
         for (Edge edge : graph.getEdges()) {
             Node n1 = Edges.getDirectedEdgeTail(edge);
@@ -822,9 +822,9 @@ public class TestFges {
         return knowledge;
     }
 
-    private IKnowledge requiredKnowledge(Graph graph) {
+    private Knowledge requiredKnowledge(Graph graph) {
 
-        IKnowledge knowledge = new Knowledge(graph.getNodeNames());
+        Knowledge knowledge = new Knowledge(graph.getNodeNames());
 
         for (Edge edge : graph.getEdges()) {
             Node n1 = Edges.getDirectedEdgeTail(edge);

@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -58,7 +57,7 @@ public final class SpFci implements GraphSearch {
     int sampleSize;
 
     // The background knowledge.
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     // The test used if Pearl's method is used ot build DAGs
     private IndependenceTest test;
@@ -223,11 +222,11 @@ public final class SpFci implements GraphSearch {
         return nodes.size() == 4;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -320,7 +319,7 @@ public final class SpFci implements GraphSearch {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientBk(IKnowledge knowledge, Graph graph, List<Node> variables) {
+    private void fciOrientBk(Knowledge knowledge, Graph graph, List<Node> variables) {
         this.logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {

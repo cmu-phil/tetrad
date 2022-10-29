@@ -64,7 +64,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private Graph sourceGraph;
     private Graph externalGraph;
     private List<Graph> graphList = new ArrayList<>();
-    private IKnowledge knowledge;
+    private Knowledge knowledge;
     private final Map<String, Object> userAlgoSelections = new HashMap<>();
     private transient List<IndependenceTest> independenceTests;
 
@@ -267,7 +267,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
 
             if (this.algorithm instanceof HasKnowledge) {
-                IKnowledge knowledge1 = TimeSeriesUtils.getKnowledge(getSourceGraph());
+                Knowledge knowledge1 = TimeSeriesUtils.getKnowledge(getSourceGraph());
 
                 if (this.knowledge.isEmpty() && !knowledge1.isEmpty()) {
                     ((HasKnowledge) algo).setKnowledge(knowledge1);
@@ -280,7 +280,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         } else {
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
                 for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
-                    IKnowledge knowledge1 = getDataModelList().get(0).getKnowledge();
+                    Knowledge knowledge1 = getDataModelList().get(0).getKnowledge();
                     List<DataSet> dataSets = getDataModelList().stream()
                             .map(e -> (DataSet) e)
                             .collect(Collectors.toCollection(ArrayList::new));
@@ -351,7 +351,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                 if (algo != null) {
                     getDataModelList().forEach(data -> {
-                        IKnowledge knowledgeFromData = data.getKnowledge();
+                        Knowledge knowledgeFromData = data.getKnowledge();
                         if (!(knowledgeFromData == null || knowledgeFromData.getVariables().isEmpty())) {
                             this.knowledge = knowledgeFromData;
                         }
@@ -383,7 +383,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         if (algo instanceof HasKnowledge && ((HasKnowledge) algo).getKnowledge().getNumTiers() > 0) {
 //                && ((HasKnowledge) algo).getKnowledge().getVariablesNotInTiers().size()
 //                < ((HasKnowledge) algo).getKnowledge().getVariables().size()) {
-            IKnowledge _knowledge = ((HasKnowledge) algo).getKnowledge();
+            Knowledge _knowledge = ((HasKnowledge) algo).getKnowledge();
             if (_knowledge.getVariablesNotInTiers().size()
                     < _knowledge.getVariables().size()) {
                 for (Graph graph : graphList) {
@@ -644,7 +644,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return this.graphList;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 

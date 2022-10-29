@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -71,7 +70,7 @@ public final class BfciSwap implements GraphSearch {
     private boolean useDataOrder = true;
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     //============================CONSTRUCTORS============================//
     public BfciSwap(IndependenceTest test, Score score) {
@@ -104,19 +103,21 @@ public final class BfciSwap implements GraphSearch {
 
         scorer.score(pi);
 
-        IKnowledge knowledge2 = new Knowledge((Knowledge) knowledge);
+        Knowledge knowledge2 = new Knowledge(knowledge);
 //        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(G1), knowledge2);
+
+        retainUnshieldedColliders(G1, knowledge2);
 
         Graph G2 = removeBySwapRule(G1, scorer, knowledge2);
 
         Graph G3 = new EdgeListGraph(G2);
 
-        for (Edge edge : G3.getEdges()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
-            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
-        }
+//        for (Edge edge : G3.getEdges()) {
+//            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
+//            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
+//        }
 
-        retainUnshieldedColliders(G1, knowledge2);
+//        retainUnshieldedColliders(G1, knowledge2);
 
         // Do final FCI orientation rules app
         Graph G4 = new EdgeListGraph(G3);
@@ -135,7 +136,7 @@ public final class BfciSwap implements GraphSearch {
         return G4;
     }
 
-    public static void retainUnshieldedColliders(Graph graph, IKnowledge knowledge) {
+    public static void retainUnshieldedColliders(Graph graph, Knowledge knowledge) {
         Graph orig = new EdgeListGraph(graph);
         graph.reorientAllWith(Endpoint.CIRCLE);
         List<Node> nodes = graph.getNodes();
@@ -166,7 +167,7 @@ public final class BfciSwap implements GraphSearch {
     }
 
 
-    private Graph removeBySwapRule(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
+    private Graph removeBySwapRule(Graph graph, TeyssierScorer scorer, Knowledge knowledge) {
         graph = new EdgeListGraph(graph);
         List<Node> nodes = graph.getNodes();
 
@@ -360,7 +361,7 @@ public final class BfciSwap implements GraphSearch {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

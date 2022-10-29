@@ -36,12 +36,12 @@ public interface KnowledgeTransferable extends TetradSerializable {
     /**
      * @return a copy of the knowledge for this class.
      */
-    IKnowledge getKnowledge();
+    Knowledge getKnowledge();
 
     /**
      * Sets knowledge to a copy of the given object.
      */
-    void setKnowledge(IKnowledge knowledge);
+    void setKnowledge(Knowledge knowledge);
 }
 
 

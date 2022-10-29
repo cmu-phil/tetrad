@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -26,7 +25,7 @@ import static java.lang.Math.min;
 public class Bes {
     private final List<Node> variables;
     private final Score score;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private boolean verbose = true;
     private int depth = 4;
 
@@ -44,7 +43,7 @@ public class Bes {
         this.verbose = verbose;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
@@ -198,7 +197,7 @@ public class Bes {
         return score.localScoreDiff(xIndex, yIndex, parentIndices);
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return knowledge;
     }
 

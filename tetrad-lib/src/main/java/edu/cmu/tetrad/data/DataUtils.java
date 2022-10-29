@@ -1553,10 +1553,10 @@ public final class DataUtils {
      * Loads knowledge from a file. Assumes knowledge is the only thing in the
      * file. No jokes please. :)
      */
-    public static IKnowledge loadKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
+    public static Knowledge loadKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
         FileReader reader = new FileReader(file);
         Lineizer lineizer = new Lineizer(reader, commentMarker);
-        IKnowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
+        Knowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
         TetradLogger.getInstance().reset();
         return knowledge;
     }
@@ -1572,8 +1572,8 @@ public final class DataUtils {
      * 4 x5
      * </pre>
      */
-    public static IKnowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
-        IKnowledge knowledge = new Knowledge();
+    public static Knowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
+        Knowledge knowledge = new Knowledge();
 
         String line = lineizer.nextLine();
         String firstLine = line;
@@ -1885,7 +1885,7 @@ public final class DataUtils {
         return knowledge;
     }
 
-    private static void addVariable(IKnowledge knowledge, String from) {
+    private static void addVariable(Knowledge knowledge, String from) {
         if (!knowledge.getVariables().contains(from)) {
             knowledge.addVariable(from);
         }
@@ -2099,7 +2099,7 @@ public final class DataUtils {
             }
         }
 
-        IKnowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
+        Knowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
 
         ICovarianceMatrix covarianceMatrix
                 = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), c, n);

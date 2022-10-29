@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Edge;
@@ -130,13 +129,13 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         // simulation or not. If in a simulation, I should print the knowledge.
         // If not, I should wait for resetParams to be called. For now I'm
         // printing the knowledge if it's not empty.
-        if (!((IKnowledge) params.get("knowledge", new Knowledge())).isEmpty()) {
+        if (!((Knowledge) params.get("knowledge", new Knowledge())).isEmpty()) {
             TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge()).toString());
         }
     }
 
     private void createKnowledge() {
-        IKnowledge knwl = getKnowledge();
+        Knowledge knwl = getKnowledge();
         if (knwl == null) {
             return;
         }

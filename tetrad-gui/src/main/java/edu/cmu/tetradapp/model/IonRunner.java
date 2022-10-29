@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -202,7 +201,7 @@ public class IonRunner extends AbstractAlgorithmRunner
 
         ion.setAdjacencySearch(getParams().getBoolean("pruneByAdjacencies", true));
         ion.setPathLengthSearch(getParams().getBoolean("pruneByPathLength", true));
-        ion.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge()));
+        ion.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
 
         List<Graph> graphs = ion.search();
 

@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
@@ -26,7 +25,7 @@ public class Boss {
     private final List<Node> variables;
     private final Score score;
     //    private IndependenceTest test;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private final TeyssierScorer scorer;
     private long start;
     private boolean useScore = true;
@@ -348,7 +347,7 @@ public class Boss {
         return graph;
     }
 
-    public void orientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+    public void orientbk(Knowledge bk, Graph graph, List<Node> variables) {
         for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
@@ -404,7 +403,7 @@ public class Boss {
         this.verbose = verbose;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

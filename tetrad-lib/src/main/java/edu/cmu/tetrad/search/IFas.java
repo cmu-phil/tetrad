@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
@@ -37,9 +37,9 @@ public interface IFas {
 
     IndependenceTest getIndependenceTest();
 
-    IKnowledge getKnowledge();
+    Knowledge getKnowledge();
 
-    void setKnowledge(IKnowledge knowledge);
+    void setKnowledge(Knowledge knowledge);
 
     SepsetMap getSepsets();
 

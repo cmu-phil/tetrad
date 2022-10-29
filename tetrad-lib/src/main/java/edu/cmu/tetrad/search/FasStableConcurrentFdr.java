@@ -21,7 +21,6 @@ package edu.cmu.tetrad.search;
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -61,7 +60,7 @@ public class FasStableConcurrentFdr implements IFas {
     /**
      * Specification of which edges are forbidden or required.
      */
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
@@ -236,11 +235,11 @@ public class FasStableConcurrentFdr implements IFas {
         return this.test;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Cannot set knowledge to null");
         }
@@ -631,7 +630,7 @@ public class FasStableConcurrentFdr implements IFas {
     }
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       IKnowledge knowledge) {
+                                       Knowledge knowledge) {
         List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
@@ -646,7 +645,7 @@ public class FasStableConcurrentFdr implements IFas {
         return possibleParents;
     }
 
-    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 

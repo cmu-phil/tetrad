@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
@@ -55,7 +54,7 @@ public class PossibleDsepFci {
     /**
      * The background knowledge.
      */
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private int maxReachablePathLength = -1;
 
     /**
@@ -155,7 +154,7 @@ public class PossibleDsepFci {
      * Removes from the list of nodes any that cannot be parents of x given the background knowledge.
      */
     private List<Node> possibleParents(Node x, List<Node> nodes,
-                                       IKnowledge knowledge) {
+                                       Knowledge knowledge) {
         List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
@@ -170,7 +169,7 @@ public class PossibleDsepFci {
         return possibleParents;
     }
 
-    private boolean possibleParentOf(String _z, String _x, IKnowledge bk) {
+    private boolean possibleParentOf(String _z, String _x, Knowledge bk) {
         return !(bk.isForbidden(_z, _x) || bk.isRequired(_x, _z));
     }
 
@@ -208,11 +207,11 @@ public class PossibleDsepFci {
         this.depth = depth;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

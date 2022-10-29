@@ -127,7 +127,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
 
         MimbuildTrek mimbuild = new MimbuildTrek();
         mimbuild.setAlpha(getParams().getDouble("alpha", 0.001));
-        mimbuild.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge()));
+        mimbuild.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
 
         if (getParams().getBoolean("includeThreeClusters", true)) {
             mimbuild.setMinClusterSize(3);

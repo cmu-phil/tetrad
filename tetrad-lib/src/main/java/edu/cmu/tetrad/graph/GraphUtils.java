@@ -22,7 +22,7 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -5209,7 +5209,7 @@ public final class GraphUtils {
         }
     }
 
-    public static void addForbiddenReverseEdgesForDirectedEdges(Graph graph, IKnowledge knowledge) {
+    public static void addForbiddenReverseEdgesForDirectedEdges(Graph graph, Knowledge knowledge) {
         List<Node> nodes = graph.getNodes();
 
         for (Node x : nodes) {
@@ -5235,7 +5235,7 @@ public final class GraphUtils {
 //        }
     }
 
-    public static void removeNonSkeletonEdges(Graph graph, IKnowledge knowledge) {
+    public static void removeNonSkeletonEdges(Graph graph, Knowledge knowledge) {
         List<Node> nodes = graph.getNodes();
 
         int numOfNodes = nodes.size();

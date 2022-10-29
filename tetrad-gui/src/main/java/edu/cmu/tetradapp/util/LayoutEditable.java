@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.util;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -52,7 +52,7 @@ public interface LayoutEditable {
     /**
      * @return the getModel knowledge.
      */
-    IKnowledge getKnowledge();
+    Knowledge getKnowledge();
 
     /**
      * @return the source graph.

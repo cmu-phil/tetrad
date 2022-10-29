@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
@@ -25,7 +24,7 @@ import static java.util.Collections.shuffle;
 public class BossMB {
     private final List<Node> variables;
     private final Score score;
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
     private TeyssierScorer2 scorer;
     private long start;
     private boolean useDataOrder = true;
@@ -262,7 +261,7 @@ public class BossMB {
         this.verbose = verbose;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
@@ -290,7 +289,7 @@ public class BossMB {
     }
 
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return knowledge;
     }
 

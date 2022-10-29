@@ -103,7 +103,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
         Mimbuild mimbuild = new Mimbuild();
         mimbuild.setPenaltyDiscount(getParams().getDouble(Params.PENALTY_DISCOUNT));
-        mimbuild.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge()));
+        mimbuild.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
 
         if (getParams().getBoolean("includeThreeClusters", true)) {
             mimbuild.setMinClusterSize(3);

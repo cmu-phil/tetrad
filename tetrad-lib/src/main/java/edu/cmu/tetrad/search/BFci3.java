@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -47,7 +46,7 @@ public final class BFci3 implements GraphSearch {
     private Graph graph;
 
     // The background knowledge.
-    private IKnowledge knowledge = new Knowledge();
+    private Knowledge knowledge = new Knowledge();
 
     // The conditional independence test.
     private IndependenceTest independenceTest;
@@ -116,7 +115,7 @@ public final class BFci3 implements GraphSearch {
 
 //        this.graph = getBossCpdag(variables, scorer, knowledge);
 
-        IKnowledge knowledge2 = new Knowledge((Knowledge) knowledge);
+        Knowledge knowledge2 = new Knowledge((Knowledge) knowledge);
 //        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
@@ -167,7 +166,7 @@ public final class BFci3 implements GraphSearch {
         }
     }
 
-    private Graph getBossCpdag(List<Node> variables, TeyssierScorer scorer, IKnowledge knowledge) {
+    private Graph getBossCpdag(List<Node> variables, TeyssierScorer scorer, Knowledge knowledge) {
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss alg = new Boss(scorer);
         alg.setAlgType(Boss.AlgType.BOSS);
@@ -183,7 +182,7 @@ public final class BFci3 implements GraphSearch {
         return alg.getGraph(true);
     }
 
-    private void doFinalOrientation(SepsetProducer sepsets, IKnowledge knowledge2) {
+    private void doFinalOrientation(SepsetProducer sepsets, Knowledge knowledge2) {
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
@@ -229,7 +228,7 @@ public final class BFci3 implements GraphSearch {
         }
     }
 
-    private void removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets, IKnowledge knowledge) {
+    private void removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(Graph graph, Graph referenceCpdag, List<Node> nodes, SepsetProducer sepsets, Knowledge knowledge) {
         for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
@@ -273,7 +272,7 @@ public final class BFci3 implements GraphSearch {
         }
     }
 
-    private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {
+    private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         this.logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -320,11 +319,11 @@ public final class BFci3 implements GraphSearch {
     }
 
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 

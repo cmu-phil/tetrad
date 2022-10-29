@@ -21,7 +21,6 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
@@ -53,7 +52,7 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
-    public static IKnowledge serializableInstance() {
+    public static Knowledge serializableInstance() {
         return new Knowledge();
     }
 
