@@ -37,7 +37,7 @@ public class GRaSPTol implements Algorithm, UsesScoreWrapper, TakesIndependenceW
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public GRaSPTol() {
         // Used in reflection; do not delete.
@@ -164,6 +164,6 @@ public class GRaSPTol implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge.copy();
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

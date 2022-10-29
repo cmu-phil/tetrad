@@ -21,7 +21,7 @@ public class BidirectedBothNonancestorAncestor implements Statistic {
 
     @Override
     public String getDescription() {
-        return "# X<->Y where neither X nor Y is an ancestor of the other in DAG";
+        return "# X<->Y for which both not X->...->Y and not Y->...->X";
     }
 
     @Override

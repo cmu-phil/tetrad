@@ -521,7 +521,7 @@ public class TestFges {
      */
     @Test
     public void testSearch4() {
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
@@ -532,7 +532,7 @@ public class TestFges {
 
     @Test
     public void testSearch5() {
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
         knowledge.setTier(1, Collections.singletonList("A"));
         knowledge.setTier(2, Collections.singletonList("B"));
 
@@ -554,7 +554,7 @@ public class TestFges {
         char[] citesChars = citesString.toCharArray();
         ICovarianceMatrix cov = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
 
         knowledge.addToTier(1, "ABILITY");
         knowledge.addToTier(2, "GPQ");
@@ -806,7 +806,7 @@ public class TestFges {
 
 
     private IKnowledge forbiddenKnowledge(Graph graph) {
-        IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
+        IKnowledge knowledge = new Knowledge(graph.getNodeNames());
 
         for (Edge edge : graph.getEdges()) {
             Node n1 = Edges.getDirectedEdgeTail(edge);
@@ -824,7 +824,7 @@ public class TestFges {
 
     private IKnowledge requiredKnowledge(Graph graph) {
 
-        IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
+        IKnowledge knowledge = new Knowledge(graph.getNodeNames());
 
         for (Edge edge : graph.getEdges()) {
             Node n1 = Edges.getDirectedEdgeTail(edge);

@@ -12,7 +12,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.BFci;
 import edu.cmu.tetrad.search.BFci2;
 import edu.cmu.tetrad.search.SepsetProducer;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
@@ -50,7 +49,7 @@ public class BFCI2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public BFCI2() {
         // Used for reflection; do not delete.
@@ -159,7 +158,7 @@ public class BFCI2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

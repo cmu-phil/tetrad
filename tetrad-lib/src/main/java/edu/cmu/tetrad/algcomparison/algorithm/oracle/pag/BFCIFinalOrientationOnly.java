@@ -12,7 +12,6 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BfciFoo;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -48,7 +47,7 @@ public class BFCIFinalOrientationOnly implements Algorithm, UsesScoreWrapper, Ta
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public BFCIFinalOrientationOnly() {
         // Used for reflection; do not delete.
@@ -151,7 +150,7 @@ public class BFCIFinalOrientationOnly implements Algorithm, UsesScoreWrapper, Ta
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

@@ -66,7 +66,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     /**
      * List of variables in the data set, in order.

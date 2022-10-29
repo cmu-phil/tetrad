@@ -34,7 +34,7 @@ public class PCMAX implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public PCMAX() {
     }
@@ -153,7 +153,7 @@ public class PCMAX implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

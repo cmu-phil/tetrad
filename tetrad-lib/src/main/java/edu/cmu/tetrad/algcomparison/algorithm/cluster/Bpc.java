@@ -32,7 +32,7 @@ import java.util.List;
 public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public Bpc() {
     }
@@ -65,7 +65,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
                 Mimbuild mimbuild = new Mimbuild();
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-                mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge2()));
+                mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge()));
 
                 if (parameters.getBoolean("includeThreeClusters", true)) {
                     mimbuild.setMinClusterSize(3);
@@ -142,6 +142,6 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

@@ -35,7 +35,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
     static final long serialVersionUID = 23L;
 
     private ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public Fges() {
 
@@ -131,7 +131,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

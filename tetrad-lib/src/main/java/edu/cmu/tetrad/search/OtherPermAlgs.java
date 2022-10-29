@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -31,7 +31,7 @@ public class OtherPermAlgs {
     private IndependenceTest test;
     private int numStarts = 1;
     private Method method = Method.GSP;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     private int depth = 4;
     private TeyssierScorer scorer;
     private int numRounds = 50;
@@ -466,7 +466,7 @@ public class OtherPermAlgs {
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public void setUseDataOrder(boolean useDataOrder) {

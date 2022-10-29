@@ -7,7 +7,6 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -27,7 +26,7 @@ public class Cfci implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private final IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public Cfci(IndependenceWrapper test) {
         this.test = test;
@@ -92,6 +91,6 @@ public class Cfci implements Algorithm, HasKnowledge {
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

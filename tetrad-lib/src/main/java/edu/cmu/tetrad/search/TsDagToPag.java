@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -55,7 +55,7 @@ public final class TsDagToPag {
     /*
      * The background knowledge.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     /**
      * Glag for complete rule set, true if should use complete rule set, false otherwise.
@@ -85,7 +85,7 @@ public final class TsDagToPag {
         int numLags = 1; // need to fix this!
         List<Node> variables = dag.getNodes();
         List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
         int lag;
         for (Node node : variables) {
             String varName = node.getName();

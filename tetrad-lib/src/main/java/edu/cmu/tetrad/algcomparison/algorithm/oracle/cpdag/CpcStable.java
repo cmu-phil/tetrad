@@ -28,7 +28,7 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm algorithm;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public CpcStable() {
     }
@@ -99,7 +99,7 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

@@ -51,7 +51,7 @@ public final class SampleVcpcFast implements GraphSearch {
     /**
      * Forbidden and required edges for the search.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     /**
      * The maximum number of nodes conditioned on in the search.
@@ -183,7 +183,7 @@ public final class SampleVcpcFast implements GraphSearch {
      * Sets the knowledge specification used in the search. Non-null.
      */
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     /**

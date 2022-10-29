@@ -47,7 +47,7 @@ public class BFCITR implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public BFCITR() {
         // Used for reflection; do not delete.
@@ -150,7 +150,7 @@ public class BFCITR implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

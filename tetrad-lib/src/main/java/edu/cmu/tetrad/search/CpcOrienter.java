@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -101,11 +102,7 @@ public final class CpcOrienter implements Reorienter {
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public void setDepth(int depth) {

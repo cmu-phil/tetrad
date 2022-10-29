@@ -22,7 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -48,7 +48,7 @@ public final class GFci implements GraphSearch {
     private Graph graph;
 
     // The background knowledge.
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     // The conditional independence test.
     private IndependenceTest independenceTest;
@@ -116,7 +116,7 @@ public final class GFci implements GraphSearch {
 
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-        knowledge = new Knowledge2((Knowledge2) knowledge);
+        knowledge = new Knowledge((Knowledge) knowledge);
         addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
 
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);

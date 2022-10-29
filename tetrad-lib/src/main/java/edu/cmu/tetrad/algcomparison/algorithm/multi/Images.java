@@ -40,7 +40,7 @@ import java.util.List;
 public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     private ScoreWrapper score;
 
@@ -79,7 +79,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 
             if (meta == 1) {
                 edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-                search.setKnowledge(this.knowledge);
+                search.setKnowledge(new Knowledge((Knowledge) knowledge));
                 search.setVerbose(parameters.getBoolean(Params.VERBOSE));
                 return search.search();
             }
@@ -96,7 +96,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
             else if (meta == 2) {
                 Boss search = new Boss(score);
                 search.setAlgType(Boss.AlgType.BOSS);
-                search.setKnowledge(this.knowledge);
+                search.setKnowledge(new Knowledge((Knowledge) knowledge));
                 search.setVerbose(parameters.getBoolean(Params.VERBOSE));
                 search.bestOrder(score.getVariables());
                 return search.getGraph(true);
@@ -217,7 +217,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

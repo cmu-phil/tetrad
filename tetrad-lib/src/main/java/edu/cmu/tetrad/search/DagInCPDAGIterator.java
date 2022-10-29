@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 
 import java.util.*;
@@ -47,7 +47,7 @@ public class DagInCPDAGIterator {
     private final boolean allowNewColliders;
 
     public DagInCPDAGIterator(Graph CPDAG) {
-        this(CPDAG, new Knowledge2(), false, true);
+        this(CPDAG, new Knowledge(), false, true);
     }
 
     public DagInCPDAGIterator(Graph CPDAG, IKnowledge knowledge) {
@@ -66,7 +66,7 @@ public class DagInCPDAGIterator {
     public DagInCPDAGIterator(Graph CPDAG, IKnowledge knowledge, boolean allowArbitraryOrientations,
                               boolean allowNewColliders) {
         if (knowledge == null) {
-            this.knowledge = new Knowledge2();
+            this.knowledge = new Knowledge();
         } else {
             this.knowledge = knowledge;
         }

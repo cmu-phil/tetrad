@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
@@ -68,7 +68,7 @@ public class TestCpc {
      */
     @Test
     public void testSearch3() {
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");

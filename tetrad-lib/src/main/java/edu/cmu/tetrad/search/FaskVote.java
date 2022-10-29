@@ -21,7 +21,7 @@ public class FaskVote {
     private final IndependenceWrapper test;
     private final ScoreWrapper score;
     // Knowledge the the search will obey, of forbidden and required edges.
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     private final List<DataSet> dataSets;
 
@@ -122,6 +122,6 @@ public class FaskVote {
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

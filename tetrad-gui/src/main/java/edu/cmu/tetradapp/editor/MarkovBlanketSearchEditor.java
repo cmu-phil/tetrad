@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestType;
@@ -143,7 +143,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
                 setErrorMessage(null);
 
                 if (!MarkovBlanketSearchEditor.this.knowledgeMessageShown) {
-                    IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+                    IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge());
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(),

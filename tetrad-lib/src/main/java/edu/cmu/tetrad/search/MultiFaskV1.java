@@ -3,7 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.Matrix;
@@ -40,7 +40,7 @@ public class MultiFaskV1 {
     private double alpha = 1e-6;
 
     // Knowledge the the search will obey, of forbidden and required edges.
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     // Cutoff for T tests for 2-cycle tests.
     private double cutoff;

@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +23,7 @@ import static java.util.Collections.sort;
 public class BossMB2 {
     private final List<Node> variables;
     private final Score score;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     private long start;
     private boolean verbose = true;
     private int depth = 4;
@@ -306,7 +306,7 @@ public class BossMB2 {
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public void setDepth(int depth) {

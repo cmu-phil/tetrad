@@ -10,7 +10,6 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.GFci;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -40,7 +39,7 @@ public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public GFCI() {
     }
@@ -137,7 +136,7 @@ public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
@@ -26,7 +26,7 @@ public class Boss {
     private final List<Node> variables;
     private final Score score;
     //    private IndependenceTest test;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     private final TeyssierScorer scorer;
     private long start;
     private boolean useScore = true;
@@ -405,7 +405,7 @@ public class Boss {
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public void setDepth(int depth) {

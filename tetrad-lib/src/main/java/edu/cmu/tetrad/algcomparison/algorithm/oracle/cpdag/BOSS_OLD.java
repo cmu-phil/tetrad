@@ -1,10 +1,8 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -13,7 +11,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -40,7 +37,7 @@ public class BOSS_OLD implements Algorithm, UsesScoreWrapper/*, TakesIndependenc
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
 //    private IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public BOSS_OLD() {
         // Used in reflection; do not delete.
@@ -154,7 +151,7 @@ public class BOSS_OLD implements Algorithm, UsesScoreWrapper/*, TakesIndependenc
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge.copy();
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
 //    @Override

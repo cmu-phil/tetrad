@@ -2468,7 +2468,7 @@ public final class TestGrasp {
         params.set(Params.DEPTH, 3);
         params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
-        params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
+        params.set(Params.DO_DISCRIMINATING_PATH_RULE, true, false);
         params.set(Params.POSSIBLE_DSEP_DONE, true);
 
         // Flags
@@ -2495,16 +2495,16 @@ public final class TestGrasp {
         ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
 
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score));
-        algorithms.add(new BOSS(score));
-        algorithms.add(new BOSS_OLD(score));
-        algorithms.add(new Fci(test));
-        algorithms.add(new FciMax(test));
-        algorithms.add(new Rfci(test));
-        algorithms.add(new GFCI(test, score));
-        algorithms.add(new BFCI(test, score));
-        algorithms.add(new BFCIFinalOrientationOnly(test, score));
-        algorithms.add(new BFCI2(test, score));
-        algorithms.add(new BFCITR(test, score));
+//        algorithms.add(new BOSS(score));
+//        algorithms.add(new BOSS_OLD(score));
+//        algorithms.add(new Fci(test));
+//        algorithms.add(new FciMax(test));
+//        algorithms.add(new Rfci(test));
+//        algorithms.add(new GFCI(test, score));
+//        algorithms.add(new BFCI(test, score));
+//        algorithms.add(new BFCIFinalOrientationOnly(test, score));
+//        algorithms.add(new BFCI2(test, score));
+//        algorithms.add(new BFCITR(test, score));
         algorithms.add(new BFCISwap(test, score));
 
         Simulations simulations = new Simulations();
@@ -2514,7 +2514,7 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.ALPHA));
         statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
-        statistics.add(new PagAdjacencyPrecision());
+//        statistics.add(new PagAdjacencyPrecision());
 //        statistics.add(new SemidirectedPrecision());
         statistics.add(new SemidirectedRecall());
         statistics.add(new NoSemidirectedPrecision());
@@ -2522,9 +2522,16 @@ public final class TestGrasp {
         statistics.add(new DefiniteDirectedPathPrecision());
         statistics.add(new PossiblyDirectedPathPrecision());
         statistics.add(new DefiniteDirectedPathRecall());
-        statistics.add(new NumDirectedEdgesImplyingAncestors());
-        statistics.add(new NumDirectedEdgesImplyingLatentCounfounders());
-        statistics.add(new NumDirectedEdgesNotImplyingAncesorsOrCounfounders());
+        statistics.add(new NumDirectedEdges());
+        statistics.add(new NumDirectedEdgeAncestors());
+        statistics.add(new NumDirectedEdgeReversed());
+        statistics.add(new NumVisibleAncestors());
+        statistics.add(new NumInvisibleAncestors());
+        statistics.add(new NumVisibleNonancestors());
+        statistics.add(new NumDirectedEdgeBna());
+        statistics.add(new ParameterColumn(Params.DO_DISCRIMINATING_PATH_RULE));
+        statistics.add(new NumDirectedEdgeBnaMeasuredCounfounded());
+        statistics.add(new NumDirectedEdgeBnaLatentCounfounded());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagRecallArrows());
         statistics.add(new ProportionDirectedPathsNotReversedEst());

@@ -78,7 +78,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      *
      * @serial Cannot be null.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     /**
      * The wrapped covariance matrix data.

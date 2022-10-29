@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -65,7 +65,7 @@ public class FasDci {
     /**
      * Specification of which edges are forbidden or required. NOTE: to be implemented later
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     /**
      * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
@@ -180,7 +180,7 @@ public class FasDci {
         }
 
         for (int d = 0; d <= _depth; d++) {
-            boolean more = searchAtDepth(this.graph, this.independenceTest, new Knowledge2(),
+            boolean more = searchAtDepth(this.graph, this.independenceTest, new Knowledge(),
                     sepset, d);
 
             if (!more) {

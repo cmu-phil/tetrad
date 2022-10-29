@@ -27,7 +27,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -310,7 +310,7 @@ public class Simulation extends DataWrapper implements
         if (this.simulation instanceof HasKnowledge) {
             return ((HasKnowledge) this.simulation).getKnowledge();
         } else {
-            return new Knowledge2();
+            return new Knowledge();
         }
     }
 

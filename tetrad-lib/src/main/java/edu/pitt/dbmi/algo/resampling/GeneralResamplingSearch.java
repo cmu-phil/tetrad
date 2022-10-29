@@ -41,7 +41,7 @@ public class GeneralResamplingSearch {
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     private PrintStream out = System.out;
 
@@ -106,9 +106,7 @@ public class GeneralResamplingSearch {
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
     public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null)
-            throw new NullPointerException();
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public void setExternalGraph(Graph externalGraph) {

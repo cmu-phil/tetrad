@@ -40,7 +40,7 @@ import java.util.List;
 public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public MultiFaskV1() {
 
@@ -156,6 +156,6 @@ public class MultiFaskV1 implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

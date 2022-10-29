@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +24,7 @@ import static java.lang.Math.min;
 public class LvBesJoe {
     private final List<Node> variables;
     private final Score score;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     private int depth = -1;
     private EdgeListGraph origGraph = null;
 
@@ -39,7 +39,7 @@ public class LvBesJoe {
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public void setDepth(int depth) {

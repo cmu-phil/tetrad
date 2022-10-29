@@ -41,7 +41,7 @@ public class FASK implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Graph externalGraph;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     private Algorithm algorithm;
 
     // Don't delete.
@@ -184,7 +184,7 @@ public class FASK implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

@@ -63,7 +63,7 @@ public final class SvarGFci implements GraphSearch {
     private Graph graph;
 
     // The background knowledge.
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     // The variables to search over (optional)
     private final List<Node> variables = new ArrayList<>();

@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 
 import java.util.Collections;
@@ -53,7 +53,7 @@ public final class FasLofs implements GraphSearch {
     private double penaltyDiscount = 1;
 
     // Knowledge the the search will obey, of forbidden and required edges.
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     /**
      * @param dataSet These datasets to analyze.
@@ -155,7 +155,7 @@ public final class FasLofs implements GraphSearch {
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }
 

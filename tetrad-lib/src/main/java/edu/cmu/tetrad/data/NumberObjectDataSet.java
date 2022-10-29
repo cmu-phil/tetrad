@@ -77,7 +77,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  * @see edu.cmu.tetrad.data.Variable
- * @see edu.cmu.tetrad.data.Knowledge2
+ * @see Knowledge
  */
 public final class NumberObjectDataSet
         implements DataSet {
@@ -125,7 +125,7 @@ public final class NumberObjectDataSet
      *
      * @serial
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     /**
      * The number formatter used for printing out continuous values.

@@ -21,7 +21,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -30,12 +30,9 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 import static edu.cmu.tetrad.graph.GraphUtils.removeNonSkeletonEdges;
 
 /**
@@ -133,7 +130,7 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
         /*
          * @serial @deprecated
          */
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
 
         for (Node v : input.getVariables()) {
             knowledge.addVariable(v.getName());
@@ -147,8 +144,8 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
         // simulation or not. If in a simulation, I should print the knowledge.
         // If not, I should wait for resetParams to be called. For now I'm
         // printing the knowledge if it's not empty.
-        if (!((IKnowledge) params.get("knowledge", new Knowledge2())).isEmpty()) {
-            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge2()).toString());
+        if (!((IKnowledge) params.get("knowledge", new Knowledge())).isEmpty()) {
+            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge()).toString());
         }
     }
 

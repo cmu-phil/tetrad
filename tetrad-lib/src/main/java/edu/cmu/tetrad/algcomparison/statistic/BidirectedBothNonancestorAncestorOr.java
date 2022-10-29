@@ -21,7 +21,7 @@ public class BidirectedBothNonancestorAncestorOr implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number of X<->Y where one or the other of X and Y is nonancestors of the other in the true graph";
+        return "Number of X<->Y for which both not X->...->Y and not Y->...->X";
     }
 
     @Override

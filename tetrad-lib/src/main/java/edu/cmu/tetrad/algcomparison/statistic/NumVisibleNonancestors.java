@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import static edu.cmu.tetrad.algcomparison.statistic.CommonAncestorBidirectedPrecision.existsCommonAncestor;
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 
 /**
@@ -13,17 +14,17 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  *
  * @author jdramsey
  */
-public class NumVisibleAncestors implements Statistic {
+public class NumVisibleNonancestors implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#X->Y-Anc-no-X<-L->Y";
+        return "#X->Y-VisNonanc";
     }
 
     @Override
     public String getDescription() {
-        return "Number of X-->Y for which X->...->Y and not X<-...<-L->...->Y in true";
+        return "Number X-->Y for which not X->...->Y and not X<-...<-L->...->Y in true";
     }
 
     @Override
@@ -35,7 +36,7 @@ public class NumVisibleAncestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.isAncestorOf(x, y) && !existsLatentCommonAncestor(trueGraph, edge)) {
+                if (!trueGraph.isAncestorOf(x, y) && !existsLatentCommonAncestor(trueGraph, edge)) {
                     tp++;
                 }
             }

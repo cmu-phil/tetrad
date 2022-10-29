@@ -31,7 +31,7 @@ import java.util.List;
 public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public Ftfc() {
     }
@@ -111,7 +111,7 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
 }

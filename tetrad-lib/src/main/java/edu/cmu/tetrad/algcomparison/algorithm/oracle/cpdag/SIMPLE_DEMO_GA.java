@@ -6,9 +6,6 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -37,7 +34,7 @@ public class SIMPLE_DEMO_GA implements Algorithm, UsesScoreWrapper, TakesIndepen
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public SIMPLE_DEMO_GA() {
         // Used in reflection; do not delete.
@@ -142,6 +139,6 @@ public class SIMPLE_DEMO_GA implements Algorithm, UsesScoreWrapper, TakesIndepen
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge.copy();
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

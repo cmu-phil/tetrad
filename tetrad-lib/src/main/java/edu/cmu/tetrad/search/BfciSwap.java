@@ -22,7 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -31,8 +31,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 
 /**
  * Does BOSS, followed by the swap rule, then final FCI orientation.
@@ -73,7 +71,7 @@ public final class BfciSwap implements GraphSearch {
     private boolean useDataOrder = true;
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     //============================CONSTRUCTORS============================//
     public BfciSwap(IndependenceTest test, Score score) {
@@ -106,10 +104,10 @@ public final class BfciSwap implements GraphSearch {
 
         scorer.score(pi);
 
-        IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
+        IKnowledge knowledge2 = new Knowledge((Knowledge) knowledge);
 //        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(G1), knowledge2);
 
-        Graph G2 = removeBySwapRule(G1, scorer);
+        Graph G2 = removeBySwapRule(G1, scorer, knowledge2);
 
         Graph G3 = new EdgeListGraph(G2);
 
@@ -168,7 +166,7 @@ public final class BfciSwap implements GraphSearch {
     }
 
 
-    private Graph removeBySwapRule(Graph graph, TeyssierScorer scorer) {
+    private Graph removeBySwapRule(Graph graph, TeyssierScorer scorer, IKnowledge knowledge) {
         graph = new EdgeListGraph(graph);
         List<Node> nodes = graph.getNodes();
 
@@ -363,7 +361,6 @@ public final class BfciSwap implements GraphSearch {
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) throw new NullPointerException("Knowledge was null");
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

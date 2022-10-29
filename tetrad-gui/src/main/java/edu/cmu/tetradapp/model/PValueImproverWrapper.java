@@ -202,7 +202,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
     public void execute() {
         DataModel dataModel = getDataModel();
 
-        IKnowledge knowledge = (IKnowledge) this.params2.get("knowledge", new Knowledge2());
+        IKnowledge knowledge = (IKnowledge) this.params2.get("knowledge", new Knowledge());
 
         if (this.externalGraph == null) {
             this.externalGraph = new EdgeListGraph(dataModel.getVariables());
@@ -268,7 +268,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
 
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge((IKnowledge) this.params.get("knowledge", new Knowledge2()));
+        rules.setKnowledge((IKnowledge) this.params.get("knowledge", new Knowledge()));
         return rules;
     }
 

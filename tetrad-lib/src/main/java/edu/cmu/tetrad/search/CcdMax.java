@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -39,7 +39,7 @@ public final class CcdMax implements GraphSearch {
     private int depth = -1;
     private boolean applyOrientAwayFromCollider;
     private long elapsed;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     private boolean useHeuristic = true;
     private int maxPathLength = 3;
     private boolean useOrientTowardDConnections = true;
@@ -384,7 +384,7 @@ public final class CcdMax implements GraphSearch {
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public void setUseHeuristic(boolean useHeuristic) {

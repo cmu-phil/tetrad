@@ -41,7 +41,7 @@ public class BFCISwap implements Algorithm, UsesScoreWrapper, TakesIndependenceW
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public BFCISwap() {
         // Used for reflection; do not delete.
@@ -143,7 +143,7 @@ public class BFCISwap implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

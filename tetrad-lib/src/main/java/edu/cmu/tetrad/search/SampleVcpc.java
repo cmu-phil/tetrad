@@ -51,7 +51,7 @@ public final class SampleVcpc implements GraphSearch {
     /**
      * Forbidden and required edges for the search.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     /**
      * The maximum number of nodes conditioned on in the search.

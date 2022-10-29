@@ -370,7 +370,7 @@ public class TimeSeriesUtils {
         List<Node> variables = data.getVariables();
         int dataSize = variables.size();
         int laggedRows = data.getNumRows() - numLags;
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
         Node[][] laggedNodes = new Node[numLags + 1][dataSize];
         List<Node> newVariables = new ArrayList<>((numLags + 1) * dataSize + 1);
 
@@ -555,7 +555,7 @@ public class TimeSeriesUtils {
         int numLags = 1; // need to fix this!
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
         int lag;
         for (Node node : variables) {
             String varName = node.getName();

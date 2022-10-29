@@ -22,7 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -50,7 +50,7 @@ public final class BFci2 implements GraphSearch {
     private Graph graph;
 
     // The background knowledge.
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     // The conditional independence test.
     private IndependenceTest independenceTest;
@@ -119,7 +119,7 @@ public final class BFci2 implements GraphSearch {
             ((MagSemBicScore) score).setMag(graph);
         }
 
-        IKnowledge knowledge2 = new Knowledge2((Knowledge2) knowledge);
+        IKnowledge knowledge2 = new Knowledge((Knowledge) knowledge);
         addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 //
         // Keep a copy of this CPDAG.
@@ -297,11 +297,7 @@ public final class BFci2 implements GraphSearch {
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException("Knowledge was null");
-        }
-
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     /**

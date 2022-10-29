@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -65,7 +65,7 @@ public final class TestKnowledge {
             varNames.add(node.getName());
         }
 
-        IKnowledge knowledge = new Knowledge2(varNames);
+        IKnowledge knowledge = new Knowledge(varNames);
 
         knowledge.addToTier(0, "X1.*1");
         knowledge.addToTier(0, "X2-1");
@@ -128,7 +128,7 @@ public final class TestKnowledge {
         List<String> names = new ArrayList<>();
         for (Node node : nodes) names.add(node.getName());
 
-        Knowledge2 knowledge = new Knowledge2(names);
+        Knowledge knowledge = new Knowledge(names);
 
         knowledge.addToTier(0, "X1*");
         knowledge.addToTier(1, "X2*");
@@ -150,7 +150,7 @@ public final class TestKnowledge {
             vars.add("X" + i);
         }
 
-        IKnowledge knowledge = new Knowledge2(vars);
+        IKnowledge knowledge = new Knowledge(vars);
 
         knowledge.setForbidden("X1*", "X2*");
         knowledge.setForbidden("X3*", "X4*");

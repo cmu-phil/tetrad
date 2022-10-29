@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
@@ -169,7 +169,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge());
 
 
         SampleVcpc svcpc = new SampleVcpc(getIndependenceTest());
@@ -256,7 +256,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     public ImpliedOrientation getMeekRules() {
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        meekRules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        meekRules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge()));
         return meekRules;
     }
 

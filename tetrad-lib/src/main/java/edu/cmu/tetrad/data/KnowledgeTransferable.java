@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * transfer of knowledge objects.
  *
  * @author Joseph Ramsey
- * @see Knowledge2
+ * @see Knowledge
  */
 public interface KnowledgeTransferable extends TetradSerializable {
     long serialVersionUID = 23L;

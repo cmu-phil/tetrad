@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +27,7 @@ public class TeyssierScorerOpt {
     private final Map<Node, Integer> orderHash;
     private ArrayList<Node> pi; // The current permutation.
     private ArrayList<Pair> scores = new ArrayList<>();
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     private ArrayList<Set<Node>> prefixes;
 
     public TeyssierScorerOpt(@NotNull Score score) {
@@ -49,7 +49,7 @@ public class TeyssierScorerOpt {
      * @param knowledge Knowledge of forbidden edges.
      */
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     /**

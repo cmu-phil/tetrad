@@ -22,7 +22,7 @@ package edu.cmu.tetrad.search;
 ///////////////////////////////////////////////////////////////////////////////
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
@@ -61,7 +61,7 @@ public class FasStableConcurrentFdr implements IFas {
     /**
      * Specification of which edges are forbidden or required.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     /**
      * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will

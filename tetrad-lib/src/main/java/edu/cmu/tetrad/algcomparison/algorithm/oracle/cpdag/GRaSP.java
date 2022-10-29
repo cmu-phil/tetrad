@@ -38,7 +38,7 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public GRaSP() {
         // Used in reflection; do not delete.
@@ -155,11 +155,11 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
     @Override
     public IKnowledge getKnowledge() {
-        return this.knowledge.copy();
+        return new Knowledge((Knowledge) knowledge);
     }
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge.copy();
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

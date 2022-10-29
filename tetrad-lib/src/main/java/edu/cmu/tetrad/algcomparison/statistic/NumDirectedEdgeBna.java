@@ -6,24 +6,22 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
-
 /**
  * The bidirected true positives.
  *
  * @author jdramsey
  */
-public class NumDirectedEdgesNotImplyingAncesorsOrCounfounders implements Statistic {
+public class NumDirectedEdgeBna implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#DENANC";
+        return "#X->Y-BNA";
     }
 
     @Override
     public String getDescription() {
-        return "Number X-->Y for which not X->...->Y and not X<-...<-L->...->Y in true";
+            return "Number X-->Y for which for which both not X->...->Y and not Y->...->X in true (should be Xo->Y)";
     }
 
     @Override
@@ -35,7 +33,7 @@ public class NumDirectedEdgesNotImplyingAncesorsOrCounfounders implements Statis
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (!trueGraph.isAncestorOf(x, y) && !existsLatentCommonAncestor(trueGraph, edge)) {
+                if (!trueGraph.isAncestorOf(x, y) && !trueGraph.isAncestorOf(y, x)) {
                     tp++;
                 }
             }

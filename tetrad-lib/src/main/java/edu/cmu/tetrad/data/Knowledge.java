@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
  * @author Joseph Ramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
-public final class Knowledge2 implements IKnowledge {
+public final class Knowledge implements IKnowledge {
 
     private static final long serialVersionUID = 23L;
 
@@ -68,7 +68,7 @@ public final class Knowledge2 implements IKnowledge {
     private final Map<KnowledgeGroup, OrderedPair<Set<String>>> knowledgeGroupRules;
     private boolean defaultToKnowledgeLayout;
 
-    public Knowledge2() {
+    public Knowledge() {
         this.variables = new HashSet<>();
         this.forbiddenRulesSpecs = new ArrayList<>();
         this.requiredRulesSpecs = new ArrayList<>();
@@ -77,7 +77,7 @@ public final class Knowledge2 implements IKnowledge {
         this.knowledgeGroupRules = new HashMap<>();
     }
 
-    public Knowledge2(Collection<String> nodes) {
+    public Knowledge(Collection<String> nodes) {
         this();
 
         nodes.forEach(node -> {
@@ -89,9 +89,13 @@ public final class Knowledge2 implements IKnowledge {
         });
     }
 
-    public Knowledge2(Knowledge2 knowledge) {
+    public Knowledge(Knowledge knowledge) {
+        if (knowledge == null) {
+            throw new IllegalArgumentException("Knowledge is null.");
+        }
+
         try {
-            Knowledge2 copy = new MarshalledObject<>(knowledge).get();
+            Knowledge copy = new MarshalledObject<>(knowledge).get();
 
             this.defaultToKnowledgeLayout = copy.defaultToKnowledgeLayout;
             this.variables = copy.variables;
@@ -108,16 +112,16 @@ public final class Knowledge2 implements IKnowledge {
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
-    public static Knowledge2 serializableInstance() {
-        return new Knowledge2();
+    public static Knowledge serializableInstance() {
+        return new Knowledge();
     }
 
     private boolean checkVarName(String name) {
-        return Knowledge2.VARNAME_PATTERN.matcher(name).matches();
+        return Knowledge.VARNAME_PATTERN.matcher(name).matches();
     }
 
     private String checkSpec(String spec) {
-        Matcher matcher = Knowledge2.SPEC_PATTERN.matcher(spec);
+        Matcher matcher = Knowledge.SPEC_PATTERN.matcher(spec);
         if (!matcher.matches()) {
             throw new IllegalArgumentException(spec + ": Cpdag names can consist of alphabetic "
                     + "characters plus :, _, -, and .. A wildcard '*' may be included to match a "
@@ -149,7 +153,7 @@ public final class Knowledge2 implements IKnowledge {
     }
 
     private Set<String> split(String spec) {
-        return Arrays.stream(Knowledge2.COMMAN_DELIM.split(spec))
+        return Arrays.stream(Knowledge.COMMAN_DELIM.split(spec))
                 .map(String::trim)
                 .filter(e -> !e.isEmpty())
                 .collect(Collectors.toSet());
@@ -676,7 +680,7 @@ public final class Knowledge2 implements IKnowledge {
      */
     @Override
     public IKnowledge copy() {
-        return new Knowledge2(this);
+        return new Knowledge(this);
     }
 
     /**
@@ -803,10 +807,10 @@ public final class Knowledge2 implements IKnowledge {
      */
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Knowledge2)) {
+        if (!(o instanceof Knowledge)) {
             return false;
         }
-        Knowledge2 that = (Knowledge2) o;
+        Knowledge that = (Knowledge) o;
 
         return this.forbiddenRulesSpecs.equals(that.forbiddenRulesSpecs)
                 && this.requiredRulesSpecs.equals(that.requiredRulesSpecs)

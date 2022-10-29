@@ -62,7 +62,7 @@ public class Mimbuild {
     /**
      * Background knowledge for CPC.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     /**
      * The estimated covariance matrix over the latents.

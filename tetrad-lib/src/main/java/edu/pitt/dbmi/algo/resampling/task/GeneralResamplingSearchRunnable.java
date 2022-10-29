@@ -6,7 +6,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch;
@@ -38,7 +38,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     private PrintStream out = System.out;
     private ScoreWrapper scoreWrapper;
@@ -85,9 +85,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
     public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null)
-            throw new NullPointerException();
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public Graph getExternalGraph() {

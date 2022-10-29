@@ -584,7 +584,7 @@ public class Comparison2 {
         int numLags; // need to fix this!
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
         int lag;
         for (Node node : variables) {
             String varName = node.getName();

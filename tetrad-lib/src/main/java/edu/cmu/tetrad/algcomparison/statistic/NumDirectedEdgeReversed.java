@@ -1,26 +1,27 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
-
-import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
 /**
  * The bidirected true positives.
  *
  * @author jdramsey
  */
-public class NumDirectedEdgesImplyingLatentCounfounders implements Statistic {
+public class NumDirectedEdgeReversed implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#DELC";
+        return "#X->Y-Rev";
     }
 
     @Override
     public String getDescription() {
-        return "Number X-->Y for which X<-...<-L->...->Y in true";
+        return "Number X-->Y for which Y->...->X in true";
     }
 
     @Override
@@ -29,7 +30,10 @@ public class NumDirectedEdgesImplyingLatentCounfounders implements Statistic {
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isDirectedEdge(edge)) {
-                if (existsLatentCommonAncestor(trueGraph, edge)) {
+                Node x = Edges.getDirectedEdgeTail(edge);
+                Node y = Edges.getDirectedEdgeHead(edge);
+
+                if (trueGraph.isAncestorOf(y, x)) {
                     tp++;
                 }
             }

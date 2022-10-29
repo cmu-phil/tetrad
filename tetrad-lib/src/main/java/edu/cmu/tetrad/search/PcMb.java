@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -91,7 +91,7 @@ public final class PcMb implements MbSearch, GraphSearch {
     /**
      * Knowledge.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     /**
      * Set of unshielded colliders from the triple orientation step.
@@ -517,7 +517,7 @@ public final class PcMb implements MbSearch, GraphSearch {
      * @param knowledge See the Knowledge class.
      */
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public Graph getGraph() {

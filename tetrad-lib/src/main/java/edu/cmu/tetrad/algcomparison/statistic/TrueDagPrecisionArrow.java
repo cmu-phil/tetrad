@@ -37,8 +37,8 @@ public class TrueDagPrecisionArrow implements Statistic {
 
                 Edge e = estGraph.getEdge(x, y);
 
-                if (e != null && e.getProximalEndpoint(y) == Endpoint.ARROW) {
-                    if (trueGraph.isAncestorOf(x, y)) {
+                if (Edges.directedEdge(x, y).equals(e)) {
+                    if (!trueGraph.isAncestorOf(y, x)) {
                         tp++;
                     } else {
                         fp++;

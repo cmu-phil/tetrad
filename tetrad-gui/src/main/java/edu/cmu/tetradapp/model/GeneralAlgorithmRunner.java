@@ -223,7 +223,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         if (knowledgeBoxModel != null) {
             this.knowledge = knowledgeBoxModel.getKnowledge();
         } else {
-            this.knowledge = new Knowledge2();
+            this.knowledge = new Knowledge();
         }
 
         if (facts != null) {

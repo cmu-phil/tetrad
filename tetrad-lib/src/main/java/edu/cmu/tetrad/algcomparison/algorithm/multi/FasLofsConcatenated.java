@@ -30,7 +30,7 @@ import java.util.List;
 public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private final Lofs2.Rule rule;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public FasLofsConcatenated(Lofs2.Rule rule) {
         this.rule = rule;
@@ -142,6 +142,6 @@ public class FasLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge 
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

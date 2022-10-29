@@ -5,7 +5,6 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -33,7 +32,7 @@ import java.util.List;
 public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public Fofc() {
     }
@@ -76,7 +75,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
                 Mimbuild mimbuild = new Mimbuild();
                 mimbuild.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-                mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge2()));
+                mimbuild.setKnowledge((IKnowledge) parameters.get("knowledge", new Knowledge()));
 
                 if (parameters.getBoolean("includeThreeClusters", true)) {
                     mimbuild.setMinClusterSize(3);
@@ -154,6 +153,6 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

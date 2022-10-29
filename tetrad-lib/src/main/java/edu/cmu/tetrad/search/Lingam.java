@@ -140,7 +140,7 @@ public class Lingam {
         score.setPenaltyDiscount(this.penaltyDiscount);
         Fges fges = new Fges(score);
 
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
         List<Node> variables = data.getVariables();
 
         for (int i = 0; i < variables.size(); i++) {

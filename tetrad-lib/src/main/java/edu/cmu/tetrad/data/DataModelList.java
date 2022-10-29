@@ -66,7 +66,7 @@ public final class DataModelList extends AbstractList<DataModel>
      *
      * @serial
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     //===========================CONSTRUCTORS============================//
     public DataModelList() {

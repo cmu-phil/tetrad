@@ -30,7 +30,7 @@ import java.util.List;
 @Bootstrapping
 public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public ImagesPcStableMax() {
     }
@@ -145,6 +145,6 @@ public class ImagesPcStableMax implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

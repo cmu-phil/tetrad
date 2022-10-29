@@ -30,7 +30,7 @@ public class CcdMax implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private final IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public CcdMax(IndependenceWrapper test) {
         this.test = test;
@@ -102,6 +102,6 @@ public class CcdMax implements Algorithm, HasKnowledge {
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

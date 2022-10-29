@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphConverter;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -65,7 +65,7 @@ public class TestPcd {
      */
 //    @Test
     public void testSearch3() {
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         checkWithKnowledge(

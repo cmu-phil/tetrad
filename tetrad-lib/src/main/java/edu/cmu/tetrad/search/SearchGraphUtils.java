@@ -957,7 +957,7 @@ public final class SearchGraphUtils {
             cpdag = GraphUtils.removeBidirectedOrientations(cpdag);
         }
 
-        return SearchGraphUtils.getDagsInCpdagMeek(cpdag, new Knowledge2());
+        return SearchGraphUtils.getDagsInCpdagMeek(cpdag, new Knowledge());
     }
 
     public static List<Graph> getDagsInCpdagMeek(Graph cpdag, IKnowledge knowledge) {

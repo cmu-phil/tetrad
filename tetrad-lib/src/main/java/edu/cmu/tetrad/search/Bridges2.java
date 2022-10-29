@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 
 import java.io.PrintStream;
@@ -55,7 +55,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     /**
      * List of variables in the data set, in order.
      */
@@ -170,10 +170,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
      *                  edges.
      */
     public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     /**

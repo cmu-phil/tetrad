@@ -22,7 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -58,7 +58,7 @@ public final class SpFci implements GraphSearch {
     int sampleSize;
 
     // The background knowledge.
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     // The test used if Pearl's method is used ot build DAGs
     private IndependenceTest test;

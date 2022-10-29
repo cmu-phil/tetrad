@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
@@ -56,7 +56,7 @@ public final class FciOrient {
      */
     private final SepsetProducer sepsets;
 
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     private boolean changeFlag = true;
 
@@ -142,7 +142,7 @@ public final class FciOrient {
             throw new NullPointerException();
         }
 
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     /**
@@ -1097,7 +1097,7 @@ public final class FciOrient {
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
      * <p>
-     * R10: If Ao->C, B-->C&lt;--D, there is an uncovered p.d. path u1=<A,M,...,B>
+     * R10: If Ao->C, B-->C<--D, there is an uncovered p.d. path u1=<A,M,...,B>
      * and an uncovered p.d. path u2=
      * <A,N,...,D> with M != N and M,N nonadjacent then A-->C.
      *

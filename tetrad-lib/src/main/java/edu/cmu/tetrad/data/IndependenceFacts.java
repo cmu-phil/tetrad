@@ -41,7 +41,7 @@ public class IndependenceFacts implements DataModel {
 
     private Set<IndependenceFact> unsortedFacts = new LinkedHashSet<>();
     private String name = "";
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     public IndependenceFacts() {
         // blank, used in reflection so don't delete.

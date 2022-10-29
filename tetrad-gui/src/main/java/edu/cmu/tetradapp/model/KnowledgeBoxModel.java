@@ -21,7 +21,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.data.KnowledgeTransferable;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -45,13 +45,13 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
     private final Graph sourceGraph = new EdgeListGraph();
     private String name;
     private Parameters params;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     private List<Node> variables = new ArrayList<>();
     private List<String> variableNames = new ArrayList<>();
     private int numTiers = 3;
 
     public KnowledgeBoxModel(Parameters params) {
-        this.knowledge = new Knowledge2();
+        this.knowledge = new Knowledge();
         this.numTiers = 3;
         this.variables = new ArrayList<>();
         this.params = params;
@@ -107,7 +107,7 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
                 .equals(new HashSet<>(variableNames))) {
             this.knowledge = (IKnowledge) myKnowledge;
         } else {
-            this.knowledge = new Knowledge2();
+            this.knowledge = new Knowledge();
 
             for (String var : variableNames) {
                 this.knowledge.addVariable(var);

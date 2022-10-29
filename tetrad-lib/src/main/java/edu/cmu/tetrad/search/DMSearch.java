@@ -2,7 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -119,7 +119,7 @@ public class DMSearch {
 
 
 
-        Knowledge2 knowledge = new Knowledge2(data.getVariableNames());
+        Knowledge knowledge = new Knowledge(data.getVariableNames());
 
         //Forbids edges from outputs to inputs.
         for (int i : getInputs()) {
@@ -590,7 +590,7 @@ public class DMSearch {
     }
 
     // Uses previous runs of GES as new knowledge for a additional runs of GES with lower penalty discounts.
-    private Graph recursiveGES(Graph previousGES, Knowledge2 knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString){
+    private Graph recursiveGES(Graph previousGES, Knowledge knowledge, double penalty, double minPenalty, DataSet data, Set<String> inputString){
 
         for(Edge edge:previousGES.getEdges()){
             knowledge.setRequired(edge.getNode1().getName(), edge.getNode2().getName());

@@ -63,7 +63,7 @@ public class Lofs2 {
 
     private Lofs.Score score = Lofs.Score.andersonDarling;
     private double epsilon = 1.0;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     private Rule rule = Rule.R1;
     private double selfLoopStrength;
 

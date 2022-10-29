@@ -1573,13 +1573,13 @@ public final class DataUtils {
      * </pre>
      */
     public static IKnowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
 
         String line = lineizer.nextLine();
         String firstLine = line;
 
         if (line == null) {
-            return new Knowledge2();
+            return new Knowledge();
         }
 
         if (line.startsWith("/knowledge")) {

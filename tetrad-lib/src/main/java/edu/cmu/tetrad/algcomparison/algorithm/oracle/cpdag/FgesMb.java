@@ -36,7 +36,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     private String targetName;
 
     public FgesMb() {
@@ -111,7 +111,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

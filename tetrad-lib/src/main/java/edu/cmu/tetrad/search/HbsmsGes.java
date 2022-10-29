@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.DagScorer;
 import edu.cmu.tetrad.sem.Scorer;
@@ -43,7 +43,7 @@ import java.util.*;
  */
 
 public final class HbsmsGes implements Hbsms {
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
     private final Graph graph;
     private double alpha = 0.05;
     private final NumberFormat nf = new DecimalFormat("0.0#########");
@@ -618,7 +618,7 @@ public final class HbsmsGes implements Hbsms {
     }
 
     public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public double getAlpha() {

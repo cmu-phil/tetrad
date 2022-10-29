@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -117,7 +117,7 @@ public class PcRunner extends AbstractAlgorithmRunner
     public ImpliedOrientation getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
-        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge2()));
+        rules.setKnowledge((IKnowledge) getParams().get("knowledge", new Knowledge()));
         return rules;
     }
 
@@ -129,7 +129,7 @@ public class PcRunner extends AbstractAlgorithmRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     public void execute() {
-        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge2());
+        IKnowledge knowledge = (IKnowledge) getParams().get("knowledge", new Knowledge());
         int depth = getParams().getInt("depth", -1);
         Graph graph;
         Pc pc = new Pc(getIndependenceTest());

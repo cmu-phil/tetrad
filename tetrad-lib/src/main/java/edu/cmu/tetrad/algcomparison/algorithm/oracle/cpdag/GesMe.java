@@ -117,7 +117,7 @@ public class GesMe implements Algorithm {
                 leaves.add(nodes.get(indices.get(i)));
             }
 
-            IKnowledge knowledge2 = new Knowledge2();
+            IKnowledge knowledge2 = new Knowledge();
 
             for (Node v : nodes) {
                 if (leaves.contains(v)) {

@@ -94,7 +94,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      *
      * @serial Cannot be null.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private IKnowledge knowledge = new Knowledge();
 
     private double[][] vectors = null;
 

@@ -73,7 +73,7 @@ public class TestPcStableMax {
      */
     @Test
     public void testSearch4() {
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
@@ -99,7 +99,7 @@ public class TestPcStableMax {
         ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
                 '\"', "*");
 
-        IKnowledge knowledge = new Knowledge2();
+        IKnowledge knowledge = new Knowledge();
 
         knowledge.addToTier(1, "ABILITY");
         knowledge.addToTier(2, "GPQ");
