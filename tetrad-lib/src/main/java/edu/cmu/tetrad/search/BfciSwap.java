@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
+
 /**
  * Does BOSS, followed by the swap rule, then final FCI orientation.
  *
@@ -104,9 +106,14 @@ public final class BfciSwap implements GraphSearch {
         scorer.score(pi);
 
         Knowledge knowledge2 = new Knowledge(knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(G1), knowledge2);
+        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(G1), knowledge2);
 
-        retainUnshieldedColliders(G1, knowledge2);
+        for (Edge edge : G1.getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
+            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
+        }
+
+//        retainUnshieldedColliders(G1, knowledge2);
 
         Graph G2 = removeBySwapRule(G1, scorer, knowledge2);
 

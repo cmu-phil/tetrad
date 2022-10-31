@@ -106,15 +106,20 @@ public final class BfciTr implements GraphSearch {
         assert variables != null;
 
         boss.bestOrder(variables);
-        Graph graph = boss.getGraph(false);
+        Graph graph = boss.getGraph(true);
 
-        if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
-            ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
+        for (Edge edge : graph.getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
+            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
         }
+
+//        if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
+//            ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
+//        }
 
         test = new IndTestScore(score);
 
-        knowledge = new Knowledge((Knowledge) knowledge);
+        knowledge = new Knowledge(knowledge);
         addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
 
         // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
@@ -125,7 +130,7 @@ public final class BfciTr implements GraphSearch {
 //        }
 
         // Retain only the unshielded colliders.
-        retainUnshieldedColliders(graph);
+//        retainUnshieldedColliders(graph);
 
         // Do final FCI orientation rules app
         SepsetProducer sepsets = new SepsetsGreedy(graph, test, null, depth);

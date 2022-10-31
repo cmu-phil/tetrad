@@ -11,17 +11,17 @@ import edu.cmu.tetrad.graph.Node;
  *
  * @author jdramsey
  */
-public class CommonAncestorBidirectedPrecision implements Statistic {
+public class CommonMeasuredAncestorBidirectedPrecision implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "CABP";
+        return "#X<->Y=>X<-M->Y";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of X<->Y in estimated graph where some Z is ancestor of X and Y in true DAG";
+        return "# X<->Y where X<-...<-M->...->Y in true";
     }
 
     @Override
@@ -39,7 +39,7 @@ public class CommonAncestorBidirectedPrecision implements Statistic {
             }
         }
 
-        return tp / (double) (tp + fp);
+        return tp;
     }
 
     @Override

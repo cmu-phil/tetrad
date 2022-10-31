@@ -20,12 +20,12 @@ public class LatentCommonAncestorRecallBidirected implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "LCABR";
+        return "#X<-M->Y,adj(X,Y)=>X<->Y";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of X<-...<-Z->...->Y with latent Z for X*-*Y in estimated that are marked as bidirected";
+        return "# of X<-...<-Z->...->Y with latent Z for X*-*Y in estimated that are marked as bidirected";
     }
 
     @Override
@@ -39,14 +39,9 @@ public class LatentCommonAncestorRecallBidirected implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (existsLatentCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))) {
+                if (existsLatentCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))
+                        && !existsLatentCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))) {
                     Edge edge2 = estGraph.getEdge(x, y);
-
-//                    if (edge2 != null && Edges.isBidirectedEdge(edge2)) {
-//                        tp++;
-//                    } else {
-//                        fn++;
-//                    }
 
                     if (edge2 != null) {
                         if (Edges.isBidirectedEdge(edge2)) {
@@ -59,7 +54,7 @@ public class LatentCommonAncestorRecallBidirected implements Statistic {
             }
         }
 
-        return tp / (double) (tp + fn);
+        return tp;
     }
 
     @Override

@@ -16,7 +16,7 @@ public class TrueDagPrecisionArrow implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "DAHP";
+        return "X*->Y-Prec";
     }
 
     @Override

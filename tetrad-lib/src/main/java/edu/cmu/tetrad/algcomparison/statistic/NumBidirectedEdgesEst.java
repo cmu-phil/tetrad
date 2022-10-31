@@ -16,7 +16,7 @@ public class NumBidirectedEdgesEst implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "BE";
+        return "#<->";
     }
 
     @Override

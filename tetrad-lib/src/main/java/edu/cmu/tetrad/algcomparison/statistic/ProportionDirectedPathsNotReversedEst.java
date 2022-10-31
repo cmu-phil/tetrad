@@ -16,12 +16,12 @@ public class ProportionDirectedPathsNotReversedEst implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "NRET";
+        return "semi(X,Y,est)=>!semi(Y,X,true)";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of X->..->Y in estimated graph for which there is no Y->...->X in true graph";
+        return "Proportion of semidirected(X, Y) in estimated graph for which there is no semidirected(Y, X) in true graph";
     }
 
     @Override
@@ -34,8 +34,8 @@ public class ProportionDirectedPathsNotReversedEst implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (estGraph.isAncestorOf(x, y)) {
-                    if (!trueGraph.isAncestorOf(y, x)) {
+                if (estGraph.existsSemiDirectedPathFromTo(x, y)) {
+                    if (!trueGraph.existsSemiDirectedPathFromTo(y, x)) {
                         tp++;
                     } else {
                         fp++;

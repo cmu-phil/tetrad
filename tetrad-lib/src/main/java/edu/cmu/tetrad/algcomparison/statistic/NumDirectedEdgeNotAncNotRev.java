@@ -11,12 +11,12 @@ import edu.cmu.tetrad.graph.Node;
  *
  * @author jdramsey
  */
-public class NumDirectedEdgeBna implements Statistic {
+public class NumDirectedEdgeNotAncNotRev implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#X->Y-BNA";
+        return "#X->Y=>!Anc!Rev";
     }
 
     @Override

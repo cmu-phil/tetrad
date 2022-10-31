@@ -18,7 +18,7 @@ public class TrueDagPrecisionTails implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "DTP";
+        return "--*-Prec";
     }
 
     @Override

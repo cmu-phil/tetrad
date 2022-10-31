@@ -131,6 +131,9 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      * @return true iff there is a semi-directed path from node1 to something in
      * nodes2 in the graph
      */
+    default boolean existsSemiDirectedPathFromTo(Node node1, Node node2) {
+        return existsSemiDirectedPathFromTo(node1, Collections.singleton(node2));
+    }
     boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes);
 
     /**

@@ -16,7 +16,7 @@ public class NumDirectedPathsTrue implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "#DPT";
+        return "#X~~>Y(True)";
     }
 
     @Override

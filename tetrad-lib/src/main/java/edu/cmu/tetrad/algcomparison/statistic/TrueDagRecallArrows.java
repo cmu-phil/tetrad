@@ -15,7 +15,7 @@ public class TrueDagRecallArrows implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "DAHR";
+        return "X*->Y-Rec";
     }
 
     @Override

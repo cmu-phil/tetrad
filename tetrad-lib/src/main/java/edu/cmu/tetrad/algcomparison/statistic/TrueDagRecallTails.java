@@ -18,7 +18,7 @@ public class TrueDagRecallTails implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "DTR";
+        return "--*-Rec";
     }
 
     @Override

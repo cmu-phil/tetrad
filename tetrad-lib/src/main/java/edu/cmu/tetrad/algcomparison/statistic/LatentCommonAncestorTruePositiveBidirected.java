@@ -17,7 +17,7 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "LCATPB";
+        return "#X<->Y=>X<-L->Y";
     }
 
     @Override
@@ -41,6 +41,7 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
     public static boolean existsLatentCommonAncestor(Graph trueGraph, Edge edge) {
         for (Node c : trueGraph.getNodes()) {
             if (c.getNodeType() == NodeType.LATENT) {
+                if (c == edge.getNode1() || c == edge.getNode2()) continue;
                 if (trueGraph.isAncestorOf(c, edge.getNode1())
                         && trueGraph.isAncestorOf(c, edge.getNode2())) {
                     return true;

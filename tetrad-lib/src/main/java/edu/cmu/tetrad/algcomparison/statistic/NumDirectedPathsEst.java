@@ -16,7 +16,7 @@ public class NumDirectedPathsEst implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "#DPE";
+        return "#X~~>Y(Est)";
     }
 
     @Override

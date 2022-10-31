@@ -15,12 +15,12 @@ public class LatentCommonAncestorBidirectedPrecision implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "LCABP";
+        return "#X<->Y=>X<-L->Y";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of X<->Y in estimated where some latent L is ancestor to X and to Y in true";
+        return "# X<->Y in estimated where X<-...<-L->...->Y in true";
     }
 
     @Override
@@ -38,7 +38,7 @@ public class LatentCommonAncestorBidirectedPrecision implements Statistic {
             }
         }
 
-        return tp / (double) (tp + fp);
+        return tp;
     }
 
 

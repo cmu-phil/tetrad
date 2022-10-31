@@ -4,7 +4,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
-import static edu.cmu.tetrad.algcomparison.statistic.CommonAncestorBidirectedPrecision.existsCommonAncestor;
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 

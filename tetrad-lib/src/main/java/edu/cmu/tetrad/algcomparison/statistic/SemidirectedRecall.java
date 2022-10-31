@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,17 +18,19 @@ public class SemidirectedRecall implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "SemiR";
+        return "semidirected(X,Y)-Rec";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of exists semidirected(X, Y) in true for which exists semidirected(X, Y) in est";
+        return "Proportion of exists semidirected(X, Y) in true cpdag for which exists semidirected(X, Y) in est";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0, fn = 0;
+
+        Graph cpdag = SearchGraphUtils.cpdagForDag(trueGraph);
 
         List<Node> nodes = trueGraph.getNodes();
 
@@ -35,7 +38,7 @@ public class SemidirectedRecall implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
+                if (cpdag.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
                     if (estGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
                         tp++;
                     } else {

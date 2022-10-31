@@ -16,7 +16,7 @@ public class BidirectedEst implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "BE";
+        return "#X<->Y";
     }
 
     @Override

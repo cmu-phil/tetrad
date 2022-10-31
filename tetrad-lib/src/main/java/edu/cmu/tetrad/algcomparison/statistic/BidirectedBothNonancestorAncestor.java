@@ -16,7 +16,7 @@ public class BidirectedBothNonancestorAncestor implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "BBNA";
+        return "#<->=>!Anc!Rev";
     }
 
     @Override
