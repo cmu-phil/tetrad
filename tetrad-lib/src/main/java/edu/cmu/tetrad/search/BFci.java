@@ -88,6 +88,7 @@ public final class BFci implements GraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
+    private Boss.AlgType bossType = Boss.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BFci(IndependenceTest test, Score score) {
@@ -112,7 +113,7 @@ public final class BFci implements GraphSearch {
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss alg = new Boss(scorer);
-        alg.setAlgType(Boss.AlgType.BOSS_OLD);
+        alg.setAlgType(bossType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
@@ -429,4 +430,7 @@ public final class BFci implements GraphSearch {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
+    public void setAlgType(Boss.AlgType type) {
+        this.bossType = type;
+    }
 }

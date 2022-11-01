@@ -2956,7 +2956,7 @@ public final class GraphUtils {
     }
 
     public static boolean existsDirectedPathFromTo(Node node1, Node node2, Graph graph) {
-        return GraphUtils.existsDirectedPathVisit(node1, node2, new LinkedList<>(), -1, graph);
+        return node1 == node2 || GraphUtils.existsDirectedPathVisit(node1, node2, new LinkedList<>(), -1, graph);
     }
 
     public static boolean existsDirectedPathFromTo(Node node1, Node node2, int depth, Graph graph) {
@@ -4018,6 +4018,8 @@ public final class GraphUtils {
 
     // Breadth first.
     private static boolean isDConnectedTo1(Node x, Node y, List<Node> z, Graph graph) {
+        Set<NodePair> ancestorCache = new HashSet<>();
+
         class EdgeNode {
 
             private final Edge edge;
@@ -4070,7 +4072,7 @@ public final class GraphUtils {
                     continue;
                 }
 
-                if (GraphUtils.reachable(edge1, edge2, a, z, graph)) {
+                if (GraphUtils.reachable(edge1, edge2, a, z, graph, ancestorCache)) {
                     if (c == y) {
                         return true;
                     }
@@ -4139,6 +4141,7 @@ public final class GraphUtils {
     }
 
     public static Set<Node> getDconnectedVars(Node y, List<Node> z, Graph graph) {
+        Set<NodePair> ancestorCache = new HashSet<>();
         Set<Node> Y = new HashSet<>();
 
         class EdgeNode {
@@ -4187,7 +4190,7 @@ public final class GraphUtils {
                     continue;
                 }
 
-                if (GraphUtils.reachable(edge1, edge2, a, z, graph)) {
+                if (GraphUtils.reachable(edge1, edge2, a, z, graph, ancestorCache)) {
                     EdgeNode u = new EdgeNode(edge2, b);
 
                     if (!V.contains(u)) {
@@ -4502,7 +4505,7 @@ public final class GraphUtils {
         return collider && ancestor;
     }
 
-    private static boolean reachable(Edge e1, Edge e2, Node a, List<Node> z, Graph graph) {
+    private static boolean reachable(Edge e1, Edge e2, Node a, List<Node> z, Graph graph, Set<NodePair> ancestorCache) {
         Node b = e1.getDistalNode(a);
         Node c = e2.getDistalNode(b);
 
@@ -4512,7 +4515,7 @@ public final class GraphUtils {
             return true;
         }
 
-        boolean ancestor = GraphUtils.isAncestor(b, z, graph);
+        boolean ancestor = GraphUtils.isAncestor(b, z, graph, ancestorCache);
         return collider && ancestor;
     }
 
@@ -4534,34 +4537,53 @@ public final class GraphUtils {
         return colliderReachable;
     }
 
-    private static boolean isAncestor(Node b, List<Node> z, Graph graph) {
-        if (z.contains(b)) {
-            return true;
-        }
-
-        Queue<Node> Q = new ArrayDeque<>();
-        Set<Node> V = new HashSet<>();
-
-        for (Node node : z) {
-            Q.offer(node);
-            V.add(node);
-        }
-
-        while (!Q.isEmpty()) {
-            Node t = Q.poll();
-            if (t == b) {
+    private static boolean isAncestor(Node b, List<Node> z, Graph graph, Set<NodePair> ancestorCache) {
+        for (Node _z : z) {
+            if (ancestorCache.contains(new NodePair(b, _z))) return true;
+            if (graph.isAncestorOf(b, _z)) {
+                ancestorCache.add(new NodePair(b, _z));
                 return true;
-            }
-
-            for (Node c : graph.getParents(t)) {
-                if (!V.contains(c)) {
-                    Q.offer(c);
-                    V.add(c);
-                }
             }
         }
 
         return false;
+    }
+
+    private static boolean isAncestor(Node b, List<Node> z, Graph graph) {
+        for (Node _z : z) {
+            if (graph.isAncestorOf(b, _z)) return true;
+        }
+
+        return false;
+
+
+//        if (z.contains(b)) {
+//            return true;
+//        }
+//
+//        Queue<Node> Q = new ArrayDeque<>();
+//        Set<Node> V = new HashSet<>();
+//
+//        for (Node node : z) {
+//            Q.offer(node);
+//            V.add(node);
+//        }
+//
+//        while (!Q.isEmpty()) {
+//            Node t = Q.poll();
+//            if (t == b) {
+//                return true;
+//            }
+//
+//            for (Node c : graph.getParents(t)) {
+//                if (!V.contains(c)) {
+//                    Q.offer(c);
+//                    V.add(c);
+//                }
+//            }
+//        }
+//
+//        return false;
 
     }
 

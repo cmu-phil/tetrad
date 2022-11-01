@@ -414,8 +414,8 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     boolean isUndirectedFromTo(Node node1, Node node2);
 
     /**
-     * A directed edge A-&gt;B is definitely visible if there is a node C not
-     * adjacent to B such that C*-&gt;A is in the PAG_of_the_true_DAG. Added by ekorber,
+     * A directed edge A-->B is definitely visible if there is a node C not
+     * adjacent to B such that C*->A is in the PAG_of_the_true_DAG. Added by ekorber,
      * 2004/06/11.
      *
      * @return true if the given edge is definitely visible (Jiji, pg 25)

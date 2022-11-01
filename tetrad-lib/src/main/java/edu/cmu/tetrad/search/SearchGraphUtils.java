@@ -35,6 +35,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Math.max;
+import static java.util.Collections.shuffle;
 import static java.util.Collections.sort;
 
 /**
@@ -708,21 +709,36 @@ public final class SearchGraphUtils {
             fciOrient.doFinalOrientation(graph);
         }
 
+        for (Edge edge : graph.getEdges()) {
+            edge.getProperties().clear();
+        }
+
+        GraphUtils.addPagColoring(graph);
+
         return graph;
     }
 
     private static boolean orientOneCircle(Graph graph) {
-        for (Edge edge : graph.getEdges()) {
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
+        shuffle(edges);
+
+        for (Edge edge : edges) {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
             if (graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-                graph.setEndpoint(x, y, Endpoint.ARROW);
+                if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
+                    graph.setEndpoint(x, y, Endpoint.ARROW);
+                } else {
+                    graph.setEndpoint(x, y, Endpoint.TAIL);
+                }
                 return true;
-            }
-
-            if (graph.getEndpoint(y, x) == Endpoint.CIRCLE) {
-                graph.setEndpoint(y, x, Endpoint.ARROW);
+            } else if (graph.getEndpoint(y, x) == Endpoint.CIRCLE) {
+                if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
+                    graph.setEndpoint(y, x, Endpoint.ARROW);
+                } else {
+                    graph.setEndpoint(y, x, Endpoint.TAIL);
+                }
                 return true;
             }
         }

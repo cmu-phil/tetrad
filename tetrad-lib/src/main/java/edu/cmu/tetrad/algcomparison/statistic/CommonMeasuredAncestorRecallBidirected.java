@@ -16,17 +16,17 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  *
  * @author jdramsey
  */
-public class CommonAncestorRecallBidirected implements Statistic {
+public class CommonMeasuredAncestorRecallBidirected implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#X<-M->Y,adj(X,Y)=>X<->Y";
+        return "#X<-M->Y,adj(X,Y),X<->Y";
     }
 
     @Override
     public String getDescription() {
-        return "Number of X<-...<-Z->...>Y for X*-*Y in est marked as bidirected";
+        return "Number of X<-...<-M->...>Y for X*-*Y in est marked as bidirected";
     }
 
     @Override
@@ -36,9 +36,10 @@ public class CommonAncestorRecallBidirected implements Statistic {
 
         List<Node> nodes = estGraph.getNodes();
 
-        for (Node x : nodes) {
-            for (Node y : nodes) {
-                if (x == y) continue;
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
 
                 if (existsCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))
                         && !existsLatentCommonAncestor(trueGraph, Edges.nondirectedEdge(x, y))) {

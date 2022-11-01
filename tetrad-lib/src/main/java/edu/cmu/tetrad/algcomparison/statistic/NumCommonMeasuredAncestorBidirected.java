@@ -6,22 +6,24 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
+
 /**
  * The bidirected true positives.
  *
  * @author jdramsey
  */
-public class CommonMeasuredAncestorBidirectedPrecision implements Statistic {
+public class NumCommonMeasuredAncestorBidirected implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#X<->Y=>X<-M->Y";
+        return "#X<->Y,X<~~MnotL~~>Y";
     }
 
     @Override
     public String getDescription() {
-        return "# X<->Y where X<-...<-M->...->Y in true";
+        return "# X<->Y where X<~~M~~>Y in true but not X<~~L~~>Y";
     }
 
     @Override
@@ -31,7 +33,7 @@ public class CommonMeasuredAncestorBidirectedPrecision implements Statistic {
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (existsCommonAncestor(trueGraph, edge)) {
+                if (existsCommonAncestor(trueGraph, edge) && !existsLatentCommonAncestor(trueGraph, edge)) {
                     tp++;
                 } else {
                     fp++;

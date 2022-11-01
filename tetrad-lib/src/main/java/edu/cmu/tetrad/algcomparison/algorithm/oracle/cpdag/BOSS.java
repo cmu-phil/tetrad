@@ -69,7 +69,14 @@ public class BOSS implements Algorithm, UsesScoreWrapper/*, TakesIndependenceWra
 //            IndependenceTest test = this.test.getTest(dataModel, parameters);
 
             Boss boss = new Boss(score);
-            boss.setAlgType(Boss.AlgType.BOSS);
+
+            if (parameters.getInt(Params.BOSS_ALG) == 1) {
+                boss.setAlgType(Boss.AlgType.BOSS1);
+            } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
+                boss.setAlgType(Boss.AlgType.BOSS2);
+            } else {
+                throw new IllegalArgumentException("Unrecognized boss algorithm type.");
+            }
 
             boss.setDepth(parameters.getInt(Params.DEPTH));
             boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
@@ -109,7 +116,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper/*, TakesIndependenceWra
 
     @Override
     public String getDescription() {
-        return "BOSS (Better Order Score Search) using " + this.score.getDescription();
+        return "BOSS (Best Order Score Search) using " + this.score.getDescription();
     }
 
     @Override
@@ -122,6 +129,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper/*, TakesIndependenceWra
         ArrayList<String> params = new ArrayList<>();
 
         // Flags
+        params.add(Params.BOSS_ALG);
         params.add(Params.DEPTH);
 //        params.add(Params.GRASP_USE_SCORE);
 //        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
@@ -132,6 +140,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper/*, TakesIndependenceWra
 
         // Parameters
         params.add(Params.NUM_STARTS);
+
 
         return params;
     }

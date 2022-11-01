@@ -18,12 +18,12 @@ public class SemidirectedPrecision implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "semidirected(X,Y)-Prec";
+        return "semi(X,Y)-Prec";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of exists semidirected(X, Y) for which exists semidirected(X, Y) in true cpdag";
+        return "Proportion of exists semi(X, Y) for which exists semi(X, Y) in true cpdag";
     }
 
     @Override

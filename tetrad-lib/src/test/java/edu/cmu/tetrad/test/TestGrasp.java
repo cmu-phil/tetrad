@@ -545,7 +545,6 @@ public final class TestGrasp {
     public void doNewAgsHeadToHead(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BOSS_OLD(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
@@ -2450,106 +2449,125 @@ public final class TestGrasp {
 
     @Test
     public void testBFci() {
-        Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 5000);
-        params.set(Params.NUM_MEASURES, 18);
-        params.set(Params.AVG_DEGREE, 7);
-        params.set(Params.NUM_LATENTS, 6);
-        params.set(Params.RANDOMIZE_COLUMNS, true);
-        params.set(Params.COEF_LOW, 0);
-        params.set(Params.COEF_HIGH, 1);
-        params.set(Params.VAR_LOW, 1);
-        params.set(Params.VAR_HIGH, 3);
+        for (int grouping : new int[]{1, 2, 3, 4, 5, 6}) {
+            RandomUtil.getInstance().setSeed(38482838482L);
+
+            Parameters params = new Parameters();
+            params.set(Params.SAMPLE_SIZE, 5000);
+            params.set(Params.NUM_MEASURES, 18);
+            params.set(Params.AVG_DEGREE, 7);
+            params.set(Params.NUM_LATENTS, 6);
+            params.set(Params.RANDOMIZE_COLUMNS, true);
+            params.set(Params.COEF_LOW, 0);
+            params.set(Params.COEF_HIGH, 1);
+            params.set(Params.VAR_LOW, 1);
+            params.set(Params.VAR_HIGH, 3);
 //        params.set(Params.MAX_DEGREE, 8);
-        params.set(Params.VERBOSE, false);
+            params.set(Params.VERBOSE, false);
 
-        params.set(Params.NUM_RUNS, 50);
+            params.set(Params.NUM_RUNS, 50);
 
-        params.set(Params.DEPTH, 3);
-        params.set(Params.MAX_PATH_LENGTH, 2);
-        params.set(Params.COMPLETE_RULE_SET_USED, true);
-        params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
-        params.set(Params.POSSIBLE_DSEP_DONE, true);
+            params.set(Params.BOSS_ALG, 2);
+            params.set(Params.DEPTH, 3);
+            params.set(Params.MAX_PATH_LENGTH, 2);
+            params.set(Params.COMPLETE_RULE_SET_USED, true);
+            params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
+            params.set(Params.POSSIBLE_DSEP_DONE, true);
 
-        // Flags
-        params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_SCORE, true);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
-        params.set(Params.NUM_STARTS, 1);
+            // Flags
+            params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
+            params.set(Params.GRASP_USE_SCORE, true);
+            params.set(Params.GRASP_USE_DATA_ORDER, false);
+            params.set(Params.NUM_STARTS, 1);
 
-        // default for kim et al. is gic = 4, pd = 1.
-        params.set(Params.SEM_GIC_RULE, 4);
-        params.set(Params.PENALTY_DISCOUNT, 2);
-        params.set(Params.ALPHA, 0.05);
-        params.set(Params.ZS_RISK_BOUND, 0.001);
+            // default for kim et al. is gic = 4, pd = 1.
+            params.set(Params.SEM_GIC_RULE, 4);
+            params.set(Params.PENALTY_DISCOUNT, 2);
+            params.set(Params.ALPHA, 0.05);
+            params.set(Params.ZS_RISK_BOUND, 0.001);
 
-        params.set(Params.DIFFERENT_GRAPHS, true);
+            params.set(Params.DIFFERENT_GRAPHS, true);
 
-        params.set(Params.ADD_ORIGINAL_DATASET, false);
+            params.set(Params.ADD_ORIGINAL_DATASET, false);
 
 //        params.set(Params.SIMULATION_ERROR_TYPE, 1);
 
-        Algorithms algorithms = new Algorithms();
+            Algorithms algorithms = new Algorithms();
 
-        IndependenceWrapper test = new FisherZ();
-        ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+            IndependenceWrapper test = new FisherZ();
+            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
 
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score));
-        algorithms.add(new BOSS(score));
-        algorithms.add(new BOSS_OLD(score));
-        algorithms.add(new Fci(test));
-        algorithms.add(new FciMax(test));
-        algorithms.add(new Rfci(test));
-        algorithms.add(new GFCI(test, score));
-        algorithms.add(new BFCI(test, score));
-        algorithms.add(new BFCIFinalOrientationOnly(test, score));
-        algorithms.add(new BFCI2(test, score));
-        algorithms.add(new BFCITR(test, score));
-        algorithms.add(new BFCISwap(test, score));
+            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score));
+            algorithms.add(new BOSS(score));
+            algorithms.add(new Fci(test));
+            algorithms.add(new FciMax(test));
+            algorithms.add(new Rfci(test));
+            algorithms.add(new GFCI(test, score));
+            algorithms.add(new BFCI(test, score));
+            algorithms.add(new BFCIFinalOrientationOnly(test, score));
+            algorithms.add(new BFCI2(test, score));
+            algorithms.add(new BFCITR(test, score));
+            algorithms.add(new BFCISwap(test, score));
 
-        Simulations simulations = new Simulations();
-        simulations.add(new SemSimulation(new RandomForward()));
+            Simulations simulations = new Simulations();
+            simulations.add(new SemSimulation(new RandomForward()));
 
-        Statistics statistics = new Statistics();
-        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-        statistics.add(new ParameterColumn(Params.ALPHA));
-        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
-        statistics.add(new SemidirectedPrecision());
-        statistics.add(new SemidirectedRecall());
-        statistics.add(new NoSemidirectedPrecision());
-        statistics.add(new NoSemidirectedRecall());
-        statistics.add(new NumDirectedEdges());
-        statistics.add(new NumDirectedEdgeAncestors());
-        statistics.add(new NumDirectedEdgeReversed());
-        statistics.add(new NumDirectedEdgeNotAncNotRev());
-        statistics.add(new NumDirectedEdgeNoMeasureAncestors());
-        statistics.add(new NumVisibleAncestors());
-        statistics.add(new NumInvisibleAncestors());
-        statistics.add(new NumVisibleNonancestors());
-        statistics.add(new NumDirectedEdgeBnaMeasuredCounfounded());
-        statistics.add(new NumDirectedEdgeBnaLatentCounfounded());
-        statistics.add(new TrueDagPrecisionArrow());
-        statistics.add(new TrueDagRecallArrows());
-        statistics.add(new ProportionDirectedPathsNotReversedEst());
-        statistics.add(new ProportionDirectedPathsNotReversedTrue());
-        statistics.add(new NumDirectedPathsEst());
-        statistics.add(new NumDirectedPathsTrue());
-        statistics.add(new TrueDagPrecisionTails());
-        statistics.add(new TrueDagRecallTails());
-        statistics.add(new NumBidirectedEdgesEst());
-        statistics.add(new BidirectedBothNonancestorAncestor());
-        statistics.add(new CommonMeasuredAncestorBidirectedPrecision());
-        statistics.add(new CommonAncestorRecallBidirected());
-        statistics.add(new LatentCommonAncestorBidirectedPrecision());
-        statistics.add(new LatentCommonAncestorRecallBidirected());
-        statistics.add(new ElapsedTime());
+            Statistics statistics = new Statistics();
 
-        Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+            if (grouping == 1) {
+                statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+                statistics.add(new ParameterColumn(Params.ALPHA));
+                statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
+                statistics.add(new ParameterColumn(Params.BOSS_ALG));
+                statistics.add(new ElapsedTime());
+            } else if (grouping == 2) {
+                statistics.add(new NumDirectedEdges());
+                statistics.add(new NumDefinitelyDirected());
+                statistics.add(new NumDirectedEdgeAncestors());
+                statistics.add(new NumDirectedEdgeReversed());
+                statistics.add(new NumDirectedEdgeNotAncNotRev());
+                statistics.add(new NumDirectedEdgeNoMeasureAncestors());
+                statistics.add(new NumColoredDD());
+            } else if (grouping == 3) {
+                statistics.add(new NumPossiblyDirected());
+                statistics.add(new NumDirectedEdgeVisible());
+                statistics.add(new NumVisibleNonancestors());
+                statistics.add(new NumDefinitelyNotDirectedPaths());
+                statistics.add(new NumColoredPD());
+                statistics.add(new NumColoredNL());
+                statistics.add(new NumColoredPL());
+            } else if (grouping == 4) {
+                statistics.add(new TrueDagPrecisionArrow());
+                statistics.add(new TrueDagRecallArrows());
+                statistics.add(new TrueDagPrecisionTails());
+                statistics.add(new TrueDagRecallTails());
+                statistics.add(new NumDirectedPathsTrue());
+                statistics.add(new NumDirectedPathsEst());
+            } else if (grouping == 5) {
+                statistics.add(new NumDirectedEdgeBnaMeasuredCounfounded());
+                statistics.add(new NumDirectedEdgeBnaLatentCounfounded());
+                statistics.add(new NumBidirectedEdgesEst());
+                statistics.add(new NumBidirectedBothNonancestorAncestor());
+                statistics.add(new NumCommonMeasuredAncestorBidirected());
+                statistics.add(new NumLatentCommonAncestorBidirected());
+            } else if (grouping == 6) {
+                statistics.add(new SemidirectedPrecision());
+                statistics.add(new SemidirectedRecall());
+                statistics.add(new NoSemidirectedPrecision());
+                statistics.add(new NoSemidirectedRecall());
+                statistics.add(new ProportionSemidirectedPathsNotReversedEst());
+                statistics.add(new ProportionSemidirectedPathsNotReversedTrue());
+            }
 
-        comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testBfci", simulations,
-                algorithms, statistics, params);
+
+            Comparison comparison = new Comparison();
+            comparison.setShowAlgorithmIndices(true);
+            comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+
+            comparison.compareFromSimulations(
+                    "/Users/josephramsey/Downloads/grasp/testBfci.grouping." + grouping, simulations,
+                    algorithms, statistics, params);
+        }
 
     }
 

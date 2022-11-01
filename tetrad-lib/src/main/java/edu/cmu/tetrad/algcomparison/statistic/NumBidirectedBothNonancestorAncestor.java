@@ -7,39 +7,39 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
 /**
- * The bidirected true positives.
+ * The bidirected edge precision.
  *
  * @author jdramsey
  */
-public class NumDirectedEdgeNotAncNotRev implements Statistic {
+public class NumBidirectedBothNonancestorAncestor implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#X->Y,!Anc!Rev";
+        return "#<->,!Anc!Rev";
     }
 
     @Override
     public String getDescription() {
-            return "Number X-->Y for which for which both not X->...->Y and not Y->...->X in true (should be Xo->Y)";
+        return "# X<->Y for which both not X->...->Y and not Y->...->X";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int tp = 0;
+        int count = 0;
 
         for (Edge edge : estGraph.getEdges()) {
-            if (Edges.isDirectedEdge(edge)) {
-                Node x = Edges.getDirectedEdgeTail(edge);
-                Node y = Edges.getDirectedEdgeHead(edge);
+            if (Edges.isBidirectedEdge(edge)) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
 
                 if (!trueGraph.isAncestorOf(x, y) && !trueGraph.isAncestorOf(y, x)) {
-                    tp++;
+                    count++;
                 }
             }
         }
 
-        return tp;
+        return count;
     }
 
     @Override

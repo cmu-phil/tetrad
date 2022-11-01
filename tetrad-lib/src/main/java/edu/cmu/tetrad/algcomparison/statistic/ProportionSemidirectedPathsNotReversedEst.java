@@ -4,48 +4,45 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
- * The bidirected true positives.
- *
  * @author jdramsey
  */
-public class ProportionDirectedPathsNotReversedTrue implements Statistic {
+public class ProportionSemidirectedPathsNotReversedEst implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "semi(X,Y,true)=>!semi(Y,X,est)";
+        return "semi(X,Y,est)==>!semi(Y,X,true)";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of semidirected(X, Y) in true graph for which there is no semidirected(Y, Z) in estimated graph";
+        return "Proportion of semi(X, Y) in estimated graph for which there is no semi(Y, X) in true graph";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         List<Node> nodes = trueGraph.getNodes();
         int tp = 0;
-        int fn = 0;
+        int fp = 0;
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.existsSemiDirectedPathFromTo(x, y)) {
-                    if (!estGraph.existsSemiDirectedPathFromTo(y, x)) {
+                if (estGraph.existsSemiDirectedPathFromTo(x, y)) {
+                    if (!trueGraph.existsSemiDirectedPathFromTo(y, x)) {
                         tp++;
                     } else {
-                        fn++;
+                        fp++;
                     }
                 }
             }
         }
 
-        return tp / (double) (tp + fn);
+        return tp / (double) (tp + fp);
     }
 
     @Override

@@ -5,43 +5,44 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-
-import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 /**
  * The bidirected true positives.
  *
  * @author jdramsey
  */
-public class NumInvisibleAncestors implements Statistic {
+public class NumDefinitelyDirected implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#X->Y-Anc-X<-L->Y";
+        return "#X->Y-DefDir";
     }
 
     @Override
     public String getDescription() {
-        return "Number of X-->Y for which X->...->Y and X<-...<-L->...->Y in true";
+        return "Number of X-->Y in est where X~~>Y in true CPDAG";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int tp = 0;
+        int count = 0;
+
+        Graph cpdag = SearchGraphUtils.cpdagForDag(trueGraph);
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isDirectedEdge(edge)) {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.isAncestorOf(x, y) && existsLatentCommonAncestor(trueGraph, edge)) {
-                    tp++;
+                if (cpdag.isAncestorOf(x, y)) {
+                    count++;
                 }
             }
         }
 
-        return tp;
+        return count;
     }
 
     @Override

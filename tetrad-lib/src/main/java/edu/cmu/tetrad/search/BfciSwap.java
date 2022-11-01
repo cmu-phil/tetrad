@@ -73,6 +73,7 @@ public final class BfciSwap implements GraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private Knowledge knowledge = new Knowledge();
+    private Boss.AlgType algType = Boss.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BfciSwap(IndependenceTest test, Score score) {
@@ -88,7 +89,7 @@ public final class BfciSwap implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss boss = new Boss(score);
-        boss.setAlgType(Boss.AlgType.BOSS_OLD);
+        boss.setAlgType(algType);
         boss.setUseScore(true);
         boss.setUseRaskuttiUhler(false);
         boss.setUseDataOrder(useDataOrder);
@@ -370,5 +371,9 @@ public final class BfciSwap implements GraphSearch {
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
+    public void setAlgType(Boss.AlgType algType) {
+        this.algType = algType;
     }
 }

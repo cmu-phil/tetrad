@@ -7,44 +7,42 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * The bidirected true positives.
- *
  * @author jdramsey
  */
-public class ProportionDirectedPathsNotReversedEst implements Statistic {
+public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "semi(X,Y,est)=>!semi(Y,X,true)";
+        return "semi(X,Y,true)==>!semi(Y,X,est)";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of semidirected(X, Y) in estimated graph for which there is no semidirected(Y, X) in true graph";
+        return "Proportion of semi(X, Y) in true graph for which there is no semi(Y, Z) in estimated graph";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         List<Node> nodes = trueGraph.getNodes();
         int tp = 0;
-        int fp = 0;
+        int fn = 0;
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (estGraph.existsSemiDirectedPathFromTo(x, y)) {
-                    if (!trueGraph.existsSemiDirectedPathFromTo(y, x)) {
+                if (trueGraph.existsSemiDirectedPathFromTo(x, y)) {
+                    if (!estGraph.existsSemiDirectedPathFromTo(y, x)) {
                         tp++;
                     } else {
-                        fp++;
+                        fn++;
                     }
                 }
             }
         }
 
-        return tp / (double) (tp + fp);
+        return tp / (double) (tp + fn);
     }
 
     @Override

@@ -72,6 +72,7 @@ public final class BfciFoo implements GraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private Knowledge knowledge = new Knowledge();
+    private Boss.AlgType algType = Boss.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BfciFoo(IndependenceTest test, Score score) {
@@ -88,7 +89,7 @@ public final class BfciFoo implements GraphSearch {
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss boss = new Boss(scorer);
-        boss.setAlgType(Boss.AlgType.BOSS_OLD);
+        boss.setAlgType(algType);
         boss.setUseScore(useScore);
         boss.setUseRaskuttiUhler(useRaskuttiUhler);
         boss.setUseDataOrder(useDataOrder);
@@ -434,5 +435,9 @@ public final class BfciFoo implements GraphSearch {
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
+    public void setAlgType(Boss.AlgType algType) {
+        this.algType = algType;
     }
 }

@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
-import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
 
 /**
  * Does an FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
@@ -78,6 +77,7 @@ public final class BfciTr implements GraphSearch {
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
     private Knowledge knowledge = new Knowledge();
+    private Boss.AlgType algType = Boss.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BfciTr(IndependenceTest test, Score score) {
@@ -94,7 +94,7 @@ public final class BfciTr implements GraphSearch {
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Boss boss = new Boss(scorer);
-        boss.setAlgType(Boss.AlgType.BOSS_OLD);
+        boss.setAlgType(algType);
         boss.setUseScore(useScore);
         boss.setUseRaskuttiUhler(useRaskuttiUhler);
         boss.setUseDataOrder(useDataOrder);
@@ -349,5 +349,9 @@ public final class BfciTr implements GraphSearch {
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
+    public void setAlgType(Boss.AlgType algType) {
+        this.algType = algType;
     }
 }

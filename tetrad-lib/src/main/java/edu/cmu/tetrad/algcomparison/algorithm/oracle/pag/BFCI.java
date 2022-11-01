@@ -11,6 +11,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BFci;
+import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -70,6 +71,15 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
             }
 
             BFci search = new BFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+
+            if (parameters.getInt(Params.BOSS_ALG) == 1) {
+                search.setAlgType(Boss.AlgType.BOSS1);
+            } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
+                search.setAlgType(Boss.AlgType.BOSS2);
+            } else {
+                throw new IllegalArgumentException("Unrecognized boss algorithm type.");
+            }
+
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
@@ -123,6 +133,7 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
+        params.add(Params.BOSS_ALG);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);

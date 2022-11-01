@@ -18,12 +18,12 @@ public class NoSemidirectedRecall implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "!semidirected(X,Y)-Rec";
+        return "!semi(X,Y)-Rec";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of not exists semidirected(X, Y) in true cpdag for which not exists semidirected(X, Y) in est";
+        return "Proportion of not exists semi(X, Y) in true cpdag for which not exists semi(X, Y) in est";
     }
 
     @Override

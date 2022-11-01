@@ -5,8 +5,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-
-import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 /**
  * The bidirected true positives.
@@ -18,15 +17,32 @@ public class NumVisibleNonancestors implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "#X->Y-VisNonanc";
+        return "#X->Y-Nonanc-VisibleEst";
     }
 
     @Override
     public String getDescription() {
-        return "Number X-->Y for which not X->...->Y and not X<-...<-L->...->Y in true";
+        return "Number X-->Y for which X->Y is visible in est not X->...->Y in true";
     }
 
     @Override
+//    public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
+//        int tp = 0;
+//
+//        for (Edge edge : estGraph.getEdges()) {
+//            if (Edges.isDirectedEdge(edge)) {
+//                Node x = Edges.getDirectedEdgeTail(edge);
+//                Node y = Edges.getDirectedEdgeHead(edge);
+//
+//                if (!trueGraph.isAncestorOf(x, y) && !existsLatentCommonAncestor(trueGraph, edge)) {
+//                    tp++;
+//                }
+//            }
+//        }
+//
+//        return tp;
+//    }
+
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
 
@@ -35,8 +51,10 @@ public class NumVisibleNonancestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (!trueGraph.isAncestorOf(x, y) && !existsLatentCommonAncestor(trueGraph, edge)) {
-                    tp++;
+                if (estGraph.defVisible(edge)) {
+                    if (!trueGraph.isAncestorOf(x, y)) {
+                        tp++;
+                    }
                 }
             }
         }

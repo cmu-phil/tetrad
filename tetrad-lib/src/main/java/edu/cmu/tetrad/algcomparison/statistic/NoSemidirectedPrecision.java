@@ -18,12 +18,12 @@ public class NoSemidirectedPrecision implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "!semidirected(X,Y)-Prec";
+        return "!semi(X,Y)-Prec";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of not exists semidirected(X, Y) for which not exists semidirected(X, Y) in true cpdag";
+        return "Proportion of not exists semi(X, Y) for which not exists semi(X, Y) in true cpdag";
     }
 
     @Override

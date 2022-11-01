@@ -81,7 +81,7 @@ public class SimpleDemoGA {
 
         // Run BOSS on pi2.
         Boss boss = new Boss(score2);
-        boss.setAlgType(Boss.AlgType.BOSS);
+        boss.setAlgType(Boss.AlgType.BOSS1);
         boss.setVerbose(true);
         List<Node> pi3 = boss.bestOrder(pi2);
 

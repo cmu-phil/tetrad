@@ -34,7 +34,7 @@ public class Boss {
     private boolean verbose = true;
     private int depth = -1;
     private int numStarts = 1;
-    private AlgType algType = AlgType.BOSS;
+    private AlgType algType = AlgType.BOSS1;
 
     public Boss(@NotNull Score score) {
         this.score = score;
@@ -87,7 +87,7 @@ public class Boss {
             List<Node> pi;
             double s1, s2;
 
-            if (algType == AlgType.BOSS_OLD) {
+            if (algType == AlgType.BOSS2) {
                 betterMutationOrig(scorer);
             } else {
                 betterMutationTuck(scorer, false);
@@ -99,7 +99,7 @@ public class Boss {
 
                 besMutation(scorer);
 
-                if (algType == AlgType.BOSS_OLD) {
+                if (algType == AlgType.BOSS2) {
                     betterMutationOrig(scorer);
                 } else {
                     betterMutationTuck(scorer, false);
@@ -220,9 +220,9 @@ public class Boss {
                 scorer.bookmark(1);
 
                 for (int j = i - 1; j >= 0; j--) {
-                    if (!scorer.parent(scorer.get(j), x)) continue;
+                    if (!scorer.adjacent(scorer.get(j), x)) continue;
 
-                    tuck(x, j, scorer, skipUncovered, range);
+                    tuck(x, j, scorer, range);
 
                     if (scorer.score() < bestScore || violatesKnowledge(scorer.getPi())) {
                         scorer.goToBookmark();
@@ -253,11 +253,7 @@ public class Boss {
         scorer.goToBookmark(1);
     }
 
-    private void tuck(Node k, int j, TeyssierScorer scorer, boolean skipUncovered, int[] range) {
-        if (skipUncovered) {
-            if (!scorer.coveredEdge(k, scorer.get(j))) return;
-        }
-
+    private void tuck(Node k, int j, TeyssierScorer scorer, int[] range) {
         Set<Node> ancestors = scorer.getAncestors(k);
 
         int minIndex = j;
@@ -274,7 +270,6 @@ public class Boss {
 
         range[0] = minIndex;
         range[1] = scorer.index(k);
-
     }
 
     public void besMutation(TeyssierScorer scorer) {
@@ -304,6 +299,23 @@ public class Boss {
                 }
             }
         }
+
+        T:
+//        while (true) {
+//
+//            _found = false;
+//
+//            for (Node node : initialOrder) {
+//                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
+//                    found.add(node);
+//                    __found.add(node);
+//                    _found = true;
+//                    continue T;
+//                }
+//            }
+//
+//            if (!_found) break;
+//        }
 
         return found;
     }
@@ -446,5 +458,5 @@ public class Boss {
         this.algType = algType;
     }
 
-    public enum AlgType {BOSS_OLD, BOSS}
+    public enum AlgType {BOSS1, BOSS2}
 }

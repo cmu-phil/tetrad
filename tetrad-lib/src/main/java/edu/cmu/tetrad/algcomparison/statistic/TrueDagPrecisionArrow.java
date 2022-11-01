@@ -7,8 +7,6 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The bidirected true positives.
- *
  * @author jdramsey
  */
 public class TrueDagPrecisionArrow implements Statistic {

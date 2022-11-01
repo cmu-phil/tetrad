@@ -195,7 +195,7 @@ public final class Params {
     public static final String NUM_STARTS = "numStarts";
     public static final String CACHE_SCORES = "cacheScores";
     public static final String OTHER_PERM_METHOD = "otherPermMethod";
-    public static final String BOSS_SCORE_TYPE = "bossScoreType";
+    public static final String BOSS_ALG = "bossAlg";
     public static final String BREAK_TIES = "breakTies";
     public static final String OUTPUT_CPDAG = "outputCpdag";
     public static final String ZS_RISK_BOUND = "zSRiskBound";
