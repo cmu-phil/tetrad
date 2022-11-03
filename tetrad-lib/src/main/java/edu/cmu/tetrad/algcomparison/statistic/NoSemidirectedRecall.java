@@ -23,7 +23,7 @@ public class NoSemidirectedRecall implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of not exists semi(X, Y) in true cpdag for which not exists semi(X, Y) in est";
+        return "Proportion of not exists semi(X, Y) in true CPDAG for which not exists semi(X, Y) in est";
     }
 
     @Override
@@ -38,8 +38,8 @@ public class NoSemidirectedRecall implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!cpdag.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
-                    if (!estGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
+                if (!cpdag.existsSemiDirectedPathFromTo(x, y)) {
+                    if (!estGraph.existsSemiDirectedPathFromTo(x, y)) {
                         tp++;
                     } else {
                         fn++;

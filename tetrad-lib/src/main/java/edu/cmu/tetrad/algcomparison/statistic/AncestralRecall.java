@@ -21,7 +21,7 @@ public class AncestralRecall implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of X->...->Y in true for which X->...->Y in est";
+        return "Proportion of X~~>Y in true for which X~~>Y in est";
     }
 
     @Override

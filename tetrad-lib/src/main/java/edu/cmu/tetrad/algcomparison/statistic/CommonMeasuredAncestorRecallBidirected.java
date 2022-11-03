@@ -26,7 +26,7 @@ public class CommonMeasuredAncestorRecallBidirected implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number of X<-...<-M->...>Y for X*-*Y in est marked as bidirected";
+        return "Number of X<~~M->...>Y for X*-*Y in est marked as bidirected";
     }
 
     @Override

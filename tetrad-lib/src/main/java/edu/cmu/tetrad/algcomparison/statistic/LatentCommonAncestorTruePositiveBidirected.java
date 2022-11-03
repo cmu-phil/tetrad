@@ -17,7 +17,7 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "#X<->Y,X<-L->Y";
+        return "#X<->Y,X<~~L~~>Y";
     }
 
     @Override

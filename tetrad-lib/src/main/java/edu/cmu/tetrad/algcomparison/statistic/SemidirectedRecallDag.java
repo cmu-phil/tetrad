@@ -1,11 +1,12 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -13,47 +14,43 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class TrueDagPrecisionTails implements Statistic {
+public class SemidirectedRecallDag implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "--*-Prec";
+        return "semi(X,Y)-Rec-DAG";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of X->Y for which X~~>Y in true";
+        return "Proportion of exists semi(X, Y) in true DAG for which exists semi(X, Y) in est";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int tp = 0;
-        int fp = 0;
+        int tp = 0, fn = 0;
 
         List<Node> nodes = estGraph.getNodes();
 
-        for (Node x : nodes){
+        nodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+
+        for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                Edge edge = estGraph.getEdge(x, y);
-
-                if (edge == null) continue;
-
-                if (Edges.directedEdge(x, y).equals(edge)) {
-                    if (trueGraph.isAncestorOf(x, y)) {
+                if (trueGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
+                    if (estGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
                         tp++;
                     } else {
-                        fp++;
+                        fn++;
                     }
                 }
             }
         }
 
-        return tp / (double) (tp + fp);
+        return tp / (double) (tp + fn);
     }
-
 
     @Override
     public double getNormValue(double value) {

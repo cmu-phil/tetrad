@@ -14,12 +14,12 @@ public class TrueDagPrecisionArrow implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "X*->Y-Prec";
+        return "*->-Prec";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of X*->Y in the estimated graph for which there is no path Y->...->X in the true graph";
+        return "Proportion of X*->Y in the estimated graph for which there is no path Y~~>X in the true graph";
     }
 
     @Override

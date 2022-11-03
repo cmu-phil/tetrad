@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 
 import java.util.List;
 
@@ -24,7 +25,9 @@ public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        List<Node> nodes = trueGraph.getNodes();
+        List<Node> nodes = estGraph.getNodes();
+        nodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+
         int tp = 0;
         int fn = 0;
 

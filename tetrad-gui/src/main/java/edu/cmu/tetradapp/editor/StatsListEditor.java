@@ -62,7 +62,7 @@ public class StatsListEditor extends JPanel {
         this.area.setBorder(new EmptyBorder(5, 5, 5, 5));
 
         this.area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
-        this.area.setPreferredSize(new Dimension(1200, 1800));
+//        this.area.setPreferredSize(new Dimension(1200, 1800));
 
         JScrollPane pane = new JScrollPane(this.area);
         pane.setPreferredSize(new Dimension(700, 700));
@@ -108,9 +108,9 @@ public class StatsListEditor extends JPanel {
 
         for (int i = 0; i < abbr.size(); i++) {
             double value = vals.get(i);
-            table.setToken(i, 2, Double.isNaN(value) ? "-" : "" + nf.format(value));
+            table.setToken(i, 1, Double.isNaN(value) ? "-" : "" + nf.format(value));
             table.setToken(i, 0, abbr.get(i));
-            table.setToken(i, 1, desc.get(i));
+            table.setToken(i, 2, desc.get(i));
         }
 
         table.setJustification(TextTable.LEFT_JUSTIFIED);
@@ -173,6 +173,46 @@ public class StatsListEditor extends JPanel {
         statistics.add(new AverageDegreeTrue());
         statistics.add(new DensityEst());
         statistics.add(new DensityTrue());
+
+        statistics.add(new NumDirectedEdges());
+        statistics.add(new NumDirectedEdgeAncestors());
+        statistics.add(new NumDirectedEdgeReversed());
+        statistics.add(new NumDirectedEdgeNotAncNotRev());
+        statistics.add(new NumDirectedEdgeNoMeasureAncestors());
+        statistics.add(new NumDefinitelyDirected());
+        statistics.add(new NumColoredDD());
+//            } else if (grouping == 3) {
+        statistics.add(new NumPossiblyDirected());
+        statistics.add(new NumDirectedEdgeVisible());
+        statistics.add(new NumVisibleNonancestors());
+        statistics.add(new NumDefinitelyNotDirectedPaths());
+        statistics.add(new NumColoredPD());
+        statistics.add(new NumColoredNL());
+        statistics.add(new NumColoredPL());
+//            } else if (grouping == 4) {
+        statistics.add(new TrueDagPrecisionArrow());
+        statistics.add(new TrueDagRecallArrows());
+        statistics.add(new TrueDagPrecisionTails());
+        statistics.add(new TrueDagRecallTails());
+        statistics.add(new NumDirectedPathsTrue());
+        statistics.add(new NumDirectedPathsEst());
+//            } else if (grouping == 5) {
+//                statistics.add(new NumDirectedEdgeBnaMeasuredCounfounded());
+        statistics.add(new NumDirectedEdgeBnaLatentCounfounded());
+        statistics.add(new NumBidirectedEdgesEst());
+        statistics.add(new NumBidirectedBothNonancestorAncestor());
+        statistics.add(new NumCommonMeasuredAncestorBidirected());
+        statistics.add(new NumLatentCommonAncestorBidirected());
+//            } else if (grouping == 6) {
+        statistics.add(new SemidirectedPrecision());
+        statistics.add(new SemidirectedPrecisionDag());
+        statistics.add(new SemidirectedRecall());
+        statistics.add(new SemidirectedRecallDag());
+        statistics.add(new NoSemidirectedPrecision());
+        statistics.add(new NoSemidirectedRecall());
+        statistics.add(new ProportionSemidirectedPathsNotReversedEst());
+        statistics.add(new ProportionSemidirectedPathsNotReversedTrue());
+
         return statistics;
     }
 

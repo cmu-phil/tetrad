@@ -2449,14 +2449,14 @@ public final class TestGrasp {
 
     @Test
     public void testBFci() {
-        for (int grouping : new int[]{1, 2, 3, 4, 5, 6}) {
+        for (int grouping : new int[]{1}) {;//, 2, 3, 4, 5, 6}) {
             RandomUtil.getInstance().setSeed(38482838482L);
 
             Parameters params = new Parameters();
-            params.set(Params.SAMPLE_SIZE, 5000);
-            params.set(Params.NUM_MEASURES, 18);
+            params.set(Params.SAMPLE_SIZE, 2000);
+            params.set(Params.NUM_MEASURES, 20);
             params.set(Params.AVG_DEGREE, 7);
-            params.set(Params.NUM_LATENTS, 6);
+            params.set(Params.NUM_LATENTS, 5);
             params.set(Params.RANDOMIZE_COLUMNS, true);
             params.set(Params.COEF_LOW, 0);
             params.set(Params.COEF_HIGH, 1);
@@ -2467,7 +2467,7 @@ public final class TestGrasp {
 
             params.set(Params.NUM_RUNS, 50);
 
-            params.set(Params.BOSS_ALG, 2);
+            params.set(Params.BOSS_ALG, 1);
             params.set(Params.DEPTH, 3);
             params.set(Params.MAX_PATH_LENGTH, 2);
             params.set(Params.COMPLETE_RULE_SET_USED, true);
@@ -2520,15 +2520,15 @@ public final class TestGrasp {
                 statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
                 statistics.add(new ParameterColumn(Params.BOSS_ALG));
                 statistics.add(new ElapsedTime());
-            } else if (grouping == 2) {
+//            } else if (grouping == 2) {
                 statistics.add(new NumDirectedEdges());
-                statistics.add(new NumDefinitelyDirected());
                 statistics.add(new NumDirectedEdgeAncestors());
                 statistics.add(new NumDirectedEdgeReversed());
                 statistics.add(new NumDirectedEdgeNotAncNotRev());
                 statistics.add(new NumDirectedEdgeNoMeasureAncestors());
+                statistics.add(new NumDefinitelyDirected());
                 statistics.add(new NumColoredDD());
-            } else if (grouping == 3) {
+//            } else if (grouping == 3) {
                 statistics.add(new NumPossiblyDirected());
                 statistics.add(new NumDirectedEdgeVisible());
                 statistics.add(new NumVisibleNonancestors());
@@ -2536,23 +2536,25 @@ public final class TestGrasp {
                 statistics.add(new NumColoredPD());
                 statistics.add(new NumColoredNL());
                 statistics.add(new NumColoredPL());
-            } else if (grouping == 4) {
+//            } else if (grouping == 4) {
                 statistics.add(new TrueDagPrecisionArrow());
                 statistics.add(new TrueDagRecallArrows());
                 statistics.add(new TrueDagPrecisionTails());
                 statistics.add(new TrueDagRecallTails());
                 statistics.add(new NumDirectedPathsTrue());
                 statistics.add(new NumDirectedPathsEst());
-            } else if (grouping == 5) {
-                statistics.add(new NumDirectedEdgeBnaMeasuredCounfounded());
+//            } else if (grouping == 5) {
+//                statistics.add(new NumDirectedEdgeBnaMeasuredCounfounded());
                 statistics.add(new NumDirectedEdgeBnaLatentCounfounded());
                 statistics.add(new NumBidirectedEdgesEst());
                 statistics.add(new NumBidirectedBothNonancestorAncestor());
                 statistics.add(new NumCommonMeasuredAncestorBidirected());
                 statistics.add(new NumLatentCommonAncestorBidirected());
-            } else if (grouping == 6) {
+//            } else if (grouping == 6) {
                 statistics.add(new SemidirectedPrecision());
+                statistics.add(new SemidirectedPrecisionDag());
                 statistics.add(new SemidirectedRecall());
+                statistics.add(new SemidirectedRecallDag());
                 statistics.add(new NoSemidirectedPrecision());
                 statistics.add(new NoSemidirectedRecall());
                 statistics.add(new ProportionSemidirectedPathsNotReversedEst());

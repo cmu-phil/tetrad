@@ -15,12 +15,12 @@ public class NumLatentCommonAncestorBidirected implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "#X<->Y,X<-L->Y";
+        return "#X<->Y,X<~~L~~>Y";
     }
 
     @Override
     public String getDescription() {
-        return "# X<->Y in estimated where X<-...<-L->...->Y in true";
+        return "# X<->Y in estimated where X<~~L~~>Y in true";
     }
 
     @Override

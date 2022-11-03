@@ -21,7 +21,7 @@ public class NumDirectedPathsEst implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number of <X, Y> for which there is a path X->...->Y in the estimated graph";
+        return "Number of <X, Y> for which there is a path X~~>Y in the estimated graph";
     }
 
     @Override

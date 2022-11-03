@@ -23,7 +23,7 @@ public class NumDirectedEdgeBnaLatentCounfounded implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number X-->Y for which both not X->...->Y and not Y->...->X but X<-L->Y (should be Xo->Y) ";
+        return "Number X-->Y for which both not X~~>Y and not Y~~>X but X<~~L~~>Y (should be Xo->Y) ";
     }
 
     @Override

@@ -288,6 +288,19 @@ public class Boss {
         HashSet<Node> __found = new HashSet<>();
         boolean _found = true;
 
+//        while (_found) {
+//            _found = false;
+//
+//            for (Node node : initialOrder) {
+//                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
+//                    found.add(node);
+//                    __found.add(node);
+//                    _found = true;
+//                }
+//            }
+//        }
+
+        T:
         while (_found) {
             _found = false;
 
@@ -296,26 +309,10 @@ public class Boss {
                     found.add(node);
                     __found.add(node);
                     _found = true;
+                    continue T;
                 }
             }
         }
-
-        T:
-//        while (true) {
-//
-//            _found = false;
-//
-//            for (Node node : initialOrder) {
-//                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-//                    found.add(node);
-//                    __found.add(node);
-//                    _found = true;
-//                    continue T;
-//                }
-//            }
-//
-//            if (!_found) break;
-//        }
 
         return found;
     }

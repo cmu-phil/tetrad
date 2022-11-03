@@ -23,7 +23,7 @@ public class NumDirectedEdgeNoMeasureAncestors implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number X-->Y for which X->...->Y in true with no measures on path";
+        return "Number X-->Y for which X~~>Y in true with no measures on path";
     }
 
     @Override

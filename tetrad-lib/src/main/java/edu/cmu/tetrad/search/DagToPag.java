@@ -120,13 +120,15 @@ public final class DagToPag {
 
     private Graph calcAdjacencyGraph() {
         List<Node> allNodes = this.dag.getNodes();
-        List<Node> measured = new ArrayList<>();
+        List<Node> measured = new ArrayList<>(allNodes);
+        measured.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        for (Node node : allNodes) {
-            if (node.getNodeType() == NodeType.MEASURED) {
-                measured.add(node);
-            }
-        }
+
+//        for (Node node : allNodes) {
+//            if (node.getNodeType() == NodeType.MEASURED) {
+//                measured.add(node);
+//            }
+//        }
 
         Graph graph = new EdgeListGraph(measured);
 

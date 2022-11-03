@@ -20,12 +20,12 @@ public class LatentCommonAncestorRecallBidirected implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "#X<-L->Y,adj(X,Y),X<->Y";
+        return "#X<~~L~~>Y,adj(X,Y),X<->Y";
     }
 
     @Override
     public String getDescription() {
-        return "# of X<-...<-L->...->Y with latent Z for X*-*Y in estimated that are marked as bidirected";
+        return "# of X<~~L~~>Y with latent Z for X*-*Y in estimated that are marked as bidirected";
     }
 
     @Override

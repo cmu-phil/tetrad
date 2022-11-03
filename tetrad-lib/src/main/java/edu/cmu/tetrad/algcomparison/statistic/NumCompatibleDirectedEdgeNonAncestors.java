@@ -22,7 +22,7 @@ public class NumCompatibleDirectedEdgeNonAncestors implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number X-->Y for which not X<-...<-L->..->Y in true";
+        return "Number X-->Y for which not X<~~L->..->Y in true";
     }
 
     @Override

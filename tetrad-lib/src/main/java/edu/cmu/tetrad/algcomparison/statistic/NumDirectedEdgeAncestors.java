@@ -18,7 +18,7 @@ public class NumDirectedEdgeAncestors implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number X-->Y for which X->...->Y in true";
+        return "Number X-->Y for which X~~>Y in true";
     }
 
     @Override

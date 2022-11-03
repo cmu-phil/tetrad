@@ -21,7 +21,7 @@ public class NumBidirectedBothNonancestorAncestor implements Statistic {
 
     @Override
     public String getDescription() {
-        return "# X<->Y for which both not X->...->Y and not Y->...->X";
+        return "# X<->Y for which both not X~~>Y and not Y~~>X";
     }
 
     @Override

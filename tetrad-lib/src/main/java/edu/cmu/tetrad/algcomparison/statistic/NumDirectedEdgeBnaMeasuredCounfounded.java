@@ -24,7 +24,7 @@ public class NumDirectedEdgeBnaMeasuredCounfounded implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number X-->Y for which both not X->...->Y and not Y->...->X but X<-M->Y (should be X<->Y) ";
+        return "Number X-->Y for which both not X~~>Y and not Y~~>X but X<-M->Y (should be X<->Y) ";
     }
 
     @Override

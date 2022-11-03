@@ -21,7 +21,7 @@ public class NumDirectedEdgeReversed implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number X-->Y for which Y->...->X in true";
+        return "Number X-->Y for which Y~~>X in true";
     }
 
     @Override

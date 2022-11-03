@@ -18,7 +18,7 @@ public class NumIncorrectDDAncestors implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number definitely direct X-->Y where not X->...->Y in true";
+        return "Number definitely direct X-->Y where not X~~>Y in true";
     }
 
     @Override

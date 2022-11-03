@@ -1242,15 +1242,14 @@ public final class FciOrient {
             return false;
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
             if (knowledge.isForbidden(x.getName(), y.getName())) {
                 return true;
             }
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
+        if (graph.getEndpoint(y, x) == Endpoint.TAIL && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
             if (knowledge.isForbidden(x.getName(), y.getName())) {
-                System.out.println("B");
                 return false;
             }
         }

@@ -18,7 +18,7 @@ public class NumIncorrectVisibleAncestors implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Number visible X-->Y where not X->...->Y in true";
+        return "Number visible X-->Y where not X~~>Y in true";
     }
 
     @Override

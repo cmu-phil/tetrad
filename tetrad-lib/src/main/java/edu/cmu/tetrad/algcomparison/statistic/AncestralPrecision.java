@@ -23,7 +23,7 @@ public class AncestralPrecision implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of X->...->Y for which X->...->Y in true";
+        return "Proportion of X~~>Y for which X~~>Y in true";
     }
 
     @Override

@@ -119,9 +119,9 @@ public final class BFci2 implements GraphSearch {
             ((MagSemBicScore) score).setMag(graph);
         }
 
-        Knowledge knowledge2 = new Knowledge((Knowledge) knowledge);
+        Knowledge knowledge2 = new Knowledge(knowledge);
         addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
-//
+
         // Keep a copy of this CPDAG.
         Graph reference = new EdgeListGraph(this.graph);
 

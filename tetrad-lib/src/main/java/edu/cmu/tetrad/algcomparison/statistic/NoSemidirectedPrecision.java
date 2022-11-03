@@ -23,7 +23,7 @@ public class NoSemidirectedPrecision implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of not exists semi(X, Y) for which not exists semi(X, Y) in true cpdag";
+        return "Proportion of not exists semi(X, Y) for which not exists semi(X, Y) in true CPDAG";
     }
 
     @Override
@@ -32,14 +32,14 @@ public class NoSemidirectedPrecision implements Statistic {
 
         Graph cpdag = SearchGraphUtils.cpdagForDag(trueGraph);
 
-        List<Node> nodes = trueGraph.getNodes();
+        List<Node> nodes = estGraph.getNodes();
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!estGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
-                    if (!cpdag.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
+                if (!estGraph.existsSemiDirectedPathFromTo(x, y)) {
+                    if (!cpdag.existsSemiDirectedPathFromTo(x, y)) {
                         tp++;
                     } else {
                         fp++;
