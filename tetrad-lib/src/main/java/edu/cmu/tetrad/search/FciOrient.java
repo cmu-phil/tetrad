@@ -347,7 +347,7 @@ public final class FciOrient {
     }
 
     /// R1, away from collider
-    // If a*-&gt;bo-*c and a, c not adjacent then a*-&gt;b->c
+    // If a*->bo-*c and a, c not adjacent then a*->b->c
     private void ruleR1(Node a, Node b, Node c, Graph graph) {
         if (graph.isAdjacentTo(a, c)) {
             return;
@@ -368,15 +368,12 @@ public final class FciOrient {
         }
     }
 
-    //if a*-oc and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
+    //if a*-oc and either a-->b*->c or a*->b-->c, and a*-oc then a*->c
     // This is Zhang's rule R2.
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
-        if ((graph.isAdjacentTo(a, c))
-                && (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
-
-            if ((graph.getEndpoint(a, b) == Endpoint.ARROW)
-                    && (graph.getEndpoint(b, c) == Endpoint.ARROW) && ((graph.getEndpoint(b, a) == Endpoint.TAIL)
-                    || (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
+        if ((graph.isAdjacentTo(a, c)) && (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
+            if ((graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(b, c) == Endpoint.ARROW)
+                    && (graph.getEndpoint(b, a) == Endpoint.TAIL || graph.getEndpoint(c, b) == Endpoint.TAIL)) {
 
                 if (!isArrowpointAllowed(a, c, graph, knowledge)) {
                     return;
@@ -395,70 +392,50 @@ public final class FciOrient {
 
     /**
      * Implements the double-triangle orientation rule, which states that if
-     * D*-oB, A*-&gt;B&lt;-*C and A*-oDo-*C, then
-     * D*-&gt;B.
+     * D*-oB, A*->B<-*C and A*-oDo-*C, and !adj(a, c), D*-oB, then D*->B.
      * <p>
      * This is Zhang's rule R3.
      */
     public void ruleR3(Graph graph) {
         List<Node> nodes = graph.getNodes();
 
-        for (Node B : nodes) {
+        for (Node b : nodes) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            List<Node> intoBArrows = graph.getNodesInTo(B, Endpoint.ARROW);
-            List<Node> intoBCircles = graph.getNodesInTo(B, Endpoint.CIRCLE);
+            List<Node> intoBArrows = graph.getNodesInTo(b, Endpoint.ARROW);
 
-            for (Node D : intoBCircles) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
+            if (intoBArrows.size() < 2) continue;
 
-                if (intoBArrows.size() < 2) {
-                    continue;
-                }
+            ChoiceGenerator gen = new ChoiceGenerator(intoBArrows.size(), 2);
+            int[] choice;
 
-                ChoiceGenerator gen = new ChoiceGenerator(intoBArrows.size(), 2);
-                int[] choice;
+            while ((choice = gen.next()) != null) {
+                List<Node> B = GraphUtils.asList(choice, intoBArrows);
 
-                while ((choice = gen.next()) != null && !Thread.currentThread().isInterrupted()) {
-                    Node A = intoBArrows.get(choice[0]);
-                    Node C = intoBArrows.get(choice[1]);
+                Node a = B.get(0);
+                Node c = B.get(1);
 
-                    if (graph.isAdjacentTo(A, C)) {
-                        continue;
+                List<Node> adj = graph.getAdjacentNodes(a);
+                adj.retainAll(graph.getAdjacentNodes(c));
+
+                for (Node d : adj) {
+                    if (d == a) continue;
+
+                    if (graph.getEndpoint(a, d) == Endpoint.CIRCLE && graph.getEndpoint(c, d) == Endpoint.CIRCLE) {
+                        if (!graph.isAdjacentTo(a, c)) {
+                            if (graph.getEndpoint(d, b) == Endpoint.CIRCLE) {
+                                graph.setEndpoint(d, b, Endpoint.ARROW);
+
+                                if (this.verbose) {
+                                    this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R3: Double triangle", graph.getEdge(d, b)));
+                                }
+
+                                this.changeFlag = true;
+                            }
+                        }
                     }
-
-                    if (!graph.isAdjacentTo(A, D)
-                            || !graph.isAdjacentTo(C, D)) {
-                        continue;
-                    }
-
-                    if (!this.sepsets.isUnshieldedNoncollider(A, D, C)) {
-                        continue;
-                    }
-
-                    if (graph.getEndpoint(A, D) != Endpoint.CIRCLE) {
-                        continue;
-                    }
-
-                    if (graph.getEndpoint(C, D) != Endpoint.CIRCLE) {
-                        continue;
-                    }
-
-                    if (!isArrowpointAllowed(D, B, graph, knowledge)) {
-                        continue;
-                    }
-
-                    graph.setEndpoint(D, B, Endpoint.ARROW);
-
-                    if (this.verbose) {
-                        this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R3: Double triangle", graph.getEdge(D, B)));
-                    }
-
-                    this.changeFlag = true;
                 }
             }
         }
@@ -473,7 +450,7 @@ public final class FciOrient {
      *         xo           x is either an arrowhead or a circle
      *        /  \
      *       v    v
-     * L....A --&gt; C
+     * L....A --> C
      * </pre>
      * <p>
      * This is Zhang's rule R4, discriminating undirectedPaths.
@@ -577,7 +554,7 @@ public final class FciOrient {
                 previous.put(d, t);
 
                 if (!graph.isAdjacentTo(d, c)) {
-                    if (doDdpOrientation(d, a, b, c, previous, graph)) {
+                    if (doDdpOrientation(d, a, b, c, graph)) {
                         return;
                     }
                 }
@@ -594,7 +571,7 @@ public final class FciOrient {
      * Orients the edges inside the definte discriminating path triangle. Takes
      * the left endpoint, and a,b,c as arguments.
      */
-    private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Map<Node, Node> previous, Graph graph) {
+    private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
         if (this.dag != null) {
             if (this.dag.isAncestorOf(b, c)) {
                 graph.setEndpoint(c, b, Endpoint.TAIL);
@@ -624,34 +601,20 @@ public final class FciOrient {
             throw new IllegalArgumentException();
         }
 
-        List<Node> path = getPath(d, previous);
+        List<Node> sepset = getSepsets().getSepset(d, c);
 
-        boolean ind = getSepsets().isIndependent(d, c, path);
-
-        List<Node> path2 = new ArrayList<>(path);
-
-        path2.remove(b);
-
-        boolean ind2 = getSepsets().isIndependent(d, c, path2);
-
-        if (!ind && !ind2) {
-            List<Node> sepset = getSepsets().getSepset(d, c);
-
-            if (this.verbose) {
-                logger.forceLogMessage("Sepset for d = " + d + " and c = " + c + " = " + sepset);
-            }
-
-            if (sepset == null) {
-                if (this.verbose) {
-                    logger.forceLogMessage("Must be a sepset: " + d + " and " + c + "; they're non-adjacent.");
-                }
-                return false;
-            }
-
-//            ind = sepset.contains(b);
+        if (this.verbose) {
+            logger.forceLogMessage("Sepset for d = " + d + " and c = " + c + " = " + sepset);
         }
 
-        if (ind) {
+        if (sepset == null) {
+            if (this.verbose) {
+                logger.forceLogMessage("Must be a sepset: " + d + " and " + c + "; they're non-adjacent.");
+            }
+            return false;
+        }
+
+        if (!sepset.contains(b)) {
             if (!isArrowpointAllowed(a, b, graph, knowledge)) {
                 return false;
             }
@@ -675,24 +638,9 @@ public final class FciOrient {
                         "R4: Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
         }
+
         this.changeFlag = true;
         return true;
-    }
-
-    private List<Node> getPath(Node c, Map<Node, Node> previous) {
-        List<Node> l = new ArrayList<>();
-
-        Node p = c;
-
-        do {
-            p = previous.get(p);
-
-            if (p != null) {
-                l.add(p);
-            }
-        } while (p != null);
-
-        return l;
     }
 
     /**

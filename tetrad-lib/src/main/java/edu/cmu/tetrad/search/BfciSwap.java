@@ -88,16 +88,15 @@ public final class BfciSwap implements GraphSearch {
 
         Boss boss = new Boss(scorer);
         boss.setAlgType(algType);
-        boss.setUseScore(true);
-        boss.setUseRaskuttiUhler(false);
+        boss.setUseScore(useScore);
+        boss.setUseRaskuttiUhler(useRaskuttiUhler);
         boss.setUseDataOrder(useDataOrder);
         boss.setDepth(depth);
         boss.setNumStarts(numStarts);
         boss.setKnowledge(knowledge);
         boss.setVerbose(false);
 
-        List<Node> variables = this.score.getVariables();
-        assert variables != null;
+        List<Node> variables = new ArrayList<>(this.score.getVariables());
         variables.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
         List<Node> pi = boss.bestOrder(variables);
@@ -108,35 +107,24 @@ public final class BfciSwap implements GraphSearch {
         Knowledge knowledge2 = new Knowledge(knowledge);
 //        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(G1), knowledge2);
 
-//        for (Edge edge : G1.getEdges()) {
-//            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
-//            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
-//        }
-
         keepArrows(G1);
-
-//        G1 = removeBySwapRule(G1, scorer, knowledge2, boss);
-//
-//        finalOrientation(knowledge2, G1, false);
 
         Graph G2 = removeBySwapRule(G1, scorer, knowledge2);
         Graph G3 = new EdgeListGraph(G2);
 
         // Do final FCI orientation rules app
         Graph G4 = new EdgeListGraph(G3);
-
-        finalOrientation(knowledge2, G4, true);
-
+        finalOrientation(knowledge2, G4);
         G4.setPag(true);
 
         return G4;
     }
 
-    private void finalOrientation(Knowledge knowledge2, Graph G4, boolean flag) {
+    private void finalOrientation(Knowledge knowledge2, Graph G4) {
         SepsetProducer sepsets = new SepsetsGreedy(G4, test, null, depth);
         FciOrient fciOrient = new FciOrient(sepsets);
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed && flag);
-        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule && flag);
+        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(knowledge2);
         fciOrient.setVerbose(true);
@@ -174,7 +162,7 @@ public final class BfciSwap implements GraphSearch {
     }
 
 
-    private Graph removeBySwapRule1(Graph graph, TeyssierScorer scorer, Knowledge knowledge) {
+    private Graph removeBySwapRule(Graph graph, TeyssierScorer scorer, Knowledge knowledge) {
         graph = new EdgeListGraph(graph);
         List<Node> nodes = graph.getNodes();
 
@@ -191,15 +179,19 @@ public final class BfciSwap implements GraphSearch {
                         if (scorer.index(y) == scorer.index(w)) continue;
                         if (scorer.index(z) == scorer.index(w)) continue;
 
-                        if (config(graph, z, x, y, w)) {
-                            scorer.bookmark();
-                            scorer.swap(y, x);
+                        if (graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)) {
+                            if (FciOrient.isArrowpointAllowed(w, y, graph, knowledge) && FciOrient.isArrowpointAllowed(x, y, graph, knowledge)) {
+                                if (config(graph, z, x, y, w)) {
+                                    scorer.bookmark();
+                                    scorer.swap(y, x);
 
-                            if (config(scorer, w, y, x, z)) {
-                                toRemove.add(list(z, x, y, w));
+                                    if (config(scorer, w, y, x, z)) {
+                                        toRemove.add(list(z, x, y, w));
+                                    }
+
+                                    scorer.goToBookmark();
+                                }
                             }
-
-                            scorer.goToBookmark();
                         }
                     }
                 }
@@ -224,13 +216,8 @@ public final class BfciSwap implements GraphSearch {
             Node w = l.get(3);
 
             if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)) {
-                if (FciOrient.isArrowpointAllowed(w, y, graph, knowledge)) {
-                    if (FciOrient.isArrowpointAllowed(x, y, graph, knowledge)) {
-                        graph.setEndpoint(w, y, Endpoint.ARROW);
-                        graph.setEndpoint(x, y, Endpoint.ARROW);
-                    }
-                }
-
+                graph.setEndpoint(w, y, Endpoint.ARROW);
+                graph.setEndpoint(x, y, Endpoint.ARROW);
                 System.out.println("Swap orienting " + GraphUtils.pathString(graph, z, x, y, w));
             }
         }
@@ -238,7 +225,7 @@ public final class BfciSwap implements GraphSearch {
         return graph;
     }
 
-    private Graph removeBySwapRule(Graph graph, TeyssierScorer scorer, Knowledge knowledge) {
+    private Graph removeBySwapRule2(Graph graph, TeyssierScorer scorer, Knowledge knowledge) {
         graph = new EdgeListGraph(graph);
         List<Node> nodes = graph.getNodes();
 
@@ -254,26 +241,25 @@ public final class BfciSwap implements GraphSearch {
                         if (scorer.index(z) == scorer.index(w)) continue;
 
                         if (config(graph, z, x, y, w)) {
-                            scorer.bookmark();
-                            scorer.swap(x, y);
+                            if (FciOrient.isArrowpointAllowed(w, y, graph, knowledge)) {
+                                if (FciOrient.isArrowpointAllowed(x, y, graph, knowledge)) {
+                                    scorer.bookmark();
+                                    scorer.swap(x, y);
 
-                            if (config(scorer, w, y, x, z)) {
-                                Edge edge = graph.getEdge(w, x);
-                                graph.removeEdge(edge);
-                                System.out.println("Swap removing : " + edge);
+                                    if (config(scorer, w, y, x, z)) {
+                                        Edge edge = graph.getEdge(w, x);
+                                        graph.removeEdge(edge);
+                                        System.out.println("Swap removing : " + edge);
 
-                                if (FciOrient.isArrowpointAllowed(w, y, graph, knowledge)) {
-                                    if (FciOrient.isArrowpointAllowed(x, y, graph, knowledge)) {
                                         graph.setEndpoint(w, y, Endpoint.ARROW);
                                         graph.setEndpoint(x, y, Endpoint.ARROW);
                                     }
+
+                                    scorer.goToBookmark();
                                 }
 
                                 System.out.println("Swap orienting " + GraphUtils.pathString(graph, z, x, y, w));
-
                             }
-
-                            scorer.goToBookmark();
                         }
                     }
                 }
@@ -308,7 +294,7 @@ public final class BfciSwap implements GraphSearch {
     private static boolean config(TeyssierScorer scorer, Node z, Node x, Node y, Node w) {
         if (scorer.adjacent(z, x) && scorer.adjacent(x, y) && scorer.adjacent(y, w)) {
             if (scorer.adjacent(w, x) && !scorer.adjacent(z, y)) {
-                return scorer.collider(z, x, y) && scorer.collider(z, x, w);
+                return scorer.collider(z, x, y);// && scorer.collider(z, x, w);
             }
         }
 

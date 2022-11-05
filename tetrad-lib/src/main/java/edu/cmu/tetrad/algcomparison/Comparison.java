@@ -503,7 +503,9 @@ public class Comparison {
                     parameters.set(param, simulationWrapper.getValue(param));
                 }
 
-                simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters(), false);
+                if (simulation.getNumDataModels() == 0) {
+                    simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters(), true);
+                }
 
                 File subdir = dir;
                 if (simulationWrappers.size() > 1) {

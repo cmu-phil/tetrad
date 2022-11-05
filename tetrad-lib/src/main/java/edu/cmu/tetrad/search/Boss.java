@@ -24,7 +24,7 @@ import static java.util.Collections.shuffle;
 public class Boss {
     private final List<Node> variables;
     private final Score score;
-    //    private IndependenceTest test;
+    private IndependenceTest test;
     private Knowledge knowledge = new Knowledge();
     private final TeyssierScorer scorer;
     private long start;
@@ -36,7 +36,16 @@ public class Boss {
     private int numStarts = 1;
     private AlgType algType = AlgType.BOSS1;
 
-    public Boss(@NotNull Score score) {
+    public Boss(@NotNull IndependenceTest test, Score score) {
+        this.test = test;
+        this.score = score;
+        this.variables = new ArrayList<>(score.getVariables());
+        this.useScore = true;
+        this.scorer = new TeyssierScorer(this.test, this.score);
+    }
+
+    public Boss(Score score) {
+        this.test = null;
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
@@ -87,17 +96,17 @@ public class Boss {
             List<Node> pi;
             double s1, s2;
 
-            if (algType == AlgType.BOSS2) {
-                betterMutationOrig(scorer);
-            } else {
-                betterMutationTuck(scorer, false);
-            }
+//            if (algType == AlgType.BOSS2) {
+//                betterMutationOrig(scorer);
+//            } else {
+//                betterMutationTuck(scorer, false);
+//            }
 
             do {
                 pi = scorer.getPi();
                 s1 = scorer.score();
 
-                besMutation(scorer);
+//                besMutation(scorer);
 
                 if (algType == AlgType.BOSS2) {
                     betterMutationOrig(scorer);
@@ -105,9 +114,8 @@ public class Boss {
                     betterMutationTuck(scorer, false);
                 }
 
-//                besMutation(scorer);
+                besMutation(scorer);
                 s2 = scorer.score();
-
             } while (s2 > s1);
 
             scorer.score(pi);

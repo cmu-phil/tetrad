@@ -132,8 +132,8 @@ public class BFCISwap implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 //        params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
-//        params.add(Params.GRASP_USE_SCORE);
-//        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
+        params.add(Params.GRASP_USE_SCORE);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
 //        params.add(Params.POSSIBLE_DSEP_DONE);
         params.add(Params.DEPTH);

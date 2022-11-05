@@ -545,7 +545,7 @@ public final class TestGrasp {
     public void doNewAgsHeadToHead(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BOSS(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
 //        if (doPcFges) {
@@ -2453,7 +2453,7 @@ public final class TestGrasp {
             RandomUtil.getInstance().setSeed(38482838482L);
 
             Parameters params = new Parameters();
-            params.set(Params.SAMPLE_SIZE, 2000);
+            params.set(Params.SAMPLE_SIZE, 1000);
             params.set(Params.NUM_MEASURES, 20);
             params.set(Params.AVG_DEGREE, 7);
             params.set(Params.NUM_LATENTS, 5);
@@ -2482,7 +2482,7 @@ public final class TestGrasp {
 
             // default for kim et al. is gic = 4, pd = 1.
             params.set(Params.SEM_GIC_RULE, 4);
-            params.set(Params.PENALTY_DISCOUNT, 2);
+            params.set(Params.PENALTY_DISCOUNT, 1);
             params.set(Params.ALPHA, 0.05);
             params.set(Params.ZS_RISK_BOUND, 0.001);
 
@@ -2495,18 +2495,18 @@ public final class TestGrasp {
             Algorithms algorithms = new Algorithms();
 
             IndependenceWrapper test = new FisherZ();
-            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+            ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.EbicScore();
 
-            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score));
-            algorithms.add(new BOSS(score));
-            algorithms.add(new Fci(test));
-            algorithms.add(new FciMax(test));
-            algorithms.add(new Rfci(test));
-            algorithms.add(new GFCI(test, score));
-            algorithms.add(new BFCI(test, score));
-            algorithms.add(new BFCIFinalOrientationOnly(test, score));
-            algorithms.add(new BFCI2(test, score));
-            algorithms.add(new BFCITR(test, score));
+//            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score));
+//            algorithms.add(new BOSS(score));
+//            algorithms.add(new Fci(test));
+//            algorithms.add(new FciMax(test));
+//            algorithms.add(new Rfci(test));
+//            algorithms.add(new GFCI(test, score));
+//            algorithms.add(new BFCI(test, score));
+//            algorithms.add(new BFCIFinalOrientationOnly(test, score));
+//            algorithms.add(new BFCI2(test, score));
+//            algorithms.add(new BFCITR(test, score));
             algorithms.add(new BFCISwap(test, score));
 
             Simulations simulations = new Simulations();
