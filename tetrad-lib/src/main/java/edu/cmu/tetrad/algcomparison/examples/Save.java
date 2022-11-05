@@ -25,7 +25,9 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * An example script to save out data files and graphs from a simulation.
@@ -36,18 +38,20 @@ public class Save {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
 
-        parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 50, 100);
-        parameters.set("avgDegree", 4);
-        parameters.set("sampleSize", 100, 500);
+        parameters.set(Params.NUM_RUNS, 10);
+        parameters.set(Params.NUM_MEASURES, 50, 100);
+        parameters.set(Params.AVG_DEGREE, 4);
+        parameters.set(Params.SAMPLE_SIZE, 100, 500);
 
-        parameters.set("numCategories", 3);
-        parameters.set("percentDiscrete", 50);
-        parameters.set("differentGraphs", true);
+        parameters.set(Params.NUM_CATEGORIES, 3);
+        parameters.set(Params.PERCENT_DISCRETE, 50);
+        parameters.set(Params.DIFFERENT_GRAPHS, true);
 
         Simulation simulation = new LeeHastieSimulation(new RandomForward());
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
+        comparison.setSaveData(true);
+        comparison.setSaveGraphs(true);
         comparison.saveToFiles("comparison", simulation, parameters);
     }
 }
