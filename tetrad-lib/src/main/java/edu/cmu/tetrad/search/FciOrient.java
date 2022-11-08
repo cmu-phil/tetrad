@@ -1182,6 +1182,8 @@ public final class FciOrient {
     }
 
     public static boolean isArrowpointAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
+        if (!graph.isAdjacentTo(x, y)) return false;
+
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }

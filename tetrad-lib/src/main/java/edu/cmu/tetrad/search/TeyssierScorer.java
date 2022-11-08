@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import nu.xom.Nodes;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -336,6 +337,16 @@ public class TeyssierScorer {
         return new HashSet<>(this.scores.get(p).getParents());
     }
 
+    public Set<Node> getChildren(int p) {
+        Set<Node> adj = getAdjacentNodes(get(p));
+        Set<Node> children = new HashSet<>();
+        for (Node a : adj) {
+            if (!parent(get(p), a)) children.add(a);
+        }
+
+        return children;
+    }
+
     /**
      * Returns the parents of a node v.
      *
@@ -344,6 +355,10 @@ public class TeyssierScorer {
      */
     public Set<Node> getParents(Node v) {
         return getParents(index(v));
+    }
+
+    public Set<Node> getChildren(Node v) {
+        return getChildren(index(v));
     }
 
     /**
@@ -462,6 +477,12 @@ public class TeyssierScorer {
         return ancestors;
     }
 
+    public Set<Node> getDescendants(Node node) {
+        Set<Node> descendants = new HashSet<>();
+        collectDescendantVisit(node, descendants);
+        return descendants;
+    }
+
     private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
         if (ancestors.contains(node)) {
             return;
@@ -473,6 +494,21 @@ public class TeyssierScorer {
         if (!parents.isEmpty()) {
             for (Node parent : parents) {
                 collectAncestorsVisit(parent, ancestors);
+            }
+        }
+    }
+
+    private void collectDescendantVisit(Node node, Set<Node> ancestors) {
+        if (ancestors.contains(node)) {
+            return;
+        }
+
+        ancestors.add(node);
+        Set<Node> children = getChildren(node);
+
+        if (!children.isEmpty()) {
+            for (Node parent : children) {
+                collectDescendantVisit(parent, ancestors);
             }
         }
     }

@@ -1175,7 +1175,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
 
         if (!getGraph().containsEdge(modelEdge)) {
-            throw new IllegalArgumentException("Attempt to add edge not in model.");
+            System.out.println("Attempt to add edge not in model: " + modelEdge);
+            return;
+//            throw new IllegalArgumentException("Attempt to add edge not in model.");
         }
 
         // construct a display edge for the model edge
