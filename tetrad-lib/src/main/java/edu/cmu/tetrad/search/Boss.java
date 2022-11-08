@@ -96,25 +96,25 @@ public class Boss {
             List<Node> pi;
             double s1, s2;
 
-//            if (algType == AlgType.BOSS2) {
-//                betterMutationOrig(scorer);
-//            } else {
-//                betterMutationTuck(scorer, false);
-//            }
+            if (algType == AlgType.BOSS1) {
+                betterMutation1(scorer);
+            } else if (algType == AlgType.BOSS2) {
+                betterMutation2(scorer);
+            }
 
             do {
                 pi = scorer.getPi();
                 s1 = scorer.score();
 
-//                besMutation(scorer);
+                besMutation(scorer);
 
-                if (algType == AlgType.BOSS2) {
+                if (algType == AlgType.BOSS1) {
+                    betterMutation1(scorer);
+                } else if (algType == AlgType.BOSS2) {
                     betterMutation2(scorer);
-                } else {
-                    betterMutation1(scorer, false);
                 }
 
-                besMutation(scorer);
+//                besMutation(scorer);
                 s2 = scorer.score();
             } while (s2 > s1);
 
@@ -138,7 +138,7 @@ public class Boss {
         return bestPerm;
     }
 
-    public void betterMutation1(@NotNull TeyssierScorer scorer, boolean skipUncovered) {
+    public void betterMutation1(@NotNull TeyssierScorer scorer) {
         double bestScore = scorer.score();
         scorer.bookmark();
         double s1, s2;

@@ -468,7 +468,7 @@ public final class FciOrient {
             }
 
             //potential A and C candidate pairs are only those
-            // that look like this:   A&lt;-*Bo-*C
+            // that look like this:   A<-*Bo-*C
             List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
             List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
 
@@ -481,6 +481,8 @@ public final class FciOrient {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
+
+                    if (a == c) continue;
 
                     if (!graph.isParentOf(a, c)) {
                         continue;

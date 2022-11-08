@@ -24,9 +24,6 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
@@ -2507,7 +2504,7 @@ public final class TestGrasp {
 //            algorithms.add(new BFCIFinalOrientationOnly(test, score));
 //            algorithms.add(new BFCI2(test, score));
 //            algorithms.add(new BFCITR(test, score));
-            algorithms.add(new BFCISwap(test, score));
+            algorithms.add(new LVSWAP(test, score));
 
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new RandomForward()));

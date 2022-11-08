@@ -11,8 +11,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BfciSwap;
-import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.search.LvSwap;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -31,24 +30,24 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BFCI-Swap",
-        command = "bfci-swap",
+        name = "LV-Swap",
+        command = "lv-swap",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class BFCISwap implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public BFCISwap() {
+    public LVSWAP() {
         // Used for reflection; do not delete.
     }
 
-    public BFCISwap(IndependenceWrapper test, ScoreWrapper score) {
+    public LVSWAP(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -66,7 +65,7 @@ public class BFCISwap implements Algorithm, UsesScoreWrapper, TakesIndependenceW
                 knowledge = timeSeries.getKnowledge();
             }
 
-            BfciSwap search = new BfciSwap(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            LvSwap search = new LvSwap(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
 //            if (parameters.getInt(Params.BOSS_ALG) == 1) {
 //                search.setAlgType(Boss.AlgType.BOSS1);
@@ -98,7 +97,7 @@ public class BFCISwap implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
             return search.search();
         } else {
-            BFCISwap algorithm = new BFCISwap(this.test, this.score);
+            LVSWAP algorithm = new LVSWAP(this.test, this.score);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
@@ -115,7 +114,7 @@ public class BFCISwap implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public String getDescription() {
-        return "BFCI-swap (BOSS + swap rule) using " + this.test.getDescription()
+        return "LV-Swap (BOSS + swap rules) using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 
