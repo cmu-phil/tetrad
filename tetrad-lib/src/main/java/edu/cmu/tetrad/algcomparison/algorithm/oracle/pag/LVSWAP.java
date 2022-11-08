@@ -67,14 +67,6 @@ public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
             LvSwap search = new LvSwap(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
-//            if (parameters.getInt(Params.BOSS_ALG) == 1) {
-//                search.setAlgType(Boss.AlgType.BOSS1);
-//            } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
-//                search.setAlgType(Boss.AlgType.BOSS2);
-//            } else {
-//                throw new IllegalArgumentException("Unrecognized boss algorithm type.");
-//            }
-
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
@@ -127,14 +119,11 @@ public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
-//        params.add(Params.BOSS_ALG);
-//        params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
         params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
-//        params.add(Params.POSSIBLE_DSEP_DONE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
