@@ -346,6 +346,34 @@ public final class FciOrient {
         }
     }
 
+    public void rulesR2cycle(Graph graph) {
+        List<Node> nodes = graph.getNodes();
+
+        for (Node B : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> adj = graph.getAdjacentNodes(B);
+
+            if (adj.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null && !Thread.currentThread().isInterrupted()) {
+                Node A = adj.get(combination[0]);
+                Node C = adj.get(combination[1]);
+
+                //choice gen doesnt do diff orders, so must switch A & C around.
+                ruleR2(A, B, C, graph);
+                ruleR2(C, B, A, graph);
+            }
+        }
+    }
+
     /// R1, away from collider
     // If a*->bo-*c and a, c not adjacent then a*->b->c
     private void ruleR1(Node a, Node b, Node c, Graph graph) {
@@ -586,12 +614,12 @@ public final class FciOrient {
                     return false;
                 }
 
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                if (verbose) {
-                    this.logger.forceLogMessage("R4: DDP Collider, d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
-                }
+//                graph.setEndpoint(a, b, Endpoint.ARROW);
+//                graph.setEndpoint(c, b, Endpoint.ARROW);
+//
+//                if (verbose) {
+//                    this.logger.forceLogMessage("R4: DDP Collider, d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
+//                }
             }
 
             this.changeFlag = true;
