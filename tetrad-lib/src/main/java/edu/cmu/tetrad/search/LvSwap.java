@@ -127,7 +127,7 @@ public final class LvSwap implements GraphSearch {
         retainUnshieldedColliders(G4, knowledge2);
 
 
-//        finalOrientation(knowledge2, G4);
+        finalOrientation(knowledge2, G4);
         G4.setPag(true);
 
         return G4;

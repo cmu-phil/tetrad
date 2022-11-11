@@ -108,6 +108,7 @@ public final class DagToPag {
         fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setKnowledge(this.knowledge);
+        fciOrient.setVerbose(true);
         fciOrient.doFinalOrientation(graph);
         graph.setPag(true);
 
