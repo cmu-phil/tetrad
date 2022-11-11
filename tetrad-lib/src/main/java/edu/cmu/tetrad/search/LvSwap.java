@@ -115,7 +115,7 @@ public final class LvSwap implements GraphSearch {
 
         do {
             G0 = new EdgeListGraph(G3);
-            G3 = swapFindRemove(G3, scorer, knowledge2, true, removed);
+            G3 = swapFindRemove(G3, scorer, knowledge2, removed);
 //            G3 = swapRemove3(G3, scorer, knowledge2, true, removed);
 //            G3 = swapRemove(G3, removed);
             G3 = swapOrient(G3, scorer, knowledge2, false, removed, pi);
@@ -174,7 +174,7 @@ public final class LvSwap implements GraphSearch {
         }
     }
 
-    private Graph swapFindRemove(Graph graph, TeyssierScorer scorer, Knowledge knowledge, boolean remove, Set<Edge> removed) {
+    private Graph swapFindRemove(Graph graph, TeyssierScorer scorer, Knowledge knowledge, Set<Edge> removed) {
         graph = new EdgeListGraph(graph);
         List<Node> nodes = graph.getNodes();
 
@@ -198,17 +198,14 @@ public final class LvSwap implements GraphSearch {
                                     if (config(scorer, z, x, y, w, false)) {
 
                                         if (graph.isAdjacentTo(w, x)) {
+                                            Edge edge = graph.getEdge(w, x);
+                                            graph.removeEdge(edge);
+                                            removed.add(edge);
+                                            System.out.println("Swap removing : " + edge);
 
-                                            if (remove) {
-                                                Edge edge = graph.getEdge(w, x);
-                                                graph.removeEdge(edge);
-                                                removed.add(edge);
-                                                System.out.println("Swap removing : " + edge);
-
-                                                graph.setEndpoint(w, y, Endpoint.ARROW);
-                                                graph.setEndpoint(x, y, Endpoint.ARROW);
-                                                System.out.println("Swap orienting " + GraphUtils.pathString(graph, x, y, w));
-                                            }
+                                            graph.setEndpoint(w, y, Endpoint.ARROW);
+                                            graph.setEndpoint(x, y, Endpoint.ARROW);
+                                            System.out.println("Swap orienting " + GraphUtils.pathString(graph, x, y, w));
                                         }
                                     }
                                 }
@@ -226,7 +223,6 @@ public final class LvSwap implements GraphSearch {
 
     private Graph swapRemove(Graph graph, Set<Edge> removed) {
         graph = new EdgeListGraph(graph);
-        List<Node> nodes = graph.getNodes();
 
         for (Edge edge : removed) {
             graph.removeEdge(edge);
