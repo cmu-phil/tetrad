@@ -614,12 +614,12 @@ public final class FciOrient {
                     return false;
                 }
 
-//                graph.setEndpoint(a, b, Endpoint.ARROW);
-//                graph.setEndpoint(c, b, Endpoint.ARROW);
-//
-//                if (verbose) {
-//                    this.logger.forceLogMessage("R4: DDP Collider, d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
-//                }
+                graph.setEndpoint(a, b, Endpoint.ARROW);
+                graph.setEndpoint(c, b, Endpoint.ARROW);
+
+                if (verbose) {
+                    this.logger.forceLogMessage("R4: DDP Collider, d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
+                }
             }
 
             this.changeFlag = true;
