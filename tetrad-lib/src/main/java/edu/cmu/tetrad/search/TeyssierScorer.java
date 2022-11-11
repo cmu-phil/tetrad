@@ -947,7 +947,7 @@ public class TeyssierScorer {
 
             double s2 = score(n, parents);
 
-            if (s2 > sMax) {
+            if (s2 >= sMax) {
                 sMax = s2;
 //                    w = z0;
                 remove.add(z0);
