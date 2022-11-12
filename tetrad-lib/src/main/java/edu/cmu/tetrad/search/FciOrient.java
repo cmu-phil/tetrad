@@ -481,7 +481,7 @@ public final class FciOrient {
      * L....A --> C
      * </pre>
      * <p>
-     * This is Zhang's rule R4, discriminating undirectedPaths.
+     * This is Zhang's rule R4, discriminating paths.
      */
     public void ruleR4B(Graph graph) {
         if (!this.doDiscriminatingPathRule) {
@@ -495,7 +495,7 @@ public final class FciOrient {
                 break;
             }
 
-            //potential A and C candidate pairs are only those
+            // potential A and C candidate pairs are only those
             // that look like this:   A<-*Bo-*C
             List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
             List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
