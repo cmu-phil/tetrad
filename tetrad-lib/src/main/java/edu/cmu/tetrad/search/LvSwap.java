@@ -98,7 +98,7 @@ public final class LvSwap implements GraphSearch {
     //========================PUBLIC METHODS==========================//
     public Graph search() {
         this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getTest() + ".");
+        this.logger.log("info", "Independence test = " + this.test + ".");
 
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
@@ -264,29 +264,12 @@ public final class LvSwap implements GraphSearch {
     }
 
     /**
-     * @return true if Zhang's complete rule set should be used, false if only
-     * R1-R4 (the rule set of the original FCI) should be used. False by
-     * default.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
      * @param completeRuleSetUsed set to true if Zhang's complete rule set
      *                            should be used, false if only R1-R4 (the rule set of the original FCI)
      *                            should be used. False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * @return the maximum length of any discriminating path, or -1 of
-     * unlimited.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
     }
 
     /**
@@ -301,42 +284,16 @@ public final class LvSwap implements GraphSearch {
         this.maxPathLength = maxPathLength;
     }
 
-    /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * The independence test.
-     */
-    public IndependenceTest getTest() {
-        return this.test;
     }
 
     public void setTest(IndependenceTest test) {
         this.test = test;
     }
 
-    public ICovarianceMatrix getCovMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public ICovarianceMatrix getCovarianceMatrix() {
-        return this.covarianceMatrix;
-    }
-
     public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
         this.covarianceMatrix = covarianceMatrix;
-    }
-
-    public PrintStream getOut() {
-        return this.out;
     }
 
     public void setOut(PrintStream out) {
