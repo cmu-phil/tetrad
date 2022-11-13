@@ -33,7 +33,27 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Does BOSS, followed by two swap rules, then final FCI orientation.
+ * Does BOSS2, followed by two swap rules, then final FCI orientation.
+ *
+ * Definitions
+ * A(z, x, y, w) iff z*->x<-*y*-*w & ~adj(z, y) & ~adj(z, w) & maybe adj(x, w)
+ * B(z, x, y, w) iff z*-*x*->y<-*w & ~adj(z, y) & ~adj(z, w) & ~adj(x, w)
+ * BOSS2(π, score) is the permutation π‘ returned by BOSS2 for input permutation π
+ * DAG(π, score) is the DAG built by BOSS (using Grow-Shrink) for permutation π
+ * swap(x, y, π) is the permutation obtained from π by swapping x and y
+ *
+ * Procedure LV-SWAP(π, score)
+ * G1, π’ <- DAG(BOSS2(π, score))
+ * G2 <- Keep only unshielded colliders in G1, turn all tails into circles
+ * Find all <z, x, y, w> that satisfy A(z, x, y, w) in DAG(π‘, score) and B(z, x, y’, w) for some y’, in DAG(swap(x, y, π‘), score)
+ *     Orient all such x*->y’<-*w in G2
+ *     Add all such w*-*x to set S
+ * Remove all edges in S from G2.
+ * G3 <- Keep only unshielded colliders in G2, making all other endpoints circles.
+ * G4 <- finalOrient(G3)
+ *     Full ruleset.
+ *     DDP tail orientation only.
+ * Return PAG G4
  *
  * @author jdramsey
  */
@@ -57,14 +77,10 @@ public final class LvSwap implements GraphSearch {
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
-
     // True iff verbose output should be printed.
     private boolean verbose;
-
     // The print stream that output is directed to.
     private PrintStream out = System.out;
-
-    // GRaSP parameters
     private int numStarts = 1;
     private int depth = -1;
     private boolean useRaskuttiUhler;
@@ -117,10 +133,9 @@ public final class LvSwap implements GraphSearch {
 
         // Do final FCI orientation rules app
         Graph G4 = new EdgeListGraph(G3);
-
         retainUnshieldedColliders(G4, knowledge2);
-
         finalOrientation(knowledge2, G4);
+
         G4.setPag(true);
 
         return G4;
@@ -189,7 +204,6 @@ public final class LvSwap implements GraphSearch {
                                     scorer.swap(x, y);
 
                                     for (Node y2 : nodes) {
-
                                         if (b(scorer, z, x, y2, w)) {
                                             if (graph.isAdjacentTo(w, x)) {
                                                 Edge edge = graph.getEdge(w, x);
@@ -231,8 +245,8 @@ public final class LvSwap implements GraphSearch {
 
     private static boolean a(TeyssierScorer scorer, Node z, Node x, Node y, Node w) {
         if ((z == null || scorer.adjacent(z, x)) && scorer.adjacent(x, y) && scorer.adjacent(y, w)) {
-            if (scorer.adjacent(w, x) /*&& (z == null || !scorer.adjacent(z, y))*/) {
-                return (z == null || scorer.collider(z, x, y));// && scorer.collider(z, x, w);
+            if (scorer.adjacent(w, x)) {
+                return (z == null || scorer.collider(z, x, y));
             }
         }
 
@@ -242,7 +256,7 @@ public final class LvSwap implements GraphSearch {
     private static boolean b(TeyssierScorer scorer, Node z, Node x, Node y, Node w) {
         if ((z == null || scorer.adjacent(z, x)) && scorer.adjacent(x, y) && scorer.adjacent(y, w)) {
             if (!scorer.adjacent(w, x) && (z == null || scorer.adjacent(z, y))) {
-                return scorer.collider(w, y, x);// && scorer.collider(w, y, z);
+                return scorer.collider(w, y, x);
             }
         }
 
