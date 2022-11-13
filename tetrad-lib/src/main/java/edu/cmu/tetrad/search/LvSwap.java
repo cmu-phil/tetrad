@@ -34,14 +34,14 @@ import java.util.Set;
 
 /**
  * Does BOSS2, followed by two swap rules, then final FCI orientation.
- *
+ * </p>
  * Definitions
  * A(z, x, y, w) iff z*->x<-*y*-*w & ~adj(z, y) & ~adj(z, w) & maybe adj(x, w)
  * B(z, x, y, w) iff z*-*x*->y<-*w & ~adj(z, y) & ~adj(z, w) & ~adj(x, w)
  * BOSS2(π, score) is the permutation π‘ returned by BOSS2 for input permutation π
  * DAG(π, score) is the DAG built by BOSS (using Grow-Shrink) for permutation π
  * swap(x, y, π) is the permutation obtained from π by swapping x and y
- *
+ * </p>
  * Procedure LV-SWAP(π, score)
  * G1, π’ <- DAG(BOSS2(π, score))
  * G2 <- Keep only unshielded colliders in G1, turn all tails into circles
