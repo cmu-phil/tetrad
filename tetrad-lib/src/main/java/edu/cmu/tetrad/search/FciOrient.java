@@ -645,21 +645,23 @@ public final class FciOrient {
         }
 
         if (!sepset.contains(b)) {
-            if (!isArrowpointAllowed(a, b, graph, knowledge)) {
-                return false;
-            }
-
-            if (!isArrowpointAllowed(c, b, graph, knowledge)) {
-                return false;
-            }
-
-            graph.setEndpoint(a, b, Endpoint.ARROW);
-            graph.setEndpoint(c, b, Endpoint.ARROW);
-
-            if (this.verbose) {
-                this.logger.forceLogMessage(
-                        "Definite discriminating path.. d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
-            }
+//            if (!isArrowpointAllowed(a, b, graph, knowledge)) {
+//                return false;
+//            }
+//
+//            if (!isArrowpointAllowed(c, b, graph, knowledge)) {
+//                return false;
+//            }
+//
+//            graph.setEndpoint(a, b, Endpoint.ARROW);
+//            graph.setEndpoint(c, b, Endpoint.ARROW);
+//
+//            if (this.verbose) {
+//                this.logger.forceLogMessage(
+//                        "Definite discriminating path.. d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
+//            }
+//
+//            this.changeFlag = true;
         } else {
             graph.setEndpoint(c, b, Endpoint.TAIL);
 
@@ -667,10 +669,12 @@ public final class FciOrient {
                 this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg(
                         "R4: Definite discriminating path d = " + d, graph.getEdge(b, c)));
             }
+
+            this.changeFlag = true;
+            return true;
         }
 
-        this.changeFlag = true;
-        return true;
+        return false;
     }
 
     /**
