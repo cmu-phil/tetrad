@@ -46,13 +46,13 @@ import java.util.Set;
  * G1, π’ <- DAG(BOSS2(π, score))
  * G2 <- Keep only unshielded colliders in G1, turn all tails into circles
  * Find all <z, x, y, w> that satisfy A(z, x, y, w) in DAG(π‘, score) and B(z, x, y’, w) for some y’, in DAG(swap(x, y, π‘), score)
- *     Orient all such x*->y’<-*w in G2
- *     Add all such w*-*x to set S
+ * Orient all such x*->y’<-*w in G2
+ * Add all such w*-*x to set S
  * Remove all edges in S from G2.
  * G3 <- Keep only unshielded colliders in G2, making all other endpoints circles.
  * G4 <- finalOrient(G3)
- *     Full ruleset.
- *     DDP tail orientation only.
+ * Full ruleset.
+ * DDP tail orientation only.
  * Return PAG G4
  *
  * @author jdramsey
@@ -77,10 +77,6 @@ public final class LvSwap implements GraphSearch {
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
-    // True iff verbose output should be printed.
-    private boolean verbose;
-    // The print stream that output is directed to.
-    private PrintStream out = System.out;
     private int numStarts = 1;
     private int depth = -1;
     private boolean useRaskuttiUhler;
@@ -88,6 +84,8 @@ public final class LvSwap implements GraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private Knowledge knowledge = new Knowledge();
+    private boolean verbose = false;
+    private PrintStream out = System.out;
 
     //============================CONSTRUCTORS============================//
     public LvSwap(IndependenceTest test, Score score) {
@@ -110,7 +108,7 @@ public final class LvSwap implements GraphSearch {
         boss.setDepth(depth);
         boss.setNumStarts(numStarts);
         boss.setKnowledge(knowledge);
-        boss.setVerbose(true);
+        boss.setVerbose(verbose);
 
         List<Node> variables = new ArrayList<>(this.score.getVariables());
         variables.removeIf(node -> node.getNodeType() == NodeType.LATENT);
@@ -210,11 +208,11 @@ public final class LvSwap implements GraphSearch {
                                                 removed.add(edge);
 
                                                 if (graph.isAdjacentTo(x, y2) && graph.isAdjacentTo(y2, w)) {
-                                                    System.out.println("Queueing " + edge + " for removal (swapped " + x + " and " + y + ")");
+                                                    out.println("Queueing " + edge + " for removal (swapped " + x + " and " + y + ")");
 
                                                     graph.setEndpoint(w, y2, Endpoint.ARROW);
                                                     graph.setEndpoint(x, y2, Endpoint.ARROW);
-                                                    System.out.println("Remove orienting " + GraphUtils.pathString(graph, x, y2, w));
+                                                    out.println("Remove orienting " + GraphUtils.pathString(graph, x, y2, w));
                                                 }
                                             }
                                         }
@@ -237,7 +235,7 @@ public final class LvSwap implements GraphSearch {
 
         for (Edge edge : removed) {
             graph.removeEdge(edge);
-            System.out.println("Swap removing : " + edge);
+            out.println("Swap removing : " + edge);
         }
 
         return graph;
@@ -284,20 +282,12 @@ public final class LvSwap implements GraphSearch {
         this.maxPathLength = maxPathLength;
     }
 
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
     public void setTest(IndependenceTest test) {
         this.test = test;
     }
 
     public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
         this.covarianceMatrix = covarianceMatrix;
-    }
-
-    public void setOut(PrintStream out) {
-        this.out = out;
     }
 
     public void setNumStarts(int numStarts) {
@@ -326,5 +316,13 @@ public final class LvSwap implements GraphSearch {
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public void setOut(PrintStream out) {
+        this.out = out;
     }
 }

@@ -42,7 +42,8 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
     private final IndTestProducer indTestProducer;
     private String name = "";
     private List<String> vars = new LinkedList<>();
-    private List<IndependenceResult> results = new ArrayList<>();
+    private List<IndependenceResult> resultsIndep = new ArrayList<>();
+    private List<IndependenceResult> resultsDep = new ArrayList<>();
     private final Graph graph;
 
     /**
@@ -87,12 +88,20 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
         return this.vars;
     }
 
-    public List<IndependenceResult> getResults() {
-        return this.results;
+    public List<IndependenceResult> getResults(boolean indep) {
+        if (indep) {
+            return this.resultsIndep;
+        } else {
+            return this.resultsDep;
+        }
     }
 
-    public void setResults(List<IndependenceResult> results) {
-        this.results = results;
+    public void setResults(List<IndependenceResult> results, boolean indep) {
+        if (indep) {
+            this.resultsIndep = results;
+        } else {
+            this.resultsDep = results;
+        }
     }
 
 }

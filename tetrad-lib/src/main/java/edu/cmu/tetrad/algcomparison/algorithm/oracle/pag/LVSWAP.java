@@ -120,7 +120,8 @@ public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
         List<String> params = new ArrayList<>();
 
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE);
+        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
         params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);

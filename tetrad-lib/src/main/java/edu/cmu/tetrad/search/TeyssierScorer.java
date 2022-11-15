@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import nu.xom.Nodes;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -237,7 +236,7 @@ public class TeyssierScorer {
     public void moveTo(Node v, int toIndex) {
         int vIndex = index(v);
         if (vIndex == toIndex) return;
-//        if (lastMoveSame(vIndex, toIndex)) return;
+        if (lastMoveSame(vIndex, toIndex)) return;
 
         this.pi.remove(v);
         this.pi.add(toIndex, v);
@@ -644,8 +643,7 @@ public class TeyssierScorer {
      */
     public boolean adjacent(Node a, Node b) {
         if (a == b) return false;
-        return parent(a, b) || parent(b, a);
-//        return getParents(a).contains(b) || getParents(b).contains(a);
+        return getParents(a).contains(b) || getParents(b).contains(a);
     }
 
     public boolean ancestorAdjacent(Node a, Node b) {
@@ -760,14 +758,14 @@ public class TeyssierScorer {
 //    }
 
     private double score(Node n, Set<Node> pi) {
-        if (this.cachingScores) {
-            this.cache.computeIfAbsent(n, w -> new HashMap<>());
-            Double score = this.cache.get(n).get(pi);
-
-            if (score != null) {
-                return score;
-            }
-        }
+//        if (this.cachingScores) {
+//            this.cache.computeIfAbsent(n, w -> new HashMap<>());
+//            Float score = this.cache.get(n).get(pi);
+//
+//            if (score != null) {
+//                return score;
+//            }
+//        }
 
         int[] parentIndices = new int[pi.size()];
 
@@ -783,10 +781,10 @@ public class TeyssierScorer {
 
         double v = (double) this.score.localScore(this.variablesHash.get(n), parentIndices);
 
-        if (this.cachingScores) {
-            this.cache.computeIfAbsent(n, w -> new HashMap<>());
-            this.cache.get(n).put(new HashSet<>(pi), v);
-        }
+//        if (this.cachingScores) {
+//            this.cache.computeIfAbsent(n, w -> new HashMap<>());
+//            this.cache.get(n).put(new HashSet<>(pi), v);
+//        }
 
         return v;
     }
@@ -884,16 +882,14 @@ public class TeyssierScorer {
         boolean changed = true;
 
         double sMax = score(n, new HashSet<>());
-        Set<Node> _prefix = getPrefix(p);
-//        if (_prefix.equals(prefixes.get(p))) return scores.get(p);
-        List<Node> prefix = new ArrayList<>(_prefix);
+        List<Node> prefix = new ArrayList<>(getPrefix(p));
 
         // Backward scoring only from the prefix variables
-//        if (this.useBackwardScoring) {
-//            parents.addAll(prefix);
-//            sMax = score(n, parents);
-//            changed = false;
-//        }
+        if (this.useBackwardScoring) {
+            parents.addAll(prefix);
+            sMax = score(n, parents);
+            changed = false;
+        }
 
         // Grow-shrink
         while (changed) {
@@ -902,11 +898,8 @@ public class TeyssierScorer {
             // Let z be the node that maximizes the score...
             Node z = null;
 
-            Set<Node> t = new HashSet<>(prefix);
-            t.removeAll(parents);
-
-            for (Node z0 : t) {
-//                if (parents.contains(z0)) continue;
+            for (Node z0 : prefix) {
+                if (parents.contains(z0)) continue;
 
                 if (!knowledge.isEmpty() && this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
 
@@ -931,41 +924,33 @@ public class TeyssierScorer {
 
         }
 
-//        boolean changed2 = true;
+        boolean changed2 = true;
 
-//        while (changed2) {
-//            changed2 = false;
-//
-//            Node w = null;
+        while (changed2) {
+            changed2 = false;
 
-        Set<Node> remove = new HashSet<>();
+            Node w = null;
 
-        for (Node z0 : new HashSet<>(parents)) {
-            if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
+            for (Node z0 : new HashSet<>(parents)) {
+                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
 
-            parents.remove(z0);
+                parents.remove(z0);
 
-            double s2 = score(n, parents);
+                double s2 = score(n, parents);
 
-            if (s2 > sMax) {
-                sMax = s2;
-//                    w = z0;
-                remove.add(z0);
+                if (s2 > sMax) {
+                    sMax = s2;
+                    w = z0;
+                }
+
+                parents.add(z0);
             }
 
-            parents.add(z0);
+            if (w != null) {
+                parents.remove(w);
+                changed2 = true;
+            }
         }
-
-        if (!remove.isEmpty()) {
-            parents.removeAll(remove);
-//                changed2 = true;
-        }
-
-//            if (w != null) {
-//                parents.remove(w);
-//                changed2 = true;
-//            }
-//        }
 
         if (this.useScore) {
             return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
@@ -1080,32 +1065,28 @@ public class TeyssierScorer {
     }
 
 
-    void moveToNoUpdate(Node v, int toIndex) {
+    public void moveToNoUpdate(Node v, int toIndex) {
         bookmark(-55);
 
-//        if (!this.pi.contains(v)) return;
+        if (!this.pi.contains(v)) return;
 
         int vIndex = index(v);
 
         if (vIndex == toIndex) return;
 
-//        if (lastMoveSame(vIndex, toIndex)) return;
+        if (lastMoveSame(vIndex, toIndex)) return;
 
-        if (vIndex < toIndex) {
-            for (int i = vIndex; i < toIndex; i++) this.pi.set(i, this.pi.get(i + 1));
-            this.pi.set(toIndex, v);
-        } else {
-            for (int i = vIndex; i > toIndex; i--) this.pi.set(i, this.pi.get(i - 1));
-            this.pi.set(toIndex, v);
-        }
+        this.pi.remove(v);
+        this.pi.add(toIndex, v);
 
         if (violatesKnowledge(this.pi)) {
             goToBookmark(-55);
         }
+
     }
 
     public boolean parent(Node k, Node j) {
-        return this.scores.get(index(j)).getParents().contains(k);
+        return getParents(j).contains(k);
     }
 
     private static class Pair {

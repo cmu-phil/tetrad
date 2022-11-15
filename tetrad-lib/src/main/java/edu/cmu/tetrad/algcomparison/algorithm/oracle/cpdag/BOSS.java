@@ -35,7 +35,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-@Experimental
+//@Experimental
 public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
@@ -105,7 +105,6 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
                     parameters.getInt(Params.RESAMPLING_ENSEMBLE),
                     parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
-
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
