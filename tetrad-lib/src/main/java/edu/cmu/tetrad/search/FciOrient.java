@@ -83,7 +83,8 @@ public final class FciOrient {
 
     private Graph truePag;
     private Graph dag;
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathColliderRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
 
     //============================CONSTRUCTORS============================//
 
@@ -484,43 +485,42 @@ public final class FciOrient {
      * This is Zhang's rule R4, discriminating paths.
      */
     public void ruleR4B(Graph graph) {
-        if (!this.doDiscriminatingPathRule) {
-            return;
-        }
 
-        List<Node> nodes = graph.getNodes();
+        if (doDiscriminatingPathColliderRule || doDiscriminatingPathTailRule) {
+            List<Node> nodes = graph.getNodes();
 
-        for (Node b : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            // potential A and C candidate pairs are only those
-            // that look like this:   A<-*Bo-*C
-            List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
-            List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
-
-            for (Node a : possA) {
+            for (Node b : nodes) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
 
-                for (Node c : possC) {
+                // potential A and C candidate pairs are only those
+                // that look like this:   A<-*Bo-*C
+                List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
+                List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
+
+                for (Node a : possA) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
 
-                    if (a == c) continue;
+                    for (Node c : possC) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
 
-                    if (!graph.isParentOf(a, c)) {
-                        continue;
+                        if (a == c) continue;
+
+                        if (!graph.isParentOf(a, c)) {
+                            continue;
+                        }
+
+                        if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
+                            continue;
+                        }
+
+                        ddpOrient(a, b, c, graph);
                     }
-
-                    if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-                        continue;
-                    }
-
-                    ddpOrient(a, b, c, graph);
                 }
             }
         }
@@ -603,9 +603,9 @@ public final class FciOrient {
      */
     private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
         if (this.dag != null) {
-            if (this.dag.isAncestorOf(b, c)) {
+            if (this.dag.isAncestorOf(b, c) && doDiscriminatingPathTailRule) {
                 graph.setEndpoint(c, b, Endpoint.TAIL);
-            } else {
+            } else if (doDiscriminatingPathColliderRule) {
                 if (!isArrowpointAllowed(a, b, graph, knowledge)) {
                     return false;
                 }
@@ -644,25 +644,25 @@ public final class FciOrient {
             return false;
         }
 
-        if (!sepset.contains(b)) {
-//            if (!isArrowpointAllowed(a, b, graph, knowledge)) {
-//                return false;
-//            }
-//
-//            if (!isArrowpointAllowed(c, b, graph, knowledge)) {
-//                return false;
-//            }
-//
-//            graph.setEndpoint(a, b, Endpoint.ARROW);
-//            graph.setEndpoint(c, b, Endpoint.ARROW);
-//
-//            if (this.verbose) {
-//                this.logger.forceLogMessage(
-//                        "Definite discriminating path.. d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
-//            }
-//
-//            this.changeFlag = true;
-        } else {
+        if (!sepset.contains(b) && doDiscriminatingPathColliderRule) {
+            if (!isArrowpointAllowed(a, b, graph, knowledge)) {
+                return false;
+            }
+
+            if (!isArrowpointAllowed(c, b, graph, knowledge)) {
+                return false;
+            }
+
+            graph.setEndpoint(a, b, Endpoint.ARROW);
+            graph.setEndpoint(c, b, Endpoint.ARROW);
+
+            if (this.verbose) {
+                this.logger.forceLogMessage(
+                        "Definite discriminating path.. d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
+            }
+
+            this.changeFlag = true;
+        } else if (doDiscriminatingPathTailRule) {
             graph.setEndpoint(c, b, Endpoint.TAIL);
 
             if (this.verbose) {
@@ -1294,8 +1294,12 @@ public final class FciOrient {
         return this.changeFlag;
     }
 
-    public void setDoDiscriminatingPathRule(boolean skip) {
-        this.doDiscriminatingPathRule = skip;
+    public void setDoDiscriminatingPathColliderRule(boolean skip) {
+        this.doDiscriminatingPathColliderRule = skip;
+    }
+
+    public void setDoDiscriminatingPathTailRule(boolean skip) {
+        this.doDiscriminatingPathTailRule = skip;
     }
 
 }

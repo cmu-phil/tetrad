@@ -82,7 +82,8 @@ public final class LvSwap implements GraphSearch {
     private boolean useRaskuttiUhler;
     private boolean useDataOrder = true;
     private boolean useScore = true;
-    private boolean doDiscriminatingPathRule = true;
+    private boolean doDiscriminatingPathColliderRule = true;
+    private boolean doDiscriminatingPathTailRule = true;
     private Knowledge knowledge = new Knowledge();
     private boolean verbose = false;
     private PrintStream out = System.out;
@@ -143,7 +144,8 @@ public final class LvSwap implements GraphSearch {
         SepsetProducer sepsets = new SepsetsGreedy(G4, test, null, depth);
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(knowledge2);
         fciOrient.setVerbose(true);
@@ -310,8 +312,12 @@ public final class LvSwap implements GraphSearch {
         this.useDataOrder = useDataOrder;
     }
 
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
+    }
+
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 
     public void setKnowledge(Knowledge knowledge) {

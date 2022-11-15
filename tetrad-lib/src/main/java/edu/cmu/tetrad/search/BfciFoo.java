@@ -143,7 +143,8 @@ public final class BfciFoo implements GraphSearch {
         SepsetProducer sepsets = new SepsetsGreedy(graph, test, null, depth);
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(knowledge2);
         fciOrient.doFinalOrientation(graph);

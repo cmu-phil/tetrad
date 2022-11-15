@@ -227,7 +227,8 @@ public final class Cfci implements GraphSearch {
                 new SepsetMap(), this.depth));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(-1);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(this.graph);

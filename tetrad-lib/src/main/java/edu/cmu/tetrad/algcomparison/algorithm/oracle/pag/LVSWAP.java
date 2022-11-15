@@ -69,7 +69,10 @@ public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+            search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
+            search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
+            search.setDoDiscriminatingPathColliderRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE));
+            search.setDoDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
 
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));

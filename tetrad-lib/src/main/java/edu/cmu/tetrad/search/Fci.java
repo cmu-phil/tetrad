@@ -217,7 +217,8 @@ public final class Fci implements GraphSearch {
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(this.knowledge);
 

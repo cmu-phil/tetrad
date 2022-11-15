@@ -157,7 +157,8 @@ public final class BFci implements GraphSearch {
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setDoDiscriminatingPathRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setVerbose(true);
         fciOrient.setKnowledge(knowledge2);
 
