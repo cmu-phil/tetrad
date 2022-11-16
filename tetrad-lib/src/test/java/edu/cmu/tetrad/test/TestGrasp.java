@@ -2444,7 +2444,7 @@ public final class TestGrasp {
         return list;
     }
 
-    @Test
+//    @Test
     public void testBFci() {
         for (int grouping : new int[]{1}) {;//, 2, 3, 4, 5, 6}) {
             RandomUtil.getInstance().setSeed(38482838482L);

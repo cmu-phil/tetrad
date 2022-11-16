@@ -57,8 +57,8 @@ public final class TestCptInvariantUpdater {
         BayesIm updatedIm = updater.getUpdatedBayesIm();
 
         // Check results.  /// was 0.125, 0.875??
-        assertEquals(.3, updatedIm.getProbability(0, 0, 0), 0.001);
-        assertEquals(.7, updatedIm.getProbability(0, 0, 1), 0.001);
+        assertEquals(.125, updatedIm.getProbability(0, 0, 0), 0.001);
+        assertEquals(.875, updatedIm.getProbability(0, 0, 1), 0.001);
 
         assertEquals(0.0000, updatedIm.getProbability(1, 0, 0), 0.001);
         assertEquals(1.0000, updatedIm.getProbability(1, 0, 1), 0.001);
@@ -92,13 +92,13 @@ public final class TestCptInvariantUpdater {
         assertEquals(0.2750, updatedIm.getProbability(0, 0, 0), 0.001);
         assertEquals(0.7250, updatedIm.getProbability(0, 0, 1), 0.001);
 
-        assertEquals(.3, updatedIm.getProbability(1, 0, 0), 0.001);
-        assertEquals(.4, updatedIm.getProbability(1, 0, 1), 0.001);
-        assertEquals(.3, updatedIm.getProbability(1, 0, 2), 0.001);
+        assertEquals(.055, updatedIm.getProbability(1, 0, 0), 0.001);
+        assertEquals(.667, updatedIm.getProbability(1, 0, 1), 0.001);
+        assertEquals(.277, updatedIm.getProbability(1, 0, 2), 0.001);
 
-        assertEquals(.6, updatedIm.getProbability(1, 1, 0), 0.001);
-        assertEquals(.1, updatedIm.getProbability(1, 1, 1), 0.001);
-        assertEquals(.3, updatedIm.getProbability(1, 1, 2), 0.001);
+        assertEquals(.786, updatedIm.getProbability(1, 1, 0), 0.001);
+        assertEquals(.065, updatedIm.getProbability(1, 1, 1), 0.001);
+        assertEquals(.147, updatedIm.getProbability(1, 1, 2), 0.001);
 
         assertEquals(0.0000, updatedIm.getProbability(2, 0, 0), 0.001);
         assertEquals(1.0000, updatedIm.getProbability(2, 0, 1), 0.001);
@@ -132,8 +132,8 @@ public final class TestCptInvariantUpdater {
         BayesIm updatedIm = updater.getUpdatedBayesIm();
 
         // Check results.
-        assertEquals(.3, updatedIm.getProbability(0, 0, 0), 0.001);
-        assertEquals(.7, updatedIm.getProbability(0, 0, 1), 0.001);
+        assertEquals(.176, updatedIm.getProbability(0, 0, 0), 0.001);
+        assertEquals(.823, updatedIm.getProbability(0, 0, 1), 0.001);
 
         assertEquals(1.0000, updatedIm.getProbability(1, 0, 0), 0.001);
         assertEquals(0.0000, updatedIm.getProbability(1, 0, 1), 0.001);
