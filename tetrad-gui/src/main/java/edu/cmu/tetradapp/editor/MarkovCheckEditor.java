@@ -160,7 +160,7 @@ public class MarkovCheckEditor extends JPanel {
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Checks whether X ~_||_ Y | parents(X) for Y in (desc(X) \\ parentx(X))"));
+        b2.add(new JLabel("Checks whether X ~_||_ Y | parents(X) for Y in desc(X)"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
