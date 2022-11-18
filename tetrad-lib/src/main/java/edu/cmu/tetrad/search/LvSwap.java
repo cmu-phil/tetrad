@@ -185,30 +185,18 @@ public final class LvSwap implements GraphSearch {
 
     private Graph swapOrient(Graph graph, TeyssierScorer scorer, Knowledge knowledge, Set<Edge> removed) {
         graph = new EdgeListGraph(graph);
-        List<Node> nodes = scorer.getPi();
+        List<Node> pi = scorer.getPi();
 
-//        for (Edge e0 : graph.getEdges()) {
-//            Node x = e0.getNode1();
-//            Node y = e0.getNode2();
-//
-//            for (Node z : graph.getAdjacentNodes(x)) {
-//                for (Node w : graph.getAdjacentNodes(y)) {
-//                    if (z == y) continue;
-//                    if (w == z) continue;
-
-
-//        }
-
-        for (Node x : nodes) {
-            for (Node y : nodes) {
-                for (Node z : nodes) {
-                    for (Node w : nodes) {
-                        if (scorer.index(x) == scorer.index(y)) continue;
-                        if (scorer.index(x) == scorer.index(z)) continue;
-                        if (scorer.index(x) == scorer.index(w)) continue;
-                        if (scorer.index(y) == scorer.index(z)) continue;
-                        if (scorer.index(y) == scorer.index(w)) continue;
-                        if (scorer.index(z) == scorer.index(w)) continue;
+        for (Node y : pi) {
+            for (Node x : graph.getAdjacentNodes(y)) {
+                for (Node w : graph.getAdjacentNodes(y)) {
+                    for (Node z : graph.getAdjacentNodes(x)) {
+//                        if (scorer.index(x) == scorer.index(y)) continue;
+//                        if (scorer.index(x) == scorer.index(z)) continue;
+//                        if (scorer.index(x) == scorer.index(w)) continue;
+//                        if (scorer.index(y) == scorer.index(z)) continue;
+//                        if (scorer.index(y) == scorer.index(w)) continue;
+//                        if (scorer.index(z) == scorer.index(w)) continue;
 
                         scorer.bookmark();
 
@@ -218,7 +206,7 @@ public final class LvSwap implements GraphSearch {
 
                                 boolean swapped = false;
 
-                                for (Node y2 : nodes) {
+                                for (Node y2 : pi) {
                                     if (FciOrient.isArrowpointAllowed(w, y2, graph, knowledge)
                                             && FciOrient.isArrowpointAllowed(x, y2, graph, knowledge)) {
                                         if (a(graph, null, x, y2, w)) {
