@@ -2528,7 +2528,7 @@ public final class TestGrasp {
 //            } else if (grouping == 3) {
                 statistics.add(new NumPossiblyDirected());
                 statistics.add(new NumDirectedEdgeVisible());
-                statistics.add(new NumVisibleNonancestors());
+                statistics.add(new NumVisibleEst());
                 statistics.add(new NumDefinitelyNotDirectedPaths());
                 statistics.add(new NumColoredPD());
                 statistics.add(new NumColoredNL());

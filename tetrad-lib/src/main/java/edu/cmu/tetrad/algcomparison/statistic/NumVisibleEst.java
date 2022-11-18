@@ -2,34 +2,34 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 
 /**
  * @author jdramsey
  */
-public class NumDirectedEdgeVisible implements Statistic {
+public class NumVisibleEst implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#X->Y-Visible";
+        return "#X->Y-Visible-Est";
     }
 
     @Override
     public String getDescription() {
-        return "Number of X-->Y for which X-->Y visible in true PAG";
+        return "Number of X-->Y visible in est";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
 
-        Graph pag = SearchGraphUtils.dagToPag(trueGraph);
-
-        for (Edge edge : pag.getEdges()) {
-            if (pag.defVisible(edge)) {
-                tp++;
+        for (Edge edge : estGraph.getEdges()) {
+            if (Edges.isDirectedEdge(edge)) {
+                if (estGraph.defVisible(edge)) {
+                    tp++;
+                }
             }
         }
 
