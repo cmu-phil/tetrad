@@ -179,6 +179,8 @@ public class TestPcStableMax {
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
 
+        resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
+
         // Do test.
         assertEquals(trueGraph, resultGraph);
     }
