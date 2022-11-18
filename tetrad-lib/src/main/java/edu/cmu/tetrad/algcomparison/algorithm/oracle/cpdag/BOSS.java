@@ -8,10 +8,14 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Score;
@@ -85,12 +89,12 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
             boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             boss.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
-//            boss.setCachingScore(parameters.getBoolean(Params.CACHE_SCORES));
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+
             boss.setKnowledge(this.knowledge);
-            boss.bestOrder(score.getVariables());
+
+            boss.bestOrder(new ArrayList<Node>(score.getVariables()));
             return boss.getGraph(true);
         } else {
             BOSS algorithm = new BOSS(this.test, this.score);

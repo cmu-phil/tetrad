@@ -78,7 +78,7 @@ public final class DagToPag {
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
     public DagToPag(Graph dag) {
-        this.dag = dag;
+        this.dag = new EdgeListGraph(dag);
     }
 
     //========================PUBLIC METHODS==========================//

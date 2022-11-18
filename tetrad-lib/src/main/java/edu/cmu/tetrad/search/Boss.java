@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -114,7 +115,6 @@ public class Boss {
                     betterMutation2(scorer);
                 }
 
-//                besMutation(scorer);
                 s2 = scorer.score();
             } while (s2 > s1);
 
@@ -255,10 +255,6 @@ public class Boss {
         } while (s2 > s1);
 
         scorer.goToBookmark(1);
-
-        if (verbose) {
-            System.out.println();
-        }
     }
 
     private void tuck(Node k, int j, TeyssierScorer scorer, int[] range) {
@@ -354,10 +350,12 @@ public class Boss {
         if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
         Graph graph = this.scorer.getGraph(cpDag);
 
-        orientbk(knowledge, graph, variables);
-        MeekRules meekRules = new MeekRules();
-        meekRules.setRevertToUnshieldedColliders(false);
-        meekRules.orientImplied(graph);
+//        if (cpDag) {
+//            orientbk(knowledge, graph, variables);
+//            MeekRules meekRules = new MeekRules();
+//            meekRules.setRevertToUnshieldedColliders(false);
+//            meekRules.orientImplied(graph);
+//        }
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         graph.addAttribute("score ", nf.format(this.scorer.score()));

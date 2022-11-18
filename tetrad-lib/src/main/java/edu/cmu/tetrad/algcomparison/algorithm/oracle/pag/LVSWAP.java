@@ -11,6 +11,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.LvSwap;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -35,7 +36,7 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-@Experimental
+//@Experimental
 public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
@@ -90,7 +91,11 @@ public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
                 search.setOut((PrintStream) obj);
             }
 
-            return search.search();
+            Graph graph = search.search();
+
+            GraphUtils.circleLayout(graph, 200, 200, 150);
+
+            return graph;
         } else {
             LVSWAP algorithm = new LVSWAP(this.test, this.score);
             DataSet data = (DataSet) dataModel;

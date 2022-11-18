@@ -134,16 +134,22 @@ public class IndTestDSep implements IndependenceTest {
         if (keepLatents) {
             return nodes;
         } else {
-            List<Node> observedVars = new ArrayList<>();
+            List<Node> _nodes = new ArrayList<>(nodes);
+            _nodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-            for (Node node : nodes) {
-                if (node.getNodeType() == NodeType.MEASURED) {
-                    observedVars.add(node);
-                }
-            }
 
-            return observedVars;
+//            List<Node> observedVars = new ArrayList<>();
+//
+//            for (Node node : nodes) {
+//                if (node.getNodeType() == NodeType.MEASURED) {
+//                    observedVars.add(node);
+//                }
+//            }
+
+            return _nodes;
         }
+
+
     }
 
     /**

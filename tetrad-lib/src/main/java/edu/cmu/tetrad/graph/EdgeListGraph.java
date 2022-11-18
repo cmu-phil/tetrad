@@ -458,7 +458,7 @@ public class EdgeListGraph implements Graph {
 //        }
 
         while (!Q.isEmpty()) {
-            Node t = Q.remove();
+            Node t = Q.poll();
 
             for (Node c : getChildren(t)) {
                 if (c == node2) return true;
