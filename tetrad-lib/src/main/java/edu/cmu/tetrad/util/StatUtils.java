@@ -1403,7 +1403,7 @@ public final class StatUtils {
 
         kurt = kurt / (variance * variance) - 3.0;
 
-//        kurt = (((N + 1) * N)/(double)((N-1)*(N-2)*(N-3))) * kurt - 3 * (N-1)*(N-1)/(double)((N-2)*(N-3));
+        kurt = (((N + 1) * N)/(double)((N-1)*(N-2)*(N-3))) * kurt - 3 * (N-1)*(N-1)/(double)((N-2)*(N-3));
 
         return kurt;
     }
@@ -1935,26 +1935,7 @@ public final class StatUtils {
 
     public static double getZForAlpha(double alpha) {
         NormalDistribution dist = new NormalDistribution(0, 1);
-        return dist.inverseCumulativeProbability(1.0 - alpha / 2.0);
-    }
-
-    public static double getChiSquareCutoff(double alpha, int df) {
-        double low = 0.0;
-        double high = 50.0;
-        double mid = 25.0;
-        ChiSquaredDistribution dist = new ChiSquaredDistribution(df);
-
-        while (high - low > 1e-4) {
-            mid = (high + low) / 2.0;
-            double _alpha = 2.0 * (1.0 - dist.cumulativeProbability(abs(mid)));
-
-            if (_alpha > alpha) {
-                low = mid;
-            } else {
-                high = mid;
-            }
-        }
-        return mid;
+        return 1.0 - dist.inverseCumulativeProbability(alpha / 2.0);
     }
 
     // Calculates the log of a list of terms, where the argument consists of the logs of the terms.

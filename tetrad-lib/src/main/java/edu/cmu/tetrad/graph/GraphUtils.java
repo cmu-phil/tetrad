@@ -25,10 +25,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.SepsetMap;
-import edu.cmu.tetrad.search.SepsetProducer;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -5197,7 +5194,7 @@ public final class GraphUtils {
      *
      * @param graph The graph to retain unshielded colliders in.
      */
-    public static void retainUnshieldedColliders(Graph graph) {
+    public static void retainUnshieldedColliders(Graph graph, Knowledge knowledge) {
         Graph orig = new EdgeListGraph(graph);
         graph.reorientAllWith(Endpoint.CIRCLE);
         List<Node> nodes = graph.getNodes();
@@ -5217,8 +5214,11 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                    if (FciOrient.isArrowpointAllowed(a, b, graph, knowledge)
+                            && FciOrient.isArrowpointAllowed(c, b, graph, knowledge)) {
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                    }
                 }
             }
         }

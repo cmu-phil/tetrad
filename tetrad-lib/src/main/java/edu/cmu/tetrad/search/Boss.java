@@ -180,7 +180,7 @@ public class Boss {
                     scorer.bookmark();
 
                     if (verbose) {
-                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutation1)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
 //                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                     }
                 }
@@ -239,7 +239,7 @@ public class Boss {
                     }
 
                     if (verbose) {
-                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
 //                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                     }
                 }
@@ -266,11 +266,11 @@ public class Boss {
             if (ancestors.contains(scorer.get(i))) {
 
                 // package scope no checks
-                scorer.moveToNoUpdate(scorer.get(i), j++);
+                scorer.moveTo(scorer.get(i), j++);
             }
         }
 
-        scorer.updateScores(minIndex, scorer.index(k));
+//        scorer.updateScores(minIndex, scorer.index(k));
 
         range[0] = minIndex;
         range[1] = scorer.index(k);

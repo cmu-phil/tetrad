@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.WeakHashMap;
 
 
 /**
@@ -71,6 +72,7 @@ public final class DagToPag {
     private int maxPathLength = -1;
     private Graph truePag;
     private boolean doDiscriminatingPathRule = true;
+    private static final WeakHashMap<Graph, Graph> history = new WeakHashMap<>();
 
     //============================CONSTRUCTORS============================//
 
@@ -85,6 +87,8 @@ public final class DagToPag {
 
     public Graph convert() {
         this.logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
+
+        if (history.get(dag) != null) return history.get(dag);
 
         if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
@@ -116,6 +120,8 @@ public final class DagToPag {
         if (this.verbose) {
             System.out.println("Finishing final orientation");
         }
+
+        history.put(dag, graph);
 
         return graph;
     }

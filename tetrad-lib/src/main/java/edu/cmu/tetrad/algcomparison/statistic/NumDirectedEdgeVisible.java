@@ -13,7 +13,7 @@ public class NumDirectedEdgeVisible implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "#X->Y-Visible";
+        return "#X->Y-NL";
     }
 
     @Override

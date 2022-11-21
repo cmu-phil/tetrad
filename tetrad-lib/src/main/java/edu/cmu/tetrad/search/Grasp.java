@@ -213,7 +213,7 @@ public class Grasp {
                 Iterator<Node> zItr = Z.iterator();
                 do {
                     if (first) {
-                        scorer.moveToNoUpdate(y, i);
+                        scorer.moveTo(y, i);
                         first = false;
                     } else {
                         Node z = zItr.next();
@@ -221,11 +221,11 @@ public class Grasp {
                             if (scorer.getParents(z).contains(x)) {
                                 singular = false;
                             }
-                            scorer.moveToNoUpdate(z, i++);
+                            scorer.moveTo(z, i++);
                         }
                     }
                 } while (zItr.hasNext());
-                scorer.updateScores(idcs[0], idcs[1]);
+//                scorer.updateScores(idcs[0], idcs[1]);
 
 
                 if (currentDepth > depth[2] && !singular) {

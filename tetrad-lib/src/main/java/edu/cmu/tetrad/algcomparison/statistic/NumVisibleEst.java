@@ -13,7 +13,7 @@ public class NumVisibleEst implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "#X->Y-Visible-Est";
+        return "#X->Y-NL-Est";
     }
 
     @Override

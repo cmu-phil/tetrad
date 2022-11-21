@@ -27,10 +27,11 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
+import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
+import static java.util.Collections.shuffle;
 
 /**
  * Does BOSS2, followed by two swap rules, then final FCI orientation.
@@ -87,6 +88,7 @@ public final class LvSwap implements GraphSearch {
     private Knowledge knowledge = new Knowledge();
     private boolean verbose = false;
     private PrintStream out = System.out;
+    private Boss.AlgType algType = Boss.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public LvSwap(IndependenceTest test, Score score) {
@@ -102,7 +104,7 @@ public final class LvSwap implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss boss = new Boss(scorer);
-        boss.setAlgType(Boss.AlgType.BOSS2);
+        boss.setAlgType(algType);
         boss.setUseScore(useScore);
         boss.setUseRaskuttiUhler(useRaskuttiUhler);
         boss.setUseDataOrder(useDataOrder);
@@ -119,7 +121,7 @@ public final class LvSwap implements GraphSearch {
         Graph G1 = scorer.getGraph(false);
 
         Knowledge knowledge2 = new Knowledge(knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(G1), knowledge2);
+        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(G1), knowledge2);
 
         Graph G2 = new EdgeListGraph(G1);
         retainUnshieldedColliders(G2, knowledge2);
@@ -153,36 +155,6 @@ public final class LvSwap implements GraphSearch {
         fciOrient.doFinalOrientation(G4);
     }
 
-    public static void retainUnshieldedColliders(Graph graph, Knowledge knowledge) {
-        Graph orig = new EdgeListGraph(graph);
-        graph.reorientAllWith(Endpoint.CIRCLE);
-        List<Node> nodes = graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
-                    if (FciOrient.isArrowpointAllowed(a, b, graph, knowledge)
-                            && FciOrient.isArrowpointAllowed(c, b, graph, knowledge)) {
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
-                    }
-                }
-            }
-        }
-    }
-
     private Graph swapOrient(Graph graph, TeyssierScorer scorer, Knowledge knowledge, Set<Edge> removed) {
         graph = new EdgeListGraph(graph);
         List<Node> pi = scorer.getPi();
@@ -191,19 +163,18 @@ public final class LvSwap implements GraphSearch {
             for (Node x : graph.getAdjacentNodes(y)) {
                 for (Node w : graph.getAdjacentNodes(y)) {
                     for (Node z : graph.getAdjacentNodes(x)) {
-//                        if (scorer.index(x) == scorer.index(y)) continue;
-//                        if (scorer.index(x) == scorer.index(z)) continue;
-//                        if (scorer.index(x) == scorer.index(w)) continue;
-//                        if (scorer.index(y) == scorer.index(z)) continue;
-//                        if (scorer.index(y) == scorer.index(w)) continue;
-//                        if (scorer.index(z) == scorer.index(w)) continue;
+                        if (scorer.index(x) == scorer.index(y)) continue;
+                        if (scorer.index(x) == scorer.index(z)) continue;
+                        if (scorer.index(x) == scorer.index(w)) continue;
+                        if (scorer.index(y) == scorer.index(z)) continue;
+                        if (scorer.index(y) == scorer.index(w)) continue;
+                        if (scorer.index(z) == scorer.index(w)) continue;
 
                         scorer.bookmark();
 
                         if (FciOrient.isArrowpointAllowed(w, y, graph, knowledge)
                                 && FciOrient.isArrowpointAllowed(x, y, graph, knowledge)) {
                             if (a(graph, z, x, y, w)) {
-
                                 boolean swapped = false;
 
                                 for (Node y2 : pi) {
@@ -214,7 +185,7 @@ public final class LvSwap implements GraphSearch {
                                                 scorer.swap(x, y);
                                                 swapped = true;
                                             }
-//
+
                                             if (b(scorer, null, x, y2, w)) {
                                                 if (graph.isAdjacentTo(w, x)) {
                                                     Edge edge = graph.getEdge(w, x);
@@ -244,6 +215,31 @@ public final class LvSwap implements GraphSearch {
         }
 
         return graph;
+    }
+
+    public boolean findDdpColliderPath(Node from, Node b, Node to, List<Node> path, Graph graph) {
+        if (path.contains(b)) return false;
+        if (b == to) return true;
+        path.add(b);
+
+        Node a = path.get(path.size() - 2);
+
+        for (Node c : graph.getAdjacentNodes(b)) {
+            Edge e = graph.getEdge(b, to);
+            Edge e1 = Edges.directedEdge(b, to);
+            Edge e2 = Edges.partiallyOrientedEdge(b, to);
+
+            if ((a != from && graph.isDefCollider(a, b, c)) && (e1.equals(e) || e2.equals(e))) {
+                boolean found = findDdpColliderPath(from, c, to, path, graph);
+
+                if (found) {
+                    return true;
+                }
+            }
+        }
+
+        path.remove(b);
+        return false;
     }
 
     private Graph swapRemove(Graph graph, Set<Edge> removed) {
@@ -352,5 +348,9 @@ public final class LvSwap implements GraphSearch {
 
     public void setOut(PrintStream out) {
         this.out = out;
+    }
+
+    public void setAlgType(Boss.AlgType algType) {
+        this.algType = algType;
     }
 }

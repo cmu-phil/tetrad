@@ -181,29 +181,24 @@ public class StatsListEditor extends JPanel {
         statistics.add(new NumDirectedEdgeNoMeasureAncestors());
         statistics.add(new NumDefinitelyDirected());
         statistics.add(new NumColoredDD());
-//            } else if (grouping == 3) {
         statistics.add(new NumPossiblyDirected());
         statistics.add(new NumDirectedEdgeVisible());
-        statistics.add(new NumVisibleEst());
+//        statistics.add(new NumVisibleEst());
         statistics.add(new NumDefinitelyNotDirectedPaths());
         statistics.add(new NumColoredPD());
         statistics.add(new NumColoredNL());
         statistics.add(new NumColoredPL());
-//            } else if (grouping == 4) {
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagRecallArrows());
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagRecallTails());
         statistics.add(new NumDirectedPathsTrue());
         statistics.add(new NumDirectedPathsEst());
-//            } else if (grouping == 5) {
-//                statistics.add(new NumDirectedEdgeBnaMeasuredCounfounded());
-        statistics.add(new NumDirectedEdgeBnaLatentCounfounded());
+        statistics.add(new NumDirectedShouldBePartiallyDirected());
         statistics.add(new NumBidirectedEdgesEst());
         statistics.add(new NumBidirectedBothNonancestorAncestor());
         statistics.add(new NumCommonMeasuredAncestorBidirected());
         statistics.add(new NumLatentCommonAncestorBidirected());
-//            } else if (grouping == 6) {
         statistics.add(new SemidirectedPrecision());
         statistics.add(new SemidirectedPrecisionDag());
         statistics.add(new SemidirectedRecall());

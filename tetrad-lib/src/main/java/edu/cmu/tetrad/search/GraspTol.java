@@ -315,8 +315,8 @@ public class GraspTol {
                 Iterator<Node> zItr = Z.iterator();
                 do {
                     if (first) {
-//                        scorer.moveTo(y, i);
-                        scorer.moveToNoUpdate(y, i);
+                        scorer.moveTo(y, i);
+//                        scorer.moveToNoUpdate(y, i);
                         first = false;
                     } else {
                         Node z = zItr.next();
@@ -324,12 +324,12 @@ public class GraspTol {
                             if (scorer.getParents(z).contains(x)) {
                                 singular = false;
                             }
-//                            scorer.moveTo(z, i++);
-                            scorer.moveToNoUpdate(z, i++);
+                            scorer.moveTo(z, i++);
+//                            scorer.moveToNoUpdate(z, i++);
                         }
                     }
                 } while (zItr.hasNext());
-                scorer.updateScores(idcs[0], idcs[1]);
+//                scorer.updateScores(idcs[0], idcs[1]);
 
 
                 if (currentDepth > depth[2] && !singular) {

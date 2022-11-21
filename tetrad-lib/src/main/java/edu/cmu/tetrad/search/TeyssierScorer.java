@@ -194,6 +194,9 @@ public class TeyssierScorer {
         double score = 0;
 
         for (int i = 0; i < this.pi.size(); i++) {
+            if (this.scores.get(i) == null) {
+                recalculate(i);
+            }
             double score1 = this.scores.get(i).getScore();
             score += score1;
         }
@@ -333,6 +336,7 @@ public class TeyssierScorer {
      * @return Its parents.
      */
     public Set<Node> getParents(int p) {
+        if (this.scores.get(p) == null) recalculate(p);
         return new HashSet<>(this.scores.get(p).getParents());
     }
 
@@ -731,10 +735,11 @@ public class TeyssierScorer {
         updateScores(0, this.pi.size() - 1);
     }
 
-    public void updateScores(int i1, int i2) {
+    private void updateScores(int i1, int i2) {
         for (int i = i1; i <= i2; i++) {
             this.orderHash.put(this.pi.get(i), i);
-            recalculate(i);
+            this.scores.set(i, null);
+//            recalculate(i);
         }
 
 //        for (int i = i1; i <= i2; i++) {
@@ -1065,25 +1070,25 @@ public class TeyssierScorer {
     }
 
 
-    public void moveToNoUpdate(Node v, int toIndex) {
-        bookmark(-55);
-
-        if (!this.pi.contains(v)) return;
-
-        int vIndex = index(v);
-
-        if (vIndex == toIndex) return;
-
-        if (lastMoveSame(vIndex, toIndex)) return;
-
-        this.pi.remove(v);
-        this.pi.add(toIndex, v);
-
-        if (violatesKnowledge(this.pi)) {
-            goToBookmark(-55);
-        }
-
-    }
+//    public void moveToNoUpdate(Node v, int toIndex) {
+//        bookmark(-55);
+//
+//        if (!this.pi.contains(v)) return;
+//
+//        int vIndex = index(v);
+//
+//        if (vIndex == toIndex) return;
+//
+//        if (lastMoveSame(vIndex, toIndex)) return;
+//
+//        this.pi.remove(v);
+//        this.pi.add(toIndex, v);
+//
+//        if (violatesKnowledge(this.pi)) {
+//            goToBookmark(-55);
+//        }
+//
+//    }
 
     public boolean parent(Node k, Node j) {
         return getParents(j).contains(k);

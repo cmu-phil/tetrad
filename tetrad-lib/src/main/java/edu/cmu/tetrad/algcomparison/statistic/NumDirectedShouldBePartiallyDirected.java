@@ -13,7 +13,7 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
  *
  * @author jdramsey
  */
-public class NumDirectedEdgeBnaLatentCounfounded implements Statistic {
+public class NumDirectedShouldBePartiallyDirected implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
