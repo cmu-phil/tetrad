@@ -163,12 +163,12 @@ public final class LvSwap implements GraphSearch {
             for (Node x : graph.getAdjacentNodes(y)) {
                 for (Node w : graph.getAdjacentNodes(y)) {
                     for (Node z : graph.getAdjacentNodes(x)) {
-                        if (scorer.index(x) == scorer.index(y)) continue;
-                        if (scorer.index(x) == scorer.index(z)) continue;
-                        if (scorer.index(x) == scorer.index(w)) continue;
-                        if (scorer.index(y) == scorer.index(z)) continue;
-                        if (scorer.index(y) == scorer.index(w)) continue;
-                        if (scorer.index(z) == scorer.index(w)) continue;
+//                        if (scorer.index(x) == scorer.index(y)) continue;
+//                        if (scorer.index(x) == scorer.index(z)) continue;
+//                        if (scorer.index(x) == scorer.index(w)) continue;
+//                        if (scorer.index(y) == scorer.index(z)) continue;
+//                        if (scorer.index(y) == scorer.index(w)) continue;
+//                        if (scorer.index(z) == scorer.index(w)) continue;
 
                         scorer.bookmark();
 
