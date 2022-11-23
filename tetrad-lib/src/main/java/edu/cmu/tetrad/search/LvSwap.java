@@ -180,13 +180,13 @@ public final class LvSwap implements GraphSearch {
                                 for (Node y2 : pi) {
                                     if (FciOrient.isArrowpointAllowed(w, y2, graph, knowledge)
                                             && FciOrient.isArrowpointAllowed(x, y2, graph, knowledge)) {
-                                        if (a(graph, null, x, y2, w)) {
+                                        if (a3(graph, x, y2, w)) {
                                             if (!swapped) {
                                                 scorer.swap(x, y);
                                                 swapped = true;
                                             }
 
-                                            if (b(scorer, null, x, y2, w)) {
+                                            if (b3(scorer, x, y2, w)) {
                                                 if (graph.isAdjacentTo(w, x)) {
                                                     Edge edge = graph.getEdge(w, x);
 
@@ -264,17 +264,20 @@ public final class LvSwap implements GraphSearch {
     }
 
     private static boolean a(Graph graph, Node z, Node x, Node y, Node w) {
-        if ((z == null || graph.isAdjacentTo(z, x)) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)
+        if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)
                 && graph.isAdjacentTo(w, x)) {
-            return (z == null || graph.isDefCollider(z, x, y));// && graph.getEndpoint(x, y) == Endpoint.CIRCLE;
+            return (z == null || graph.isDefCollider(z, x, y));
         }
 
         return false;
     }
 
-    private static boolean b(TeyssierScorer scorer, Node z, Node x, Node y, Node w) {
-        if ((z == null || scorer.adjacent(z, x)) && scorer.adjacent(x, y) && scorer.adjacent(y, w)
-                && (z == null || scorer.adjacent(z, y)) && !scorer.adjacent(w, x)) {
+    private static boolean a3(Graph graph, Node x, Node y, Node w) {
+        return graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w) && graph.isAdjacentTo(w, x);
+    }
+
+    private static boolean b3(TeyssierScorer scorer, Node x, Node y, Node w) {
+        if (scorer.adjacent(x, y) && scorer.adjacent(y, w) && !scorer.adjacent(w, x)) {
             return scorer.collider(w, y, x);
         }
 
