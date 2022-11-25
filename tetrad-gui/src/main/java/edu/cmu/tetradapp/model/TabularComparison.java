@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
@@ -99,9 +100,10 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             this.targetGraph = model2.getGraph();
         }
 
-        if (this.targetGraph.isPag() || this.referenceGraph.isPag()) {
-            this.targetGraph.setPag(true);
-            this.referenceGraph.setPag(true);
+        if (this.targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG
+                || this.referenceGraph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+            this.targetGraph.setGraphType(EdgeListGraph.GraphType.PAG);
+            this.referenceGraph.setGraphType(EdgeListGraph.GraphType.PAG);
         }
 
         newExecution();

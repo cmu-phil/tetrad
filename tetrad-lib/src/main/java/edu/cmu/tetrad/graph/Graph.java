@@ -56,7 +56,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     boolean addUndirectedEdge(Node node1, Node node2);
 
     /**
-     * Adds an nondirected edges o-o to the graph.
+     * Adds a nondirected edges o-o to the graph.
      */
     boolean addNondirectedEdge(Node node1, Node node2);
 
@@ -375,13 +375,9 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      */
     boolean isDConnectedTo(Node node1, Node node2, List<Node> z);
 
-    boolean isCPDAG();
+    EdgeListGraph.GraphType getGraphType();
 
-    void setCPDAG(boolean cpdag);
-
-    boolean isPag();
-
-    void setPag(boolean pag);
+    void setGraphType(EdgeListGraph.GraphType graphType);
 
     /**
      * Determines whether one node is d-separated from another. Two elements are   E

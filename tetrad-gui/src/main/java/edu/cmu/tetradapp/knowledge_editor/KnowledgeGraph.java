@@ -54,6 +54,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     private boolean CPDAG;
 
     private final Map<String, Object> attributes = new HashMap<>();
+    private EdgeListGraph.GraphType graphType = EdgeListGraph.GraphType.DAG;
 
     //============================CONSTRUCTORS=============================//
 
@@ -575,24 +576,12 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return null;
     }
 
-    @Override
-    public boolean isPag() {
-        return this.pag;
+    public void setGraphType(EdgeListGraph.GraphType graphType) {
+        this.graphType = graphType;
     }
 
-    @Override
-    public void setPag(boolean pag) {
-        this.pag = pag;
-    }
-
-    @Override
-    public boolean isCPDAG() {
-        return this.CPDAG;
-    }
-
-    @Override
-    public void setCPDAG(boolean CPDAG) {
-        this.CPDAG = CPDAG;
+    public EdgeListGraph.GraphType getGraphType() {
+        return this.graphType;
     }
 
     @Override

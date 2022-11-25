@@ -132,11 +132,9 @@ public final class BFci2 implements GraphSearch {
         removeSomeMoreEdgesAndOrientSomeBidirectedEdgesByTesting(this.graph, reference, nodes, sepsets, knowledge2);
         doFinalOrientation(sepsets, knowledge2);
 
-        graph.setPag(true);
+        this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
-
-        this.graph.setPag(true);
 
         return this.graph;
     }

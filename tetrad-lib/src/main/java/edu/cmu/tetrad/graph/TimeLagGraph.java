@@ -379,25 +379,7 @@ public class TimeLagGraph implements Graph {
         return null;
     }
 
-    @Override
-    public boolean isPag() {
-        return this.pag;
-    }
-
-    @Override
-    public void setPag(boolean pag) {
-        this.pag = pag;
-    }
-
-    @Override
-    public boolean isCPDAG() {
-        return this.cpdag;
-    }
-
-    @Override
-    public void setCPDAG(boolean CPDAG) {
-        this.cpdag = CPDAG;
-    }
+    public EdgeListGraph.GraphType graphType;
 
     public static class NodeId {
         private final String name;
@@ -846,6 +828,14 @@ public class TimeLagGraph implements Graph {
         this.attributes.put(key, value);
     }
 
+    @Override
+    public EdgeListGraph.GraphType getGraphType() {
+        return graphType;
+    }
+
+    public void setGraphType(EdgeListGraph.GraphType graphType) {
+        this.graphType = graphType;
+    }
 }
 
 

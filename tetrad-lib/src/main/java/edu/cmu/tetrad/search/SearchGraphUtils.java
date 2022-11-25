@@ -1624,7 +1624,7 @@ public final class SearchGraphUtils {
             if (!edge1.equals(edge2)) {
                 incorrect.add(adj);
 
-                if (graph1.isPag() && graph2.isPag()) {
+                if (graph1.getGraphType() == EdgeListGraph.GraphType.PAG && graph2.getGraphType() == EdgeListGraph.GraphType.PAG) {
                     GraphUtils.addPagColoring(graph1);
                     GraphUtils.addPagColoring(graph2);
 
@@ -1639,7 +1639,7 @@ public final class SearchGraphUtils {
             }
         }
 
-        if (graph1.isPag() && graph2.isPag()) {
+        if (graph1.getGraphType() == EdgeListGraph.GraphType.PAG && graph2.getGraphType() == EdgeListGraph.GraphType.PAG) {
 
             builder.append("\n\n" + "Edges incorrectly oriented (incompatible)");
 

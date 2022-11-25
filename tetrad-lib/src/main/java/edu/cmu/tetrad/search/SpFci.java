@@ -194,7 +194,7 @@ public final class SpFci implements GraphSearch {
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(graph);
 
-        graph.setPag(true);
+        graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         graph.removeAttribute("BIC");
 

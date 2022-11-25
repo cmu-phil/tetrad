@@ -41,6 +41,7 @@ public class LagGraph implements Graph {
     private boolean CPDAG;
 
     private final Map<String, Object> attributes = new HashMap<>();
+    private EdgeListGraph.GraphType graphType = EdgeListGraph.GraphType.UNLABELED;
 
     // New methods.
     public boolean addVariable(String variable) {
@@ -485,24 +486,12 @@ public class LagGraph implements Graph {
         return null;
     }
 
-    @Override
-    public boolean isPag() {
-        return this.pag;
+    public EdgeListGraph.GraphType getGraphType() {
+        return graphType;
     }
 
-    @Override
-    public void setPag(boolean pag) {
-        this.pag = pag;
-    }
-
-    @Override
-    public boolean isCPDAG() {
-        return this.CPDAG;
-    }
-
-    @Override
-    public void setCPDAG(boolean CPDAG) {
-        this.CPDAG = CPDAG;
+    public void setGraphType(EdgeListGraph.GraphType graphType) {
+        this.graphType = graphType;
     }
 
     @Override

@@ -139,7 +139,7 @@ public final class BfciTr implements GraphSearch {
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(graph);
 
-        graph.setPag(true);
+        graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return graph;
     }

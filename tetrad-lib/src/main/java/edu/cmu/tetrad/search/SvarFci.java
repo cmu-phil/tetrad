@@ -22,10 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -243,7 +240,7 @@ public final class SvarFci implements GraphSearch {
         fciOrient.ruleR0(this.graph);
         fciOrient.doFinalOrientation(this.graph);
 
-        this.graph.setPag(true);
+        this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return this.graph;
     }

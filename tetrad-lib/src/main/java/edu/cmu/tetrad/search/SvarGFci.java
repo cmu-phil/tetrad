@@ -205,7 +205,7 @@ public final class SvarGFci implements GraphSearch {
 
         long elapsedTime = time2 - time1;
 
-        this.graph.setPag(true);
+        this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return this.graph;
     }

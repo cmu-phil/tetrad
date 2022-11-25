@@ -22,10 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -1046,6 +1043,11 @@ public final class FciOrient {
      * @return Whether or not R9 was succesfully applied.
      */
     private boolean ruleR9(Node a, Node c, Graph graph) {
+        Edge e = graph.getEdge(a, c);
+
+        if (e == null) return false;
+        if (!e.equals(Edges.partiallyOrientedEdge(a, c))) return false;
+
         List<List<Node>> ucPdPsToC = getUcPdPaths(a, c, graph);
 
         for (List<Node> u : ucPdPsToC) {

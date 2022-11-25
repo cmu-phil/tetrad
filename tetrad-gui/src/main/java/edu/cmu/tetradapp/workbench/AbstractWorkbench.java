@@ -927,7 +927,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         } else {
             this.graph = graph;
 
-            if (graph.isPag()) {
+            if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
                 GraphUtils.addPagColoring(new EdgeListGraph(graph));
             }
         }
@@ -1200,7 +1200,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             displayEdge.setHighlighted(true);
         }
 
-        if (graph.isPag()) {
+        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
 
             // visible edges.
             boolean solid = modelEdge.getProperties().contains(Edge.Property.nl);

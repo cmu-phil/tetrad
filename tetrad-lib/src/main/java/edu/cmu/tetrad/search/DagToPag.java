@@ -115,7 +115,7 @@ public final class DagToPag {
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.setVerbose(true);
         fciOrient.doFinalOrientation(graph);
-        graph.setPag(true);
+        graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         if (this.verbose) {
             System.out.println("Finishing final orientation");

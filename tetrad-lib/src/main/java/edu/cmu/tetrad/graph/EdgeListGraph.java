@@ -20,8 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.util.Params;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -47,6 +45,8 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
 public class EdgeListGraph implements Graph {
 
     static final long serialVersionUID = 23L;
+
+    public enum GraphType {DAG, CPDAG, PAG, UNLABELED}
 
     /**
      * A list of the nodes in the graph, in the order in which they were added.
@@ -106,10 +106,14 @@ public class EdgeListGraph implements Graph {
      * A hash from node names to nodes;
      */
     Map<String, Node> namesHash;
-    private boolean cpdag;
+
+    private GraphType graphType = GraphType.UNLABELED;
 
     //==============================CONSTUCTORS===========================//
     private boolean pag;
+
+
+
 
     /**
      * Constructs a new (empty) EdgeListGraph.
@@ -156,8 +160,7 @@ public class EdgeListGraph implements Graph {
             this.namesHash.put(node.getName(), node);
         }
 
-        setPag(graph.isPag());
-        setCPDAG(graph.isCPDAG());
+        setGraphType(graph.getGraphType());
     }
 
     public EdgeListGraph(EdgeListGraph graph) throws IllegalArgumentException {
@@ -185,8 +188,7 @@ public class EdgeListGraph implements Graph {
 
         this.highlightedEdges = new HashSet<>(graph.highlightedEdges);
 
-        setPag(graph.isPag());
-        setCPDAG(graph.isCPDAG());
+        setGraphType(graph.getGraphType());
     }
 
     /**
@@ -368,7 +370,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean defVisible(Edge edge) {
-        if (!isPag()) return true;
+        if (getGraphType() != GraphType.PAG) return true;
         if (!edge.isDirected()) return false;
 
         if (containsEdge(edge)) {
@@ -794,31 +796,17 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * True if this graph has been stamped as a cpdag. The search algorithm
-     * should do this.
-     */
-    @Override
-    public boolean isCPDAG() {
-        return this.cpdag;
-    }
-
-    @Override
-    public void setCPDAG(boolean cpdag) {
-        this.cpdag = cpdag;
-    }
-
-    /**
      * True if this graph has been "stamped" as a PAG_of_the_true_DAG. The
      * search algorithm should do this.
      */
     @Override
-    public boolean isPag() {
-        return this.pag;
+    public GraphType getGraphType() {
+        return graphType;
     }
 
     @Override
-    public void setPag(boolean pag) {
-        this.pag = pag;
+    public void setGraphType(GraphType graphType) {
+        this.graphType = graphType;
     }
 
     /**
@@ -1604,7 +1592,7 @@ public class EdgeListGraph implements Graph {
             }
         }
 
-        setPag(graph.isPag());
+        setGraphType(graph.getGraphType());
 
         return graph;
     }

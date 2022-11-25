@@ -138,7 +138,7 @@ public final class LvSwap implements GraphSearch {
         retainUnshieldedColliders(G4, knowledge2);
         finalOrientation(knowledge2, G4);
 
-        G4.setPag(true);
+        G4.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return G4;
     }
@@ -175,16 +175,17 @@ public final class LvSwap implements GraphSearch {
                         if (FciOrient.isArrowpointAllowed(w, y, graph, knowledge)
                                 && FciOrient.isArrowpointAllowed(x, y, graph, knowledge)) {
                             if (a(graph, z, x, y, w)) {
-                                boolean swapped = false;
+//                                boolean swapped = false;
+
+                                scorer.swap(x, y);
 
                                 for (Node y2 : pi) {
                                     if (FciOrient.isArrowpointAllowed(w, y2, graph, knowledge)
                                             && FciOrient.isArrowpointAllowed(x, y2, graph, knowledge)) {
-                                        if (a3(graph, x, y2, w)) {
-                                            if (!swapped) {
-                                                scorer.swap(x, y);
-                                                swapped = true;
-                                            }
+                                        if (a(graph, z, x, y2, w)) {
+//                                            if (!swapped) {
+//                                                swapped = true;
+//                                            }
 
                                             if (b3(scorer, x, y2, w)) {
                                                 if (graph.isAdjacentTo(w, x)) {
@@ -199,8 +200,19 @@ public final class LvSwap implements GraphSearch {
                                                 if (!graph.isDefCollider(x, y2, w)) {
                                                     graph.setEndpoint(x, y2, Endpoint.ARROW);
                                                     graph.setEndpoint(w, y2, Endpoint.ARROW);
-                                                    out.println("Remove orienting " + GraphUtils.pathString(graph, x, y2, w));
+                                                    out.println("Orienting collider " + GraphUtils.pathString(graph, x, y2, w));
                                                 }
+                                            } else if (c3(scorer, x, y2, w)) {
+                                                if (graph.isAdjacentTo(w, x)) {
+                                                    Edge edge = graph.getEdge(w, x);
+
+                                                    if (!removed.contains(edge)) {
+                                                        out.println("Marking " + edge + " for removal (swapping " + x + " and " + y + ")");
+                                                        removed.add(edge);
+                                                    }
+
+                                                }
+
                                             }
                                         }
                                     }
@@ -266,7 +278,7 @@ public final class LvSwap implements GraphSearch {
     private static boolean a(Graph graph, Node z, Node x, Node y, Node w) {
         if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)
                 && graph.isAdjacentTo(w, x)) {
-            return (z == null || graph.isDefCollider(z, x, y));
+            return graph.isDefCollider(z, x, y);
         }
 
         return false;
@@ -279,6 +291,14 @@ public final class LvSwap implements GraphSearch {
     private static boolean b3(TeyssierScorer scorer, Node x, Node y, Node w) {
         if (scorer.adjacent(x, y) && scorer.adjacent(y, w) && !scorer.adjacent(w, x)) {
             return scorer.collider(w, y, x);
+        }
+
+        return false;
+    }
+
+    private static boolean c3(TeyssierScorer scorer, Node x, Node y, Node w) {
+        if (scorer.adjacent(x, y) && scorer.adjacent(y, w) && !scorer.adjacent(w, x)) {
+            return !scorer.collider(w, y, x);
         }
 
         return false;

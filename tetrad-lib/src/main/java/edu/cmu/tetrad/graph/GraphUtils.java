@@ -1610,6 +1610,7 @@ public final class GraphUtils {
         }
 
         Graph convertedGraph = new EdgeListGraph(newVariables);
+        convertedGraph.setGraphType(originalGraph.getGraphType());
 
         for (Edge edge : originalGraph.getEdges()) {
             Node node1 = newNodes.get(edge.getNode1().getName());
@@ -1669,8 +1670,7 @@ public final class GraphUtils {
             convertedGraph.addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
-        convertedGraph.setPag(originalGraph.isPag());
-        convertedGraph.setCPDAG(originalGraph.isCPDAG());
+        convertedGraph.setGraphType(EdgeListGraph.GraphType.CPDAG);
 
         return convertedGraph;
     }
@@ -3108,7 +3108,7 @@ public final class GraphUtils {
      *
      * @param graph        The graph to find a causal order for. Must be acyclic, though
      *                     it need not be a DAG.
-     * @param initialorder The order to try to get as close to as possible.
+     * @param initialOrder The order to try to get as close to as possible.
      * @return Such a causal order.
      */
     public static List<Node> getCausalOrdering(Graph graph, List<Node> initialOrder) {
@@ -3782,7 +3782,7 @@ public final class GraphUtils {
 
     public static String graphToText(Graph graph) {
         // add edge properties relating to edge coloring of PAGs
-        if (graph.isPag()) {
+        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
             GraphUtils.addPagColoring(graph);
         }
 
