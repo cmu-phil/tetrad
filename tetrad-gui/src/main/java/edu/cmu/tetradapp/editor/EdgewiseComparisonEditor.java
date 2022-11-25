@@ -26,7 +26,6 @@ import edu.cmu.tetradapp.model.GraphWrapper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 
 /**
  * Provides a little display/editor for notes in the session workbench. This may
@@ -55,42 +54,20 @@ public class EdgewiseComparisonEditor extends JPanel {
     private void setup() {
         setLayout(new BorderLayout());
 
-        List<Graph> referenceGraphs = this.comparison.getReferenceGraphs();
-        JTabbedPane pane = new JTabbedPane(SwingConstants.LEFT);
+        JPanel pane = new JPanel();
 
-        for (int i = 0; i < referenceGraphs.size(); i++) {
-            JTabbedPane pane2 = new JTabbedPane(SwingConstants.TOP);
-            String compareString = this.comparison.getComparisonString(i);
+        String compareString = this.comparison.getComparisonString();
 
-            Font font = new Font("Monospaced", Font.PLAIN, 14);
-            JTextArea textPane = new JTextArea();
-            textPane.setText(compareString);
+        Font font = new Font("Monospaced", Font.PLAIN, 14);
+        JTextArea textPane = new JTextArea();
+        textPane.setText(compareString);
 
-            textPane.setFont(font);
+        textPane.setFont(font);
 
-            JScrollPane scrollTextPane = new JScrollPane(textPane);
-            scrollTextPane.setPreferredSize(new Dimension(400, 400));
+        JScrollPane scrollTextPane = new JScrollPane(textPane);
+        scrollTextPane.setPreferredSize(new Dimension(500, 600));
 
-            pane2.add("Comparison", scrollTextPane);
-
-            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getTargetGraphs().get(i)));
-            graphEditor.enableEditing(false);
-
-            JScrollPane scrollTargetGraph = new JScrollPane(graphEditor.getWorkbench());
-            scrollTargetGraph.setPreferredSize(new Dimension(400, 400));
-
-            pane2.add("Target Graph", scrollTargetGraph);
-
-            graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getReferenceGraphs().get(i)));
-            graphEditor.enableEditing(false);
-
-            JScrollPane scrollTrueGraph = new JScrollPane(graphEditor.getWorkbench());
-            scrollTrueGraph.setPreferredSize(new Dimension(400, 400));
-
-            pane2.add("True Graph", scrollTrueGraph);
-
-            pane.add("" + (i + 1), pane2);
-        }
+        pane.add(scrollTextPane, new BorderLayout());
 
         add(pane);
     }

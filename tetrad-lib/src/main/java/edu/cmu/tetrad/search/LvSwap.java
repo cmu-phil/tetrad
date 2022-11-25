@@ -23,15 +23,16 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
-import static java.util.Collections.shuffle;
 
 /**
  * Does BOSS2, followed by two swap rules, then final FCI orientation.
@@ -163,31 +164,21 @@ public final class LvSwap implements GraphSearch {
             for (Node x : graph.getAdjacentNodes(y)) {
                 for (Node w : graph.getAdjacentNodes(y)) {
                     for (Node z : graph.getAdjacentNodes(x)) {
-//                        if (scorer.index(x) == scorer.index(y)) continue;
-//                        if (scorer.index(x) == scorer.index(z)) continue;
-//                        if (scorer.index(x) == scorer.index(w)) continue;
-//                        if (scorer.index(y) == scorer.index(z)) continue;
-//                        if (scorer.index(y) == scorer.index(w)) continue;
-//                        if (scorer.index(z) == scorer.index(w)) continue;
-
                         scorer.bookmark();
 
-                        if (FciOrient.isArrowpointAllowed(w, y, graph, knowledge)
-                                && FciOrient.isArrowpointAllowed(x, y, graph, knowledge)) {
-                            if (a(graph, z, x, y, w)) {
-//                                boolean swapped = false;
-
+                        if (leftCollider(graph, z, x, y, w)) {
+                            if (FciOrient.isArrowpointAllowed(w, y, graph, knowledge)
+                                    && FciOrient.isArrowpointAllowed(x, y, graph, knowledge)) {
                                 scorer.swap(x, y);
 
-                                for (Node y2 : pi) {
-                                    if (FciOrient.isArrowpointAllowed(w, y2, graph, knowledge)
-                                            && FciOrient.isArrowpointAllowed(x, y2, graph, knowledge)) {
-                                        if (a(graph, z, x, y2, w)) {
-//                                            if (!swapped) {
-//                                                swapped = true;
-//                                            }
+                                if (!scorer.adjacent(x, w)) {
+                                    List<Node> adj = graph.getAdjacentNodes(x);
+                                    adj.retainAll(graph.getAdjacentNodes(w));
 
-                                            if (b3(scorer, x, y2, w)) {
+                                    for (Node y2 : adj) {
+                                        if (unshieldedCollider(scorer, x, y2, w)) {
+                                            if (FciOrient.isArrowpointAllowed(w, y2, graph, knowledge)
+                                                    && FciOrient.isArrowpointAllowed(x, y2, graph, knowledge)) {
                                                 if (graph.isAdjacentTo(w, x)) {
                                                     Edge edge = graph.getEdge(w, x);
 
@@ -202,7 +193,7 @@ public final class LvSwap implements GraphSearch {
                                                     graph.setEndpoint(w, y2, Endpoint.ARROW);
                                                     out.println("Orienting collider " + GraphUtils.pathString(graph, x, y2, w));
                                                 }
-                                            } else if (c3(scorer, x, y2, w)) {
+                                            } else if (unshieldedNoncollider(scorer, x, y2, w)) {
                                                 if (graph.isAdjacentTo(w, x)) {
                                                     Edge edge = graph.getEdge(w, x);
 
@@ -210,9 +201,7 @@ public final class LvSwap implements GraphSearch {
                                                         out.println("Marking " + edge + " for removal (swapping " + x + " and " + y + ")");
                                                         removed.add(edge);
                                                     }
-
                                                 }
-
                                             }
                                         }
                                     }
@@ -265,7 +254,7 @@ public final class LvSwap implements GraphSearch {
         return graph;
     }
 
-    private static boolean a(TeyssierScorer scorer, Node z, Node x, Node y, Node w) {
+    private static boolean leftCollider(TeyssierScorer scorer, Node z, Node x, Node y, Node w) {
         if ((z == null || scorer.adjacent(z, x)) && scorer.adjacent(x, y) && scorer.adjacent(y, w)) {
             if (scorer.adjacent(w, x)) {
                 return (z == null || scorer.collider(z, x, y));
@@ -275,7 +264,7 @@ public final class LvSwap implements GraphSearch {
         return false;
     }
 
-    private static boolean a(Graph graph, Node z, Node x, Node y, Node w) {
+    private static boolean leftCollider(Graph graph, Node z, Node x, Node y, Node w) {
         if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)
                 && graph.isAdjacentTo(w, x)) {
             return graph.isDefCollider(z, x, y);
@@ -284,11 +273,11 @@ public final class LvSwap implements GraphSearch {
         return false;
     }
 
-    private static boolean a3(Graph graph, Node x, Node y, Node w) {
+    private static boolean triangle(Graph graph, Node x, Node y, Node w) {
         return graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w) && graph.isAdjacentTo(w, x);
     }
 
-    private static boolean b3(TeyssierScorer scorer, Node x, Node y, Node w) {
+    private static boolean unshieldedCollider(TeyssierScorer scorer, Node x, Node y, Node w) {
         if (scorer.adjacent(x, y) && scorer.adjacent(y, w) && !scorer.adjacent(w, x)) {
             return scorer.collider(w, y, x);
         }
@@ -296,7 +285,7 @@ public final class LvSwap implements GraphSearch {
         return false;
     }
 
-    private static boolean c3(TeyssierScorer scorer, Node x, Node y, Node w) {
+    private static boolean unshieldedNoncollider(TeyssierScorer scorer, Node x, Node y, Node w) {
         if (scorer.adjacent(x, y) && scorer.adjacent(y, w) && !scorer.adjacent(w, x)) {
             return !scorer.collider(w, y, x);
         }

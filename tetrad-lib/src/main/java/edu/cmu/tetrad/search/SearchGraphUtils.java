@@ -1640,14 +1640,13 @@ public final class SearchGraphUtils {
         }
 
         if (graph1.getGraphType() == EdgeListGraph.GraphType.PAG && graph2.getGraphType() == EdgeListGraph.GraphType.PAG) {
-
             builder.append("\n\n" + "Edges incorrectly oriented (incompatible)");
-
-            sort(incompatible);
 
             if (incompatible.isEmpty()) {
                 builder.append("\n  --NONE--");
             } else {
+                sort(incompatible);
+
                 int j1 = 0;
 
                 for (Edge adj : incompatible) {
@@ -1677,44 +1676,44 @@ public final class SearchGraphUtils {
         } else {
             builder.append("\n\n" + "Edges incorrectly oriented");
 
-            sort(incorrect);
-
             if (incorrect.isEmpty()) {
                 builder.append("\n  --NONE--");
             } else {
                 int j1 = 0;
+                sort(incorrect);
 
                 for (Edge adj : incorrect) {
                     Edge edge1 = graph1.getEdge(adj.getNode1(), adj.getNode2());
                     Edge edge2 = graph2.getEdge(adj.getNode1(), adj.getNode2());
                     if (edge1 == null || edge2 == null) continue;
-                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge1);
+                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
                 }
             }
         }
 
+        {
+            builder.append("\n\n" + "Edges correctly oriented");
 
-        builder.append("\n\n" + "Edges correctly oriented");
+            List<Edge> correct = new ArrayList<>();
 
-        List<Edge> correct = new ArrayList<>();
-
-        for (Edge adj : allSingleEdges) {
-            Edge edge1 = graph1.getEdge(adj.getNode1(), adj.getNode2());
-            Edge edge2 = graph2.getEdge(adj.getNode1(), adj.getNode2());
-            if (edge1.equals(edge2)) {
-                correct.add(edge1);
+            for (Edge adj : allSingleEdges) {
+                Edge edge1 = graph1.getEdge(adj.getNode1(), adj.getNode2());
+                Edge edge2 = graph2.getEdge(adj.getNode1(), adj.getNode2());
+                if (edge1.equals(edge2)) {
+                    correct.add(edge1);
+                }
             }
-        }
 
-        sort(correct);
+            if (correct.isEmpty()) {
+                builder.append("\n  --NONE--");
+            } else {
+                sort(correct);
 
-        if (correct.isEmpty()) {
-            builder.append("\n  --NONE--");
-        } else {
-            int j2 = 0;
+                int j2 = 0;
 
-            for (Edge edge : correct) {
-                builder.append("\n").append(++j2).append(". ").append(edge);
+                for (Edge edge : correct) {
+                    builder.append("\n").append(++j2).append(". ").append(edge);
+                }
             }
         }
 
