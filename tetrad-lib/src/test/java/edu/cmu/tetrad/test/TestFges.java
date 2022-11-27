@@ -177,7 +177,7 @@ public class TestFges {
 
         Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
 
-        int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
+        int[][] counts = SearchGraphUtils.graphComparison(trueCPDAG, estCPDAG, null);
 
         int[][] expectedCounts = {
                 {2, 0, 0, 0, 0, 1},

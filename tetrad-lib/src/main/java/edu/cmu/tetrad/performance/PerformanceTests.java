@@ -126,7 +126,7 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + PC-Stable) " + (time4 - time2) + " ms");
 
-        SearchGraphUtils.graphComparison(outGraph, SearchGraphUtils.cpdagForDag(graph), this.out);
+        SearchGraphUtils.graphComparison(SearchGraphUtils.cpdagForDag(graph), outGraph, this.out);
 
         this.out.close();
     }
@@ -241,7 +241,7 @@ public class PerformanceTests {
         System.out.println("# edges in true CPDAG = " + trueCPDAG.getNumEdges());
         System.out.println("# edges in est CPDAG = " + estCPDAG.getNumEdges());
 
-        SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, this.out);
+        SearchGraphUtils.graphComparison(trueCPDAG, estCPDAG, this.out);
 
         this.out.close();
     }
@@ -309,7 +309,7 @@ public class PerformanceTests {
         System.out.println("# edges in true CPDAG = " + trueCPDAG.getNumEdges());
         System.out.println("# edges in est CPDAG = " + estCPDAG.getNumEdges());
 
-        SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, this.out);
+        SearchGraphUtils.graphComparison(trueCPDAG, estCPDAG, this.out);
 
         this.out.close();
     }
@@ -372,7 +372,7 @@ public class PerformanceTests {
         System.out.println("# edges in true CPDAG = " + trueCPDAG.getNumEdges());
         System.out.println("# edges in est CPDAG = " + estCPDAG.getNumEdges());
 
-        SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, this.out);
+        SearchGraphUtils.graphComparison(trueCPDAG, estCPDAG, this.out);
 
         this.out.close();
     }
@@ -456,7 +456,7 @@ public class PerformanceTests {
 
         this.out.println("Total elapsed (cov + PC-Stable) " + (time4 - time2) + " ms");
 
-        SearchGraphUtils.graphComparison(outGraph, SearchGraphUtils.cpdagForDag(graph), this.out);
+        SearchGraphUtils.graphComparison(SearchGraphUtils.cpdagForDag(graph), outGraph, this.out);
 
         this.out.close();
     }
@@ -529,7 +529,7 @@ public class PerformanceTests {
 
         Graph trueCPDAG = SearchGraphUtils.cpdagForDag(graph);
 
-        SearchGraphUtils.graphComparison(outGraph, trueCPDAG, this.out);
+        SearchGraphUtils.graphComparison(trueCPDAG, outGraph, this.out);
 
         this.out.println("# ambiguous triples = " + outGraph.getAmbiguousTriples().size());
 

@@ -76,7 +76,7 @@ public class StatsListEditor extends JPanel {
     @NotNull
     private String tableTextWithHeader() {
         TextTable table = tableText();
-        return "Comparing target " + this.comparison.getTargetName() + " to reference " + this.comparison.getReferenceName()
+        return "True graph from " + this.comparison.getReferenceName() + "\nTarget graph from " + this.comparison.getTargetName()
                 + "\n\n" + table;
     }
 

@@ -157,65 +157,101 @@ public final class LvSwap implements GraphSearch {
     }
 
     private Graph swapOrient(Graph graph, TeyssierScorer scorer, Knowledge knowledge, Set<Edge> removed) {
+        removed.clear();
+
         graph = new EdgeListGraph(graph);
         List<Node> pi = scorer.getPi();
 
         for (Node y : pi) {
             for (Node x : graph.getAdjacentNodes(y)) {
                 for (Node w : graph.getAdjacentNodes(y)) {
+
+                    Z:
                     for (Node z : graph.getAdjacentNodes(x)) {
-                        scorer.bookmark();
+                        if (!distinct(z, x, y, w)) continue;
 
-                        if (leftCollider(graph, z, x, y, w)) {
-                            if (FciOrient.isArrowpointAllowed(w, y, graph, knowledge)
-                                    && FciOrient.isArrowpointAllowed(x, y, graph, knowledge)) {
+                        // Check to make sure you have a left collider in the graph--i.e., z->x<-y
+                        // with adj(w, x)
+                        if (graph.isDefCollider(z, x, y)) {
+                            scorer.swap(x, y);
+
+                            // Make aure you get a right unshielded collider in the scorer--i.e. x->y<-w
+                            // with ~adj(x, w)
+                            if (scorer.adjacent(x, w)) {
                                 scorer.swap(x, y);
+                                continue;
+                            }
 
-                                if (!scorer.adjacent(x, w)) {
-                                    List<Node> adj = graph.getAdjacentNodes(x);
-                                    adj.retainAll(graph.getAdjacentNodes(w));
+                            if (scorer.adjacent(z, w)) {
+                                scorer.swap(x, y);
+                                continue;
+                            }
 
-                                    for (Node y2 : adj) {
-                                        if (unshieldedCollider(scorer, x, y2, w)) {
-                                            if (FciOrient.isArrowpointAllowed(w, y2, graph, knowledge)
-                                                    && FciOrient.isArrowpointAllowed(x, y2, graph, knowledge)) {
-                                                if (graph.isAdjacentTo(w, x)) {
-                                                    Edge edge = graph.getEdge(w, x);
+                            if (!scorer.collider(x, y, w)) {
+                                scorer.swap(x, y);
+                                continue;
+                            }
 
-                                                    if (!removed.contains(edge)) {
-                                                        out.println("Marking " + edge + " for removal (swapping " + x + " and " + y + ")");
-                                                        removed.add(edge);
-                                                    }
-                                                }
+                            if (!scorer.collider(z, y, w)) {
+                                scorer.swap(x, y);
+                                continue;
+                            }
 
-                                                if (!graph.isDefCollider(x, y2, w)) {
-                                                    graph.setEndpoint(x, y2, Endpoint.ARROW);
-                                                    graph.setEndpoint(w, y2, Endpoint.ARROW);
-                                                    out.println("Orienting collider " + GraphUtils.pathString(graph, x, y2, w));
-                                                }
-                                            } else if (unshieldedNoncollider(scorer, x, y2, w)) {
-                                                if (graph.isAdjacentTo(w, x)) {
-                                                    Edge edge = graph.getEdge(w, x);
+                            // Make sure the new scorer orientations are all allowed in the graph...
+                            Set<Node> adj = scorer.getAdjacentNodes(x);
+                            adj.retainAll(scorer.getAdjacentNodes(w));
 
-                                                    if (!removed.contains(edge)) {
-                                                        out.println("Marking " + edge + " for removal (swapping " + x + " and " + y + ")");
-                                                        removed.add(edge);
-                                                    }
-                                                }
-                                            }
-                                        }
+                            for (Node y2 : adj) {
+                                if (scorer.collider(x, y2, w)) {
+                                    if (!FciOrient.isArrowpointAllowed(w, y2, graph, knowledge)
+                                            || !FciOrient.isArrowpointAllowed(x, y2, graph, knowledge)) {
+                                        scorer.swap(x, y);
+                                        continue Z;
+                                    }
+                                } else {
+                                    if (graph.isDefCollider(x, y2, w)) {
+                                        scorer.swap(x, y);
+                                        continue Z;
                                     }
                                 }
                             }
-                        }
 
-                        scorer.goToBookmark();
+                            // If OK, mark w*-*x for removal and do any new collider orientations in the graph...
+                            Edge edge = graph.getEdge(w, x);
+
+                            if (!removed.contains(edge)) {
+                                out.println("Marking " + edge + " for removal (swapping " + x + " and " + y + ")");
+                                removed.add(edge);
+                            }
+
+                            for (Node y2 : adj) {
+                                if (scorer.collider(x, y2, w)) {
+                                    if (!graph.isDefCollider(x, y2, w)) {
+                                        graph.setEndpoint(x, y2, Endpoint.ARROW);
+                                        graph.setEndpoint(w, y2, Endpoint.ARROW);
+                                        out.println("Orienting collider " + GraphUtils.pathString(graph, x, y2, w));
+                                    }
+                                }
+                            }
+
+                            scorer.swap(x, y);
+                        }
                     }
                 }
             }
         }
 
         return graph;
+    }
+
+    private boolean distinct(Node...n) {
+        for (int i = 0; i < n.length; i++) {
+            for (int j = i + 1; j < n.length; j++) {
+                if (n[i] == n[j]) return false;
+            }
+        }
+
+        return true;
     }
 
     public boolean findDdpColliderPath(Node from, Node b, Node to, List<Node> path, Graph graph) {
