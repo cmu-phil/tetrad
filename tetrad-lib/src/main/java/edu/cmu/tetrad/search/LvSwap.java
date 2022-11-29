@@ -137,6 +137,22 @@ public final class LvSwap implements GraphSearch {
         // Do final FCI orientation rules app
         Graph G4 = new EdgeListGraph(G3);
         retainUnshieldedColliders(G4, knowledge2);
+
+        List<Node> nodes = G4.getNodes();
+
+        for (Node n1 : nodes) {
+            for (Node n2 : nodes) {
+                if (n1 == n2) continue;
+
+                List<Node> ddp = ddp(n1, n2, G4);
+
+                if (ddp != null) {
+                    System.out.println("DDP from " + n1 + " to " + n2 + ": " + GraphUtils.pathString(ddp, G4));
+                }
+            }
+        }
+
+
         finalOrientation(knowledge2, G4);
 
         G4.setGraphType(EdgeListGraph.GraphType.PAG);
@@ -168,7 +184,7 @@ public final class LvSwap implements GraphSearch {
 
                     Z:
                     for (Node z : graph.getAdjacentNodes(x)) {
-                        if (!distinct(z, x, y, w)) continue;
+//                        if (!distinct(z, x, y, w)) continue;
 
                         // Check to make sure you have a left collider in the graph--i.e., z->x<-y
                         // with adj(w, x)
@@ -177,22 +193,8 @@ public final class LvSwap implements GraphSearch {
 
                             // Make aure you get a right unshielded collider in the scorer--i.e. x->y<-w
                             // with ~adj(x, w)
-                            if (scorer.adjacent(x, w)) {
-                                scorer.swap(x, y);
-                                continue;
-                            }
-
-                            if (scorer.adjacent(z, w)) {
-                                scorer.swap(x, y);
-                                continue;
-                            }
-
-                            if (!scorer.collider(x, y, w)) {
-                                scorer.swap(x, y);
-                                continue;
-                            }
-
-                            if (!scorer.collider(z, y, w)) {
+                            if (scorer.adjacent(x, w) || scorer.adjacent(z, w) || !scorer.collider(x, y, w)
+                                    || !scorer.collider(z, y, w)) {
                                 scorer.swap(x, y);
                                 continue;
                             }
@@ -219,7 +221,7 @@ public final class LvSwap implements GraphSearch {
                             // If OK, mark w*-*x for removal and do any new collider orientations in the graph...
                             Edge edge = graph.getEdge(w, x);
 
-                            if (!removed.contains(edge)) {
+                            if (edge != null && !removed.contains(edge)) {
                                 out.println("Marking " + edge + " for removal (swapping " + x + " and " + y + ")");
                                 removed.add(edge);
                             }
@@ -244,7 +246,7 @@ public final class LvSwap implements GraphSearch {
         return graph;
     }
 
-    private boolean distinct(Node...n) {
+    private boolean distinct(Node... n) {
         for (int i = 0; i < n.length; i++) {
             for (int j = i + 1; j < n.length; j++) {
                 if (n[i] == n[j]) return false;
@@ -254,24 +256,47 @@ public final class LvSwap implements GraphSearch {
         return true;
     }
 
-    public boolean findDdpColliderPath(Node from, Node b, Node to, List<Node> path, Graph graph) {
+    public List<Node> ddp(Node from, Node to, Graph graph) {
+        if (!graph.isAdjacentTo(from, to)) return null;
+
+        List<Node> path = new ArrayList<>();
+        path.add(from);
+
+        for (Node b : graph.getAdjacentNodes(from)) {
+            if (findDdpColliderPath(b, to, path, graph)) {
+                return path;
+            }
+        }
+
+        return null;
+    }
+
+    public boolean findDdpColliderPath(Node b, Node to, List<Node> path, Graph graph) {
         if (path.contains(b)) return false;
-        if (b == to) return true;
         path.add(b);
+        if (path.size() >= 3 && b == to) return true;
 
         Node a = path.get(path.size() - 2);
 
         for (Node c : graph.getAdjacentNodes(b)) {
+            if (!graph.isDefCollider(a, b, c)) continue;
+
+//            if (c != to) {
             Edge e = graph.getEdge(b, to);
-            Edge e1 = Edges.directedEdge(b, to);
-            Edge e2 = Edges.partiallyOrientedEdge(b, to);
+            if (e == null) {
+                path.remove(b);
+                return false;
+            }
+//                if (e.getProximalEndpoint(to) != Endpoint.ARROW) continue;
+//            if (e.getProximalEndpoint(b) == Endpoint.ARROW) continue;
+            System.out.println("e = " + e + " to = " + to);
+//            }
 
-            if ((a != from && graph.isDefCollider(a, b, c)) && (e1.equals(e) || e2.equals(e))) {
-                boolean found = findDdpColliderPath(from, c, to, path, graph);
 
-                if (found) {
-                    return true;
-                }
+            boolean found = findDdpColliderPath(c, to, path, graph);
+
+            if (found) {
+                return true;
             }
         }
 

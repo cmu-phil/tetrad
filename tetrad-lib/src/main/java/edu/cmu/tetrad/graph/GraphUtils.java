@@ -269,6 +269,8 @@ public final class GraphUtils {
             GraphUtils.circleLayout(dag, 200, 200, 150);
         }
 
+        dag.setGraphType(EdgeListGraph.GraphType.DAG);
+
         return dag;
     }
 
