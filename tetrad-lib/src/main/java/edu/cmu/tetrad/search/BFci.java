@@ -119,6 +119,7 @@ public final class BFci implements GraphSearch {
         alg.setUseDataOrder(useDataOrder);
         alg.setDepth(depth);
         alg.setNumStarts(numStarts);
+//        alg.setKnowledge(knowledge);
         alg.setVerbose(false);
 
         List<Node> variables = this.score.getVariables();
