@@ -2554,9 +2554,9 @@ public final class TestGrasp {
                 statistics.add(new NumLatentCommonAncestorBidirected());
             } else if (grouping == 6) {
                 statistics.add(new SemidirectedPrecision());
-                statistics.add(new SemidirectedPrecisionDag());
+                statistics.add(new SemidirectedPrecision());
                 statistics.add(new SemidirectedRecall());
-                statistics.add(new SemidirectedRecallDag());
+                statistics.add(new SemidirectedRecall());
                 statistics.add(new NoSemidirectedPrecision());
                 statistics.add(new NoSemidirectedRecall());
                 statistics.add(new ProportionSemidirectedPathsNotReversedEst());
@@ -2588,9 +2588,9 @@ public final class TestGrasp {
                 statistics.add(new NumCommonMeasuredAncestorBidirected());
                 statistics.add(new NumLatentCommonAncestorBidirected());
                 statistics.add(new SemidirectedPrecision());
-                statistics.add(new SemidirectedPrecisionDag());
+                statistics.add(new SemidirectedPrecision());
                 statistics.add(new SemidirectedRecall());
-                statistics.add(new SemidirectedRecallDag());
+                statistics.add(new SemidirectedRecall());
                 statistics.add(new NoSemidirectedPrecision());
                 statistics.add(new NoSemidirectedRecall());
                 statistics.add(new ProportionSemidirectedPathsNotReversedEst());

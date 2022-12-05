@@ -347,7 +347,7 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\n\nBetween " + node1 + " and " + node2 + ":");
 
                 for (List<Node> trek : treks) {
-                    textArea.append("\n    " + GraphUtils.pathString(trek, graph));
+                    textArea.append("\n    " + GraphUtils.pathString(graph, trek));
                 }
             }
         }

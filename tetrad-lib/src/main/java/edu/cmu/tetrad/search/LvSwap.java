@@ -123,6 +123,9 @@ public final class LvSwap implements GraphSearch {
         Graph G2 = new EdgeListGraph(G1);
         retainUnshieldedColliders(G2, knowledge2);
 
+//        Graph G5 = new EdgeListGraph(G2);
+
+//        for (int i = 0; i < 5; i++) {
         Graph G3 = new EdgeListGraph(G2);
 
         Set<Edge> removed = new HashSet<>();
@@ -138,22 +141,40 @@ public final class LvSwap implements GraphSearch {
 
         // Do final FCI orientation rules app
         Graph G4 = new EdgeListGraph(G3);
-        retainUnshieldedColliders(G4, knowledge2);
+//        retainUnshieldedColliders(G4, knowledge2);
 
-//        GraphUtils.removeByPossibleDsep(G4, test, new SepsetMap());
-        printDdps(G4);
+        Graph _G4;
 
-        retainUnshieldedColliders(G4, knowledge2);
+        do {
+            _G4 = new EdgeListGraph(G4);
+            removeDdpCovers(G4, scorer, removed, true);
+        } while (!_G4.equals(G4));
 
+        G4 = swapRemove(G4, removed);
 
-        finalOrientation(knowledge2, G4);
+        do {
+            _G4 = new EdgeListGraph(G4);
+            removeDdpCovers(G4, scorer, removed, false);
+
+            G4 = swapRemove(G4, removed);
+
+//        retainUnshieldedColliders(G4, knowledge2);
+
+//            Graph G5 = new EdgeListGraph(G4);
+
+//        }
+
+            retainUnshieldedColliders(G4, knowledge2);
+
+            finalOrientation(knowledge2, G4);
+        } while (!_G4.equals(G4));
 
         G4.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return G4;
     }
 
-    private void printDdps(Graph G4) {
+    private void removeDdpCovers(Graph G4, TeyssierScorer scorer, Set<Edge> toRemove, boolean flag) {
         List<Node> nodes = G4.getNodes();
 
         for (Node n1 : nodes) {
@@ -161,22 +182,90 @@ public final class LvSwap implements GraphSearch {
                 if (n1 == n2) continue;
                 if (!G4.isAdjacentTo(n1, n2)) continue;
 
-                List<List<Node>> ddps = ddp(n1, n2, G4);
+                List<List<Node>> coveredDdps = coveredDdps(n1, n2, G4);
 
-                for (List<Node> path : ddps) {
-                    System.out.println("Edge from 'from' to 'to': " + G4.getEdge(n1, n2));
-                    System.out.println("DDP path: " + GraphUtils.pathString(path, G4));
+                for (List<Node> path : coveredDdps) {
+                    if (!G4.isAdjacentTo(n1, n2)) continue;
+
+                    System.out.println("\nEdge from 'from' to 'to': " + G4.getEdge(n1, n2));
+
+                    for (int i = 1; i < path.size() - 2; i++) {
+                        System.out.println(G4.getEdge(path.get(i), n2));
+                    }
+
+                    System.out.println("DDP path: " + GraphUtils.pathString(G4, path));
+
+                    if (path.size() >= 3) {
+                        scorer.bookmark();
+
+                        Node bn = path.get(path.size() - 3);
+                        Node c = path.get(path.size() - 2);
+                        Node d = path.get(path.size() - 1);
+                        reverseTuck(c, scorer.index(d), scorer);
+
+//                        scorer.tuck(path.get(0), scorer.index(path.get(1)));
+//                        scorer.tuck(path.get(0), scorer.index(c));
+//                        scorer.tuck(path.get(0), scorer.index(d));
+
+                        for (int i = 1; i <= path.size() - 3; i++) {
+                            scorer.tuck(path.get(i), scorer.index(d));
+                            scorer.tuck(path.get(i), scorer.index(c));
+                        }
+
+//                        if (G4.getEndpoint(c, d) == Endpoint.ARROW) {
+                        if (flag && !scorer.adjacent(n1, n2)) {// && G4.getEndpoint(d, c) == Endpoint.CIRCLE) {
+//                            G4.removeEdge(n1, n2);
+                            G4.setEndpoint(bn, c, Endpoint.ARROW);
+                            G4.setEndpoint(d, c, Endpoint.ARROW);
+                            toRemove.add(G4.getEdge(n1, n2));
+                        }
+
+                        if (!flag && !scorer.adjacent(n1, n2)) {// if (G4.getEndpoint(c, d) == Endpoint.ARROW && G4.getEndpoint(d, c) == Endpoint.CIRCLE) {
+                            G4.setEndpoint(d, c, Endpoint.TAIL);
+                            toRemove.add(G4.getEdge(n1, n2));
+                        }
+
+
+                        scorer.goToBookmark();
+                    }
                 }
             }
         }
+
+    }
+
+    public boolean reverseTuck(Node k, int j, TeyssierScorer scorer) {
+//        if (scorer.adjacent(k, scorer.get(j))) return false;
+//        if (scorer.coveredEdge(k, scorer.get(j))) return false;
+        int _k = scorer.index(k);
+        if (j <= _k) return false;
+
+        Set<Node> descendants = scorer.getDescendants(k);
+
+        System.out.println("Doing a reverse tuck; k = " + k + " pi(j) = " + scorer.get(j));
+        System.out.println("Descendanta of " + k + " = " + descendants);
+
+        System.out.println("Iterating down from " + j + " to " + _k);
+        System.out.println("Pi before = " + scorer.getPi());
+
+        for (int i = j; i >= 0; i--) {
+            Node varI = scorer.get(i);
+            if (descendants.contains(varI)) {
+                scorer.moveTo(varI, j);
+            }
+        }
+
+        System.out.println("Pi after = " + scorer.getPi());
+
+        return true;
     }
 
     private void finalOrientation(Knowledge knowledge2, Graph G4) {
         SepsetProducer sepsets = new SepsetsGreedy(G4, test, null, depth);
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(true);//this.doDiscriminatingPathColliderRule);
+        fciOrient.setDoDiscriminatingPathTailRule(true);//this.doDiscriminatingPathTailRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(knowledge2);
         fciOrient.setVerbose(true);
@@ -269,7 +358,7 @@ public final class LvSwap implements GraphSearch {
         return true;
     }
 
-    public List<List<Node>> ddp(Node from, Node to, Graph graph) {
+    public List<List<Node>> coveredDdps(Node from, Node to, Graph graph) {
         if (!graph.isAdjacentTo(from, to)) throw new IllegalArgumentException();
 
         List<List<Node>> paths = new ArrayList<>();
@@ -278,55 +367,52 @@ public final class LvSwap implements GraphSearch {
         path.add(from);
 
         for (Node b : graph.getAdjacentNodes(from)) {
-            if (findDdpColliderPaths(from, b, to, path, graph, paths)) {
-                return paths;
-            }
+            findDdpColliderPaths(from, b, to, path, graph, paths);
         }
 
         return paths;
     }
 
-    public boolean findDdpColliderPaths(Node from, Node b, Node to, List<Node> path, Graph graph, List<List<Node>> paths) {
-        if (path.contains(b)) return false;
+    public void findDdpColliderPaths(Node from, Node b, Node to, List<Node> path, Graph graph, List<List<Node>> paths) {
+        if (path.contains(b)) {
+            return;
+        }
+
         path.add(b);
-        if (b == to) return true;
 
-        boolean bok = true;
+        if (b == to && path.size() >= 4) {
+            boolean ok = true;
 
-        Edge e = graph.getEdge(b, to);
-
-        if (e == null) {
-            bok = false;
-        } else {
-            if (e.getProximalEndpoint(b) == Endpoint.ARROW) {
-                bok = false;
-            }
-
-            if (e.getProximalEndpoint(to) != Endpoint.ARROW) {
-                bok = false;
-            }
-
-            if (path.size() >= 3) {
-                for (int i = 0; i < path.size() - 2; i++) {
-                    if (!graph.isDefCollider(path.get(i), path.get(i + 1), path.get(i + 2))) {
-                        bok = false;
-                    }
+            for (int i = 1; i < path.size() - 2; i++) {
+                Node d = path.get(i);
+                Edge e2 = graph.getEdge(d, to);
+                if (!Edges.partiallyOrientedEdge(d, to).equals(e2)) {
+                    ok = false;
                 }
+            }
+
+            for (int i = 0; i < path.size() - 3; i++) {
+                if (!graph.isDefCollider(path.get(i), path.get(i + 1), path.get(i + 2))) ok = false;
+            }
+
+            if (ok) {
+                paths.add(new ArrayList<>(path));
             }
         }
 
-        if (bok) {
-            for (Node c : graph.getAdjacentNodes(b)) {
-                boolean found = findDdpColliderPaths(from, c, to, path, graph, paths);
+        boolean ok = true;
 
-                if (found) {
-                    paths.add(new ArrayList<>(path));
-                }
+        for (int i = 0; i < path.size() - 3; i++) {
+            if (!graph.isDefCollider(path.get(i), path.get(i + 1), path.get(i + 2))) ok = false;
+        }
+
+        if (ok) {
+            for (Node c : graph.getAdjacentNodes(b)) {
+                findDdpColliderPaths(from, c, to, path, graph, paths);
             }
         }
 
         path.remove(b);
-        return false;
     }
 
     private Graph swapRemove(Graph graph, Set<Edge> removed) {
@@ -338,45 +424,6 @@ public final class LvSwap implements GraphSearch {
         }
 
         return graph;
-    }
-
-    private static boolean leftCollider(TeyssierScorer scorer, Node z, Node x, Node y, Node w) {
-        if ((z == null || scorer.adjacent(z, x)) && scorer.adjacent(x, y) && scorer.adjacent(y, w)) {
-            if (scorer.adjacent(w, x)) {
-                return (z == null || scorer.collider(z, x, y));
-            }
-        }
-
-        return false;
-    }
-
-    private static boolean leftCollider(Graph graph, Node z, Node x, Node y, Node w) {
-        if (graph.isAdjacentTo(z, x) && graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w)
-                && graph.isAdjacentTo(w, x)) {
-            return graph.isDefCollider(z, x, y);
-        }
-
-        return false;
-    }
-
-    private static boolean triangle(Graph graph, Node x, Node y, Node w) {
-        return graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w) && graph.isAdjacentTo(w, x);
-    }
-
-    private static boolean unshieldedCollider(TeyssierScorer scorer, Node x, Node y, Node w) {
-        if (scorer.adjacent(x, y) && scorer.adjacent(y, w) && !scorer.adjacent(w, x)) {
-            return scorer.collider(w, y, x);
-        }
-
-        return false;
-    }
-
-    private static boolean unshieldedNoncollider(TeyssierScorer scorer, Node x, Node y, Node w) {
-        if (scorer.adjacent(x, y) && scorer.adjacent(y, w) && !scorer.adjacent(w, x)) {
-            return !scorer.collider(w, y, x);
-        }
-
-        return false;
     }
 
     /**

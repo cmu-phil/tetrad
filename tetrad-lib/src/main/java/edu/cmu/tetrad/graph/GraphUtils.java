@@ -1531,7 +1531,7 @@ public final class GraphUtils {
         return newGraph;
     }
 
-    public static String pathString(List<Node> path, Graph graph) {
+    public static String pathString(Graph graph, List<Node> path) {
         return GraphUtils.pathString(graph, path, new LinkedList<>());
     }
 

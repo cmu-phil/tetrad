@@ -200,9 +200,7 @@ public class StatsListEditor extends JPanel {
         statistics.add(new NumCommonMeasuredAncestorBidirected());
         statistics.add(new NumLatentCommonAncestorBidirected());
         statistics.add(new SemidirectedPrecision());
-        statistics.add(new SemidirectedPrecisionDag());
         statistics.add(new SemidirectedRecall());
-        statistics.add(new SemidirectedRecallDag());
         statistics.add(new NoSemidirectedPrecision());
         statistics.add(new NoSemidirectedRecall());
         statistics.add(new ProportionSemidirectedPathsNotReversedEst());
