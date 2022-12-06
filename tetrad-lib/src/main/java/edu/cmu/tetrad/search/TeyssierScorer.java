@@ -2,6 +2,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.SublistGenerator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -417,6 +419,119 @@ public class TeyssierScorer {
         } else {
             return G1;
         }
+    }
+
+//    public Graph getGraph(boolean cpDag) {
+//
+//        if(cpDag) {
+//            return findCompelled();
+//        }
+//
+//        List<Node> order = getPi();
+//        Graph G1 = new EdgeListGraph(this.variables);
+//
+//        for (int p = 0; p < order.size(); p++) {
+//            for (Node z : getParents(p)) {
+//                G1.addDirectedEdge(z, order.get(p));
+//            }
+//        }
+//
+//        GraphUtils.replaceNodes(G1, this.variables);
+//
+//        if (cpDag) {
+//            return SearchGraphUtils.cpdagForDag(G1);
+//        } else {
+//            return G1;
+//        }
+//    }
+
+    private List<Edge> orderEdges() {
+
+        List<Edge> orderedEdges = new ArrayList<>();
+
+        for (int i = this.pi.size(); i-- > 0; ) {
+            Node y = this.pi.get(i);
+            Set<Node> pa = this.getParents(i);
+            for (int j = 0; j < i; j++) {
+                Node x = this.pi.get(j);
+                if (pa.contains(x)) {
+                    Edge e = new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
+                    orderedEdges.add(e);
+                    pa.remove(x);
+                    if (pa.isEmpty()) {
+                        break;
+                    }
+                }
+            }
+        }
+        return orderedEdges;
+    }
+
+    public Graph findCompelled() {
+
+        Graph G = new EdgeListGraph(this.variables);
+
+        List<Edge> orderedEdges = orderEdges();
+
+        Node remainderCompelled = null;
+        Node remainderReversible = null;
+
+        EDGES:
+        while (!orderedEdges.isEmpty()) {
+
+            Edge e = orderedEdges.remove(0);
+            Node x = e.getNode1();
+            Node y = e.getNode2();
+
+            if (remainderCompelled != null) {
+                if (remainderCompelled == y) {
+                    G.addEdge(e);
+                    continue;
+                } else {
+                    remainderCompelled = null;
+                }
+            }
+
+            if (remainderReversible != null) {
+                if (remainderReversible == y) {
+                    G.addUndirectedEdge(x, y);
+                    continue;
+                } else {
+                    remainderReversible = null;
+                }
+            }
+
+            if (G.isParentOf(x, y)) {
+                continue;
+            }
+
+            List<Node> compelled = G.getParents(x);
+            Set<Node> xPa = getParents(x);
+            Set<Node> yPa = getParents(y);
+
+            for (Node w : compelled) {
+                if (yPa.contains(w)) {
+                    G.addEdge(e);
+                    continue EDGES;
+                } else {
+                    G.addDirectedEdge(w, y);
+                }
+            }
+
+            yPa.remove(x);
+            for (Node z : yPa) {
+                if (!xPa.contains(z)) {
+                    G.addEdge(e);
+                    remainderCompelled = y;
+                    continue EDGES;
+                }
+            }
+
+            G.addUndirectedEdge(x, y);
+            remainderReversible = y;
+        }
+
+        return G;
     }
 
     /**
@@ -956,6 +1071,41 @@ public class TeyssierScorer {
                 changed2 = true;
             }
         }
+
+//        while (changed2) {
+//            changed2 = false;
+//
+//            List<Node> aaa = null;
+//
+//            List<Node> pp = new ArrayList<>(parents);
+//
+//            SublistGenerator gen = new SublistGenerator(parents.size(), 2);
+//            int[] choice;
+//
+//            while ((choice = gen.next()) != null) {
+//                List<Node> aa = GraphUtils.asList(choice, pp);
+//
+////            for (Node z0 : new HashSet<>(parents)) {
+////                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
+////
+//                aa.forEach(parents::remove);
+//
+//                double s2 = score(n, parents);
+//
+//                if (s2 > sMax) {
+//                    sMax = s2;
+//                    aaa = aa;
+//                }
+//
+//                parents.addAll(aa);
+//            }
+//
+//            if (aaa != null) {
+//                aaa.forEach(parents::remove);
+//                changed2 = true;
+//            }
+//
+//        }
 
         if (this.useScore) {
             return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
