@@ -114,6 +114,7 @@ public class StatsListEditor extends JPanel {
         }
 
         table.setJustification(TextTable.LEFT_JUSTIFIED);
+
         return table;
     }
 

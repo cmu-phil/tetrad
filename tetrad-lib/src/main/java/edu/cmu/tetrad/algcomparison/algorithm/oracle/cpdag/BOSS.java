@@ -91,6 +91,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
             boss.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+            boss.setCaching(parameters.getBoolean(Params.CACHE_SCORES));
 
             boss.setKnowledge(this.knowledge);
 
@@ -142,7 +143,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.TIME_LAG);
-//        params.add(Params.CACHE_SCORES);
+        params.add(Params.CACHE_SCORES);
         params.add(Params.VERBOSE);
 
         // Parameters

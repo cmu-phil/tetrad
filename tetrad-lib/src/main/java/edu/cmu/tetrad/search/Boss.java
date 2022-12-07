@@ -36,6 +36,7 @@ public class Boss {
     private int depth = -1;
     private int numStarts = 1;
     private AlgType algType = AlgType.BOSS1;
+    private boolean caching = true;
 
     public Boss(@NotNull IndependenceTest test, Score score) {
         this.test = test;
@@ -60,7 +61,7 @@ public class Boss {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
-        boolean caching = true;
+//        boolean caching = true;
         scorer.setCachingScores(caching);
         scorer.setKnowledge(knowledge);
 
@@ -459,6 +460,10 @@ public class Boss {
 
     public void setAlgType(AlgType algType) {
         this.algType = algType;
+    }
+
+    public void setCaching(boolean caching) {
+        this.caching = caching;
     }
 
     public enum AlgType {BOSS1, BOSS2}

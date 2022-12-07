@@ -878,14 +878,14 @@ public class TeyssierScorer {
 //    }
 
     private double score(Node n, Set<Node> pi) {
-//        if (this.cachingScores) {
-//            this.cache.computeIfAbsent(n, w -> new HashMap<>());
-//            Float score = this.cache.get(n).get(pi);
-//
-//            if (score != null) {
-//                return score;
-//            }
-//        }
+        if (this.cachingScores) {
+            this.cache.computeIfAbsent(n, w -> new HashMap<>());
+            Double score = this.cache.get(n).get(pi);
+
+            if (score != null) {
+                return score;
+            }
+        }
 
         int[] parentIndices = new int[pi.size()];
 
@@ -901,10 +901,10 @@ public class TeyssierScorer {
 
         double v = (double) this.score.localScore(this.variablesHash.get(n), parentIndices);
 
-//        if (this.cachingScores) {
-//            this.cache.computeIfAbsent(n, w -> new HashMap<>());
-//            this.cache.get(n).put(new HashSet<>(pi), v);
-//        }
+        if (this.cachingScores) {
+            this.cache.computeIfAbsent(n, w -> new HashMap<>());
+            this.cache.get(n).put(new HashSet<>(pi), v);
+        }
 
         return v;
     }

@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
@@ -29,7 +32,6 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr;
 import static java.lang.Double.NaN;
@@ -252,7 +254,7 @@ public class SemBicScore implements Score {
         return localScoreDiff(x, y, new int[0]);
     }
 
-    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
+//    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
 
     /**
      * @param i       The index of the node.
@@ -293,20 +295,20 @@ public class SemBicScore implements Score {
 
         Arrays.sort(parents);
 
-        List<Integer> _all = new ArrayList<>();
-        _all.add(i);
-        for (int value : parents) _all.add(value);
-
+//        List<Integer> _all = new ArrayList<>();
+//        _all.add(i);
+//        for (int value : parents) _all.add(value);
+//
 //        if (cache.containsKey(_all)) {
 //            lik = cache.get(_all);
 //        } else {
-            try {
-                double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
-                lik = -(double) this.sampleSize * log(varey);
+        try {
+            double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+            lik = -(double) this.sampleSize * log(varey);
 //                cache.put(_all, lik);
-            } catch (SingularMatrixException e) {
-                lik = NaN;
-            }
+        } catch (SingularMatrixException e) {
+            lik = NaN;
+        }
 
 //            cache.put(_all, lik);
 //        }
