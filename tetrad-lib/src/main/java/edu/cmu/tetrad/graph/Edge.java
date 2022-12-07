@@ -254,10 +254,12 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
             String n1 = getNode1().getName();
             String n2 = getNode2().getName();
-            if (n1.compareTo(n2) > 0) {// Sort node's names
-                n1 = getNode2().getName();
-                n2 = getNode1().getName();
-            }
+
+            // bug! 2022/12/07
+//            if (n1.compareTo(n2) > 0) {// Sort node's names
+//                n1 = getNode2().getName();
+//                n2 = getNode1().getName();
+//            }
 
             for (EdgeTypeProbability etp : edgeTypeDist) {
                 double prob = etp.getProbability();
@@ -271,19 +273,19 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
                             _type = new StringBuilder("-->");
                             break;
                         case at:
-                            _type = new StringBuilder("&lt;--");
+                            _type = new StringBuilder("<--");
                             break;
                         case ca:
                             _type = new StringBuilder("o->");
                             break;
                         case ac:
-                            _type = new StringBuilder("&lt;-o");
+                            _type = new StringBuilder("<-o");
                             break;
                         case cc:
                             _type = new StringBuilder("o-o");
                             break;
                         case aa:
-                            _type = new StringBuilder("&lt;-&gt;");
+                            _type = new StringBuilder("<->");
                             break;
                         case tt:
                             _type = new StringBuilder("---");

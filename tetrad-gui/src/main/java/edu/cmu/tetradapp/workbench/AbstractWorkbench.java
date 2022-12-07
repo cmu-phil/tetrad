@@ -1978,13 +1978,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                             endpoint1 = "-";
                             break;
                         case "Arrow":
-                            endpoint1 = "&lt;";
+                            endpoint1 = "<";
                             break;
                         case "Circle":
                             endpoint1 = "o";
                             break;
                         case "Star":
-                            endpoint1 = "&#42;";
+                            endpoint1 = "*";
                             break;
                         case "Null":
                             endpoint1 = "Null";
@@ -1997,13 +1997,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                             endpoint2 = "-";
                             break;
                         case "Arrow":
-                            endpoint2 = "&gt;";
+                            endpoint2 = ">";
                             break;
                         case "Circle":
                             endpoint2 = "o";
                             break;
                         case "Star":
-                            endpoint2 = "&#42;";
+                            endpoint2 = "*";
                             break;
                         case "Null":
                             endpoint2 = "Null";
@@ -2035,19 +2035,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                                 _type = "no edge";
                                 break;
                             case ta:
-                                _type = "--&gt;";
+                                _type = "--?";
                                 _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
                                 break;
                             case at:
-                                _type = "&lt;--";
+                                _type = "<--";
                                 _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
                                 break;
                             case ca:
-                                _type = "o-&gt;";
+                                _type = "o->";
                                 _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
                                 break;
                             case ac:
-                                _type = "&lt;-o";
+                                _type = "<-o";
                                 _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
                                 break;
                             case cc:
@@ -2055,7 +2055,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                                 _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
                                 break;
                             case aa:
-                                _type = "&lt;-&gt;";
+                                _type = "<->";
                                 _type = nodes.get(0) + " " + _type + " " + nodes.get(1);
                                 break;
                             case tt:

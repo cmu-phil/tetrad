@@ -1937,19 +1937,19 @@ public final class GraphUtils {
                                 edgeTypeString = new StringBuilder("-->");
                                 break;
                             case at:
-                                edgeTypeString = new StringBuilder("&lt;--");
+                                edgeTypeString = new StringBuilder("<--");
                                 break;
                             case ca:
                                 edgeTypeString = new StringBuilder("o->");
                                 break;
                             case ac:
-                                edgeTypeString = new StringBuilder("&lt;-o");
+                                edgeTypeString = new StringBuilder("<-o");
                                 break;
                             case cc:
                                 edgeTypeString = new StringBuilder("o-o");
                                 break;
                             case aa:
-                                edgeTypeString = new StringBuilder("&lt;-&gt;");
+                                edgeTypeString = new StringBuilder("<->");
                                 break;
                             case tt:
                                 edgeTypeString = new StringBuilder("---");
@@ -2509,7 +2509,7 @@ public final class GraphUtils {
             Edge _edge = new Edge(_from, _to, _end1, _end2);
 
             //Bootstrapping
-            if (line.contains("[no edge]") || line.contains(" --> ") || line.contains(" &lt;-- ") || line.contains(" o-> ") || line.contains(" &lt;-o ") || line.contains(" o-o ") || line.contains(" &lt;-&gt; ") || line.contains(" --- ")) {
+            if (line.contains("[no edge]") || line.contains(" --> ") || line.contains(" <-- ") || line.contains(" o-> ") || line.contains(" <-o ") || line.contains(" o-o ") || line.contains(" <-> ") || line.contains(" --- ")) {
 
                 // String bootstrap_format = "[no edge]:0.0000;[n1 --> n2]:0.0000;[n1 &lt;-- n2]:0.0000;[n1 o-> n2]:0.0000;[n1 &lt;-o n2]:0.0000;[n1 o-o n2]:0.0000;[n1 &lt;-> n2]:0.0000;[n1 --- n2]:0.0000;";
                 int last_semicolon = line.lastIndexOf(";");
@@ -2539,15 +2539,15 @@ public final class GraphUtils {
                         EdgeTypeProbability etp;
                         if (orient.contains(" --> ")) {
                             etp = new EdgeTypeProbability(EdgeType.ta, prob);
-                        } else if (orient.contains(" &lt;-- ")) {
+                        } else if (orient.contains(" <-- ")) {
                             etp = new EdgeTypeProbability(EdgeType.at, prob);
                         } else if (orient.contains(" o-> ")) {
                             etp = new EdgeTypeProbability(EdgeType.ca, prob);
-                        } else if (orient.contains(" &lt;-o ")) {
+                        } else if (orient.contains(" <-o ")) {
                             etp = new EdgeTypeProbability(EdgeType.ac, prob);
                         } else if (orient.contains(" o-o ")) {
                             etp = new EdgeTypeProbability(EdgeType.cc, prob);
-                        } else if (orient.contains(" &lt;-> ")) {
+                        } else if (orient.contains(" <-> ")) {
                             etp = new EdgeTypeProbability(EdgeType.aa, prob);
                         } else {// [n1 --- n2]
                             etp = new EdgeTypeProbability(EdgeType.tt, prob);

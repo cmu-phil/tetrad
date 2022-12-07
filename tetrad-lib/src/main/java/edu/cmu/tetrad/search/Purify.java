@@ -1963,7 +1963,7 @@ public class Purify {
                                 "****************************Added impurity: " +
                                         this.measuredNodes.get(
                                                 bestChoice1).toString() +
-                                        " &lt;-&gt; " + this.measuredNodes.get(
+                                        " <-> " + this.measuredNodes.get(
                                         bestChoice2).toString() + " " +
                                         nextScore);
                         this.correlatedErrors[bestChoice1][bestChoice2] =
@@ -2045,7 +2045,7 @@ public class Purify {
                                 "****************************Removed impurity: " +
                                         this.measuredNodes.get(
                                                 bestChoice1).toString() +
-                                        " &lt;-&gt; " + this.measuredNodes.get(
+                                        " <-> " + this.measuredNodes.get(
                                         bestChoice2).toString() + " " +
                                         nextScore);
                         this.correlatedErrors[bestChoice1][bestChoice2] =

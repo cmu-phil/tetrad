@@ -292,7 +292,7 @@ public final class Fask implements GraphSearch {
                     if (edgeForbiddenByKnowledge(X, Y) && edgeForbiddenByKnowledge(Y, X)) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge_forbidden"
                                 + "\t" + nf.format(lr)
-                                + "\t" + X + "&lt;-&gt;" + Y
+                                + "\t" + X + "<->" + Y
                         );
                         continue;
                     }
@@ -306,7 +306,7 @@ public final class Fask implements GraphSearch {
                     } else if (knowledgeOrients(Y, X)) {
                         TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\tknowledge"
                                 + "\t" + nf.format(lr)
-                                + "\t" + X + "&lt;--" + Y
+                                + "\t" + X + "<--" + Y
                         );
                         graph.addDirectedEdge(Y, X);
                     } else {

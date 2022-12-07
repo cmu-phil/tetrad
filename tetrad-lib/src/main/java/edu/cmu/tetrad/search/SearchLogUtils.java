@@ -51,7 +51,7 @@ public class SearchLogUtils {
 
     public static String colliderOrientedMsg(Node x, Node y, Node z, List<Node> sepset) {
         return "Orienting collider: " + x.getName() + " *-&gt; " +
-                y.getName() + " &lt;-* " + z.getName() + "\t(Sepset = " + sepset +
+                y.getName() + " <-* " + z.getName() + "\t(Sepset = " + sepset +
                 ")";
     }
 
