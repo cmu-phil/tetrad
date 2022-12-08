@@ -101,13 +101,14 @@ public final class BfciTr implements GraphSearch {
         boss.setUseDataOrder(useDataOrder);
         boss.setDepth(depth);
         boss.setNumStarts(numStarts);
+        boss.setCaching(true);
         boss.setVerbose(false); // Get the DAG
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
         boss.bestOrder(variables);
-        Graph graph = boss.getGraph(true);
+        Graph graph = boss.getGraph(false);
 
 //        for (Edge edge : graph.getEdges()) {
 //            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);

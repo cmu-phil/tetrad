@@ -98,28 +98,36 @@ public class Boss {
             List<Node> pi;
             double s1, s2;
 
-            if (algType == AlgType.BOSS1) {
-                betterMutation1(scorer);
-            } else if (algType == AlgType.BOSS2) {
-                betterMutation2(scorer);
-            }
+//            if (algType == AlgType.BOSS1) {
+//                betterMutation1(scorer);
+//            } else if (algType == AlgType.BOSS2) {
+//                betterMutation2(scorer);
+//            }
+
+//            do {
+//                pi = scorer.getPi();
+//                s1 = scorer.score();
+//
+//                if (algType == AlgType.BOSS1) {
+//                    betterMutation1(scorer);
+//                } else if (algType == AlgType.BOSS2) {
+//                    betterMutation2(scorer);
+//                }
+//
+//                besMutation(scorer);
+//
+//                s2 = scorer.score();
+//            } while (s2 > s1);
+
 
             do {
-                pi = scorer.getPi();
+                betterMutation1(scorer);
                 s1 = scorer.score();
-
                 besMutation(scorer);
-
-                if (algType == AlgType.BOSS1) {
-                    betterMutation1(scorer);
-                } else if (algType == AlgType.BOSS2) {
-                    betterMutation2(scorer);
-                }
-
                 s2 = scorer.score();
             } while (s2 > s1);
 
-            scorer.score(pi);
+//            scorer.score(pi);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();

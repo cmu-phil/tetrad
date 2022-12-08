@@ -122,7 +122,7 @@ public class BFCITR implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
     @Override
     public String getDescription() {
-        return "BFCITR (Best-order FCI with triangle reduce rule using " + this.test.getDescription()
+        return "BFCI-TR (Best-order FCI with triangle reduce rule using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 
