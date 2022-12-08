@@ -192,7 +192,7 @@ public final class LvSwap implements GraphSearch {
                         for (int i = 1; i <= path.size() - 3; i++) {
                             if (scorer.index(path.get(i)) > scorer.index(d)) continue D;
                             if (scorer.index(path.get(i)) > scorer.index(c)) continue D;
-                            if (scorer.index(path.get(0)) > scorer.index(path.get(1))) continue D;
+                            if (scorer.index(path.get(0)) > scorer.index(path.get(i))) continue D;
 //                            scorer.tuck(path.get(i), scorer.index(d));
 //                            scorer.tuck(path.get(i), scorer.index(c));
                         }
