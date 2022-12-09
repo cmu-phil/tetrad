@@ -2,6 +2,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -175,37 +176,40 @@ public class StatsListEditor extends JPanel {
         statistics.add(new DensityEst());
         statistics.add(new DensityTrue());
 
-        statistics.add(new NumDirectedEdges());
-        statistics.add(new NumDirectedEdgeAncestors());
-        statistics.add(new NumDirectedEdgeReversed());
-        statistics.add(new NumDirectedEdgeNotAncNotRev());
-        statistics.add(new NumDirectedEdgeNoMeasureAncestors());
-        statistics.add(new NumDefinitelyDirected());
-        statistics.add(new NumColoredDD());
-        statistics.add(new NumPossiblyDirected());
-        statistics.add(new NumDirectedEdgeVisible());
+        if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG
+                && referenceGraph.getGraphType() == EdgeListGraph.GraphType.DAG) {
+            statistics.add(new NumDirectedEdges());
+            statistics.add(new NumDirectedEdgeAncestors());
+            statistics.add(new NumDirectedEdgeReversed());
+            statistics.add(new NumDirectedEdgeNotAncNotRev());
+            statistics.add(new NumDirectedEdgeNoMeasureAncestors());
+            statistics.add(new NumDefinitelyDirected());
+            statistics.add(new NumColoredDD());
+            statistics.add(new NumPossiblyDirected());
+//        statistics.add(new NumDirectedEdgeVisible());
 //        statistics.add(new NumVisibleEst());
-        statistics.add(new NumDefinitelyNotDirectedPaths());
-        statistics.add(new NumColoredPD());
-        statistics.add(new NumColoredNL());
-        statistics.add(new NumColoredPL());
-        statistics.add(new TrueDagPrecisionArrow());
-        statistics.add(new TrueDagRecallArrows());
-        statistics.add(new TrueDagPrecisionTails());
-        statistics.add(new TrueDagRecallTails());
-        statistics.add(new NumDirectedPathsTrue());
-        statistics.add(new NumDirectedPathsEst());
-        statistics.add(new NumDirectedShouldBePartiallyDirected());
-        statistics.add(new NumBidirectedEdgesEst());
-        statistics.add(new NumBidirectedBothNonancestorAncestor());
-        statistics.add(new NumCommonMeasuredAncestorBidirected());
-        statistics.add(new NumLatentCommonAncestorBidirected());
-        statistics.add(new SemidirectedPrecision());
-        statistics.add(new SemidirectedRecall());
-        statistics.add(new NoSemidirectedPrecision());
-        statistics.add(new NoSemidirectedRecall());
-        statistics.add(new ProportionSemidirectedPathsNotReversedEst());
-        statistics.add(new ProportionSemidirectedPathsNotReversedTrue());
+            statistics.add(new NumDefinitelyNotDirectedPaths());
+            statistics.add(new NumColoredPD());
+            statistics.add(new NumColoredNL());
+            statistics.add(new NumColoredPL());
+            statistics.add(new TrueDagPrecisionArrow());
+            statistics.add(new TrueDagRecallArrows());
+            statistics.add(new TrueDagPrecisionTails());
+            statistics.add(new TrueDagRecallTails());
+            statistics.add(new NumDirectedPathsTrue());
+            statistics.add(new NumDirectedPathsEst());
+            statistics.add(new NumDirectedShouldBePartiallyDirected());
+            statistics.add(new NumBidirectedEdgesEst());
+            statistics.add(new NumBidirectedBothNonancestorAncestor());
+            statistics.add(new NumCommonMeasuredAncestorBidirected());
+            statistics.add(new NumLatentCommonAncestorBidirected());
+            statistics.add(new SemidirectedPrecision());
+            statistics.add(new SemidirectedRecall());
+            statistics.add(new NoSemidirectedPrecision());
+            statistics.add(new NoSemidirectedRecall());
+            statistics.add(new ProportionSemidirectedPathsNotReversedEst());
+            statistics.add(new ProportionSemidirectedPathsNotReversedTrue());
+        }
 
         return statistics;
     }

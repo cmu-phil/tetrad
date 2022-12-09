@@ -100,12 +100,6 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
             this.targetGraph = model2.getGraph();
         }
 
-        if (this.targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG
-                || this.referenceGraph.getGraphType() == EdgeListGraph.GraphType.PAG) {
-            this.targetGraph.setGraphType(EdgeListGraph.GraphType.PAG);
-            this.referenceGraph.setGraphType(EdgeListGraph.GraphType.PAG);
-        }
-
         newExecution();
 
         addRecord();

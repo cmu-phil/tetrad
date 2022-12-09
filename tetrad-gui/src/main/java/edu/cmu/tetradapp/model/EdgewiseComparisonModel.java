@@ -21,10 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.algcomparison.statistic.Statistic;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
@@ -34,8 +31,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Map;
 
 
 /**
@@ -50,13 +45,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
     private final Graph targetGraph;
     private final Graph referenceGraph;
     private final Parameters params;
-    private final DataModel dataModel = null;
     private String name;
-    private Map<String, String> allParamSettings;
-    private DataSet dataSet;
-    private ArrayList<Statistic> statistics;
-    private String targetName;
-    private String referenceName;
 
 
     //=============================CONSTRUCTORS==========================//
@@ -66,14 +55,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
      * of omission and commission. The counts can be retrieved using the methods
      * <code>countOmissionErrors</code> and <code>countCommissionErrors</code>.
      */
-
-    public EdgewiseComparisonModel(GraphSource model1, GraphSource model2,
-                             Parameters params) {
-        this(model1, model2, null, params);
-    }
-
-    public EdgewiseComparisonModel(GraphSource model1, GraphSource model2,
-                                   DataWrapper dataWrapper, Parameters params) {
+    public EdgewiseComparisonModel(GraphSource model1, GraphSource model2, Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }
@@ -84,32 +66,21 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 
         this.params = params;
 
-        this.referenceName = params.getString("referenceGraphName", null);
-        this.targetName = params.getString("targetGraphName", null);
+        String referenceName = params.getString("referenceGraphName", null);
 
         String model1Name = model1.getName();
         String model2Name = model2.getName();
 
-        if (this.referenceName.equals(model1Name)) {
+        if (referenceName.equals(model1Name)) {
             this.referenceGraph = model1.getGraph();
             this.targetGraph = model2.getGraph();
-        } else if (this.referenceName.equals(model2Name)) {
+        } else if (referenceName.equals(model2Name)) {
             this.referenceGraph = model2.getGraph();
             this.targetGraph = model1.getGraph();
         } else {
             this.referenceGraph = model1.getGraph();
             this.targetGraph = model2.getGraph();
         }
-
-        if (this.targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG
-                || this.referenceGraph.getGraphType() == EdgeListGraph.GraphType.PAG) {
-            this.targetGraph.setGraphType(EdgeListGraph.GraphType.PAG);
-            this.referenceGraph.setGraphType(EdgeListGraph.GraphType.PAG);
-        }
-
-//        newExecution();
-//
-//        addRecord();
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
 
