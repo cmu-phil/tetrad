@@ -22,7 +22,8 @@
 package edu.cmu.tetrad.util;
 
 
-import static edu.cmu.tetrad.util.ProbUtils.lngamma;
+import org.apache.commons.math3.special.Gamma;
+
 import static java.lang.Math.exp;
 import static java.lang.Math.round;
 
@@ -211,7 +212,8 @@ public final class ChoiceGenerator {
     }
 
     public static double logCombinations(int a, int b) {
-        return lngamma(a + 1) - lngamma(b + 1) - lngamma((a - b) + 1);
+//        return lngamma(a + 1) - lngamma(b + 1) - lngamma((a - b) + 1);
+        return Gamma.logGamma(a + 1) - Gamma.logGamma(b + 1) - Gamma.logGamma((a - b) + 1);
     }
 }
 

@@ -21,7 +21,8 @@
 
 package edu.cmu.tetrad.util;
 
-import static edu.cmu.tetrad.util.ProbUtils.lngamma;
+import org.apache.commons.math3.special.Gamma;
+
 import static java.lang.Math.exp;
 import static java.lang.Math.round;
 
@@ -114,7 +115,7 @@ public final class SublistGenerator {
         int numCombinations = 0;
 
         for (int c = 0; c <= b; c++) {
-            numCombinations += (int) round(exp(lngamma(a + 1) - lngamma(c + 1) - lngamma((a - c) + 1)));
+            numCombinations += (int) round(exp(Gamma.logGamma(a + 1) - Gamma.logGamma(c + 1) - Gamma.logGamma((a - c) + 1)));
         }
 
         return numCombinations;

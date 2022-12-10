@@ -23,9 +23,9 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.special.Gamma;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +37,7 @@ import static java.lang.Math.*;
  *
  * @author Joseph Ramsey
  */
-public class EbicScore implements Score {
+public class PoissonPriorScore implements Score {
 
     private DataSet dataSet;
     // The covariance matrix.
@@ -61,13 +61,10 @@ public class EbicScore implements Score {
     // True if row subsets should be calculated.
     private boolean calculateRowSubsets;
 
-    // The gamma paramter for EBIC.
-    private double gamma = 1;
-
     /**
      * Constructs the score using a covariance matrix.
      */
-    public EbicScore(ICovarianceMatrix covariances) {
+    public PoissonPriorScore(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -80,7 +77,7 @@ public class EbicScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public EbicScore(DataSet dataSet, boolean precomputeCovariances) {
+    public PoissonPriorScore(DataSet dataSet, boolean precomputeCovariances) {
 
         if (dataSet == null) {
             throw new NullPointerException();
@@ -115,7 +112,7 @@ public class EbicScore implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, EbicScore.append(z, x)) - localScore(y, z);
+        return localScore(y, PoissonPriorScore.append(z, x)) - localScore(y, z);
     }
 
     @Override
@@ -124,24 +121,23 @@ public class EbicScore implements Score {
     }
 
     /**
-     * @param i       The index of the node.
+     * @param i The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
      */
     public double localScore(int i, int... parents) throws RuntimeException {
         int pi = parents.length + 1;
+        int k = parents.length;
         double varRy;
 
         try {
             varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
-        } catch (SingularMatrixException e) {
+        } catch (SingularMatrixException e){
             return Double.NaN;
         }
 
-        double gamma = this.gamma;//  1.0 - riskBound;
-
-        double score = -(this.N * log(varRy) + (pi * log(this.N)
-                + 2 * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
+        // Bryan
+        double score = - 0.5 * this.N * log(varRy) - 0.5 * k * log(this.N) + k * log(3) - Gamma.logGamma(k + 1.);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
@@ -256,10 +252,6 @@ public class EbicScore implements Score {
         int[] _z = Arrays.copyOf(z, z.length + 1);
         _z[z.length] = x;
         return _z;
-    }
-
-    public void setGamma(double gamma) {
-        this.gamma = gamma;
     }
 }
 

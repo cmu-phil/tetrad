@@ -76,6 +76,8 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
                 search.setAlgType(Boss.AlgType.BOSS1);
             } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
                 search.setAlgType(Boss.AlgType.BOSS2);
+            } else if (parameters.getInt(Params.BOSS_ALG) == 3) {
+                search.setAlgType(Boss.AlgType.BOSS3);
             } else {
                 throw new IllegalArgumentException("Unrecognized boss algorithm type.");
             }

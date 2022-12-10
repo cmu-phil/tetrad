@@ -118,6 +118,7 @@ public class Boss {
 //                s2 = scorer.score();
 //            } while (s2 > s1);
 
+            int count = 0;
 
             do {
                 s1 = scorer.score();
@@ -138,7 +139,7 @@ public class Boss {
 
 //                besMutation(scorer);
                 s2 = scorer.score();
-            } while (s2 > s1);
+            } while (s2 > s1 || ++count < 8);
 
 //            scorer.score(pi);
 
@@ -337,11 +338,16 @@ public class Boss {
             introns1 = introns2;
             introns2 = new HashSet<>();
 
-            for (OrderedPair<Node> edge : scorer.getEdges()) {
+            List<OrderedPair<Node>> edges = scorer.getEdges();
+            int m = 0;
+            int all = edges.size();
+
+            for (OrderedPair<Node> edge : edges) {
+                m++;
                 Node x = edge.getFirst();
                 Node y = edge.getSecond();
-
-//                if (!scorer.adjacent(y, x)) continue;
+                if (scorer.index(x) > scorer.index(y)) continue;
+                if (!scorer.adjacent(y, x)) continue;
                 if (!introns1.contains(y) && !introns1.contains(x)) continue;
 
 //                scorer.bookmark(1);
@@ -356,13 +362,16 @@ public class Boss {
                     for (int l = range[0]; l <= range[1]; l++) {
                         introns2.add(scorer.get(l));
                     }
+
+                    if (verbose) {
+                        System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                    }
                 }
 
                 scorer.bookmark();
 
                 if (verbose) {
-                    System.out.print("\r Score = " + scorer.score() + " (boss)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-//                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                    System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                 }
             }
 

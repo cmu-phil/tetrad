@@ -286,7 +286,7 @@ public final class LvSwap implements GraphSearch {
 
                             // Make aure you get a right unshielded collider in the scorer--i.e. x->y<-w
                             // with ~adj(x, w)
-                            if (scorer.collider(x, y, w) && !scorer.adjacent(x, w) && !scorer.adjacent(x, w)) {
+                            if (scorer.collider(x, y, w) && !scorer.adjacent(x, w) /*&& !scorer.adjacent(x, w)*/) {
 
                                 // Make sure the new scorer orientations are all allowed in the graph...
                                 Set<Node> adj = scorer.getAdjacentNodes(x);
