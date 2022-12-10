@@ -48,7 +48,7 @@ public class PoissonPriorScore implements ScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "EBIC Score";
+        return "Poisson Prior Score";
     }
 
     @Override
@@ -59,7 +59,6 @@ public class PoissonPriorScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.EBIC_GAMMA);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         return parameters;
     }
