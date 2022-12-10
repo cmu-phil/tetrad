@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for linear, Gaussian Extended BIC score (Chen and Chen).
+ * Wrapper for the Poisson prior score (Bryan)
  *
  * @author jdramsey
  */

@@ -33,7 +33,7 @@ import java.util.List;
 import static java.lang.Math.*;
 
 /**
- * Implements the extended BIC score (Chen and Chen)..
+ * Implements Poisson prior score (Bryan).
  *
  * @author Joseph Ramsey
  */
