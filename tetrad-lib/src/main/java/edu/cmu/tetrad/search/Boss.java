@@ -14,7 +14,7 @@ import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.util.Collections.shuffle;
 
 /**
- * Implements the GRASP algorithms, with various execution flags.
+ * Implements the BOSS algorithm.
  *
  * @author bryanandrews
  * @author josephramsey
@@ -59,8 +59,6 @@ public class Boss {
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
 
-
-//        boolean caching = true;
         scorer.setCachingScores(caching);
         scorer.setKnowledge(knowledge);
 
@@ -94,31 +92,10 @@ public class Boss {
 
             makeValidKnowledgeOrder(order);
 
-            List<Node> pi;
             double s1, s2;
 
-//            if (algType == AlgType.BOSS1) {
-//                betterMutation1(scorer);
-//            } else if (algType == AlgType.BOSS2) {
-//                betterMutation2(scorer);
-//            }
-
-//            do {
-//                pi = scorer.getPi();
-//                s1 = scorer.score();
-//
-//                if (algType == AlgType.BOSS1) {
-//                    betterMutation1(scorer);
-//                } else if (algType == AlgType.BOSS2) {
-//                    betterMutation2(scorer);
-//                }
-//
-//                besMutation(scorer);
-//
-//                s2 = scorer.score();
-//            } while (s2 > s1);
-
             int count = 0;
+            boolean ensureMinimumCount = score instanceof ZhangShenBoundScore;
 
             do {
                 s1 = scorer.score();
@@ -127,122 +104,16 @@ public class Boss {
                     betterMutation1(scorer);
                     besMutation(scorer);
                 } else if (algType == AlgType.BOSS2) {
-//                    tubes(scorer);
                     betterMutation2(scorer);
                     besMutation(scorer);
-
                 } else if (algType == AlgType.BOSS3) {
                     betterMutationBryan(scorer);
                     besMutation(scorer);
 
                 }
 
-//                besMutation(scorer);
                 s2 = scorer.score();
-            } while (s2 > s1 || ++count < 8);
-
-//            scorer.score(pi);
-
-            if (this.scorer.score() > best) {
-                best = this.scorer.score();
-                bestPerm = scorer.getPi();
-            }
-        }
-
-        this.scorer.score(bestPerm);
-
-        long stop = System.currentTimeMillis();
-
-        if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
-        }
-
-        return bestPerm;
-    }
-
-    public void tubes(@NotNull TeyssierScorer scorer) {
-        double s;
-
-        do {
-            s = scorer.score();
-
-            Graph g = scorer.findCompelled();
-
-            scorer.bookmark();
-
-            for (Edge edge : g.getEdges()) {
-                if (!edge.isDirected()) continue;
-
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                tuck(y, scorer.index(x), scorer, new int[2]);
-
-                if (scorer.score() >= s) {
-                    scorer.bookmark();
-                    break;
-                }
-
-                scorer.goToBookmark();
-            }
-
-            scorer.goToBookmark();
-
-            besMutation(scorer);
-
-            scorer.bookmark();
-        } while (scorer.score() > s);
-    }
-
-    public List<Node> bestOrder2(@NotNull List<Node> order) {
-//        boolean caching = true;
-        scorer.setCachingScores(caching);
-        scorer.setKnowledge(knowledge);
-
-        List<Node> bestPerm;
-        long start = System.currentTimeMillis();
-        order = new ArrayList<>(order);
-
-        this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
-
-        if (this.useRaskuttiUhler) {
-            this.scorer.setUseScore(false);
-        } else {
-            this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
-        }
-
-        this.scorer.setKnowledge(this.knowledge);
-        this.scorer.clearBookmarks();
-
-        bestPerm = null;
-        double best = NEGATIVE_INFINITY;
-
-        this.scorer.score(order);
-
-        for (int r = 0; r < this.numStarts; r++) {
-            if ((r == 0 && !this.useDataOrder) || r > 0) {
-                shuffle(order);
-                System.out.println("order = " + order);
-            }
-
-            this.start = System.currentTimeMillis();
-
-            makeValidKnowledgeOrder(order);
-
-            List<Node> pi;
-            double s1, s2;
-
-            do {
-                s1 = scorer.score();
-
-
-                betterMutationBryan(scorer);
-                besMutation(scorer);
-                s2 = scorer.score();
-            } while (s2 > s1);
-
-//            scorer.score(pi);
+            } while (s2 > s1 || (ensureMinimumCount && ++count <= 3));
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -305,7 +176,6 @@ public class Boss {
 
                     if (verbose) {
                         System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutation1)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-//                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                     }
                 }
             }
@@ -350,8 +220,6 @@ public class Boss {
                 if (!scorer.adjacent(y, x)) continue;
                 if (!introns1.contains(y) && !introns1.contains(x)) continue;
 
-//                scorer.bookmark(1);
-
                 tuck(y, scorer.index(x), scorer, range);
 
                 if (scorer.score() < bestScore || violatesKnowledge(scorer.getPi())) {
@@ -381,8 +249,6 @@ public class Boss {
 
             s2 = scorer.score();
         } while (s2 > s1);
-
-//        scorer.goToBookmark(1);
     }
 
     public void betterMutation2(@NotNull TeyssierScorer scorer) {
@@ -429,13 +295,8 @@ public class Boss {
 
                     if (verbose) {
                         System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-//                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                     }
                 }
-
-//                if (verbose) {
-//                    System.out.print("\r# Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-//                }
 
                 scorer.goToBookmark();
             }
@@ -496,13 +357,8 @@ public class Boss {
 
                     if (verbose) {
                         System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-//                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                     }
                 }
-
-//                if (verbose) {
-//                    System.out.print("\r# Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-//                }
 
                 scorer.goToBookmark();
             }
@@ -512,67 +368,6 @@ public class Boss {
 
         scorer.goToBookmark(1);
     }
-
-//    public void betterMutation2(@NotNull TeyssierScorer scorer) {
-//        scorer.bookmark();
-//        double s1, s2;
-//
-//        Set<Node> introns1;
-//        Set<Node> introns2;
-//
-//        introns2 = new HashSet<>(scorer.getPi());
-//
-//        do {
-//            s1 = scorer.score();
-//            scorer.bookmark(1);
-//
-//            introns1 = introns2;
-//            introns2 = new HashSet<>();
-//
-//            for (Node k : scorer.getPi()) {
-//                double _sp = NEGATIVE_INFINITY;
-//                scorer.bookmark();
-//
-//                if (!introns1.contains(k)) continue;
-//
-//                for (int j = 0; j < scorer.size(); j++) {
-//                    scorer.moveTo(k, j);
-//
-//                    if (scorer.score() >= _sp) {
-//                        if (!violatesKnowledge(scorer.getPi())) {
-//                            _sp = scorer.score();
-//                            scorer.bookmark();
-//
-//                            if (scorer.index(k) <= j) {
-//                                for (int m = scorer.index(k); m <= j; m++) {
-//                                    introns2.add(scorer.get(m));
-//                                }
-//                            } else if (scorer.index(k) > j) {
-//                                for (int m = j; m <= scorer.index(k); m++) {
-//                                    introns2.add(scorer.get(m));
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                    if (verbose) {
-//                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-////                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-//                    }
-//                }
-//
-////                if (verbose) {
-////                    System.out.print("\r# Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-////                }
-//
-//                scorer.goToBookmark();
-//            }
-//
-//            s2 = scorer.score();
-//        } while (s2 > s1);
-//
-//        scorer.goToBookmark(1);
-//    }
 
     private void tuck(Node k, int j, TeyssierScorer scorer, int[] range) {
         if (scorer.index(k) < j) return;
@@ -605,18 +400,6 @@ public class Boss {
         List<Node> found = new ArrayList<>();
         HashSet<Node> __found = new HashSet<>();
         boolean _found = true;
-
-//        while (_found) {
-//            _found = false;
-//
-//            for (Node node : initialOrder) {
-//                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-//                    found.add(node);
-//                    __found.add(node);
-//                    _found = true;
-//                }
-//            }
-//        }
 
         T:
         while (_found) {
@@ -663,13 +446,6 @@ public class Boss {
     public Graph getGraph(boolean cpDag) {
         if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
         Graph graph = this.scorer.getGraph(cpDag);
-
-//        if (cpDag) {
-//            orientbk(knowledge, graph, variables);
-//            MeekRules meekRules = new MeekRules();
-//            meekRules.setRevertToUnshieldedColliders(false);
-//            meekRules.orientImplied(graph);
-//        }
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         graph.addAttribute("score ", nf.format(this.scorer.score()));
