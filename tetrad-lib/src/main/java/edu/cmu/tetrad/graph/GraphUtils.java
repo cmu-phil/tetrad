@@ -4801,7 +4801,7 @@ public final class GraphUtils {
         Set<OrderedPair<Node>> V = new HashSet<>();
 
         Map<Node, Set<Node>> previous = new HashMap<>();
-        previous.put(x, null);
+        previous.put(x, new HashSet<>());
 
         OrderedPair<Node> e = null;
         int distance = 0;

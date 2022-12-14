@@ -30,8 +30,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
-import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
+import static edu.cmu.tetrad.graph.GraphUtils.*;
 
 /**
  * Does an FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
@@ -110,23 +109,26 @@ public final class BfciTr implements GraphSearch {
         boss.bestOrder(variables);
         Graph graph = boss.getGraph(false);
 
+//        if (true) return graph;
+
 //        for (Edge edge : graph.getEdges()) {
 //            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
 //            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
 //        }
 
-        retainUnshieldedColliders(graph, knowledge);
+//        retainUnshieldedColliders(graph, knowledge);
 
         test = new IndTestScore(score);
 
         knowledge = new Knowledge(knowledge);
 
         // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
+        retainUnshieldedColliders(graph, knowledge);
         triangleReduce(graph, scorer, knowledge); // Adds <-> edges to the DAG
 
-//        if (this.possibleDsepSearchDone) {
-//            removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
-//        }
+        if (this.possibleDsepSearchDone) {
+            removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
+        }
 
         // Retain only the unshielded colliders.
         retainUnshieldedColliders(graph, knowledge);

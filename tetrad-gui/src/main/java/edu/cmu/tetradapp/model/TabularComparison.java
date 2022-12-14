@@ -102,7 +102,7 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
 
         newExecution();
 
-        addRecord();
+//        addRecord();
 
         TetradLogger.getInstance().log("info", "Graph Comparison");
     }

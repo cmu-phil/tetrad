@@ -91,7 +91,7 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
     @Override
     public String getDescription() {
-        return "GRASP-FCI (GRaSP-based FCI) using " + this.test.getDescription()
+        return "SP-FCI (SP-based FCI) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 

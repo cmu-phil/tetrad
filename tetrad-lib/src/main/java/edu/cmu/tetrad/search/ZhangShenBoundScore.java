@@ -179,7 +179,7 @@ public class ZhangShenBoundScore implements Score {
 
         int m0 = estMaxParents[i];
 
-        double score = -(sampleSize * log(varRy) + getLambda(m0, pn) * pi * 2);
+        double score = -(0.5 * sampleSize * log(varRy) + getLambda(m0, pn) * pi);
 
         if (score > maxScores[i]) {
             maxScores[i] = score;

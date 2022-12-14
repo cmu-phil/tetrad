@@ -191,11 +191,11 @@ public class KimEtAlScores implements Score {
         //    private double correlationThreshold = 1.0;
         boolean takeLog = true;
         if (takeLog) {
-            return -n * log(varry) - lambda * getPenaltyDiscount() * k;
+            return -(n / 2.0) * log(varry) - lambda * getPenaltyDiscount() * k;
         } else {
             // The true error variance
             double trueErrorVariance = 1.0;
-            return -n * (varry) - lambda * getPenaltyDiscount() * k * trueErrorVariance;
+            return -(n / 2.0) * (varry) - lambda * getPenaltyDiscount() * k * trueErrorVariance;
         }
 
     }

@@ -109,11 +109,10 @@ public class Boss {
                 } else if (algType == AlgType.BOSS3) {
                     betterMutationBryan(scorer);
                     besMutation(scorer);
-
                 }
 
                 s2 = scorer.score();
-            } while (s2 > s1 || (ensureMinimumCount && ++count <= 3));
+            } while (s2 > s1);// || (++count <= 6));
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -190,6 +189,63 @@ public class Boss {
         scorer.goToBookmark(1);
     }
 
+
+    public void betterMutation2(@NotNull TeyssierScorer scorer) {
+        scorer.bookmark();
+        double s1, s2;
+
+        Set<Node> introns1;
+        Set<Node> introns2;
+
+        introns2 = new HashSet<>(scorer.getPi());
+
+        do {
+            s1 = scorer.score();
+            scorer.bookmark(1);
+
+            introns1 = introns2;
+            introns2 = new HashSet<>();
+
+            for (Node k : scorer.getPi()) {
+                double _sp = NEGATIVE_INFINITY;
+                scorer.bookmark();
+
+                if (!introns1.contains(k)) continue;
+
+                for (int j = 0; j < scorer.size(); j++) {
+                    scorer.moveTo(k, j);
+
+                    if (scorer.score() >= _sp) {
+                        if (!violatesKnowledge(scorer.getPi())) {
+                            _sp = scorer.score();
+                            scorer.bookmark();
+
+                            if (scorer.index(k) <= j) {
+                                for (int m = scorer.index(k); m <= j; m++) {
+                                    introns2.add(scorer.get(m));
+                                }
+                            } else if (scorer.index(k) > j) {
+                                for (int m = j; m <= scorer.index(k); m++) {
+                                    introns2.add(scorer.get(m));
+                                }
+                            }
+                        }
+                    }
+
+                    if (verbose) {
+                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                    }
+                }
+
+                scorer.goToBookmark();
+            }
+
+            s2 = scorer.score();
+        } while (s2 > s1);
+
+        scorer.goToBookmark(1);
+    }
+
     public void betterMutationBryan(@NotNull TeyssierScorer scorer) {
         double bestScore = scorer.score();
         scorer.bookmark();
@@ -251,61 +307,32 @@ public class Boss {
         } while (s2 > s1);
     }
 
-    public void betterMutation2(@NotNull TeyssierScorer scorer) {
-        scorer.bookmark();
-        double s1, s2;
 
-        Set<Node> introns1;
-        Set<Node> introns2;
-
-        introns2 = new HashSet<>(scorer.getPi());
+    public void tubes(@NotNull TeyssierScorer scorer) {
+        double s;
 
         do {
-            s1 = scorer.score();
-            scorer.bookmark(1);
+            s = scorer.score();
 
-            introns1 = introns2;
-            introns2 = new HashSet<>();
+            for (NodePair edge : scorer.getAdjacencies()) {
+                Node x = edge.getFirst();
+                Node y = edge.getSecond();
+                if (!scorer.adjacent(x, y)) continue;
 
-            for (Node k : scorer.getPi()) {
-                double _sp = NEGATIVE_INFINITY;
                 scorer.bookmark();
 
-                if (!introns1.contains(k)) continue;
+                tuck(y, scorer.index(x), scorer, new int[2]);
 
-                for (int j = 0; j < scorer.size(); j++) {
-                    scorer.moveTo(k, j);
-
-                    if (scorer.score() >= _sp) {
-                        if (!violatesKnowledge(scorer.getPi())) {
-                            _sp = scorer.score();
-                            scorer.bookmark();
-
-                            if (scorer.index(k) <= j) {
-                                for (int m = scorer.index(k); m <= j; m++) {
-                                    introns2.add(scorer.get(m));
-                                }
-                            } else if (scorer.index(k) > j) {
-                                for (int m = j; m <= scorer.index(k); m++) {
-                                    introns2.add(scorer.get(m));
-                                }
-                            }
-                        }
-                    }
-
-                    if (verbose) {
-                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-                    }
+                if (scorer.score() >= s) {
+                    besMutation(scorer);
+                } else {
+                    scorer.goToBookmark();
                 }
-
-                scorer.goToBookmark();
             }
 
-            s2 = scorer.score();
-        } while (s2 > s1);
-
-        scorer.goToBookmark(1);
+        } while (scorer.score() > s);
     }
+
 
     private void tuck(Node k, int j, TeyssierScorer scorer, int[] range) {
         if (scorer.index(k) < j) return;

@@ -23,11 +23,14 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES_OLD;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
@@ -46,7 +49,6 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -71,8 +73,6 @@ import static java.util.Collections.shuffle;
 
 
 /**
- *
- *
  * @author Joseph Ramsey
  */
 @SuppressWarnings("ALL")
@@ -85,7 +85,7 @@ public final class TestGrasp {
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
 
-        new TestGrasp().testBFci();
+        new TestGrasp().testScores();
 //        new TestGrasp().testForWayne3();
     }
 
@@ -1736,7 +1736,7 @@ public final class TestGrasp {
     }
 
     @NotNull
-    private static List<Node> nodeList(Node...n) {
+    private static List<Node> nodeList(Node... n) {
         List<Node> list = new ArrayList<>();
         for (Node m : n) list.add(m);
         return list;
@@ -2447,7 +2447,7 @@ public final class TestGrasp {
         return list;
     }
 
-//    @Test
+    //    @Test
     public void testBFci() {
         for (int grouping : new int[]{7}) {//, 2, 3, 4, 5, 67}) {
             RandomUtil.getInstance().setSeed(38482838482L);
@@ -2507,7 +2507,6 @@ public final class TestGrasp {
             algorithms.add(new GFCI(test, score));
             algorithms.add(new BFCI(test, score));
             algorithms.add(new BFCIFinalOrientationOnly(test, score));
-            algorithms.add(new BFCI2(test, score));
             algorithms.add(new BFCITR(test, score));
             algorithms.add(new LVSWAP(test, score));
 
@@ -2604,6 +2603,73 @@ public final class TestGrasp {
 
             comparison.compareFromSimulations(
                     "/Users/josephramsey/Downloads/grasp/testBfci.grouping." + grouping, simulations,
+                    algorithms, statistics, params);
+        }
+
+    }
+
+    public void testScores() {
+        for (int grouping : new int[]{7}) {//, 2, 3, 4, 5, 67}) {
+            RandomUtil.getInstance().setSeed(38482838482L);
+
+            Parameters params = new Parameters();
+            params.set(Params.SAMPLE_SIZE, 10000);
+            params.set(Params.NUM_MEASURES, 20);
+            params.set(Params.AVG_DEGREE, 10);
+            params.set(Params.RANDOMIZE_COLUMNS, true);
+            params.set(Params.COEF_LOW, 0);
+            params.set(Params.COEF_HIGH, 1);
+            params.set(Params.VAR_LOW, 1);
+            params.set(Params.VAR_HIGH, 3);
+            params.set(Params.VERBOSE, false);
+
+            params.set(Params.NUM_RUNS, 60);
+
+            params.set(Params.BOSS_ALG, 1, 2, 3);
+            params.set(Params.DEPTH, 3);
+            params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 4);
+
+            // default for kim et al. is gic = 4, pd = 1.
+            params.set(Params.SEM_GIC_RULE, 2, 3, 4, 5, 6);
+            params.set(Params.PENALTY_DISCOUNT, 1, 2, 3);
+            params.set(Params.ALPHA, 0.01);
+            params.set(Params.ZS_RISK_BOUND, 0.00001);
+
+            params.set(Params.DIFFERENT_GRAPHS, true);
+
+            Algorithms algorithms = new Algorithms();
+
+            IndependenceWrapper test = new FisherZ();
+
+            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.EbicScore()));
+            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.KimEtAlScores()));
+            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+
+            Simulations simulations = new Simulations();
+            simulations.add(new SemSimulation(new RandomForward()));
+
+            Statistics statistics = new Statistics();
+
+            statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+            statistics.add(new ParameterColumn(Params.ALPHA));
+            statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
+            statistics.add(new ParameterColumn(Params.BOSS_ALG));
+            statistics.add(new AdjacencyPrecision());
+            statistics.add(new AdjacencyRecall());
+            statistics.add(new ArrowheadPrecision());
+            statistics.add(new ArrowheadRecall());
+            statistics.add(new ArrowheadPrecisionCommonEdges());
+            statistics.add(new ArrowheadRecallCommonEdges());
+            statistics.add(new ElapsedTime());
+
+            Comparison comparison = new Comparison();
+            comparison.setShowAlgorithmIndices(true);
+            comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+
+            comparison.compareFromSimulations(
+                    "/Users/josephramsey/Downloads/grasp/scores", simulations,
                     algorithms, statistics, params);
         }
 

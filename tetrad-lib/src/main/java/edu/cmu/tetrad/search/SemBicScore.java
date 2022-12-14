@@ -304,7 +304,7 @@ public class SemBicScore implements Score {
 //        } else {
         try {
             double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
-            lik = -(double) this.sampleSize * log(varey);
+            lik = -(double) (this.sampleSize / 2.0) * log(varey);
 //                cache.put(_all, lik);
         } catch (SingularMatrixException e) {
             lik = NaN;
@@ -318,7 +318,7 @@ public class SemBicScore implements Score {
         if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
             // Standard BIC, with penalty discount and structure prior.
-            double _score = lik - c * k * logN; // - 2 * getStructurePrior(k);
+            double _score = lik - c * (k / 2.0) * logN - getStructurePrior(k);
 
             if (Double.isNaN(_score) || Double.isInfinite(_score)) {
                 return Double.NaN;

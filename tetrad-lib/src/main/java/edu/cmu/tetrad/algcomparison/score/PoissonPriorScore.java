@@ -43,6 +43,8 @@ public class PoissonPriorScore implements ScoreWrapper {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
 
+        score.setStructurePrior(parameters.getDouble(Params.SEM_BIC_STRUCTURE_PRIOR));
+
         return score;
     }
 
@@ -60,6 +62,7 @@ public class PoissonPriorScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
+        parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
         return parameters;
     }
 
