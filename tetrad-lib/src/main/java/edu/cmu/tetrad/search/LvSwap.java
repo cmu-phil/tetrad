@@ -128,15 +128,21 @@ public final class LvSwap implements GraphSearch {
         Set<Edge> removed = new HashSet<>();
         Set<Triple> colliders = new HashSet<>();
 
-        for (int i = 0; i < 10; i++) {
+        Graph G0;
+
+        do {
+            G0 = new EdgeListGraph(G3);
             G3 = swapOrient(G3, scorer, knowledge2, removed, colliders);
+            removeDdpCovers(G3, scorer, removed, colliders);
             G3 = swapRemove(G3, removed);
             G3 = swapOrientColliders(G3, colliders);
-        }
 
-//        removeDdpCovers(G3, scorer, removed, colliders);
-//        G3 = swapRemove(G3, removed);
-//        G3 = swapOrientColliders(G3, colliders);
+//            removeDdpCovers(G3, scorer, removed, colliders);
+//            G3 = swapRemove(G3, removed);
+//            G3 = swapOrientColliders(G3, colliders);
+
+        } while (!G0.equals(G3));
+
 
         // Do final FCI orientation rules app
         Graph G4 = new EdgeListGraph(G3);

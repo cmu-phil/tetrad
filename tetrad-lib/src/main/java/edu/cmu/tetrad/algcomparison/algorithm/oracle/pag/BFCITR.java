@@ -36,13 +36,13 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BFCI-TR",
-        command = "bfci-tr",
-        algoType = AlgType.allow_latent_common_causes
-)
-@Bootstrapping
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BFCI-TR",
+//        command = "bfci-tr",
+//        algoType = AlgType.allow_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class BFCITR implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
