@@ -128,21 +128,25 @@ public final class LvSwap implements GraphSearch {
         Set<Edge> removed = new HashSet<>();
         Set<Triple> colliders = new HashSet<>();
 
-        Graph G0;
+        Graph G0, G00;
 
         do {
-            G0 = new EdgeListGraph(G3);
-            G3 = swapOrient(G3, scorer, knowledge2, removed, colliders);
+            G00 = new EdgeListGraph(G3);
             removeDdpCovers(G3, scorer, removed, colliders);
             G3 = swapRemove(G3, removed);
             G3 = swapOrientColliders(G3, colliders);
 
+            do {
+                G0 = new EdgeListGraph(G3);
+                G3 = swapOrient(G3, scorer, knowledge2, removed, colliders);
 //            removeDdpCovers(G3, scorer, removed, colliders);
-//            G3 = swapRemove(G3, removed);
+                G3 = swapRemove(G3, removed);
+                G3 = swapOrientColliders(G3, colliders);
+            } while (!G0.equals(G3));
+
 //            G3 = swapOrientColliders(G3, colliders);
-
-        } while (!G0.equals(G3));
-
+            removeDdpCovers(G3, scorer, removed, colliders);
+        }while (!G00.equals(G3));
 
         // Do final FCI orientation rules app
         Graph G4 = new EdgeListGraph(G3);
@@ -191,31 +195,14 @@ public final class LvSwap implements GraphSearch {
                             if (scorer.index(path.get(i)) > scorer.index(d)) continue D;
                             if (scorer.index(path.get(i)) > scorer.index(c)) continue D;
                             if (scorer.index(path.get(0)) > scorer.index(path.get(i))) continue D;
-//                            scorer.tuck(path.get(i), scorer.index(d));
-//                            scorer.tuck(path.get(i), scorer.index(c));
                         }
 
                         reverseTuck(c, scorer.index(d), scorer);
 
-//                        scorer.tuck(path.get(0), scorer.index(path.get(1)));
-//                        scorer.tuck(path.get(0), scorer.index(c));
-//                        scorer.tuck(path.get(0), scorer.index(d));
-
-
-//                        if (G4.getEndpoint(c, d) == Endpoint.ARROW) {
                         if (!scorer.adjacent(n1, n2)) {// && G4.getEndpoint(d, c) == Endpoint.CIRCLE) {
-//                            G4.removeEdge(n1, n2);
                             colliders.add(new Triple(bn, c, d));
-
-//                            G4.setEndpoint(bn, c, Endpoint.ARROW);
-//                            G4.setEndpoint(d, c, Endpoint.ARROW);
                             toRemove.add(G4.getEdge(n1, n2));
                         }
-
-//                        if (!flag && !scorer.adjacent(n1, n2)) {// if (G4.getEndpoint(c, d) == Endpoint.ARROW && G4.getEndpoint(d, c) == Endpoint.CIRCLE) {
-//                            G4.setEndpoint(d, c, Endpoint.TAIL);
-//                            toRemove.add(G4.getEdge(n1, n2));
-//                        }
 
 
                         scorer.goToBookmark();
@@ -298,28 +285,23 @@ public final class LvSwap implements GraphSearch {
                                     }
                                 }
 
-                                if (!conflicting) {
+//                                if (!conflicting) {
 
                                     // If OK, mark w*-*x for removal and do any new collider orientations in the graph...
                                     Edge edge = graph.getEdge(w, x);
 
-                                    if (edge != null && !removed.contains(edge)) {
+                                    if (edge != null) {// && !removed.contains(edge)) {
                                         out.println("Marking " + edge + " for removal (swapping " + x + " and " + y + ")");
                                         removed.add(edge);
-//                                    }
 
                                         for (Node y2 : adj) {
                                             if (scorer.collider(x, y2, w)) {
                                                 if (!graph.isDefCollider(x, y2, w) && graph.isAdjacentTo(x, y2) && graph.isAdjacentTo(w, y2)) {
                                                     colliders.add(new Triple(x, y2, w));
-
-//                                                    graph.setEndpoint(x, y2, Endpoint.ARROW);
-//                                                    graph.setEndpoint(w, y2, Endpoint.ARROW);
-//                                                    out.println("Orienting collider " + GraphUtils.pathString(graph, x, y2, w));
                                                 }
                                             }
                                         }
-                                    }
+//                                    }
                                 }
                             }
 
@@ -380,31 +362,13 @@ public final class LvSwap implements GraphSearch {
         if (ok) {
             path.add(b);
 
-//        if (!ok) {
-//            path.remove(b);
-//            return;
-//        }
-
-//            System.out.println("path ok = " + GraphUtils.pathString(graph, path));
-
-
             if (b == to && path.size() >= 4) {
-//            if (ok) {
                 paths.add(new ArrayList<>(path));
-//            }
             }
 
-//        boolean ok = true;
-
-//        for (int i = 0; i < path.size() - 3; i++) {
-//            if (!graph.isDefCollider(path.get(i), path.get(i + 1), path.get(i + 2))) ok = false;
-//        }
-
-//        if (ok) {
             for (Node c : graph.getAdjacentNodes(b)) {
                 findDdpColliderPaths(c, to, path, graph, paths);
             }
-//        }
 
             path.remove(b);
         }

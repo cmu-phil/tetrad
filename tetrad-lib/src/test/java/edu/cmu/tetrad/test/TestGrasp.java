@@ -2698,6 +2698,72 @@ public final class TestGrasp {
 
     }
 
+    public void testScores2() {
+        for (int grouping : new int[]{7}) {//, 2, 3, 4, 5, 67}) {
+            RandomUtil.getInstance().setSeed(38482838482L);
+
+            Parameters params = new Parameters();
+            params.set(Params.SAMPLE_SIZE, 1000);
+            params.set(Params.NUM_MEASURES, 100);
+            params.set(Params.NUM_LATENTS, 0);
+            params.set(Params.AVG_DEGREE, 10);
+            params.set(Params.RANDOMIZE_COLUMNS, true);
+            params.set(Params.COEF_LOW, 0);
+            params.set(Params.COEF_HIGH, 1);
+            params.set(Params.VAR_LOW, 1);
+            params.set(Params.VAR_HIGH, 3);
+            params.set(Params.VERBOSE, false);
+
+            params.set(Params.NUM_RUNS, 5);
+
+            params.set(Params.BOSS_ALG, 1);
+            params.set(Params.DEPTH, 3);
+            params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 4);
+            params.set(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE, false);
+            params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, false);
+
+            // default for kim et al. is gic = 4, pd = 1.
+            params.set(Params.SEM_GIC_RULE, 4);
+            params.set(Params.PENALTY_DISCOUNT, 2);
+            params.set(Params.ALPHA, 0.01);
+            params.set(Params.ZS_RISK_BOUND, 1, 0.8, 0.6, 0.4, 0.2, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.0);
+
+            params.set(Params.DIFFERENT_GRAPHS, true);
+
+            Algorithms algorithms = new Algorithms();
+
+            IndependenceWrapper test = new FisherZ();
+
+            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+
+            Simulations simulations = new Simulations();
+            simulations.add(new SemSimulation(new RandomForward()));
+
+            Statistics statistics = new Statistics();
+
+//            statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+//            statistics.add(new ParameterColumn(Params.ALPHA));
+//            statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
+            statistics.add(new ParameterColumn(Params.ZS_RISK_BOUND));
+            statistics.add(new AdjacencyPrecision());
+            statistics.add(new AdjacencyRecall());
+            statistics.add(new ArrowheadPrecision());
+            statistics.add(new ArrowheadRecall());
+            statistics.add(new ArrowheadPrecisionCommonEdges());
+            statistics.add(new ArrowheadRecallCommonEdges());
+            statistics.add(new ElapsedTime());
+
+            Comparison comparison = new Comparison();
+            comparison.setShowAlgorithmIndices(true);
+            comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
+
+            comparison.compareFromSimulations(
+                    "/Users/josephramsey/Downloads/grasp/zsb_varyrisk", simulations,
+                    algorithms, statistics, params);
+        }
+
+    }
+
     //    @Test
     public void test6Examples() {
         List<Ret> allFacts = new ArrayList<>();
