@@ -89,6 +89,7 @@ public final class LvSwap implements GraphSearch {
     private boolean verbose = false;
     private PrintStream out = System.out;
     private Boss.AlgType algType = Boss.AlgType.BOSS1;
+    private boolean possibleDsepSearchDone = true;
 
     //============================CONSTRUCTORS============================//
     public LvSwap(IndependenceTest test, Score score) {
@@ -115,48 +116,30 @@ public final class LvSwap implements GraphSearch {
 
         List<Node> pi = boss.bestOrder(scorer.getPi());
         scorer.score(pi);
-        Graph G1 = scorer.getGraph(false);
+        Graph G = scorer.getGraph(false);
 
         Knowledge knowledge2 = new Knowledge(knowledge);
 //        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(G1), knowledge2);
-
-        Graph G2 = new EdgeListGraph(G1);
-        retainUnshieldedColliders(G2, knowledge2);
-
-        Graph G3 = new EdgeListGraph(G2);
+        retainUnshieldedColliders(G, knowledge2);
 
         Set<Edge> removed = new HashSet<>();
         Set<Triple> colliders = new HashSet<>();
 
-        Graph G0, G00;
+        if (possibleDsepSearchDone) {
+            removeDdpCovers(G, scorer, removed, colliders);
+            G = swapRemove(G, removed);
+            G = swapOrientColliders(G, colliders);
+        }
 
-        do {
-            G00 = new EdgeListGraph(G3);
-            removeDdpCovers(G3, scorer, removed, colliders);
-            G3 = swapRemove(G3, removed);
-            G3 = swapOrientColliders(G3, colliders);
+        swapOrient(G, scorer, removed, colliders);
+        G = swapRemove(G, removed);
+        G = swapOrientColliders(G, colliders);
 
-            do {
-                G0 = new EdgeListGraph(G3);
-                G3 = swapOrient(G3, scorer, knowledge2, removed, colliders);
-//            removeDdpCovers(G3, scorer, removed, colliders);
-                G3 = swapRemove(G3, removed);
-                G3 = swapOrientColliders(G3, colliders);
-            } while (!G0.equals(G3));
+        finalOrientation(knowledge2, G);
 
-//            G3 = swapOrientColliders(G3, colliders);
-            removeDdpCovers(G3, scorer, removed, colliders);
-        }while (!G00.equals(G3));
+        G.setGraphType(EdgeListGraph.GraphType.PAG);
 
-        // Do final FCI orientation rules app
-        Graph G4 = new EdgeListGraph(G3);
-//        retainUnshieldedColliders(G4, knowledge2);
-
-        finalOrientation(knowledge2, G4);
-
-        G4.setGraphType(EdgeListGraph.GraphType.PAG);
-
-        return G4;
+        return G;
     }
 
     private void removeDdpCovers(Graph G4, TeyssierScorer scorer, Set<Edge> toRemove, Set<Triple> colliders) {
@@ -167,10 +150,7 @@ public final class LvSwap implements GraphSearch {
                 if (n1 == n2) continue;
                 if (!G4.isAdjacentTo(n1, n2)) continue;
 
-//                System.out.println("Checking " + n1 + " --- " + n2);
                 List<List<Node>> coveredDdps = coveredDdps(n1, n2, G4);
-//                System.out.println("Done checking " + n1 + " --- " + n2);
-
 
                 D:
                 for (List<Node> path : coveredDdps) {
@@ -204,20 +184,16 @@ public final class LvSwap implements GraphSearch {
                             toRemove.add(G4.getEdge(n1, n2));
                         }
 
-
                         scorer.goToBookmark();
                     }
                 }
             }
         }
-
     }
 
-    public boolean reverseTuck(Node k, int j, TeyssierScorer scorer) {
-//        if (scorer.adjacent(k, scorer.get(j))) return false;
-//        if (scorer.coveredEdge(k, scorer.get(j))) return false;
+    public void reverseTuck(Node k, int j, TeyssierScorer scorer) {
         int _k = scorer.index(k);
-        if (j <= _k) return false;
+        if (j <= _k) return;
 
         Set<Node> descendants = scorer.getDescendants(k);
 
@@ -236,7 +212,6 @@ public final class LvSwap implements GraphSearch {
 
         System.out.println("Pi after = " + scorer.getPi());
 
-        return true;
     }
 
     private void finalOrientation(Knowledge knowledge2, Graph G4) {
@@ -251,7 +226,7 @@ public final class LvSwap implements GraphSearch {
         fciOrient.doFinalOrientation(G4);
     }
 
-    private Graph swapOrient(Graph graph, TeyssierScorer scorer, Knowledge knowledge, Set<Edge> removed, Set<Triple> colliders) {
+    private void swapOrient(Graph graph, TeyssierScorer scorer, Set<Edge> removed, Set<Triple> colliders) {
         removed.clear();
 
         graph = new EdgeListGraph(graph);
@@ -265,7 +240,7 @@ public final class LvSwap implements GraphSearch {
 
                         // Check to make sure you have a left collider in the graph--i.e., z->x<-y
                         // with adj(w, x)
-                        if (graph.isDefCollider(z, x, y) && !graph.isAdjacentTo(z, y) && !graph.isDefCollider(x, y, w)) {// && !graph.isAdjacentTo(z, y) && scorer.adjacent(x, w)) {
+                        if (graph.isDefCollider(z, x, y) && !graph.isAdjacentTo(z, y) && !(!graph.isAdjacentTo(x, w) && graph.isDefCollider(x, y, w))) {// && !graph.isAdjacentTo(z, y) && scorer.adjacent(x, w)) {
                             scorer.swap(x, y);
 
                             // Make aure you get a right unshielded collider in the scorer--i.e. x->y<-w
@@ -276,32 +251,20 @@ public final class LvSwap implements GraphSearch {
                                 Set<Node> adj = scorer.getAdjacentNodes(x);
                                 adj.retainAll(scorer.getAdjacentNodes(w));
 
-                                boolean conflicting = false;
+                                // If OK, mark w*-*x for removal and do any new collider orientations in the graph...
+                                Edge edge = graph.getEdge(w, x);
 
-                                for (Node y2 : adj) {
-                                    if (graph.isDefCollider(x, y2, w) && !scorer.collider(x, y2, w)) {
-                                        conflicting = true;
-                                        break;
-                                    }
+                                if (edge != null) {// && !removed.contains(edge)) {
+                                    out.println("Marking " + edge + " for removal (swapping " + x + " and " + y + ")");
+                                    removed.add(edge);
                                 }
 
-//                                if (!conflicting) {
-
-                                    // If OK, mark w*-*x for removal and do any new collider orientations in the graph...
-                                    Edge edge = graph.getEdge(w, x);
-
-                                    if (edge != null) {// && !removed.contains(edge)) {
-                                        out.println("Marking " + edge + " for removal (swapping " + x + " and " + y + ")");
-                                        removed.add(edge);
-
-                                        for (Node y2 : adj) {
-                                            if (scorer.collider(x, y2, w)) {
-                                                if (!graph.isDefCollider(x, y2, w) && graph.isAdjacentTo(x, y2) && graph.isAdjacentTo(w, y2)) {
-                                                    colliders.add(new Triple(x, y2, w));
-                                                }
-                                            }
+                                for (Node y2 : adj) {
+                                    if (scorer.collider(x, y2, w)) {
+                                        if (!graph.isDefCollider(x, y2, w) && graph.isAdjacentTo(x, y2) && graph.isAdjacentTo(w, y2)) {
+                                            colliders.add(new Triple(x, y2, w));
                                         }
-//                                    }
+                                    }
                                 }
                             }
 
@@ -311,8 +274,6 @@ public final class LvSwap implements GraphSearch {
                 }
             }
         }
-
-        return graph;
     }
 
     private boolean distinct(Node... n) {
@@ -480,5 +441,9 @@ public final class LvSwap implements GraphSearch {
 
     public void setAlgType(Boss.AlgType algType) {
         this.algType = algType;
+    }
+
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 }
