@@ -115,8 +115,8 @@ public final class GFci implements GraphSearch {
 
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-        knowledge = new Knowledge((Knowledge) knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
+//        knowledge = new Knowledge(knowledge);
+//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
 
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
         gfciExtraEdgeRemovalStep(this.graph, fgesGraph, nodes, sepsets);

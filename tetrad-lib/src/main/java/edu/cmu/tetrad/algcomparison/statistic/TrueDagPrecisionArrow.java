@@ -31,14 +31,11 @@ public class TrueDagPrecisionArrow implements Statistic {
 
         for (Node x : nodes) {
             for (Node y : nodes) {
-                if (x == y) continue;
-
-                Edge e = estGraph.getEdge(x, y);
-
-                if (Edges.directedEdge(x, y).equals(e)) {
+                if (estGraph.isAdjacentTo(x, y) && estGraph.getEndpoint(x, y) == Endpoint.ARROW) {
                     if (!trueGraph.isAncestorOf(y, x)) {
                         tp++;
                     } else {
+                        System.out.println("Shoudn't be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));
                         fp++;
                     }
                 }

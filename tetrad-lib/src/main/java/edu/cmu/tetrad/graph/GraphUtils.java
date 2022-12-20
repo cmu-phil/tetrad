@@ -5237,19 +5237,6 @@ public final class GraphUtils {
                 }
             }
         }
-
-//                Edge edge = graph.getEdge(n1, n2);
-//                if (edge != null && edge.pointsTowards(n2)) {
-//                    if (!knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
-//                        knowledge.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
-//                    }
-//                } else if (edge != null && edge.pointsTowards(n1)) {
-//                    if (!knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
-//                        knowledge.setForbidden(edge.getNode1().getName(), edge.getNode2().getName());
-//                    }
-//                }
-//    }
-//        }
     }
 
     public static void removeNonSkeletonEdges(Graph graph, Knowledge knowledge) {

@@ -223,6 +223,7 @@ public final class Fci implements GraphSearch {
         fciOrient.setKnowledge(this.knowledge);
 
         fciOrient.ruleR0(graph);
+
         fciOrient.doFinalOrientation(graph);
         graph.setGraphType(EdgeListGraph.GraphType.PAG);
 

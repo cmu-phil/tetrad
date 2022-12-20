@@ -123,9 +123,6 @@ public class StatsListEditor extends JPanel {
     private List<Statistic> statistics() {
         List<Statistic> statistics = new ArrayList<>();
 
-//        statistics.add(new BicTrue());
-//        statistics.add(new BicEst());
-//        statistics.add(new BicDiff());
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -146,24 +143,10 @@ public class StatsListEditor extends JPanel {
         statistics.add(new F1Arrow());
         statistics.add(new MathewsCorrAdj());
         statistics.add(new MathewsCorrArrow());
-//        statistics.add(new SHD());
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new NumberOfEdgesTrue());
         statistics.add(new NumCorrectVisibleAncestors());
-//        statistics.add(new NumIncorrectVisibleEstimatedEdges());
-//        statistics.add(new NumAmbiguousTriples());
-//        statistics.add(new PercentAmbiguous());
         statistics.add(new PercentBidirectedEdges());
-//        statistics.add(new BidirectedTP());
-//        statistics.add(new BidirectedFP());
-//        statistics.add(new BidirectedPrecision());
-//        statistics.add(new NumGreenAncestors());
-//        statistics.add(new NumGreenNonancestors());
-//        statistics.add(new NumBidirectedEdgesEst());
-//        statistics.add(new BidirectedBothNonancestorAncestor());
-//        statistics.add(new LatentCommonAncestorTruePositiveBidirected());
-//        statistics.add(new LatentCommonAncestorFalsePositiveBidirected());
-//        statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TailPrecision());
         statistics.add(new TailRecall());
         statistics.add(new TwoCyclePrecision());
@@ -179,36 +162,17 @@ public class StatsListEditor extends JPanel {
         if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG
                 && referenceGraph.getGraphType() == EdgeListGraph.GraphType.DAG) {
             statistics.add(new NumDirectedEdges());
-            statistics.add(new NumDirectedEdgeAncestors());
             statistics.add(new NumDirectedEdgeReversed());
             statistics.add(new NumDirectedEdgeNotAncNotRev());
-            statistics.add(new NumDirectedEdgeNoMeasureAncestors());
-            statistics.add(new NumDefinitelyDirected());
-            statistics.add(new NumColoredDD());
-            statistics.add(new NumPossiblyDirected());
-//        statistics.add(new NumDirectedEdgeVisible());
-//        statistics.add(new NumVisibleEst());
-            statistics.add(new NumDefinitelyNotDirectedPaths());
-            statistics.add(new NumColoredPD());
-            statistics.add(new NumColoredNL());
-            statistics.add(new NumColoredPL());
-            statistics.add(new TrueDagPrecisionArrow());
-            statistics.add(new TrueDagRecallArrows());
-            statistics.add(new TrueDagPrecisionTails());
-            statistics.add(new TrueDagRecallTails());
-            statistics.add(new NumDirectedPathsTrue());
-            statistics.add(new NumDirectedPathsEst());
-            statistics.add(new NumDirectedShouldBePartiallyDirected());
             statistics.add(new NumBidirectedEdgesEst());
-            statistics.add(new NumBidirectedBothNonancestorAncestor());
             statistics.add(new NumCommonMeasuredAncestorBidirected());
             statistics.add(new NumLatentCommonAncestorBidirected());
+            statistics.add(new TrueDagPrecisionArrow());
+            statistics.add(new TrueDagPrecisionTails());
             statistics.add(new SemidirectedPrecision());
             statistics.add(new SemidirectedRecall());
             statistics.add(new NoSemidirectedPrecision());
             statistics.add(new NoSemidirectedRecall());
-            statistics.add(new ProportionSemidirectedPathsNotReversedEst());
-            statistics.add(new ProportionSemidirectedPathsNotReversedTrue());
         }
 
         return statistics;

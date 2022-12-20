@@ -119,7 +119,6 @@ public final class BFci implements GraphSearch {
         alg.setUseDataOrder(useDataOrder);
         alg.setDepth(depth);
         alg.setNumStarts(numStarts);
-//        alg.setKnowledge(knowledge);
         alg.setVerbose(false);
 
         List<Node> variables = this.score.getVariables();
@@ -128,14 +127,7 @@ public final class BFci implements GraphSearch {
         alg.bestOrder(variables);
         this.graph = alg.getGraph(true); // Get the DAG
 
-        if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
-            ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
-        }
-
-        Knowledge knowledge2 = new Knowledge((Knowledge) knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
-
-        // Keep a copy of this CPDAG.
+        Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(this.graph);
 
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
@@ -143,17 +135,6 @@ public final class BFci implements GraphSearch {
         // GFCI extra edge removal step...
         gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
         modifiedR0(referenceDag, sepsets);
-//        retainUnshieldedColliders(this.graph);
-
-//        graph = SearchGraphUtils.cpdagForDag(graph);
-////
-//        for (Edge edge : graph.getEdges()) {
-//            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
-//            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
-//        }
-
-
-//        removeByPossibleDsep(graph, independenceTest, null);
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);

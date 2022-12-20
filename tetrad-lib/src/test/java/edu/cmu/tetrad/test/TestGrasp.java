@@ -2465,18 +2465,13 @@ public final class TestGrasp {
 //        params.set(Params.MAX_DEGREE, 8);
             params.set(Params.VERBOSE, false);
 
-            params.set(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE, false);
-            params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, false);
+            params.set(Params.NUM_RUNS, 20);
 
-
-            params.set(Params.NUM_RUNS, 50);
-
-            params.set(Params.BOSS_ALG, 1, 2);
+            params.set(Params.BOSS_ALG, 1);
             params.set(Params.DEPTH, 3);
             params.set(Params.MAX_PATH_LENGTH, 2);
             params.set(Params.COMPLETE_RULE_SET_USED, true);
             params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
-            params.set(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE, true);
             params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
             params.set(Params.POSSIBLE_DSEP_DONE, true);
 
@@ -2577,42 +2572,19 @@ public final class TestGrasp {
                 statistics.add(new ProportionSemidirectedPathsNotReversedTrue());
             } else if (grouping == 7) {
                 statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-                statistics.add(new ParameterColumn(Params.ALPHA));
-                statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
-                statistics.add(new ParameterColumn(Params.SEM_BIC_STRUCTURE_PRIOR));
-                statistics.add(new ParameterColumn(Params.BOSS_ALG));
 
                 statistics.add(new NumDirectedEdges());
-                statistics.add(new NumDirectedEdgeAncestors());
                 statistics.add(new NumDirectedEdgeReversed());
                 statistics.add(new NumDirectedEdgeNotAncNotRev());
-//                statistics.add(new NumDirectedEdgeNoMeasureAncestors());
-//                statistics.add(new NumDefinitelyDirected());
-//                statistics.add(new NumColoredDD());
-//                statistics.add(new NumPossiblyDirected());
-//                statistics.add(new NumDirectedEdgeVisible());
-//                statistics.add(new NumVisibleEst());
-//                statistics.add(new NumDefinitelyNotDirectedPaths());
-//                statistics.add(new NumColoredPD());
-//                statistics.add(new NumColoredNL());
-//                statistics.add(new NumColoredPL());
-//                statistics.add(new NumDirectedShouldBePartiallyDirected());
-                statistics.add(new TrueDagPrecisionArrow());
-                statistics.add(new TrueDagRecallArrows());
-                statistics.add(new TrueDagPrecisionTails());
-                statistics.add(new TrueDagRecallTails());
-//                statistics.add(new NumDirectedPathsTrue());
-//                statistics.add(new NumDirectedPathsEst());
                 statistics.add(new NumBidirectedEdgesEst());
-                statistics.add(new NumBidirectedBothNonancestorAncestor());
                 statistics.add(new NumCommonMeasuredAncestorBidirected());
                 statistics.add(new NumLatentCommonAncestorBidirected());
+                statistics.add(new TrueDagPrecisionArrow());
+                statistics.add(new TrueDagPrecisionTails());
                 statistics.add(new SemidirectedPrecision());
                 statistics.add(new SemidirectedRecall());
                 statistics.add(new NoSemidirectedPrecision());
                 statistics.add(new NoSemidirectedRecall());
-//                statistics.add(new ProportionSemidirectedPathsNotReversedEst());
-//                statistics.add(new ProportionSemidirectedPathsNotReversedTrue());
 
                 statistics.add(new ElapsedTime());
             }
