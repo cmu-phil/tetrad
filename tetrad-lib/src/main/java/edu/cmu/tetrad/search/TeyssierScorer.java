@@ -397,6 +397,11 @@ public class TeyssierScorer {
      * @return This graph.
      */
     public Graph getGraph(boolean cpDag) {
+
+//        if(cpDag) {
+//            return findCompelled();
+//        }
+
         List<Node> order = getPi();
         Graph G1 = new EdgeListGraph(this.variables);
 
@@ -414,6 +419,96 @@ public class TeyssierScorer {
             return G1;
         }
     }
+
+    private List<Edge> orderEdges() {
+
+        List<Edge> orderedEdges = new ArrayList<>();
+
+        for (int i = this.pi.size(); i-- > 0; ) {
+            Node y = this.pi.get(i);
+            Set<Node> pa = this.getParents(i);
+            for (int j = 0; j < i; j++) {
+                Node x = this.pi.get(j);
+                if (pa.contains(x)) {
+                    Edge e = new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
+                    orderedEdges.add(e);
+                    pa.remove(x);
+                    if (pa.isEmpty()) {
+                        break;
+                    }
+                }
+            }
+        }
+        return orderedEdges;
+    }
+
+    public Graph findCompelled() {
+
+        Graph G = new EdgeListGraph(this.variables);
+
+        List<Edge> orderedEdges = orderEdges();
+
+        Node remainderCompelled = null;
+        Node remainderReversible = null;
+
+        EDGES:
+        while (!orderedEdges.isEmpty()) {
+
+            Edge e = orderedEdges.remove(0);
+            Node x = e.getNode1();
+            Node y = e.getNode2();
+
+            if (remainderCompelled != null) {
+                if (remainderCompelled == y) {
+                    G.addEdge(e);
+                    continue;
+                } else {
+                    remainderCompelled = null;
+                }
+            }
+
+            if (remainderReversible != null) {
+                if (remainderReversible == y) {
+                    G.addUndirectedEdge(x, y);
+                    continue;
+                } else {
+                    remainderReversible = null;
+                }
+            }
+
+            if (G.isParentOf(x, y)) {
+                continue;
+            }
+
+            List<Node> compelled = G.getParents(x);
+            Set<Node> xPa = getParents(x);
+            Set<Node> yPa = getParents(y);
+
+            for (Node w : compelled) {
+                if (yPa.contains(w)) {
+                    G.addEdge(e);
+                    continue EDGES;
+                } else {
+                    G.addDirectedEdge(w, y);
+                }
+            }
+
+            yPa.remove(x);
+            for (Node z : yPa) {
+                if (!xPa.contains(z)) {
+                    G.addEdge(e);
+                    remainderCompelled = y;
+                    continue EDGES;
+                }
+            }
+
+            G.addUndirectedEdge(x, y);
+            remainderReversible = y;
+        }
+
+        return G;
+    }
+
 
     /**
      * Returns a list of adjacent node pairs in the current graph.

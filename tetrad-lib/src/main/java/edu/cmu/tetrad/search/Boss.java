@@ -97,23 +97,17 @@ public class Boss {
             List<Node> pi;
             double s1, s2;
 
-            if (algType == AlgType.BOSS1) {
-                betterMutation1(scorer);
-            } else if (algType == AlgType.BOSS2) {
-                betterMutation2(scorer);
-            }
-
             do {
-                pi = scorer.getPi();
-                s1 = scorer.score();
-
-                besMutation(scorer);
-
                 if (algType == AlgType.BOSS1) {
                     betterMutation1(scorer);
                 } else if (algType == AlgType.BOSS2) {
                     betterMutation2(scorer);
                 }
+
+                pi = scorer.getPi();
+                s1 = scorer.score();
+
+                besMutation(scorer);
 
                 s2 = scorer.score();
             } while (s2 > s1);

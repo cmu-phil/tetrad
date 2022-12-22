@@ -23,14 +23,19 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.CPC;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.independence.PseudoTest;
+import edu.cmu.tetrad.algcomparison.score.EbicScore;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.simulation.UnifCorrSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * An example script to simulate data and run a comparison analysis on it.
@@ -41,44 +46,76 @@ public class ExampleCompareSimulation {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
         //https:arxiv.org/abs/1607.08110
-        parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 10);
-        parameters.set("avgDegree", 2);
-        parameters.set("sampleSize", 500);
-        parameters.set("alpha", 1e-2);
+//        parameters.set("numRuns", 10);
+//        parameters.set("numMeasures", 10);
+//        parameters.set("avgDegree", 2);
+//        parameters.set("sampleSize", 500);
+//        parameters.set("alpha", 1e-2);
+
+
+
+        parameters.set("numRuns", 30);
+        parameters.set("numMeasures", 40);
+//        parameters.set("numMeasures", 10, 20, 40);
+//        parameters.set("numLatents", 4);
+        parameters.set("avgDegree", 6);
+//        parameters.set("avgDegree", 2, 3, 4, 6);
+        parameters.set("sampleSize", 1000);
+//        parameters.set("sampleSize", 40, 60, 90, 135, 200, 300, 450, 675, 1000, 1500, 2250);
+        parameters.set("alpha", 1e-1, 1e-2, 1e-3);
+        parameters.set("ebicGamma", 0.8);
+        parameters.set("penaltyDiscount", 1, 2);
+        parameters.set("bossAlg", 1);
+        parameters.set("differentGraphs", true);
+        parameters.set("randomizeColumns", true);
+        parameters.set("verbose", false);
+
 
         Statistics statistics = new Statistics();
+
+        statistics.add(new ParameterColumn(Params.NUM_MEASURES));
+        statistics.add(new ParameterColumn(Params.AVG_DEGREE));
+        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+        statistics.add(new ParameterColumn(Params.ALPHA));
+        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
+        statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new MathewsCorrAdj());
-        statistics.add(new MathewsCorrArrow());
-        statistics.add(new F1Adj());
-        statistics.add(new F1Arrow());
-        statistics.add(new SHD());
+//        statistics.add(new MathewsCorrAdj());
+//        statistics.add(new MathewsCorrArrow());
+//        statistics.add(new F1Adj());
+//        statistics.add(new F1Arrow());
+//        statistics.add(new SHD());
         statistics.add(new ElapsedTime());
-
-        statistics.setWeight("AP", 1.0);
-        statistics.setWeight("AR", 0.5);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new PC(new FisherZ()));
-        algorithms.add(new CPC(new FisherZ()));
+//        algorithms.add(new PC(new FisherZ()));
+//        algorithms.add(new CPC(new FisherZ()));
+//        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new BOSS(new PseudoTest(), new SemBicScore()));
+        algorithms.add(new Fges(new EbicScore()));
+        algorithms.add(new BOSS(new PseudoTest(), new EbicScore()));
+        algorithms.add(new rGES(new EbicScore()));
 
         Simulations simulations = new Simulations();
 
-        simulations.add(new SemSimulation(new RandomForward()));
+//        simulations.add(new SemSimulation(new RandomForward()));
+        simulations.add(new UnifCorrSimulation(new RandomForward()));
+//        simulations.add(new UnifCorrSimulation(new ScaleFree()));
 
         Comparison comparison = new Comparison();
 
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
-        comparison.setSortByUtility(true);
-        comparison.setShowUtilities(true);
-        comparison.setSaveGraphs(true);
+//        comparison.setSortByUtility(true);
+//        comparison.setShowUtilities(true);
+//        comparison.setSaveGraphs(true);
+
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }

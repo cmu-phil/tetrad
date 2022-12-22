@@ -291,18 +291,33 @@ public class Matrix implements TetradSerializable {
         return newMatrix;
     }
 
+//    public Matrix sqrt() {
+//        SingularValueDecomposition svd = new SingularValueDecomposition(this.apacheData);
+//        RealMatrix U = svd.getU();
+//        RealMatrix V = svd.getV();
+//        double[] s = svd.getSingularValues();
+//        for (int i = 0; i < s.length; i++) s[i] = 1.0 / s[i];
+//        RealMatrix S = new BlockRealMatrix(s.length, s.length);
+//        for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
+//        RealMatrix sqrt = U.multiply(S).multiply(V);
+//        return new Matrix(sqrt.getData());
+//    }
+
     public Matrix sqrt() {
-        SingularValueDecomposition svd = new SingularValueDecomposition(this.apacheData);
-        RealMatrix U = svd.getU();
-        RealMatrix V = svd.getV();
-        double[] s = svd.getSingularValues();
-        for (int i = 0; i < s.length; i++) s[i] = 1.0 / s[i];
-        RealMatrix S = new BlockRealMatrix(s.length, s.length);
-        for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
-        RealMatrix sqrt = U.multiply(S).multiply(V);
+        EigenDecomposition eig = new EigenDecomposition(this.apacheData);
+        RealMatrix D = eig.getD();
+        RealMatrix V = eig.getV();
+        for (int i = 0; i < this.n; i++) {
+            double v = D.getEntry(i, i);
+            if (v <= 0) {
+                throw new IllegalArgumentException("Eigenvalues should be positive.");
+            } else {
+                D.setEntry(i, i, Math.sqrt(v));
+            }
+        }
+        RealMatrix sqrt = V.multiply(D).multiply(V.transpose());
         return new Matrix(sqrt.getData());
     }
-
 
     public static Matrix sparseMatrix(int m, int n) {
         return new Matrix(new OpenMapRealMatrix(m, n).getData());
