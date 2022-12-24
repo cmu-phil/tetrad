@@ -112,7 +112,7 @@ public class Boss {
                 }
 
                 s2 = scorer.score();
-            } while (s2 > s1);// || (++count <= 6));
+            } while (s2 > s1 || (++count <= 5));
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();

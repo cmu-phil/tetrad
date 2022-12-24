@@ -40,8 +40,7 @@ public class ZhangShenBoundScore implements Score {
 
     // The variables of the covariance matrix.
     private final List<Node> variables;
-    private DataSet dataSet;
-    private double riskBound;
+    private double riskBound = 0.001;
     // The running maximum score, for estimating the true minimal model.
     double[] maxScores;
     // The running estimate of the number of parents in the true minimal model.
@@ -59,8 +58,6 @@ public class ZhangShenBoundScore implements Score {
     // The data, if it is set.
     private Matrix data;
 
-    // True if row subsets should be calculated.
-    private boolean calculateRowSubsets = false;
     private boolean changed = false;
 
     /**
@@ -74,12 +71,6 @@ public class ZhangShenBoundScore implements Score {
         setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
-        this.estMaxParents = new int[variables.size()];
-        Arrays.fill(this.estMaxParents, 0);
-        this.maxScores = new double[variables.size()];
-        this.estMaxVarRys = new double[variables.size()];
-
-        this.riskBound = 3.0 / covariances.getDimension();
     }
 
     /**
@@ -87,41 +78,19 @@ public class ZhangShenBoundScore implements Score {
      */
     public ZhangShenBoundScore(DataSet dataSet) {
         this(DataUtils.getCovarianceMatrix(dataSet));
-
-        this.dataSet = dataSet;
-
-//        if (dataSet == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        this.variables = dataSet.getVariables();
-//        this.sampleSize = dataSet.getNumRows();
-//
-//        DataSet _dataSet = DataUtils.center(dataSet);
-//        this.data = _dataSet.getDoubleData();
-//
-//        if (!dataSet.existsMissingValue()) {
-//            setCovariances(new CovarianceMatrix(dataSet));
-//            calculateRowSubsets = false;
-//        } else {
-//            calculateRowSubsets = true;
-//        }
-//
-//        this.riskBound = 3.0 / dataSet.getNumColumns();
+        this.data = dataSet.getDoubleData();
     }
 
-    public static double zhangShenLambda(int m0, int pn, double riskBound) {
-//        if (pn == m0) throw new IllegalArgumentException("m0 should not equal pn");
-//        int sn = min(pn, 12);
-        int sn = pn;//max(sn, 0);
+    public static double zhangShenLambda(int m0, double pn, double riskBound) {
+        if (m0 >= pn) throw new IllegalArgumentException("m0 should not be >= pn; m0 = " + m0 + " pn = " + pn);
 
-        double high = 10000;
+        double high = 10000.0;
         double low = 0.0;
 
-        while (high - low > 1e-10) {
+        while (high - low > 1e-13) {
             double lambda = (high + low) / 2.0;
 
-            double p = getP(sn, m0, lambda);
+            double p = getP(pn, m0, lambda);
 
             if (p < 1.0 - riskBound) {
                 low = lambda;
@@ -133,8 +102,8 @@ public class ZhangShenBoundScore implements Score {
         return low;
     }
 
-    public static double getP(int pn, int m0, double lambda) {
-        return 2 - pow((1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda)), pn - m0);
+    public static double getP(double pn, double m0, double lambda) {
+        return 2. - pow((1. + (exp(-(lambda - 1.) / 2.)) * sqrt(lambda)), pn - m0);
     }
 
     private static int[] append(int[] z, int x) {
@@ -162,6 +131,9 @@ public class ZhangShenBoundScore implements Score {
     public double localScore(int i, int... parents) throws RuntimeException {
         int pn = variables.size() - 1;
 
+        // True if row subsets should be calculated.
+        boolean calculateRowSubsets = false;
+
         if (this.estMaxParents == null) {
             this.estMaxParents = new int[variables.size()];
             this.maxScores = new double[variables.size()];
@@ -169,8 +141,8 @@ public class ZhangShenBoundScore implements Score {
 
             for (int j = 0; j < variables.size(); j++) {
                 this.estMaxParents[j] = 0;
-                this.maxScores[j] = localScore(j, new int[0]);
-                this.estMaxVarRys[j] = SemBicScore.getVarRy(j, new int[0], data, covariances, calculateRowSubsets);
+                this.maxScores[j] = Double.NEGATIVE_INFINITY;
+                this.estMaxVarRys[j] = Double.NaN;
             }
         }
 
@@ -181,7 +153,7 @@ public class ZhangShenBoundScore implements Score {
 
         double score = -(0.5 * sampleSize * log(varRy) + getLambda(m0, pn) * pi);
 
-        if (score > maxScores[i]) {
+        if (score >= maxScores[i]) {
             maxScores[i] = score;
             estMaxParents[i] = parents.length;
             estMaxVarRys[i] = varRy;
@@ -225,7 +197,6 @@ public class ZhangShenBoundScore implements Score {
 
     private void setCovariances(ICovarianceMatrix covariances) {
         CorrelationMatrix correlations = new CorrelationMatrix(covariances);
-//        this.covariances = correlations;
         this.covariances = covariances;
 
         boolean exists = false;
@@ -246,7 +217,6 @@ public class ZhangShenBoundScore implements Score {
             throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
                     + ") in absolute value.");
         }
-
 
         this.sampleSize = covariances.getSampleSize();
     }
