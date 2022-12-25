@@ -655,7 +655,7 @@ public final class FciOrient {
 
             if (this.verbose) {
                 this.logger.forceLogMessage(
-                        "Definite discriminating path.. d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
+                        "R4: Definite discriminating path collider rule d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
             }
 
             this.changeFlag = true;
@@ -664,7 +664,7 @@ public final class FciOrient {
 
             if (this.verbose) {
                 this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg(
-                        "R4: Definite discriminating path d = " + d, graph.getEdge(b, c)));
+                        "R4: Definite discriminating path tail rule d = " + d, graph.getEdge(b, c)));
             }
 
             this.changeFlag = true;

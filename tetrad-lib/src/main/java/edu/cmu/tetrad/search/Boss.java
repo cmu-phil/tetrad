@@ -85,7 +85,6 @@ public class Boss {
         for (int r = 0; r < this.numStarts; r++) {
             if ((r == 0 && !this.useDataOrder) || r > 0) {
                 shuffle(order);
-                System.out.println("order = " + order);
             }
 
             this.start = System.currentTimeMillis();
@@ -125,7 +124,8 @@ public class Boss {
         long stop = System.currentTimeMillis();
 
         if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
+            TetradLogger.getInstance().forceLogMessage("\nFinal " + algType + " order = " + this.scorer.getPi());
+            TetradLogger.getInstance().forceLogMessage("Final score = " + this.scorer.score());
             TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
         }
 

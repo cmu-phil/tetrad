@@ -82,7 +82,7 @@ public class ZhangShenBoundScore implements Score {
     }
 
     public static double zhangShenLambda(int m0, double pn, double riskBound) {
-        if (m0 >= pn) throw new IllegalArgumentException("m0 should not be >= pn; m0 = " + m0 + " pn = " + pn);
+        if (m0 > pn) throw new IllegalArgumentException("m0 should not be > pn; m0 = " + m0 + " pn = " + pn);
 
         double high = 10000.0;
         double low = 0.0;

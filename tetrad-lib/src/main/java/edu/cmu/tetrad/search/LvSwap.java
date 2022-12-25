@@ -90,6 +90,7 @@ public final class LvSwap implements GraphSearch {
     private boolean possibleDsepSearchDone = true;
 
     double delta = 100.;
+    private boolean doDiscriminatingPathColliderRule;
 
 
     //============================CONSTRUCTORS============================//
@@ -112,7 +113,7 @@ public final class LvSwap implements GraphSearch {
         alg.setUseDataOrder(useDataOrder);
         alg.setDepth(depth);
         alg.setNumStarts(numStarts);
-        alg.setVerbose(false);
+        alg.setVerbose(verbose);
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
@@ -126,15 +127,16 @@ public final class LvSwap implements GraphSearch {
 
         Set<Triple> colliders;
 
-        if (possibleDsepSearchDone) {
-            colliders = removeDdpCovers(G, scorer);
-            swapRemove(G, colliders, knowledge2);
-            swapOrientColliders(G, colliders, knowledge2);
-        }
+//        if (possibleDsepSearchDone) {
+//            colliders = removeDdpCovers(G, scorer);
+//            swapRemove(G, colliders, knowledge2, "Remove DDP covers");
+//            swapOrientColliders(G, colliders, knowledge2, "Remove DDP covers");
+//        }
 
-        colliders = swapOrient(G, scorer);
-        swapRemove(G, colliders, knowledge2);
-        swapOrientColliders(G, colliders, knowledge2);
+        while (!(colliders = swapOrient(G, scorer)).isEmpty()) {
+            swapRemove(G, colliders, knowledge2, "Swap rule");
+            swapOrientColliders(G, colliders, knowledge2, "Swap rule");
+        }
 
         finalOrientation(knowledge2, G);
 
@@ -185,13 +187,13 @@ public final class LvSwap implements GraphSearch {
                 for (List<Node> path : coveredDdps) {
                     if (!G4.isAdjacentTo(n1, n2)) continue;
 
-                    System.out.println("\nEdge from 'from' to 'to': " + G4.getEdge(n1, n2));
+//                    System.out.println("\nEdge from 'from' to 'to': " + G4.getEdge(n1, n2));
 
-                    for (int i = 1; i < path.size() - 2; i++) {
-                        System.out.println(G4.getEdge(path.get(i), n2));
-                    }
+//                    for (int i = 1; i < path.size() - 2; i++) {
+//                        System.out.println(G4.getEdge(path.get(i), n2));
+//                    }
 
-                    System.out.println("DDP path: " + GraphUtils.pathString(G4, path));
+//                    System.out.println("DDP path: " + GraphUtils.pathString(G4, path));
 
                     if (path.size() >= 3) {
                         scorer.bookmark();
@@ -209,7 +211,9 @@ public final class LvSwap implements GraphSearch {
                         reverseTuck(c, scorer.index(d), scorer);
 
                         if (!scorer.adjacent(n1, n2)) {// && G4.getEndpoint(d, c) == Endpoint.CIRCLE) {
-                            colliders.add(new Triple(bn, c, d));
+                            Triple triple = new Triple(bn, c, d);
+                            System.out.println("Adding DDP collider: " + colliders);
+                            colliders.add(triple);
                         }
 
                         scorer.goToBookmark();
@@ -248,7 +252,7 @@ public final class LvSwap implements GraphSearch {
         SepsetProducer sepsets = new SepsetsGreedy(G4, test, null, depth);
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(false);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathColliderRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathTailRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(knowledge2);
@@ -256,7 +260,7 @@ public final class LvSwap implements GraphSearch {
         fciOrient.doFinalOrientation(G4);
     }
 
-    private Set<Triple> swapOrient(Graph graph, TeyssierScorer scorer) {
+    private Set<Triple>     swapOrient(Graph graph, TeyssierScorer scorer) {
         Set<Triple> colliders = new HashSet<>();
 
         graph = new EdgeListGraph(graph);
@@ -264,38 +268,38 @@ public final class LvSwap implements GraphSearch {
 
         for (Node y : pi) {
             for (Node x : graph.getAdjacentNodes(y)) {
+
+                W:
                 for (Node w : graph.getAdjacentNodes(y)) {
-                    for (Node z : graph.getAdjacentNodes(x)) {
-                        if (!distinct(z, x, y, w)) continue;
+                    if (!distinct(x, y, w)) continue;
+                    if (graph.isDefCollider(x, y, w) && graph.isAdjacentTo(x, w)) continue;
 
-                        // Check to make sure you have a left collider in the graph--i.e., z->x<-y
-                        // with adj(w, x)
-                        if ((graph.isDefCollider(z, x, y) && !graph.isAdjacentTo(z, y))
-                                        && !(graph.isDefCollider(x, y, w) && !graph.isAdjacentTo(x, w))
-                                        && graph.isAdjacentTo(y, w)) {
-                            scorer.swap(x, y);
+                    for (Node p : graph.getParents(x)) {
+                        if (!(scorer.parent(p, x))) continue W;
+                    }
 
-                            // Make aure you get a right unshielded collider in the scorer--i.e. x->y<-w
-                            // with ~adj(x, w)
-                            if (scorer.collider(x, y, w) && !scorer.adjacent(x, w)) {
+                    // Check to make sure you have a left collider in the graph--i.e., z->x<-y
+                    scorer.swap(x, y);
 
-                                // Make sure the new scorer orientations are all allowed in the graph...
-                                Set<Node> adj = scorer.getAdjacentNodes(x);
-                                adj.retainAll(scorer.getAdjacentNodes(w));
+                    // Make aure you get a right unshielded collider in the scorer--i.e. x->y<-w
+                    // with ~adj(x, w)
+                    if (scorer.collider(x, y, w) && !scorer.adjacent(x, w)) {
 
-                                // If OK, mark w*-*x for removal and do any new collider orientations in the graph...
-                                for (Node y2 : adj) {
-                                    if (scorer.collider(x, y2, w)) {
-                                        if (!graph.isDefCollider(x, y2, w) && graph.isAdjacentTo(x, y2) && graph.isAdjacentTo(w, y2)) {
-                                            colliders.add(new Triple(x, y2, w));
-                                        }
-                                    }
+                        // Make sure the new scorer orientations are all allowed in the graph...
+                        Set<Node> adj = scorer.getAdjacentNodes(x);
+                        adj.retainAll(scorer.getAdjacentNodes(w));
+
+                        // If OK, mark w*-*x for removal and do any new collider orientations in the graph...
+                        for (Node y2 : adj) {
+                            if (scorer.collider(x, y2, w)) {
+                                if (!graph.isDefCollider(x, y2, w) && graph.isAdjacentTo(x, y2) && graph.isAdjacentTo(w, y2)) {
+                                    colliders.add(new Triple(x, y2, w));
                                 }
                             }
-
-                            scorer.swap(x, y);
                         }
                     }
+
+                    scorer.swap(x, y);
                 }
             }
         }
@@ -362,31 +366,38 @@ public final class LvSwap implements GraphSearch {
         }
     }
 
-    private void swapRemove(Graph graph, Set<Triple> colliders, Knowledge knowledge2) {
+    private void swapRemove(Graph graph, Set<Triple> colliders, Knowledge knowledge2, String note) {
         for (Triple triple : colliders) {
             Node x = triple.getX();
             Node w = triple.getZ();
 
             Edge edge = graph.getEdge(x, w);
 
+            if (graph.isAdjacentTo(x, w)) {
+                graph.removeEdge(x, w);
+                out.println("Removing (" + note + "): " + edge);
+            } else {
+                out.println("Edge already removed (" + note + ") " + x + "*-*" + w);
+            }
+
             if (edge != null) {
                 graph.removeEdge(x, w);
-                out.println("Removing : " + edge);
+                out.println("Removing (swap rule): " + edge);
             }
         }
     }
 
-    private void swapOrientColliders(Graph graph, Set<Triple> colliders, Knowledge knowledge2) {
+    private void swapOrientColliders(Graph graph, Set<Triple> colliders, Knowledge knowledge2, String note) {
         for (Triple triple : colliders) {
             Node x = triple.getX();
             Node y2 = triple.getY();
             Node w = triple.getZ();
             if (graph.isAdjacentTo(x, y2) && graph.isAdjacentTo(y2, w)) {
-                if (FciOrient.isArrowpointAllowed(x, y2, graph, knowledge2) && FciOrient.isArrowpointAllowed(w, y2, graph, knowledge2)) {
-                    graph.setEndpoint(x, y2, Endpoint.ARROW);
-                    graph.setEndpoint(w, y2, Endpoint.ARROW);
-                    out.println("Orienting collider " + GraphUtils.pathString(graph, x, y2, w));
-                }
+//                if (FciOrient.isArrowpointAllowed(x, y2, graph, knowledge2) && FciOrient.isArrowpointAllowed(w, y2, graph, knowledge2)) {
+                graph.setEndpoint(x, y2, Endpoint.ARROW);
+                graph.setEndpoint(w, y2, Endpoint.ARROW);
+                out.println("Orienting collider (" + note + "): " + GraphUtils.pathString(graph, x, y2, w));
+//                }
             }
         }
     }
@@ -438,6 +449,10 @@ public final class LvSwap implements GraphSearch {
 
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
+    }
+
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
     public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {

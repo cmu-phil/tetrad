@@ -2594,7 +2594,7 @@ public final class TestGrasp {
             comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
             comparison.compareFromSimulations(
-                    "/Users/josephramsey/Downloads/grasp/testBfci.grouping." + grouping, simulations,
+                        "/Users/josephramsey/Downloads/grasp/testBfci.grouping." + grouping, simulations,
                     algorithms, statistics, params);
         }
 
