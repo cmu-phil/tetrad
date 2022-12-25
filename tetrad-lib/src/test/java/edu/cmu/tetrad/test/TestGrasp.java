@@ -2471,8 +2471,6 @@ public final class TestGrasp {
             params.set(Params.DEPTH, 3);
             params.set(Params.MAX_PATH_LENGTH, 2);
             params.set(Params.COMPLETE_RULE_SET_USED, true);
-            params.set(Params.DO_DISCRIMINATING_PATH_RULE, true);
-            params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
             params.set(Params.POSSIBLE_DSEP_DONE, true);
 
             // Flags
