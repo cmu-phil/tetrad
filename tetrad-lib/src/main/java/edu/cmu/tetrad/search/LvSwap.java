@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -182,40 +183,43 @@ public final class LvSwap implements GraphSearch {
                 if (x == y) continue;
 
                 W:
-                for (Node w : G.getAdjacentNodes(y)) {
-                    if (x == w) continue;
-                    if (y == w) continue;
+                for (Node z : G.getAdjacentNodes(y)) {
+                    if (x == z) continue;
+                    if (y == z) continue;
 
-                    if (!G.isAdjacentTo(x, w)) continue;
+                    // Check that  <x, y, z> is an unshielded collider or else is a shielded collider or noncollider
+                    // (either way you can end up after possible reorientation with an unshielded collider),
+                    if (!G.isDefCollider(x, y, z) && !G.isAdjacentTo(x, z)) continue;
 
                     scorer.bookmark();
 
-                    Set<Node> district = district(x, G);
-
-                    for (Node p : district) {
-                        if (scorer.index(p) > scorer.index(x)) continue W;
+                    // and make sure you're conditioning on district(x, G)...
+                    for (Node p : district(x, G)) {
+                        scorer.tuck(p, x);
                     }
 
-                    // If x->y<-w is an unshielded collider in DAG(swap(x, w, π)...
-                    scorer.swap(x, y);
+                    scorer.swapTuckWithoutMovingAncestors(x, y);
 
-                    // ...then look at each y2 commonly adjacent to both x and w...
-                    Set<Node> adj = scorer.getAdjacentNodes(x);
-                    adj.retainAll(scorer.getAdjacentNodes(w));
+                    // If that's true, and if <x, y, z> is an unshielded collider in DAG(π),
+                    if (scorer.collider(x, y, z) && !scorer.adjacent(x, z)) {
 
-                    for (Node y2 : adj) {
+                        // look at each y2 commonly adjacent to both x and z,
+                        Set<Node> adj = scorer.getAdjacentNodes(x);
+                        adj.retainAll(scorer.getAdjacentNodes(z));
 
-                        // ... and if x->y2<-w is an unshielded collider in DAG(swap(x, w, π))
-                        // not already oriented as such in G...
-                        if (scorer.collider(x, y2, w) && !scorer.adjacent(x, w)
-                                && !(G.isDefCollider(x, y2, w) && !G.isAdjacentTo(x, w))) {
+                        for (Node y2 : adj) {
 
-                            // ...add <x, y2, w> to the set of new unshielded colliders...
-                            newUnshieldedColliders.add(new Triple(x, y2, w));
+                            // and x->y2<-z is an unshielded collider in DAG(swap(x, z, π))
+                            // not already oriented as an unshielded collider in G,
+                            if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)
+                                    && !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))) {
+
+                                // then add <x, y2, z> to the set of new unshielded colliders to process.
+                                newUnshieldedColliders.add(new Triple(x, y2, z));
+                            }
                         }
                     }
 
-//                    scorer.swap(x, y);
                     scorer.goToBookmark();
                 }
             }
@@ -224,8 +228,8 @@ public final class LvSwap implements GraphSearch {
         return newUnshieldedColliders;
     }
 
-    private Set<Node> district(Node x, Graph G) {
-        Set<Node> district = new HashSet<>();
+    private List<Node> district(Node x, Graph G) {
+        List<Node> district = new ArrayList<>();
         Set<Node> boundary = new HashSet<>();
 
         for (Edge e : G.getEdges(x)) {

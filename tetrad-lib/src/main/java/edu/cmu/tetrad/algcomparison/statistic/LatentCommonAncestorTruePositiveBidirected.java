@@ -4,8 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * The bidirected true positives.
@@ -39,13 +38,12 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
     }
 
     public static boolean existsLatentCommonAncestor(Graph trueGraph, Edge edge) {
-        for (Node c : trueGraph.getNodes()) {
+        List<Node> nodes = trueGraph.getAncestors(Collections.singletonList(edge.getNode1()));
+        nodes.retainAll(trueGraph.getAncestors(Collections.singletonList(edge.getNode2())));
+
+        for (Node c : nodes) {
             if (c.getNodeType() == NodeType.LATENT) {
-                if (c == edge.getNode1() || c == edge.getNode2()) continue;
-                if (trueGraph.isAncestorOf(c, edge.getNode1())
-                        && trueGraph.isAncestorOf(c, edge.getNode2())) {
-                    return true;
-                }
+                return true;
             }
         }
 

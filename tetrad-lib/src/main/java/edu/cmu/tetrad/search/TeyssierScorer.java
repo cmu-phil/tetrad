@@ -2,8 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.SublistGenerator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -209,12 +207,22 @@ public class TeyssierScorer {
     /**
      * Performs a tuck operation.
      */
-    public void tuck(Node x, Node y) {
+    public void swapTuckWithoutMovingAncestors(Node x, Node y) {
         if (index(x) < index(y)) {
             moveTo(y, index(x));
         } else if (index(x) > index(y)) {
             moveTo(x, index(y));
         }
+    }
+
+    public void tuckWithoutMovingAncestors(Node x, Node y) {
+        if (index(x) > index(y)) {
+            moveTo(x, index(y));
+        }
+    }
+
+    public boolean tuck(Node k, Node j) {
+        return tuck(k, index(j));
     }
 
     public boolean tuck(Node k, int j) {
