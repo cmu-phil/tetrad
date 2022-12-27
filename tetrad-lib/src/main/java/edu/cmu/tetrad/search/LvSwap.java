@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -194,7 +193,7 @@ public final class LvSwap implements GraphSearch {
                     scorer.bookmark();
 
                     // and make sure you're conditioning on district(x, G)...
-                    for (Node p : district(x, G)) {
+                    for (Node p : mb(x, G)) {
                         scorer.tuck(p, x);
                     }
 
@@ -228,8 +227,8 @@ public final class LvSwap implements GraphSearch {
         return newUnshieldedColliders;
     }
 
-    private List<Node> district(Node x, Graph G) {
-        List<Node> district = new ArrayList<>();
+    private Set<Node> district(Node x, Graph G) {
+        Set<Node> district = new HashSet<>();
         Set<Node> boundary = new HashSet<>();
 
         for (Edge e : G.getEdges(x)) {
@@ -259,6 +258,36 @@ public final class LvSwap implements GraphSearch {
         } while (!boundary.isEmpty());
 
         return district;
+    }
+
+    private Set<Node> mb(Node x, Graph G) {
+        Set<Node> mb = district(x, G);
+
+        List<Edge> edges = G.getEdges(x);
+
+        for (Edge e : edges) {
+            if (Edges.partiallyOrientedEdge(e.getDistalNode(x), x).equals(e)) {
+                mb.add(e.getDistalNode(x));
+            }
+        }
+
+        for (Node b : new HashSet<>(mb)) {
+            List<Edge> edges2 = G.getEdges(b);
+
+            for (Edge e : edges2) {
+                Node distalNode = e.getDistalNode(b);
+                if (distalNode == x) continue;
+                if (Edges.partiallyOrientedEdge(distalNode, b).equals(e)) {
+                    mb.add(distalNode);
+                }
+
+                if (Edges.directedEdge(distalNode, b).equals(e)) {
+                    mb.add(distalNode);
+                }
+            }
+        }
+
+        return mb;
     }
 
     private void removeShields(Graph graph, Set<Triple> unshieldedColliders) {

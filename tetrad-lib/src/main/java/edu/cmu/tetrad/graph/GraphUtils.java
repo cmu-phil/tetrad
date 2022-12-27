@@ -1326,6 +1326,7 @@ public final class GraphUtils {
         path.addLast(node1);
 
         if (path.size() > (maxLength == -1 ? 1000 : maxLength)) {
+            path.removeLast();
             return;
         }
 
@@ -1396,7 +1397,7 @@ public final class GraphUtils {
             }
 
             // Found a path.
-            if (next == node2) {
+            if (next == node2 && !path.isEmpty()) {
                 LinkedList<Node> _path = new LinkedList<>(path);
                 _path.add(next);
                 paths.add(_path);
@@ -1457,7 +1458,7 @@ public final class GraphUtils {
             }
 
             // Found a path.
-            if (next == node2) {
+            if (next == node2 && !path.isEmpty()) {
                 LinkedList<Node> _path = new LinkedList<>(path);
                 _path.add(next);
                 paths.add(_path);
@@ -1548,7 +1549,12 @@ public final class GraphUtils {
             return "NO PATH";
         }
 
-        buf.append(path.get(0).toString());
+        if (path.get(0).getNodeType() == NodeType.LATENT) {
+            buf.append("(").append(path.get(0).toString()).append(")");
+        } else {
+            buf.append(path.get(0).toString());
+        }
+
 
         if (conditioningVars.contains(path.get(0))) {
             buf.append("(C)");
@@ -1559,7 +1565,6 @@ public final class GraphUtils {
             Node n1 = path.get(m);
 
             Edge edge = graph.getEdge(n0, n1);
-
 
             if (edge == null) {
                 buf.append("(-)");
@@ -1586,7 +1591,11 @@ public final class GraphUtils {
                 }
             }
 
-            buf.append(n1.toString());
+            if (n1.getNodeType() == NodeType.LATENT) {
+                buf.append("(").append(n1).append(")");
+            } else {
+                buf.append(n1);
+            }
 
             if (conditioningVars.contains(n1)) {
                 buf.append("(C)");
@@ -2078,6 +2087,35 @@ public final class GraphUtils {
         return out.toString();
     }
 
+    public static String graphToPcalg(Graph g) {
+        Map<Endpoint, Integer> mark2Int = new HashMap();
+        mark2Int.put(Endpoint.NULL, 0);
+        mark2Int.put(Endpoint.CIRCLE, 1);
+        mark2Int.put(Endpoint.ARROW, 2);
+        mark2Int.put(Endpoint.TAIL, 3);
+
+        int n = g.getNumNodes();
+        int[][] A = new int[n][n];
+
+        List<Node> nodes = g.getNodes();
+        for (Edge edge : g.getEdges()) {
+            int i = nodes.indexOf(edge.getNode1());
+            int j = nodes.indexOf(edge.getNode2());
+            A[j][i] = mark2Int.get(edge.getEndpoint1());
+            A[i][j] = mark2Int.get(edge.getEndpoint2());
+        }
+
+        TextTable table = new TextTable(n, n);
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                table.setToken(i, j, "" + A[i][j]);
+            }
+        }
+
+        return table.toString();
+    }
+
     public static Graph parseGraphXml(Element graphElement, Map<String, Node> nodes) throws ParsingException {
         if (!"graph".equals(graphElement.getLocalName())) {
             throw new IllegalArgumentException("Expecting graph element: " + graphElement.getLocalName());
@@ -2279,7 +2317,8 @@ public final class GraphUtils {
 //            out.print(graph);
 
             if (xml) {
-                out.print(graphToXml(graph));
+                out.println(graphToPcalg(graph));
+//                out.print(graphToXml(graph));
             } else {
                 out.print(graph);
             }

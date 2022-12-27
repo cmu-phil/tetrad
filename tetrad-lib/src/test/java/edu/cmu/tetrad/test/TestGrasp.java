@@ -2484,7 +2484,7 @@ public final class TestGrasp {
             params.set(Params.PENALTY_DISCOUNT, 2);
             params.set(Params.ALPHA, 0.01);
             params.set(Params.ZS_RISK_BOUND, 0.001);
-            params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 4);
+            params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 2);
 
             params.set(Params.DIFFERENT_GRAPHS, true);
 
