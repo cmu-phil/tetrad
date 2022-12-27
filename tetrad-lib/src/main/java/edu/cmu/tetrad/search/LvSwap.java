@@ -108,31 +108,31 @@ public final class LvSwap implements GraphSearch {
         alg.setNumStarts(numStarts);
         alg.setVerbose(verbose);
 
-        List<Node> variables = this.score.getVariables();
-        assert variables != null;
+        alg.bestOrder(this.score.getVariables());
+        Graph G = alg.getGraph(false);
 
-        alg.bestOrder(variables);
+        retainUnshieldedColliders(G);
 
-        Graph G = alg.getGraph(true); // Get the DAG
+        Set<Triple> allT = new HashSet<>();
 
-        Knowledge knowledge2 = new Knowledge(knowledge);
-        retainUnshieldedColliders(G, knowledge2);
+        while (true) {
+            Set<Triple> T = newUnshieldedCollidersBySwap(G, scorer);
 
-        Set<Triple> colliders;
+            if (allT.containsAll(T)) break;
+            allT.addAll(T);
 
-        while (!(colliders = swapOrient(G, scorer)).isEmpty()) {
-            swapRemove(G, colliders, knowledge2);
-            swapOrientColliders(G, colliders, knowledge2);
+            removeShields(G, T);
+            orientColliders(G, T);
         }
 
-        finalOrientation(knowledge2, G);
+        finalOrientation(knowledge, G);
 
         G.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return G;
     }
 
-    public static void retainUnshieldedColliders(Graph graph, Knowledge knowledge) {
+    public static void retainUnshieldedColliders(Graph graph) {
         Graph orig = new EdgeListGraph(graph);
         graph.reorientAllWith(Endpoint.CIRCLE);
         List<Node> nodes = graph.getNodes();
@@ -159,88 +159,110 @@ public final class LvSwap implements GraphSearch {
         }
     }
 
-    private void finalOrientation(Knowledge knowledge2, Graph G4) {
-        SepsetProducer sepsets = new SepsetsGreedy(G4, test, null, depth);
+    private void finalOrientation(Knowledge knowledge2, Graph G) {
+        SepsetProducer sepsets = new SepsetsGreedy(G, test, null, depth);
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(false);
-        fciOrient.setDoDiscriminatingPathTailRule(false);
+        fciOrient.setDoDiscriminatingPathTailRule(true);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(knowledge2);
         fciOrient.setVerbose(true);
-        fciOrient.doFinalOrientation(G4);
+        fciOrient.doFinalOrientation(G);
     }
 
-    private Set<Triple>     swapOrient(Graph graph, TeyssierScorer scorer) {
-        Set<Triple> colliders = new HashSet<>();
+    private Set<Triple> newUnshieldedCollidersBySwap(Graph G, TeyssierScorer scorer) {
+        Set<Triple> newUnshieldedColliders = new HashSet<>();
 
-        graph = new EdgeListGraph(graph);
-        List<Node> pi = scorer.getPi();
+        List<Node> nodes = G.getNodes();
 
-        for (Node y : pi) {
-            for (Node x : graph.getAdjacentNodes(y)) {
+        // For every x*-*y*-*w that is not already an unshielded collider...
+        for (Node y : nodes) {
+            for (Node x : G.getAdjacentNodes(y)) {
+                if (x == y) continue;
 
                 W:
-                for (Node w : graph.getAdjacentNodes(y)) {
-                    if (!distinct(x, y, w)) continue;
-                    if (graph.isDefCollider(x, y, w) && graph.isAdjacentTo(x, w)) continue;
+                for (Node w : G.getAdjacentNodes(y)) {
+                    if (x == w) continue;
+                    if (y == w) continue;
 
-                    for (Node p : graph.getParents(x)) {
-                        if (!(scorer.parent(p, x))) continue W;
+                    if (!G.isAdjacentTo(x, w)) continue;
+
+                    scorer.bookmark();
+
+                    Set<Node> district = district(x, G);
+
+                    for (Node p : district) {
+                        if (scorer.index(p) > scorer.index(x)) continue W;
                     }
 
-                    // Check to make sure you have a left collider in the graph--i.e., z->x<-y
+                    // If x->y<-w is an unshielded collider in DAG(swap(x, w, π)...
                     scorer.swap(x, y);
 
-                    // Make aure you get a right unshielded collider in the scorer--i.e. x->y<-w
-                    // with ~adj(x, w)
-                    if (scorer.collider(x, y, w) && !scorer.adjacent(x, w)) {
+                    // ...then look at each y2 commonly adjacent to both x and w...
+                    Set<Node> adj = scorer.getAdjacentNodes(x);
+                    adj.retainAll(scorer.getAdjacentNodes(w));
 
-                        // Make sure the new scorer orientations are all allowed in the graph...
-                        Set<Node> adj = scorer.getAdjacentNodes(x);
-                        adj.retainAll(scorer.getAdjacentNodes(w));
+                    for (Node y2 : adj) {
 
-                        // If OK, mark w*-*x for removal and do any new collider orientations in the graph...
-                        for (Node y2 : adj) {
-                            if (scorer.collider(x, y2, w)) {
-                                if (!graph.isDefCollider(x, y2, w) && graph.isAdjacentTo(x, y2) && graph.isAdjacentTo(w, y2)) {
-                                    colliders.add(new Triple(x, y2, w));
-                                }
-                            }
+                        // ... and if x->y2<-w is an unshielded collider in DAG(swap(x, w, π))
+                        // not already oriented as such in G...
+                        if (scorer.collider(x, y2, w) && !scorer.adjacent(x, w)
+                                && !(G.isDefCollider(x, y2, w) && !G.isAdjacentTo(x, w))) {
+
+                            // ...add <x, y2, w> to the set of new unshielded colliders...
+                            newUnshieldedColliders.add(new Triple(x, y2, w));
                         }
                     }
 
-                    scorer.swap(x, y);
+//                    scorer.swap(x, y);
+                    scorer.goToBookmark();
                 }
             }
         }
 
-        return colliders;
+        return newUnshieldedColliders;
     }
 
-    private boolean distinct(Node... n) {
-        for (int i = 0; i < n.length; i++) {
-            for (int j = i + 1; j < n.length; j++) {
-                if (n[i] == n[j]) return false;
+    private Set<Node> district(Node x, Graph G) {
+        Set<Node> district = new HashSet<>();
+        Set<Node> boundary = new HashSet<>();
+
+        for (Edge e : G.getEdges(x)) {
+            if (Edges.isBidirectedEdge(e)) {
+                Node other = e.getDistalNode(x);
+                district.add(other);
+                boundary.add(other);
             }
         }
 
-        return true;
+        do {
+            Set<Node> previousBoundary = new HashSet<>(boundary);
+            boundary = new HashSet<>();
+
+            for (Node x2 : previousBoundary) {
+                for (Edge e : G.getEdges(x2)) {
+                    if (Edges.isBidirectedEdge(e)) {
+                        Node other = e.getDistalNode(x2);
+
+                        if (!district.contains(other)) {
+                            district.add(other);
+                            boundary.add(other);
+                        }
+                    }
+                }
+            }
+        } while (!boundary.isEmpty());
+
+        return district;
     }
 
-    private void swapRemove(Graph graph, Set<Triple> colliders, Knowledge knowledge2) {
-        for (Triple triple : colliders) {
+    private void removeShields(Graph graph, Set<Triple> unshieldedColliders) {
+        for (Triple triple : unshieldedColliders) {
             Node x = triple.getX();
             Node w = triple.getZ();
 
             Edge edge = graph.getEdge(x, w);
-
-            if (graph.isAdjacentTo(x, w)) {
-                graph.removeEdge(x, w);
-                out.println("Removing (Swap rule): " + edge);
-            } else {
-                out.println("Edge already removed (Swap rule) " + x + "*-*" + w);
-            }
 
             if (edge != null) {
                 graph.removeEdge(x, w);
@@ -249,17 +271,16 @@ public final class LvSwap implements GraphSearch {
         }
     }
 
-    private void swapOrientColliders(Graph graph, Set<Triple> colliders, Knowledge knowledge2) {
-        for (Triple triple : colliders) {
+    private void orientColliders(Graph graph, Set<Triple> unshieldedColliders) {
+        for (Triple triple : unshieldedColliders) {
             Node x = triple.getX();
-            Node y2 = triple.getY();
+            Node y = triple.getY();
             Node w = triple.getZ();
-            if (graph.isAdjacentTo(x, y2) && graph.isAdjacentTo(y2, w)) {
-//                if (FciOrient.isArrowpointAllowed(x, y2, graph, knowledge2) && FciOrient.isArrowpointAllowed(w, y2, graph, knowledge2)) {
-                graph.setEndpoint(x, y2, Endpoint.ARROW);
-                graph.setEndpoint(w, y2, Endpoint.ARROW);
-                out.println("Orienting collider (Swap rule): " + GraphUtils.pathString(graph, x, y2, w));
-//                }
+
+            if (graph.isAdjacentTo(x, y) && graph.isAdjacentTo(y, w) && !graph.isDefCollider(x, y, w)) {
+                graph.setEndpoint(x, y, Endpoint.ARROW);
+                graph.setEndpoint(w, y, Endpoint.ARROW);
+                out.println("Orienting collider (Swap rule): " + GraphUtils.pathString(graph, x, y, w));
             }
         }
     }
