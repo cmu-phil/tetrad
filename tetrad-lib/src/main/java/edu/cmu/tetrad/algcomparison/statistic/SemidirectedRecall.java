@@ -23,7 +23,7 @@ public class SemidirectedRecall implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Proportion of exists semi(X, Y) in truth for which exists semi(X, Y) in est";
+        return "Proportion of <X, Y> where there is a semidirected path from X to Y in true, for which there is also a semidirected path from X to Y in estimated";
     }
 
     @Override

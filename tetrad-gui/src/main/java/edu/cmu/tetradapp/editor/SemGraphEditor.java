@@ -479,7 +479,7 @@ public final class SemGraphEditor extends JPanel
             editor.setParams(this.parameters);
 
             EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
-                    "Done", false, this);
+                    "Done", true, this);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();

@@ -2483,7 +2483,7 @@ public final class TestGrasp {
             params.set(Params.SEM_GIC_RULE, 4);
             params.set(Params.PENALTY_DISCOUNT, 2);
             params.set(Params.ALPHA, 0.01);
-            params.set(Params.ZS_RISK_BOUND, 0.001);
+            params.set(Params.ZS_RISK_BOUND, 0.2);
             params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 2);
 
             params.set(Params.DIFFERENT_GRAPHS, true);
@@ -2579,10 +2579,10 @@ public final class TestGrasp {
                 statistics.add(new NumLatentCommonAncestorBidirected());
                 statistics.add(new TrueDagPrecisionArrow());
                 statistics.add(new TrueDagPrecisionTails());
-                statistics.add(new SemidirectedPrecision());
+//                statistics.add(new SemidirectedPrecision());
                 statistics.add(new SemidirectedRecall());
-                statistics.add(new NoSemidirectedPrecision());
-                statistics.add(new NoSemidirectedRecall());
+//                statistics.add(new NoSemidirectedPrecision());
+//                statistics.add(new NoSemidirectedRecall());
 
                 statistics.add(new ElapsedTime());
             }

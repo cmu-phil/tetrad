@@ -527,7 +527,7 @@ public class OtherPermAlgs {
             Node y = adj.getSecond();
             if (checkCovering && !scorer.coveredEdge(x, y)) continue;
             scorer.bookmark(currentDepth);
-            scorer.swapTuckWithoutMovingAncestors(x, y);
+            scorer.swaptuck(x, y);
 //            System.out.println(scorer.getOrder() + " score = " + scorer.getNumEdges());
 
             if (violatesKnowledge(scorer.getPi())) {

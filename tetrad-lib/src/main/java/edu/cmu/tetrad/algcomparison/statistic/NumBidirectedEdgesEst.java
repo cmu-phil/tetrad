@@ -16,12 +16,12 @@ public class NumBidirectedEdgesEst implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "#<->";
+        return "#X<->Y";
     }
 
     @Override
     public String getDescription() {
-        return "Num Bidirected Edges in Estimated";
+        return "Number of bidirected edges in estimated";
     }
 
     @Override

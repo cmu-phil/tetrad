@@ -207,7 +207,7 @@ public class TeyssierScorer {
     /**
      * Performs a tuck operation.
      */
-    public void swapTuckWithoutMovingAncestors(Node x, Node y) {
+    public void swaptuck(Node x, Node y) {
         if (index(x) < index(y)) {
             moveTo(y, index(x));
         } else if (index(x) > index(y)) {

@@ -21,11 +21,12 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -91,8 +92,6 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
             }
 
             Preferences.userRoot().put("pathFrom", node.getName());
-
-//                update(graph, textArea, nodes1, nodes2, method);
         });
 
         node1Box.setSelectedItem(this.nodes1.get(0));
@@ -119,8 +118,6 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
             }
 
             Preferences.userRoot().put("pathTo", node.getName());
-
-//                update(graph, textArea, nodes1, nodes2, method);
         });
 
         node2Box.setSelectedItem(this.nodes2.get(0));
@@ -143,7 +140,6 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
         maxField.setFilter((value, oldValue) -> {
             try {
                 setMaxLength(value);
-//                    update(graph, textArea, nodes1, nodes2, method);
                 return value;
             } catch (Exception e14) {
                 return oldValue;
@@ -154,8 +150,6 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
 
         updateButton.addActionListener(e15 -> update(graph, PathsAction.this.textArea,
                 PathsAction.this.nodes1, PathsAction.this.nodes2, PathsAction.this.method));
-
-        allDirectedPaths(graph, this.textArea, this.nodes1, this.nodes2);
 
         Box b = Box.createVerticalBox();
 
@@ -190,27 +184,19 @@ class PathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     private void update(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2, String method) {
-        Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
-
-        WatchedProcess process = new WatchedProcess(owner) {
-            public void watch() {
-                if ("Directed Paths".equals(method)) {
-                    textArea.setText("");
-                    allDirectedPaths(graph, textArea, nodes1, nodes2);
-                } else if ("Semidirected Paths".equals(method)) {
-                    textArea.setText("");
-                    allSemidirectedPaths(graph, textArea, nodes1, nodes2);
-                } else if ("Treks".equals(method)) {
-                    textArea.setText("");
-                    allTreks(graph, textArea, nodes1, nodes2);
-                } else if ("Adjacents".equals(method)) {
-                    textArea.setText("");
-                    adjacentNodes(graph, textArea, nodes1, nodes2);
-                }
-            }
-        };
-
-        process.watch();
+        if ("Directed Paths".equals(method)) {
+            textArea.setText("");
+            allDirectedPaths(graph, textArea, nodes1, nodes2);
+        } else if ("Semidirected Paths".equals(method)) {
+            textArea.setText("");
+            allSemidirectedPaths(graph, textArea, nodes1, nodes2);
+        } else if ("Treks".equals(method)) {
+            textArea.setText("");
+            allTreks(graph, textArea, nodes1, nodes2);
+        } else if ("Adjacents".equals(method)) {
+            textArea.setText("");
+            adjacentNodes(graph, textArea, nodes1, nodes2);
+        }
     }
 
     private void allDirectedPaths(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {

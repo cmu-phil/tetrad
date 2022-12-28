@@ -15,12 +15,12 @@ public class TrueDagPrecisionTails implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "--*-Prec";
+        return "-->-Prec";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of X->Y for which X~~>Y in true";
+        return "Proportion of X-->Y in estimated for which there is a path X~~>Y in true graph";
     }
 
     @Override
@@ -38,10 +38,11 @@ public class TrueDagPrecisionTails implements Statistic {
 
                 if (edge == null) continue;
 
-                if (estGraph.isAdjacentTo(x, y) && estGraph.getEndpoint(y, x) == Endpoint.TAIL) {
+                if (Edges.directedEdge(x, y).equals(edge)) {
                     if (trueGraph.isAncestorOf(x, y)) {
                         tp++;
                     } else {
+                        System.out.println("Should be " + x + "~~>" + y + ": " + estGraph.getEdge(x, y));
                         fp++;
                     }
                 }

@@ -35,7 +35,7 @@ public class TrueDagPrecisionArrow implements Statistic {
                     if (!trueGraph.isAncestorOf(y, x)) {
                         tp++;
                     } else {
-                        System.out.println("Shoudn't be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));
+                        System.out.println("Shouldn't be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));
                         fp++;
                     }
                 }

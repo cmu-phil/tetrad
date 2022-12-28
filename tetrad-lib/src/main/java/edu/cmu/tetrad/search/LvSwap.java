@@ -24,12 +24,11 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Does BOSS2, followed by two swap rules, then final FCI orientation.
@@ -85,6 +84,7 @@ public final class LvSwap implements GraphSearch {
     private boolean verbose = false;
     private PrintStream out = System.out;
     private Boss.AlgType algType = Boss.AlgType.BOSS1;
+    private boolean doDiscriminatingPathTailRule = true;
 
     //============================CONSTRUCTORS============================//
     public LvSwap(IndependenceTest test, Score score) {
@@ -109,9 +109,9 @@ public final class LvSwap implements GraphSearch {
         alg.setVerbose(verbose);
 
         alg.bestOrder(this.score.getVariables());
-        Graph G = alg.getGraph(false);
+        Graph G = alg.getGraph(true);
 
-        retainUnshieldedColliders(G);
+        retainColliders(G);
 
         Set<Triple> allT = new HashSet<>();
 
@@ -132,7 +132,7 @@ public final class LvSwap implements GraphSearch {
         return G;
     }
 
-    public static void retainUnshieldedColliders(Graph graph) {
+    public static void retainColliders(Graph graph) {
         Graph orig = new EdgeListGraph(graph);
         graph.reorientAllWith(Endpoint.CIRCLE);
         List<Node> nodes = graph.getNodes();
@@ -151,7 +151,7 @@ public final class LvSwap implements GraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
+                if (orig.isDefCollider(a, b, c)) {// && !orig.isAdjacentTo(a, c)) {
                     graph.setEndpoint(a, b, Endpoint.ARROW);
                     graph.setEndpoint(c, b, Endpoint.ARROW);
                 }
@@ -164,7 +164,7 @@ public final class LvSwap implements GraphSearch {
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(false);
-        fciOrient.setDoDiscriminatingPathTailRule(true);
+        fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(knowledge2);
         fciOrient.setVerbose(true);
@@ -192,31 +192,51 @@ public final class LvSwap implements GraphSearch {
 
                     scorer.bookmark();
 
-                    // and make sure you're conditioning on district(x, G)...
-                    for (Node p : mb(x, G)) {
-                        scorer.tuck(p, x);
-                    }
+                    // and make sure you're conditioning on S(x, G)...
+                    Set<Node> S = district(x, G);
+                    List<Node> _S = new ArrayList<>(S);
+                    _S.remove(y);
 
-                    scorer.swapTuckWithoutMovingAncestors(x, y);
+                    scorer.bookmark(1);
 
-                    // If that's true, and if <x, y, z> is an unshielded collider in DAG(π),
-                    if (scorer.collider(x, y, z) && !scorer.adjacent(x, z)) {
+                    SublistGenerator gen = new SublistGenerator(_S.size(), _S.size());
+                    int[] choice;
 
-                        // look at each y2 commonly adjacent to both x and z,
-                        Set<Node> adj = scorer.getAdjacentNodes(x);
-                        adj.retainAll(scorer.getAdjacentNodes(z));
+                    while ((choice = gen.next()) != null) {
+                        List<Node> C = GraphUtils.asList(choice, _S);
 
-                        for (Node y2 : adj) {
+                        for (Node c : S) {
+                            scorer.tuck(c, x);
+                        }
 
-                            // and x->y2<-z is an unshielded collider in DAG(swap(x, z, π))
-                            // not already oriented as an unshielded collider in G,
-                            if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)
-                                    && !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))) {
 
-                                // then add <x, y2, z> to the set of new unshielded colliders to process.
-                                newUnshieldedColliders.add(new Triple(x, y2, z));
+//                    for (Node p : S) {
+//                        scorer.tuck(p, x);
+//                    }
+
+                        scorer.swaptuck(x, y);
+
+                        // If that's true, and if <x, y, z> is an unshielded collider in DAG(π),
+                        if (scorer.collider(x, y, z) && !scorer.adjacent(x, z)) {
+
+                            // look at each y2 commonly adjacent to both x and z,
+                            Set<Node> adj = scorer.getAdjacentNodes(x);
+                            adj.retainAll(scorer.getAdjacentNodes(z));
+
+                            for (Node y2 : adj) {
+
+                                // and x->y2<-z is an unshielded collider in DAG(swap(x, z, π))
+                                // not already oriented as an unshielded collider in G,
+                                if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)
+                                        && !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))) {
+
+                                    // then add <x, y2, z> to the set of new unshielded colliders to process.
+                                    newUnshieldedColliders.add(new Triple(x, y2, z));
+                                }
                             }
                         }
+
+                        scorer.goToBookmark(1);
                     }
 
                     scorer.goToBookmark();
@@ -261,34 +281,45 @@ public final class LvSwap implements GraphSearch {
     }
 
     private Set<Node> mb(Node x, Graph G) {
-        Set<Node> mb = district(x, G);
+        Set<Node> mb = new HashSet<>();
 
-        List<Edge> edges = G.getEdges(x);
+        LinkedList<Node> path = new LinkedList<>();
 
-        for (Edge e : edges) {
-            if (Edges.partiallyOrientedEdge(e.getDistalNode(x), x).equals(e)) {
-                mb.add(e.getDistalNode(x));
-            }
+        for (Node d : G.getAdjacentNodes(x)) {
+            mbVisit(d, path, G, mb);
         }
 
-        for (Node b : new HashSet<>(mb)) {
-            List<Edge> edges2 = G.getEdges(b);
-
-            for (Edge e : edges2) {
-                Node distalNode = e.getDistalNode(b);
-                if (distalNode == x) continue;
-                if (Edges.partiallyOrientedEdge(distalNode, b).equals(e)) {
-                    mb.add(distalNode);
-                }
-
-                if (Edges.directedEdge(distalNode, b).equals(e)) {
-                    mb.add(distalNode);
-                }
-            }
-        }
+        mb.remove(x);
 
         return mb;
     }
+
+    private boolean mbVisit(Node c, LinkedList<Node> path, Graph G, Set<Node> mb) {
+        if (mb.contains(c)) return false;
+        path.add(c);
+
+        if (path.size() >= 3) {
+            Node w1 = path.get(path.size() - 3);
+            Node w2 = path.get(path.size() - 2);
+            Node w3 = path.get(path.size() - 1);
+
+            if (!G.isDefCollider(w1, w2, w3)) {
+                path.remove(c);
+                return false;
+            }
+
+            mb.add(c);
+        }
+
+        for (Node d : G.getAdjacentNodes(c)) {
+            if (path.contains(d)) continue;
+            if (!mbVisit(d, path, G, mb)) return false;
+        }
+
+        path.remove(c);
+        return true;
+    }
+
 
     private void removeShields(Graph graph, Set<Triple> unshieldedColliders) {
         for (Triple triple : unshieldedColliders) {
@@ -381,5 +412,9 @@ public final class LvSwap implements GraphSearch {
 
     public void setAlgType(Boss.AlgType algType) {
         this.algType = algType;
+    }
+
+    public void setDoDefiniteDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 }
