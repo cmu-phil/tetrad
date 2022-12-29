@@ -193,27 +193,13 @@ public final class LvSwap implements GraphSearch {
                     scorer.bookmark();
 
                     // and make sure you're conditioning on district(x, G)...
-                    Set<Node> S = GraphUtils.pagMb(x, G);
-//                    S.addAll(G.getAdjacentNodes(x));
+//                    Set<Node> S = GraphUtils.pagMb(x, G);
 
-//                    S.remove(y);
-
-//                    List<Node> pi = scorer.getPi();
-////                    reverse(pi);
-//
-//                    for (Node p : pi) {
-//                        if (S.contains(p)) {
-//                            scorer.tuck(p, x);
-//                        }
+//                    for (Node p : S) {
+//                        scorer.tuck(p, x);
 //                    }
 
-                    for (Node p : S) {
-                        scorer.tuck(p, x);
-                    }
-
-//                    if (scorer.getPrefix(scorer.index(x)).contains(y) && scorer.index(x) < scorer.size() - 1) {
                     scorer.swaptuck(x, y);
-//                    }
 
                     // If that's true, and if <x, y, z> is an unshielded collider in DAG(π),
                     if (scorer.collider(x, y, z) && !scorer.adjacent(x, z)) {
@@ -227,7 +213,7 @@ public final class LvSwap implements GraphSearch {
                             // and x->y2<-z is an unshielded collider in DAG(swap(x, z, π))
                             // not already oriented as an unshielded collider in G,
                             if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)
-                                /*(&& !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))*/) {
+                                && !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))) {
 
                                 // then add <x, y2, z> to the set of new unshielded colliders to process.
                                 T.add(new Triple(x, y2, z));

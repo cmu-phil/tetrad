@@ -47,14 +47,14 @@ public final class GraphFileMenu extends JMenu {
             load.add(new LoadGraphJson(editable, "Json..."));
         }
 
-//        JMenu save = new JMenu("Save...");
-//        add(save);
-//
-//        save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));
-//        save.add(new SaveGraph(editable, "Text...", SaveGraph.Type.text));
-//        save.add(new SaveGraph(editable, "Json...", SaveGraph.Type.json));
-//        save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
-//        save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
+        JMenu save = new JMenu("Save...");
+        add(save);
+
+        save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));
+        save.add(new SaveGraph(editable, "Text...", SaveGraph.Type.text));
+        save.add(new SaveGraph(editable, "Json...", SaveGraph.Type.json));
+        save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
+        save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
 
         addSeparator();
         add(new SaveComponentImage(comp, "Save Graph Image..."));
