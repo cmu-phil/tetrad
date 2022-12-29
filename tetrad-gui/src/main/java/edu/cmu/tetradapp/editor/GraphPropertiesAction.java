@@ -39,7 +39,7 @@ import java.text.NumberFormat;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
+public class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
     private GraphWorkbench workbench;
 
     /**
@@ -136,8 +136,7 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
 
         int numEdges = 0;
 
-        for (
-                int i = 0; i < nodes.size(); i++) {
+        for (int i = 0; i < nodes.size(); i++) {
             for (int j = i; j < nodes.size(); j++) {
                 numEdges += getGraph().getEdges(nodes.get(i), nodes.get(j)).size();
             }
@@ -147,11 +146,7 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(400, 300));
 
-        textArea.append("\nNumber of nodes: " +
-
-                getGraph().
-
-                        getNumNodes());
+        textArea.append("\nNumber of nodes: " + getGraph(). getNumNodes());
         textArea.append("\nNumber of latents: " + numLatents);
         textArea.append("\nNumber of edges: " + numEdges);
         textArea.append("\nNumber of adjacencies: " + numAdjacencies);
@@ -172,12 +167,8 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         double avgDegree = 2 * numAdjacencies / ((double) (numVars));
         double density = avgDegree / (numVars - 1);
 
-        textArea.append("\nAverage degree: " + NumberFormat.getInstance().
-
-                format(avgDegree));
-        textArea.append("\nDensity: " + NumberFormat.getInstance().
-
-                format(density));
+        textArea.append("\nAverage degree: " + NumberFormat.getInstance().format(avgDegree));
+        textArea.append("\nDensity: " + NumberFormat.getInstance().format(density));
 
         textArea.append("\nNumber of latents: " + numLatents);
         textArea.append("\n" + (cyclic ? "Cyclic" : "Acyclic"));
@@ -188,16 +179,18 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         b.add(b2);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new
-
-                BorderLayout());
+        panel.setLayout(new BorderLayout());
         panel.add(b);
+
+//        Node x = getGraph().getNode("X5");
+
+        for (Node x : getGraph().getNodes()) {
+            System.out.println("district(" + x + ") = " + GraphUtils.district(x, getGraph()));
+        }
 
         EditorWindow window = new EditorWindow(panel,
                 "Graph Properties", "Close", false, workbench);
-        DesktopController.getInstance().
-
-                addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+        DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
     }
 

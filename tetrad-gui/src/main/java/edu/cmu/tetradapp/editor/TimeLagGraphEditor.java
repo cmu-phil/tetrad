@@ -304,7 +304,7 @@ public final class TimeLagGraphEditor extends JPanel
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
-        JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
+        JMenu fileMenu = new GraphFileMenu(this, getWorkbench(), false);
         JMenu editMenu = createNumLagsMenu();
 //        JMenu graphMenu = createGraphMenu();
 

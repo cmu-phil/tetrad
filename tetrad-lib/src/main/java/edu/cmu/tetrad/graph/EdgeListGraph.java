@@ -446,18 +446,13 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
+        if (node1 == node2) return false;
+
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
 
         Q.add(node1);
         V.add(node1);
-
-//        for (Node c : getChildren(node1)) {
-//            if (c == node2) return true;
-//
-//            Q.add(c);
-//            V.add(c);
-//        }
 
         while (!Q.isEmpty()) {
             Node t = Q.poll();

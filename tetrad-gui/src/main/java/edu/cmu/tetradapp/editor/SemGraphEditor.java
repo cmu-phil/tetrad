@@ -385,7 +385,7 @@ public final class SemGraphEditor extends JPanel
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
-        JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
+        JMenu fileMenu = new GraphFileMenu(this, getWorkbench(), false);
         JMenu editMenu = createEditMenu();
         JMenu graphMenu = createGraphMenu();
 

@@ -42,7 +42,7 @@ public class TrueDagPrecisionTails implements Statistic {
                     if (trueGraph.isAncestorOf(x, y)) {
                         tp++;
                     } else {
-                        System.out.println("Should be " + x + "~~>" + y + ": " + estGraph.getEdge(x, y));
+                        System.out.println("Should be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));
                         fp++;
                     }
                 }

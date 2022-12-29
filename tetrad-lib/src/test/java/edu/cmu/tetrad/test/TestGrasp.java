@@ -2455,7 +2455,7 @@ public final class TestGrasp {
             Parameters params = new Parameters();
             params.set(Params.SAMPLE_SIZE, 1000, 10000);
             params.set(Params.NUM_MEASURES, 30);
-            params.set(Params.AVG_DEGREE, 6);
+            params.set(Params.AVG_DEGREE, 5);
             params.set(Params.NUM_LATENTS, 7);
             params.set(Params.RANDOMIZE_COLUMNS, true);
             params.set(Params.COEF_LOW, 0);

@@ -383,7 +383,7 @@ public final class DagEditor extends JPanel
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
-        JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
+        JMenu fileMenu = new GraphFileMenu(this, getWorkbench(), false);
 //        JMenu fileMenu = createFileMenu();
         JMenu editMenu = createEditMenu();
         JMenu graphMenu = createGraphMenu();

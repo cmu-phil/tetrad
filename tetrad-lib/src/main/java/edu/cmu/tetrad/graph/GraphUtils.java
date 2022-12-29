@@ -5319,6 +5319,80 @@ public final class GraphUtils {
         return (ex1 == Endpoint.CIRCLE || (ex1 == ex2 || ex2 == Endpoint.CIRCLE)) && (ey1 == Endpoint.CIRCLE || (ey1 == ey2 || ey2 == Endpoint.CIRCLE));
     }
 
+    public static Set<Node> pagMb(Node x, Graph G) {
+        Set<Node> mb = new HashSet<>();
+
+        LinkedList<Node> path = new LinkedList<>();
+        path.add(x);
+        mb.add(x);
+
+        for (Node d : G.getAdjacentNodes(x)) {
+            mbVisit(d, path, G, mb);
+        }
+
+        mb.remove(x);
+
+        return mb;
+    }
+
+    public static void mbVisit(Node c, LinkedList<Node> path, Graph G, Set<Node> mb) {
+        if (path.contains(c)) return;
+        path.add(c);
+
+        if (path.size() >= 3) {
+            Node w1 = path.get(path.size() - 3);
+            Node w2 = path.get(path.size() - 2);
+
+            if (!G.isDefCollider(w1, w2, c)) {
+                path.remove(c);
+                return;
+            }
+        }
+
+        mb.add(c);
+
+        for (Node d : G.getAdjacentNodes(c)) {
+            mbVisit(d, path, G, mb);
+        }
+
+        path.remove(c);
+    }
+
+    public static Set<Node> district(Node x, Graph G) {
+        Set<Node> district = new HashSet<>();
+        Set<Node> boundary = new HashSet<>();
+
+        for (Edge e : G.getEdges(x)) {
+            if (Edges.isBidirectedEdge(e)) {
+                Node other = e.getDistalNode(x);
+                district.add(other);
+                boundary.add(other);
+            }
+        }
+
+        do {
+            Set<Node> previousBoundary = new HashSet<>(boundary);
+            boundary = new HashSet<>();
+
+            for (Node x2 : previousBoundary) {
+                for (Edge e : G.getEdges(x2)) {
+                    if (Edges.isBidirectedEdge(e)) {
+                        Node other = e.getDistalNode(x2);
+
+                        if (!district.contains(other)) {
+                            district.add(other);
+                            boundary.add(other);
+                        }
+                    }
+                }
+            }
+        } while (!boundary.isEmpty());
+
+        district.remove(x);
+
+        return district;
+    }
+
     /**
      * Check to see if a set of variables Z satisfies the back-door criterion
      * relative to node x and node y.

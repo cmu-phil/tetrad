@@ -45,7 +45,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class UnderliningsAction extends AbstractAction implements ClipboardOwner {
+public class UnderliningsAction extends AbstractAction implements ClipboardOwner {
     private final GraphWorkbench workbench;
 
     /**

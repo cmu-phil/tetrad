@@ -41,7 +41,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class SelectLatentsAction extends AbstractAction implements ClipboardOwner {
+public class SelectLatentsAction extends AbstractAction implements ClipboardOwner {
 
     /**
      * The desktop containing the target session editor.

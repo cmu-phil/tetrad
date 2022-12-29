@@ -337,7 +337,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         file.add(new JMenuItem(new SaveDataAction(this)));
-        file.add(new GraphFileMenu(this, getWorkbench()));
+        file.add(new GraphFileMenu(this, getWorkbench(), false));
 //        file.add(new SaveGraph(this, "Save Graph..."));
 
         JMenu edit = new JMenu("Edit");

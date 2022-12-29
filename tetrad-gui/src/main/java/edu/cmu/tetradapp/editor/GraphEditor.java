@@ -234,7 +234,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         JMenuBar menuBar = createGraphMenuBar();
 
         // Add the model selection to top if multiple models
-        modelSelectin(graphWrapper);
+        modelSelection(graphWrapper);
 
         // topBox Left side toolbar
         GraphToolbar graphToolbar = new GraphToolbar(getWorkbench());
@@ -344,7 +344,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
      * Creates the UI component for choosing from multiple graph models
      *
      */
-    private void modelSelectin(GraphWrapper graphWrapper) {
+    private void modelSelection(GraphWrapper graphWrapper) {
         int numModels = graphWrapper.getNumModels();
 
         if (numModels > 1) {
@@ -396,7 +396,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
-        JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
+        JMenu fileMenu = new GraphFileMenu(this, getWorkbench(), false);
         JMenu editMenu = createEditMenu();
         JMenu graphMenu = createGraphMenu();
 
@@ -407,6 +407,29 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
         return menuBar;
     }
+
+    JMenuBar createGraphMenuBarNoEditing() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
+        file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
+
+        menuBar.add(file);
+
+        JMenu graph = new JMenu("Graph");
+
+        graph.add(new GraphPropertiesAction(this.workbench));
+        graph.add(new PathsAction(this.workbench));
+        graph.add(new UnderliningsAction(this.workbench));
+
+        graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
+        graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
+        graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
+
+        menuBar.add(graph);
+
+        return menuBar;
+    }
+
 
     /**
      * Creates the "file" menu, which allows the user to load, save, and post

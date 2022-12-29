@@ -31,28 +31,30 @@ import javax.swing.*;
  * @author Aaron Powers
  * @author Joseph Ramsey
  */
-final class GraphFileMenu extends JMenu {
+public final class GraphFileMenu extends JMenu {
 
     private static final long serialVersionUID = 8003709852565658589L;
 
-    public GraphFileMenu(GraphEditable editable, JComponent comp) {
+    public GraphFileMenu(GraphEditable editable, JComponent comp, boolean saveOnly) {
         super("File");
 
-        JMenu load = new JMenu("Load...");
-        add(load);
+        if (!saveOnly) {
+            JMenu load = new JMenu("Load...");
+            add(load);
 
-        load.add(new LoadGraph(editable, "XML..."));
-        load.add(new LoadGraphTxt(editable, "Text..."));
-        load.add(new LoadGraphJson(editable, "Json..."));
+            load.add(new LoadGraph(editable, "XML..."));
+            load.add(new LoadGraphTxt(editable, "Text..."));
+            load.add(new LoadGraphJson(editable, "Json..."));
+        }
 
-        JMenu save = new JMenu("Save...");
-        add(save);
-
-        save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));
-        save.add(new SaveGraph(editable, "Text...", SaveGraph.Type.text));
-        save.add(new SaveGraph(editable, "Json...", SaveGraph.Type.json));
-        save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
-        save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
+//        JMenu save = new JMenu("Save...");
+//        add(save);
+//
+//        save.add(new SaveGraph(editable, "XML...", SaveGraph.Type.xml));
+//        save.add(new SaveGraph(editable, "Text...", SaveGraph.Type.text));
+//        save.add(new SaveGraph(editable, "Json...", SaveGraph.Type.json));
+//        save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
+//        save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
 
         addSeparator();
         add(new SaveComponentImage(comp, "Save Graph Image..."));

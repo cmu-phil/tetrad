@@ -402,7 +402,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         menuBar.add(file);
-        JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
+        JMenu fileMenu = new GraphFileMenu(this, getWorkbench(), false);
         file.add(fileMenu);
         file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
 
