@@ -423,7 +423,7 @@ public class TeyssierScorer {
         GraphUtils.replaceNodes(G1, this.variables);
 
         if (cpDag) {
-            return SearchGraphUtils.cpdagForDag(G1);
+            return findCompelled();// SearchGraphUtils.cpdagForDag(G1);
         } else {
             return G1;
         }

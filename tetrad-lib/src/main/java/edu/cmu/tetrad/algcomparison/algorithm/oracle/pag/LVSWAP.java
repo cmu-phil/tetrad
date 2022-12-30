@@ -16,6 +16,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.LvSwap;
+import edu.cmu.tetrad.search.LvSwap2;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -69,7 +70,7 @@ public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
                 knowledge = timeSeries.getKnowledge();
             }
 
-            LvSwap search = new LvSwap(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            LvSwap2 search = new LvSwap2(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
             if (parameters.getInt(Params.BOSS_ALG) == 1) {
                 search.setAlgType(Boss.AlgType.BOSS1);
