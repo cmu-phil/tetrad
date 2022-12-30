@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -127,7 +128,18 @@ public final class LvSwap2 implements GraphSearch {
 
             removeShields(G, allT);
             orientColliders(G, allT);
+        } while (!G.equals(G0));
 
+        G2 = new EdgeListGraph(G);
+
+        do {
+            G0 = new EdgeListGraph(G);
+            allT.addAll(extendedSwap(G, scorer));
+
+            G = new EdgeListGraph(G2);
+
+            removeShields(G, allT);
+            orientColliders(G, allT);
         } while (!G.equals(G0));
 
         finalOrientation(knowledge, G);
@@ -230,6 +242,7 @@ public final class LvSwap2 implements GraphSearch {
         for (Node y : Y) {
             List<Node> X = G.getAdjacentNodes(y);
 
+            X:
             for (Node x : X) {
                 if (x == y) continue;
 
@@ -237,14 +250,16 @@ public final class LvSwap2 implements GraphSearch {
                 List<Node> Z = G.getAdjacentNodes(x);
                 Z.retainAll(G.getAdjacentNodes(y));
 
+                Z.removeIf(z -> (!G.isDefCollider(x, z, y) && !G.isAdjacentTo(x, y)));
+
                 // Need y<-oz*-*x
-                Z.removeIf(z -> !(Edges.partiallyOrientedEdge(z, y).equals(G.getEdge(z, y))));
+//                Z.removeIf(z -> !(Edges.partiallyOrientedEdge(z, y).equals(G.getEdge(z, y))));
 
                 if (Z.isEmpty()) continue;
 
                 // Need to try making every combination of Z latent. If a combination works,
                 // for Z = {Z1,...,Zm}, orient Y<->Z1, ..., Y<->Zm.
-                SublistGenerator gen = new SublistGenerator(Z.size(), Z.size());
+                SublistGenerator gen = new SublistGenerator(Z.size(), 2);// Z.size());
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
@@ -259,8 +274,6 @@ public final class LvSwap2 implements GraphSearch {
                     if (!scorer.adjacent(x, y)) {
                         for (Node z : ZZ) {
                             T.add(new Triple(x, z, y));
-
-
                         }
                     }
                 }
@@ -291,13 +304,6 @@ public final class LvSwap2 implements GraphSearch {
                     if (!G.isDefCollider(x, y, z) && !G.isAdjacentTo(x, z)) continue;
 
                     scorer.bookmark();
-
-                    // and make sure you're conditioning on district(x, G)...
-//                    Set<Node> S = GraphUtils.pagMb(x, G);
-
-//                    for (Node p : S) {
-//                        scorer.tuck(p, x);
-//                    }
 
                     scorer.swaptuck(x, y);
 
