@@ -715,10 +715,10 @@ public class TeyssierScorer {
             return;
         }
 
-        this.pi = this.bookmarkedOrders.remove(key);
-        this.scores = this.bookmarkedScores.remove(key);
-        this.orderHash = this.bookmarkedOrderHashes.remove(key);
-        this.runningScore = this.bookmarkedRunningScores.remove(key);
+        this.pi = this.bookmarkedOrders.get(key);
+        this.scores = this.bookmarkedScores.get(key);
+        this.orderHash = this.bookmarkedOrderHashes.get(key);
+        this.runningScore = this.bookmarkedRunningScores.get(key);
 
     }
 
