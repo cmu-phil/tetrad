@@ -130,17 +130,17 @@ public final class LvSwap2 implements GraphSearch {
             orientColliders(G, allT);
         } while (!G.equals(G0));
 
-        G2 = new EdgeListGraph(G);
-
-        do {
-            G0 = new EdgeListGraph(G);
-            allT.addAll(extendedSwap(G, scorer));
-
-            G = new EdgeListGraph(G2);
-
-            removeShields(G, allT);
-            orientColliders(G, allT);
-        } while (!G.equals(G0));
+//        G2 = new EdgeListGraph(G);
+//
+//        do {
+//            G0 = new EdgeListGraph(G);
+//            allT.addAll(extendedSwap(G, scorer));
+//
+//            G = new EdgeListGraph(G2);
+//
+//            removeShields(G, allT);
+//            orientColliders(G, allT);
+//        } while (!G.equals(G0));
 
         finalOrientation(knowledge, G);
 
@@ -291,47 +291,53 @@ public final class LvSwap2 implements GraphSearch {
         List<Node> nodes = G.getNodes();
 
         // For every x*-*y*-*w that is not already an unshielded collider...
-        for (Node y : nodes) {
-            for (Node x : G.getAdjacentNodes(y)) {
-                if (x == y) continue;
+        for (Node z : nodes) {
+            for (Node x : G.getAdjacentNodes(z)) {
+//                if (x == z) continue;
 
-                for (Node z : G.getAdjacentNodes(y)) {
-                    if (x == z) continue;
-                    if (y == z) continue;
+                for (Node y : G.getAdjacentNodes(z)) {
+                    if (x == y) continue;
+//                    if (z == y) continue;
 
-                    // Check that  <x, y, z> is an unshielded collider or else is a shielded collider or noncollider
+                    // Check that  <x, z, y> is an unshielded collider or else is a shielded collider or noncollider
                     // (either way you can end up after possible reorientation with an unshielded collider),
-                    if (!G.isDefCollider(x, y, z) && !G.isAdjacentTo(x, z)) continue;
+                    if (!G.isDefCollider(x, z, y) && !G.isAdjacentTo(x, y)) continue;
 
-                    scorer.bookmark();
+//                    if ((G.isDefCollider(x, z, y))) continue;;//  && !G.isAdjacentTo(x, y))) continue;
 
-                    scorer.swaptuck(x, y);
 
-                    // If that's true, and if <x, y, z> is an unshielded collider in DAG(π),
-                    if (scorer.collider(x, y, z) && !scorer.adjacent(x, z)) {
+                    {
+                        scorer.bookmark();
 
-                        // look at each y2 commonly adjacent to both x and z,
-                        Set<Node> adj = scorer.getAdjacentNodes(x);
-                        adj.retainAll(scorer.getAdjacentNodes(z));
+                        scorer.swaptuck(x, z);
 
-                        for (Node y2 : adj) {
+                        // If that's true, and if <x, z, y> is an unshielded collider in DAG(π),
+                        if (scorer.collider(x, z, y) && !scorer.adjacent(x, y)) {
 
-                            // and x->y2<-z is an unshielded collider in DAG(swap(x, z, π))
-                            // not already oriented as an unshielded collider in G,
-                            if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)
-                                    && !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))) {
+                            // look at each y2 commonly adjacent to both x and y,
+                            Set<Node> adj = scorer.getAdjacentNodes(x);
+                            adj.retainAll(scorer.getAdjacentNodes(y));
 
-                                // then add <x, y2, z> to the set of new unshielded colliders to process.
-                                T.add(new Triple(x, y2, z));
+                            for (Node w : adj) {
+
+                                // and x->w<-y is an unshielded collider in DAG(swap(x, y, π))
+                                // not already oriented as an unshielded collider in G,
+                                if (scorer.collider(x, w, y) && !scorer.adjacent(x, y)) {
+//                                        && !(G.isDefCollider(x, w, y) && !G.isAdjacentTo(x, y))) {
+
+                                    // then add <x, w, y> to the set of new unshielded colliders to process.
+                                    T.add(new Triple(x, w, y));
 
 //                                removeShields(G, T);
 //                                orientColliders(G, T);
 
+                                }
                             }
-                        }
-                    }
 
-                    scorer.goToBookmark();
+                            scorer.goToBookmark();
+                        }
+
+                    }
                 }
             }
         }

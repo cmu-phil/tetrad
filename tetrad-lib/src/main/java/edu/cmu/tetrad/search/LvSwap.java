@@ -110,7 +110,7 @@ public final class LvSwap implements GraphSearch {
         alg.setVerbose(verbose);
 
         alg.bestOrder(this.score.getVariables());
-        Graph G = alg.getGraph(true);
+        Graph G = alg.getGraph(false);
 
         retainUnshieldedColliders(G);
 
@@ -193,11 +193,11 @@ public final class LvSwap implements GraphSearch {
                     scorer.bookmark();
 
                     // and make sure you're conditioning on district(x, G)...
-//                    Set<Node> S = GraphUtils.pagMb(x, G);
+                    Set<Node> S = GraphUtils.pagMb(x, G);
 
-//                    for (Node p : S) {
-//                        scorer.tuck(p, x);
-//                    }
+                    for (Node p : S) {
+                        scorer.tuck(p, x);
+                    }
 
                     scorer.swaptuck(x, y);
 
