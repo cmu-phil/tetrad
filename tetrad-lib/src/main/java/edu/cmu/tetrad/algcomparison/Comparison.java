@@ -558,7 +558,6 @@ public class Comparison {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
                         GraphUtils.saveGraph(dagToPag(graph), file4, false);
                     }
-
                 }
 
                 PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
