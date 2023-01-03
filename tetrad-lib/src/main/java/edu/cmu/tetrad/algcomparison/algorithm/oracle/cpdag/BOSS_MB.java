@@ -4,6 +4,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -18,18 +21,18 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * BOSS-MB.
-// *
-// * @author jdramsey
-// */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "BOSS-MB",
-//        command = "boss-mb",
-//        algoType = AlgType.search_for_Markov_blankets
-//)
-//@Bootstrapping
-//@Experimental
+/**
+ * BOSS-MB.
+ *
+ * @author jdramsey
+ */
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "BOSS-MB",
+        command = "boss-mb",
+        algoType = AlgType.search_for_Markov_blankets
+)
+@Bootstrapping
+@Experimental
 public class BOSS_MB implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
