@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.SublistGenerator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -118,6 +119,10 @@ public class TeyssierScorer {
         this.maxIndegree = scorer.maxIndegree;
 
         this.prefixes = new ArrayList<>(scorer.prefixes);
+    }
+
+    public void moveToEnd(Node z) {
+        moveTo(z, size() - 1);
     }
 
     /**
@@ -1148,24 +1153,18 @@ public class TeyssierScorer {
                     changed1 = true;
                 }
             }
-        }
-
-        boolean changed2 = true;
-
-        while (changed2) {
-            changed2 = false;
 
             for (Node z1 : new HashSet<>(parents)) {
                 if (!knowledge.isEmpty() && this.knowledge.isRequired(z1.getName(), n.getName())) {
                     continue;
                 }
 
-                Set<Node> _p = new HashSet<>(parents);
-                _p.remove(z1);
+                parents.remove(z1);
 
-                if (this.test.checkIndependence(n, z1, new ArrayList<>(_p)).independent()) {
-                    parents.remove(z1);
-                    changed2 = true;
+                if (this.test.checkIndependence(n, z1, new ArrayList<>(parents)).dependent()) {
+                    parents.add(z1);
+                } else {
+                    changed1 = true;
                 }
             }
         }

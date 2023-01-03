@@ -2317,8 +2317,8 @@ public final class GraphUtils {
 //            out.print(graph);
 
             if (xml) {
-                out.println(graphToPcalg(graph));
-//                out.print(graphToXml(graph));
+//                out.println(graphToPcalg(graph));
+                out.print(graphToXml(graph));
             } else {
                 out.print(graph);
             }
@@ -2622,7 +2622,23 @@ public final class GraphUtils {
                 break;
             }
 
-            Arrays.stream(line.split("[,;]")).map(GraphNode::new).forEach(graph::addNode);
+            String[] tokens = line.split("[,;]");
+
+            for (String token : tokens) {
+                if (token.startsWith("(") && token.endsWith(")")) {
+                    token = token.replace("(", "");
+                    token = token.replace(")", "");
+                    Node node = new GraphNode(token);
+                    node.setNodeType(NodeType.LATENT);
+                    graph.addNode(node);
+                } else {
+                    Node node = new GraphNode(token);
+                    node.setNodeType(NodeType.MEASURED);
+                    graph.addNode(node);
+                }
+            }
+
+//            Arrays.stream(line.split("[,;]")).map(GraphNode::new).forEach(graph::addNode);
         }
     }
 
@@ -3946,7 +3962,13 @@ public final class GraphUtils {
         int count = 0;
         for (Node node : nodes) {
             count++;
-            sb.append(node.getName());
+
+            if (node.getNodeType() == NodeType.LATENT) {
+                sb.append("(").append(node.getName()).append(")");
+            } else {
+                sb.append(node.getName());
+            }
+
             if (count < size) {
                 sb.append(delimiter);
             }
@@ -5337,6 +5359,7 @@ public final class GraphUtils {
 
     public static void mbVisit(Node c, LinkedList<Node> path, Graph G, Set<Node> mb) {
         if (path.contains(c)) return;
+        if (mb.contains(c)) return;
         path.add(c);
 
         if (path.size() >= 3) {

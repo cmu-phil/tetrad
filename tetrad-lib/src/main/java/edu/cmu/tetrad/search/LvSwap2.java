@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -122,19 +122,23 @@ public final class LvSwap2 implements GraphSearch {
 
         do {
             G0 = new EdgeListGraph(G);
-            allT.addAll(swapRule(G, scorer));
+            allT.addAll(swapRule(G, scorer, 2));
 
             G = new EdgeListGraph(G2);
 
             removeShields(G, allT);
+            retainUnshieldedColliders(G);
             orientColliders(G, allT);
         } while (!G.equals(G0));
+
+//        retainUnshieldedColliders(G);
+
 
 //        G2 = new EdgeListGraph(G);
 //
 //        do {
 //            G0 = new EdgeListGraph(G);
-//            allT.addAll(extendedSwap(G, scorer));
+//            allT.addAll(extendedSwap(G, scorer, 3));
 //
 //            G = new EdgeListGraph(G2);
 //
@@ -232,7 +236,7 @@ public final class LvSwap2 implements GraphSearch {
         fciOrient.doFinalOrientation(G);
     }
 
-    private Set<Triple> extendedSwap(Graph G, TeyssierScorer scorer) {
+    private Set<Triple> extendedSwap(Graph G, TeyssierScorer scorer, int depth) {
         scorer.bookmark();
 
         Set<Triple> T = new HashSet<>();
@@ -252,14 +256,11 @@ public final class LvSwap2 implements GraphSearch {
 
                 Z.removeIf(z -> (!G.isDefCollider(x, z, y) && !G.isAdjacentTo(x, y)));
 
-                // Need y<-oz*-*x
-//                Z.removeIf(z -> !(Edges.partiallyOrientedEdge(z, y).equals(G.getEdge(z, y))));
-
                 if (Z.isEmpty()) continue;
 
                 // Need to try making every combination of Z latent. If a combination works,
                 // for Z = {Z1,...,Zm}, orient Y<->Z1, ..., Y<->Zm.
-                SublistGenerator gen = new SublistGenerator(Z.size(), 2);// Z.size());
+                SublistGenerator gen = new SublistGenerator(Z.size(), depth);// Z.size());
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
@@ -268,7 +269,7 @@ public final class LvSwap2 implements GraphSearch {
                     List<Node> ZZ = GraphUtils.asList(choice, Z);
 
                     for (Node z : ZZ) {
-                        scorer.moveTo(z, scorer.size() - 1);
+                        scorer.moveToEnd(z);
                     }
 
                     if (!scorer.adjacent(x, y)) {
@@ -285,7 +286,8 @@ public final class LvSwap2 implements GraphSearch {
         return T;
     }
 
-    private static Set<Triple> swapRule(Graph G, TeyssierScorer scorer) {
+    private static Set<Triple> swapRule(Graph G, TeyssierScorer scorer, int depth) {
+
         Set<Triple> T = new HashSet<>();
 
         List<Node> nodes = G.getNodes();
@@ -346,6 +348,91 @@ public final class LvSwap2 implements GraphSearch {
         return T;
     }
 
+    private static Set<Triple> swapRule2(Graph G, TeyssierScorer scorer, int depth) {
+
+        Set<Triple> T = new HashSet<>();
+
+        List<Node> nodes = G.getNodes();
+
+        scorer.bookmark();
+
+        // For every x*-*y*-*w that is not already an unshielded collider...
+        for (Node y : nodes) {
+            for (Node x : G.getAdjacentNodes(y)) {
+                if (x == y) continue;
+
+                for (Node z : G.getAdjacentNodes(y)) {
+                    if (x == z) continue;
+                    if (y == z) continue;
+
+                    // Check that  <x, y, z> is an unshielded collider or else is a shielded collider or noncollider
+                    // (either way you can end up after possible reorientation with an unshielded collider),
+//                    if (!G.isDefCollider(x, y, z) && !G.isAdjacentTo(x, z)) continue;
+
+                    scorer.goToBookmark();
+
+                    // and make sure you're conditioning on district(x, G)...
+                    Set<Node> S = GraphUtils.pagMb(x, G);
+//                    List<Node> S = G.getAdjacentNodes(x);
+//                    Set<Node> S = GraphUtils.district(x, G);
+
+                    for (Node p : S) {
+                        scorer.tuck(p, x);
+                    }
+
+                    List<Node> _S = new ArrayList<>(S);
+                    _S.removeAll(GraphUtils.district(x, G));
+
+                    scorer.bookmark(1);
+
+                    SublistGenerator gen = new SublistGenerator(_S.size(), 1);
+                    int[] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        scorer.goToBookmark(1);
+
+                        List<Node> sub = GraphUtils.asList(choice, _S);
+
+                        for (Node p : sub) {
+                            scorer.moveToEnd(p);
+                        }
+
+//                        scorer.swaptuck(x, z);
+
+                        // If that's true, and if <x, y, z> is an unshielded collider in DAG(π),
+                        if (scorer.collider(x, y, z) && !scorer.adjacent(x, z)) {
+
+                            // look at each y2 commonly adjacent to both x and z,
+                            Set<Node> adj = scorer.getAdjacentNodes(x);
+                            adj.retainAll(scorer.getAdjacentNodes(z));
+
+                            for (Node y2 : adj) {
+
+                                // and x->y2<-z is an unshielded collider in DAG(swap(x, z, π))
+                                // not already oriented as an unshielded collider in G,
+                                if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)
+                                        && !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))) {
+
+                                    // then add <x, y2, z> to the set of new unshielded colliders to process.
+                                    T.add(new Triple(x, y2, z));
+
+//                                removeShields(G, T);
+//                                orientColliders(G, T);
+
+                                }
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        scorer.goToBookmark();
+
+        return T;
+    }
 
     private void removeShields(Graph graph, Set<Triple> unshieldedColliders) {
         for (Triple triple : unshieldedColliders) {
