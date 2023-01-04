@@ -116,7 +116,7 @@ public final class LvSwap2 implements GraphSearch {
         alg.setVerbose(verbose);
 
         alg.bestOrder(this.score.getVariables());
-        Graph G = alg.getGraph(true);
+        Graph G = alg.getGraph(false);
 
         retainUnshieldedColliders(G);
 
@@ -142,6 +142,8 @@ public final class LvSwap2 implements GraphSearch {
                     for (Node z : G.getAdjacentNodes(y)) {
                         if (x == z) continue;
                         if (y == z) continue;
+
+                        if (!G.isAdjacentTo(x, z)) continue;
 
                         // Check that  <x, y, z> is an unshielded collider or else is a shielded collider or noncollider
                         // (either way you can end up after possible reorientation with an unshielded collider),
@@ -247,7 +249,7 @@ public final class LvSwap2 implements GraphSearch {
                         }
 
                         List<Node> _S = new ArrayList<>(S);
-                        _S.removeAll(GraphUtils.district(x, G));
+//                        _S.removeAll(GraphUtils.district(x, G));
 
                         scorer.bookmark(1);
 
@@ -262,12 +264,13 @@ public final class LvSwap2 implements GraphSearch {
 
                                 List<Node> sub = GraphUtils.asList(choice, _S);
 
-                                for (Node p : _S) {
-                                    if (sub.contains(p)) {
+                                for (Node p : sub) {
+//                                    if (sub.contains(p)) {
                                         scorer.tuck(p, x);
-                                    } else {
-                                        scorer.swaptuck(p, x);
-                                    }
+//                                    }
+//                                    else if (scorer.index(p) < scorer.index(x)) {
+//                                        scorer.swaptuck(p, x);
+//                                    }
                                 }
 
 //                                for (Node p : sub) {
@@ -454,13 +457,15 @@ public final class LvSwap2 implements GraphSearch {
         scorer.bookmark();
 
         // For every x*-*y*-*w that is not already an unshielded collider...
-        for (Node y : nodes) {
-            for (Node x : G.getAdjacentNodes(y)) {
-                if (x == y) continue;
+        for (Node z : nodes) {
+            for (Node x : G.getAdjacentNodes(z)) {
 
-                for (Node z : G.getAdjacentNodes(y)) {
+
+                for (Node y : G.getAdjacentNodes(z)) {
                     if (x == z) continue;
                     if (y == z) continue;
+
+                    if (x == y) continue;
 
                     // Check that  <x, y, z> is an unshielded collider or else is a shielded collider or noncollider
                     // (either way you can end up after possible reorientation with an unshielded collider),
