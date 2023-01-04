@@ -170,7 +170,7 @@ public final class LvSwap2 implements GraphSearch {
                                 // and x->y2<-z is an unshielded collider in DAG(swap(x, z, π))
                                 // not already oriented as an unshielded collider in G,
                                 if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)
-                                    && !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))) {
+                                        && !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))) {
 
                                     // then add <x, y2, z> to the set of new unshielded colliders to process.
                                     T.add(new Triple(x, y2, z));
