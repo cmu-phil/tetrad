@@ -716,13 +716,14 @@ public class TeyssierScorer {
      */
     public void goToBookmark(int key) {
         if (!this.bookmarkedOrders.containsKey(key)) {
-            bookmark(key);
-            return;
+//            bookmark(key);
+//            return;
+            throw new IllegalArgumentException("That key was not bookmarked: " + key);
         }
 
-        this.pi = this.bookmarkedOrders.get(key);
-        this.scores = this.bookmarkedScores.get(key);
-        this.orderHash = this.bookmarkedOrderHashes.get(key);
+        this.pi = new ArrayList<>(this.bookmarkedOrders.get(key));
+        this.scores = new ArrayList<>(this.bookmarkedScores.get(key));
+        this.orderHash = new HashMap<>(this.bookmarkedOrderHashes.get(key));
         this.runningScore = this.bookmarkedRunningScores.get(key);
 
     }
