@@ -326,6 +326,25 @@ public class GeneralResamplingTest {
         return graph;
     }
 
+    /**
+     * Get all the edges in the graphs.
+     *
+     * @param graphs list of graphs
+     * @return set of distinct edges
+     */
+    private Set<Edge> getDistinctEdges(List<Graph> graphs) {
+        Set<Edge> edges = new HashSet();
+        graphs.forEach(bsGraph -> {
+            bsGraph.getEdges().forEach(edge -> {
+                Node n1 = edge.getNode1();
+                Node n2 = edge.getNode2();
+                edges.add(new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL));
+            });
+        });
+
+        return edges;
+    }
+
     private Graph generateSamplingGraph() {
         Graph _graph = null;
         if (this.verbose) {
@@ -358,12 +377,8 @@ public class GeneralResamplingTest {
         List<Node> nodes = _graph.getNodes();
         Collections.sort(nodes);
 
-        Graph complete = new EdgeListGraph(nodes);
-        complete.fullyConnect(Endpoint.TAIL);
-
         Graph graph = new EdgeListGraph(nodes);
-
-        for (Edge e : complete.getEdges()) {
+        for (Edge e : getDistinctEdges(this.graphs)) {
             Node n1 = e.getNode1();
             Node n2 = e.getNode2();
 
@@ -450,7 +465,7 @@ public class GeneralResamplingTest {
             }
 
         }
-
+        
         return graph;
     }
 
