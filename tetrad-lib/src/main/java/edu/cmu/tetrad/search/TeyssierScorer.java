@@ -220,6 +220,14 @@ public class TeyssierScorer {
         }
     }
 
+    public void reverseSwaptuck(Node x, Node y) {
+        if (index(x) < index(y) && index(y) < size() - 1) {
+            moveTo(x, index(y) + 1);
+        } else if (index(y) < index(x) && index(x) < size() - 1) {
+            moveTo(y, index(x) + 1);
+        }
+    }
+
     public void tuckWithoutMovingAncestors(Node x, Node y) {
         if (index(x) > index(y)) {
             moveTo(x, index(y));
