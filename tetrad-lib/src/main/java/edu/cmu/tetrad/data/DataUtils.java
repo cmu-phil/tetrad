@@ -1123,6 +1123,52 @@ public final class DataUtils {
     }
 
     /**
+     * Get dataset sampled without replacement.
+     *
+     * @param data original dataset
+     * @param sampleSize number of data (row)
+     * @param seed the initial seed
+     * @return dataset
+     */
+    public static DataSet getResamplingDataset(DataSet data, int sampleSize, long seed) {
+        Random random = new Random(seed);
+
+        int actualSampleSize = data.getNumRows();
+        int _size = sampleSize;
+        if (actualSampleSize < _size) {
+            _size = actualSampleSize;
+        }
+
+        List<Integer> availRows = new ArrayList<>();
+        for (int i = 0; i < actualSampleSize; i++) {
+            availRows.add(i);
+        }
+
+        Collections.shuffle(availRows);
+
+        List<Integer> addedRows = new ArrayList<>();
+        int[] rows = new int[_size];
+        for (int i = 0; i < _size; i++) {
+            int row = -1;
+            int index = -1;
+            while (row == -1 || addedRows.contains(row)) {
+                index = random.nextInt(availRows.size());
+                row = availRows.get(index);
+            }
+            rows[i] = row;
+            addedRows.add(row);
+            availRows.remove(index);
+        }
+
+        int[] cols = new int[data.getNumColumns()];
+        for (int i = 0; i < cols.length; i++) {
+            cols[i] = i;
+        }
+
+        return new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()), data.getVariables());
+    }
+
+    /**
      * @return a sample with replacement with the given sample size from the
      * given dataset.
      */
@@ -1141,6 +1187,36 @@ public final class DataUtils {
         BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()),
                 data.getVariables());
         boxDataSet.setKnowledge(data.getKnowledge());
+        return boxDataSet;
+    }
+
+    /**
+     * Get dataset sampled with replacement.
+     *
+     * @param data original dataset
+     * @param sampleSize number of data (row)
+     * @param seed the initial seed
+     * @return dataset
+     */
+    public static DataSet getBootstrapSample(DataSet data, int sampleSize, long seed) {
+        Random random = new Random(seed);
+
+        int actualSampleSize = data.getNumRows();
+        int[] rows = new int[sampleSize];
+        for (int i = 0; i < rows.length; i++) {
+            rows[i] = random.nextInt(actualSampleSize);
+        }
+
+        int[] cols = new int[data.getNumColumns()];
+        for (int i = 0; i < cols.length; i++) {
+            cols[i] = i;
+        }
+
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(
+                data.getDoubleData().getSelection(rows, cols).transpose().toArray()),
+                data.getVariables());
+        boxDataSet.setKnowledge(data.getKnowledge());
+
         return boxDataSet;
     }
 
