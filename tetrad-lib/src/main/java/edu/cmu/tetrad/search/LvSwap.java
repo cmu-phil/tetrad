@@ -199,7 +199,7 @@ public final class LvSwap implements GraphSearch {
                         scorer.tuck(p, x);
                     }
 
-                    scorer.swaptuck(x, y);
+                    scorer.swaptuck(x, y, z);
 
                     // If that's true, and if <x, y, z> is an unshielded collider in DAG(π),
                     if (scorer.collider(x, y, z) && !scorer.adjacent(x, z)) {

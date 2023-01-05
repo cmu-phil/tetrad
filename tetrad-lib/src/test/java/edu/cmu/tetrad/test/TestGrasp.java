@@ -2455,8 +2455,8 @@ public final class TestGrasp {
             Parameters params = new Parameters();
             params.set(Params.SAMPLE_SIZE, 1000, 10000);
             params.set(Params.NUM_MEASURES, 30);
-            params.set(Params.AVG_DEGREE, 5);
-            params.set(Params.NUM_LATENTS, 7);
+            params.set(Params.AVG_DEGREE, 6);
+            params.set(Params.NUM_LATENTS, 8);
             params.set(Params.RANDOMIZE_COLUMNS, true);
             params.set(Params.COEF_LOW, 0);
             params.set(Params.COEF_HIGH, 1);
@@ -2472,6 +2472,7 @@ public final class TestGrasp {
             params.set(Params.MAX_PATH_LENGTH, 2);
             params.set(Params.COMPLETE_RULE_SET_USED, true);
             params.set(Params.POSSIBLE_DSEP_DONE, true);
+            params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
 
             // Flags
             params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
@@ -2481,7 +2482,7 @@ public final class TestGrasp {
 
             // default for kim et al. is gic = 4, pd = 1.
             params.set(Params.SEM_GIC_RULE, 4);
-            params.set(Params.PENALTY_DISCOUNT, 2);
+            params.set(Params.PENALTY_DISCOUNT, 1);
             params.set(Params.ALPHA, 0.01);
             params.set(Params.ZS_RISK_BOUND, 0.2);
             params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 2);
@@ -2497,10 +2498,10 @@ public final class TestGrasp {
             IndependenceWrapper test = new FisherZ();
 
             List<ScoreWrapper> scores = new ArrayList<>();
-            scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-            scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
+//            scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+//            scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
             scores.add(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore());
-            scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
+//            scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
 
             algorithms.add(new Fci(test));
             algorithms.add(new FciMax(test));
@@ -2572,17 +2573,11 @@ public final class TestGrasp {
                 statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
 
                 statistics.add(new NumDirectedEdges());
-                statistics.add(new NumDirectedEdgeReversed());
-                statistics.add(new NumDirectedEdgeNotAncNotRev());
-                statistics.add(new NumBidirectedEdgesEst());
-                statistics.add(new NumCommonMeasuredAncestorBidirected());
-                statistics.add(new NumLatentCommonAncestorBidirected());
                 statistics.add(new TrueDagPrecisionArrow());
                 statistics.add(new TrueDagPrecisionTails());
-//                statistics.add(new SemidirectedPrecision());
+                statistics.add(new NumBidirectedEdgesEst());
+                statistics.add(new BidirectedLatentPrecision());
                 statistics.add(new SemidirectedRecall());
-//                statistics.add(new NoSemidirectedPrecision());
-//                statistics.add(new NoSemidirectedRecall());
 
                 statistics.add(new ElapsedTime());
             }

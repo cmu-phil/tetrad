@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.SublistGenerator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -212,19 +211,21 @@ public class TeyssierScorer {
     /**
      * Performs a tuck operation.
      */
-    public void swaptuck(Node x, Node y) {
-        if (index(x) < index(y)) {
-            moveTo(y, index(x));
-        } else if (index(x) > index(y)) {
+    public void swaptuck(Node x, Node y, Node z) {
+        if (index(y) < index(x)) {
             moveTo(x, index(y));
+        }
+
+        else if (index(z) < index(x)) {
+            moveTo(x, index(z));
         }
     }
 
-    public void reverseSwaptuck(Node x, Node y) {
-        if (index(x) < index(y) && index(y) < size() - 1) {
-            moveTo(x, index(y) + 1);
-        } else if (index(y) < index(x) && index(x) < size() - 1) {
-            moveTo(y, index(x) + 1);
+    public void swaptuck(Node x, Node y) {
+        if (index(x) < index(y)) {
+            moveTo(y, index(x));
+        } else if (index(y) < index(x)) {
+            moveTo(x, index(y));
         }
     }
 

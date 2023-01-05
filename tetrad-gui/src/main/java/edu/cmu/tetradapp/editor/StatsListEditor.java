@@ -126,17 +126,11 @@ public class StatsListEditor extends JPanel {
         if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG
                 && referenceGraph.getGraphType() == EdgeListGraph.GraphType.DAG) {
             statistics.add(new NumDirectedEdges());
-            statistics.add(new NumDirectedEdgeReversed());
-            statistics.add(new NumDirectedEdgeNotAncNotRev());
-            statistics.add(new NumBidirectedEdgesEst());
-            statistics.add(new NumCommonMeasuredAncestorBidirected());
-            statistics.add(new NumLatentCommonAncestorBidirected());
             statistics.add(new TrueDagPrecisionArrow());
             statistics.add(new TrueDagPrecisionTails());
-//            statistics.add(new SemidirectedPrecision());
+            statistics.add(new NumBidirectedEdgesEst());
+            statistics.add(new BidirectedLatentPrecision());
             statistics.add(new SemidirectedRecall());
-//            statistics.add(new NoSemidirectedPrecision());
-//            statistics.add(new NoSemidirectedRecall());
         }
 
         statistics.add(new AdjacencyPrecision());
