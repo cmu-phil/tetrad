@@ -35,6 +35,8 @@ public class EdgeTypeTable extends JPanel {
 
     private static final long serialVersionUID = -9104061917163909746L;
 
+    private static final Color DARK_GREEN = new Color(0,153,0);
+
     private static final String[] EDGES = {
             "Node 1",
             "Interaction",
@@ -49,6 +51,7 @@ public class EdgeTypeTable extends JPanel {
             "No edge",
             "\u2192",
             "\u2190",
+            "---",
             "\u2192", // -G> pd nl
             "\u2190", // <G- pd nl
             "\u2192", // =G> dd nl
@@ -56,8 +59,7 @@ public class EdgeTypeTable extends JPanel {
             "o->",
             "<-o",
             "o-o",
-            "<->",
-            "---"
+            "<->"
     };
 
     private final JLabel title = new JLabel();
@@ -91,10 +93,10 @@ public class EdgeTypeTable extends JPanel {
             TableCellRenderer headerRenderer = header.getDefaultRenderer();
             header.setDefaultRenderer((tbl, value, isSelected, hasFocus, row, column) -> {
                 Component comp = headerRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
-                if (column > 6 && column < 11) {
-                    comp.setForeground(Color.GREEN);
+                if (column >= 8 && column <= 11) {
+                    comp.setForeground(DARK_GREEN);
                 }
-                if (column > 8 && column < 11) {
+                if (column >= 10 && column <=11) {
                     comp.setFont(boldFont);
                 }
 
@@ -156,9 +158,9 @@ public class EdgeTypeTable extends JPanel {
                         }
                     }
                     if (nl && dd) {
-                        rowData[9] = probValue;
+                        rowData[10] = probValue;
                     } else if (nl && pd) {
-                        rowData[7] = probValue;
+                        rowData[8] = probValue;
                     } else {
                         rowData[5] = probValue;
                     }
@@ -179,26 +181,26 @@ public class EdgeTypeTable extends JPanel {
                         }
                     }
                     if (nl && dd) {
-                        rowData[10] = probValue;
+                        rowData[11] = probValue;
                     } else if (nl && pd) {
-                        rowData[8] = probValue;
+                        rowData[9] = probValue;
                     } else {
                         rowData[6] = probValue;
                     }
                     break;
-                case ca:
-                    rowData[11] = probValue;
+                case tt:
+                    rowData[7] = probValue;
                     break;
-                case ac:
+                case ca:
                     rowData[12] = probValue;
                     break;
-                case cc:
+                case ac:
                     rowData[13] = probValue;
                     break;
-                case aa:
+                case cc:
                     rowData[14] = probValue;
                     break;
-                case tt:
+                case aa:
                     rowData[15] = probValue;
                     break;
             }
