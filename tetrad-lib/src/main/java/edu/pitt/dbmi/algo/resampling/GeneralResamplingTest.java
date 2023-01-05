@@ -327,18 +327,16 @@ public class GeneralResamplingTest {
     }
 
     /**
-     * Get all the edges in the graphs.
+     * Create a set of undirected edges using the edges from the graphs.
      *
      * @param graphs list of graphs
-     * @return set of distinct edges
+     * @return set of undirected edges
      */
-    private Set<Edge> getDistinctEdges(List<Graph> graphs) {
+    private Set<Edge> createUndirectedEdges(List<Graph> graphs) {
         Set<Edge> edges = new HashSet();
-        graphs.forEach(bsGraph -> {
-            bsGraph.getEdges().forEach(edge -> {
-                Node n1 = edge.getNode1();
-                Node n2 = edge.getNode2();
-                edges.add(new Edge(n1, n2, Endpoint.NULL, Endpoint.NULL));
+        graphs.forEach(graph -> {
+            graph.getEdges().forEach(edge -> {
+                edges.add(new Edge(edge.getNode1(), edge.getNode2(), Endpoint.NULL, Endpoint.NULL));
             });
         });
 
@@ -378,7 +376,7 @@ public class GeneralResamplingTest {
         Collections.sort(nodes);
 
         Graph graph = new EdgeListGraph(nodes);
-        for (Edge e : getDistinctEdges(this.graphs)) {
+        for (Edge e : createUndirectedEdges(this.graphs)) {
             Node n1 = e.getNode1();
             Node n2 = e.getNode2();
 
