@@ -35,8 +35,6 @@ public class EdgeTypeTable extends JPanel {
 
     private static final long serialVersionUID = -9104061917163909746L;
 
-    private static final Color DARK_GREEN = new Color(0,153,0);
-
     private static final String[] EDGES = {
             "Node 1",
             "Interaction",
@@ -94,10 +92,10 @@ public class EdgeTypeTable extends JPanel {
             TableCellRenderer headerRenderer = header.getDefaultRenderer();
             header.setDefaultRenderer((tbl, value, isSelected, hasFocus, row, column) -> {
                 Component comp = headerRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
-                if (column >= 8 && column <= 11) {
-                    comp.setForeground(DARK_GREEN);
+                if (column >= 9 && column <= 12) {
+                    comp.setForeground(Color.BLUE);
                 }
-                if (column >= 10 && column <=11) {
+                if (column >= 11 && column <=12) {
                     comp.setFont(boldFont);
                 }
 
