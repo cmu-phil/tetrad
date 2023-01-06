@@ -48,6 +48,7 @@ public class EdgeTypeTable extends JPanel {
             "Interaction",
             "Node 2",
             "Ensemble",
+            "Edge Probability",
             "No edge",
             "\u2192",
             "\u2190",
@@ -140,32 +141,9 @@ public class EdgeTypeTable extends JPanel {
             boolean nl, pd, dd;
             switch (edgeTypeProb.getEdgeType()) {
                 case nil:
-                    rowData[4] = probValue;
+                    rowData[5] = probValue;
                     break;
                 case ta:
-                    nl = false;
-                    pd = false;
-                    dd = false;
-                    for (Edge.Property p : edgeTypeProb.getProperties()) {
-                        if (p == Edge.Property.dd) {
-                            dd = true;
-                        }
-                        if (p == Edge.Property.nl) {
-                            nl = true;
-                        }
-                        if (p == Edge.Property.pd) {
-                            pd = true;
-                        }
-                    }
-                    if (nl && dd) {
-                        rowData[10] = probValue;
-                    } else if (nl && pd) {
-                        rowData[8] = probValue;
-                    } else {
-                        rowData[5] = probValue;
-                    }
-                    break;
-                case at:
                     nl = false;
                     pd = false;
                     dd = false;
@@ -188,20 +166,43 @@ public class EdgeTypeTable extends JPanel {
                         rowData[6] = probValue;
                     }
                     break;
+                case at:
+                    nl = false;
+                    pd = false;
+                    dd = false;
+                    for (Edge.Property p : edgeTypeProb.getProperties()) {
+                        if (p == Edge.Property.dd) {
+                            dd = true;
+                        }
+                        if (p == Edge.Property.nl) {
+                            nl = true;
+                        }
+                        if (p == Edge.Property.pd) {
+                            pd = true;
+                        }
+                    }
+                    if (nl && dd) {
+                        rowData[12] = probValue;
+                    } else if (nl && pd) {
+                        rowData[10] = probValue;
+                    } else {
+                        rowData[7] = probValue;
+                    }
+                    break;
                 case tt:
-                    rowData[7] = probValue;
+                    rowData[8] = probValue;
                     break;
                 case ca:
-                    rowData[12] = probValue;
-                    break;
-                case ac:
                     rowData[13] = probValue;
                     break;
-                case cc:
+                case ac:
                     rowData[14] = probValue;
                     break;
-                case aa:
+                case cc:
                     rowData[15] = probValue;
+                    break;
+                case aa:
+                    rowData[16] = probValue;
                     break;
             }
         });
@@ -212,6 +213,7 @@ public class EdgeTypeTable extends JPanel {
                 .max()
                 .orElse(0);
         rowData[3] = String.format("%.4f", maxEdgeProbability);
+        rowData[4] = String.format("%.4f", edge.getProbability());
     }
 
     private void addEdgeData(Edge edge, String[] rowData) {
