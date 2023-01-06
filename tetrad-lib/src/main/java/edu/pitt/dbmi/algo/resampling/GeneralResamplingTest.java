@@ -544,8 +544,7 @@ public class GeneralResamplingTest {
                 edgeType = EdgeType.tt;
             }
 
-            EdgeTypeProbability etp = new EdgeTypeProbability(edgeType, probability);
-
+            EdgeTypeProbability etp = new EdgeTypeProbability(edgeType, edge.getProperties(), probability);
             edgeTypeProbabilities.add(etp);
         }
 

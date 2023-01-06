@@ -311,16 +311,16 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
             }
         }
 
+        if (probability > 0.0) {
+            buf.append(String.format("[edge]:%.4f", probability));
+        }
+
         List<Property> properties = getProperties();
         if (properties != null && properties.size() > 0) {
             for (Property property : properties) {
                 buf.append(" ");
                 buf.append(property.toString());
             }
-        }
-
-        if (probability > 0.0) {
-            buf.append(String.format("[edge]:%.4f", probability));
         }
 
         return buf.toString();
