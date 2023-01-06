@@ -60,6 +60,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
     private final List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
 
+    private double probability;
+
     // =========================CONSTRUCTORS============================//
 
     /**
@@ -309,6 +311,10 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
             }
         }
 
+        if (probability > 0.0) {
+            buf.append(String.format("[edge]:%.4f", probability));
+        }
+
         List<Property> properties = getProperties();
         if (properties != null && properties.size() > 0) {
             for (Property property : properties) {
@@ -448,4 +454,13 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     public List<EdgeTypeProbability> getEdgeTypeProbabilities() {
         return this.edgeTypeProbabilities;
     }
+
+    public double getProbability() {
+        return probability;
+    }
+
+    public void setProbability(double probability) {
+        this.probability = probability;
+    }
+
 }

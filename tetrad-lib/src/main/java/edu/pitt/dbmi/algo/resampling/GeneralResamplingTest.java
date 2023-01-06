@@ -463,7 +463,26 @@ public class GeneralResamplingTest {
             }
 
         }
-        
+
+        graph = computeEdgeProbabilities(graph);
+
+        return graph;
+    }
+
+    private static Graph computeEdgeProbabilities(Graph graph) {
+        for (Edge edge : graph.getEdges()) {
+            List<EdgeTypeProbability> edgeTypeProbs = edge.getEdgeTypeProbabilities();
+            if (!(edgeTypeProbs == null || edgeTypeProbs.isEmpty())) {
+                double prob = 0;
+                for (EdgeTypeProbability typeProbability : edgeTypeProbs) {
+                    if (typeProbability.getEdgeType() != EdgeTypeProbability.EdgeType.nil) {
+                        prob += typeProbability.getProbability();
+                    }
+                }
+                edge.setProbability(prob);
+            }
+        }
+
         return graph;
     }
 
@@ -525,8 +544,7 @@ public class GeneralResamplingTest {
                 edgeType = EdgeType.tt;
             }
 
-            EdgeTypeProbability etp = new EdgeTypeProbability(edgeType, probability);
-
+            EdgeTypeProbability etp = new EdgeTypeProbability(edgeType, edge.getProperties(), probability);
             edgeTypeProbabilities.add(etp);
         }
 
