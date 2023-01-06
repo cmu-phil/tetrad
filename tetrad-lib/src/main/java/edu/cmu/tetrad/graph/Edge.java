@@ -320,7 +320,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         }
 
         if (probability > 0.0) {
-            buf.append(String.format(" edgeProb:%.4f", probability));
+            buf.append(String.format("[edge]:%.4f", probability));
         }
 
         return buf.toString();

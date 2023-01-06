@@ -48,7 +48,7 @@ public class EdgeTypeTable extends JPanel {
             "Interaction",
             "Node 2",
             "Ensemble",
-            "Edge Probability",
+            "Edge",
             "No edge",
             "\u2192",
             "\u2190",
