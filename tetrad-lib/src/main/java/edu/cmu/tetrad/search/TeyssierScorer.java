@@ -421,20 +421,20 @@ public class TeyssierScorer {
      * @return This graph.
      */
     public Graph getGraph(boolean cpDag) {
-        List<Node> order = getPi();
-        Graph G1 = new EdgeListGraph(this.variables);
-
-        for (int p = 0; p < order.size(); p++) {
-            for (Node z : getParents(p)) {
-                G1.addDirectedEdge(z, order.get(p));
-            }
-        }
-
-        GraphUtils.replaceNodes(G1, this.variables);
-
         if (cpDag) {
-            return findCompelled();// SearchGraphUtils.cpdagForDag(G1);
+            return findCompelled();
         } else {
+            List<Node> order = getPi();
+            Graph G1 = new EdgeListGraph(this.variables);
+
+            for (int p = 0; p < order.size(); p++) {
+                for (Node z : getParents(p)) {
+                    G1.addDirectedEdge(z, order.get(p));
+                }
+            }
+
+            GraphUtils.replaceNodes(G1, this.variables);
+
             return G1;
         }
     }
