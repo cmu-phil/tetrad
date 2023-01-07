@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -161,7 +161,7 @@ public final class TimeLagGraphEditor extends JPanel
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return null;
     }
 
@@ -304,7 +304,7 @@ public final class TimeLagGraphEditor extends JPanel
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
-        JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
+        JMenu fileMenu = new GraphFileMenu(this, getWorkbench(), false);
         JMenu editMenu = createNumLagsMenu();
 //        JMenu graphMenu = createGraphMenu();
 

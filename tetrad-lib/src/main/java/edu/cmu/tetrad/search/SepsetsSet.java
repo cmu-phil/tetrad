@@ -47,17 +47,17 @@ public class SepsetsSet implements SepsetProducer {
     }
 
     @Override
-    public boolean isCollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         List<Node> sepset = this.sepsets.get(i, k);
-        if (sepset == null) return false;
+        if (sepset == null) throw new IllegalArgumentException("That triple was covered: " + i + " " + j + " " + k);
         else return !sepset.contains(j);
     }
 
     @Override
-    public boolean isNoncollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
         List<Node> sepset = this.sepsets.get(i, k);
-        isIndependent(i, k, this.sepsets.get(i, k));
-        return sepset != null && sepset.contains(j);
+        if (sepset == null) throw new IllegalArgumentException("That triple was covered: " + i + " " + j + " " + k);
+        return sepset.contains(j);
     }
 
     @Override

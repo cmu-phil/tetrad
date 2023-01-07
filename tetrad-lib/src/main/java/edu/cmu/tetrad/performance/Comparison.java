@@ -17,6 +17,8 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
  * Does a comparison of algorithm results across algorithm type, sample sizes, etc.
  *
@@ -215,12 +217,12 @@ public class Comparison {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(new DagToPag(trueDag).convert());
+            result.setCorrectResult(dagToPag(trueDag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             GFci search = new GFci(test, score);
             result.setResultGraph(search.search());
-            result.setCorrectResult(new DagToPag(trueDag).convert());
+            result.setCorrectResult(dagToPag(trueDag));
         } else {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }

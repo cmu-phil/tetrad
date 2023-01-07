@@ -13,15 +13,15 @@ import java.util.Set;
  * @author jdramsey
  */
 public class AdjacencyConfusion {
-    private int adjTp;
-    private int adjFp;
-    private int adjFn;
-    private final int adjTn;
+    private int tp;
+    private int fp;
+    private int fn;
+    private final int tn;
 
     public AdjacencyConfusion(Graph truth, Graph est) {
-        this.adjTp = 0;
-        this.adjFp = 0;
-        this.adjFn = 0;
+        this.tp = 0;
+        this.fp = 0;
+        this.fn = 0;
 
         Set<Edge> allUnoriented = new HashSet<>();
         for (Edge edge : truth.getEdges()) {
@@ -35,39 +35,39 @@ public class AdjacencyConfusion {
         for (Edge edge : allUnoriented) {
             if (est.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
                     !truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                this.adjFp++;
+                this.fp++;
             }
 
             if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
                     !est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                this.adjFn++;
+                this.fn++;
             }
 
             if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) &&
                     est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                this.adjTp++;
+                this.tp++;
             }
         }
 
         int allEdges = truth.getNumNodes() * (truth.getNumNodes() - 1) / 2;
 
-        this.adjTn = allEdges - this.adjFn;
+        this.tn = allEdges - this.fn;
     }
 
-    public int getAdjTp() {
-        return this.adjTp;
+    public int getTp() {
+        return this.tp;
     }
 
-    public int getAdjFp() {
-        return this.adjFp;
+    public int getFp() {
+        return this.fp;
     }
 
-    public int getAdjFn() {
-        return this.adjFn;
+    public int getFn() {
+        return this.fn;
     }
 
-    public int getAdjTn() {
-        return this.adjTn;
+    public int getTn() {
+        return this.tn;
     }
 
 }

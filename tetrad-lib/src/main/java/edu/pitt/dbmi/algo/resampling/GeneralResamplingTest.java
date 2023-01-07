@@ -2,14 +2,13 @@ package edu.pitt.dbmi.algo.resampling;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -23,6 +22,7 @@ import java.util.*;
 public class GeneralResamplingTest {
     private final GeneralResamplingSearch resamplingSearch;
     private final ResamplingEdgeEnsemble edgeEnsemble;
+    private ScoreWrapper scoreWrapper;
     private PrintStream out = System.out;
     private Parameters parameters;
     private Algorithm algorithm;
@@ -32,7 +32,7 @@ public class GeneralResamplingTest {
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     /**
      * An initial graph to start from.
      */
@@ -255,10 +255,8 @@ public class GeneralResamplingTest {
      *
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null)
-            throw new NullPointerException();
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     /**
@@ -282,6 +280,8 @@ public class GeneralResamplingTest {
         this.resamplingSearch.setRunParallel(runParallel);
         this.resamplingSearch.setVerbose(this.verbose);
         this.resamplingSearch.setParameters(this.parameters);
+        this.resamplingSearch.setScoreWrapper(scoreWrapper);
+
 
         if (!this.knowledge.isEmpty()) {
             this.resamplingSearch.setKnowledge(this.knowledge);
@@ -326,6 +326,23 @@ public class GeneralResamplingTest {
         return graph;
     }
 
+    /**
+     * Create a set of undirected edges using the edges from the graphs.
+     *
+     * @param graphs list of graphs
+     * @return set of undirected edges
+     */
+    private Set<Edge> createUndirectedEdges(List<Graph> graphs) {
+        Set<Edge> edges = new HashSet();
+        graphs.forEach(graph -> {
+            graph.getEdges().forEach(edge -> {
+                edges.add(new Edge(edge.getNode1(), edge.getNode2(), Endpoint.NULL, Endpoint.NULL));
+            });
+        });
+
+        return edges;
+    }
+
     private Graph generateSamplingGraph() {
         Graph _graph = null;
         if (this.verbose) {
@@ -358,12 +375,8 @@ public class GeneralResamplingTest {
         List<Node> nodes = _graph.getNodes();
         Collections.sort(nodes);
 
-        Graph complete = new EdgeListGraph(nodes);
-        complete.fullyConnect(Endpoint.TAIL);
-
         Graph graph = new EdgeListGraph(nodes);
-
-        for (Edge e : complete.getEdges()) {
+        for (Edge e : createUndirectedEdges(this.graphs)) {
             Node n1 = e.getNode1();
             Node n2 = e.getNode2();
 
@@ -451,6 +464,25 @@ public class GeneralResamplingTest {
 
         }
 
+        graph = computeEdgeProbabilities(graph);
+
+        return graph;
+    }
+
+    private static Graph computeEdgeProbabilities(Graph graph) {
+        for (Edge edge : graph.getEdges()) {
+            List<EdgeTypeProbability> edgeTypeProbs = edge.getEdgeTypeProbabilities();
+            if (!(edgeTypeProbs == null || edgeTypeProbs.isEmpty())) {
+                double prob = 0;
+                for (EdgeTypeProbability typeProbability : edgeTypeProbs) {
+                    if (typeProbability.getEdgeType() != EdgeTypeProbability.EdgeType.nil) {
+                        prob += typeProbability.getProbability();
+                    }
+                }
+                edge.setProbability(prob);
+            }
+        }
+
         return graph;
     }
 
@@ -512,8 +544,7 @@ public class GeneralResamplingTest {
                 edgeType = EdgeType.tt;
             }
 
-            EdgeTypeProbability etp = new EdgeTypeProbability(edgeType, probability);
-
+            EdgeTypeProbability etp = new EdgeTypeProbability(edgeType, edge.getProperties(), probability);
             edgeTypeProbabilities.add(etp);
         }
 
@@ -526,5 +557,9 @@ public class GeneralResamplingTest {
 
     public int getNumNoGraphs() {
         return numNoGraphs;
+    }
+
+    public void setScoreWrapper(ScoreWrapper scoreWrapper) {
+        this.scoreWrapper = scoreWrapper;
     }
 }

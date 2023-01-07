@@ -45,7 +45,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class UnderliningsAction extends AbstractAction implements ClipboardOwner {
+public class UnderliningsAction extends AbstractAction implements ClipboardOwner {
     private final GraphWorkbench workbench;
 
     /**
@@ -150,7 +150,7 @@ class UnderliningsAction extends AbstractAction implements ClipboardOwner {
 
     private String pathFor(Triple triple, Graph graph) {
         List<Node> path = asList(triple);
-        return GraphUtils.pathString(path, graph);
+        return GraphUtils.pathString(graph, path);
     }
 
 

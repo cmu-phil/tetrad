@@ -41,7 +41,7 @@ import java.util.List;
 public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     private Graph externalGraph;
     private ScoreWrapper score;
     private IndependenceWrapper test;
@@ -87,6 +87,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
+            search.setScoreWrapper(score);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -109,6 +110,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
+            search.setScoreWrapper(score);
 
 
             search.setParameters(parameters);
@@ -141,13 +143,13 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

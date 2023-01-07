@@ -102,7 +102,7 @@ public class TestGFci {
 
         outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
 
-        int[][] counts = SearchGraphUtils.graphComparison(outGraph, truePag, null);
+        int[][] counts = SearchGraphUtils.graphComparison(truePag, outGraph, null);
 
         int[][] expectedCounts = {
                 {0, 0, 0, 0, 0, 0},

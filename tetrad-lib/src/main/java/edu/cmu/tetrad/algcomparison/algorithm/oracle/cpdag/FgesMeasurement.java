@@ -28,7 +28,7 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private final ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     public FgesMeasurement(ScoreWrapper score) {
         this.score = score;
@@ -104,13 +104,13 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
 }

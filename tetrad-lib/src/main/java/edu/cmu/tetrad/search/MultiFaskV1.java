@@ -2,10 +2,9 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -40,7 +39,7 @@ public class MultiFaskV1 {
     private double alpha = 1e-6;
 
     // Knowledge the the search will obey, of forbidden and required edges.
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     // Cutoff for T tests for 2-cycle tests.
     private double cutoff;
@@ -179,14 +178,14 @@ public class MultiFaskV1 {
     /**
      * @return the current knowledge.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     /**
      * @param knowledge Knowledge of forbidden and required edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -208,7 +207,7 @@ public class MultiFaskV1 {
 
         for (int i = 0; i < this.dataSets.size(); i++) {
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), this.depth);
+            SublistGenerator gen = new SublistGenerator(adj.size(), this.depth);
             int[] choice;
 
             boolean possibleTwoCycle = false;

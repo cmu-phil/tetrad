@@ -21,8 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -64,7 +63,7 @@ public class Fasts implements IFas {
     /**
      * Specification of which edges are forbidden or required.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
@@ -246,15 +245,12 @@ public class Fasts implements IFas {
         this.depth = depth;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException("Cannot set knowledge to null");
-        }
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     //==============================PRIVATE METHODS======================/
@@ -484,7 +480,7 @@ public class Fasts implements IFas {
     }
 
     private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       IKnowledge knowledge) {
+                                       Knowledge knowledge) {
         List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
@@ -499,7 +495,7 @@ public class Fasts implements IFas {
         return possibleParents;
     }
 
-    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 

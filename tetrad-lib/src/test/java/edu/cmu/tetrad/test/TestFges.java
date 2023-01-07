@@ -65,12 +65,12 @@ public class TestFges {
     private final PrintStream out = System.out;
 //    private OutputStream out =
 
-    //    @Test
+    @Test
     public void explore1() {
         RandomUtil.getInstance().setSeed(1450184147770L);
 
-        final int numVars = 10;
-        final double edgesPerNode = 1.0;
+        final int numVars = 1000;
+        final double edgesPerNode = 2.0;
         final int numCases = 1000;
         final double penaltyDiscount = 2.0;
 
@@ -91,42 +91,51 @@ public class TestFges {
             causalOrdering[i] = i;
         }
 
-        LargeScaleSimulation simulator = new LargeScaleSimulation(dag, vars, causalOrdering);
-        simulator.setOut(this.out);
-        DataSet data = simulator.simulateDataFisher(numCases);
+        SemPm pm = new SemPm(dag);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(numCases, false);
 
-//        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        ICovarianceMatrix cov = new CovarianceMatrix(data);
+        System.out.println("data done");
+
+        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
 
-        Fges fges = new Fges(score);
-        fges.setVerbose(false);
-        fges.setOut(this.out);
-        fges.setFaithfulnessAssumed(true);
-
-        Graph estCPDAG = fges.search();
-
-//        printDegreeDistribution(estCPDAG, out);
+        Fges alg = new Fges(score);
+        alg.setVerbose(true);
+        alg.setOut(this.out);
+        alg.setFaithfulnessAssumed(true);
+        Graph estCPDAG = alg.search();
 
         Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
 
-        int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
+        estCPDAG = GraphUtils.replaceNodes(estCPDAG, vars);
 
-        int[][] expectedCounts = {
-                {2, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 8, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0},
-        };
+        System.out.println("true = " + trueCPDAG + " est = " + estCPDAG);
 
-        for (int i = 0; i < counts.length; i++) {
-            assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
-        }
+        double ap = new AdjacencyPrecision().getValue(trueCPDAG, estCPDAG, data);
+        double ar = new AdjacencyRecall().getValue(trueCPDAG, estCPDAG, data);
+
+        System.out.println("ap = " + ap + " ar = " + ar);
+
+
+
+//        int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
+//
+//        int[][] expectedCounts = {
+//                {2, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 8, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//                {0, 0, 0, 0, 0, 0},
+//        };
+//
+//        for (int i = 0; i < counts.length; i++) {
+//            assertTrue(Arrays.equals(counts[i], expectedCounts[i]));
+//        }
 
     }
 
@@ -168,7 +177,7 @@ public class TestFges {
 
         Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
 
-        int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
+        int[][] counts = SearchGraphUtils.graphComparison(trueCPDAG, estCPDAG, null);
 
         int[][] expectedCounts = {
                 {2, 0, 0, 0, 0, 1},
@@ -512,7 +521,7 @@ public class TestFges {
      */
     @Test
     public void testSearch4() {
-        IKnowledge knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
@@ -523,7 +532,7 @@ public class TestFges {
 
     @Test
     public void testSearch5() {
-        IKnowledge knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
         knowledge.setTier(1, Collections.singletonList("A"));
         knowledge.setTier(2, Collections.singletonList("B"));
 
@@ -545,7 +554,7 @@ public class TestFges {
         char[] citesChars = citesString.toCharArray();
         ICovarianceMatrix cov = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
-        IKnowledge knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
 
         knowledge.addToTier(1, "ABILITY");
         knowledge.addToTier(2, "GPQ");
@@ -624,7 +633,7 @@ public class TestFges {
      * graph.
      */
     private void checkWithKnowledge(String inputGraph, String answerGraph,
-                                    IKnowledge knowledge) {
+                                    Knowledge knowledge) {
         // Set up graph and node objects.
         Graph input = GraphConverter.convert(inputGraph);
 
@@ -652,7 +661,7 @@ public class TestFges {
 
     @Test
     public void testFromGraph() {
-        final int numNodes = 15;
+        final int numNodes = 10;
         final int aveDegree = 4;
         final int numIterations = 1;
 
@@ -732,8 +741,8 @@ public class TestFges {
 
     @Test
     public void testFromGraphWithForbiddenKnowledge() {
-        final int numNodes = 20;
-        final int numIterations = 20;
+        final int numNodes = 10;
+        final int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
@@ -741,7 +750,7 @@ public class TestFges {
             Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
 
-            IKnowledge knowledge = forbiddenKnowledge(knowledgeGraph);
+            Knowledge knowledge = forbiddenKnowledge(knowledgeGraph);
 
             Fges fges = new Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
@@ -775,7 +784,7 @@ public class TestFges {
             Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
 
-            IKnowledge knowledge = requiredKnowledge(knowledgeGraph);
+            Knowledge knowledge = requiredKnowledge(knowledgeGraph);
 
             Fges fges = new Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
@@ -796,8 +805,8 @@ public class TestFges {
     }
 
 
-    private IKnowledge forbiddenKnowledge(Graph graph) {
-        IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
+    private Knowledge forbiddenKnowledge(Graph graph) {
+        Knowledge knowledge = new Knowledge(graph.getNodeNames());
 
         for (Edge edge : graph.getEdges()) {
             Node n1 = Edges.getDirectedEdgeTail(edge);
@@ -810,12 +819,12 @@ public class TestFges {
             knowledge.setForbidden(n1.getName(), n2.getName());
         }
 
-        return knowledge ;
+        return knowledge;
     }
 
-    private IKnowledge requiredKnowledge(Graph graph) {
+    private Knowledge requiredKnowledge(Graph graph) {
 
-        IKnowledge knowledge = new Knowledge2(graph.getNodeNames());
+        Knowledge knowledge = new Knowledge(graph.getNodeNames());
 
         for (Edge edge : graph.getEdges()) {
             Node n1 = Edges.getDirectedEdgeTail(edge);

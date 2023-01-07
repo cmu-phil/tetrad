@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
  * Does a comparison of algorithm results across algorithm type, sample sizes,
  * etc.
@@ -155,14 +157,14 @@ public class Comparison2 {
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
                 Fci search = new Fci(test);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(new DagToPag(trueDag).convert());
+                result.setCorrectResult(dagToPag(trueDag));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
                 GFci search = new GFci(test, score);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(new DagToPag(trueDag).convert());
+                result.setCorrectResult(dagToPag(trueDag));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                 SvarFci search = new SvarFci(test);
-                IKnowledge knowledge = getKnowledge(trueDag);
+                Knowledge knowledge = getKnowledge(trueDag);
                 search.setKnowledge(knowledge);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(new TsDagToPag(trueDag).convert());
@@ -413,21 +415,21 @@ public class Comparison2 {
             }
             Fci search = new Fci(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(new DagToPag(trueDag).convert());
+            result.setCorrectResult(dagToPag(trueDag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.GFCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
             GFci search = new GFci(test, score);
             result.setResultGraph(search.search());
-            result.setCorrectResult(new DagToPag(trueDag).convert());
+            result.setCorrectResult(dagToPag(trueDag));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
             SvarFci search = new SvarFci(test);
             assert trueDag != null;
-            IKnowledge knowledge = Comparison2.getKnowledge(trueDag);
+            Knowledge knowledge = Comparison2.getKnowledge(trueDag);
             search.setKnowledge(knowledge);
             result.setResultGraph(search.search());
             result.setCorrectResult(new TsDagToPag(trueDag).convert());
@@ -577,12 +579,12 @@ public class Comparison2 {
         return table;
     }
 
-    public static IKnowledge getKnowledge(Graph graph) {
+    public static Knowledge getKnowledge(Graph graph) {
 //        System.out.println("Entering getKnowledge ... ");
         int numLags; // need to fix this!
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
         int lag;
         for (Node node : variables) {
             String varName = node.getName();

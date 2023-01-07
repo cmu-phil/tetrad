@@ -21,8 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -31,6 +30,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
+
+import static edu.cmu.tetrad.graph.GraphUtils.*;
 
 /**
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
@@ -46,13 +47,13 @@ public final class GFci implements GraphSearch {
     private Graph graph;
 
     // The background knowledge.
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     // The conditional independence test.
     private IndependenceTest independenceTest;
 
     // Flag for complete rule set, true if should use complete rule set, false otherwise.
-    private boolean completeRuleSetUsed;
+    private boolean completeRuleSetUsed = true;
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
@@ -80,8 +81,9 @@ public final class GFci implements GraphSearch {
 
     // The score.
     private final Score score;
-
-    private SepsetProducer sepsets;
+    private boolean doDiscriminatingPathRule = true;
+    private boolean possibleDsepSearchDone = true;
+    private int depth = -1;
 
     //============================CONSTRUCTORS============================//
     public GFci(IndependenceTest test, Score score) {
@@ -95,8 +97,7 @@ public final class GFci implements GraphSearch {
 
     //========================PUBLIC METHODS==========================//
     public Graph search() {
-        long time1 = System.currentTimeMillis();
-
+        this.independenceTest.setVerbose(verbose);
         List<Node> nodes = getIndependenceTest().getVariables();
 
         this.logger.log("info", "Starting FCI algorithm.");
@@ -111,57 +112,36 @@ public final class GFci implements GraphSearch {
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
         this.graph = fges.search();
+
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxDegree);
+//        knowledge = new Knowledge(knowledge);
+//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
 
-        for (Node b : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
+        gfciExtraEdgeRemovalStep(this.graph, fgesGraph, nodes, sepsets);
 
-            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
+        modifiedR0(fgesGraph, sepsets);
 
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (this.graph.isAdjacentTo(a, c) && fgesGraph.isAdjacentTo(a, c)) {
-                    if (this.sepsets.getSepset(a, c) != null) {
-                        this.graph.removeEdge(a, c);
-                    }
-                }
-            }
+        if (this.possibleDsepSearchDone) {
+            removeByPossibleDsep(graph, independenceTest, null);
         }
 
-        modifiedR0(fgesGraph);
+//        retainUnshieldedColliders(this.graph);
 
-        FciOrient fciOrient = new FciOrient(this.sepsets);
-        fciOrient.setVerbose(this.verbose);
-        fciOrient.setOut(this.out);
-        fciOrient.setKnowledge(getKnowledge());
+        FciOrient fciOrient = new FciOrient(sepsets);
+
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.doFinalOrientation(this.graph);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setVerbose(this.verbose);
+        fciOrient.setKnowledge(this.knowledge);
+
+        fciOrient.doFinalOrientation(graph);
+        this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
-
-        long time2 = System.currentTimeMillis();
-
-        long elapsedTime = time2 - time1;
-
-        this.graph.setPag(true);
 
         return this.graph;
     }
@@ -186,7 +166,8 @@ public final class GFci implements GraphSearch {
     }
 
     // Due to Spirtes.
-    public void modifiedR0(Graph fgesGraph) {
+    public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
+        this.graph = new EdgeListGraph(graph);
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
 
@@ -210,7 +191,7 @@ public final class GFci implements GraphSearch {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = this.sepsets.getSepset(a, c);
+                    List<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);
@@ -221,11 +202,11 @@ public final class GFci implements GraphSearch {
         }
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -322,7 +303,7 @@ public final class GFci implements GraphSearch {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {
+    private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         this.logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -340,9 +321,8 @@ public final class GFci implements GraphSearch {
                 continue;
             }
 
-            // Orient to*-&gt;from
+            // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
-            graph.setEndpoint(from, to, Endpoint.CIRCLE);
             this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
@@ -369,4 +349,15 @@ public final class GFci implements GraphSearch {
         this.logger.log("info", "Finishing BK Orientation.");
     }
 
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
 }

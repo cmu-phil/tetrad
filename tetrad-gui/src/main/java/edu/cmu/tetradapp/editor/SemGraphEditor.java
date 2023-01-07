@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -182,7 +182,7 @@ public final class SemGraphEditor extends JPanel
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return null;
     }
 
@@ -385,7 +385,7 @@ public final class SemGraphEditor extends JPanel
     private JMenuBar createGraphMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
-        JMenu fileMenu = new GraphFileMenu(this, getWorkbench());
+        JMenu fileMenu = new GraphFileMenu(this, getWorkbench(), false);
         JMenu editMenu = createEditMenu();
         JMenu graphMenu = createGraphMenu();
 
@@ -479,7 +479,7 @@ public final class SemGraphEditor extends JPanel
             editor.setParams(this.parameters);
 
             EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
-                    "Done", false, this);
+                    "Done", true, this);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();

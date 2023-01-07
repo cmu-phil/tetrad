@@ -9,7 +9,6 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -17,6 +16,8 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 /**
  * FCI.
@@ -33,7 +34,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     public FciMax() {
     }
@@ -60,6 +61,8 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
             search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+            search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
@@ -78,7 +81,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(new EdgeListGraph(graph)).convert();
+        return dagToPag(new EdgeListGraph(graph));
     }
 
     public String getDescription() {
@@ -97,6 +100,8 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        parameters.add(Params.POSSIBLE_DSEP_DONE);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
@@ -104,13 +109,13 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

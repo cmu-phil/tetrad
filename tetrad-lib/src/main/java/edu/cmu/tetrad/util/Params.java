@@ -47,6 +47,9 @@ public final class Params {
     public static final String COEF_SYMMETRIC = "coefSymmetric";
     public static final String COLLIDER_DISCOVERY_RULE = "colliderDiscoveryRule";
     public static final String COMPLETE_RULE_SET_USED = "completeRuleSetUsed";
+    public static final String DO_DISCRIMINATING_PATH_RULE = "doDiscriminatingPathRule";
+    public static final String DO_DISCRIMINATING_PATH_COLLIDER_RULE = "doDiscriminatingPathColliderRule";
+    public static final String DO_DISCRIMINATING_PATH_TAIL_RULE = "doDiscriminatingPathTailRule";
     public static final String CONCURRENT_FAS = "concurrentFAS";
     public static final String CONFLICT_RULE = "conflictRule";
     public static final String CONNECTED = "connected";
@@ -189,11 +192,12 @@ public final class Params {
     // System prameters that are not supposed to put in the HTML manual documentation
     public static final String PRINT_STREAM = "printStream";
     public static final String SEM_BIC_RULE = "semBicRule";
+    public static final String SEM_GIC_RULE = "semGicRule";
     public static final String SEM_BIC_STRUCTURE_PRIOR = "semBicStructurePrior";
     public static final String NUM_STARTS = "numStarts";
     public static final String CACHE_SCORES = "cacheScores";
     public static final String OTHER_PERM_METHOD = "otherPermMethod";
-    public static final String BOSS_SCORE_TYPE = "bossScoreType";
+    public static final String BOSS_ALG = "bossAlg";
     public static final String BREAK_TIES = "breakTies";
     public static final String OUTPUT_CPDAG = "outputCpdag";
     public static final String ZS_RISK_BOUND = "zSRiskBound";
@@ -205,7 +209,7 @@ public final class Params {
     public static final String GRASP_BREAK_AFTER_IMPROVEMENT = "graspBreakAFterImprovement";
     public static final String GRASP_ORDERED_ALG = "graspOrderedAlg";
     public static final String GRASP_USE_SCORE = "graspUseScore";
-    public static final String GRASP_USE_VERMA_PEARL = "graspUseVermaPearl";
+    public static final String GRASP_USE_RASKUTTI_UHLER = "graspUseRaskuttiUhler";
     public static final String GRASP_USE_DATA_ORDER = "graspUseDataOrder";
     public static final String GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM = "graspAllowRandomnessIndideAlgorithm";
     public static final String GRASP_DEPTH = "graspDepth";
@@ -220,10 +224,12 @@ public final class Params {
     public static final String SIMULATION_PARAM2 = "simulationParam2";
     public static final String SELECTION_MIN_EFFECT = "selectionMinEffect";
     public static final String NUM_SUBSAMPLES = "numSubsamples";
-    public static final String TARGET_NAMES = "targetNames";
+    public static final String TARGETS = "targets";
+    public static final String MB = "mb";
     public static final String CSTAR_Q = "cstarQ";
     public static final String TIME_LAG = "timeLag";
     public static final String PRECOMPUTE_COVARIANCES = "precomputeCovariances";
+    public static final String IMAGES_META_ALG = "imagesMetaAlg";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

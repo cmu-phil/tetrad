@@ -3,10 +3,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
@@ -30,7 +27,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     private final RandomGraph randomGraph;
     private List<Graph> graphs = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
-    private IKnowledge knowledge;
+    private Knowledge knowledge;
 
     public TimeSeriesSemSimulation(RandomGraph randomGraph) {
         if (randomGraph == null) {
@@ -127,13 +124,13 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public static void topToBottomLayout(TimeLagGraph graph) {

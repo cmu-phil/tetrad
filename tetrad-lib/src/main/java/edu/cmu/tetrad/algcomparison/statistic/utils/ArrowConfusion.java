@@ -19,14 +19,14 @@ public class ArrowConfusion {
     // For arrowhead FP's, don't count an error unless the variables are adj in the true graph.
     private final boolean truthAdj;
 
-    private int arrowsTp;
-    private int arrowsTpc;
-    private int arrowsFp;
-    private int arrowsFpc;
-    private int arrowsFn;
-    private int arrowsFnc;
-    private int arrowsTn;
-    private int arrowsTnc;
+    private int tp;
+    private int tpc;
+    private int fp;
+    private int fpc;
+    private int fn;
+    private int fnc;
+    private int tn;
+    private int tnc;
     private int TCtp;
     private int TCfn;
     private int TCfp;
@@ -38,12 +38,12 @@ public class ArrowConfusion {
     public ArrowConfusion(Graph truth, Graph est, boolean truthAdj) {
         Graph truth1 = truth;
         Graph est1 = est;
-        this.arrowsTp = 0;
-        this.arrowsTpc = 0;
-        this.arrowsFp = 0;
-        this.arrowsFpc = 0;
-        this.arrowsFn = 0;
-        this.arrowsFnc = 0;
+        this.tp = 0;
+        this.tpc = 0;
+        this.fp = 0;
+        this.fpc = 0;
+        this.fn = 0;
+        this.fnc = 0;
         this.TCtp = 0; //for the two-cycle accuracy
         this.TCfn = 0;
         this.TCfp = 0;
@@ -100,52 +100,52 @@ public class ArrowConfusion {
 
 
             if (e1True == Endpoint.ARROW && e1Est != Endpoint.ARROW) {
-                this.arrowsFn++;
+                this.fn++;
             }
 
             if (e2True == Endpoint.ARROW && e2Est != Endpoint.ARROW) {
-                this.arrowsFn++;
+                this.fn++;
             }
 
             if (e1True == Endpoint.ARROW && e1Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                this.arrowsFnc = getArrowsFnc() + 1;
+                this.fnc = getFnc() + 1;
             }
 
             if (e2True == Endpoint.ARROW && e2Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                this.arrowsFnc = getArrowsFnc() + 1;
+                this.fnc = getFnc() + 1;
             }
 
 
             if (e1True == Endpoint.ARROW && e1Est == Endpoint.ARROW) {
-                this.arrowsTp++;
+                this.tp++;
             }
 
             if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW) {
-                this.arrowsTp++;
+                this.tp++;
             }
 
             if (e1True == Endpoint.ARROW && e1Est == Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                this.arrowsTpc = getArrowsTpc() + 1;
+                this.tpc = getTpc() + 1;
             }
 
             if (e2True == Endpoint.ARROW && e2Est == Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                this.arrowsTpc = getArrowsTpc() + 1;
+                this.tpc = getTpc() + 1;
             }
 
             if (e1True != Endpoint.ARROW && e1Est != Endpoint.ARROW) {
-                this.arrowsTn++;
+                this.tn++;
             }
 
             if (e2True != Endpoint.ARROW && e2Est != Endpoint.ARROW) {
-                this.arrowsTn++;
+                this.tn++;
             }
 
             if (e1True != Endpoint.ARROW && e1Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                this.arrowsTnc = getArrowsTnc() + 1;
+                this.tnc = getTnc() + 1;
             }
 
             if (e2True != Endpoint.ARROW && e2Est != Endpoint.ARROW && truth.isAdjacentTo(edge.getNode1(), edge.getNode2()) && est.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                this.arrowsTnc = getArrowsTnc() + 1;
+                this.tnc = getTnc() + 1;
             }
         }
 // Get edges from the estimated graph to compute only FalsePositives
@@ -195,29 +195,29 @@ public class ArrowConfusion {
             if (isTruthAdj()) {
                 if (truth.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
                     if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW) {
-                        this.arrowsFp++;
+                        this.fp++;
                     }
 
                     if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW) {
-                        this.arrowsFp++;
+                        this.fp++;
                     }
                 }
             } else {
                 if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW) {
-                    this.arrowsFp++;
+                    this.fp++;
                 }
 
                 if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW) {
-                    this.arrowsFp++;
+                    this.fp++;
                 }
             }
 
             if (e1Est == Endpoint.ARROW && e1True != Endpoint.ARROW && edge1 != null && edge2 != null) {
-                this.arrowsFpc = getArrowsFpc() + 1;
+                this.fpc = getFpc() + 1;
             }
 
             if (e2Est == Endpoint.ARROW && e2True != Endpoint.ARROW && edge1 != null && edge2 != null) {
-                this.arrowsFpc = getArrowsFpc() + 1;
+                this.fpc = getFpc() + 1;
             }
 
         }
@@ -261,20 +261,20 @@ public class ArrowConfusion {
     }
 
 
-    public int getArrowsTp() {
-        return this.arrowsTp;
+    public int getTp() {
+        return this.tp;
     }
 
-    public int getArrowsFp() {
-        return this.arrowsFp;
+    public int getFp() {
+        return this.fp;
     }
 
-    public int getArrowsFn() {
-        return this.arrowsFn;
+    public int getFn() {
+        return this.fn;
     }
 
-    public int getArrowsTn() {
-        return this.arrowsTn;
+    public int getTn() {
+        return this.tn;
     }
 
     public int getTwoCycleTp() {
@@ -292,29 +292,29 @@ public class ArrowConfusion {
     /**
      * Two positives for common edges.
      */
-    public int getArrowsTpc() {
-        return this.arrowsTpc;
+    public int getTpc() {
+        return this.tpc;
     }
 
     /**
      * False positives for common edges.
      */
-    public int getArrowsFpc() {
-        return this.arrowsFpc;
+    public int getFpc() {
+        return this.fpc;
     }
 
     /**
      * False negatives for common edges.
      */
-    public int getArrowsFnc() {
-        return this.arrowsFnc;
+    public int getFnc() {
+        return this.fnc;
     }
 
     /**
      * True Negatives for common edges.
      */
-    public int getArrowsTnc() {
-        return this.arrowsTnc;
+    public int getTnc() {
+        return this.tnc;
     }
 
     public boolean isTruthAdj() {

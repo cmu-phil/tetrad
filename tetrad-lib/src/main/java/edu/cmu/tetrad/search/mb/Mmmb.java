@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MbSearch;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -105,18 +105,17 @@ public final class Mmmb implements MbSearch {
     /**
      * Searches for the Markov blanket of the node by the given name.
      *
-     * @param targetName The name of the target node.
+     * @param target The name of the target node.
      * @return The Markov blanket of the target.
      */
-    public List<Node> findMb(String targetName) {
-        TetradLogger.getInstance().log("info", "target = " + targetName);
+    public List<Node> findMb(Node target) {
+        TetradLogger.getInstance().log("info", "target = " + target);
         this.numIndTests = 0;
         long time = System.currentTimeMillis();
 
         this.pc = new HashMap<>();
         this.trimmed = new HashSet<>();
 
-        Node target = getVariableForName(targetName);
         List<Node> nodes = mmmb(target);
 
         long time2 = System.currentTimeMillis() - time;
@@ -157,8 +156,8 @@ public final class Mmmb implements MbSearch {
             List<Node> s = null;
 
             // Find an S such PC such that x _||_ t | S
-            DepthChoiceGenerator generator =
-                    new DepthChoiceGenerator(pcpc.size(), this.depth);
+            SublistGenerator generator =
+                    new SublistGenerator(pcpc.size(), this.depth);
             int[] choice;
 
             while ((choice = generator.next()) != null) {
@@ -319,8 +318,8 @@ public final class Mmmb implements MbSearch {
         if (pc.contains(target)) throw new IllegalArgumentException();
         if (x == target) throw new IllegalArgumentException();
 
-        DepthChoiceGenerator generator =
-                new DepthChoiceGenerator(pc.size(), this.depth);
+        SublistGenerator generator =
+                new SublistGenerator(pc.size(), this.depth);
         int[] choice;
 
         while ((choice = generator.next()) != null) {

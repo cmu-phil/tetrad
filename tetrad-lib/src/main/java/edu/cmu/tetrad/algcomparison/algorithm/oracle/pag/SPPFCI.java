@@ -10,7 +10,6 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.SpFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -19,6 +18,8 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 
 /**
@@ -43,7 +44,7 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     public SPPFCI() {
         // Used for reflection; do not delete.
@@ -61,7 +62,7 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
             search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
+            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(search.getKnowledge());
 
@@ -85,12 +86,12 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(graph).convert();
+        return dagToPag(graph);
     }
 
     @Override
     public String getDescription() {
-        return "GRASP-FCI (GRaSP-based FCI) using " + this.test.getDescription()
+        return "SP-FCI (SP-based FCI) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
@@ -108,7 +109,7 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
         params.add(Params.MAX_PATH_LENGTH);
 
         // Flags
-        params.add(Params.GRASP_USE_VERMA_PEARL);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.VERBOSE);
 
@@ -117,13 +118,13 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override

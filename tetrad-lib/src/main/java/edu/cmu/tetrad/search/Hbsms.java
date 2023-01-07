@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.SemIm;
 
@@ -35,7 +35,7 @@ public interface Hbsms {
 
     void setHighPValueAlpha(double alpha);
 
-    void setKnowledge(IKnowledge knowledge);
+    void setKnowledge(Knowledge knowledge);
 
     Graph search();
 

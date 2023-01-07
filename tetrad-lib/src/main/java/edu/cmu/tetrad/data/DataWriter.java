@@ -146,7 +146,7 @@ public final class DataWriter {
         out.close();
     }
 
-    public static void saveKnowledge(IKnowledge knowledge, Writer out) throws IOException {
+    public static void saveKnowledge(Knowledge knowledge, Writer out) throws IOException {
         StringBuilder buf = new StringBuilder();
         buf.append("/knowledge");
 

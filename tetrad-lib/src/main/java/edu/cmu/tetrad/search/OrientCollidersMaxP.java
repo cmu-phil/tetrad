@@ -21,11 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -39,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class OrientCollidersMaxP {
     private final IndependenceTest independenceTest;
     private int depth = -1;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     private boolean useHeuristic;
     private int maxPathLength = 3;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
@@ -146,7 +145,7 @@ public final class OrientCollidersMaxP {
         double p = 0;
         List<Node> S = null;
 
-        DepthChoiceGenerator cg1 = new DepthChoiceGenerator(adja.size(), this.depth);
+        SublistGenerator cg1 = new SublistGenerator(adja.size(), this.depth);
         int[] comb2;
 
         while ((comb2 = cg1.next()) != null) {
@@ -165,7 +164,7 @@ public final class OrientCollidersMaxP {
             }
         }
 
-        DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adjc.size(), this.depth);
+        SublistGenerator cg2 = new SublistGenerator(adjc.size(), this.depth);
         int[] comb3;
 
         while ((comb3 = cg2.next()) != null) {
@@ -225,11 +224,11 @@ public final class OrientCollidersMaxP {
         OrientCollidersMaxP.orientCollider(a, b, c, conflictRule, graph);
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 

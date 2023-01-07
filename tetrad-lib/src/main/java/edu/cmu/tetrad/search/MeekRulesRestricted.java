@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -39,7 +39,7 @@ import java.util.*;
  */
 public class MeekRulesRestricted implements ImpliedOrientation {
 
-    private IKnowledge knowledge;
+    private Knowledge knowledge;
 
     /**
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
@@ -103,13 +103,13 @@ public class MeekRulesRestricted implements ImpliedOrientation {
         graph.removeTriplesNotInGraph();
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     //============================== Private Methods ===================================//
 
-    private void orientUsingMeekRulesLocally(IKnowledge knowledge, Graph graph) {
+    private void orientUsingMeekRulesLocally(Knowledge knowledge, Graph graph) {
 //        List<Node> colliderNodes = getColliderNodes(graph);
 
         // Previously oriented, probably by knowledge.
@@ -151,7 +151,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
     /**
      * Meek's rule R1: if b-->a, a---c, and a not adj to c, then a-->c
      */
-    private void meekR1Locally(Node a, Graph graph, IKnowledge knowledge) {
+    private void meekR1Locally(Node a, Graph graph, Knowledge knowledge) {
         List<Node> adjacentNodes = graph.getAdjacentNodes(a);
         this.visitedNodes.add(a);
 
@@ -220,7 +220,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
     /**
      * If b-->a-->c, b--c, then b-->c.
      */
-    private void meekR2(Node a, Graph graph, IKnowledge knowledge) {
+    private void meekR2(Node a, Graph graph, Knowledge knowledge) {
         List<Node> adjacentNodes = graph.getAdjacentNodes(a);
         this.visitedNodes.add(a);
 
@@ -278,7 +278,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
     /**
      * Meek's rule R3. If a--b, a--c, a--d, c-->b, d-->b, then orient a-->b.
      */
-    private void meekR3(Node a, Graph graph, IKnowledge knowledge) {
+    private void meekR3(Node a, Graph graph, Knowledge knowledge) {
         List<Node> adjacentNodes = graph.getAdjacentNodes(a);
         this.visitedNodes.add(a);
 
@@ -341,7 +341,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
         }
     }
 
-    private void meekR4(Node a, Graph graph, IKnowledge knowledge) {
+    private void meekR4(Node a, Graph graph, Knowledge knowledge) {
         if (!this.useRule4) {
             return;
         }
@@ -456,7 +456,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
     }
 
 
-    private static boolean isArrowpointAllowed(Node from, Node to, IKnowledge knowledge) {
+    private static boolean isArrowpointAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge == null) return true;
         return !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());

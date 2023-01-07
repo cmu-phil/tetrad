@@ -3,9 +3,10 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -29,17 +30,18 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "IMaGES Discrete",
-        command = "imgs_disc",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Discrete
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "IMaGES Discrete",
+//        command = "imgs_disc",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        dataType = DataType.Discrete
+//)
 @Bootstrapping
+@Experimental
 public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     public ImagesBDeu() {
     }
@@ -71,11 +73,17 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
+            search.setScoreWrapper(null);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+
     }
 
     @Override
@@ -92,6 +100,7 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
+            search.setScoreWrapper(null);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -127,12 +136,12 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

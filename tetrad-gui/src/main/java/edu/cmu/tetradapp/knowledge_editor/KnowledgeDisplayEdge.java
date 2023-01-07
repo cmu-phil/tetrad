@@ -204,7 +204,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      */
     private final PropertyChangeHandler propertyChangeHandler =
             new PropertyChangeHandler();
-    private boolean bold;
+    private boolean solid = true;
+    private boolean thick = false;
 
     //==========================CONSTRUCTORS============================//
 
@@ -970,12 +971,17 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 //        throw new UnsupportedOperationException();
     }
 
-    public boolean getBold() {
-        return this.bold;
+    public boolean getSolid() {
+        return this.solid;
     }
 
-    public void setBold(boolean bold) {
-        this.bold = bold;
+    public void setSolid(boolean solid) {
+        this.solid = solid;
+    }
+
+    @Override
+    public void setThick(boolean thick) {
+        this.thick = thick;
     }
 
     /**

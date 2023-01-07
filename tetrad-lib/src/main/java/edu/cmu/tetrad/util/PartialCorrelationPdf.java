@@ -22,6 +22,8 @@
 package edu.cmu.tetrad.util;
 
 
+import org.apache.commons.math3.special.Gamma;
+
 /**
  * Frequency function of partial correlation r(12|34...k), assuming that the
  * true partial correlation is equal to zero.  Uses the equation (29.13.4) from
@@ -116,7 +118,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
     private double gammaRatio(int n, int k) {
         double top = (n - k + 1) / 2.0;
         double bottom = (n - k) / 2.0;
-        double lngamma = ProbUtils.lngamma(top) - ProbUtils.lngamma(bottom);
+        double lngamma = Gamma.logGamma(top) - Gamma.logGamma(bottom);
         return Math.exp(lngamma);
     }
 

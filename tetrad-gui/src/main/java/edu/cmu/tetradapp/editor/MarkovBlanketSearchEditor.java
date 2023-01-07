@@ -23,8 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndTestType;
@@ -143,7 +142,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
                 setErrorMessage(null);
 
                 if (!MarkovBlanketSearchEditor.this.knowledgeMessageShown) {
-                    IKnowledge knowledge = (IKnowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge2());
+                    Knowledge knowledge = (Knowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge());
                     if (!knowledge.isEmpty()) {
                         JOptionPane.showMessageDialog(
                                 JOptionUtils.centeringComp(),
@@ -338,7 +337,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
         file.add(new JMenuItem(new SaveDataAction(this)));
-        file.add(new GraphFileMenu(this, getWorkbench()));
+        file.add(new GraphFileMenu(this, getWorkbench(), false));
 //        file.add(new SaveGraph(this, "Save Graph..."));
 
         JMenu edit = new JMenu("Edit");

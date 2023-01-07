@@ -21,14 +21,14 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.WeakHashMap;
 
 
 /**
@@ -53,12 +53,12 @@ public final class DagToPag {
     /*
      * The background knowledge.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * Glag for complete rule set, true if should use complete rule set, false otherwise.
      */
-    private boolean completeRuleSetUsed;
+    private boolean completeRuleSetUsed = true;
 
     /**
      * The logger to use.
@@ -71,6 +71,8 @@ public final class DagToPag {
     private boolean verbose;
     private int maxPathLength = -1;
     private Graph truePag;
+    private boolean doDiscriminatingPathRule = true;
+    private static final WeakHashMap<Graph, Graph> history = new WeakHashMap<>();
 
     //============================CONSTRUCTORS============================//
 
@@ -78,13 +80,15 @@ public final class DagToPag {
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
     public DagToPag(Graph dag) {
-        this.dag = dag;
+        this.dag = new EdgeListGraph(dag);
     }
 
     //========================PUBLIC METHODS==========================//
 
     public Graph convert() {
         this.logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
+
+        if (history.get(dag) != null) return history.get(dag);
 
         if (this.verbose) {
             System.out.println("DAG to PAG_of_the_true_DAG: Starting adjacency search");
@@ -103,27 +107,36 @@ public final class DagToPag {
         }
 
         FciOrient fciOrient = new FciOrient(new DagSepsets(this.dag));
-        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setChangeFlag(false);
         fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setKnowledge(this.knowledge);
+        fciOrient.setVerbose(true);
         fciOrient.doFinalOrientation(graph);
+        graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         if (this.verbose) {
             System.out.println("Finishing final orientation");
         }
+
+        history.put(dag, graph);
 
         return graph;
     }
 
     private Graph calcAdjacencyGraph() {
         List<Node> allNodes = this.dag.getNodes();
-        List<Node> measured = new ArrayList<>();
+        List<Node> measured = new ArrayList<>(allNodes);
+        measured.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        for (Node node : allNodes) {
-            if (node.getNodeType() == NodeType.MEASURED) {
-                measured.add(node);
-            }
-        }
+
+//        for (Node node : allNodes) {
+//            if (node.getNodeType() == NodeType.MEASURED) {
+//                measured.add(node);
+//            }
+//        }
 
         Graph graph = new EdgeListGraph(measured);
 
@@ -131,6 +144,8 @@ public final class DagToPag {
             for (int j = i + 1; j < measured.size(); j++) {
                 Node n1 = measured.get(i);
                 Node n2 = measured.get(j);
+
+                if (graph.isAdjacentTo(n1, n2)) continue;
 
                 List<Node> inducingPath = GraphUtils.getInducingPath(n1, n2, this.dag);
 
@@ -180,7 +195,7 @@ public final class DagToPag {
                     if (found) {
 
                         if (this.verbose) {
-                            System.out.println("Orienting collider " + a + "*-&gt;" + b + "&lt;-*" + c);
+                            System.out.println("Orienting collider " + a + "*->" + b + "<-*" + c);
                         }
 
                         graph.setEndpoint(a, b, Endpoint.ARROW);
@@ -228,7 +243,8 @@ public final class DagToPag {
 
         for (Node b : graph.getAdjacentNodes(x)) {
             Edge edge = graph.getEdge(x, b);
-            if (!edge.pointsTowards(x)) continue;
+            if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
+//            if (!edge.pointsTowards(x)) continue;
 
             if (GraphUtils.existsInducingPathVisit(graph, x, b, x, y, path)) {
                 return true;
@@ -239,11 +255,11 @@ public final class DagToPag {
     }
 
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -292,6 +308,10 @@ public final class DagToPag {
 
     public void setTruePag(Graph truePag) {
         this.truePag = truePag;
+    }
+
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 }
 

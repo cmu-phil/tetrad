@@ -17,11 +17,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Score(
-//        name = "MAG SEM BIC Score",
-//        command = "mag-sem-bic-score",
-//        dataType = {DataType.Continuous, DataType.Covariance}
-//)
+@edu.cmu.tetrad.annotation.Score(
+        name = "MAG SEM BIC Score",
+        command = "mag-sem-bic-score",
+        dataType = {DataType.Continuous, DataType.Covariance}
+)
 public class MagSemBicScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
@@ -42,7 +42,7 @@ public class MagSemBicScore implements ScoreWrapper {
         }
 
         semBicScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        semBicScore.setStructurePrior(parameters.getDouble(Params.SEM_BIC_STRUCTURE_PRIOR));
+//        semBicScore.setStructurePrior(parameters.getDouble(Params.SEM_BIC_STRUCTURE_PRIOR));
 
         return semBicScore;
     }

@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.knowledge_editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -232,7 +232,7 @@ class KnowledgeEditorToolbar extends JPanel {
             this.workbench.setGraph(graph);
         } else if ("Knowledge Layout".equals(nodeType)) {
             KnowledgeGraph graph = (KnowledgeGraph) this.workbench.getGraph();
-            IKnowledge knowledge = graph.getKnowledge();
+            Knowledge knowledge = graph.getKnowledge();
             try {
                 SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
                 this.workbench.setGraph(graph);

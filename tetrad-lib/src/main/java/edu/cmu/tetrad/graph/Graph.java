@@ -24,10 +24,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implements a graph capable of storing edges of type N1 *-# N2 where * and
@@ -59,7 +56,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     boolean addUndirectedEdge(Node node1, Node node2);
 
     /**
-     * Adds an nondirected edges o-o to the graph.
+     * Adds a nondirected edges o-o to the graph.
      */
     boolean addNondirectedEdge(Node node1, Node node2);
 
@@ -134,6 +131,9 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      * @return true iff there is a semi-directed path from node1 to something in
      * nodes2 in the graph
      */
+    default boolean existsSemiDirectedPathFromTo(Node node1, Node node2) {
+        return existsSemiDirectedPathFromTo(node1, Collections.singleton(node2));
+    }
     boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes);
 
     /**
@@ -375,13 +375,9 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      */
     boolean isDConnectedTo(Node node1, Node node2, List<Node> z);
 
-    boolean isCPDAG();
+    EdgeListGraph.GraphType getGraphType();
 
-    void setCPDAG(boolean cpdag);
-
-    boolean isPag();
-
-    void setPag(boolean pag);
+    void setGraphType(EdgeListGraph.GraphType graphType);
 
     /**
      * Determines whether one node is d-separated from another. Two elements are   E
@@ -414,8 +410,8 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     boolean isUndirectedFromTo(Node node1, Node node2);
 
     /**
-     * A directed edge A-&gt;B is definitely visible if there is a node C not
-     * adjacent to B such that C*-&gt;A is in the PAG_of_the_true_DAG. Added by ekorber,
+     * A directed edge A-->B is definitely visible if there is a node C not
+     * adjacent to B such that C*->A is in the PAG_of_the_true_DAG. Added by ekorber,
      * 2004/06/11.
      *
      * @return true if the given edge is definitely visible (Jiji, pg 25)

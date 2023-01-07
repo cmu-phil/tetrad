@@ -29,8 +29,8 @@ public class ArrowheadPrecisionCommonEdges implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion confusion = new ArrowConfusion(trueGraph, estGraph);
-        double arrowsTp = confusion.getArrowsTpc();
-        double arrowsFp = confusion.getArrowsFpc();
+        double arrowsTp = confusion.getTpc();
+        double arrowsFp = confusion.getFpc();
         return arrowsTp / (arrowsTp + arrowsFp);
     }
 

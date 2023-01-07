@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.ParamType;
 import edu.cmu.tetrad.sem.Parameter;
@@ -216,7 +216,7 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
         return graphicalEditor().getWorkbench().getModelNodesToDisplay();
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return graphicalEditor().getWorkbench().getKnowledge();
     }
 

@@ -144,11 +144,9 @@ public class TestIndTestFisherZ {
             ICovarianceMatrix _cov = new CovarianceMatrix(data);
             Matrix cov = _cov.getMatrix();
 
-            List<Node> nodes = _cov.getVariables();
-
-            int xi = nodes.indexOf(x);
-            int yi = nodes.indexOf(y);
-            int ri = nodes.indexOf(r);
+            int xi = _cov.getVariableNames().indexOf(x.getName());
+            int yi = _cov.getVariableNames().indexOf(y.getName());
+            int ri = _cov.getVariableNames().indexOf(r.getName());
 
             double xy = StatUtils.partialCorrelation(cov, xi, yi);
             double xyr = StatUtils.partialCorrelation(cov, xi, yi, ri);

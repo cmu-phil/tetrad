@@ -21,17 +21,18 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
+
+import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
 
 /**
  * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
@@ -59,7 +60,7 @@ public final class FciMax implements GraphSearch {
     /**
      * The background knowledge.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * The variables to search over (optional)
@@ -74,7 +75,7 @@ public final class FciMax implements GraphSearch {
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
      */
-    private boolean completeRuleSetUsed;
+    private boolean completeRuleSetUsed = true;
 
     /**
      * True iff the possible dsep search is done.
@@ -115,6 +116,7 @@ public final class FciMax implements GraphSearch {
      * FAS stable option.
      */
     private boolean stable;
+    private boolean doDiscriminatingPathRule = false;
 
     //============================CONSTRUCTORS============================//
 
@@ -205,29 +207,10 @@ public final class FciMax implements GraphSearch {
         sp.setVerbose(this.verbose);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
+        // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
         if (isPossibleDsepSearchDone()) {
             new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest)).ruleR0(graph);
-
-            for (Edge edge : new ArrayList<>(graph.getEdges())) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                List<Node> sepset = sp.getSepset(x, y);
-
-                if (sepset != null) {
-                    graph.removeEdge(x, y);
-                    this.sepsets.set(x, y, sepset);
-
-                    if (this.verbose) {
-                        System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
-                    }
-                }
-            }
+            removeByPossibleDsep(graph, independenceTest, sepsets);
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
@@ -239,13 +222,15 @@ public final class FciMax implements GraphSearch {
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setVerbose(this.verbose);
         fciOrient.setKnowledge(this.knowledge);
+
         fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
         addColliders(graph);
-
-//        fciOrient.ruleR0(graph);
         fciOrient.doFinalOrientation(graph);
-        graph.setPag(true);
+        graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         long stop = System.currentTimeMillis();
 
@@ -337,7 +322,7 @@ public final class FciMax implements GraphSearch {
             double score = Double.POSITIVE_INFINITY;
             List<Node> S = null;
 
-            DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
+            SublistGenerator cg2 = new SublistGenerator(adja.size(), -1);
             int[] comb2;
 
             while ((comb2 = cg2.next()) != null) {
@@ -353,7 +338,7 @@ public final class FciMax implements GraphSearch {
 
             List<Node> adjc = graph.getAdjacentNodes(c);
 
-            DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
+            SublistGenerator cg3 = new SublistGenerator(adjc.size(), -1);
             int[] comb3;
 
             while ((comb3 = cg3.next()) != null) {
@@ -386,14 +371,14 @@ public final class FciMax implements GraphSearch {
     /**
      * Retrieves the background knowledge that was set.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     /**
      * Sets background knowledge for the search.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -482,6 +467,10 @@ public final class FciMax implements GraphSearch {
      */
     public void setStable(boolean stable) {
         this.stable = stable;
+    }
+
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 }
 

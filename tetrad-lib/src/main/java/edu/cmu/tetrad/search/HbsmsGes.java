@@ -22,8 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.DagScorer;
 import edu.cmu.tetrad.sem.Scorer;
@@ -43,7 +42,7 @@ import java.util.*;
  */
 
 public final class HbsmsGes implements Hbsms {
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     private final Graph graph;
     private double alpha = 0.05;
     private final NumberFormat nf = new DecimalFormat("0.0#########");
@@ -593,7 +592,7 @@ public final class HbsmsGes implements Hbsms {
      * UAI paper. Notice it is the same implemented in PcSearch. *IMPORTANT!* *It assumes all colliders are
      * oriented, as well as arrows dictated by time order.*
      */
-    private void pdagWithBk(Graph graph, IKnowledge knowledge) {
+    private void pdagWithBk(Graph graph, Knowledge knowledge) {
         MeekRules rules = new MeekRules();
 //        rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         rules.setKnowledge(knowledge);
@@ -617,8 +616,8 @@ public final class HbsmsGes implements Hbsms {
         }
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public double getAlpha() {
@@ -634,7 +633,7 @@ public final class HbsmsGes implements Hbsms {
         // Do nothing. We don't care about beam width.
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 

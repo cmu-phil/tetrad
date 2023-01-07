@@ -2,10 +2,10 @@ package edu.pitt.dbmi.algo.resampling.task;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch;
@@ -37,9 +37,10 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     private PrintStream out = System.out;
+    private ScoreWrapper scoreWrapper;
 
     public GeneralResamplingSearchRunnable(DataModel dataModel, Algorithm algorithm, Parameters parameters,
                                            GeneralResamplingSearch resamplingAlgorithmSearch, boolean verbose) {
@@ -73,7 +74,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
      * @return the background knowledge.
      */
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
@@ -82,10 +83,8 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
      *
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null)
-            throw new NullPointerException();
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public Graph getExternalGraph() {
@@ -142,10 +141,13 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
                     }
                 }
 
+                this.multiDataSetAlgorithm.setScoreWrapper(this.scoreWrapper);
+
                 graph = this.multiDataSetAlgorithm.search(this.dataModels, this.parameters);
             }
 
             stop = System.currentTimeMillis();
+
             if (this.verbose) {
                 this.out.println("processing time of resampling for a thread was: "
                         + (stop - start) / 1000.0 + " sec");
@@ -153,7 +155,13 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
 
             return graph;
         } catch (Exception e) {
+            e.printStackTrace();
+//            e.printStackTrace();
             return null;
         }
+    }
+
+    public void setScoreWrapper(ScoreWrapper scoreWrapper) {
+        this.scoreWrapper = scoreWrapper;
     }
 }

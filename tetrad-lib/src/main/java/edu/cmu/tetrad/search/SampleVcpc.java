@@ -51,7 +51,7 @@ public final class SampleVcpc implements GraphSearch {
     /**
      * Forbidden and required edges for the search.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * The maximum number of nodes conditioned on in the search.
@@ -176,14 +176,14 @@ public final class SampleVcpc implements GraphSearch {
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     /**
      * Sets the knowledge specification used in the search. Non-null.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -783,7 +783,7 @@ public final class SampleVcpc implements GraphSearch {
     }
 
 
-    private void orientUnshieldedTriples(IKnowledge knowledge,
+    private void orientUnshieldedTriples(Knowledge knowledge,
                                          IndependenceTest test, int depth) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
@@ -838,13 +838,13 @@ public final class SampleVcpc implements GraphSearch {
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
     }
 
-    private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
+    private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return SampleVcpc.isArrowpointAllowed1(x, y, knowledge) &&
                 SampleVcpc.isArrowpointAllowed1(z, y, knowledge);
     }
 
     public static boolean isArrowpointAllowed1(Node from, Node to,
-                                               IKnowledge knowledge) {
+                                               Knowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
     }

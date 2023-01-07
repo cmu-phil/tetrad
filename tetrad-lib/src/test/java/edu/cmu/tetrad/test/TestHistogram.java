@@ -27,7 +27,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Histogram;
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -48,7 +48,7 @@ import static org.junit.Assert.assertEquals;
  * @author Joseph Ramsey
  */
 public final class TestHistogram {
-    private IKnowledge knowledge;
+    private Knowledge knowledge;
 
     @Test
     public void testHistogram() {

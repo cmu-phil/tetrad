@@ -106,7 +106,7 @@ public final class Triple implements TetradSerializable {
         path.add(x);
         path.add(y);
         path.add(z);
-        return GraphUtils.pathString(path, graph);
+        return GraphUtils.pathString(graph, path);
     }
 }
 

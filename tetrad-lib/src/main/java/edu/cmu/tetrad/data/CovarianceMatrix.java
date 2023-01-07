@@ -78,7 +78,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      *
      * @serial Cannot be null.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * The wrapped covariance matrix data.
@@ -234,14 +234,14 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     /**
      * @return the knowledge associated with this data.
      */
-    public final IKnowledge getKnowledge() {
+    public final Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     /**
      * Associates knowledge with this data.
      */
-    public final void setKnowledge(IKnowledge knowledge) {
+    public final void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }

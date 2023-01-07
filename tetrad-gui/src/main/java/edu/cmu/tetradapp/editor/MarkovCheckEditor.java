@@ -45,8 +45,10 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -63,14 +65,17 @@ import static java.lang.Math.min;
 public class MarkovCheckEditor extends JPanel {
     private Graph dag;
     private final MarkovCheckIndTestModel model;
-    private AbstractTableModel tableModel;
+    private AbstractTableModel tableModelIndep;
+    private AbstractTableModel tableModelDep;
     private int sortDir;
     private int lastSortCol;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private boolean parallelized = true;
     private final IndependenceTest test;
-    private double fractionDependent = Double.NaN;
-    private JLabel fractionDepLabel;
+    private double fractionDependentIndep = Double.NaN;
+    private double fractionDependentDep = Double.NaN;
+    private JLabel fractionDepLabelIndep;
+    private JLabel fractionDepLabelDep;
 
     public MarkovCheckEditor(MarkovCheckIndTestModel model) {
         if (model == null) {
@@ -124,7 +129,13 @@ public class MarkovCheckEditor extends JPanel {
         this.dag = sourceGraph;
         model.setVars(dag.getNodeNames());
 
-        buildGui();
+        JPanel indep = buildGuiIndep();
+        JPanel dep = buildGuiDep();
+
+        JTabbedPane pane = new JTabbedPane();
+        pane.addTab("Should be Independent", indep);
+        pane.addTab("Should be Dependent", dep);
+        add(pane);
     }
 
     //========================PUBLIC METHODS==========================//
@@ -132,16 +143,16 @@ public class MarkovCheckEditor extends JPanel {
     /**
      * Performs the action of opening a session from a file.
      */
-    private void buildGui() {
+    private JPanel buildGuiDep() {
         JButton list = new JButton("CHECK");
         list.setFont(new Font("Dialog", Font.BOLD, 14));
 
-        list.addActionListener(e -> generateResults());
+        list.addActionListener(e -> generateResults(false));
 
         JButton clear = new JButton("Clear");
         clear.setFont(new Font("Dialog", Font.PLAIN, 14));
         clear.addActionListener(e -> {
-            model.getResults().clear();
+            model.getResults(false).clear();
             revalidate();
             repaint();
         });
@@ -149,14 +160,19 @@ public class MarkovCheckEditor extends JPanel {
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Checks whether X _||_ Y | parents(x) for y not in (desc(x) U parentx(x)), for "));
-        b2.add(new JLabel(getIndependenceTest().toString()));
+        b2.add(new JLabel("Checks whether X ~_||_ Y | parents(X) for Y in desc(X)"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
+        Box b2a = Box.createHorizontalBox();
+        b2a.add(new JLabel("Test: "));
+        b2a.add(new JLabel(getIndependenceTest().toString()));
+        b2a.add(Box.createHorizontalGlue());
+        b1.add(b2a);
+
         b1.add(Box.createVerticalStrut(5));
 
-        this.tableModel = new AbstractTableModel() {
+        this.tableModelDep = new AbstractTableModel() {
             public String getColumnName(int column) {
                 if (column == 0) {
                     return "Index";
@@ -176,20 +192,20 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public int getRowCount() {
-                return model.getResults().size();
+                return model.getResults(false).size();
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > model.getResults().size()) return null;
+                if (rowIndex > model.getResults(false).size()) return null;
 
                 if (columnIndex == 0) {
                     return rowIndex + 1;
                 }
                 if (columnIndex == 1) {
-                    return model.getResults().get(rowIndex).getFact();
+                    return model.getResults(false).get(rowIndex).getFact();
                 }
 
-                IndependenceResult result = model.getResults().get(rowIndex);
+                IndependenceResult result = model.getResults(false).get(rowIndex);
 
                 if (columnIndex == 2) {
                     if (getIndependenceTest() instanceof IndTestDSep) {
@@ -226,7 +242,7 @@ public class MarkovCheckEditor extends JPanel {
             }
         };
 
-        JTable table = new JTable(tableModel);
+        JTable table = new JTable(tableModelDep);
 
         table.getColumnModel().getColumn(0).setMinWidth(40);
         table.getColumnModel().getColumn(0).setMaxWidth(40);
@@ -250,7 +266,7 @@ public class MarkovCheckEditor extends JPanel {
                 int col = header.columnAtPoint(point);
                 int sortCol = header.getTable().convertColumnIndexToModel(col);
 
-                MarkovCheckEditor.this.sortByColumn(sortCol);
+                MarkovCheckEditor.this.sortByColumn(sortCol, false);
             }
         });
 
@@ -267,7 +283,7 @@ public class MarkovCheckEditor extends JPanel {
         showHistogram.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                JPanel component = createHistogramPanel();
+                JPanel component = createHistogramPanel(false);
                 EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, MarkovCheckEditor.this);
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
@@ -288,28 +304,211 @@ public class MarkovCheckEditor extends JPanel {
 
         int dependent = 0;
 
-        for (IndependenceResult result : model.getResults()) {
+        for (IndependenceResult result : model.getResults(false)) {
             if (result.dependent() && !Double.isNaN(result.getPValue())) dependent++;
         }
 
-        fractionDependent = dependent / (double) model.getResults().size();
+        fractionDependentDep = dependent / (double) model.getResults(false).size();
 
-        fractionDepLabel = new JLabel("% dependent = "
-                + ((Double.isNaN(fractionDependent)
-                ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependent))));
+        fractionDepLabelDep = new JLabel("% dependent = "
+                + ((Double.isNaN(fractionDependentDep)
+                ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentDep))));
 
-        b5.add(fractionDepLabel);
+        b5.add(fractionDepLabelDep);
         b1.add(b5);
 
-        JPanel panel = this;
+        JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b1, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        return panel;
+    }
+
+    private JPanel buildGuiIndep() {
+        JButton list = new JButton("CHECK");
+        list.setFont(new Font("Dialog", Font.BOLD, 14));
+
+        list.addActionListener(e -> generateResults(true));
+
+        JButton clear = new JButton("Clear");
+        clear.setFont(new Font("Dialog", Font.PLAIN, 14));
+        clear.addActionListener(e -> {
+            model.getResults(true).clear();
+            revalidate();
+            repaint();
+        });
+
+        Box b1 = Box.createVerticalBox();
+
+        Box b2 = Box.createHorizontalBox();
+        b2.add(new JLabel("Checks whether X _||_ Y | parents(X) for Y not in (desc(X) U parentx(X))"));
+        b2.add(Box.createHorizontalGlue());
+        b1.add(b2);
+
+        Box b2a = Box.createHorizontalBox();
+        b2a.add(new JLabel("Test: "));
+        b2a.add(new JLabel(getIndependenceTest().toString()));
+        b2a.add(Box.createHorizontalGlue());
+        b1.add(b2a);
+
+
+        b1.add(Box.createVerticalStrut(5));
+
+        this.tableModelIndep = new AbstractTableModel() {
+            public String getColumnName(int column) {
+                if (column == 0) {
+                    return "Index";
+                } else if (column == 1) {
+                    return "Fact";
+                } else if (column == 2) {
+                    return "Result";
+                } else if (column == 3) {
+                    return "P-value";
+                }
+
+                return null;
+            }
+
+            public int getColumnCount() {
+                return 4;//2 + MarkovFactsEditor.this.indTestProducers.size();
+            }
+
+            public int getRowCount() {
+                return model.getResults(true).size();
+            }
+
+            public Object getValueAt(int rowIndex, int columnIndex) {
+                if (rowIndex > model.getResults(true).size()) return null;
+
+                if (columnIndex == 0) {
+                    return rowIndex + 1;
+                }
+                if (columnIndex == 1) {
+                    return model.getResults(true).get(rowIndex).getFact();
+                }
+
+                IndependenceResult result = model.getResults(true).get(rowIndex);
+
+                if (columnIndex == 2) {
+                    if (getIndependenceTest() instanceof IndTestDSep) {
+                        if (result.independent()) {
+                            return "D-SEPARATED";
+                        } else {
+                            return "d-connected";
+                        }
+                    } else {
+                        if (result.independent()) {
+                            return "INDEPENDENT";
+                        } else {
+                            return "dependent";
+                        }
+                    }
+                }
+
+                if (columnIndex == 3) {
+                    return nf.format(result.getPValue());
+                }
+
+                return null;
+            }
+
+            public Class getColumnClass(int columnIndex) {
+                if (columnIndex == 0) {
+                    return Number.class;
+                }
+                if (columnIndex == 1) {
+                    return String.class;
+                } else {
+                    return Number.class;
+                }
+            }
+        };
+
+        JTable table = new JTable(tableModelIndep);
+
+        table.getColumnModel().getColumn(0).setMinWidth(40);
+        table.getColumnModel().getColumn(0).setMaxWidth(40);
+        table.getColumnModel().getColumn(1).setMinWidth(200);
+        table.getColumnModel().getColumn(1).setCellRenderer(new Renderer());
+        table.getColumnModel().getColumn(2).setMinWidth(100);
+        table.getColumnModel().getColumn(2).setMaxWidth(100);
+        table.getColumnModel().getColumn(3).setMinWidth(100);
+        table.getColumnModel().getColumn(3).setMaxWidth(100);
+
+        table.getColumnModel().getColumn(2).setCellRenderer(new Renderer());
+        table.getColumnModel().getColumn(3).setCellRenderer(new Renderer());
+
+
+        JTableHeader header = table.getTableHeader();
+
+        header.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                JTableHeader header = (JTableHeader) e.getSource();
+                Point point = e.getPoint();
+                int col = header.columnAtPoint(point);
+                int sortCol = header.getTable().convertColumnIndexToModel(col);
+
+                MarkovCheckEditor.this.sortByColumn(sortCol, true);
+            }
+        });
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setPreferredSize(new Dimension(400, 400));
+        b1.add(scroll);
+
+        Box b4 = Box.createHorizontalBox();
+        b4.add(Box.createGlue());
+        b4.add(Box.createHorizontalStrut(10));
+
+        JButton showHistogram = new JButton("Show P-Value Histogram");
+        showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
+        showHistogram.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JPanel component = createHistogramPanel(true);
+                EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, MarkovCheckEditor.this);
+                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+                editorWindow.pack();
+                editorWindow.setVisible(true);
+            }
+        });
+
+        b4.add(Box.createHorizontalGlue());
+        b4.add(clear);
+        b4.add(list);
+        b4.add(showHistogram);
+
+        b1.add(b4);
+        b1.add(Box.createVerticalStrut(10));
+
+        Box b5 = Box.createHorizontalBox();
+        b5.add(Box.createGlue());
+
+        int dependent = 0;
+
+        for (IndependenceResult result : model.getResults(true)) {
+            if (result.dependent() && !Double.isNaN(result.getPValue())) dependent++;
+        }
+
+        fractionDependentIndep = dependent / (double) model.getResults(true).size();
+
+        fractionDepLabelIndep = new JLabel("% dependent = "
+                + ((Double.isNaN(fractionDependentIndep)
+                ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentIndep))));
+
+        b5.add(fractionDepLabelIndep);
+        b1.add(b5);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.add(b1, BorderLayout.CENTER);
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        return panel;
     }
 
     //=============================PRIVATE METHODS=======================//
 
-    private void sortByColumn(int sortCol) {
+    private void sortByColumn(int sortCol, boolean indep) {
         if (sortCol == this.getLastSortCol()) {
             this.setSortDir(-1 * this.getSortDir());
         } else {
@@ -317,10 +516,14 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         this.setLastSortCol(sortCol);
-        model.getResults().sort(Comparator.comparing(
+        model.getResults(indep).sort(Comparator.comparing(
                 IndependenceResult::getFact));
 
-        tableModel.fireTableDataChanged();
+        if (indep) {
+            tableModelIndep.fireTableDataChanged();
+        } else {
+            tableModelDep.fireTableDataChanged();
+        }
     }
 
     static class Renderer extends DefaultTableCellRenderer {
@@ -350,14 +553,18 @@ public class MarkovCheckEditor extends JPanel {
         }
     }
 
-    private void generateResults() {
+    private void generateResults(boolean indep) {
         Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
 
         new WatchedProcess(owner) {
             public void watch() {
 
                 if (model.getVars().size() < 2) {
-                    tableModel.fireTableDataChanged();
+                    if (indep) {
+                        tableModelIndep.fireTableDataChanged();
+                    } else {
+                        tableModelDep.fireTableDataChanged();
+                    }
                     return;
                 }
 
@@ -376,8 +583,14 @@ public class MarkovCheckEditor extends JPanel {
                     System.out.println("Node " + x + " parents = " + z
                             + " non-descendants = " + nondesc);
 
-                    for (Node y : nondesc) {
-                        facts.add(new IndependenceFact(x, y, z));
+                    if (indep) {
+                        for (Node y : nondesc) {
+                            facts.add(new IndependenceFact(x, y, z));
+                        }
+                    } else {
+                        for (Node y : desc) {
+                            facts.add(new IndependenceFact(x, y, z));
+                        }
                     }
                 }
 
@@ -412,6 +625,12 @@ public class MarkovCheckEditor extends JPanel {
                             test.setVerbose(verbose);
 
                             results.add(new IndependenceResult(fact, indep, pValue));
+
+                            if (indep) {
+                                tableModelIndep.fireTableDataChanged();
+                            } else {
+                                tableModelDep.fireTableDataChanged();
+                            }
                         }
 
                         return results;
@@ -428,7 +647,7 @@ public class MarkovCheckEditor extends JPanel {
 
                     if (!parallelized) {
                         List<IndependenceResult> _results = task.call();
-                        model.getResults().addAll(_results);
+                        model.getResults(indep).addAll(_results);
                     } else {
                         tasks.add(task);
                     }
@@ -439,7 +658,7 @@ public class MarkovCheckEditor extends JPanel {
 
                     for (Future<List<IndependenceResult>> future : theseResults) {
                         try {
-                            model.getResults().addAll(future.get());
+                            model.getResults(indep).addAll(future.get());
                         } catch (InterruptedException | ExecutionException e) {
                             throw new RuntimeException(e);
                         }
@@ -448,17 +667,31 @@ public class MarkovCheckEditor extends JPanel {
 
                 int dependent = 0;
 
-                for (IndependenceResult result : model.getResults()) {
+                for (IndependenceResult result : model.getResults(indep)) {
                     if (result.dependent() && !Double.isNaN(result.getPValue())) dependent++;
                 }
 
-                fractionDependent = dependent / (double) model.getResults().size();
+                if (indep) {
+                    fractionDependentIndep = dependent / (double) model.getResults(indep).size();
+                } else {
+                    fractionDependentDep = dependent / (double) model.getResults(indep).size();
+                }
 
-                fractionDepLabel.setText("% dependent = "
-                        + ((Double.isNaN(fractionDependent)
-                        ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependent))));
+                if (indep) {
+                    fractionDepLabelIndep.setText("% dependent = "
+                            + ((Double.isNaN(fractionDependentIndep)
+                            ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentIndep))));
+                } else {
+                    fractionDepLabelDep.setText("% dependent = "
+                            + ((Double.isNaN(fractionDependentDep)
+                            ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentDep))));
+                }
 
-                tableModel.fireTableDataChanged();
+                if (indep) {
+                    tableModelIndep.fireTableDataChanged();
+                } else {
+                    tableModelDep.fireTableDataChanged();
+                }
             }
         };
     }
@@ -497,12 +730,12 @@ public class MarkovCheckEditor extends JPanel {
         this.sortDir = sortDir;
     }
 
-    private JPanel createHistogramPanel() {
-        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(model.getResults().size(), 1),
+    private JPanel createHistogramPanel(boolean indep) {
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(model.getResults(indep).size(), 1),
                 Collections.singletonList(new ContinuousVariable("P-Values")));
 
-        for (int i = 0; i < model.getResults().size(); i++) {
-            dataSet.setDouble(i, 0, model.getResults().get(i).getPValue());
+        for (int i = 0; i < model.getResults(indep).size(); i++) {
+            dataSet.setDouble(i, 0, model.getResults(indep).get(i).getPValue());
         }
 
         Histogram histogram = new Histogram(dataSet);

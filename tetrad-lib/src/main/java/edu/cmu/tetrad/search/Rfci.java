@@ -21,8 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -60,7 +59,7 @@ public final class Rfci implements GraphSearch {
     /**
      * The background knowledge.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * The variables to search over (optional)
@@ -77,7 +76,7 @@ public final class Rfci implements GraphSearch {
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
      */
-    private boolean completeRuleSetUsed;
+    private boolean completeRuleSetUsed = true;
 
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
@@ -174,6 +173,7 @@ public final class Rfci implements GraphSearch {
 
     public Graph search(IFas fas, List<Node> nodes) {
         long beginTime = System.currentTimeMillis();
+        independenceTest.setVerbose(verbose);
 
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
@@ -209,7 +209,7 @@ public final class Rfci implements GraphSearch {
         this.logger.log("info", "Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
         this.logger.log("info", "Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
 
-        this.graph.setPag(true);
+        this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return this.graph;
     }
@@ -218,16 +218,12 @@ public final class Rfci implements GraphSearch {
         return this.sepsets;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     /**
@@ -523,7 +519,7 @@ public final class Rfci implements GraphSearch {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+    private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         this.logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it =

@@ -32,9 +32,9 @@ public class F1Arrow implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         ArrowConfusion arrowConfusion = new ArrowConfusion(trueGraph, estGraph);
-        int arrowTp = arrowConfusion.getArrowsTp();
-        int arrowFp = arrowConfusion.getArrowsFp();
-        int arrowFn = arrowConfusion.getArrowsFn();
+        int arrowTp = arrowConfusion.getTp();
+        int arrowFp = arrowConfusion.getFp();
+        int arrowFn = arrowConfusion.getFn();
         double arrowPrecision = arrowTp / (double) (arrowTp + arrowFp);
         double arrowRecall = arrowTp / (double) (arrowTp + arrowFn);
         return 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);

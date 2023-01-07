@@ -26,7 +26,7 @@ public class AdjacencyFP implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
-        return adjConfusion.getAdjFp();
+        return adjConfusion.getFp();
     }
 
     @Override

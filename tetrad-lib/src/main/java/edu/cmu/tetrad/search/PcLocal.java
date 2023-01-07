@@ -21,10 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.HashSet;
@@ -46,7 +45,7 @@ public class PcLocal implements GraphSearch {
     /**
      * Forbidden and required edges for the search.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
@@ -102,16 +101,12 @@ public class PcLocal implements GraphSearch {
         return this.independenceTest;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public long getElapsedTime() {
@@ -222,7 +217,7 @@ public class PcLocal implements GraphSearch {
             List<Node> adj = this.graph.getAdjacentNodes(x);
             adj.remove(y);
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            SublistGenerator gen = new SublistGenerator(adj.size(), adj.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -239,7 +234,7 @@ public class PcLocal implements GraphSearch {
             List<Node> adj = this.graph.getAdjacentNodes(y);
             adj.remove(x);
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            SublistGenerator gen = new SublistGenerator(adj.size(), adj.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -315,7 +310,7 @@ public class PcLocal implements GraphSearch {
      * Checks if an arrowpoint is allowed by background knowledge.
      */
     public static boolean isArrowpointAllowed(Object from, Object to,
-                                              IKnowledge knowledge) {
+                                              Knowledge knowledge) {
         if (knowledge == null) {
             return true;
         }

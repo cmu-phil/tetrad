@@ -63,7 +63,7 @@ public class Lofs2 {
 
     private Lofs.Score score = Lofs.Score.andersonDarling;
     private double epsilon = 1.0;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     private Rule rule = Rule.R1;
     private double selfLoopStrength;
 
@@ -249,7 +249,7 @@ public class Lofs2 {
 
     private void ruleR1TimeLag(Graph skeleton, Graph graph) {
         List<DataSet> timeSeriesDataSets = new ArrayList<>();
-        IKnowledge knowledge = null;
+        Knowledge knowledge = null;
         List<Node> dataNodes = null;
 
         for (DataSet dataModel : this.dataSets) {
@@ -360,7 +360,7 @@ public class Lofs2 {
                 adj.add(_node);
             }
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(adj.size(), adj.size());
+            SublistGenerator gen = new SublistGenerator(adj.size(), adj.size());
             int[] choice;
             double maxScore = Double.NEGATIVE_INFINITY;
             List<Node> parents = null;
@@ -467,7 +467,7 @@ public class Lofs2 {
         boolean left = false;
         boolean right = false;
 
-        DepthChoiceGenerator genx = new DepthChoiceGenerator(neighborsx.size(), neighborsx.size());
+        SublistGenerator genx = new SublistGenerator(neighborsx.size(), neighborsx.size());
         int[] choicex;
 
         while ((choicex = genx.next()) != null) {
@@ -510,7 +510,7 @@ public class Lofs2 {
                 }
             }
 
-            DepthChoiceGenerator geny = new DepthChoiceGenerator(neighborsy.size(), neighborsy.size());
+            SublistGenerator geny = new SublistGenerator(neighborsy.size(), neighborsy.size());
             int[] choicey;
 
             while ((choicey = geny.next()) != null) {
@@ -1243,7 +1243,7 @@ public class Lofs2 {
         this.epsilon = epsilon;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }

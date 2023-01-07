@@ -96,7 +96,7 @@ public class HsimRun {
             Graph estGraphOut = fgesOut.search();
             System.out.println(estGraphOut);
 
-            SearchGraphUtils.graphComparison(estGraphOut, estGraph, System.out);
+            SearchGraphUtils.graphComparison(estGraph, estGraphOut, System.out);
         } catch (Exception IOException) {
             IOException.printStackTrace();
         }

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ProbUtils;
+import org.apache.commons.math3.special.Gamma;
 
 import java.util.HashMap;
 import java.util.List;
@@ -160,8 +161,8 @@ public final class BdeMetricCache {
             for (int j = 0; j < numRows; j++) {
 
                 try {
-                    double numerator = ProbUtils.lngamma(priorProbsRowSum[j]);
-                    double denom = ProbUtils.lngamma(
+                    double numerator = Gamma.logGamma(priorProbsRowSum[j]);
+                    double denom = Gamma.logGamma(
                             priorProbsRowSum[j] + observedCountsRowSum[j]);
                     sum += (numerator - denom);
                 } catch (Exception e) {
@@ -172,9 +173,9 @@ public final class BdeMetricCache {
                 double sumk = 0.0;
                 for (int k = 0; k < numCols; k++) {
                     try {
-                        sumk += ProbUtils.lngamma(
+                        sumk += Gamma.logGamma(
                                 priorProbs[j][k] + this.observedCounts[j][k]) -
-                                ProbUtils.lngamma(priorProbs[j][k]);
+                                Gamma.logGamma(priorProbs[j][k]);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

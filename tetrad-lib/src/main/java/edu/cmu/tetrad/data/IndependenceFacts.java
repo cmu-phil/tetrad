@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestDSep;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.PermutationGenerator;
 
 import java.util.*;
@@ -41,7 +41,7 @@ public class IndependenceFacts implements DataModel {
 
     private Set<IndependenceFact> unsortedFacts = new LinkedHashSet<>();
     private String name = "";
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     public IndependenceFacts() {
         // blank, used in reflection so don't delete.
@@ -54,7 +54,7 @@ public class IndependenceFacts implements DataModel {
 
         nodes = graph.getNodes();
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(nodes.size(), nodes.size());
+        SublistGenerator gen = new SublistGenerator(nodes.size(), nodes.size());
         int[] choice;
 
         while ((choice = gen.next()) != null) {
@@ -197,17 +197,17 @@ public class IndependenceFacts implements DataModel {
         return found;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) throw new NullPointerException();
         this.knowledge = knowledge;
     }
 
     public List<Node> getVariables() {
-        if (nodes != null) {
+        if (nodes != null && !nodes.isEmpty()) {
             return nodes;
         }
 
@@ -219,7 +219,7 @@ public class IndependenceFacts implements DataModel {
             variables.addAll(fact.getZ());
         }
 
-        if (nodes != null) {
+        if (nodes != null && !nodes.isEmpty()) {
             if (new HashSet<>(variables).equals(new HashSet<>(nodes))) {
                 return nodes;
             } else {

@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
@@ -33,7 +34,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     private boolean compareToTrue;
     private final IndependenceWrapper test;
     private final Algorithm externalGraph = null;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     public PcStableMaxConcatenated(IndependenceWrapper test, boolean compareToTrue) {
         this.test = test;
@@ -77,11 +78,17 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
+            search.setScoreWrapper(null);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+
     }
 
     @Override
@@ -98,6 +105,7 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
+            search.setScoreWrapper(null);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -144,13 +152,13 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
 }

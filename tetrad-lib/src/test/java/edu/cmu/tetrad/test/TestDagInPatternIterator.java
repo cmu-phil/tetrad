@@ -22,8 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DagInCPDAGIterator;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -182,7 +181,7 @@ public class TestDagInPatternIterator {
 
         // Make random knowedge.
         final int numTiers = 6;
-        IKnowledge knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
 
         for (Node node : nodes) {
             int tier = RandomUtil.getInstance().nextInt(numTiers);

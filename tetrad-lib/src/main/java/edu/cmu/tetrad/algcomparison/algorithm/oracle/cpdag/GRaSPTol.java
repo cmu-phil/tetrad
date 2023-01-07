@@ -37,7 +37,7 @@ public class GRaSPTol implements Algorithm, UsesScoreWrapper, TakesIndependenceW
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     public GRaSPTol() {
         // Used in reflection; do not delete.
@@ -72,7 +72,7 @@ public class GRaSPTol implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             grasp.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
             grasp.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             grasp.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            grasp.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
+            grasp.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             grasp.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             grasp.setToleranceDepth(parameters.getInt(Params.GRASP_TOLERANCE_DEPTH));
             grasp.setAllowRandomnessInsideAlgorithm(parameters.getBoolean(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM));
@@ -104,7 +104,7 @@ public class GRaSPTol implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public String getDescription() {
-        return "GRaSP (Greedy Relaxed Sparsest Permutation) using " + this.test.getDescription()
+        return "GRaSPTol (Greedy Relaxed Sparsest Permutation Tolerance) using " + this.test.getDescription()
                 + " or " + this.score.getDescription();
     }
 
@@ -124,7 +124,7 @@ public class GRaSPTol implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.GRASP_TOLERANCE_DEPTH);
         params.add(Params.GRASP_ORDERED_ALG);
 //        params.add(Params.GRASP_USE_SCORE);
-        params.add(Params.GRASP_USE_VERMA_PEARL);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM);
         params.add(Params.CACHE_SCORES);
@@ -158,12 +158,12 @@ public class GRaSPTol implements Algorithm, UsesScoreWrapper, TakesIndependenceW
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge.copy();
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge.copy();
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

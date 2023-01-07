@@ -26,16 +26,12 @@ import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Wraps a Simulation object for the Tetrad interface. A Simulation object
@@ -309,11 +305,11 @@ public class Simulation extends DataWrapper implements
         this.fixedGraph = fixedGraph;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         if (this.simulation instanceof HasKnowledge) {
             return ((HasKnowledge) this.simulation).getKnowledge();
         } else {
-            return new Knowledge2();
+            return new Knowledge();
         }
     }
 
@@ -327,10 +323,11 @@ public class Simulation extends DataWrapper implements
 
     @Override
     public Graph getGraph() {
-        if (getGraphs().size() == 1) {
-            return getGraphs().get(0);
+        Set<Graph> graphs = new HashSet<>(getGraphs());
+        if (graphs.size() == 1) {
+            return graphs.iterator().next();
+        } else {
+            throw new IllegalArgumentException("Expecting one graph.");
         }
-
-        throw new IllegalArgumentException("Expecting one graph.");
     }
 }

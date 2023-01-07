@@ -6,8 +6,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.Grasp;
+import edu.cmu.tetrad.search.Boss;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
@@ -92,10 +91,14 @@ public class TestAnneAnalysis3 {
                         for (int i = 0; i < p; i++) vars.add(new ContinuousVariable("x" + (i + 1)));
                         CovarianceMatrix cov = getCov1(linecor, vars, n);
 
-                        edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(cov);
-                        score.setPenaltyDiscount(penalty);
+//                        edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(cov);
+                        edu.cmu.tetrad.search.PoissonPriorScore score = new edu.cmu.tetrad.search.PoissonPriorScore(cov);
+//                        score.setPenaltyDiscount(penalty);
+                        score.setStructurePrior(vars.size() / 2.);
 
-                        Grasp alg = new Grasp(score);
+//                        Grasp alg = new Grasp(score);
+                        Boss alg = new Boss(score);
+                        alg.setAlgType(Boss.AlgType.BOSS2);
 
                         List<Node> nodes = alg.bestOrder(score.getVariables());
                         Graph estCpdag = alg.getGraph(true);

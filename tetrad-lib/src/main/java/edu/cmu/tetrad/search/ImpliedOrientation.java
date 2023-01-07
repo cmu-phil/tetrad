@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
@@ -37,7 +37,7 @@ public interface ImpliedOrientation {
     /**
      * Sets knowledge.
      */
-    void setKnowledge(IKnowledge knowledge);
+    void setKnowledge(Knowledge knowledge);
 
     /**
      * Adds implied orientations.

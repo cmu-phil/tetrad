@@ -62,7 +62,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * Constructs a new workbench workbench for the given workbench model.
+     * Constructs a new workbench for the given graph model.
      */
     public GraphWorkbench(Graph graph) {
         super(graph);

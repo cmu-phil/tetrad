@@ -8,16 +8,16 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 /**
  * Jan 4, 2019 4:32:05 PM
@@ -36,16 +36,16 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private final IndependenceWrapper test = new ProbabilisticTest();
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class RfciBsc implements Algorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(new EdgeListGraph(graph)).convert();
+        return dagToPag(new EdgeListGraph(graph));
     }
 
     @Override
