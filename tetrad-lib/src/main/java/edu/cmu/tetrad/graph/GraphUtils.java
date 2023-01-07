@@ -5416,6 +5416,18 @@ public final class GraphUtils {
         return district;
     }
 
+    public static boolean isDag(Graph graph) {
+        boolean allDirected = true;
+
+        for (Edge edge : graph.getEdges()) {
+            if (!Edges.isDirectedEdge(edge)) {
+                allDirected = false;
+            }
+        }
+
+        return allDirected && !graph.existsDirectedCycle();
+    }
+
     /**
      * Check to see if a set of variables Z satisfies the back-door criterion
      * relative to node x and node y.
