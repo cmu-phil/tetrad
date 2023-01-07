@@ -2,6 +2,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -123,8 +124,13 @@ public class StatsListEditor extends JPanel {
     private List<Statistic> statistics() {
         List<Statistic> statistics = new ArrayList<>();
 
-        if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG
-                && referenceGraph.getGraphType() == EdgeListGraph.GraphType.DAG) {
+        boolean dag = referenceGraph.getGraphType() == EdgeListGraph.GraphType.DAG;
+
+        if (!dag) {
+            dag = GraphUtils.isDag(referenceGraph);
+        }
+
+        if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG && dag) {
             statistics.add(new NumDirectedEdges());
             statistics.add(new TrueDagPrecisionArrow());
             statistics.add(new TrueDagPrecisionTails());

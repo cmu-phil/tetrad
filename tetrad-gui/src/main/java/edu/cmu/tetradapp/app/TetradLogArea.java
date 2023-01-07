@@ -54,6 +54,7 @@ class TetradLogArea extends JPanel {
 
         // build the text area.
         JTextArea textArea = new JTextArea();
+        textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         if (TetradLogger.getInstance().isDisplayLogEnabled()) {
             this.stream = new TextAreaOutputStream(textArea);
             TetradLogger.getInstance().addOutputStream(this.stream);

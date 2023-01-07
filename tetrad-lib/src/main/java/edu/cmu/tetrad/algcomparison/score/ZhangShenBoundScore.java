@@ -1,5 +1,7 @@
 package edu.cmu.tetrad.algcomparison.score;
 
+import edu.cmu.tetrad.annotation.Experimental;
+import edu.cmu.tetrad.annotation.LinearGaussian;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -22,6 +24,8 @@ import java.util.List;
         command = "zsbound-score",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
+@LinearGaussian
+@Experimental
 public class ZhangShenBoundScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;

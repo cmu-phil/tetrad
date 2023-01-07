@@ -94,6 +94,7 @@ public class GraphCard extends JPanel {
         graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
+        graph.add(new PagTypeSetter(this.workbench));
 
         menuBar.add(graph);
 

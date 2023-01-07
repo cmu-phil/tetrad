@@ -86,12 +86,15 @@ public final class ChoiceGenerator {
      * @param b the number of objects in the desired selection.
      */
     public ChoiceGenerator(int a, int b) {
-        if ((b < 0) || (a < b)) {
-            throw new IllegalArgumentException(
-                    "For 'a choose b', a and b must be " +
-                            "nonnegative with a >= b: " + "a = " + a +
-                            ", b = " + b);
-        }
+//        if ((b < 0) || (a < b)) {
+//            throw new IllegalArgumentException(
+//                    "For 'a choose b', a and b must be " +
+//                            "nonnegative with a >= b: " + "a = " + a +
+//                            ", b = " + b);
+//        }
+
+        if (a < 0 || b < 0) throw new IllegalArgumentException("ERROR: a and b must be non-negative");
+        if (b > a) b = a;
 
         this.a = a;
         this.b = b;
