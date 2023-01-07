@@ -85,7 +85,7 @@ public final class TestGrasp {
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
 
-        new TestGrasp().testBFci();
+//        new TestGrasp().testBFci();
 //        new TestGrasp().testForWayne3();
     }
 
