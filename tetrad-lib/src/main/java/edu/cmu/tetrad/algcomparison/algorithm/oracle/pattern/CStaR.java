@@ -27,7 +27,7 @@ import java.util.List;
         command = "cstar",
         algoType = AlgType.forbid_latent_common_causes
 )
-//@Experimental
+@Experimental
 public class CStaR implements Algorithm, TakesIndependenceWrapper {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
