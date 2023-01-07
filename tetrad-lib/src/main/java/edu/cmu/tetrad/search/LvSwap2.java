@@ -97,7 +97,7 @@ public final class LvSwap2 implements GraphSearch {
 
     //========================PUBLIC METHODS==========================//
     public Graph search() {
-        return search_Joe1();
+        return search_Joe2();
     }
 
 
