@@ -74,11 +74,11 @@ public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
             LvSwap2 search = new LvSwap2(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
             if (parameters.getInt(Params.BOSS_ALG) == 1) {
-                search.setAlgType(Boss.AlgType.BOSS1);
+                search.setBossAlgType(Boss.AlgType.BOSS1);
             } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
-                search.setAlgType(Boss.AlgType.BOSS2);
+                search.setBossAlgType(Boss.AlgType.BOSS2);
             } else if (parameters.getInt(Params.BOSS_ALG) == 3) {
-                search.setAlgType(Boss.AlgType.BOSS3);
+                search.setBossAlgType(Boss.AlgType.BOSS3);
             } else {
                 throw new IllegalArgumentException("Unrecognized boss algorithm type.");
             }

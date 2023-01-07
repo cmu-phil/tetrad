@@ -367,11 +367,6 @@ public class TeyssierScorer {
     public Set<Node> getChildren(int p) {
         Set<Node> adj = getAdjacentNodes(get(p));
         adj.removeAll(getParents(p));
-//        Set<Node> children = new HashSet<>();
-//        for (Node a : adj) {
-//            if (!parent(get(p), a)) children.add(a);
-//        }
-
         return adj;
     }
 

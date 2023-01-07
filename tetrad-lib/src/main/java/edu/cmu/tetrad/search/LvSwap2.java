@@ -60,6 +60,12 @@ import static java.util.Collections.reverse;
  */
 public final class LvSwap2 implements GraphSearch {
 
+    public enum AlgType {Bryan, Joe1, Joe2, Joe3}
+
+    private AlgType algType = AlgType.Bryan;
+
+    private Boss.AlgType bossAlgType = Boss.AlgType.BOSS1;
+
     // The score used, if GS is used to build DAGs.
     private final Score score;
 
@@ -86,7 +92,6 @@ public final class LvSwap2 implements GraphSearch {
     private Knowledge knowledge = new Knowledge();
     private boolean verbose = false;
     private PrintStream out = System.out;
-    private Boss.AlgType algType = Boss.AlgType.BOSS1;
     private boolean doDiscriminatingPathTailRule = true;
 
     //============================CONSTRUCTORS============================//
@@ -97,13 +102,23 @@ public final class LvSwap2 implements GraphSearch {
 
     //========================PUBLIC METHODS==========================//
     public Graph search() {
-        return search_Joe2();
+        if (algType == AlgType.Bryan) {
+            return search_Bryan();
+        } else if (algType == AlgType.Joe1) {
+            return search_Joe1();
+        } else if (algType == AlgType.Joe2) {
+            return search_Joe1();
+        } else if (algType == AlgType.Joe3) {
+            return search_Joe1();
+        }
+
+        throw new IllegalArgumentException("Unexpected alg type: " + algType);
     }
 
 
     @NotNull
-    private static List<Node> getComplement(List<Node> pa_G_x, List<Node> Y) {
-        List<Node> complement = new ArrayList<>(pa_G_x);
+    private static List<Node> getComplement(List<Node> X, List<Node> Y) {
+        List<Node> complement = new ArrayList<>(X);
         complement.removeAll(Y);
         return complement;
     }
@@ -124,7 +139,7 @@ public final class LvSwap2 implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
-        alg.setAlgType(algType);
+        alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
@@ -133,9 +148,9 @@ public final class LvSwap2 implements GraphSearch {
         alg.setVerbose(verbose);
 
         alg.bestOrder(this.score.getVariables());
-        Graph G = alg.getGraph(false);
+        Graph G = alg.getGraph(true);
 
-        retainUnshieldedColliders(G);
+        retainArrows(G);
 
         Graph G2 = new EdgeListGraph(G);
 
@@ -146,78 +161,42 @@ public final class LvSwap2 implements GraphSearch {
 
         do {
             allT.addAll(T);
-
             T = new HashSet<>();
-
             List<Node> nodes = G.getNodes();
 
-//            for (Node y : nodes) {
-//                List<Node> adj =  G.getAdjacentNodes(y);
-//
-//                SublistGenerator gen = new SublistGenerator(adj.size(), depth < 0 ? adj.size() : depth);
-//                int[] choice;
-//
-//                W:
-//                while ((choice = gen.next()) != null) {
-//                    if (choice.length == 0) continue;
-//                    List<Node> _adj = GraphUtils.asList(choice, adj);
-//
-//                    scorer.goToBookmark();
-//
-//                    for (Node w : _adj) {
-//                        if (scorer.index(w) > scorer.index(y)) {
-//                            scorer.moveTo(w, scorer.index(y));
-//                        }
-//                    }
-//
-//                    for (Node x : _adj) {
-//                        for (Node z : _adj) {
-////                    }
-////                    for (int i = 0; i < _adj.size(); i++) {
-////                        for (int j = i + 1; j < _adj.size(); j++) {
-////                            Node x = _adj.get(i);
-////                            Node z = _adj.get(j);
-//
-//                            if ((scorer.collider(x, y, z) && !scorer.adjacent(x, z))) {
-//                                T.add(new Triple(x, y, z));
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            for (Node y : nodes) {
+                for (Node x : G.getAdjacentNodes(y)) {
+                    for (Node z : G.getAdjacentNodes(y)) {
+                        if (x == y) continue;
+                        if (x == z) continue;
+                        if (y == z) continue;
 
-            for (int d = 0; d <= depth; d++) {
-                for (Node y : nodes) {
-                    for (Node x : G.getAdjacentNodes(y)) {
-                        for (Node z : G.getAdjacentNodes(y)) {
-                            if (x == y) continue;
-                            if (x == z) continue;
-                            if (y == z) continue;
+                        if (!G.isAdjacentTo(x, z)) continue;
 
-                            if (!G.isAdjacentTo(x, z)) continue;
+                        scorer.goToBookmark();
 
+                        List<Node> children = new ArrayList<>(scorer.getChildren(y));
+
+                        int _depth = depth < 0 ? children.size() : depth;
+                        _depth = Math.min(_depth, children.size());
+
+                        SublistGenerator gen = new SublistGenerator(children.size(), _depth);
+                        int[] choice;
+
+                        W:
+                        while ((choice = gen.next()) != null) {
+                            if (choice.length == 0) continue;
                             scorer.goToBookmark();
 
-                            List<Node> children = new ArrayList<>(scorer.getChildren(y));
+                            List<Node> Q = GraphUtils.asList(choice, children);
 
-                            ChoiceGenerator gen = new ChoiceGenerator(children.size(), d);
-                            int[] choice;
+                            for (Node w : Q) {
+                                scorer.moveTo(w, scorer.index(y));
+                            }
 
-                            W:
-                            while ((choice = gen.next()) != null) {
-//                            if (choice.length == 0) continue;
-                                scorer.goToBookmark();
-
-                                List<Node> Q = GraphUtils.asList(choice, children);
-
-                                for (Node w : Q) {
-                                    scorer.moveTo(w, scorer.index(y));
-                                }
-
-                                if ((scorer.collider(x, y, z) && !scorer.adjacent(x, z))) {
-                                    T.add(new Triple(x, y, z));
-                                    break;
-                                }
+                            if (scorer.collider(x, y, z) && !scorer.adjacent(x, z)) {
+                                T.add(new Triple(x, y, z));
+                                break;
                             }
                         }
                     }
@@ -231,10 +210,6 @@ public final class LvSwap2 implements GraphSearch {
             orientColliders(G, allT);
         } while (!allT.containsAll(T));
 
-        scorer.goToBookmark();
-
-        retainUnshieldedColliders(G);
-
         finalOrientation(knowledge, G);
 
         G.setGraphType(EdgeListGraph.GraphType.PAG);
@@ -243,13 +218,10 @@ public final class LvSwap2 implements GraphSearch {
     }
 
     public Graph search_Joe2() {
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + this.test + ".");
-
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
-        alg.setAlgType(algType);
+        alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
@@ -319,13 +291,10 @@ public final class LvSwap2 implements GraphSearch {
     }
 
     public Graph search_Joe3() {
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + this.test + ".");
-
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
-        alg.setAlgType(algType);
+        alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
@@ -435,13 +404,10 @@ public final class LvSwap2 implements GraphSearch {
     }
 
     public Graph search_Bryan() {
-        this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + this.test + ".");
-
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
-        alg.setAlgType(algType);
+        alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
@@ -454,54 +420,53 @@ public final class LvSwap2 implements GraphSearch {
 
         Graph GBoss = new EdgeListGraph(G);
 
-        retainUnshieldedColliders(G);
+        retainArrows(G);
 
         scorer.bookmark();
 
-        for (int k = 1; k <= (depth < 0 ? 5 : depth); k++) {
-            List<Node> pi = scorer.getPi();
-            reverse(pi);
+        List<Node> pi = scorer.getPi();
+        reverse(pi);
 
-            for (Node x : pi) {
-                Map<Node, List<Node>> T = new HashMap<>();
+        for (Node x : pi) {
+            Map<Node, List<Node>> T = new HashMap<>();
 
-                List<Node> Q = GBoss.getChildren(x);
+            List<Node> X = GBoss.getParents(x);
 
-                ChoiceGenerator gen = new ChoiceGenerator(Q.size(), k);
-                int[] choice;
+            int _depth = depth < 0 ? X.size() : depth;
+            _depth = Math.min(_depth, X.size());
 
-                while ((choice = gen.next()) != null) {
-//                    if (choice.length == 0) continue;
-                    List<Node> Y = GraphUtils.asList(choice, Q);
+            // Order of increasing size
+            SublistGenerator gen = new SublistGenerator(X.size(), _depth);
+            int[] choice;
 
-                    for (Node z : Y) {
-                        if (T.get(z) != null) continue;
+            while ((choice = gen.next()) != null) {
+                List<Node> Y = GraphUtils.asList(choice, X);
+                Y = getComplement(X, Y);
 
-                        if (adj(x, GBoss, Y).contains(z)) {
-                            scorer.goToBookmark();
+                for (Node z : getComplement(X, Y)) {
+                    if (adj(x, GBoss, Y).contains(z)) {
+                        scorer.bookmark();
+                        for (Node w : Y) {
+                            scorer.moveTo(w, scorer.index(x));
+                        }
 
-                            for (Node w : Y) {
-                                scorer.moveTo(w, scorer.index(x));
-                            }
+                        if (!scorer.parent(z, x)) T.put(z, Y);
+                        scorer.goToBookmark();
+                    }
+                }
+            }
 
-                            if (!scorer.parent(z, x)) T.put(z, Y);
+            for (Node z : T.keySet()) {
+                if (!T.get(z).isEmpty()) {
+                    G.removeEdge(x, z);
+
+                    for (Node y : T.get(z)) {
+                        if (G.isAdjacentTo(x, y) && G.isAdjacentTo(y, z)) {
+                            G.setEndpoint(x, y, Endpoint.ARROW);
+                            G.setEndpoint(z, y, Endpoint.ARROW);
                         }
                     }
                 }
-
-                for (Node z : T.keySet()) {
-                    if (!T.get(z).isEmpty()) {
-                        G.removeEdge(x, z);
-
-                        for (Node y : T.get(z)) {
-                            if (G.isAdjacentTo(x, y) && G.isAdjacentTo(y, z)) {
-                                G.setEndpoint(x, y, Endpoint.ARROW);
-                                G.setEndpoint(z, y, Endpoint.ARROW);
-                            }
-                        }
-                    }
-                }
-
             }
         }
 
@@ -569,21 +534,21 @@ public final class LvSwap2 implements GraphSearch {
 //    }
 
 
-//    public static void retainArrows(Graph graph) {
-//        Graph orig = new EdgeListGraph(graph);
-//        graph.reorientAllWith(Endpoint.CIRCLE);
-//
-//        List<Node> nodes = graph.getNodes();
-//
-//        for (Node x : nodes) {
-//            for (Node y : nodes) {
-//                if (x == y) continue;
-//                if (orig.getEndpoint(x, y) == Endpoint.ARROW) {
-//                    graph.setEndpoint(x, y, Endpoint.ARROW);
-//                }
-//            }
-//        }
-//    }
+    public static void retainArrows(Graph graph) {
+        Graph orig = new EdgeListGraph(graph);
+        graph.reorientAllWith(Endpoint.CIRCLE);
+
+        List<Node> nodes = graph.getNodes();
+
+        for (Node x : nodes) {
+            for (Node y : nodes) {
+                if (x == y) continue;
+                if (orig.getEndpoint(x, y) == Endpoint.ARROW) {
+                    graph.setEndpoint(x, y, Endpoint.ARROW);
+                }
+            }
+        }
+    }
 
     private void finalOrientation(Knowledge knowledge2, Graph G) {
         SepsetProducer sepsets = new SepsetsGreedy(G, test, null, depth);
@@ -686,8 +651,12 @@ public final class LvSwap2 implements GraphSearch {
         this.out = out;
     }
 
-    public void setAlgType(Boss.AlgType algType) {
-        this.algType = algType;
+    public void setAlgType(AlgType bossAlgType) {
+        this.algType = bossAlgType;
+    }
+
+    public void setBossAlgType(Boss.AlgType algType) {
+        this.bossAlgType = algType;
     }
 
     public void setDoDefiniteDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
