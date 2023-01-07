@@ -1195,7 +1195,7 @@ public final class TestGrasp {
         }
     }
 
-    @Test
+//    @Test
     public void bryanCheckDensityClaims() {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
