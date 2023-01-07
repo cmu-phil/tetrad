@@ -2516,7 +2516,7 @@ public final class TestGrasp {
             }
 
             for (ScoreWrapper score : scores) {
-                algorithms.add(new LVSWAP(test, score));
+                algorithms.add(new LVSWAP_Bryan(test, score));
             }
 
             Simulations simulations = new Simulations();
