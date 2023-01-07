@@ -24,12 +24,14 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static java.util.Collections.reverse;
 
 /**
  * Does BOSS2, followed by two swap rules, then final FCI orientation.
@@ -95,10 +97,152 @@ public final class LvSwap2 implements GraphSearch {
 
     //========================PUBLIC METHODS==========================//
     public Graph search() {
-        return search1();
+        return search_Joe1();
     }
 
-    public Graph search1() {
+
+    @NotNull
+    private static List<Node> getComplement(List<Node> pa_G_x, List<Node> Y) {
+        List<Node> complement = new ArrayList<>(pa_G_x);
+        complement.removeAll(Y);
+        return complement;
+    }
+
+    private Set<Node> adj(Node x, Graph g, List<Node> Y) {
+        Set<Node> adj = new HashSet<>();
+
+        for (Node y : Y) {
+            adj.addAll(g.getAdjacentNodes(y));
+        }
+
+        adj.remove(x);
+
+        return adj;
+    }
+
+    public Graph search_Joe1() {
+        TeyssierScorer scorer = new TeyssierScorer(test, score);
+
+        Boss alg = new Boss(scorer);
+        alg.setAlgType(algType);
+        alg.setUseScore(useScore);
+        alg.setUseRaskuttiUhler(useRaskuttiUhler);
+        alg.setUseDataOrder(useDataOrder);
+        alg.setDepth(depth);
+        alg.setNumStarts(numStarts);
+        alg.setVerbose(verbose);
+
+        alg.bestOrder(this.score.getVariables());
+        Graph G = alg.getGraph(false);
+
+        retainUnshieldedColliders(G);
+
+        Graph G2 = new EdgeListGraph(G);
+
+        scorer.bookmark();
+
+        Set<Triple> T = new HashSet<>();
+        Set<Triple> allT = new HashSet<>();
+
+        do {
+            allT.addAll(T);
+
+            T = new HashSet<>();
+
+            List<Node> nodes = G.getNodes();
+
+//            for (Node y : nodes) {
+//                List<Node> adj =  G.getAdjacentNodes(y);
+//
+//                SublistGenerator gen = new SublistGenerator(adj.size(), depth < 0 ? adj.size() : depth);
+//                int[] choice;
+//
+//                W:
+//                while ((choice = gen.next()) != null) {
+//                    if (choice.length == 0) continue;
+//                    List<Node> _adj = GraphUtils.asList(choice, adj);
+//
+//                    scorer.goToBookmark();
+//
+//                    for (Node w : _adj) {
+//                        if (scorer.index(w) > scorer.index(y)) {
+//                            scorer.moveTo(w, scorer.index(y));
+//                        }
+//                    }
+//
+//                    for (Node x : _adj) {
+//                        for (Node z : _adj) {
+////                    }
+////                    for (int i = 0; i < _adj.size(); i++) {
+////                        for (int j = i + 1; j < _adj.size(); j++) {
+////                            Node x = _adj.get(i);
+////                            Node z = _adj.get(j);
+//
+//                            if ((scorer.collider(x, y, z) && !scorer.adjacent(x, z))) {
+//                                T.add(new Triple(x, y, z));
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+
+            for (int d = 0; d <= depth; d++) {
+                for (Node y : nodes) {
+                    for (Node x : G.getAdjacentNodes(y)) {
+                        for (Node z : G.getAdjacentNodes(y)) {
+                            if (x == y) continue;
+                            if (x == z) continue;
+                            if (y == z) continue;
+
+                            if (!G.isAdjacentTo(x, z)) continue;
+
+                            scorer.goToBookmark();
+
+                            List<Node> children = new ArrayList<>(scorer.getChildren(y));
+
+                            ChoiceGenerator gen = new ChoiceGenerator(children.size(), d);
+                            int[] choice;
+
+                            W:
+                            while ((choice = gen.next()) != null) {
+//                            if (choice.length == 0) continue;
+                                scorer.goToBookmark();
+
+                                List<Node> Q = GraphUtils.asList(choice, children);
+
+                                for (Node w : Q) {
+                                    scorer.moveTo(w, scorer.index(y));
+                                }
+
+                                if ((scorer.collider(x, y, z) && !scorer.adjacent(x, z))) {
+                                    T.add(new Triple(x, y, z));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            G = new EdgeListGraph(G2);
+
+            removeShields(G, allT);
+            retainUnshieldedColliders(G);
+            orientColliders(G, allT);
+        } while (!allT.containsAll(T));
+
+        scorer.goToBookmark();
+
+        retainUnshieldedColliders(G);
+
+        finalOrientation(knowledge, G);
+
+        G.setGraphType(EdgeListGraph.GraphType.PAG);
+
+        return G;
+    }
+
+    public Graph search_Joe2() {
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + this.test + ".");
 
@@ -143,9 +287,6 @@ public final class LvSwap2 implements GraphSearch {
 
                         if (!G.isAdjacentTo(x, z)) continue;
 
-//                        if (!G.isDefCollider(x, y, z) && !G.isAdjacentTo(x, z)) continue;
-//                        if (G.isDefCollider(x, y, z) && !G.isAdjacentTo(x, z)) continue;
-
                         {
                             scorer.goToBookmark();
 
@@ -153,49 +294,10 @@ public final class LvSwap2 implements GraphSearch {
                             scorer.swaptuck(x, y, z);
 
                             // If then <x, y, z> is an unshielded collider in DAG(π2),
-                            if ((scorer.collider(x, y, z) && !scorer.adjacent(x, z))) {
+                            if ((scorer.collider(x, y, z) && !scorer.adjacent(x, z)) && !G.isDefCollider(x, y, z)) {
                                 T.add(new Triple(x, y, z));
-
-                                // look at each y2 commonly adjacent to both x and z,
-//                                Set<Node> adj = scorer.getAdjacentNodes(x);
-//                                adj.retainAll(scorer.getAdjacentNodes(z));
-//
-//                                for (Node w : adj) {
-//
-//                                    // and x->w<-z is an unshielded collider in DAG(π2)
-//                                    if (scorer.collider(x, w, z) && !scorer.adjacent(x, z)) {
-//
-//                                        // then add <x, w, z> to the set of new unshielded colliders to process.
-//                                        T.add(new Triple(x, w, z));
-//                                    }
-//                                }
                             }
                         }
-
-//                        {
-//                            scorer.goToBookmark();
-//
-//                            // Swap tuck x and y yielding π2
-//                            scorer.swaptuck(x, z);
-//
-//                            // If then <x, y, z> is an unshielded collider in DAG(π2),
-//                            if ((scorer.collider(x, y, z) && !scorer.adjacent(x, z))) {
-//
-//                                // look at each y2 commonly adjacent to both x and z,
-//                                Set<Node> adj = scorer.getAdjacentNodes(x);
-//                                adj.retainAll(scorer.getAdjacentNodes(z));
-//
-//                                for (Node w : adj) {
-//
-//                                    // and x->w<-z is an unshielded collider in DAG(π2)
-//                                    if (scorer.collider(x, w, z) && !scorer.adjacent(x, z)) {
-//
-//                                        // then add <x, w, z> to the set of new unshielded colliders to process.
-//                                        T.add(new Triple(x, w, z));
-//                                    }
-//                                }
-//                            }
-//                        }
                     }
                 }
             }
@@ -216,121 +318,201 @@ public final class LvSwap2 implements GraphSearch {
         return G;
     }
 
-//    public Graph search2() {
-//        this.logger.log("info", "Starting FCI algorithm.");
-//        this.logger.log("info", "Independence test = " + this.test + ".");
-//
-//        TeyssierScorer scorer = new TeyssierScorer(test, score);
-//
-//        Boss alg = new Boss(scorer);
-//        alg.setAlgType(algType);
-//        alg.setUseScore(useScore);
-//        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-//        alg.setUseDataOrder(useDataOrder);
-//        alg.setDepth(depth);
-//        alg.setNumStarts(numStarts);
-//        alg.setVerbose(verbose);
-//
-//        alg.bestOrder(this.score.getVariables());
-//        Graph G = alg.getGraph(false);
-//
-//        retainUnshieldedColliders(G);
-//
-//        Set<Triple> allT = new HashSet<>();
-//        Graph G2 = new EdgeListGraph(G);
-//
-//        Set<Triple> T = new HashSet<>();
-//
-//        do {
-//            allT.addAll(T);
-//            T = new HashSet<>(); // triples for unshielded colliders
-//
-//            List<Node> nodes = G.getNodes();
-//
-//            // For every x*-*y*-*w that is not already an unshielded collider...
-//            for (Node z : nodes) {
-//                for (Node x : G.getAdjacentNodes(z)) {
-//                    for (Node y : G.getAdjacentNodes(z)) {
-//                        if (y == z) continue;
-//
-//                        // Check that  <x, y, z> is an unshielded collider or else is a shielded collider or noncollider
-//                        // (either way you can end up after possible reorientation with an unshielded collider),
-//                        //                    if (!G.isDefCollider(x, y, z) && !G.isAdjacentTo(x, z)) continue;
-//
-//                        scorer.bookmark();
-//
-//                        Set<Node> S = GraphUtils.pagMb(x, G);
-//
-//                        for (Node p : S) {
-//                            scorer.tuck(p, x);
-//                        }
-//
-//                        List<Node> _S = new ArrayList<>(S);
-////                        _S.removeAll(GraphUtils.district(x, G));
-//
-//                        scorer.bookmark(1);
-//
-//                        for (int k = 1; k <= depth; k++) {
-//                            if (_S.size() < depth) continue;
-//
-//                            ChoiceGenerator gen = new ChoiceGenerator(_S.size(), depth);
-//                            int[] choice;
-//
-//                            while ((choice = gen.next()) != null) {
-//                                scorer.goToBookmark(1);
-//
-//                                List<Node> sub = GraphUtils.asList(choice, _S);
-//
-//                                for (Node p : sub) {
-////                                    if (sub.contains(p)) {
-//                                    scorer.tuck(p, x);
-////                                    }
-////                                    else if (scorer.index(p) < scorer.index(x)) {
-////                                        scorer.swaptuck(p, x);
-////                                    }
-//                                }
-//
-////                                for (Node p : sub) {
-////                                    scorer.swaptuck(p, x);
-////                                }
-//
-//                                // If that's true, and if <x, y, z> is an unshielded collider in DAG(π),
-//
-//                                // look at each y2 commonly adjacent to both x and z,
-//                                Set<Node> adj = scorer.getAdjacentNodes(x);
-//                                adj.retainAll(scorer.getAdjacentNodes(z));
-//
-//                                for (Node y2 : adj) {
-//
-//                                    // and x->y2<-z is an unshielded collider in DAG(swap(x, z, π))
-//                                    // not already oriented as an unshielded collider in G,
-//                                    if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)
-//                                            && !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))) {
-//                                        T.add(new Triple(x, y2, z));
+    public Graph search_Joe3() {
+        this.logger.log("info", "Starting FCI algorithm.");
+        this.logger.log("info", "Independence test = " + this.test + ".");
+
+        TeyssierScorer scorer = new TeyssierScorer(test, score);
+
+        Boss alg = new Boss(scorer);
+        alg.setAlgType(algType);
+        alg.setUseScore(useScore);
+        alg.setUseRaskuttiUhler(useRaskuttiUhler);
+        alg.setUseDataOrder(useDataOrder);
+        alg.setDepth(depth);
+        alg.setNumStarts(numStarts);
+        alg.setVerbose(verbose);
+
+        alg.bestOrder(this.score.getVariables());
+        Graph G = alg.getGraph(false);
+
+        retainUnshieldedColliders(G);
+
+        Set<Triple> allT = new HashSet<>();
+        Graph G2 = new EdgeListGraph(G);
+
+        Set<Triple> T = new HashSet<>();
+
+        do {
+            allT.addAll(T);
+            T = new HashSet<>(); // triples for unshielded colliders
+
+            List<Node> nodes = G.getNodes();
+
+            // For every x*-*y*-*w that is not already an unshielded collider...
+            for (Node z : nodes) {
+                for (Node x : G.getAdjacentNodes(z)) {
+                    for (Node y : G.getAdjacentNodes(z)) {
+                        if (y == z) continue;
+
+                        // Check that  <x, y, z> is an unshielded collider or else is a shielded collider or noncollider
+                        // (either way you can end up after possible reorientation with an unshielded collider),
+                        //                    if (!G.isDefCollider(x, y, z) && !G.isAdjacentTo(x, z)) continue;
+
+                        scorer.bookmark();
+
+                        Set<Node> S = GraphUtils.pagMb(x, G);
+
+                        for (Node p : S) {
+                            scorer.tuck(p, x);
+                        }
+
+                        List<Node> _S = new ArrayList<>(S);
+//                        _S.removeAll(GraphUtils.district(x, G));
+
+                        scorer.bookmark(1);
+
+                        for (int k = 1; k <= depth; k++) {
+                            if (_S.size() < depth) continue;
+
+                            ChoiceGenerator gen = new ChoiceGenerator(_S.size(), depth);
+                            int[] choice;
+
+                            while ((choice = gen.next()) != null) {
+                                scorer.goToBookmark(1);
+
+                                List<Node> sub = GraphUtils.asList(choice, _S);
+
+                                for (Node p : sub) {
+//                                    if (sub.contains(p)) {
+                                    scorer.tuck(p, x);
 //                                    }
+//                                    else if (scorer.index(p) < scorer.index(x)) {
+//                                        scorer.swaptuck(p, x);
+//                                    }
+                                }
+
+//                                for (Node p : sub) {
+//                                    scorer.swaptuck(p, x);
 //                                }
-//                            }
-//                        }
-//
-//                        scorer.goToBookmark();
-//                    }
-//                }
-//            }
-//
-//
-//            G = new EdgeListGraph(G2);
-//
-//            removeShields(G, allT);
-////            retainUnshieldedColliders(G);
-//            orientColliders(G, allT);
-//        } while (!allT.containsAll(T));
-//
-//        finalOrientation(knowledge, G);
-//
-//        G.setGraphType(EdgeListGraph.GraphType.PAG);
-//
-//        return G;
-//    }
+
+                                // If that's true, and if <x, y, z> is an unshielded collider in DAG(π),
+
+                                // look at each y2 commonly adjacent to both x and z,
+                                Set<Node> adj = scorer.getAdjacentNodes(x);
+                                adj.retainAll(scorer.getAdjacentNodes(z));
+
+                                for (Node y2 : adj) {
+
+                                    // and x->y2<-z is an unshielded collider in DAG(swap(x, z, π))
+                                    // not already oriented as an unshielded collider in G,
+                                    if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)
+                                            && !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))) {
+                                        T.add(new Triple(x, y2, z));
+                                    }
+                                }
+                            }
+                        }
+
+                        scorer.goToBookmark();
+                    }
+                }
+            }
+
+
+            G = new EdgeListGraph(G2);
+
+            removeShields(G, allT);
+//            retainUnshieldedColliders(G);
+            orientColliders(G, allT);
+        } while (!allT.containsAll(T));
+
+        finalOrientation(knowledge, G);
+
+        G.setGraphType(EdgeListGraph.GraphType.PAG);
+
+        return G;
+    }
+
+    public Graph search_Bryan() {
+        this.logger.log("info", "Starting FCI algorithm.");
+        this.logger.log("info", "Independence test = " + this.test + ".");
+
+        TeyssierScorer scorer = new TeyssierScorer(test, score);
+
+        Boss alg = new Boss(scorer);
+        alg.setAlgType(algType);
+        alg.setUseScore(useScore);
+        alg.setUseRaskuttiUhler(useRaskuttiUhler);
+        alg.setUseDataOrder(useDataOrder);
+        alg.setDepth(depth);
+        alg.setNumStarts(numStarts);
+        alg.setVerbose(verbose);
+
+        alg.bestOrder(this.score.getVariables());
+        Graph G = alg.getGraph(true);
+
+        Graph GBoss = new EdgeListGraph(G);
+
+        retainUnshieldedColliders(G);
+
+        scorer.bookmark();
+
+        for (int k = 1; k <= (depth < 0 ? 5 : depth); k++) {
+            List<Node> pi = scorer.getPi();
+            reverse(pi);
+
+            for (Node x : pi) {
+                Map<Node, List<Node>> T = new HashMap<>();
+
+                List<Node> Q = GBoss.getChildren(x);
+
+                ChoiceGenerator gen = new ChoiceGenerator(Q.size(), k);
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+//                    if (choice.length == 0) continue;
+                    List<Node> Y = GraphUtils.asList(choice, Q);
+
+                    for (Node z : Y) {
+                        if (T.get(z) != null) continue;
+
+                        if (adj(x, GBoss, Y).contains(z)) {
+                            scorer.goToBookmark();
+
+                            for (Node w : Y) {
+                                scorer.moveTo(w, scorer.index(x));
+                            }
+
+                            if (!scorer.parent(z, x)) T.put(z, Y);
+                        }
+                    }
+                }
+
+                for (Node z : T.keySet()) {
+                    if (!T.get(z).isEmpty()) {
+                        G.removeEdge(x, z);
+
+                        for (Node y : T.get(z)) {
+                            if (G.isAdjacentTo(x, y) && G.isAdjacentTo(y, z)) {
+                                G.setEndpoint(x, y, Endpoint.ARROW);
+                                G.setEndpoint(z, y, Endpoint.ARROW);
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        scorer.goToBookmark();
+
+        finalOrientation(knowledge, G);
+
+        G.setGraphType(EdgeListGraph.GraphType.PAG);
+
+        return G;
+    }
 
     public static void retainUnshieldedColliders(Graph graph) {
         Graph orig = new EdgeListGraph(graph);
@@ -414,144 +596,6 @@ public final class LvSwap2 implements GraphSearch {
         fciOrient.setVerbose(true);
         fciOrient.doFinalOrientation(G);
     }
-
-//    private Set<Triple> extendedSwap(Graph G, TeyssierScorer scorer, int depth) {
-//        scorer.bookmark();
-//
-//        Set<Triple> T = new HashSet<>();
-//
-//        List<Node> Y = G.getNodes();
-//
-//        for (Node y : Y) {
-//            List<Node> X = G.getAdjacentNodes(y);
-//
-//            X:
-//            for (Node x : X) {
-//                if (x == y) continue;
-//
-//                // Try to remove x*-*y
-//                List<Node> Z = G.getAdjacentNodes(x);
-//                Z.retainAll(G.getAdjacentNodes(y));
-//
-//                Z.removeIf(z -> (!G.isDefCollider(x, z, y) && !G.isAdjacentTo(x, y)));
-//
-//                if (Z.isEmpty()) continue;
-//
-//                // Need to try making every combination of Z latent. If a combination works,
-//                // for Z = {Z1,...,Zm}, orient Y<->Z1, ..., Y<->Zm.
-//                SublistGenerator gen = new SublistGenerator(Z.size(), depth);// Z.size());
-//                int[] choice;
-//
-//                while ((choice = gen.next()) != null) {
-//                    scorer.goToBookmark();
-//
-//                    List<Node> ZZ = GraphUtils.asList(choice, Z);
-//
-//                    for (Node z : ZZ) {
-//                        scorer.moveToEnd(z);
-//                    }
-//
-//                    if (!scorer.adjacent(x, y)) {
-//                        for (Node z : ZZ) {
-//                            T.add(new Triple(x, z, y));
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        scorer.goToBookmark();
-//
-//        return T;
-//    }
-
-//    private static Set<Triple> swapRule2(Graph G, TeyssierScorer scorer, int depth) {
-//
-//        Set<Triple> T = new HashSet<>();
-//
-//        List<Node> nodes = G.getNodes();
-//
-//        scorer.bookmark();
-//
-//        // For every x*-*y*-*w that is not already an unshielded collider...
-//        for (Node z : nodes) {
-//            for (Node x : G.getAdjacentNodes(z)) {
-//
-//
-//                for (Node y : G.getAdjacentNodes(z)) {
-//                    if (x == z) continue;
-//                    if (y == z) continue;
-//
-//                    if (x == y) continue;
-//
-//                    // Check that  <x, y, z> is an unshielded collider or else is a shielded collider or noncollider
-//                    // (either way you can end up after possible reorientation with an unshielded collider),
-////                    if (!G.isDefCollider(x, y, z) && !G.isAdjacentTo(x, z)) continue;
-//
-//                    scorer.goToBookmark();
-//
-//                    // and make sure you're conditioning on district(x, G)...
-//                    Set<Node> S = GraphUtils.pagMb(x, G);
-////                    List<Node> S = G.getAdjacentNodes(x);
-////                    Set<Node> S = GraphUtils.district(x, G);
-//
-//                    for (Node p : S) {
-//                        scorer.tuck(p, x);
-//                    }
-//
-//                    List<Node> _S = new ArrayList<>(S);
-//                    _S.removeAll(GraphUtils.district(x, G));
-//
-//                    scorer.bookmark(1);
-//
-//                    SublistGenerator gen = new SublistGenerator(_S.size(), 1);
-//                    int[] choice;
-//
-//                    while ((choice = gen.next()) != null) {
-//                        scorer.goToBookmark(1);
-//
-//                        List<Node> sub = GraphUtils.asList(choice, _S);
-//
-//                        for (Node p : sub) {
-//                            scorer.moveToEnd(p);
-//                        }
-//
-////                        scorer.swaptuck(x, z);
-//
-//                        // If that's true, and if <x, y, z> is an unshielded collider in DAG(π),
-//                        if (scorer.collider(x, y, z) && !scorer.adjacent(x, z)) {
-//
-//                            // look at each y2 commonly adjacent to both x and z,
-//                            Set<Node> adj = scorer.getAdjacentNodes(x);
-//                            adj.retainAll(scorer.getAdjacentNodes(z));
-//
-//                            for (Node y2 : adj) {
-//
-//                                // and x->y2<-z is an unshielded collider in DAG(swap(x, z, π))
-//                                // not already oriented as an unshielded collider in G,
-//                                if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)
-//                                        && !(G.isDefCollider(x, y2, z) && !G.isAdjacentTo(x, z))) {
-//
-//                                    // then add <x, y2, z> to the set of new unshielded colliders to process.
-//                                    T.add(new Triple(x, y2, z));
-//
-////                                removeShields(G, T);
-////                                orientColliders(G, T);
-//
-//                                }
-//                            }
-//
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        scorer.goToBookmark();
-//
-//        return T;
-//    }
 
     private void removeShields(Graph graph, Set<Triple> unshieldedColliders) {
         for (Triple triple : unshieldedColliders) {
