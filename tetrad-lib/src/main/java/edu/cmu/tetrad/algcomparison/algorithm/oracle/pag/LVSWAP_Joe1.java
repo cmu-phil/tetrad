@@ -17,7 +17,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.LvSwap;
-import edu.cmu.tetrad.search.LvSwap2;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -36,24 +35,24 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-Swap",
-        command = "lv-swap",
+        name = "LV-Swap-Joe1",
+        command = "lv-swap-joe1",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class LVSWAP_Joe1 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public LVSWAP() {
+    public LVSWAP_Joe1() {
         // Used for reflection; do not delete.
     }
 
-    public LVSWAP(IndependenceWrapper test, ScoreWrapper score) {
+    public LVSWAP_Joe1(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -71,14 +70,14 @@ public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
                 knowledge = timeSeries.getKnowledge();
             }
 
-            LvSwap2 search = new LvSwap2(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            LvSwap search = new LvSwap(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
             if (parameters.getInt(Params.BOSS_ALG) == 1) {
-                search.setAlgType(Boss.AlgType.BOSS1);
+                search.setBossAlgType(Boss.AlgType.BOSS1);
             } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
-                search.setAlgType(Boss.AlgType.BOSS2);
+                search.setBossAlgType(Boss.AlgType.BOSS2);
             } else if (parameters.getInt(Params.BOSS_ALG) == 3) {
-                search.setAlgType(Boss.AlgType.BOSS3);
+                search.setBossAlgType(Boss.AlgType.BOSS3);
             } else {
                 throw new IllegalArgumentException("Unrecognized boss algorithm type.");
             }
@@ -86,6 +85,7 @@ public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
+            search.setAlgType(LvSwap.AlgType.Joe1);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
@@ -109,7 +109,7 @@ public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
             return graph;
         } else {
-            LVSWAP algorithm = new LVSWAP(this.test, this.score);
+            LVSWAP_Joe1 algorithm = new LVSWAP_Joe1(this.test, this.score);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
@@ -126,7 +126,7 @@ public class LVSWAP implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
     @Override
     public String getDescription() {
-        return "LV-Swap (BOSS + swap rules) using " + this.test.getDescription()
+        return "LV-Swap-Joe1 (BOSS + swap rules) using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 
