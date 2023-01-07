@@ -2359,6 +2359,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         setEnabled(enableEditing);
     }
 
+    public void setPag(boolean pagColoring) {
+        if (pagColoring) {
+            this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
+        } else {
+            this.graph.setGraphType(EdgeListGraph.GraphType.UNLABELED);
+        }
+        setGraph(graph);
+    }
+
     /**
      * This inner class is a simple wrapper for JComponents which are to serve
      * as edge labels in the workbench. Its sole function is to make sure the

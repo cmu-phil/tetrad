@@ -424,6 +424,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
+        graph.add(new PagTypeSetter(getWorkbench()));
 
         menuBar.add(graph);
 
@@ -526,6 +527,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));
+        graph.add(new PagTypeSetter(getWorkbench()));
 
         // Only show these menu options for graph that has interventional nodes - Zhou
         if (isHasInterventional()) {
