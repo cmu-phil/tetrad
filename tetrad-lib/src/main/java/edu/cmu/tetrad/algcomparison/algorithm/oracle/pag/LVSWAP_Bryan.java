@@ -16,7 +16,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.LvSwap2;
+import edu.cmu.tetrad.search.LvSwap;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -70,7 +70,7 @@ public class LVSWAP_Bryan implements Algorithm, UsesScoreWrapper, TakesIndepende
                 knowledge = timeSeries.getKnowledge();
             }
 
-            LvSwap2 search = new LvSwap2(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            LvSwap search = new LvSwap(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
             if (parameters.getInt(Params.BOSS_ALG) == 1) {
                 search.setBossAlgType(Boss.AlgType.BOSS1);
@@ -85,7 +85,7 @@ public class LVSWAP_Bryan implements Algorithm, UsesScoreWrapper, TakesIndepende
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-            search.setAlgType(LvSwap2.AlgType.Bryan);
+            search.setAlgType(LvSwap.AlgType.Bryan);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
