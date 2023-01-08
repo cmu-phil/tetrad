@@ -85,7 +85,7 @@ public final class TestGrasp {
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
 
-//        new TestGrasp().testBFci();
+        new TestGrasp().testBFci();
 //        new TestGrasp().testForWayne3();
     }
 
@@ -2498,10 +2498,26 @@ public final class TestGrasp {
             IndependenceWrapper test = new FisherZ();
 
             List<ScoreWrapper> scores = new ArrayList<>();
-//            scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-//            scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
+            scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+            scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
             scores.add(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore());
-//            scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
+            scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
+
+            for (ScoreWrapper score : scores) {
+                algorithms.add(new LVSWAP_1(test, score));
+            }
+
+            for (ScoreWrapper score : scores) {
+                algorithms.add(new LVSWAP_2(test, score));
+            }
+
+            for (ScoreWrapper score : scores) {
+                algorithms.add(new LVSWAP_3(test, score));
+            }
+
+            for (ScoreWrapper score : scores) {
+                algorithms.add(new LVSWAP_4(test, score));
+            }
 
             algorithms.add(new Fci(test));
             algorithms.add(new FciMax(test));
@@ -2513,10 +2529,6 @@ public final class TestGrasp {
 
             for (ScoreWrapper score : scores) {
                 algorithms.add(new BFCI(test, score));
-            }
-
-            for (ScoreWrapper score : scores) {
-                algorithms.add(new LVSWAP_Bryan(test, score));
             }
 
             Simulations simulations = new Simulations();
@@ -2571,6 +2583,7 @@ public final class TestGrasp {
                 statistics.add(new ProportionSemidirectedPathsNotReversedTrue());
             } else if (grouping == 7) {
                 statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+                statistics.add(new ParameterColumn(Params.DEPTH));
 
                 statistics.add(new NumDirectedEdges());
                 statistics.add(new TrueDagPrecisionArrow());
