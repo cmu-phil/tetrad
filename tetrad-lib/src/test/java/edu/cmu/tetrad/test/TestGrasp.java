@@ -2454,7 +2454,7 @@ public final class TestGrasp {
             RandomUtil.getInstance().setSeed(38482838482L);
 
             Parameters params = new Parameters();
-            params.set(Params.SAMPLE_SIZE, 20000);
+            params.set(Params.SAMPLE_SIZE, 1000, 10000);
             params.set(Params.NUM_MEASURES, 30);
             params.set(Params.AVG_DEGREE, 6);
             params.set(Params.NUM_LATENTS, 8);
