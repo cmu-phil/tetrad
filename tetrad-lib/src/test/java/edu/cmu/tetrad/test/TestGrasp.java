@@ -28,9 +28,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES_OLD;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
@@ -51,6 +48,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fci;
+import edu.cmu.tetrad.search.FciMax;
+import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
@@ -1196,7 +1196,7 @@ public final class TestGrasp {
         }
     }
 
-//    @Test
+    //    @Test
     public void bryanCheckDensityClaims() {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
@@ -2454,7 +2454,7 @@ public final class TestGrasp {
             RandomUtil.getInstance().setSeed(38482838482L);
 
             Parameters params = new Parameters();
-            params.set(Params.SAMPLE_SIZE, 1000, 10000);
+            params.set(Params.SAMPLE_SIZE, 20000);
             params.set(Params.NUM_MEASURES, 30);
             params.set(Params.AVG_DEGREE, 6);
             params.set(Params.NUM_LATENTS, 8);
@@ -2505,9 +2505,9 @@ public final class TestGrasp {
             scores.add(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore());
             scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
 
-            algorithms.add(new Fci(test));
-            algorithms.add(new FciMax(test));
-            algorithms.add(new Rfci(test));
+            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci(test));
+            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
+            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci(test));
 
             for (ScoreWrapper score : scores) {
                 algorithms.add(new GFCI(test, score));
@@ -2547,70 +2547,31 @@ public final class TestGrasp {
 
             Statistics statistics = new Statistics();
 
-            if (grouping == 1) {
-                statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-                statistics.add(new ParameterColumn(Params.ALPHA));
-                statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
-                statistics.add(new ParameterColumn(Params.BOSS_ALG));
-                statistics.add(new ElapsedTime());
-            } else if (grouping == 2) {
-                statistics.add(new NumDirectedEdges());
-                statistics.add(new NumDirectedEdgeAncestors());
-                statistics.add(new NumDirectedEdgeReversed());
-                statistics.add(new NumDirectedEdgeNotAncNotRev());
-                statistics.add(new NumDirectedEdgeNoMeasureAncestors());
-                statistics.add(new NumDefinitelyDirected());
-                statistics.add(new NumColoredDD());
-            } else if (grouping == 3) {
-                statistics.add(new NumPossiblyDirected());
-                statistics.add(new NumDirectedEdgeVisible());
-//                statistics.add(new NumVisibleEst());
-                statistics.add(new NumDefinitelyNotDirectedPaths());
-                statistics.add(new NumColoredPD());
-                statistics.add(new NumColoredNL());
-                statistics.add(new NumColoredPL());
-            } else if (grouping == 4) {
-                statistics.add(new TrueDagPrecisionArrow());
-                statistics.add(new TrueDagRecallArrows());
-                statistics.add(new TrueDagPrecisionTails());
-                statistics.add(new TrueDagRecallTails());
-                statistics.add(new NumDirectedPathsTrue());
-                statistics.add(new NumDirectedPathsEst());
-            } else if (grouping == 5) {
-//                statistics.add(new NumDirectedEdgeBnaMeasuredCounfounded());
-                statistics.add(new NumDirectedShouldBePartiallyDirected());
-                statistics.add(new NumBidirectedEdgesEst());
-                statistics.add(new NumBidirectedBothNonancestorAncestor());
-                statistics.add(new NumCommonMeasuredAncestorBidirected());
-                statistics.add(new NumLatentCommonAncestorBidirected());
-            } else if (grouping == 6) {
-                statistics.add(new SemidirectedPrecision());
-                statistics.add(new SemidirectedPrecision());
-                statistics.add(new SemidirectedRecall());
-                statistics.add(new SemidirectedRecall());
-                statistics.add(new NoSemidirectedPrecision());
-                statistics.add(new NoSemidirectedRecall());
-                statistics.add(new ProportionSemidirectedPathsNotReversedEst());
-                statistics.add(new ProportionSemidirectedPathsNotReversedTrue());
-            } else if (grouping == 7) {
-                statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-                statistics.add(new ParameterColumn(Params.DEPTH));
+            statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
+            statistics.add(new ParameterColumn(Params.DEPTH));
 
+            // Joe table.
 //                statistics.add(new NumDirectedEdges());
 //                statistics.add(new TrueDagPrecisionArrow());
 //                statistics.add(new TrueDagPrecisionTails());
 //                statistics.add(new NumBidirectedEdgesEst());
-//                statistics.add(new BidirectedLatentPrecision());
+                statistics.add(new BidirectedLatentPrecision());
 //                statistics.add(new SemidirectedRecall());
 
-                statistics.add(new AncestorPrecision());
-                statistics.add(new AncestorRecall());
-                statistics.add(new SemidirectedPrecision());
-                statistics.add(new SemidirectedRecall());
-                statistics.add(new NonancestorPrecision());
-                statistics.add(new NonancestorRecall());
-                statistics.add(new NoSemidirectedPrecision());
-                statistics.add(new NoSemidirectedRecall());
+            // Greg table
+            statistics.add(new AncestorPrecision());
+            statistics.add(new AncestorRecall());
+            statistics.add(new AncestorF1());
+            statistics.add(new SemidirectedPrecision());
+            statistics.add(new SemidirectedRecall());
+            statistics.add(new SemidirectedPathF1());
+            statistics.add(new NonancestorPrecision());
+            statistics.add(new NonancestorRecall());
+            statistics.add(new NonancestorF1());
+
+
+//                statistics.add(new NoSemidirectedPrecision());
+//                statistics.add(new NoSemidirectedRecall());
 
 //                statistics.add(new NumDirectedEdges());
 //                statistics.add(new NumBidirectedEdgesEst());
@@ -2618,15 +2579,14 @@ public final class TestGrasp {
 //                statistics.add(new TrueDagPrecisionTails());
 //                statistics.add(new BidirectedLatentPrecision());
 
-                statistics.add(new ElapsedTime());
-            }
+            statistics.add(new ElapsedTime());
 
             Comparison comparison = new Comparison();
             comparison.setShowAlgorithmIndices(true);
             comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
 
             comparison.compareFromSimulations(
-                        "/Users/josephramsey/Downloads/grasp/testBfci.grouping." + grouping, simulations,
+                    "/Users/josephramsey/Downloads/grasp/testBfci.grouping." + grouping, simulations,
                     _algorithms, statistics, params);
         }
 
