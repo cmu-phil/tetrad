@@ -86,7 +86,7 @@ public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
             search.setAlgType(LvSwap.AlgType.Alg3);
-            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setDepth(-1);//parameters.getInt(Params.DEPTH));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setDoDefiniteDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
@@ -145,7 +145,7 @@ public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.DEPTH);
+//        params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 

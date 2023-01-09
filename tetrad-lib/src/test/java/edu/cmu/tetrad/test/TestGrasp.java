@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES_OLD;
@@ -2493,7 +2494,8 @@ public final class TestGrasp {
 
 //        params.set(Params.SIMULATION_ERROR_TYPE, 1);
 
-            Algorithms algorithms = new Algorithms();
+
+            List<Algorithm> algorithms = new ArrayList<>();
 
             IndependenceWrapper test = new FisherZ();
 
@@ -2502,6 +2504,18 @@ public final class TestGrasp {
             scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
             scores.add(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore());
             scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
+
+            algorithms.add(new Fci(test));
+            algorithms.add(new FciMax(test));
+            algorithms.add(new Rfci(test));
+
+            for (ScoreWrapper score : scores) {
+                algorithms.add(new GFCI(test, score));
+            }
+
+            for (ScoreWrapper score : scores) {
+                algorithms.add(new BFCI(test, score));
+            }
 
             for (ScoreWrapper score : scores) {
                 algorithms.add(new LVSWAP_1(test, score));
@@ -2519,16 +2533,13 @@ public final class TestGrasp {
                 algorithms.add(new LVSWAP_4(test, score));
             }
 
-            algorithms.add(new Fci(test));
-            algorithms.add(new FciMax(test));
-            algorithms.add(new Rfci(test));
 
-            for (ScoreWrapper score : scores) {
-                algorithms.add(new GFCI(test, score));
-            }
+//            Collections.shuffle(algorithms);
 
-            for (ScoreWrapper score : scores) {
-                algorithms.add(new BFCI(test, score));
+            Algorithms _algorithms = new Algorithms();
+
+            for (Algorithm algorithm : algorithms) {
+                _algorithms.add(algorithm);
             }
 
             Simulations simulations = new Simulations();
@@ -2585,12 +2596,27 @@ public final class TestGrasp {
                 statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
                 statistics.add(new ParameterColumn(Params.DEPTH));
 
-                statistics.add(new NumDirectedEdges());
-                statistics.add(new TrueDagPrecisionArrow());
-                statistics.add(new TrueDagPrecisionTails());
-                statistics.add(new NumBidirectedEdgesEst());
-                statistics.add(new BidirectedLatentPrecision());
+//                statistics.add(new NumDirectedEdges());
+//                statistics.add(new TrueDagPrecisionArrow());
+//                statistics.add(new TrueDagPrecisionTails());
+//                statistics.add(new NumBidirectedEdgesEst());
+//                statistics.add(new BidirectedLatentPrecision());
+//                statistics.add(new SemidirectedRecall());
+
+                statistics.add(new AncestorPrecision());
+                statistics.add(new AncestorRecall());
+                statistics.add(new SemidirectedPrecision());
                 statistics.add(new SemidirectedRecall());
+                statistics.add(new NonancestorPrecision());
+                statistics.add(new NonancestorRecall());
+                statistics.add(new NoSemidirectedPrecision());
+                statistics.add(new NoSemidirectedRecall());
+
+//                statistics.add(new NumDirectedEdges());
+//                statistics.add(new NumBidirectedEdgesEst());
+//                statistics.add(new TrueDagPrecisionArrow());
+//                statistics.add(new TrueDagPrecisionTails());
+//                statistics.add(new BidirectedLatentPrecision());
 
                 statistics.add(new ElapsedTime());
             }
@@ -2601,7 +2627,7 @@ public final class TestGrasp {
 
             comparison.compareFromSimulations(
                         "/Users/josephramsey/Downloads/grasp/testBfci.grouping." + grouping, simulations,
-                    algorithms, statistics, params);
+                    _algorithms, statistics, params);
         }
 
     }

@@ -18,12 +18,12 @@ public class BidirectedLatentPrecision implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "<->-Lat-Prec";
+        return "<->-Lat";
     }
 
     @Override
     public String getDescription() {
-        return "Percent of bidirected edges for which a latent confounder exists";
+        return "Percent of bidirected edges for which a latent confounder of X and Y exists";
     }
 
     @Override
