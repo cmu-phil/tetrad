@@ -211,14 +211,20 @@ public class TeyssierScorer {
     /**
      * Performs a tuck operation.
      */
-    public void swaptuck(Node x, Node y, Node z) {
+    public boolean swaptuck(Node x, Node y, Node z) {
+        boolean moved = false;
+
         if (index(y) < index(x)) {
             moveTo(x, index(y));
+            moved = true;
         }
 
-        else if (index(z) < index(x)) {
+        if (index(z) < index(x)) {
             moveTo(x, index(z));
+            moved = true;
         }
+
+        return moved;
     }
 
     public void swaptuck(Node x, Node y) {

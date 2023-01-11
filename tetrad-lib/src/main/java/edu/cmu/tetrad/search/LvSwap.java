@@ -221,49 +221,30 @@ public final class LvSwap implements GraphSearch {
             retainUnshieldedColliders(G);
             orientColliders(G, allT);
 
-            T = new HashSet<>(); // triples for unshielded colliders
+            T = new HashSet<>();
 
             List<Node> nodes = G.getNodes();
 
-            // For every <x, y, z> such that Triangle(x, y, z)....
             for (Node y : nodes) {
                 for (Node x : G.getAdjacentNodes(y)) {
-                    if (x == y) continue;
-
                     for (Node z : G.getAdjacentNodes(y)) {
                         if (x == z) continue;
-                        if (y == z) continue;
 
-                        // Check that  <x, y, z> is an unshielded collider or else is a shielded collider or noncollider
-                        // (either way you can end up after possible reorientation with an unshielded collider),
                         if (!G.isAdjacentTo(x, z)) continue;
 
                         scorer.goToBookmark();
 
-                        // and make sure you're conditioning on district(x, G)...
-                        Set<Node> S = GraphUtils.pagMb(x, G);
+                        boolean swapped = scorer.swaptuck(x, y, z);
 
-                        for (Node p : S) {
-                            scorer.tuck(p, x);
-                        }
+                        if (!swapped) continue;
 
-                        scorer.swaptuck(x, y, z);
-
-                        // If that's true, and if <x, y, z> is an unshielded collider in DAG(π),
                         if (scorer.collider(x, y, z) && !scorer.adjacent(x, z)) {
-
-                            // look at each y2 commonly adjacent to both x and z,
                             Set<Node> adj = scorer.getAdjacentNodes(x);
                             adj.retainAll(scorer.getAdjacentNodes(z));
 
                             for (Node y2 : adj) {
-
-                                // and x->y2<-z is an unshielded collider in DAG(swap(x, z, π))
-                                // not already oriented as an unshielded collider in G,
                                 if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z) && !G.isDefCollider(x, y, z)) {
-
-                                    // then add <x, y2, z> to the set of new unshielded colliders to process.
-                                    T.add(new Triple(x, y2, z));
+                                    T.add(new Triple(x, y, z));
                                 }
                             }
                         }
@@ -331,7 +312,7 @@ public final class LvSwap implements GraphSearch {
                         scorer.goToBookmark();
 
                         // Swap tuck x and y yielding π2
-                        scorer.swaptuck(x, y);
+                        scorer.swaptuck(x, y, z);
 
                         // If then <x, y, z> is an unshielded collider in DAG(π2), record it.
                         if ((scorer.collider(x, y, z) && !scorer.adjacent(x, z)) && !G.isDefCollider(x, y, z)) {
