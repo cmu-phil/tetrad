@@ -139,28 +139,29 @@ public final class LvSwap implements GraphSearch {
         for (Node x : pi) {
             Map<Node, List<Node>> T = new HashMap<>();
 
-            List<Node> X = GBoss.getParents(x);
+            List<Node> xParents = GBoss.getParents(x);
 
-            int _depth = depth < 0 ? X.size() : depth;
-            _depth = Math.min(_depth, X.size());
+            int _depth = depth < 0 ? xParents.size() : depth;
+            _depth = Math.min(_depth, xParents.size());
 
             // Order of increasing size
-            SublistGenerator gen = new SublistGenerator(X.size(), _depth);
+            SublistGenerator gen = new SublistGenerator(xParents.size(), _depth);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                List<Node> Y = GraphUtils.asList(choice, X);
-                Y = getComplement(X, Y);
+                List<Node> XSubset = GraphUtils.asList(choice, xParents);
 
-                for (Node z : getComplement(X, Y)) {
-                    if (adj(x, Y, GBoss).contains(z)) {
+                for (Node z : getComplement(xParents, XSubset)) {
+                    if (adj(x, XSubset, GBoss).contains(z)) {
                         scorer.goToBookmark();
 
-                        for (Node w : Y) {
-                            scorer.moveTo(w, scorer.index(x));
+                        for (Node w : XSubset) {
+                            if (scorer.index(w) < scorer.index(x)) {
+                                scorer.moveTo(w, scorer.index(x));
+                            }
                         }
 
-                        if (!scorer.parent(z, x)) T.put(z, Y);
+                        if (!scorer.parent(z, x)) T.put(z, XSubset);
                     }
                 }
             }

@@ -86,8 +86,9 @@ public final class TestGrasp {
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
 
-        new TestGrasp().testLvSwap();
-//        new TestGrasp().testLvSwapFromDsep();
+//        new TestGrasp().testLvSwap();
+        new TestGrasp().testLvSwapFromDsep();
+//        new TestGrasp().testDsep();
     }
 
     @NotNull
@@ -2524,9 +2525,9 @@ public final class TestGrasp {
             algorithms.add(new LVSWAP_2(test, score));
         }
 
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_3(test, score));
-        }
+//        for (ScoreWrapper score : scores) {
+//            algorithms.add(new LVSWAP_3(test, score));
+//        }
 
         for (ScoreWrapper score : scores) {
             algorithms.add(new LVSWAP_4(test, score));
@@ -2780,6 +2781,22 @@ public final class TestGrasp {
         }
 
         System.out.println(table);
+    }
+
+    public void testDsep() {
+        Graph graph = GraphUtils.randomGraph(20, 0, 40, 100, 100, 100, false);
+
+        for (Node x : graph.getNodes()) {
+            List<Node> parents = graph.getParents(x);
+
+            for (Node y : graph.getNodes()) {
+                if (!graph.isDescendentOf(y, x) && !parents.contains(y)) {
+                    if (!graph.isDSeparatedFrom(x, y, parents)) {
+                        System.out.println("Failure! " + SearchLogUtils.dependenceFactMsg(x, y, parents, 1.0));
+                    }
+                }
+            }
+        }
     }
 
     public void testScores() {

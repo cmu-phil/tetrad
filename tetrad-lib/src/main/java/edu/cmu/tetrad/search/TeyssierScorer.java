@@ -219,20 +219,24 @@ public class TeyssierScorer {
             moved = true;
         }
 
-        if (index(z) < index(x)) {
-            moveTo(x, index(z));
+        if (index(y) < index(z)) {
+            moveTo(z, index(y));
             moved = true;
         }
 
         return moved;
     }
 
-    public void swaptuck(Node x, Node y) {
+    public boolean swaptuck(Node x, Node y) {
         if (index(x) < index(y)) {
             moveTo(y, index(x));
+            return true;
         } else if (index(y) < index(x)) {
             moveTo(x, index(y));
+            return true;
         }
+
+        return false;
     }
 
     public void tuckWithoutMovingAncestors(Node x, Node y) {
