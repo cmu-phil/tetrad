@@ -148,7 +148,7 @@ public class StatsListEditor extends JPanel {
         statistics.add(new NoSemidirectedPrecision());
         statistics.add(new NoSemidirectedRecall());
         statistics.add(new NoSemidirectedF1());
-//        }
+//
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
