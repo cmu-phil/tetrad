@@ -123,11 +123,11 @@ public class StatsListEditor extends JPanel {
     private List<Statistic> statistics() {
         List<Statistic> statistics = new ArrayList<>();
 
-        boolean dag = referenceGraph.getGraphType() == EdgeListGraph.GraphType.DAG;
-
-        if (!dag) {
-            dag = GraphUtils.isDag(referenceGraph);
-        }
+//        boolean dag = referenceGraph.getGraphType() == EdgeListGraph.GraphType.DAG;
+//
+//        if (!dag) {
+//            dag = GraphUtils.isDag(referenceGraph);
+//        }
 
         // Allow these stats for any types of graphs
 //        if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG && dag) {
