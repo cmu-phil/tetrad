@@ -37,12 +37,14 @@ public final class ParamDescriptions {
         final String VALUE_TYPE_STRING = "String";
         final String VALUE_TYPE_INTEGER = "Integer";
         final String VALUE_TYPE_DOUBLE = "Double";
+        final String VALUE_TYPE_LONG = "Long";
         final String VALUE_TYPE_BOOLEAN = "Boolean";
 
         Set<String> PARAM_VALUE_TYPES = new HashSet<>(Arrays.asList(
                 VALUE_TYPE_STRING,
                 VALUE_TYPE_INTEGER,
                 VALUE_TYPE_DOUBLE,
+                VALUE_TYPE_LONG,
                 VALUE_TYPE_BOOLEAN
         ));
 
