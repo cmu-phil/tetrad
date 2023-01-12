@@ -12,12 +12,12 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author Joseh Ramsey
  */
-public class NonancestorF1 implements Statistic {
+public class NoSemidirectedF1 implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "Nonancestor-F1";
+        return "NoSemidirected-F1";
     }
 
     @Override
@@ -27,8 +27,8 @@ public class NonancestorF1 implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double precision = new NonancestorPrecision().getValue(trueGraph, estGraph, dataModel);
-        double recall = new NonancestorRecall().getValue(trueGraph, estGraph, dataModel);
+        double precision = new NoSemidirectedPrecision().getValue(trueGraph, estGraph, dataModel);
+        double recall = new NoSemidirectedRecall().getValue(trueGraph, estGraph, dataModel);
         return 2 * (precision * recall) / (precision + recall);
     }
 

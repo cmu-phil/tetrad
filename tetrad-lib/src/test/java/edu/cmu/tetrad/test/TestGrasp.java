@@ -86,8 +86,8 @@ public final class TestGrasp {
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
 
-//        new TestGrasp().testLvSwap();
-        new TestGrasp().testLvSwapFromDsep();
+        new TestGrasp().testLvSwap();
+//        new TestGrasp().testLvSwapFromDsep();
     }
 
     @NotNull
@@ -2500,17 +2500,21 @@ public final class TestGrasp {
 
         List<Algorithm> algorithms = new ArrayList<>();
 
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci(test));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
-//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci(test));
-//
-//        for (ScoreWrapper score : scores) {
-//            algorithms.add(new GFCI(test, score));
-//        }
-//
-//        for (ScoreWrapper score : scores) {
-//            algorithms.add(new BFCI(test, score));
-//        }
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci(test));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
+        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci(test));
+
+        for (ScoreWrapper score : scores) {
+            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS(test, score));
+        }
+
+        for (ScoreWrapper score : scores) {
+            algorithms.add(new GFCI(test, score));
+        }
+
+        for (ScoreWrapper score : scores) {
+            algorithms.add(new BFCI(test, score));
+        }
 
         for (ScoreWrapper score : scores) {
             algorithms.add(new LVSWAP_1(test, score));
@@ -2546,11 +2550,12 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.DEPTH));
 
         // Joe table.
-//        statistics.add(new NumDirectedEdges());
+        statistics.add(new NumDirectedEdges());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagPrecisionTails());
-//        statistics.add(new NumBidirectedEdgesEst());
+        statistics.add(new NumBidirectedEdgesEst());
         statistics.add(new BidirectedLatentPrecision());
+
 
         // Greg table
         statistics.add(new AncestorPrecision());
@@ -2559,9 +2564,9 @@ public final class TestGrasp {
         statistics.add(new SemidirectedPrecision());
         statistics.add(new SemidirectedRecall());
         statistics.add(new SemidirectedPathF1());
-        statistics.add(new NonancestorPrecision());
-        statistics.add(new NonancestorRecall());
-        statistics.add(new NonancestorF1());
+        statistics.add(new NoSemidirectedPrecision());
+        statistics.add(new NoSemidirectedRecall());
+        statistics.add(new NoSemidirectedF1());
 
         statistics.add(new ElapsedTime());
 
@@ -2594,7 +2599,7 @@ public final class TestGrasp {
         params.set(Params.NUM_RUNS, 20);
 
         params.set(Params.BOSS_ALG, 1);
-        params.set(Params.DEPTH, -1);
+        params.set(Params.DEPTH, 2);
         params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.POSSIBLE_DSEP_DONE, true);
@@ -2636,7 +2641,7 @@ public final class TestGrasp {
         dagStats.add(new SemidirectedPathF1());
         dagStats.add(new NonancestorPrecision());
         dagStats.add(new NonancestorRecall());
-        dagStats.add(new NonancestorF1());
+        dagStats.add(new NoSemidirectedF1());
 
         Statistics pagStats = new Statistics();
 

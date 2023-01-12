@@ -2,7 +2,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -130,23 +129,26 @@ public class StatsListEditor extends JPanel {
             dag = GraphUtils.isDag(referenceGraph);
         }
 
-        if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG && dag) {
-            statistics.add(new AncestorPrecision());
-            statistics.add(new AncestorRecall());
-            statistics.add(new SemidirectedPrecision());
-            statistics.add(new SemidirectedRecall());
-            statistics.add(new NonancestorPrecision());
-            statistics.add(new NonancestorRecall());
-            statistics.add(new NoSemidirectedPrecision());
-            statistics.add(new NoSemidirectedRecall());
+//        if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG && dag) {
+        // Joe table.
+        statistics.add(new NumDirectedEdges());
+        statistics.add(new TrueDagPrecisionArrow());
+        statistics.add(new TrueDagPrecisionTails());
+        statistics.add(new NumBidirectedEdgesEst());
+        statistics.add(new BidirectedLatentPrecision());
 
-            statistics.add(new NumDirectedEdges());
-            statistics.add(new TrueDagPrecisionArrow());
-            statistics.add(new TrueDagPrecisionTails());
-            statistics.add(new NumBidirectedEdgesEst());
-            statistics.add(new BidirectedLatentPrecision());
-            statistics.add(new SemidirectedRecall());
-        }
+
+        // Greg table
+        statistics.add(new AncestorPrecision());
+        statistics.add(new AncestorRecall());
+        statistics.add(new AncestorF1());
+        statistics.add(new SemidirectedPrecision());
+        statistics.add(new SemidirectedRecall());
+        statistics.add(new SemidirectedPathF1());
+        statistics.add(new NoSemidirectedPrecision());
+        statistics.add(new NoSemidirectedRecall());
+        statistics.add(new NoSemidirectedF1());
+//        }
 
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
