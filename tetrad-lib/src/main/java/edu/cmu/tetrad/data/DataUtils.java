@@ -45,6 +45,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.SynchronizedRandomGenerator;
+import org.apache.commons.math3.random.Well44497b;
 
 /**
  * Some static utility methods for dealing with data sets.
@@ -1131,7 +1134,7 @@ public final class DataUtils {
      * @return dataset
      */
     public static DataSet getResamplingDataset(DataSet data, int sampleSize, long seed) {
-        Random random = new Random(seed);
+        RandomGenerator random = new SynchronizedRandomGenerator(new Well44497b(seed));
 
         int actualSampleSize = data.getNumRows();
         int _size = sampleSize;
@@ -1199,7 +1202,7 @@ public final class DataUtils {
      * @return dataset
      */
     public static DataSet getBootstrapSample(DataSet data, int sampleSize, long seed) {
-        Random random = new Random(seed);
+        RandomGenerator random = new SynchronizedRandomGenerator(new Well44497b(seed));
 
         int actualSampleSize = data.getNumRows();
         int[] rows = new int[sampleSize];

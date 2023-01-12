@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.task.GeneralResamplingSearchRunnable;
 
 import java.io.PrintStream;
@@ -146,13 +147,18 @@ public class GeneralResamplingSearch {
         }
 
         if (this.data != null) {
+            Long seed = (parameters == null || parameters.get(Params.SEED) == null) ? null : (Long) parameters.get(Params.SEED);
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
                 DataSet dataSet;
 
                 if (this.resamplingWithReplacement) {
-                    dataSet = DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
+                    dataSet = (seed == null || seed < 0)
+                            ? DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0))
+                            : DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), seed);
                 } else {
-                    dataSet = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
+                    dataSet = (seed == null || seed < 0)
+                            ? DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0))
+                            : DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), seed);
                 }
 
                 dataSet.setKnowledge(data.getKnowledge());

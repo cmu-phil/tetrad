@@ -145,7 +145,7 @@ public class Parameters implements TetradSerializable {
      * @param name The name of the parameter.
      * @return The long value of this parameter.
      */
-    public long getLong(String name, int defaultValue) {
+    public long getLong(String name, long defaultValue) {
         return ((Number) get(name, defaultValue)).longValue();
     }
 
