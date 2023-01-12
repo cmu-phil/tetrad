@@ -96,6 +96,12 @@ public final class ParamDescriptions {
                         int upperBoundInt = Integer.parseInt(upperBound);
 
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueInt, lowerBoundInt, upperBoundInt);
+                    } else if (valueType.equalsIgnoreCase(VALUE_TYPE_LONG)) {
+                        Long defaultValueLong = Long.parseLong(defaultValue);
+                        long lowerBoundLong = Long.parseLong(lowerBound);
+                        long upperBoundLong = Long.parseLong(upperBound);
+
+                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueLong, lowerBoundLong, upperBoundLong);
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_DOUBLE)) {
                         Double defaultValueDouble = Double.parseDouble(defaultValue);
                         double lowerBoundDouble = Double.parseDouble(lowerBound);

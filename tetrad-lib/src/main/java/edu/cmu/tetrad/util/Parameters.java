@@ -69,6 +69,17 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
+     * Returns the long value of the given parameter, looking up its default in
+     * the ParamDescriptions map.
+     *
+     * @param name The name of the parameter.
+     * @return The long value of this parameter.
+     */
+    public long getLong(String name) {
+        return ((Number) get(name, ParamDescriptions.getInstance().get(name).getDefaultValue())).longValue();
+    }
+
+    /**
      * Returns the boolean value of the given parameter, looking up its default
      * in the ParamDescriptions map.
      *
@@ -125,6 +136,17 @@ public class Parameters implements TetradSerializable {
      */
     public int getInt(String name, int defaultValue) {
         return ((Number) get(name, defaultValue)).intValue();
+    }
+
+    /**
+     * Returns the long value of the given parameter, looking up its default in
+     * the ParamDescriptions map.
+     *
+     * @param name The name of the parameter.
+     * @return The long value of this parameter.
+     */
+    public long getLong(String name, int defaultValue) {
+        return ((Number) get(name, defaultValue)).longValue();
     }
 
     /**
