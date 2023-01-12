@@ -129,6 +129,7 @@ public class StatsListEditor extends JPanel {
             dag = GraphUtils.isDag(referenceGraph);
         }
 
+        // Allow these stats for any types of graphs
 //        if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG && dag) {
         // Joe table.
         statistics.add(new NumDirectedEdges());
