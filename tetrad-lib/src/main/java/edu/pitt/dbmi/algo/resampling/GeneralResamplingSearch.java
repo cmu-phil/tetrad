@@ -17,6 +17,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.SynchronizedRandomGenerator;
+import org.apache.commons.math3.random.Well44497b;
 
 /**
  * Sep 7, 2018 1:38:50 PM
@@ -148,17 +151,18 @@ public class GeneralResamplingSearch {
 
         if (this.data != null) {
             Long seed = (parameters == null || parameters.get(Params.SEED) == null) ? null : (Long) parameters.get(Params.SEED);
+            RandomGenerator randomGenerator = (seed == null || seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
                 DataSet dataSet;
 
                 if (this.resamplingWithReplacement) {
-                    dataSet = (seed == null || seed < 0)
+                    dataSet = (randomGenerator == null)
                             ? DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0))
-                            : DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), seed);
+                            : DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), randomGenerator);
                 } else {
-                    dataSet = (seed == null || seed < 0)
+                    dataSet = (randomGenerator == null)
                             ? DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0))
-                            : DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), seed);
+                            : DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), randomGenerator);
                 }
 
                 dataSet.setKnowledge(data.getKnowledge());
