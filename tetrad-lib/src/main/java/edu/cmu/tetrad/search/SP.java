@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeEdge;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -9,10 +11,7 @@ import edu.cmu.tetrad.util.PermutationGenerator;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Collections.shuffle;
 
@@ -193,19 +192,81 @@ public class SP {
 
     @NotNull
     public Graph getGraph(boolean cpDag) {
-//        if (scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-//        Graph graph = scorer.getGraph(cpDag);
-//        graph.addAttribute("# edges", graph.getNumEdges());
-//        return graph;
-
         if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
         Graph graph = this.scorer.getGraph(cpDag);
+
+        orientbk(knowledge, graph, variables);
+        MeekRules meekRules = new MeekRules();
+        meekRules.setRevertToUnshieldedColliders(false);
+        meekRules.orientImplied(graph);
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         graph.addAttribute("score ", nf.format(this.scorer.score()));
         return graph;
 
+//        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
+//        Graph graph = this.scorer.getGraph(cpDag);
+//
+//        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+//        graph.addAttribute("score ", nf.format(this.scorer.score()));
+//        return graph;
+
     }
+
+    public void orientbk(Knowledge bk, Graph graph, List<Node> variables) {
+        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(to, from, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(from, to, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+    }
+
 
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
