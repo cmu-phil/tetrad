@@ -34,13 +34,13 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "LV-Swap-3",
-//        command = "lv-swap-3",
-//        algoType = AlgType.allow_latent_common_causes
-//)
-//@Bootstrapping
-//@Experimental
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "LV-Swap-3",
+        command = "lv-swap-3",
+        algoType = AlgType.allow_latent_common_causes
+)
+@Bootstrapping
+@Experimental
 public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;

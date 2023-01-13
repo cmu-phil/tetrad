@@ -59,7 +59,7 @@ import static java.util.Collections.reverse;
  */
 public final class LvSwap implements GraphSearch {
 
-    public enum AlgType {Alg1, Alg2, Alg3, Alg4}
+    public enum AlgType {Alg1, Alg2, Alg3}
 
     private AlgType algType = AlgType.Alg1;
 
@@ -104,8 +104,6 @@ public final class LvSwap implements GraphSearch {
             return search_2();
         } else if (algType == AlgType.Alg3) {
             return search_3();
-        } else if (algType == AlgType.Alg4) {
-            return search_4();
         }
 
         throw new IllegalArgumentException("Unexpected alg type: " + algType);
@@ -264,78 +262,6 @@ public final class LvSwap implements GraphSearch {
     }
 
     public Graph search_3() {
-        TeyssierScorer scorer = new TeyssierScorer(test, score);
-
-        Boss alg = new Boss(scorer);
-        alg.setAlgType(bossAlgType);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-        alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(depth);
-        alg.setNumStarts(numStarts);
-        alg.setVerbose(verbose);
-
-        alg.bestOrder(this.score.getVariables());
-        Graph G = alg.getGraph(false);
-
-        retainUnshieldedColliders(G);
-
-        Graph G2 = new EdgeListGraph(G);
-
-        scorer.bookmark();
-
-        Set<Triple> T = new HashSet<>();
-        Set<Triple> allT = new HashSet<>();
-
-        do {
-            allT.addAll(T);
-
-            G = new EdgeListGraph(G2);
-
-            removeShields(G, allT);
-            retainUnshieldedColliders(G);
-            orientColliders(G, allT);
-
-            T = new HashSet<>();
-
-            List<Node> nodes = G.getNodes();
-
-            // For every <x, y, z>, it Triangle(x, y, z),
-            for (Node y : nodes) {
-                for (Node x : G.getAdjacentNodes(y)) {
-                    if (x == y) continue;
-
-                    for (Node z : G.getAdjacentNodes(y)) {
-                        if (x == z) continue;
-                        if (y == z) continue;
-
-                        if (!G.isAdjacentTo(x, z)) continue;
-
-                        scorer.goToBookmark();
-
-                        // Swap tuck x and y yielding π2
-                        scorer.swaptuck(x, y, z);
-
-                        // If then <x, y, z> is an unshielded collider in DAG(π2), record it.
-                        if ((scorer.collider(x, y, z) && !scorer.adjacent(x, z)) && !G.isDefCollider(x, y, z)) {
-                            T.add(new Triple(x, y, z));
-                        }
-                    }
-                }
-            }
-        } while (!allT.containsAll(T));
-
-        scorer.goToBookmark();
-
-        finalOrientation(knowledge, G);
-
-        G.setGraphType(EdgeListGraph.GraphType.PAG);
-
-        return G;
-    }
-
-
-    public Graph search_4() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
