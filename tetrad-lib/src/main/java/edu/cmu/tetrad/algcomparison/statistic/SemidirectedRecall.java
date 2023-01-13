@@ -36,7 +36,7 @@ public class SemidirectedRecall implements Statistic {
 
         for (Node x : nodes) {
             for (Node y : nodes) {
-//                if (x == y) continue;
+                if (x == y) continue;
 
                 if (trueGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
                     if (estGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {

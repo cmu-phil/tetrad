@@ -155,10 +155,11 @@ public final class LvSwap implements GraphSearch {
                     if (adj(x, XSubset, GBoss).contains(z)) {
                         scorer.goToBookmark();
 
-                        for (Node w : XSubset) {
-                            if (scorer.index(w) < scorer.index(x)) {
-                                scorer.moveTo(w, scorer.index(x));
-                            }
+                        List<Node> _sub = new ArrayList<>(XSubset);
+                        _sub.remove(z);
+
+                        for (Node w : _sub) {
+                            scorer.moveTo(w, scorer.index(x));
                         }
 
                         if (!scorer.parent(z, x)) T.put(z, XSubset);

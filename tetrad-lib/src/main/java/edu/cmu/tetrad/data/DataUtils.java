@@ -45,6 +45,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.SynchronizedRandomGenerator;
+import org.apache.commons.math3.random.Well44497b;
 
 /**
  * Some static utility methods for dealing with data sets.
@@ -1127,12 +1130,10 @@ public final class DataUtils {
      *
      * @param data original dataset
      * @param sampleSize number of data (row)
-     * @param seed the initial seed
+     * @param randomGenerator random number generator
      * @return dataset
      */
-    public static DataSet getResamplingDataset(DataSet data, int sampleSize, long seed) {
-        Random random = new Random(seed);
-
+    public static DataSet getResamplingDataset(DataSet data, int sampleSize, RandomGenerator randomGenerator) {
         int actualSampleSize = data.getNumRows();
         int _size = sampleSize;
         if (actualSampleSize < _size) {
@@ -1152,7 +1153,7 @@ public final class DataUtils {
             int row = -1;
             int index = -1;
             while (row == -1 || addedRows.contains(row)) {
-                index = random.nextInt(availRows.size());
+                index = randomGenerator.nextInt(availRows.size());
                 row = availRows.get(index);
             }
             rows[i] = row;
@@ -1195,16 +1196,14 @@ public final class DataUtils {
      *
      * @param data original dataset
      * @param sampleSize number of data (row)
-     * @param seed the initial seed
+     * @param randomGenerator random number generator
      * @return dataset
      */
-    public static DataSet getBootstrapSample(DataSet data, int sampleSize, long seed) {
-        Random random = new Random(seed);
-
+    public static DataSet getBootstrapSample(DataSet data, int sampleSize, RandomGenerator randomGenerator) {
         int actualSampleSize = data.getNumRows();
         int[] rows = new int[sampleSize];
         for (int i = 0; i < rows.length; i++) {
-            rows[i] = random.nextInt(actualSampleSize);
+            rows[i] = randomGenerator.nextInt(actualSampleSize);
         }
 
         int[] cols = new int[data.getNumColumns()];
@@ -2193,7 +2192,7 @@ public final class DataUtils {
 //        if (dataSet.getNumRows() < 1000) {
 //            cov = new CovarianceMatrixOnTheFly(dataSet);
 //        } else {
-            cov = new CovarianceMatrix(dataSet);
+        cov = new CovarianceMatrix(dataSet);
 //        }
 
         return cov;
@@ -2206,7 +2205,7 @@ public final class DataUtils {
 //        if (dataSet.getNumRows() < 1000) {
 //            cov = new CorrelationMatrixOnTheFly(new CovarianceMatrixOnTheFly(dataSet));
 //        } else {
-            cov = new CovarianceMatrix(dataSet);
+        cov = new CovarianceMatrix(dataSet);
 //        }
 
         return cov;

@@ -478,8 +478,8 @@ public class Boss {
     }
 
     public void setDepth(int depth) {
-//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-//        this.depth = depth;
+        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
+        this.depth = depth;
     }
 
     public void setUseScore(boolean useScore) {

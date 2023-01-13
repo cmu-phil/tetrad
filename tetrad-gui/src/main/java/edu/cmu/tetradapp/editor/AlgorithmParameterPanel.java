@@ -32,6 +32,7 @@ import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
+import edu.cmu.tetradapp.util.LongTextField;
 import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
@@ -183,6 +184,10 @@ public class AlgorithmParameterPanel extends JPanel {
             int lowerBoundInt = paramDesc.getLowerBoundInt();
             int upperBoundInt = paramDesc.getUpperBoundInt();
             component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+        } else if (defaultValue instanceof Long) {
+            long lowerBoundLong = paramDesc.getLowerBoundLong();
+            long upperBoundLong = paramDesc.getUpperBoundLong();
+            component = getLongTextField(parameter, parameters, (Long) defaultValue, lowerBoundLong, upperBoundLong);
         } else if (defaultValue instanceof Boolean) {
             component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
         } else if (defaultValue instanceof String) {
@@ -257,6 +262,35 @@ public class AlgorithmParameterPanel extends JPanel {
     protected IntTextField getIntTextField(String parameter, Parameters parameters,
                                            int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
+
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
+            }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+    
+    protected LongTextField getLongTextField(String parameter, Parameters parameters,
+            long defaultValue, long lowerBound, long upperBound) {
+        LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
             if (value == field.getValue()) {
