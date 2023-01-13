@@ -9,8 +9,6 @@ import edu.cmu.tetrad.graph.Node;
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
 
 /**
- * The bidirected true positives.
- *
  * @author jdramsey
  */
 public class NumDirectedEdges implements Statistic {
@@ -18,7 +16,7 @@ public class NumDirectedEdges implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "#X->Y";
+        return "#X-->Y";
     }
 
     @Override

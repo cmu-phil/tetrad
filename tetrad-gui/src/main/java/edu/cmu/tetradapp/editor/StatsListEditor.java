@@ -133,21 +133,24 @@ public class StatsListEditor extends JPanel {
 //        if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG && dag) {
         // Joe table.
         statistics.add(new NumDirectedEdges());
-        statistics.add(new TrueDagPrecisionArrow());
-        statistics.add(new TrueDagPrecisionTails());
+        statistics.add(new NumUndirectedEdges());
+        statistics.add(new NumPartiallyOrientedEdges());
+        statistics.add(new NumNondirectedEdges());
         statistics.add(new NumBidirectedEdgesEst());
+        statistics.add(new TrueDagPrecisionTails());
+        statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new BidirectedLatentPrecision());
 
 
         // Greg table
-        statistics.add(new AncestorPrecision());
-        statistics.add(new AncestorRecall());
+//        statistics.add(new AncestorPrecision());
+//        statistics.add(new AncestorRecall());
         statistics.add(new AncestorF1());
-        statistics.add(new SemidirectedPrecision());
-        statistics.add(new SemidirectedRecall());
+//        statistics.add(new SemidirectedPrecision());
+//        statistics.add(new SemidirectedRecall());
         statistics.add(new SemidirectedPathF1());
-        statistics.add(new NoSemidirectedPrecision());
-        statistics.add(new NoSemidirectedRecall());
+//        statistics.add(new NoSemidirectedPrecision());
+//        statistics.add(new NoSemidirectedRecall());
         statistics.add(new NoSemidirectedF1());
 
         // Others
