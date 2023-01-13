@@ -229,9 +229,10 @@ public class TeyssierScorer {
 
     public boolean swaptuck(Node x, Node y) {
         if (index(x) < index(y)) {
-            moveTo(y, index(x));
-            return true;
-        } else if (index(y) < index(x)) {
+//            moveTo(y, index(x));
+            return false;
+        } else
+        if (index(y) < index(x)) {
             moveTo(x, index(y));
             return true;
         }

@@ -2525,12 +2525,8 @@ public final class TestGrasp {
             algorithms.add(new LVSWAP_2(test, score));
         }
 
-//        for (ScoreWrapper score : scores) {
-//            algorithms.add(new LVSWAP_3(test, score));
-//        }
-
         for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_4(test, score));
+            algorithms.add(new LVSWAP_3(test, score));
         }
 
 
@@ -2688,8 +2684,7 @@ public final class TestGrasp {
             algorithms.add(new BFCI(test, score));
             algorithms.add(new LVSWAP_1(test, score));
             algorithms.add(new LVSWAP_2(test, score));
-//            algorithms.add(new LVSWAP_3(test, score));
-            algorithms.add(new LVSWAP_4(test, score));
+            algorithms.add(new LVSWAP_3(test, score));
 
             algNames = new ArrayList<>();
 

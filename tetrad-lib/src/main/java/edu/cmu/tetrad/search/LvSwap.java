@@ -218,7 +218,7 @@ public final class LvSwap implements GraphSearch {
             G = new EdgeListGraph(G2);
 
             removeShields(G, allT);
-            retainUnshieldedColliders(G);
+//            retainUnshieldedColliders(G);
             orientColliders(G, allT);
 
             T = new HashSet<>();
@@ -243,8 +243,8 @@ public final class LvSwap implements GraphSearch {
                             adj.retainAll(scorer.getAdjacentNodes(z));
 
                             for (Node y2 : adj) {
-                                if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z) && !G.isDefCollider(x, y, z)) {
-                                    T.add(new Triple(x, y, z));
+                                if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)) {// && !G.isDefCollider(x, y, z)) {
+                                    T.add(new Triple(x, y2, z));
                                 }
                             }
                         }
@@ -308,7 +308,7 @@ public final class LvSwap implements GraphSearch {
 
                         scorer.goToBookmark();
 
-                        List<Node> children = new ArrayList<>(scorer.getChildren(y));
+                        List<Node> children = new ArrayList<>(scorer.getAdjacentNodes(y));
 
                         int _depth = depth < 0 ? children.size() : depth;
                         _depth = Math.min(_depth, children.size());
