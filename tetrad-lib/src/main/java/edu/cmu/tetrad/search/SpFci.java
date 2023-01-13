@@ -122,18 +122,11 @@ public final class SpFci implements GraphSearch {
 ////        alg.setKnowledge(knowledge);
 //        alg.setVerbose(false);
 
-        OtherPermAlgs otherPermAlgs;
+        SP sp = new SP(independenceTest, score);
+        sp.setKnowledge(knowledge);
 
-        otherPermAlgs = new OtherPermAlgs(independenceTest, score);
-
-        OtherPermAlgs.Method method = OtherPermAlgs.Method.SP;
-
-        otherPermAlgs.setMethod(method);
-        otherPermAlgs.setUsePearl(this.useRaskuttiUhler);
-        otherPermAlgs.setVerbose(this.verbose);
-
-        List<Node> pi = otherPermAlgs.bestOrder(score.getVariables());
-        Graph graph = otherPermAlgs.getGraph(false);
+        sp.bestOrder(score.getVariables());
+        Graph graph = sp.getGraph(false);
         this.graph = graph;
 
         if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
