@@ -61,7 +61,7 @@ public class PoissonPriorScore implements Score {
     // True if row subsets should be calculated.
     private boolean calculateRowSubsets;
 
-    private double structurePrior = 3.;
+    private double lambda = 3.;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -138,7 +138,7 @@ public class PoissonPriorScore implements Score {
             return Double.NaN;
         }
 
-        double r = structurePrior == 0 ? 0.0 : k * log(structurePrior);
+        double r = k * log(lambda);
 
         // Bryan
         double score = - 0.5 * this.N * log(varRy) - 0.5 * k * log(this.N) + r - Gamma.logGamma(k + 1.);
@@ -258,9 +258,9 @@ public class PoissonPriorScore implements Score {
         return _z;
     }
 
-    public void setStructurePrior(double structurePrior) {
-        if (structurePrior < 1.0) throw new IllegalArgumentException("Structure prior can't be < 1: " + structurePrior);
-        this.structurePrior = structurePrior;
+    public void setLambda(double lambda) {
+        if (lambda < 1.0) throw new IllegalArgumentException("Structure prior can't be < 1: " + lambda);
+        this.lambda = lambda;
     }
 }
 
