@@ -18,12 +18,12 @@ public class SemidirectedRecall implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "semi(X,Y)-Rec";
+        return "Semidirected-Rec";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of <X, Y> where there is a semidirected path from X to Y in true, for which there is also a semidirected path from X to Y in estimated";
+        return "Proportion of (X, Y) where if semidirected path in true then also in est";
     }
 
     @Override

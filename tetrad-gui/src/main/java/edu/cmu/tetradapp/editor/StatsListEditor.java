@@ -2,7 +2,6 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -124,21 +123,34 @@ public class StatsListEditor extends JPanel {
     private List<Statistic> statistics() {
         List<Statistic> statistics = new ArrayList<>();
 
-        boolean dag = referenceGraph.getGraphType() == EdgeListGraph.GraphType.DAG;
+//        boolean dag = referenceGraph.getGraphType() == EdgeListGraph.GraphType.DAG;
+//
+//        if (!dag) {
+//            dag = GraphUtils.isDag(referenceGraph);
+//        }
 
-        if (!dag) {
-            dag = GraphUtils.isDag(referenceGraph);
-        }
+        // Allow these stats for any types of graphs
+//        if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG && dag) {
+        // Joe table.
+        statistics.add(new NumDirectedEdges());
+        statistics.add(new TrueDagPrecisionArrow());
+        statistics.add(new TrueDagPrecisionTails());
+        statistics.add(new NumBidirectedEdgesEst());
+        statistics.add(new BidirectedLatentPrecision());
 
-        if (targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG && dag) {
-            statistics.add(new NumDirectedEdges());
-            statistics.add(new TrueDagPrecisionArrow());
-            statistics.add(new TrueDagPrecisionTails());
-            statistics.add(new NumBidirectedEdgesEst());
-            statistics.add(new BidirectedLatentPrecision());
-            statistics.add(new SemidirectedRecall());
-        }
 
+        // Greg table
+        statistics.add(new AncestorPrecision());
+        statistics.add(new AncestorRecall());
+        statistics.add(new AncestorF1());
+        statistics.add(new SemidirectedPrecision());
+        statistics.add(new SemidirectedRecall());
+        statistics.add(new SemidirectedPathF1());
+        statistics.add(new NoSemidirectedPrecision());
+        statistics.add(new NoSemidirectedRecall());
+        statistics.add(new NoSemidirectedF1());
+
+        // Others
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
