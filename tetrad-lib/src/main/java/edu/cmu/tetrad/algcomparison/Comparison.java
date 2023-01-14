@@ -67,6 +67,10 @@ public class Comparison {
 
     private boolean parallelized = true;
 
+    public void setParallelized(boolean parallelized) {
+        this.parallelized = parallelized;
+    }
+
     public enum ComparisonGraph {
         true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
     }
