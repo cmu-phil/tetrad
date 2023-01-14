@@ -234,7 +234,15 @@ public final class LvSwap implements GraphSearch {
 
                         scorer.goToBookmark();
 
-                        boolean swapped = scorer.swaptuck(x, y, z);
+                        boolean swapped = scorer.swaptuck(x, y);
+
+//                        boolean swapped = false;
+//
+//                        if (scorer.index(x) > scorer.index(y)) {
+//                            scorer.moveTo(x, scorer.index(y));
+//                            swapped = true;
+//                        }
+
 
                         if (!swapped) continue;
 
