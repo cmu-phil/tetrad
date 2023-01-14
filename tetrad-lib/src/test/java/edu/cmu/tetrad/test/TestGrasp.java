@@ -86,8 +86,8 @@ public final class TestGrasp {
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
 
-//        new TestGrasp().testLvSwap();
-        new TestGrasp().testLvSwapFromDsep();
+        new TestGrasp().testLvSwap();
+//        new TestGrasp().testLvSwapFromDsep();
 //        new TestGrasp().testDsep();
     }
 

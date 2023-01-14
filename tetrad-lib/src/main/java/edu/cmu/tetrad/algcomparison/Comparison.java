@@ -50,7 +50,9 @@ import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 
 import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
@@ -62,6 +64,8 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  * @author Daniel Malinsky
  */
 public class Comparison {
+
+    private boolean parallelized = true;
 
     public enum ComparisonGraph {
         true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
@@ -909,8 +913,15 @@ public class Comparison {
             }
         }
 
-        for (AlgorithmTask task : tasks) {
-            task.compute();
+        if (parallelized) {
+            int parallelism = ForkJoinPool.getCommonPoolParallelism() + 10;
+            ForkJoinPool pool = (ForkJoinPool) Executors.newWorkStealingPool(parallelism);
+            pool.invokeAll(tasks);
+            pool.shutdown();
+        } else {
+            for (AlgorithmTask task : tasks) {
+                task.call();
+            }
         }
 
         return allStats;
@@ -1045,7 +1056,7 @@ public class Comparison {
         this.comparisonGraph = comparisonGraph;
     }
 
-    private class AlgorithmTask extends RecursiveTask<Boolean> {
+    private class AlgorithmTask implements Callable<Boolean> {
 
         private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
         private final List<AlgorithmWrapper> algorithmWrappers;
@@ -1070,7 +1081,7 @@ public class Comparison {
         }
 
         @Override
-        protected Boolean compute() {
+        public Boolean call() {
             doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,
                     this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run, this.stdout);
             return true;
