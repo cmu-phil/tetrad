@@ -42,6 +42,11 @@ import java.io.ObjectInputStream;
  */
 public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
+
+    public enum ComparisonType {DAG, CPDAG, PAG}
+
+    private ComparisonType comparisonType = ComparisonType.DAG;
+
     private final Graph targetGraph;
     private final Graph referenceGraph;
     private final Parameters params;
@@ -103,7 +108,21 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
     public String getComparisonString() {
         String refName = getParams().getString("referenceGraphName", null);
         String targetName = getParams().getString("targetGraphName", null);
-        return SearchGraphUtils.graphComparisonString(refName, this.referenceGraph,
+
+
+        Graph comparisonGraph;
+
+        if (comparisonType == ComparisonType.DAG) {
+            comparisonGraph = this.referenceGraph;
+        } else if (comparisonType == ComparisonType.CPDAG) {
+            comparisonGraph = SearchGraphUtils.cpdagForDag(this.referenceGraph);
+        } else if (comparisonType == ComparisonType.PAG) {
+            comparisonGraph = SearchGraphUtils.dagToPag(this.referenceGraph);
+        } else {
+            throw new IllegalArgumentException("Unexpected compariton type: " + comparisonType);
+        }
+
+        return SearchGraphUtils.graphComparisonString(refName, comparisonGraph,
                 targetName, this.targetGraph, false);
     }
 
@@ -122,16 +141,16 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
         s.defaultReadObject();
     }
 
-    private Parameters getParams() {
+    public Parameters getParams() {
         return this.params;
     }
 
-    public Graph getTargetGraph() {
-        return this.targetGraph;
+    public void setComparisonGraphType(ComparisonType comparisonType) {
+        this.comparisonType = comparisonType;
     }
 
-    public Graph getReferenceGraph() {
-        return this.referenceGraph;
+    public ComparisonType getComparisonGraphType() {
+        return  this.comparisonType;
     }
 }
 

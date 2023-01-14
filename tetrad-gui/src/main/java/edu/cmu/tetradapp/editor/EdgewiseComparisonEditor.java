@@ -21,11 +21,15 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.model.EdgewiseComparisonModel;
-import edu.cmu.tetradapp.model.GraphWrapper;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
 
 /**
  * Provides a little display/editor for notes in the session workbench. This may
@@ -41,6 +45,8 @@ public class EdgewiseComparisonEditor extends JPanel {
      * The model for the note.
      */
     private final EdgewiseComparisonModel comparison;
+    private JTextArea area;
+    private Graph referenceGraph;
 
     /**
      * Constructs the editor given the model
@@ -56,20 +62,108 @@ public class EdgewiseComparisonEditor extends JPanel {
 
         JPanel pane = new JPanel();
 
-        String compareString = this.comparison.getComparisonString();
-
         Font font = new Font("Monospaced", Font.PLAIN, 14);
-        JTextArea textPane = new JTextArea();
-        textPane.setText(compareString);
+        area = new JTextArea();
+        area.setText(tableTextWithHeader());
 
-        textPane.setFont(font);
+        area.setFont(font);
 
-        JScrollPane scrollTextPane = new JScrollPane(textPane);
+        JScrollPane scrollTextPane = new JScrollPane(area);
         scrollTextPane.setPreferredSize(new Dimension(500, 600));
 
         pane.add(scrollTextPane, new BorderLayout());
 
         add(pane);
+
+        add(menubar(), BorderLayout.NORTH);
     }
 
+    @NotNull
+    private JMenuBar menubar() {
+        JMenuBar menubar = new JMenuBar();
+        JMenu menu = new JMenu("Compare To...");
+        JMenuItem graph = new JCheckBoxMenuItem("DAG");
+        graph.setBackground(Color.WHITE);
+        JMenuItem cpdag = new JCheckBoxMenuItem("CPDAG");
+        cpdag.setBackground(Color.YELLOW);
+        JMenuItem pag = new JCheckBoxMenuItem("PAG");
+        pag.setBackground(Color.GREEN.brighter().brighter());
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(graph);
+        group.add(cpdag);
+        group.add(pag);
+
+        menu.add(graph);
+        menu.add(cpdag);
+        menu.add(pag);
+
+        menubar.add(menu);
+
+        switch (comparison.getComparisonGraphType()) {
+            case CPDAG:
+                menu.setText("Compare to CPDAG...");
+                cpdag.setSelected(true);
+                break;
+            case PAG:
+                menu.setText("Compare to PAG...");
+                pag.setSelected(true);
+                break;
+            case DAG:
+                menu.setText("Compare to DAG...");
+                graph.setSelected(true);
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected comparison DAG type: " + comparison.getComparisonGraphType());
+        }
+
+        graph.addActionListener(e -> {
+            comparison.setComparisonGraphType(EdgewiseComparisonModel.ComparisonType.DAG);
+
+            menu.setText("Compare to DAG...");
+            menu.setBackground(Color.WHITE);
+
+            this.area.setText(tableTextWithHeader());
+            this.area.moveCaretPosition(0);
+            this.area.setSelectionStart(0);
+            this.area.setSelectionEnd(0);
+
+            this.area.repaint();
+
+        });
+
+        cpdag.addActionListener(e -> {
+            comparison.setComparisonGraphType(EdgewiseComparisonModel.ComparisonType.CPDAG);
+
+            menu.setText("Compare to CPDAG...");
+            menu.setBackground(Color.YELLOW);
+
+            this.area.setText(tableTextWithHeader());
+            this.area.moveCaretPosition(0);
+            this.area.setSelectionStart(0);
+            this.area.setSelectionEnd(0);
+
+            this.area.repaint();
+
+        });
+
+        pag.addActionListener(e -> {
+            comparison.setComparisonGraphType(EdgewiseComparisonModel.ComparisonType.PAG);
+
+            menu.setText("Compare to PAG...");
+            menu.setBackground(Color.GREEN.brighter().brighter());
+
+            this.area.setText(tableTextWithHeader());
+            this.area.moveCaretPosition(0);
+            this.area.setSelectionStart(0);
+            this.area.setSelectionEnd(0);
+            this.area.repaint();
+        });
+
+        return menubar;
+    }
+
+    private String tableTextWithHeader() {
+        return this.comparison.getComparisonString();
+    }
 }
