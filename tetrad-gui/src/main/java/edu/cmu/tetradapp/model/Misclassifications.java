@@ -126,8 +126,11 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         StringBuilder b = new StringBuilder();
 
         b.append("True graph from " + refName + "\nTarget graph from " + targetName);
-        b.append("\n\n");
+        b.append("\n\n\n");
+        b.append("Edge Misclassification Table");
         b.append(MisclassificationUtils.edgeMisclassifications(targetGraph, comparisonGraph));
+        b.append("\n\n");
+        b.append("Endpoint Misclassification Table:");
         b.append("\n\n");
         b.append(MisclassificationUtils.endpointMisclassification(targetGraph, comparisonGraph));
 
