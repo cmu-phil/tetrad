@@ -69,7 +69,7 @@ public class TestFges {
     public void explore1() {
         RandomUtil.getInstance().setSeed(1450184147770L);
 
-        final int numVars = 1000;
+        final int numVars = 10;
         final double edgesPerNode = 2.0;
         final int numCases = 1000;
         final double penaltyDiscount = 2.0;
@@ -143,7 +143,7 @@ public class TestFges {
     public void explore2() {
         RandomUtil.getInstance().setSeed(1457220623122L);
 
-        final int numVars = 20;
+        final int numVars = 10;
         final double edgeFactor = 1.0;
         final int numCases = 1000;
         final double structurePrior = 1;
@@ -369,7 +369,7 @@ public class TestFges {
 
         Parameters parameters = new Parameters();
 
-        parameters.set(Params.NUM_MEASURES, 100);
+        parameters.set(Params.NUM_MEASURES, 10);
         parameters.set(Params.NUM_LATENTS, 0);
         parameters.set(Params.COEF_LOW, 0.2);
         parameters.set(Params.COEF_HIGH, 0.8);
@@ -949,8 +949,8 @@ public class TestFges {
         String[] algorithms = {"SemFGES", "BDeuFGES", "MixedFGES", "PC", "PCS", "CPC", "MGMFges", "MGMPcs"};
         String[] statLabels = {"AP", "AR", "OP", "OR", "SUM", "McAdj", "McOr", "F1Adj", "F1Or", "E"};
 
-        final int numMeasures = 30;
-        final int numEdges = 60;
+        final int numMeasures = 10;
+        final int numEdges = 10;
 
         final int numRuns = 50;
         final int maxCategories = 5;

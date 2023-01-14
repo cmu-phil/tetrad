@@ -234,6 +234,8 @@ public final class Params {
     
     public static final String SEED = "seed";
 
+    public static final String SEED = "seed";
+
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,

@@ -6,40 +6,36 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * The adjacency precision. The true positives are the number of adjacencies in both
- * the true and estimated graphs.
- *
  * @author jdramsey
  */
-public class NumBidirectedEdgesEst implements Statistic {
+public class NumNondirectedEdges implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "#X<->Y";
+        return "#Xo-oY";
     }
 
     @Override
     public String getDescription() {
-        return "Number of <-> edges in estimated";
+        return "Number of Xo-oY in est";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int numBidirected = 0;
+        int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
-            if (Edges.isBidirectedEdge(edge)) {
-                numBidirected++;
+            if (Edges.isNondirectedEdge(edge)) {
+                tp++;
             }
-
         }
 
-        return numBidirected;
+        return tp;
     }
 
     @Override
     public double getNormValue(double value) {
-        return 1.0 - value;
+        return value;
     }
 }

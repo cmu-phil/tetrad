@@ -35,24 +35,24 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-Swap-Bryan",
-        command = "lv-swap-bryan",
+        name = "LV-Swap-2",
+        command = "lv-swap-2",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class LVSWAP_Bryan implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class LVSWAP_2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public LVSWAP_Bryan() {
+    public LVSWAP_2() {
         // Used for reflection; do not delete.
     }
 
-    public LVSWAP_Bryan(IndependenceWrapper test, ScoreWrapper score) {
+    public LVSWAP_2(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -85,8 +85,8 @@ public class LVSWAP_Bryan implements Algorithm, UsesScoreWrapper, TakesIndepende
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-            search.setAlgType(LvSwap.AlgType.Bryan);
-            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setAlgType(LvSwap.AlgType.Alg2);
+            search.setDepth(-1);//parameters.getInt(Params.DEPTH));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setDoDefiniteDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
@@ -109,7 +109,7 @@ public class LVSWAP_Bryan implements Algorithm, UsesScoreWrapper, TakesIndepende
 
             return graph;
         } else {
-            LVSWAP_Bryan algorithm = new LVSWAP_Bryan(this.test, this.score);
+            LVSWAP_2 algorithm = new LVSWAP_2(this.test, this.score);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
@@ -126,7 +126,7 @@ public class LVSWAP_Bryan implements Algorithm, UsesScoreWrapper, TakesIndepende
 
     @Override
     public String getDescription() {
-        return "LV-Swap-Bryan (BOSS + swap rules) using " + this.test.getDescription()
+        return "LV-Swap-2 (BOSS + swap rules) using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 
@@ -145,7 +145,7 @@ public class LVSWAP_Bryan implements Algorithm, UsesScoreWrapper, TakesIndepende
         params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.DEPTH);
+//        params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 

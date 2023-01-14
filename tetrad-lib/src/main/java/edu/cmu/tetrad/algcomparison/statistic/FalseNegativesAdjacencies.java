@@ -1,11 +1,11 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -13,42 +13,39 @@ import java.util.List;
  *
  * @author jdramsey
  */
-public class NoSemidirectedRecall implements Statistic {
+public class FalseNegativesAdjacencies implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "NoSemidirected-Rec";
+        return "FN-Adj";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of (X, Y) where if no semidirected path in true then also not in est";
+        return "False Negatives Adjacencies";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int tp = 0, fn = 0;
-
-        Graph cpdag = SearchGraphUtils.cpdagForDag(trueGraph);
+        int fn = 0;
 
         List<Node> nodes = trueGraph.getNodes();
 
-        for (Node x : nodes) {
-            for (Node y : nodes) {
-                if (x == y) continue;
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
 
-                if (!cpdag.existsSemiDirectedPathFromTo(x, y)) {
-                    if (!estGraph.existsSemiDirectedPathFromTo(x, y)) {
-                        tp++;
-                    } else {
+                if (trueGraph.isAdjacentTo(x, y)) {
+                    if (!estGraph.isAdjacentTo(x, y)) {
                         fn++;
                     }
                 }
             }
         }
 
-        return tp / (double) (tp + fn);
+        return fn;
     }
 
     @Override

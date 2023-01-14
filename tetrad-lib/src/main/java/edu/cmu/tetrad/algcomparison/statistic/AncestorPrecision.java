@@ -3,43 +3,37 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
- * The bidirected true positives.
- *
  * @author jdramsey
  */
-public class SemidirectedPrecision implements Statistic {
+public class AncestorPrecision implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "Semidirected-Prec";
+        return "Anc-Prec";
     }
 
     @Override
     public String getDescription() {
-        return "Proportion of (X, Y) where if semidirected path in est then also in true";
+        return "Proportion of X~~>Y in the estimated graph for which also X~~>Y in true graph";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        int tp = 0, fp = 0;
+        int tp = 0;
+        int fp = 0;
 
         List<Node> nodes = estGraph.getNodes();
 
-        nodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
         for (Node x : nodes) {
             for (Node y : nodes) {
-                if (x == y) continue;
-
-                if (estGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
-                    if (trueGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
+//                if (x == y) continue;
+                if (estGraph.isAncestorOf(x, y)) {
+                    if (trueGraph.isAncestorOf(x, y)) {
                         tp++;
                     } else {
                         fp++;

@@ -211,22 +211,33 @@ public class TeyssierScorer {
     /**
      * Performs a tuck operation.
      */
-    public void swaptuck(Node x, Node y, Node z) {
+    public boolean swaptuck(Node x, Node y, Node z) {
+        boolean moved = false;
+
         if (index(y) < index(x)) {
             moveTo(x, index(y));
+            moved = true;
         }
 
-        else if (index(z) < index(x)) {
-            moveTo(x, index(z));
+        if (index(y) < index(z)) {
+            moveTo(z, index(y));
+            moved = true;
         }
+
+        return moved;
     }
 
-    public void swaptuck(Node x, Node y) {
+    public boolean swaptuck(Node x, Node y) {
         if (index(x) < index(y)) {
-            moveTo(y, index(x));
-        } else if (index(y) < index(x)) {
+//            moveTo(y, index(x));
+            return false;
+        } else
+        if (index(y) < index(x)) {
             moveTo(x, index(y));
+            return true;
         }
+
+        return false;
     }
 
     public void tuckWithoutMovingAncestors(Node x, Node y) {
@@ -421,20 +432,20 @@ public class TeyssierScorer {
      * @return This graph.
      */
     public Graph getGraph(boolean cpDag) {
-        List<Node> order = getPi();
-        Graph G1 = new EdgeListGraph(this.variables);
-
-        for (int p = 0; p < order.size(); p++) {
-            for (Node z : getParents(p)) {
-                G1.addDirectedEdge(z, order.get(p));
-            }
-        }
-
-        GraphUtils.replaceNodes(G1, this.variables);
-
         if (cpDag) {
-            return findCompelled();// SearchGraphUtils.cpdagForDag(G1);
+            return findCompelled();
         } else {
+            List<Node> order = getPi();
+            Graph G1 = new EdgeListGraph(this.variables);
+
+            for (int p = 0; p < order.size(); p++) {
+                for (Node z : getParents(p)) {
+                    G1.addDirectedEdge(z, order.get(p));
+                }
+            }
+
+            GraphUtils.replaceNodes(G1, this.variables);
+
             return G1;
         }
     }

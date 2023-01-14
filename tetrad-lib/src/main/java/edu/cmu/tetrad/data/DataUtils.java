@@ -2192,7 +2192,7 @@ public final class DataUtils {
 //        if (dataSet.getNumRows() < 1000) {
 //            cov = new CovarianceMatrixOnTheFly(dataSet);
 //        } else {
-            cov = new CovarianceMatrix(dataSet);
+        cov = new CovarianceMatrix(dataSet);
 //        }
 
         return cov;
@@ -2205,7 +2205,7 @@ public final class DataUtils {
 //        if (dataSet.getNumRows() < 1000) {
 //            cov = new CorrelationMatrixOnTheFly(new CovarianceMatrixOnTheFly(dataSet));
 //        } else {
-            cov = new CovarianceMatrix(dataSet);
+        cov = new CovarianceMatrix(dataSet);
 //        }
 
         return cov;
