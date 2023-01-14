@@ -108,7 +108,7 @@ public class EdgewiseComparisonEditor extends JPanel {
             case PAG:
                 menu.setText("Compare to PAG...");
                 pag.setSelected(true);
-                 break;
+                break;
             case DAG:
                 menu.setText("Compare to DAG...");
                 graph.setSelected(true);

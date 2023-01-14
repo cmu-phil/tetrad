@@ -43,10 +43,6 @@ import java.io.ObjectInputStream;
 public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
 
-    public void setComparisonType(ComparisonType comparisonType) {
-        this.comparisonType = comparisonType;
-    }
-
     public enum ComparisonType {DAG, CPDAG, PAG}
 
     private ComparisonType comparisonType = ComparisonType.DAG;
@@ -147,14 +143,6 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 
     public Parameters getParams() {
         return this.params;
-    }
-
-    public Graph getTargetGraph() {
-        return this.targetGraph;
-    }
-
-    public Graph getReferenceGraph() {
-        return this.referenceGraph;
     }
 
     public void setComparisonGraphType(ComparisonType comparisonType) {

@@ -20,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.model.EdgewiseComparisonModel;
 import edu.cmu.tetradapp.model.Misclassifications;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,6 +41,7 @@ public class MisclassificationsEditor extends JPanel {
      * The model for the note.
      */
     private final Misclassifications comparison;
+    private JTextArea area;
 
     /**
      * Constructs the editor given the model
@@ -51,53 +52,111 @@ public class MisclassificationsEditor extends JPanel {
     }
 
     private void setup() {
-        java.util.List<Graph> referenceGraphs = this.comparison.getReferenceGraphs();
-        JTabbedPane pane = new JTabbedPane(SwingConstants.LEFT);
+        setLayout(new BorderLayout());
 
-        for (int i = 0; i < referenceGraphs.size(); i++) {
-            JTabbedPane pane2 = new JTabbedPane(SwingConstants.TOP);
-            String compareString = this.comparison.getComparisonString(i);
+        JPanel pane = new JPanel();
 
-            JPanel panel = new JPanel();
+        Font font = new Font("Monospaced", Font.PLAIN, 14);
+        area = new JTextArea();
+        area.setText(this.comparison.getComparisonString());
 
-            Font font = new Font("Monospaced", Font.PLAIN, 14);
-            JTextArea textPane = new JTextArea();
-            textPane.setText(compareString);
+        area.setFont(font);
 
-            textPane.setFont(font);
-            textPane.setPreferredSize(new Dimension(400, 400));
+        JScrollPane scrollTextPane = new JScrollPane(area);
+        scrollTextPane.setPreferredSize(new Dimension(500, 600));
 
-            JScrollPane scroll = new JScrollPane(textPane);
-            scroll.setPreferredSize(new Dimension(400, 400));
-
-            panel.add(Box.createVerticalStrut(10));
-
-            Box box = Box.createHorizontalBox();
-            panel.add(box);
-            panel.add(Box.createVerticalStrut(10));
-
-            Box box1 = Box.createHorizontalBox();
-            box1.add(new JLabel("Graph Comparison: "));
-            box1.add(Box.createHorizontalGlue());
-
-            add(box1);
-            setLayout(new BorderLayout());
-
-            pane2.add("Comparison", scroll);
-
-//            GraphEditor graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getTargetGraphs().get(i)));
-//            graphEditor.enableEditing(false);
-//            pane2.add("Target Graph", graphEditor.getWorkbench());
-//
-//            graphEditor = new GraphEditor(new GraphWrapper(this.comparison.getReferenceGraphs().get(i)));
-//            graphEditor.enableEditing(false);
-//            pane2.add("True Graph", graphEditor.getWorkbench());
-
-            pane.add("" + (i + 1), pane2);
-
-        }
+        pane.add(scrollTextPane, new BorderLayout());
 
         add(pane);
+
+        add(menubar(), BorderLayout.NORTH);
     }
+
+
+    @NotNull
+    private JMenuBar menubar() {
+        JMenuBar menubar = new JMenuBar();
+        JMenu menu = new JMenu("Compare To...");
+        JMenuItem graph = new JCheckBoxMenuItem("DAG");
+        graph.setBackground(Color.WHITE);
+        JMenuItem cpdag = new JCheckBoxMenuItem("CPDAG");
+        cpdag.setBackground(Color.YELLOW);
+        JMenuItem pag = new JCheckBoxMenuItem("PAG");
+        pag.setBackground(Color.GREEN.brighter().brighter());
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(graph);
+        group.add(cpdag);
+        group.add(pag);
+
+        menu.add(graph);
+        menu.add(cpdag);
+        menu.add(pag);
+
+        menubar.add(menu);
+
+        switch (comparison.getComparisonGraphType()) {
+            case CPDAG:
+                menu.setText("Compare to CPDAG...");
+                cpdag.setSelected(true);
+                break;
+            case PAG:
+                menu.setText("Compare to PAG...");
+                pag.setSelected(true);
+                break;
+            case DAG:
+                menu.setText("Compare to DAG...");
+                graph.setSelected(true);
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected comparison DAG type: " + comparison.getComparisonGraphType());
+        }
+
+        graph.addActionListener(e -> {
+            comparison.setComparisonGraphType(Misclassifications.ComparisonType.DAG);
+
+            menu.setText("Compare to DAG...");
+            menu.setBackground(Color.WHITE);
+
+            this.area.setText(this.comparison.getComparisonString());
+            this.area.moveCaretPosition(0);
+            this.area.setSelectionStart(0);
+            this.area.setSelectionEnd(0);
+
+            this.area.repaint();
+
+        });
+
+        cpdag.addActionListener(e -> {
+            comparison.setComparisonGraphType(Misclassifications.ComparisonType.CPDAG);
+
+            menu.setText("Compare to CPDAG...");
+            menu.setBackground(Color.YELLOW);
+
+            this.area.setText(this.comparison.getComparisonString());
+            this.area.moveCaretPosition(0);
+            this.area.setSelectionStart(0);
+            this.area.setSelectionEnd(0);
+
+            this.area.repaint();
+
+        });
+
+        pag.addActionListener(e -> {
+            comparison.setComparisonGraphType(Misclassifications.ComparisonType.PAG);
+
+            menu.setText("Compare to PAG...");
+            menu.setBackground(Color.GREEN.brighter().brighter());
+
+            this.area.setText(this.comparison.getComparisonString());
+            this.area.moveCaretPosition(0);
+            this.area.setSelectionStart(0);
+            this.area.setSelectionEnd(0);
+            this.area.repaint();
+        });
+
+        return menubar;
+    }
+
 
 }
