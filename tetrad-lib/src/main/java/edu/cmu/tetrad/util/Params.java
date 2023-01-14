@@ -230,6 +230,8 @@ public final class Params {
     public static final String TIME_LAG = "timeLag";
     public static final String PRECOMPUTE_COVARIANCES = "precomputeCovariances";
     public static final String IMAGES_META_ALG = "imagesMetaAlg";
+    
+    public static final String SEED = "seed";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -275,7 +277,8 @@ public final class Params {
             Params.NUMBER_RESAMPLING,
             Params.PERCENT_RESAMPLE_SIZE,
             Params.RESAMPLING_ENSEMBLE,
-            Params.RESAMPLING_WITH_REPLACEMENT
+            Params.RESAMPLING_WITH_REPLACEMENT,
+            Params.SEED
     ));
 
     private Params() {

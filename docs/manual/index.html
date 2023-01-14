@@ -4353,7 +4353,7 @@ tabs will not appear.</p> -->
     <div id="parameters"><h2>Search Parameters</h2>
 
         <p>Note: You must specify the "Value Type" of each parameter, and
-            the value type must be one of the following: Integer, Double, String,
+            the value type must be one of the following: Integer, Long, Double, String,
             Boolean.</p> <!-- Insert the parameter descriptions here, must follow
         the same structure and naming conventions -->
 
@@ -7742,6 +7742,25 @@ tabs will not appear.</p> -->
                     id="scaleFreeDeltaOut_upper_bound">2147483647</span></li>
             <li>Value
                 Type: <span id="scaleFreeDeltaOut_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="seed">seed</h3>
+        <ul
+            class="parameter_description_list">
+            <li>Short Description: <span
+                    id="seed_short_desc">Seed for pseudorandom number generator (min = -1)</span></li>
+            <li>Long Description: <span
+                    id="seed_long_desc">The seed is the initial value of the
+                    internal state of the pseudorandom number generator.</span></li>
+            <li>Default Value: <span
+                    id="seed_default_value">-1</span></li>
+            <li>Lower Bound:
+                <span id="seed_lower_bound">-1</span></li>
+            <li>Upper
+                Bound: <span id="seed_upper_bound">9223372036854775807</span></li>
+            <li>Value Type: <span
+                    id="seed_value_type">Long</span></li>
         </ul>
 
         <h3 class="parameter_description"
