@@ -94,7 +94,7 @@ public class TestAnneAnalysis3 {
 //                        edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(cov);
                         edu.cmu.tetrad.search.PoissonPriorScore score = new edu.cmu.tetrad.search.PoissonPriorScore(cov);
 //                        score.setPenaltyDiscount(penalty);
-                        score.setStructurePrior(vars.size() / 2.);
+                        score.setLambda(vars.size() / 2.);
 
 //                        Grasp alg = new Grasp(score);
                         Boss alg = new Boss(score);
