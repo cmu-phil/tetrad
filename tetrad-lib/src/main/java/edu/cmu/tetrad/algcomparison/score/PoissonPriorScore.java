@@ -25,7 +25,6 @@ import java.util.List;
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 @LinearGaussian
-@Experimental
 public class PoissonPriorScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;

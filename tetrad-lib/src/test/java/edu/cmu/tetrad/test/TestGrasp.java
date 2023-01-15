@@ -2570,6 +2570,7 @@ public final class TestGrasp {
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
         comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
+        comparison.setParallelized(true);
 
         comparison.compareFromSimulations(
                 "/Users/josephramsey/Downloads/grasp/testLvSwap", simulations,

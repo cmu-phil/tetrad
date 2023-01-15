@@ -25,13 +25,13 @@ import java.util.List;
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 @LinearGaussian
-@Experimental
 public class ZhangShenBoundScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
 
     @Override
+    
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 

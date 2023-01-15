@@ -65,7 +65,7 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  */
 public class Comparison {
 
-    private boolean parallelized = true;
+    private boolean parallelized = false;
 
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
