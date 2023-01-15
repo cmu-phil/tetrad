@@ -129,6 +129,35 @@ public final class ParameterComponents {
         return field;
     }
 
+    public static LongTextField getLongTextField(String parameter, Parameters parameters,
+                                               long defaultValue, double lowerBound, double upperBound) {
+        LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 10);
+
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
+            }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
     public static Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
@@ -203,6 +232,10 @@ public final class ParameterComponents {
             int lowerBoundInt = paramDesc.getLowerBoundInt();
             int upperBoundInt = paramDesc.getUpperBoundInt();
             component = ParameterComponents.getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+        } else if (defaultValue instanceof Long) {
+            int lowerBoundInt = paramDesc.getLowerBoundInt();
+            int upperBoundInt = paramDesc.getUpperBoundInt();
+            component = ParameterComponents.getLongTextField(parameter, parameters, (Long) defaultValue, lowerBoundInt, upperBoundInt);
         } else if (defaultValue instanceof Boolean) {
             component = ParameterComponents.getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
         } else if (defaultValue instanceof String) {

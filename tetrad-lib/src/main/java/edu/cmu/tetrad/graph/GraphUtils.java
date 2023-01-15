@@ -2105,11 +2105,16 @@ public final class GraphUtils {
             A[i][j] = mark2Int.get(edge.getEndpoint2());
         }
 
-        TextTable table = new TextTable(n, n);
+        TextTable table = new TextTable(n + 1, n);
+        table.setDelimiter(TextTable.Delimiter.COMMA);
+
+        for (int j = 0; j < n; j++) {
+            table.setToken(0, j, nodes.get(j).getName());
+        }
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                table.setToken(i, j, "" + A[i][j]);
+                table.setToken(i + 1, j, "" + A[i][j]);
             }
         }
 
@@ -2446,8 +2451,25 @@ public final class GraphUtils {
             }
         }
 
+//        computeEdgeProbabilities(graph);
+
         return graph;
     }
+
+//    private static void computeEdgeProbabilities(Graph graph) {
+//        for (Edge edge : graph.getEdges()) {
+//            List<EdgeTypeProbability> edgeTypeProbs = edge.getEdgeTypeProbabilities();
+//            if (!(edgeTypeProbs == null || edgeTypeProbs.isEmpty())) {
+//                double prob = 0;
+//                for (EdgeTypeProbability typeProbability : edgeTypeProbs) {
+//                    if (typeProbability.getEdgeType() != EdgeTypeProbability.EdgeType.nil) {
+//                        prob += typeProbability.getProbability();
+//                    }
+//                }
+//                edge.setProbability(prob);
+//            }
+//        }
+//    }
 
     public static Graph readerToGraphRuben(Reader reader) throws IOException {
         Graph graph = new EdgeListGraph();
@@ -2473,7 +2495,7 @@ public final class GraphUtils {
             line = line.trim();
 
             if (line.isEmpty()) {
-                continue;
+                return;
             }
 
             String[] tokens = line.split("\\s+");
@@ -2573,6 +2595,7 @@ public final class GraphUtils {
 
                     if (orient.equalsIgnoreCase("[no edge]")) {
                         _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, prob));
+                        _edge.setProbability(1.0 - prob);
                     } else {
                         orient = orient.replace("[", "").replace("]", "");
                         EdgeTypeProbability etp;
@@ -2929,28 +2952,72 @@ public final class GraphUtils {
         return table.toString();
     }
 
-    public static Graph loadGraphPcAlgMatrix(DataSet dataSet) {
-        List<Node> vars = dataSet.getVariables();
+    public static Graph loadGraphPcalg(File file) {
+        try {
+            DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"',
+                    "*", true, Delimiter.COMMA);
 
-        Graph graph = new EdgeListGraph(vars);
+            List<Node> nodes = dataSet.getVariables();
+            Graph graph = new EdgeListGraph(nodes);
 
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                if (i == j) {
-                    continue;
-                }
-                int g = dataSet.getInt(i, j);
-                int h = dataSet.getInt(j, i);
+            for (int i = 0; i < nodes.size(); i++) {
+                for (int j = i + 1; j < nodes.size(); j++) {
+                    Node n1 = nodes.get(i);
+                    Node n2 = nodes.get(j);
 
-                if (g == 1 && h == 1 && !graph.isAdjacentTo(vars.get(i), vars.get(j))) {
-                    graph.addUndirectedEdge(vars.get(i), vars.get(j)); //
-                } else if (g == 1 && h == 0) {
-                    graph.addDirectedEdge(vars.get(j), vars.get(i));
+                    int e1 = dataSet.getInt(j, i);
+                    int e2 = dataSet.getInt(i, j);
+
+                    Endpoint e1a;
+
+                    switch (e1) {
+                        case 0:
+                            e1a = Endpoint.NULL;
+                            break;
+                        case 1:
+                            e1a = Endpoint.CIRCLE;
+                            break;
+                        case 2:
+                            e1a = Endpoint.ARROW;
+                            break;
+                        case 3:
+                            e1a = Endpoint.TAIL;
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+                    }
+
+                    Endpoint e2a;
+
+                    switch (e2) {
+                        case 0:
+                            e2a = Endpoint.NULL;
+                            break;
+                        case 1:
+                            e2a = Endpoint.CIRCLE;
+                            break;
+                        case 2:
+                            e2a = Endpoint.ARROW;
+                            break;
+                        case 3:
+                            e2a = Endpoint.TAIL;
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+                    }
+
+                    if (e1a != Endpoint.NULL && e2a != Endpoint.NULL) {
+                        Edge edge = new Edge(n1, n2, e1a, e2a);
+                        graph.addEdge(edge);
+                    }
                 }
             }
-        }
 
-        return graph;
+            return  graph;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IllegalStateException();
+        }
     }
 
     public static Graph loadGraphBNTPcMatrix(List<Node> vars, DataSet dataSet) {

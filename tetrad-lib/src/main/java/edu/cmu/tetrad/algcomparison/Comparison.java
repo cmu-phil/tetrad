@@ -65,7 +65,7 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  */
 public class Comparison {
 
-    private boolean parallelized = true;
+    private boolean parallelized = false;
 
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
@@ -1467,7 +1467,7 @@ public class Comparison {
                     + (isShowUtilities() ? 1 : 0);
 
             TextTable table = new TextTable(rows, cols);
-            table.setTabDelimited(isTabDelimitedTables());
+            table.setDelimiter(isTabDelimitedTables() ? TextTable.Delimiter.TAB : TextTable.Delimiter.JUSTIFIED);
 
             int initialColumn = 0;
 

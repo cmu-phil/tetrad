@@ -16,14 +16,14 @@ import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wrapper for CCI Score.
- *
- * @author jdramsey
- */
-@edu.cmu.tetrad.annotation.Score(name = "CCI-Score (Conditional Correlation Independence Score)", command = "cci-score", dataType = DataType.Continuous)
-@General
-@Experimental
+///**
+// * Wrapper for CCI Score.
+// *
+// * @author jdramsey
+// */
+//@edu.cmu.tetrad.annotation.Score(name = "CCI-Score (Conditional Correlation Independence Score)", command = "cci-score", dataType = DataType.Continuous)
+//@General
+//@Experimental
 public class CciScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
