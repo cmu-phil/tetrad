@@ -1792,6 +1792,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 graphEdge.setSelected(true);
             }
         }
+
+        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+        }
     }
 
     private void nodeClicked(Object source, MouseEvent e) {
@@ -1814,6 +1818,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             selectConnectingEdges();
             fireNodeSelection();
         }
+
+        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+        }
     }
 
     private void reorientEdge(Object source, MouseEvent e) {
@@ -1828,7 +1836,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         if (e.isShiftDown()) {
             if (AbstractWorkbench.distance(point, pointA) < endpointRadius) {
                 toggleEndpoint(graphEdge, 1);
-                firePropertyChange("modelChanged", null, null);
+                fireModelChanged();
             } else if (AbstractWorkbench.distance(point, pointB) < endpointRadius) {
                 toggleEndpoint(graphEdge, 2);
                 firePropertyChange("modelChanged", null, null);
@@ -1842,6 +1850,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 firePropertyChange("modelChanged", null, null);
             }
         }
+
+        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+        }
+    }
+
+    private void fireModelChanged() {
+        firePropertyChange("modelChanged", null, null);
     }
 
     private void handleMousePressed(MouseEvent e) {
@@ -1894,6 +1910,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                 break;
         }
+
+        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+        }
     }
 
     private void launchPopup(MouseEvent e) {
@@ -1935,6 +1955,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 finishEdge();
                 break;
         }
+
+        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+        }
     }
 
     private void handleMouseDragged(MouseEvent e) {
@@ -1959,6 +1983,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                 dragNewEdge(source, newPoint);
                 break;
+        }
+
+        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+            GraphUtils.addPagColoring(new EdgeListGraph(graph));
         }
     }
 
@@ -2245,17 +2273,28 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         try {
             boolean added = getGraph().addEdge(newEdge);
+
             if (!added) {
                 getGraph().addEdge(edge);
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Reorienting that edge would violate graph constraints.");
             }
+
+            if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+                GraphUtils.addPagColoring(new EdgeListGraph(graph));
+            }
         } catch (IllegalArgumentException e) {
             getGraph().addEdge(edge);
+
+            if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+                GraphUtils.addPagColoring(new EdgeListGraph(graph));
+            }
+
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     "Reorienting that edge would violate graph constraints.");
         }
 
+        revalidate();
         repaint();
     }
 
@@ -2299,6 +2338,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             boolean added = getGraph().addEdge(newEdge);
             if (!added) {
                 getGraph().addEdge(edge);
+
+                if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+                    GraphUtils.addPagColoring(new EdgeListGraph(graph));
+                }
+
                 return;
             }
         } catch (IllegalArgumentException e) {
@@ -2306,6 +2350,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
+        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+        }
+
+        revalidate();
         repaint();
     }
 
