@@ -1467,7 +1467,7 @@ public class Comparison {
                     + (isShowUtilities() ? 1 : 0);
 
             TextTable table = new TextTable(rows, cols);
-            table.setTabDelimited(isTabDelimitedTables());
+            table.setDelimiter(isTabDelimitedTables() ? TextTable.Delimiter.TAB : TextTable.Delimiter.JUSTIFIED);
 
             int initialColumn = 0;
 
