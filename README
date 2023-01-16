@@ -6,6 +6,10 @@ The release is here:
 
 https://github.com/cmu-phil/tetrad/releases/tag/v7.1.3
 
+The Dietrich College web page for Tetrad is here (Carnegie Mellon University):
+
+https://www.cmu.edu/dietrich/news/news-stories/2020/august/tetrad-sail.html
+
 This is the code for the Tetrad project. The purpose of Tetrad is to make 
 algorithms for inferring causal relationships in data; it is a Java project
 of many years now.
