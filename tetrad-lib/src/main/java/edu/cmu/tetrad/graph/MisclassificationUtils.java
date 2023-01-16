@@ -117,6 +117,8 @@ public class MisclassificationUtils {
     }
 
     public static String edgeMisclassifications(Graph estGraph, Graph refGraph) {
+        estGraph = GraphUtils.replaceNodes(estGraph, refGraph.getNodes());
+
         StringBuilder builder = new StringBuilder();
 
         TextTable table2 = new TextTable(9, 7);
