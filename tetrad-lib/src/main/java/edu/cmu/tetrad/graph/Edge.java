@@ -259,7 +259,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
             for (EdgeTypeProbability etp : edgeTypeDist) {
                 double prob = etp.getProbability();
-//                if (prob > 0) {
+                if (prob > 0) {
                     StringBuilder _type = new StringBuilder("" + etp.getEdgeType());
                     switch (etp.getEdgeType()) {
                         case nil:
@@ -299,15 +299,14 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
                             _type.append(" ").append(property.toString());
                         }
                     }
-                    buf.append("[").append(_type).append("]:").append(String.format("%.4f", etp.getProbability())).append(";");
+                    buf.append("[").append(_type).append("]:").append(String.format("%.4f", prob)).append(";");
+                }
+            }
 
-//                }
+            if (probability > 0.0) {
+                buf.append(String.format("[edge]:%.4f", probability));
             }
         }
-
-//        if (probability > 0.0) {
-//            buf.append(String.format("[edge]:%.4f", probability));
-//        }
 
         List<Property> properties = getProperties();
         if (properties != null && properties.size() > 0) {
