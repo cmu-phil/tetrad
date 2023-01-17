@@ -205,6 +205,64 @@ public final class LvSwap implements GraphSearch {
 
         retainUnshieldedColliders(G);
 
+        scorer.bookmark();
+
+        Set<Triple> T = new HashSet<>();
+
+        for (Node y : scorer.getPi()) {
+            List<Node> adjy = G.getAdjacentNodes(y);
+
+            for (Node x : adjy) {
+                for (Node z : adjy) {
+                    if (!G.isAdjacentTo(x, z)) continue;
+                    if (T.contains(new Triple(x, y, z))) continue;
+
+                    scorer.goToBookmark();
+                    scorer.swaptuck(x, y, z);
+
+                    if (!scorer.adjacent(x, z) && scorer.collider(x, y, z)) {
+                        Set<Node> adj = scorer.getAdjacentNodes(x);
+                        adj.retainAll(scorer.getAdjacentNodes(z));
+
+                        for (Node w : adj) {
+                            if (scorer.collider(x, w, z)) {
+                                T.add(new Triple(x, w, z));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        removeShields(G, T);
+        retainUnshieldedColliders(G);
+        orientColliders(G, T);
+
+        finalOrientation(knowledge, G);
+
+        G.setGraphType(EdgeListGraph.GraphType.PAG);
+
+        scorer.goToBookmark();
+        return G;
+    }
+
+    public Graph search_2b() {
+        TeyssierScorer scorer = new TeyssierScorer(test, score);
+
+        Boss alg = new Boss(scorer);
+        alg.setAlgType(bossAlgType);
+        alg.setUseScore(useScore);
+        alg.setUseRaskuttiUhler(useRaskuttiUhler);
+        alg.setUseDataOrder(useDataOrder);
+        alg.setDepth(depth);
+        alg.setNumStarts(numStarts);
+        alg.setVerbose(verbose);
+
+        alg.bestOrder(this.score.getVariables());
+        Graph G = alg.getGraph(false);
+
+        retainUnshieldedColliders(G);
+
         Set<Triple> allT = new HashSet<>();
         Graph G2 = new EdgeListGraph(G);
 
@@ -238,13 +296,13 @@ public final class LvSwap implements GraphSearch {
 
                         if (!swapped) continue;
 
-                        if (/*scorer.collider(x, y, z) &&*/ !scorer.adjacent(x, z)) {
+                        if (!scorer.adjacent(x, z)) {
                             Set<Node> adj = scorer.getAdjacentNodes(x);
                             adj.retainAll(scorer.getAdjacentNodes(z));
 
-                            for (Node y2 : adj) {
-                                if (scorer.collider(x, y2, z) /*&& !scorer.adjacent(x, z)*/) {// && !G.isDefCollider(x, y, z)) {
-                                    T.add(new Triple(x, y2, z));
+                            for (Node w : adj) {
+                                if (scorer.collider(x, w, z)) {
+                                    T.add(new Triple(x, w, z));
                                 }
                             }
                         }

@@ -2454,7 +2454,7 @@ public final class TestGrasp {
         RandomUtil.getInstance().setSeed(38482838482L);
 
         Parameters params = new Parameters();
-        params.set(Params.SAMPLE_SIZE, 5000);
+        params.set(Params.SAMPLE_SIZE, 1000, 10000);
         params.set(Params.NUM_MEASURES, 30);
         params.set(Params.AVG_DEGREE, 6);
         params.set(Params.NUM_LATENTS, 8);
@@ -2597,7 +2597,7 @@ public final class TestGrasp {
         params.set(Params.NUM_RUNS, 20);
 
         params.set(Params.BOSS_ALG, 1);
-        params.set(Params.DEPTH, 2);
+        params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.POSSIBLE_DSEP_DONE, true);
@@ -2663,7 +2663,7 @@ public final class TestGrasp {
 
         for (int i = 0; i < 40; i++) {
 
-            Graph trueGraph = GraphUtils.randomGraph(16, 8, 32,
+            Graph trueGraph = GraphUtils.randomGraph(20, 8, 40,
                     100, 100, 100, false);
 
             Graph truePag = SearchGraphUtils.dagToPag(trueGraph);
@@ -2679,13 +2679,13 @@ public final class TestGrasp {
             Algorithms algorithms = new Algorithms();
 
             algorithms.add(new Fci(test));
-            algorithms.add(new FciMax(test));
-            algorithms.add(new Rfci(test));
-            algorithms.add(new GFCI(test, score));
-            algorithms.add(new BFCI(test, score));
+//            algorithms.add(new FciMax(test));
+//            algorithms.add(new Rfci(test));
+//            algorithms.add(new GFCI(test, score));
+//            algorithms.add(new BFCI(test, score));
             algorithms.add(new LVSWAP_1(test, score));
             algorithms.add(new LVSWAP_2(test, score));
-            algorithms.add(new LVSWAP_3(test, score));
+//            algorithms.add(new LVSWAP_3(test, score));
 
             algNames = new ArrayList<>();
 
