@@ -21,10 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -42,7 +42,7 @@ import java.util.*;
 public final class Ccd implements GraphSearch {
     private final IndependenceTest independenceTest;
     private int depth = -1;
-    private IKnowledge knowledge;
+    private Knowledge knowledge;
     private final List<Node> nodes;
     private boolean applyR1;
 
@@ -98,7 +98,7 @@ public final class Ccd implements GraphSearch {
         }
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
@@ -110,7 +110,7 @@ public final class Ccd implements GraphSearch {
         this.depth = depth;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -177,7 +177,7 @@ public final class Ccd implements GraphSearch {
             double score = Double.POSITIVE_INFINITY;
             List<Node> S = null;
 
-            DepthChoiceGenerator cg2 = new DepthChoiceGenerator(adja.size(), -1);
+            SublistGenerator cg2 = new SublistGenerator(adja.size(), -1);
             int[] comb2;
 
             while ((comb2 = cg2.next()) != null) {
@@ -193,7 +193,7 @@ public final class Ccd implements GraphSearch {
 
             List<Node> adjc = graph.getAdjacentNodes(c);
 
-            DepthChoiceGenerator cg3 = new DepthChoiceGenerator(adjc.size(), -1);
+            SublistGenerator cg3 = new SublistGenerator(adjc.size(), -1);
             int[] comb3;
 
             while ((comb3 = cg3.next()) != null) {
@@ -311,7 +311,7 @@ public final class Ccd implements GraphSearch {
             TT.remove(b);
             TT.remove(c);
 
-            DepthChoiceGenerator gen2 = new DepthChoiceGenerator(TT.size(), -1);
+            SublistGenerator gen2 = new SublistGenerator(TT.size(), -1);
             int[] choice2;
 
             while ((choice2 = gen2.next()) != null) {

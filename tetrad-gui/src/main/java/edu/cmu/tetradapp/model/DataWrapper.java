@@ -332,11 +332,11 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         }
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return getSelectedDataModel().getKnowledge();
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         getSelectedDataModel().setKnowledge(knowledge);
     }
 

@@ -109,12 +109,12 @@ public class SepsetsConservative implements SepsetProducer {
         return _v;
     }
 
-    public boolean isCollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         List<List<List<Node>>> ret = getSepsetsLists(i, j, k, this.independenceTest, this.depth, true);
         return ret.get(0).isEmpty();
     }
 
-    public boolean isNoncollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
         List<List<List<Node>>> ret = getSepsetsLists(i, j, k, this.independenceTest, this.depth, true);
         return ret.get(1).isEmpty();
     }

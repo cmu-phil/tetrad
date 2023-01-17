@@ -706,24 +706,14 @@ public final class Dag implements Graph {
         return null;
     }
 
-    @Override
-    public boolean isPag() {
-        return this.pag;
+    public EdgeListGraph.GraphType getGraphType() {
+        return EdgeListGraph.GraphType.DAG;
     }
 
-    @Override
-    public void setPag(boolean pag) {
-        this.pag = pag;
-    }
-
-    @Override
-    public boolean isCPDAG() {
-        return this.CPDAG;
-    }
-
-    @Override
-    public void setCPDAG(boolean CPDAG) {
-        this.CPDAG = CPDAG;
+    public void setGraphType(EdgeListGraph.GraphType graphType) {
+        if (graphType != EdgeListGraph.GraphType.DAG) {
+            throw new IllegalArgumentException("A DAG must be set to graph type DAG");
+        }
     }
 
     @Override

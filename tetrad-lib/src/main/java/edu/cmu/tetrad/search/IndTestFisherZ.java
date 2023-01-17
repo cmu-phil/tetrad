@@ -48,14 +48,14 @@ import static java.lang.StrictMath.log;
  */
 public final class IndTestFisherZ implements IndependenceTest {
 
-    private final Map<Node, Integer> indexMap;
+    private final Map<String, Integer> indexMap;
     private final Map<String, Node> nameMap;
     private final NormalDistribution normal = new NormalDistribution(0, 1, 1e-15);
     private final Map<Node, Integer> nodesHash;
     /**
      * The correlation matrix.
      */
-    private final CorrelationMatrix cor;
+    private final ICovarianceMatrix cor;
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
@@ -136,7 +136,8 @@ public final class IndTestFisherZ implements IndependenceTest {
      */
     public IndTestFisherZ(Matrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
-        this.cor = new CorrelationMatrix(this.dataSet);
+        this.cor = DataUtils.getCorrelationMatrix(this.dataSet);
+//        this.cor = new CorrelationMatrix(this.dataSet);
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
@@ -191,7 +192,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         int[] indices = new int[vars.size()];
 
         for (int i = 0; i < indices.length; i++) {
-            indices[i] = this.indexMap.get(vars.get(i));
+            indices[i] = this.indexMap.get(vars.get(i).getName());
         }
 
         ICovarianceMatrix newCovMatrix = this.cor.getSubmatrix(indices);
@@ -210,7 +211,14 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
-        double p = getPValue(x, y, z);
+        double p = 0.0;
+        try {
+            p = getPValue(x, y, z);
+        } catch (SingularMatrixException e) {
+            e.printStackTrace();
+            return new IndependenceResult(new IndependenceFact(x, y, z),
+                    false, p);
+        }
 
         boolean independent = p > this.alpha;
 
@@ -237,7 +245,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         return this.p;
     }
 
-    public double getPValue(Node x, Node y, List<Node> z) {
+    public double getPValue(Node x, Node y, List<Node> z) throws SingularMatrixException {
         double r;
         int n;
 
@@ -267,10 +275,10 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     private double partialCorrelation(Node x, Node y, List<Node> z, List<Integer> rows) throws SingularMatrixException {
         int[] indices = new int[z.size() + 2];
-        indices[0] = this.indexMap.get(x);
-        indices[1] = this.indexMap.get(y);
-        for (int i = 0; i < z.size(); i++) indices[i + 2] = this.indexMap.get(z.get(i));
-
+        indices[0] = this.indexMap.get(x.getName());
+        indices[1] = this.indexMap.get(y.getName());
+        for (int i = 0; i < z.size(); i++) indices[i + 2] = this.indexMap.get(z.get(i).getName());
+//
         Matrix cor;
 
         if (this.cor != null) {
@@ -280,9 +288,9 @@ public final class IndTestFisherZ implements IndependenceTest {
             cor = MatrixUtils.convertCovToCorr(cov);
         }
 
-        if (z.isEmpty()) return cor.get(0, 1);
+//        if (z.isEmpty()) return cor.get(0, 1);
 
-        return StatUtils.partialCorrelation(cor);
+        return StatUtils.partialCorrelationPrecisionMatrix(cor);
     }
 
     private Matrix getCov(List<Integer> rows, int[] cols) {
@@ -316,13 +324,13 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     private double getR(Node x, Node y, List<Node> z, List<Integer> rows) {
-        try {
-            return partialCorrelation(x, y, z, rows);
-        } catch (SingularMatrixException e) {
-            e.printStackTrace();
-            System.out.println(SearchLogUtils.determinismDetected(z, x));
-            return Double.NaN;
-        }
+//        try {
+        return partialCorrelation(x, y, z, rows);
+//        } catch (SingularMatrixException e) {
+//            e.printStackTrace();
+//            System.out.println(SearchLogUtils.determinismDetected(z, x));
+//            return Double.NaN;
+//        }
     }
 
 
@@ -391,7 +399,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         int[] parents = new int[z.size()];
 
         for (int j = 0; j < parents.length; j++) {
-            parents[j] = this.cor.getVariables().indexOf(z.get(j));
+            parents[j] = indexMap.get(z.get(j).getName());
         }
 
         if (parents.length > 0) {
@@ -444,11 +452,11 @@ public final class IndTestFisherZ implements IndependenceTest {
         return nameMap;
     }
 
-    private Map<Node, Integer> indexMap(List<Node> variables) {
-        Map<Node, Integer> indexMap = new ConcurrentHashMap<>();
+    private Map<String, Integer> indexMap(List<Node> variables) {
+        Map<String, Integer> indexMap = new HashMap<>();
 
         for (int i = 0; i < variables.size(); i++) {
-            indexMap.put(variables.get(i), i);
+            indexMap.put(variables.get(i).getName(), i);
         }
 
         return indexMap;

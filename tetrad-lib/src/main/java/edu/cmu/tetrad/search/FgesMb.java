@@ -20,8 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TaskManager;
@@ -74,7 +73,7 @@ public final class FgesMb {
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     /**
      * List of variables in the data set, in order.
      */
@@ -381,7 +380,7 @@ public final class FgesMb {
     /**
      * @return the background knowledge.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
@@ -391,7 +390,7 @@ public final class FgesMb {
      * @param knowledge the knowledge object, specifying forbidden and required
      *                  edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -1530,7 +1529,7 @@ public final class FgesMb {
     }
 
     // Runs Meek rules on just the changed adj.
-    private Set<Node> meekOrientRestricted(IKnowledge knowledge) {
+    private Set<Node> meekOrientRestricted(Knowledge knowledge) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
         return rules.orientImplied(this.graph);

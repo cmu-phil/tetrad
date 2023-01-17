@@ -20,10 +20,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -35,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 
 /**
  * @author kaalpurush
@@ -137,7 +137,7 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
         /*
          * @serial @deprecated
          */
-        IKnowledge knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
 
         for (Node v : input.getVariables()) {
             knowledge.addVariable(v.getName());
@@ -151,41 +151,44 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
         // simulation or not. If in a simulation, I should print the knowledge.
         // If not, I should wait for resetParams to be called. For now I'm
         // printing the knowledge if it's not empty.
-        if (!((IKnowledge) params.get("knowledge", new Knowledge2())).isEmpty()) {
-            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge2()).toString());
+        if (!((Knowledge) params.get("knowledge", new Knowledge())).isEmpty()) {
+            TetradLogger.getInstance().log("knowledge", params.get("knowledge", new Knowledge()).toString());
         }
     }
 
     private void createKnowledge(Parameters params) {
-        IKnowledge knwl = getKnowledge();
-        if (knwl == null) {
+        Knowledge knowledge = getKnowledge();
+        if (knowledge == null) {
             return;
         }
 
-        knwl.clear();
+        knowledge.clear();
 
         if (this.resultGraph == null) {
             throw new NullPointerException("I couldn't find a parent graph.");
         }
 
-        List<Node> nodes = this.resultGraph.getNodes();
+        addForbiddenReverseEdgesForDirectedEdges(resultGraph, knowledge);
 
-        int numOfNodes = nodes.size();
-        for (int i = 0; i < numOfNodes; i++) {
-            for (int j = i + 1; j < numOfNodes; j++) {
-                Node n1 = nodes.get(i);
-                Node n2 = nodes.get(j);
 
-                if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
-                    continue;
-                }
-
-                Edge edge = this.resultGraph.getEdge(n1, n2);
-                if (edge != null && edge.isDirected()) {
-                    knwl.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
-                }
-            }
-        }
+//        List<Node> nodes = this.resultGraph.getNodes();
+//
+//        int numOfNodes = nodes.size();
+//        for (int i = 0; i < numOfNodes; i++) {
+//            for (int j = i + 1; j < numOfNodes; j++) {
+//                Node n1 = nodes.get(i);
+//                Node n2 = nodes.get(j);
+//
+//                if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
+//                    continue;
+//                }
+//
+//                Edge edge = this.resultGraph.getEdge(n1, n2);
+//                if (edge != null && edge.isDirected()) {
+//                    knowledge.setForbidden(edge.getNode2().getName(), edge.getNode1().getName());
+//                }
+//            }
+//        }
     }
 
     /**

@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
@@ -141,7 +141,7 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      * @return the knowledge currently stored in the workbench. Required for and
      * interface.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.standardizedSemImGraphicalEditor.getWorkbench().getKnowledge();
     }
 

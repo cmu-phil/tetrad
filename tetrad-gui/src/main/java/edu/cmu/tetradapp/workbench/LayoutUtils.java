@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.workbench;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -485,7 +485,7 @@ public class LayoutUtils {
                 }
             }
 
-            IKnowledge knowledge = layoutEditable.getKnowledge();
+            Knowledge knowledge = layoutEditable.getKnowledge();
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
             layoutEditable.layoutByGraph(graph);
         } catch (Exception e1) {

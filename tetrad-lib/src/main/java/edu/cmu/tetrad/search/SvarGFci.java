@@ -63,7 +63,7 @@ public final class SvarGFci implements GraphSearch {
     private Graph graph;
 
     // The background knowledge.
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     // The variables to search over (optional)
     private final List<Node> variables = new ArrayList<>();
@@ -205,7 +205,7 @@ public final class SvarGFci implements GraphSearch {
 
         long elapsedTime = time2 - time1;
 
-        this.graph.setPag(true);
+        this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return this.graph;
     }
@@ -300,11 +300,11 @@ public final class SvarGFci implements GraphSearch {
         }
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -416,7 +416,7 @@ public final class SvarGFci implements GraphSearch {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(IKnowledge knowledge, Graph graph, List<Node> variables) {
+    private void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
         this.logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
@@ -491,7 +491,7 @@ public final class SvarGFci implements GraphSearch {
         return max;
     }
 
-    private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y) {
+    private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y) {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return;
         }

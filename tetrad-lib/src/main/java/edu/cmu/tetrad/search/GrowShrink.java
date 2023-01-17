@@ -61,11 +61,10 @@ public class GrowShrink implements MbSearch {
     /**
      * Finds the Markov blanket of the given target.
      *
-     * @param targetName the name of the target
+     * @param target the target
      * @return the list of node in the Markov blanket.
      */
-    public List<Node> findMb(String targetName) {
-        Node target = getVariableForName(targetName);
+    public List<Node> findMb(Node target) {
         List<Node> blanket = new LinkedList<>();
 
         boolean changed = true;

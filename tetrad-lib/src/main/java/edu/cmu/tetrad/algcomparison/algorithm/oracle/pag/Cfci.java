@@ -7,13 +7,14 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 /**
  * Conserative FCI.
@@ -25,7 +26,7 @@ public class Cfci implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private final IndependenceWrapper test;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     public Cfci(IndependenceWrapper test) {
         this.test = test;
@@ -39,6 +40,7 @@ public class Cfci implements Algorithm, HasKnowledge {
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             return search.search();
         } else {
             Cfci algorithm = new Cfci(this.test);
@@ -55,7 +57,7 @@ public class Cfci implements Algorithm, HasKnowledge {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new DagToPag(new EdgeListGraph(graph)).convert();
+        return dagToPag(new EdgeListGraph(graph));
     }
 
     @Override
@@ -76,18 +78,19 @@ public class Cfci implements Algorithm, HasKnowledge {
         }
         parameters.add(Params.DEPTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
 
         parameters.add(Params.VERBOSE);
         return parameters;
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

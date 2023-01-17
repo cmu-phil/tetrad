@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.SelectionGenerator;
 import org.junit.Test;
@@ -56,7 +56,7 @@ public class TestChoiceGenerator {
         final int a = 4;
         final int b = 2;
 
-        int numCombinations = DepthChoiceGenerator.getNumCombinations(a, b);
+        int numCombinations = SublistGenerator.getNumCombinations(a, b);
 
         assertEquals(11, numCombinations);
     }

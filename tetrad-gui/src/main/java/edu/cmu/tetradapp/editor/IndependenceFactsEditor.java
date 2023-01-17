@@ -26,7 +26,7 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetradapp.model.IndTestModel;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.IndependenceResultIndFacts;
@@ -596,7 +596,7 @@ public class IndependenceFactsEditor extends JPanel {
                 List<String> vars3 = new ArrayList<>(vars2);
                 vars3.removeAll(s3);
 
-                DepthChoiceGenerator gen3 = new DepthChoiceGenerator(vars3.size(), plusIndices.length);
+                SublistGenerator gen3 = new SublistGenerator(vars3.size(), plusIndices.length);
                 int[] choice3;
 
                 while ((choice3 = gen3.next()) != null) {

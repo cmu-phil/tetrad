@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.Matrix;
 
 import java.io.OutputStream;
@@ -41,7 +41,7 @@ public class ShiftSearch {
     private final List<DataModel> dataSets;
 
     private int maxShift = 2;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     private int c = 4;
     private int maxNumShifts;
     private PrintStream out = System.out;
@@ -67,7 +67,7 @@ public class ShiftSearch {
 
         printShifts(bestshifts, b, nodes);
 
-        DepthChoiceGenerator generator = new DepthChoiceGenerator(nodes.size(), getMaxNumShifts());
+        SublistGenerator generator = new SublistGenerator(nodes.size(), getMaxNumShifts());
         int[] choice;
 
         while ((choice = generator.next()) != null) {
@@ -176,12 +176,12 @@ public class ShiftSearch {
         this.maxShift = maxShift;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public int getC() {

@@ -361,11 +361,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         return this.dataWrapper;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.dataWrapper.getKnowledge();
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.dataWrapper.setKnowledge(knowledge);
     }
 

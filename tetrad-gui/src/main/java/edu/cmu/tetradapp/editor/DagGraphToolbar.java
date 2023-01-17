@@ -177,6 +177,7 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
         button.setIcon(
                 new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
         button.setMaximumSize(new Dimension(80, 40));
+        button.setMaximumSize(new Dimension(80, 40));
         button.setPreferredSize(new Dimension(80, 40));
         this.buttonsPanel.add(button);
         this.buttonsPanel.add(Box.createVerticalStrut(5));

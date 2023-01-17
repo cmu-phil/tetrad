@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.search;
 
-import cern.colt.Arrays;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -32,7 +30,7 @@ public class OtherPermAlgs {
     private IndependenceTest test;
     private int numStarts = 1;
     private Method method = Method.GSP;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     private int depth = 4;
     private TeyssierScorer scorer;
     private int numRounds = 50;
@@ -72,7 +70,7 @@ public class OtherPermAlgs {
             scorer.setUseScore(true);
         } else {
             scorer = new TeyssierScorer(test, score);
-            scorer.setUseVermaPearl(usePearl);
+            scorer.setUseRaskuttiUhler(usePearl);
             scorer.score(variables);
 
             if (usePearl) {
@@ -246,7 +244,6 @@ public class OtherPermAlgs {
             int numPairs = pairs.size();
 
             for (OrderedPair<Node> pair : pairs) {
-                scorer.resetCacheIfTooBig(100000);
                 visited++;
 
                 Node x = pair.getFirst();
@@ -293,7 +290,6 @@ public class OtherPermAlgs {
             }
 
             for (OrderedPair<Node> pair : pairs) {
-                scorer.resetCacheIfTooBig(100000);
                 visited++;
 
                 Node x = pair.getFirst();
@@ -468,8 +464,8 @@ public class OtherPermAlgs {
         this.verbose = verbose;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public void setUseDataOrder(boolean useDataOrder) {
@@ -531,7 +527,7 @@ public class OtherPermAlgs {
             Node y = adj.getSecond();
             if (checkCovering && !scorer.coveredEdge(x, y)) continue;
             scorer.bookmark(currentDepth);
-            scorer.tuck(x, y);
+            scorer.swaptuck(x, y);
 //            System.out.println(scorer.getOrder() + " score = " + scorer.getNumEdges());
 
             if (violatesKnowledge(scorer.getPi())) {

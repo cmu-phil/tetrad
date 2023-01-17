@@ -56,7 +56,12 @@ public class TextTable {
      * The number of spaces between columns. By default, 2.
      */
     private int columnSpacing = 2;
-    private boolean tabDelimited;
+
+    public enum Delimiter {JUSTIFIED, COMMA, TAB, SPACE}
+
+    private Delimiter delimiter = Delimiter.JUSTIFIED;
+
+//    private boolean tabDelimited;
 
     /**
      * Construct the text table; the table has a fixed number of rows and
@@ -169,11 +174,23 @@ public class TextTable {
         for (String[] token1 : this.tokens) {
             for (int j = 0; j < this.tokens[0].length; j++) {
 
-                if (this.tabDelimited) {
+                if (this.delimiter == Delimiter.TAB) {
                     buffer.append(token1[j]);
 
                     if (j < this.tokens[0].length - 1) {
                         buffer.append("\t");
+                    }
+                } else if (this.delimiter == Delimiter.COMMA) {
+                    buffer.append(token1[j]);
+
+                    if (j < this.tokens[0].length - 1) {
+                        buffer.append(",");
+                    }
+                } else if (this.delimiter == Delimiter.SPACE) {
+                    buffer.append(token1[j]);
+
+                    if (j < this.tokens[0].length - 1) {
+                        buffer.append(" ");
                     }
                 } else {
                     for (int k = 0; k < getColumnSpacing(); k++) {
@@ -204,8 +221,8 @@ public class TextTable {
         return buffer.toString();
     }
 
-    public void setTabDelimited(boolean tabDelimited) {
-        this.tabDelimited = tabDelimited;
+    public void setDelimiter(Delimiter delimiter) {
+        this.delimiter = delimiter;
     }
 }
 

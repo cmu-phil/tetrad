@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.utils;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 
 /**
  * Stores a knowledge object.
@@ -12,10 +12,10 @@ public interface HasKnowledge {
     /**
      * @return a knowledge object.
      */
-    IKnowledge getKnowledge();
+    Knowledge getKnowledge();
 
     /**
      * Sets a knowledge object.
      */
-    void setKnowledge(IKnowledge knowledge);
+    void setKnowledge(Knowledge knowledge);
 }

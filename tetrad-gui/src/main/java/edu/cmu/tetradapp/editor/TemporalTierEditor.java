@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,7 +40,7 @@ class TemporalTierEditor extends JPanel
         implements PropertyChangeListener, ActionListener {
 
 
-    private final IKnowledge knowledge;
+    private final Knowledge knowledge;
     //private JButton nameTiers;
     private final JButton clear;
 
@@ -49,7 +49,7 @@ class TemporalTierEditor extends JPanel
      */
     private final TierList tierList;
 
-    public TemporalTierEditor(IKnowledge knowledge, List varNames,
+    public TemporalTierEditor(Knowledge knowledge, List varNames,
                               String sessionName) {
 
         //nameTiers = new JButton("VariableNameImpliedTiers");

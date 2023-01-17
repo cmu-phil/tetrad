@@ -45,6 +45,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.SynchronizedRandomGenerator;
+import org.apache.commons.math3.random.Well44497b;
 
 /**
  * Some static utility methods for dealing with data sets.
@@ -1123,6 +1126,50 @@ public final class DataUtils {
     }
 
     /**
+     * Get dataset sampled without replacement.
+     *
+     * @param data original dataset
+     * @param sampleSize number of data (row)
+     * @param randomGenerator random number generator
+     * @return dataset
+     */
+    public static DataSet getResamplingDataset(DataSet data, int sampleSize, RandomGenerator randomGenerator) {
+        int actualSampleSize = data.getNumRows();
+        int _size = sampleSize;
+        if (actualSampleSize < _size) {
+            _size = actualSampleSize;
+        }
+
+        List<Integer> availRows = new ArrayList<>();
+        for (int i = 0; i < actualSampleSize; i++) {
+            availRows.add(i);
+        }
+
+        Collections.shuffle(availRows);
+
+        List<Integer> addedRows = new ArrayList<>();
+        int[] rows = new int[_size];
+        for (int i = 0; i < _size; i++) {
+            int row = -1;
+            int index = -1;
+            while (row == -1 || addedRows.contains(row)) {
+                index = randomGenerator.nextInt(availRows.size());
+                row = availRows.get(index);
+            }
+            rows[i] = row;
+            addedRows.add(row);
+            availRows.remove(index);
+        }
+
+        int[] cols = new int[data.getNumColumns()];
+        for (int i = 0; i < cols.length; i++) {
+            cols[i] = i;
+        }
+
+        return new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()), data.getVariables());
+    }
+
+    /**
      * @return a sample with replacement with the given sample size from the
      * given dataset.
      */
@@ -1138,8 +1185,38 @@ public final class DataUtils {
         int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
-        return new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()),
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(data.getDoubleData().getSelection(rows, cols).transpose().toArray()),
                 data.getVariables());
+        boxDataSet.setKnowledge(data.getKnowledge());
+        return boxDataSet;
+    }
+
+    /**
+     * Get dataset sampled with replacement.
+     *
+     * @param data original dataset
+     * @param sampleSize number of data (row)
+     * @param randomGenerator random number generator
+     * @return dataset
+     */
+    public static DataSet getBootstrapSample(DataSet data, int sampleSize, RandomGenerator randomGenerator) {
+        int actualSampleSize = data.getNumRows();
+        int[] rows = new int[sampleSize];
+        for (int i = 0; i < rows.length; i++) {
+            rows[i] = randomGenerator.nextInt(actualSampleSize);
+        }
+
+        int[] cols = new int[data.getNumColumns()];
+        for (int i = 0; i < cols.length; i++) {
+            cols[i] = i;
+        }
+
+        BoxDataSet boxDataSet = new BoxDataSet(new VerticalDoubleDataBox(
+                data.getDoubleData().getSelection(rows, cols).transpose().toArray()),
+                data.getVariables());
+        boxDataSet.setKnowledge(data.getKnowledge());
+
+        return boxDataSet;
     }
 
     public static List<DataSet> split(DataSet data, double percentTest) {
@@ -1551,10 +1628,10 @@ public final class DataUtils {
      * Loads knowledge from a file. Assumes knowledge is the only thing in the
      * file. No jokes please. :)
      */
-    public static IKnowledge loadKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
+    public static Knowledge loadKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
         FileReader reader = new FileReader(file);
         Lineizer lineizer = new Lineizer(reader, commentMarker);
-        IKnowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
+        Knowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
         TetradLogger.getInstance().reset();
         return knowledge;
     }
@@ -1570,14 +1647,14 @@ public final class DataUtils {
      * 4 x5
      * </pre>
      */
-    public static IKnowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
-        IKnowledge knowledge = new Knowledge2();
+    public static Knowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
+        Knowledge knowledge = new Knowledge();
 
         String line = lineizer.nextLine();
         String firstLine = line;
 
         if (line == null) {
-            return new Knowledge2();
+            return new Knowledge();
         }
 
         if (line.startsWith("/knowledge")) {
@@ -1883,7 +1960,7 @@ public final class DataUtils {
         return knowledge;
     }
 
-    private static void addVariable(IKnowledge knowledge, String from) {
+    private static void addVariable(Knowledge knowledge, String from) {
         if (!knowledge.getVariables().contains(from)) {
             knowledge.addVariable(from);
         }
@@ -2097,7 +2174,7 @@ public final class DataUtils {
             }
         }
 
-        IKnowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
+        Knowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
 
         ICovarianceMatrix covarianceMatrix
                 = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), c, n);
@@ -2106,6 +2183,32 @@ public final class DataUtils {
 
         TetradLogger.getInstance().log("info", "\nData set loaded!");
         return covarianceMatrix;
+    }
+
+    @NotNull
+    public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet) {
+        ICovarianceMatrix cov;
+
+//        if (dataSet.getNumRows() < 1000) {
+//            cov = new CovarianceMatrixOnTheFly(dataSet);
+//        } else {
+        cov = new CovarianceMatrix(dataSet);
+//        }
+
+        return cov;
+    }
+
+    @NotNull
+    public static ICovarianceMatrix getCorrelationMatrix(DataSet dataSet) {
+        ICovarianceMatrix cov;
+
+//        if (dataSet.getNumRows() < 1000) {
+//            cov = new CorrelationMatrixOnTheFly(new CovarianceMatrixOnTheFly(dataSet));
+//        } else {
+        cov = new CovarianceMatrix(dataSet);
+//        }
+
+        return cov;
     }
 }
 

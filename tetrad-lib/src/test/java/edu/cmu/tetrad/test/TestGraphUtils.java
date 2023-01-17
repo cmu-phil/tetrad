@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -276,69 +277,6 @@ public final class TestGraphUtils {
                 return;
             }
         }
-    }
-
-    @Test
-    public void testPagColoring() {
-        Graph dag = GraphUtils.randomGraph(30, 5, 50, 10, 10, 10, false);
-        Graph pag = new DagToPag(dag).convert();
-
-        GraphUtils.addPagColoring(pag);
-
-        for (Edge edge : pag.getEdges()) {
-            Node x1 = edge.getNode1();
-            Node x2 = edge.getNode2();
-
-            if (edge.getLineColor() == Color.green) {
-                System.out.println("Green");
-
-                for (Node L : pag.getNodes()) {
-                    if (L == x1 || L == x2) continue;
-
-                    if (L.getNodeType() == NodeType.LATENT) {
-                        if (TestGraphUtils.existsLatentPath(dag, L, x1) && TestGraphUtils.existsLatentPath(dag, L, x2)) {
-                            System.out.println("Edge " + edge + " falsely colored green.");
-                        }
-                    }
-                }
-            }
-
-            if (edge.isBold()) {
-                System.out.println("Bold");
-
-                if (!TestGraphUtils.existsLatentPath(dag, x1, x2)) {
-                    System.out.println("Edge " + edge + " is falsely bold.");
-                }
-            }
-        }
-    }
-
-    public static boolean existsLatentPath(Graph graph, Node b, Node y) {
-        if (b == y) return false;
-        return TestGraphUtils.existsLatentPath(graph, b, y, new LinkedList<>());
-    }
-
-    public static boolean existsLatentPath(Graph graph, Node b, Node y, LinkedList<Node> path) {
-        if (path.contains(b)) {
-            return false;
-        }
-
-        path.addLast(b);
-
-        for (Node c : graph.getChildren(b)) {
-            if (c == y) return true;
-
-            if (c.getNodeType() != NodeType.LATENT) {
-                continue;
-            }
-
-            if (!TestGraphUtils.existsLatentPath(graph, c, y, path)) {
-                return false;
-            }
-        }
-
-        path.removeLast();
-        return true;
     }
 
     private List<Node> list(Node... z) {

@@ -73,15 +73,14 @@ public class TestPcStableMax {
      */
     @Test
     public void testSearch4() {
-        IKnowledge knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
         System.out.println(knowledge);
 
-        checkWithKnowledge(  /*"A---B,B-->C,A-->D,C-->D", */
-                knowledge);
+        checkWithKnowledge(  "A-->B,C-->B,B-->D", knowledge);
     }
 
     //    @Test
@@ -100,7 +99,7 @@ public class TestPcStableMax {
         ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
                 '\"', "*");
 
-        IKnowledge knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
 
         knowledge.addToTier(1, "ABILITY");
         knowledge.addToTier(2, "GPQ");
@@ -163,9 +162,9 @@ public class TestPcStableMax {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(IKnowledge knowledge) {
+    private void checkWithKnowledge(String input, Knowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
+        Graph graph = GraphConverter.convert(input);
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -179,6 +178,8 @@ public class TestPcStableMax {
 
         // Build comparison graph.
         Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
+
+        resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
         // Do test.
         assertEquals(trueGraph, resultGraph);

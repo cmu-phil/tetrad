@@ -22,11 +22,10 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
-import edu.cmu.tetrad.search.DagToPag;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -41,8 +40,10 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 import static java.lang.Math.min;
 import static java.util.Collections.shuffle;
+import java.util.regex.Pattern;
 
 /**
  * Basic graph utilities.
@@ -268,6 +269,8 @@ public final class GraphUtils {
         if (layoutAsCircle) {
             GraphUtils.circleLayout(dag, 200, 200, 150);
         }
+
+        dag.setGraphType(EdgeListGraph.GraphType.DAG);
 
         return dag;
     }
@@ -939,7 +942,9 @@ public final class GraphUtils {
      *               calculated. All of the nodes and edges of the Markov Blanket DAG are in
      *               this DAG.
      */
-    public static Dag markovBlanketDag(Node target, Graph dag) {
+    public static Graph markovBlanketDag(Node target, Graph dag) {
+        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
+
         if (dag.getNode(target.getName()) == null) {
             throw new NullPointerException("Target node not in graph: " + target);
         }
@@ -951,7 +956,6 @@ public final class GraphUtils {
         List<Node> parents = dag.getParents(target);
         for (Node parent1 : parents) {
             blanket.addNode(parent1);
-
             blanket.addDirectedEdge(parent1, target);
         }
 
@@ -1011,7 +1015,7 @@ public final class GraphUtils {
             }
         }
 
-        return new Dag(blanket);
+        return blanket;
     }
 
     /**
@@ -1323,6 +1327,7 @@ public final class GraphUtils {
         path.addLast(node1);
 
         if (path.size() > (maxLength == -1 ? 1000 : maxLength)) {
+            path.removeLast();
             return;
         }
 
@@ -1393,7 +1398,7 @@ public final class GraphUtils {
             }
 
             // Found a path.
-            if (next == node2) {
+            if (next == node2 && !path.isEmpty()) {
                 LinkedList<Node> _path = new LinkedList<>(path);
                 _path.add(next);
                 paths.add(_path);
@@ -1454,7 +1459,7 @@ public final class GraphUtils {
             }
 
             // Found a path.
-            if (next == node2) {
+            if (next == node2 && !path.isEmpty()) {
                 LinkedList<Node> _path = new LinkedList<>(path);
                 _path.add(next);
                 paths.add(_path);
@@ -1528,7 +1533,7 @@ public final class GraphUtils {
         return newGraph;
     }
 
-    public static String pathString(List<Node> path, Graph graph) {
+    public static String pathString(Graph graph, List<Node> path) {
         return GraphUtils.pathString(graph, path, new LinkedList<>());
     }
 
@@ -1545,7 +1550,12 @@ public final class GraphUtils {
             return "NO PATH";
         }
 
-        buf.append(path.get(0).toString());
+        if (path.get(0).getNodeType() == NodeType.LATENT) {
+            buf.append("(").append(path.get(0).toString()).append(")");
+        } else {
+            buf.append(path.get(0).toString());
+        }
+
 
         if (conditioningVars.contains(path.get(0))) {
             buf.append("(C)");
@@ -1556,7 +1566,6 @@ public final class GraphUtils {
             Node n1 = path.get(m);
 
             Edge edge = graph.getEdge(n0, n1);
-
 
             if (edge == null) {
                 buf.append("(-)");
@@ -1583,7 +1592,11 @@ public final class GraphUtils {
                 }
             }
 
-            buf.append(n1.toString());
+            if (n1.getNodeType() == NodeType.LATENT) {
+                buf.append("(").append(n1).append(")");
+            } else {
+                buf.append(n1);
+            }
 
             if (conditioningVars.contains(n1)) {
                 buf.append("(C)");
@@ -1609,6 +1622,7 @@ public final class GraphUtils {
         }
 
         Graph convertedGraph = new EdgeListGraph(newVariables);
+        convertedGraph.setGraphType(originalGraph.getGraphType());
 
         for (Edge edge : originalGraph.getEdges()) {
             Node node1 = newNodes.get(edge.getNode1().getName());
@@ -1667,6 +1681,8 @@ public final class GraphUtils {
 
             convertedGraph.addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
+
+        convertedGraph.setGraphType(EdgeListGraph.GraphType.CPDAG);
 
         return convertedGraph;
     }
@@ -1731,9 +1747,6 @@ public final class GraphUtils {
         }
 
         graph2 = GraphUtils.replaceNodes(graph2, graph1.getNodes());
-
-        graph1 = GraphUtils.undirectedGraph(graph1);
-        graph2 = GraphUtils.undirectedGraph(graph2);
 
         int count = 0;
 
@@ -1934,19 +1947,19 @@ public final class GraphUtils {
                                 edgeTypeString = new StringBuilder("-->");
                                 break;
                             case at:
-                                edgeTypeString = new StringBuilder("&lt;--");
+                                edgeTypeString = new StringBuilder("<--");
                                 break;
                             case ca:
                                 edgeTypeString = new StringBuilder("o->");
                                 break;
                             case ac:
-                                edgeTypeString = new StringBuilder("&lt;-o");
+                                edgeTypeString = new StringBuilder("<-o");
                                 break;
                             case cc:
                                 edgeTypeString = new StringBuilder("o-o");
                                 break;
                             case aa:
-                                edgeTypeString = new StringBuilder("&lt;-&gt;");
+                                edgeTypeString = new StringBuilder("<->");
                                 break;
                             case tt:
                                 edgeTypeString = new StringBuilder("---");
@@ -2073,6 +2086,40 @@ public final class GraphUtils {
         }
 
         return out.toString();
+    }
+
+    public static String graphToPcalg(Graph g) {
+        Map<Endpoint, Integer> mark2Int = new HashMap();
+        mark2Int.put(Endpoint.NULL, 0);
+        mark2Int.put(Endpoint.CIRCLE, 1);
+        mark2Int.put(Endpoint.ARROW, 2);
+        mark2Int.put(Endpoint.TAIL, 3);
+
+        int n = g.getNumNodes();
+        int[][] A = new int[n][n];
+
+        List<Node> nodes = g.getNodes();
+        for (Edge edge : g.getEdges()) {
+            int i = nodes.indexOf(edge.getNode1());
+            int j = nodes.indexOf(edge.getNode2());
+            A[j][i] = mark2Int.get(edge.getEndpoint1());
+            A[i][j] = mark2Int.get(edge.getEndpoint2());
+        }
+
+        TextTable table = new TextTable(n + 1, n);
+        table.setDelimiter(TextTable.Delimiter.COMMA);
+
+        for (int j = 0; j < n; j++) {
+            table.setToken(0, j, nodes.get(j).getName());
+        }
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                table.setToken(i + 1, j, "" + A[i][j]);
+            }
+        }
+
+        return table.toString();
     }
 
     public static Graph parseGraphXml(Element graphElement, Map<String, Node> nodes) throws ParsingException {
@@ -2276,6 +2323,7 @@ public final class GraphUtils {
 //            out.print(graph);
 
             if (xml) {
+//                out.println(graphToPcalg(graph));
                 out.print(graphToXml(graph));
             } else {
                 out.print(graph);
@@ -2315,6 +2363,35 @@ public final class GraphUtils {
             throw new IllegalStateException();
         }
     }
+
+//    public static Graph readerToGraphMyTxt(File file) throws IOException {
+//        List<Node> vars = new ArrayList<>();
+//        int numVars = 33;
+//        for (int i = 1; i <= numVars; i++) vars.add(new ContinuousVariable("X" + i));
+//
+//        Graph graph = new EdgeListGraph(vars);
+//
+//        try {
+//            DataSet datasSet = DataUtils.loadContinuousData(file, "//", '\"',
+//                    "*", false, Delimiter.TAB);
+//
+//            for (int i = 0; i < numVars; i++) {
+//                for (int j = i; j < numVars; j++) {
+//                    if (datasSet.getDouble(i, j) == 1.0 && datasSet.getDouble(j, i) == 1.0) {
+//                        graph.addBidirectedEdge(vars.get(i), vars.get(j));
+//                    } else if (datasSet.getDouble(i, j) == 1.0 && datasSet.getDouble(j, i) == 0.0) {
+//                        graph.addDirectedEdge(vars.get(i), vars.get(j));
+//                    } else if (datasSet.getDouble(i, j) == 0.0 && datasSet.getDouble(j, i) == 1.0) {
+//                        graph.addDirectedEdge(vars.get(j), vars.get(i));
+//                    }
+//                }
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return graph;
+//    }
 
     public static Graph loadGraphRuben(File file) {
         try {
@@ -2375,8 +2452,25 @@ public final class GraphUtils {
             }
         }
 
+//        computeEdgeProbabilities(graph);
+
         return graph;
     }
+
+//    private static void computeEdgeProbabilities(Graph graph) {
+//        for (Edge edge : graph.getEdges()) {
+//            List<EdgeTypeProbability> edgeTypeProbs = edge.getEdgeTypeProbabilities();
+//            if (!(edgeTypeProbs == null || edgeTypeProbs.isEmpty())) {
+//                double prob = 0;
+//                for (EdgeTypeProbability typeProbability : edgeTypeProbs) {
+//                    if (typeProbability.getEdgeType() != EdgeTypeProbability.EdgeType.nil) {
+//                        prob += typeProbability.getProbability();
+//                    }
+//                }
+//                edge.setProbability(prob);
+//            }
+//        }
+//    }
 
     public static Graph readerToGraphRuben(Reader reader) throws IOException {
         Graph graph = new EdgeListGraph();
@@ -2396,153 +2490,293 @@ public final class GraphUtils {
 
         return graph;
     }
-
+    
     private static void extractGraphEdges(Graph graph, BufferedReader in) throws IOException {
+        Pattern lineNumPattern = Pattern.compile("^[\\d]+.[\\s]?");
+        Pattern spacePattern = Pattern.compile("\\s+");
+        Pattern semicolonPattern = Pattern.compile(";");
+        Pattern colonPattern = Pattern.compile(":");
         for (String line = in.readLine(); line != null; line = in.readLine()) {
             line = line.trim();
-
             if (line.isEmpty()) {
-                continue;
+                return;
             }
 
-            String[] tokens = line.split("\\s+");
-
-            String number = tokens[0];
-
-            String[] tokensa = number.split("\\.");
-
-            int fromIndex;
-
-            try {
-                Integer.parseInt(tokensa[0]);
-                fromIndex = 1;
-            } catch (NumberFormatException e) {
-                fromIndex = 0;
-            }
-
-            String from = tokens[fromIndex];
-
-            line = line.substring(line.indexOf(from) + from.length()).trim();
-            tokens = line.split("\\s+");
-
-            String edge = tokens[0];
-
-            if ("Attributes:".equals(edge)) break;
-
-            line = line.substring(line.indexOf(edge) + edge.length()).trim();
-            tokens = line.split("\\s+");
-
-            String to = tokens[0];
-            line = line.substring(line.indexOf(to) + to.length()).trim();
-
-            Node _from = graph.getNode(from);
-            Node _to = graph.getNode(to);
-
-            if (_from == null) {
-                graph.addNode(new GraphNode(from));
-                _from = graph.getNode(from);
-            }
-
-            if (_to == null) {
-                graph.addNode(new GraphNode(to));
-                _to = graph.getNode(to);
-            }
-
-            char end1 = edge.charAt(0);
-            char end2 = edge.charAt(2);
-
-            Endpoint _end1;
-            Endpoint _end2;
-
-            if (end1 == '<') {
-                _end1 = Endpoint.ARROW;
-            } else if (end1 == 'o') {
-                _end1 = Endpoint.CIRCLE;
-            } else if (end1 == '-') {
-                _end1 = Endpoint.TAIL;
-            } else {
-                throw new IllegalArgumentException("Unrecognized endpoint: " + end1 + ", for edge " + edge);
-            }
-
-            if (end2 == '>') {
-                _end2 = Endpoint.ARROW;
-            } else if (end2 == 'o') {
-                _end2 = Endpoint.CIRCLE;
-            } else if (end2 == '-') {
-                _end2 = Endpoint.TAIL;
-            } else {
-                throw new IllegalArgumentException("Unrecognized endpoint: " + end2 + ", for edge " + edge);
-            }
-
-            Edge _edge = new Edge(_from, _to, _end1, _end2);
-
-            //Bootstrapping
-            if (line.contains("[no edge]") || line.contains(" --> ") || line.contains(" &lt;-- ") || line.contains(" o-> ") || line.contains(" &lt;-o ") || line.contains(" o-o ") || line.contains(" &lt;-&gt; ") || line.contains(" --- ")) {
-
-                // String bootstrap_format = "[no edge]:0.0000;[n1 --> n2]:0.0000;[n1 &lt;-- n2]:0.0000;[n1 o-> n2]:0.0000;[n1 &lt;-o n2]:0.0000;[n1 o-o n2]:0.0000;[n1 &lt;-> n2]:0.0000;[n1 --- n2]:0.0000;";
-                int last_semicolon = line.lastIndexOf(";");
-                String bootstraps;
-                if (last_semicolon != -1) {
-                    bootstraps = line.substring(0, last_semicolon + 1);
+            line = lineNumPattern.matcher(line).replaceAll("");
+            String[] fields = spacePattern.split(line, 4);
+            Edge edge = getEdge(fields[0], fields[1], fields[2], graph);
+            if (fields.length > 3) {
+                fields = semicolonPattern.split(fields[3]);
+                if (fields.length > 1) {
+                    for (String prop : fields) {
+                        setEdgeTypeProperties(prop, edge, graph, spacePattern, colonPattern);
+                    }
                 } else {
-                    bootstraps = line;
-                }
-
-                line = line.substring(bootstraps.length()).trim();
-
-                String[] bootstrap = bootstraps.split(";");
-                for (String s : bootstrap) {
-                    String[] token = s.split(":");
-                    if (token.length < 2) {
-                        continue;
-                    }
-
-                    String orient = token[0];
-                    double prob = Double.parseDouble(token[1]);
-
-                    if (orient.equalsIgnoreCase("[no edge]")) {
-                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, prob));
-                    } else {
-                        orient = orient.replace("[", "").replace("]", "");
-                        EdgeTypeProbability etp;
-                        if (orient.contains(" --> ")) {
-                            etp = new EdgeTypeProbability(EdgeType.ta, prob);
-                        } else if (orient.contains(" &lt;-- ")) {
-                            etp = new EdgeTypeProbability(EdgeType.at, prob);
-                        } else if (orient.contains(" o-> ")) {
-                            etp = new EdgeTypeProbability(EdgeType.ca, prob);
-                        } else if (orient.contains(" &lt;-o ")) {
-                            etp = new EdgeTypeProbability(EdgeType.ac, prob);
-                        } else if (orient.contains(" o-o ")) {
-                            etp = new EdgeTypeProbability(EdgeType.cc, prob);
-                        } else if (orient.contains(" &lt;-> ")) {
-                            etp = new EdgeTypeProbability(EdgeType.aa, prob);
-                        } else {// [n1 --- n2]
-                            etp = new EdgeTypeProbability(EdgeType.tt, prob);
-                        }
-                        String[] _edge_property = orient.trim().split("\\s+");
-                        if (_edge_property.length > 3) {
-                            for (int j = 3; j < _edge_property.length; j++) {
-                                etp.addProperty(Property.valueOf(_edge_property[j]));
-                            }
-                        }
-                        _edge.addEdgeTypeProbability(etp);
-                    }
-
+                    getEdgeProperties(fields[0], spacePattern)
+                            .forEach(edge::addProperty);
                 }
             }
 
-            if (line.length() > 0) {
-                tokens = line.split("\\s+");
-
-                for (String token : tokens) {
-                    _edge.addProperty(Property.valueOf(token));
-                }
-            }
-
-            graph.addEdge(_edge);
+            graph.addEdge(edge);
         }
     }
+
+    private static void setEdgeTypeProperties(String prop, Edge edge, Graph graph, Pattern spacePattern, Pattern colonPattern) {
+        prop = prop.replace("[", "").replace("]", "");
+        String[] fields = colonPattern.split(prop);
+        if (fields.length == 2) {
+            String bootstrapEdge = fields[0];
+            String bootstrapEdgeTypeProb = fields[1];
+
+            // edge type
+            fields = spacePattern.split(bootstrapEdge, 4);
+            if (fields.length >= 3) {
+                // edge-type probability
+                EdgeTypeProbability.EdgeType edgeType = getEdgeType(fields[1]);
+                List<Edge.Property> properties = new LinkedList<>();
+                if (fields.length > 3) {
+                    // pags
+                    properties.addAll(getEdgeProperties(fields[3], spacePattern));
+                }
+
+                edge.addEdgeTypeProbability(new EdgeTypeProbability(edgeType, properties, Double.parseDouble(bootstrapEdgeTypeProb)));
+            } else {
+                // edge probability
+                if ("edge".equals(bootstrapEdge)) {
+                    fields = spacePattern.split(bootstrapEdgeTypeProb, 2);
+                    if (fields.length > 1) {
+                        edge.setProbability(Double.parseDouble(fields[0]));
+                        getEdgeProperties(fields[1], spacePattern).forEach(edge::addProperty);
+                    } else {
+                        edge.setProbability(Double.parseDouble(bootstrapEdgeTypeProb));
+                    }
+                } else if ("no edge".equals(bootstrapEdge)) {
+                    fields = spacePattern.split(bootstrapEdgeTypeProb);
+                    edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, Double.parseDouble(bootstrapEdgeTypeProb)));
+                }
+            }
+        }
+    }
+
+    private static EdgeTypeProbability.EdgeType getEdgeType(String edgeType) {
+        Endpoint endpointFrom = getEndpoint(edgeType.charAt(0));
+        Endpoint endpointTo = getEndpoint(edgeType.charAt(2));
+
+        if (endpointFrom == Endpoint.TAIL && endpointTo == Endpoint.ARROW) {
+            return EdgeTypeProbability.EdgeType.ta;
+        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.TAIL) {
+            return EdgeTypeProbability.EdgeType.at;
+        } else if (endpointFrom == Endpoint.CIRCLE && endpointTo == Endpoint.ARROW) {
+            return EdgeTypeProbability.EdgeType.ca;
+        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.CIRCLE) {
+            return EdgeTypeProbability.EdgeType.ac;
+        } else if (endpointFrom == Endpoint.CIRCLE && endpointTo == Endpoint.CIRCLE) {
+            return EdgeTypeProbability.EdgeType.cc;
+        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.ARROW) {
+            return EdgeTypeProbability.EdgeType.aa;
+        } else if (endpointFrom == Endpoint.TAIL && endpointTo == Endpoint.TAIL) {
+            return EdgeTypeProbability.EdgeType.tt;
+        } else {
+            return EdgeTypeProbability.EdgeType.nil;
+        }
+    }
+
+    private static List<Edge.Property> getEdgeProperties(String props, Pattern spacePattern) {
+        List<Edge.Property> properties = new LinkedList<>();
+
+        for (String prop : spacePattern.split(props)) {
+            if ("dd".equals(prop)) {
+                properties.add(Edge.Property.dd);
+            } else if ("nl".equals(prop)) {
+                properties.add(Edge.Property.nl);
+            } else if ("pd".equals(prop)) {
+                properties.add(Edge.Property.pd);
+            } else if ("pl".equals(prop)) {
+                properties.add(Edge.Property.pl);
+            }
+        }
+
+        return properties;
+    }
+
+    private static Edge getEdge(String nodeNameFrom, String edgeType, String nodeNameTo, Graph graph) {
+        Node nodeFrom = getNode(nodeNameFrom, graph);
+        Node nodeTo = getNode(nodeNameTo, graph);
+        Endpoint endpointFrom = getEndpoint(edgeType.charAt(0));
+        Endpoint endpointTo = getEndpoint(edgeType.charAt(2));
+
+        return new Edge(nodeFrom, nodeTo, endpointFrom, endpointTo);
+    }
+
+    private static Endpoint getEndpoint(char endpoint) {
+        if (endpoint == '>' || endpoint == '<') {
+            return Endpoint.ARROW;
+        } else if (endpoint == 'o') {
+            return Endpoint.CIRCLE;
+        } else if (endpoint == '-') {
+            return Endpoint.TAIL;
+        } else {
+            throw new IllegalArgumentException(String.format("Unrecognized endpoint: %s.", endpoint));
+        }
+    }
+
+    private static Node getNode(String nodeName, Graph graph) {
+        Node node = graph.getNode(nodeName);
+        if (node == null) {
+            graph.addNode(new GraphNode(nodeName));
+            node = graph.getNode(nodeName);
+        }
+
+        return node;
+    }
+
+//    private static void extractGraphEdges(Graph graph, BufferedReader in) throws IOException {
+//        for (String line = in.readLine(); line != null; line = in.readLine()) {
+//            line = line.trim();
+//
+//            if (line.isEmpty()) {
+//                return;
+//            }
+//
+//            String[] tokens = line.split("\\s+");
+//
+//            String number = tokens[0];
+//
+//            String[] tokensa = number.split("\\.");
+//
+//            int fromIndex;
+//
+//            try {
+//                Integer.parseInt(tokensa[0]);
+//                fromIndex = 1;
+//            } catch (NumberFormatException e) {
+//                fromIndex = 0;
+//            }
+//
+//            String from = tokens[fromIndex];
+//
+//            line = line.substring(line.indexOf(from) + from.length()).trim();
+//            tokens = line.split("\\s+");
+//
+//            String edge = tokens[0];
+//
+//            if ("Attributes:".equals(edge)) break;
+//
+//            line = line.substring(line.indexOf(edge) + edge.length()).trim();
+//            tokens = line.split("\\s+");
+//
+//            String to = tokens[0];
+//            line = line.substring(line.indexOf(to) + to.length()).trim();
+//
+//            Node _from = graph.getNode(from);
+//            Node _to = graph.getNode(to);
+//
+//            if (_from == null) {
+//                graph.addNode(new GraphNode(from));
+//                _from = graph.getNode(from);
+//            }
+//
+//            if (_to == null) {
+//                graph.addNode(new GraphNode(to));
+//                _to = graph.getNode(to);
+//            }
+//
+//            char end1 = edge.charAt(0);
+//            char end2 = edge.charAt(2);
+//
+//            Endpoint _end1;
+//            Endpoint _end2;
+//
+//            if (end1 == '<') {
+//                _end1 = Endpoint.ARROW;
+//            } else if (end1 == 'o') {
+//                _end1 = Endpoint.CIRCLE;
+//            } else if (end1 == '-') {
+//                _end1 = Endpoint.TAIL;
+//            } else {
+//                throw new IllegalArgumentException("Unrecognized endpoint: " + end1 + ", for edge " + edge);
+//            }
+//
+//            if (end2 == '>') {
+//                _end2 = Endpoint.ARROW;
+//            } else if (end2 == 'o') {
+//                _end2 = Endpoint.CIRCLE;
+//            } else if (end2 == '-') {
+//                _end2 = Endpoint.TAIL;
+//            } else {
+//                throw new IllegalArgumentException("Unrecognized endpoint: " + end2 + ", for edge " + edge);
+//            }
+//
+//            Edge _edge = new Edge(_from, _to, _end1, _end2);
+//
+//            //Bootstrapping
+//            if (line.contains("[no edge]") || line.contains(" --> ") || line.contains(" <-- ") || line.contains(" o-> ") || line.contains(" <-o ") || line.contains(" o-o ") || line.contains(" <-> ") || line.contains(" --- ")) {
+//
+//                // String bootstrap_format = "[no edge]:0.0000;[n1 --> n2]:0.0000;[n1 &lt;-- n2]:0.0000;[n1 o-> n2]:0.0000;[n1 &lt;-o n2]:0.0000;[n1 o-o n2]:0.0000;[n1 &lt;-> n2]:0.0000;[n1 --- n2]:0.0000;";
+//                int last_semicolon = line.lastIndexOf(";");
+//                String bootstraps;
+//                if (last_semicolon != -1) {
+//                    bootstraps = line.substring(0, last_semicolon + 1);
+//                } else {
+//                    bootstraps = line;
+//                }
+//
+//                line = line.substring(bootstraps.length()).trim();
+//
+//                String[] bootstrap = bootstraps.split(";");
+//                for (String s : bootstrap) {
+//                    String[] token = s.split(":");
+//                    if (token.length < 2) {
+//                        continue;
+//                    }
+//
+//                    String orient = token[0];
+//                    double prob = Double.parseDouble(token[1]);
+//
+//                    if (orient.equalsIgnoreCase("[no edge]")) {
+//                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, prob));
+//                        _edge.setProbability(1.0 - prob);
+//                    } else {
+//                        orient = orient.replace("[", "").replace("]", "");
+//                        EdgeTypeProbability etp;
+//                        if (orient.contains(" --> ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.ta, prob);
+//                        } else if (orient.contains(" <-- ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.at, prob);
+//                        } else if (orient.contains(" o-> ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.ca, prob);
+//                        } else if (orient.contains(" <-o ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.ac, prob);
+//                        } else if (orient.contains(" o-o ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.cc, prob);
+//                        } else if (orient.contains(" <-> ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.aa, prob);
+//                        } else {// [n1 --- n2]
+//                            etp = new EdgeTypeProbability(EdgeType.tt, prob);
+//                        }
+//                        String[] _edge_property = orient.trim().split("\\s+");
+//                        if (_edge_property.length > 3) {
+//                            for (int j = 3; j < _edge_property.length; j++) {
+//                                etp.addProperty(Property.valueOf(_edge_property[j]));
+//                            }
+//                        }
+//                        _edge.addEdgeTypeProbability(etp);
+//                    }
+//
+//                }
+//            }
+//
+//            if (line.length() > 0) {
+//                tokens = line.split("\\s+");
+//
+//                for (String token : tokens) {
+//                    _edge.addProperty(Property.valueOf(token));
+//                }
+//            }
+//
+//            graph.addEdge(_edge);
+//        }
+//    }
 
     private static void extractGraphNodes(Graph graph, BufferedReader in) throws IOException {
         for (String line = in.readLine(); line != null; line = in.readLine()) {
@@ -2551,7 +2785,23 @@ public final class GraphUtils {
                 break;
             }
 
-            Arrays.stream(line.split("[,;]")).map(GraphNode::new).forEach(graph::addNode);
+            String[] tokens = line.split("[,;]");
+
+            for (String token : tokens) {
+                if (token.startsWith("(") && token.endsWith(")")) {
+                    token = token.replace("(", "");
+                    token = token.replace(")", "");
+                    Node node = new GraphNode(token);
+                    node.setNodeType(NodeType.LATENT);
+                    graph.addNode(node);
+                } else {
+                    Node node = new GraphNode(token);
+                    node.setNodeType(NodeType.MEASURED);
+                    graph.addNode(node);
+                }
+            }
+
+//            Arrays.stream(line.split("[,;]")).map(GraphNode::new).forEach(graph::addNode);
         }
     }
 
@@ -2842,28 +3092,72 @@ public final class GraphUtils {
         return table.toString();
     }
 
-    public static Graph loadGraphPcAlgMatrix(DataSet dataSet) {
-        List<Node> vars = dataSet.getVariables();
+    public static Graph loadGraphPcalg(File file) {
+        try {
+            DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"',
+                    "*", true, Delimiter.COMMA);
 
-        Graph graph = new EdgeListGraph(vars);
+            List<Node> nodes = dataSet.getVariables();
+            Graph graph = new EdgeListGraph(nodes);
 
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                if (i == j) {
-                    continue;
-                }
-                int g = dataSet.getInt(i, j);
-                int h = dataSet.getInt(j, i);
+            for (int i = 0; i < nodes.size(); i++) {
+                for (int j = i + 1; j < nodes.size(); j++) {
+                    Node n1 = nodes.get(i);
+                    Node n2 = nodes.get(j);
 
-                if (g == 1 && h == 1 && !graph.isAdjacentTo(vars.get(i), vars.get(j))) {
-                    graph.addUndirectedEdge(vars.get(i), vars.get(j)); //
-                } else if (g == 1 && h == 0) {
-                    graph.addDirectedEdge(vars.get(j), vars.get(i));
+                    int e1 = dataSet.getInt(j, i);
+                    int e2 = dataSet.getInt(i, j);
+
+                    Endpoint e1a;
+
+                    switch (e1) {
+                        case 0:
+                            e1a = Endpoint.NULL;
+                            break;
+                        case 1:
+                            e1a = Endpoint.CIRCLE;
+                            break;
+                        case 2:
+                            e1a = Endpoint.ARROW;
+                            break;
+                        case 3:
+                            e1a = Endpoint.TAIL;
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+                    }
+
+                    Endpoint e2a;
+
+                    switch (e2) {
+                        case 0:
+                            e2a = Endpoint.NULL;
+                            break;
+                        case 1:
+                            e2a = Endpoint.CIRCLE;
+                            break;
+                        case 2:
+                            e2a = Endpoint.ARROW;
+                            break;
+                        case 3:
+                            e2a = Endpoint.TAIL;
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unexpected endpoint type: " + e1);
+                    }
+
+                    if (e1a != Endpoint.NULL && e2a != Endpoint.NULL) {
+                        Edge edge = new Edge(n1, n2, e1a, e2a);
+                        graph.addEdge(edge);
+                    }
                 }
             }
-        }
 
-        return graph;
+            return  graph;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IllegalStateException();
+        }
     }
 
     public static Graph loadGraphBNTPcMatrix(List<Node> vars, DataSet dataSet) {
@@ -2923,7 +3217,7 @@ public final class GraphUtils {
     }
 
     public static boolean existsDirectedPathFromTo(Node node1, Node node2, Graph graph) {
-        return GraphUtils.existsDirectedPathVisit(node1, node2, new LinkedList<>(), -1, graph);
+        return node1 == node2 || GraphUtils.existsDirectedPathVisit(node1, node2, new LinkedList<>(), -1, graph);
     }
 
     public static boolean existsDirectedPathFromTo(Node node1, Node node2, int depth, Graph graph) {
@@ -3075,27 +3369,43 @@ public final class GraphUtils {
     /**
      * Finds a causal order for the given graph that is follows the order
      * of the given initialorder as possible.
-     * @param graph The graph to find a causal order for. Must be acyclic, though
-     *              it need not be a DAG.
-     * @param initialorder The order to try to get as close to as possible.
+     *
+     * @param graph        The graph to find a causal order for. Must be acyclic, though
+     *                     it need not be a DAG.
+     * @param initialOrder The order to try to get as close to as possible.
      * @return Such a causal order.
      */
-    public static List<Node> getCausalOrdering(Graph graph, List<Node> initialorder) {
+    public static List<Node> getCausalOrdering(Graph graph, List<Node> initialOrder) {
         if (graph.existsDirectedCycle()) {
             throw new IllegalArgumentException("Graph must be acyclic.");
         }
 
         List<Node> found = new ArrayList<>();
+        HashSet<Node> __found = new HashSet<>();
         boolean _found = true;
 
+//        while (_found) {
+//            _found = false;
+//
+//            for (Node node : initialOrder) {
+//                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
+//                    found.add(node);
+//                    __found.add(node);
+//                    _found = true;
+//                }
+//            }
+//        }
+
+        T:
         while (_found) {
             _found = false;
 
-            for (Node node : initialorder) {
-                HashSet<Node> nodes = new HashSet<>(found);
-                if (!nodes.contains(node) && nodes.containsAll(graph.getParents(node))) {
+            for (Node node : initialOrder) {
+                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
                     found.add(node);
+                    __found.add(node);
                     _found = true;
+                    continue T;
                 }
             }
         }
@@ -3429,6 +3739,8 @@ public final class GraphUtils {
 
     public static void addPagColoring(Graph graph) {
         for (Edge edge : graph.getEdges()) {
+            edge.getProperties().clear();
+
             if (!Edges.isDirectedEdge(edge)) {
                 continue;
             }
@@ -3445,15 +3757,15 @@ public final class GraphUtils {
             if (!GraphUtils.existsSemiDirectedPath(x, y, graph)) {
                 edge.addProperty(Property.dd); // green.
             } else {
-                edge.addProperty(Property.pd);
+                edge.addProperty(Property.pd); // blue
             }
 
             graph.addEdge(xyEdge);
 
             if (graph.defVisible(edge)) {
-                edge.addProperty(Property.nl); // bold.
+                edge.addProperty(Property.nl); // solid.
             } else {
-                edge.addProperty(Property.pl);
+                edge.addProperty(Property.pl); // dashed
             }
         }
     }
@@ -3734,7 +4046,7 @@ public final class GraphUtils {
 
     public static String graphToText(Graph graph) {
         // add edge properties relating to edge coloring of PAGs
-        if (graph.isPag()) {
+        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
             GraphUtils.addPagColoring(graph);
         }
 
@@ -3857,7 +4169,13 @@ public final class GraphUtils {
         int count = 0;
         for (Node node : nodes) {
             count++;
-            sb.append(node.getName());
+
+            if (node.getNodeType() == NodeType.LATENT) {
+                sb.append("(").append(node.getName()).append(")");
+            } else {
+                sb.append(node.getName());
+            }
+
             if (count < size) {
                 sb.append(delimiter);
             }
@@ -4268,6 +4586,79 @@ public final class GraphUtils {
         return R;
     }
 
+//    private static boolean isDConnectedTo4(Node x, Node y, List<Node> z, Graph graph) {
+//        class EdgeNode {
+//
+//            private final Edge edge;
+//            private final Node nodeFrom;
+//            private final Node nodeTo;
+//
+//            public EdgeNode(Edge edge, Node nodeFrom, Node nodeTo) {
+//                this.edge = edge;
+//                this.nodeFrom = nodeFrom;
+//                this.nodeTo = nodeTo;
+//            }
+//
+//            public int hashCode() {
+//                return this.edge.hashCode() + this.nodeFrom.hashCode();
+//            }
+//
+//            public boolean equals(Object o) {
+//                if (!(o instanceof EdgeNode)) {
+//                    throw new IllegalArgumentException();
+//                }
+//                EdgeNode _o = (EdgeNode) o;
+//                return _o.edge == this.edge && _o.nodeFrom == this.nodeFrom;
+//            }
+//        }
+//
+//        Queue<EdgeNode> Q = new ArrayDeque<>();
+//        Set<EdgeNode> V = new HashSet<>();
+//
+//        if (x == y) {
+//            return true;
+//        }
+//
+//        for (Edge edge : graph.getEdges(x)) {
+//            if (edge.getDistalNode(x) == y) {
+//                return true;
+//            }
+//            EdgeNode edgeNode = new EdgeNode(edge, x);
+//            Q.offer(edgeNode);
+//            V.add(edgeNode);
+//        }
+//
+//        while (!Q.isEmpty()) {
+//            EdgeNode t = Q.poll();
+//
+//            Edge edge1 = t.edge;
+//            Node a = t.nodeFrom;
+//            Node b = edge1.getDistalNode(a);
+//
+//            for (Edge edge2 : graph.getEdges(b)) {
+//                Node c = edge2.getDistalNode(b);
+//                if (c == a) {
+//                    continue;
+//                }
+//
+//                if (GraphUtils.reachable(edge1, edge2, a, z, graph)) {
+//                    if (c == y) {
+//                        return true;
+//                    }
+//
+//                    EdgeNode u = new EdgeNode(edge2, b);
+//
+//                    if (!V.contains(u)) {
+//                        V.add(u);
+//                        Q.offer(u);
+//                    }
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
+
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
     public static List<Node> getSepset(Node x, Node y, Graph graph) {
         List<Node> sepset = GraphUtils.getSepsetVisit(x, y, graph);
@@ -4671,14 +5062,14 @@ public final class GraphUtils {
         return null;
     }
 
-    public static List<Node> possibleDsep(Node x, Node y, Graph graph, int maxPathLength, IndependenceTest test) {
+    public static List<Node> possibleDsep(Node x, Node y, Graph graph, int maxPathLength) {
         Set<Node> dsep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
         Set<OrderedPair<Node>> V = new HashSet<>();
 
         Map<Node, Set<Node>> previous = new HashMap<>();
-        previous.put(x, null);
+        previous.put(x, new HashSet<>());
 
         OrderedPair<Node> e = null;
         int distance = 0;
@@ -4747,13 +5138,6 @@ public final class GraphUtils {
             }
         }
 
-        Map<Node, Double> scores = new HashMap<>();
-
-        for (Node node : dsep) {
-            test.checkIndependence(x, y, Collections.singletonList(node));
-            scores.put(node, test.getScore());
-        }
-
         dsep.remove(x);
         dsep.remove(y);
 
@@ -4764,6 +5148,76 @@ public final class GraphUtils {
 
         return _dsep;
     }
+
+    /**
+     * Remove edges by the possible d-separation rule.
+     *
+     * @param graph   The graph from which edges should be removed.
+     * @param test    The independence test to use to remove edges.
+     * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets
+     *                will not be recorded.
+     */
+    public static boolean removeByPossibleDsep(Graph graph, IndependenceTest test, SepsetMap sepsets) {
+        boolean changed = false;
+
+        for (Edge edge : graph.getEdges()) {
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+
+            {
+                List<Node> possibleDsep = GraphUtils.possibleDsep(a, b, graph, -1);
+
+                SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                int[] choice;
+
+                while ((choice = gen.next()) != null) {
+                    if (choice.length < 2) continue;
+                    List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                    if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                    if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                    if (test.checkIndependence(a, b, sepset).independent()) {
+                        graph.removeEdge(edge);
+                        changed = true;
+
+                        if (sepsets != null) {
+                            sepsets.set(a, b, sepset);
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            if (graph.containsEdge(edge)) {
+                {
+                    List<Node> possibleDsep = GraphUtils.possibleDsep(b, a, graph, -1);
+
+                    SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                    int[] choice;
+
+                    while ((choice = gen.next()) != null) {
+                        if (choice.length < 2) continue;
+                        List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
+                        if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
+                        if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
+                        if (test.checkIndependence(a, b, sepset).independent()) {
+                            graph.removeEdge(edge);
+                            changed = true;
+
+                            if (sepsets != null) {
+                                sepsets.set(a, b, sepset);
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return changed;
+    }
+
 
     private static boolean existOnePathWithPossibleParents(Map<Node, Set<Node>> previous, Node w, Node x, Node b, Graph graph) {
         if (w == x) {
@@ -4955,11 +5409,230 @@ public final class GraphUtils {
             return SearchGraphUtils.cpdagForDag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
-            return new DagToPag(graph).convert();
+            return dagToPag(graph);
         } else {
             params.set("graphComparisonType", "DAG");
             return new EdgeListGraph(graph);
         }
+    }
+
+    /**
+     * The extra edge removal step for GFCI. This removed edges in triangles in the reference graph by looking
+     * for sepsets for edge a--b among the adjacents of a or the adjacents of b.
+     *
+     * @param graph          The graph being operated on and changed.
+     * @param referenceCpdag The reference graph, a CPDAG or a DAG obtained using such an algorithm.
+     * @param nodes          The nodes in the graph.
+     * @param sepsets        A SepsetProducer that will do the sepset search operation described.
+     */
+    public static void gfciExtraEdgeRemovalStep(Graph graph, Graph referenceCpdag, List<Node> nodes,
+                                                SepsetProducer sepsets) {
+        for (Node b : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            List<Node> adjacentNodes = referenceCpdag.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (graph.isAdjacentTo(a, c) && referenceCpdag.isAdjacentTo(a, c)) {
+                    List<Node> sepset = sepsets.getSepset(a, c);
+                    if (sepset != null) {
+                        graph.removeEdge(a, c);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Retains only the unshielded colliders of the given graph.
+     *
+     * @param graph The graph to retain unshielded colliders in.
+     */
+    public static void retainUnshieldedColliders(Graph graph, Knowledge knowledge) {
+        Graph orig = new EdgeListGraph(graph);
+        graph.reorientAllWith(Endpoint.CIRCLE);
+        List<Node> nodes = graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
+                    if (FciOrient.isArrowpointAllowed(a, b, graph, knowledge)
+                            && FciOrient.isArrowpointAllowed(c, b, graph, knowledge)) {
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void addForbiddenReverseEdgesForDirectedEdges(Graph graph, Knowledge knowledge) {
+        List<Node> nodes = graph.getNodes();
+
+        for (Node x : nodes) {
+            for (Node y : nodes) {
+                if (x == y) continue;
+                if (graph.isAncestorOf(x, y)) {
+                    knowledge.setForbidden(y.getName(), x.getName());
+                }
+            }
+        }
+    }
+
+    public static void removeNonSkeletonEdges(Graph graph, Knowledge knowledge) {
+        List<Node> nodes = graph.getNodes();
+
+        int numOfNodes = nodes.size();
+        for (int i = 0; i < numOfNodes; i++) {
+            for (int j = i + 1; j < numOfNodes; j++) {
+                Node n1 = nodes.get(i);
+                Node n2 = nodes.get(j);
+
+                if (n1.getName().startsWith("E_") || n2.getName().startsWith("E_")) {
+                    continue;
+                }
+
+                if (!graph.isAdjacentTo(n1, n2)) {
+                    if (!knowledge.isForbidden(n1.getName(), n2.getName())) {
+                        knowledge.setForbidden(n1.getName(), n2.getName());
+                    }
+
+                    if (!knowledge.isForbidden(n2.getName(), n1.getName())) {
+                        knowledge.setForbidden(n2.getName(), n1.getName());
+                    }
+                }
+            }
+        }
+    }
+
+    public static boolean compatible(Edge edge1, Edge edge2) {
+        if (edge1 == null || edge2 == null) return true;
+
+        Node x = edge1.getNode1();
+        Node y = edge1.getNode2();
+
+        Endpoint ex1 = edge1.getProximalEndpoint(x);
+        Endpoint ey1 = edge1.getProximalEndpoint(y);
+
+        Endpoint ex2 = edge2.getProximalEndpoint(x);
+        Endpoint ey2 = edge2.getProximalEndpoint(y);
+
+        return (ex1 == Endpoint.CIRCLE || (ex1 == ex2 || ex2 == Endpoint.CIRCLE)) && (ey1 == Endpoint.CIRCLE || (ey1 == ey2 || ey2 == Endpoint.CIRCLE));
+    }
+
+    public static Set<Node> pagMb(Node x, Graph G) {
+        Set<Node> mb = new HashSet<>();
+
+        LinkedList<Node> path = new LinkedList<>();
+        path.add(x);
+        mb.add(x);
+
+        for (Node d : G.getAdjacentNodes(x)) {
+            mbVisit(d, path, G, mb);
+        }
+
+        mb.remove(x);
+
+        return mb;
+    }
+
+    public static void mbVisit(Node c, LinkedList<Node> path, Graph G, Set<Node> mb) {
+        if (path.contains(c)) return;
+        if (mb.contains(c)) return;
+        path.add(c);
+
+        if (path.size() >= 3) {
+            Node w1 = path.get(path.size() - 3);
+            Node w2 = path.get(path.size() - 2);
+
+            if (!G.isDefCollider(w1, w2, c)) {
+                path.remove(c);
+                return;
+            }
+        }
+
+        mb.add(c);
+
+        for (Node d : G.getAdjacentNodes(c)) {
+            mbVisit(d, path, G, mb);
+        }
+
+        path.remove(c);
+    }
+
+    public static Set<Node> district(Node x, Graph G) {
+        Set<Node> district = new HashSet<>();
+        Set<Node> boundary = new HashSet<>();
+
+        for (Edge e : G.getEdges(x)) {
+            if (Edges.isBidirectedEdge(e)) {
+                Node other = e.getDistalNode(x);
+                district.add(other);
+                boundary.add(other);
+            }
+        }
+
+        do {
+            Set<Node> previousBoundary = new HashSet<>(boundary);
+            boundary = new HashSet<>();
+
+            for (Node x2 : previousBoundary) {
+                for (Edge e : G.getEdges(x2)) {
+                    if (Edges.isBidirectedEdge(e)) {
+                        Node other = e.getDistalNode(x2);
+
+                        if (!district.contains(other)) {
+                            district.add(other);
+                            boundary.add(other);
+                        }
+                    }
+                }
+            }
+        } while (!boundary.isEmpty());
+
+        district.remove(x);
+
+        return district;
+    }
+
+    public static boolean isDag(Graph graph) {
+        boolean allDirected = true;
+
+        for (Edge edge : graph.getEdges()) {
+            if (!Edges.isDirectedEdge(edge)) {
+                allDirected = false;
+            }
+        }
+
+        return allDirected && !graph.existsDirectedCycle();
     }
 
     /**
@@ -5088,7 +5761,12 @@ public final class GraphUtils {
         private final List<Edge> edgesReorientedTo;
         private final List<Edge> edgesAdjacencies;
 
-        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int arrowptFn, int arrowptFp, int arrowptCorrect, double adjPrec, double adjRec, double arrowptPrec, double arrowptRec, int shd, int twoCycleCorrect, int twoCycleFn, int twoCycleFp, List<Edge> edgesAdded, List<Edge> edgesRemoved, List<Edge> edgesReorientedFrom, List<Edge> edgesReorientedTo, List<Edge> edgesAdjacencies, int[][] counts) {
+        public GraphComparison(int adjFn, int adjFp, int adjCorrect, int arrowptFn, int arrowptFp,
+                               int arrowptCorrect, double adjPrec, double adjRec, double arrowptPrec,
+                               double arrowptRec, int shd, int twoCycleCorrect, int twoCycleFn,
+                               int twoCycleFp, List<Edge> edgesAdded, List<Edge> edgesRemoved,
+                               List<Edge> edgesReorientedFrom, List<Edge> edgesReorientedTo,
+                               List<Edge> edgesAdjacencies, int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
             this.adjCorrect = adjCorrect;

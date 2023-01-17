@@ -19,7 +19,7 @@
 package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetradapp.editor.EdgeTypeTable;
+import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.ImageUtils;
@@ -33,6 +33,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.net.URL;
 
 /**
@@ -45,6 +47,7 @@ public class GraphCard extends JPanel {
     private static final long serialVersionUID = -7654484444146823298L;
 
     private final GeneralAlgorithmRunner algorithmRunner;
+    private GraphWorkbench workbench;
 
     public GraphCard(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
@@ -69,8 +72,34 @@ public class GraphCard extends JPanel {
         tabbedPane.addTab("Edges", createEdgeTypeTable(graph));
         add(tabbedPane, BorderLayout.CENTER);
 
+        add(menuBar(), BorderLayout.NORTH);
+
         revalidate();
         repaint();
+    }
+
+    JMenuBar menuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu file = new JMenu("File");
+        file.add(new SaveComponentImage(this.workbench, "Save Graph Image..."));
+
+        menuBar.add(file);
+
+        JMenu graph = new JMenu("Graph");
+
+        graph.add(new GraphPropertiesAction(this.workbench));
+        graph.add(new PathsAction(this.workbench));
+        graph.add(new UnderliningsAction(this.workbench));
+
+        graph.add(new JMenuItem(new SelectDirectedAction(this.workbench)));
+        graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
+        graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
+        graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
+        graph.add(new PagTypeSetter(this.workbench));
+
+        menuBar.add(graph);
+
+        return menuBar;
     }
 
     private EdgeTypeTable createEdgeTypeTable(Graph graph) {
@@ -84,6 +113,8 @@ public class GraphCard extends JPanel {
     private JPanel createGraphPanel(Graph graph) {
         GraphWorkbench graphWorkbench = new GraphWorkbench(graph);
         graphWorkbench.enableEditing(false);
+
+        this.workbench = graphWorkbench;
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setPreferredSize(new Dimension(825, 406));

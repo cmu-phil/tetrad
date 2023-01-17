@@ -2,9 +2,11 @@ package edu.pitt.dbmi.algo.resampling;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.task.GeneralResamplingSearchRunnable;
 
 import java.io.PrintStream;
@@ -15,6 +17,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.SynchronizedRandomGenerator;
+import org.apache.commons.math3.random.Well44497b;
 
 /**
  * Sep 7, 2018 1:38:50 PM
@@ -40,7 +45,7 @@ public class GeneralResamplingSearch {
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     private PrintStream out = System.out;
 
@@ -51,6 +56,7 @@ public class GeneralResamplingSearch {
      */
     private Graph externalGraph;
     private int numNograph = 0;
+    private ScoreWrapper scoreWrapper;
 
     public GeneralResamplingSearch(DataSet data, int numberResampling) {
         this.data = data;
@@ -103,10 +109,8 @@ public class GeneralResamplingSearch {
      *
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null)
-            throw new NullPointerException();
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public void setExternalGraph(Graph externalGraph) {
@@ -146,19 +150,28 @@ public class GeneralResamplingSearch {
         }
 
         if (this.data != null) {
+            Long seed = (parameters == null || parameters.get(Params.SEED) == null) ? null : (Long) parameters.get(Params.SEED);
+            RandomGenerator randomGenerator = (seed == null || seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
                 DataSet dataSet;
 
                 if (this.resamplingWithReplacement) {
-                    dataSet = DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
+                    dataSet = (randomGenerator == null)
+                            ? DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0))
+                            : DataUtils.getBootstrapSample(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), randomGenerator);
                 } else {
-                    dataSet = DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0));
+                    dataSet = (randomGenerator == null)
+                            ? DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0))
+                            : DataUtils.getResamplingDataset(data, (int) (data.getNumRows() * this.percentResampleSize / 100.0), randomGenerator);
                 }
+
+                dataSet.setKnowledge(data.getKnowledge());
 
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataSet, this.algorithm, this.parameters, this, this.verbose);
                 task.setExternalGraph(this.externalGraph);
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);
+                task.setScoreWrapper(scoreWrapper);
             }
 
             if (addOriginalDataset) {
@@ -168,6 +181,7 @@ public class GeneralResamplingSearch {
                 task.setExternalGraph(this.externalGraph);
                 task.setKnowledge(this.knowledge);
                 tasks.add(task);
+                task.setScoreWrapper(scoreWrapper);
             }
         } else {
             for (int i1 = 0; i1 < this.numberResampling; i1++) {
@@ -184,8 +198,6 @@ public class GeneralResamplingSearch {
                         resamplingDataset.setKnowledge(data.getKnowledge());
                         dataModels.add(resamplingDataset);
                     }
-
-
                 }
 
                 GeneralResamplingSearchRunnable task = new GeneralResamplingSearchRunnable(dataModels,
@@ -193,6 +205,7 @@ public class GeneralResamplingSearch {
                         this.verbose);
                 task.setExternalGraph(this.externalGraph);
                 task.setKnowledge(dataModels.get(0).getKnowledge());
+                task.setScoreWrapper(scoreWrapper);
 
                 tasks.add(task);
             }
@@ -200,7 +213,7 @@ public class GeneralResamplingSearch {
 
         int numNoGraph = 0;
 
-        if (this.runParallel) {
+        if (false) {//this.runParallel) {
             List<Future<Graph>> futures = this.pool.invokeAll(tasks);
             for (Future<Graph> future : futures) {
                 Graph graph;
@@ -240,5 +253,9 @@ public class GeneralResamplingSearch {
 
     public int getNumNograph() {
         return numNograph;
+    }
+
+    public void setScoreWrapper(ScoreWrapper scoreWrapper) {
+        this.scoreWrapper = scoreWrapper;
     }
 }

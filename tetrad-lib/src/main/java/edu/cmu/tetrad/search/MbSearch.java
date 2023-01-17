@@ -37,7 +37,7 @@ public interface MbSearch {
     /**
      * Given the target this returns all the nodes in the Markov Blanket.
      */
-    List<Node> findMb(String targetName);
+    List<Node> findMb(Node target);
 
 
     /**

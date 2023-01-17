@@ -56,7 +56,7 @@ public final class TimeSeriesData implements DataModel {
     /**
      * @serial
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     //==============================CONSTRUCTOR===========================//
 
@@ -149,13 +149,13 @@ public final class TimeSeriesData implements DataModel {
         return vars;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         System.out.println();
 
         return this.knowledge.copy();
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }

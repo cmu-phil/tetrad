@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -25,7 +24,7 @@ public class GraspTol {
     private final List<Node> variables;
     private Score score;
     private IndependenceTest test;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     private TeyssierScorer scorer;
     private long start;
     // flags
@@ -67,7 +66,7 @@ public class GraspTol {
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
-        this.scorer.setUseVermaPearl(this.usePearl);
+        this.scorer.setUseRaskuttiUhler(this.usePearl);
 
         if (this.usePearl) {
             this.scorer.setUseScore(false);
@@ -220,12 +219,12 @@ public class GraspTol {
                     return 1;
                 } else if (this.knowledge.isRequired(o2.getName(), o1.getName())) {
                     return -1;
-                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
-                    return -1;
                 } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
+                    return -1;
+                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
                     return 1;
                 } else {
-                    return 1;
+                    return 0;
                 }
             });
         }
@@ -316,8 +315,8 @@ public class GraspTol {
                 Iterator<Node> zItr = Z.iterator();
                 do {
                     if (first) {
-//                        scorer.moveTo(y, i);
-                        scorer.moveToNoUpdate(y, i);
+                        scorer.moveTo(y, i);
+//                        scorer.moveToNoUpdate(y, i);
                         first = false;
                     } else {
                         Node z = zItr.next();
@@ -325,12 +324,12 @@ public class GraspTol {
                             if (scorer.getParents(z).contains(x)) {
                                 singular = false;
                             }
-//                            scorer.moveTo(z, i++);
-                            scorer.moveToNoUpdate(z, i++);
+                            scorer.moveTo(z, i++);
+//                            scorer.moveToNoUpdate(z, i++);
                         }
                     }
                 } while (zItr.hasNext());
-                scorer.updateScores(idcs[0], idcs[1]);
+//                scorer.updateScores(idcs[0], idcs[1]);
 
 
                 if (currentDepth > depth[2] && !singular) {
@@ -405,7 +404,7 @@ public class GraspTol {
         this.test.setVerbose(verbose);
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 

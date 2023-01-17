@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
@@ -29,7 +32,6 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr;
 import static java.lang.Double.NaN;
@@ -69,7 +71,7 @@ public class SemBicScore implements Score {
 
     // The rule type to use.
     private RuleType ruleType = RuleType.CHICKERING;
-    private boolean precomputeCovariances = true;
+    private double logN;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -83,17 +85,13 @@ public class SemBicScore implements Score {
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
         this.indexMap = indexMap(this.variables);
-    }
-
-    public SemBicScore(DataSet dataSet) {
-        this(dataSet, true);
+        this.logN = log(sampleSize);
     }
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore(DataSet dataSet, boolean precomputeCovariances) {
-        this.precomputeCovariances = precomputeCovariances;
+    public SemBicScore(DataSet dataSet) {
 
         if (dataSet == null) {
             throw new NullPointerException();
@@ -103,15 +101,13 @@ public class SemBicScore implements Score {
         this.data = dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            if (!precomputeCovariances) {
-                setCovariances(new CovarianceMatrixOnTheFly(dataSet));
-            } else {
-                setCovariances(new CovarianceMatrix(dataSet));
-            }
+            setCovariances(getiCovarianceMatrix(dataSet));
+
             this.variables = this.covariances.getVariables();
             this.sampleSize = this.covariances.getSampleSize();
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
+            this.logN = log(sampleSize);
             return;
         }
 
@@ -119,6 +115,13 @@ public class SemBicScore implements Score {
         this.sampleSize = dataSet.getNumRows();
         this.indexMap = indexMap(this.variables);
         this.calculateRowSubsets = true;
+        this.logN = log(sampleSize);
+    }
+
+    @NotNull
+    private ICovarianceMatrix getiCovarianceMatrix(DataSet dataSet) {
+        ICovarianceMatrix cov = DataUtils.getCovarianceMatrix(dataSet);
+        return cov;
     }
 
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)
@@ -251,45 +254,71 @@ public class SemBicScore implements Score {
         return localScoreDiff(x, y, new int[0]);
     }
 
-    private final Map<int[], Double> cache = new ConcurrentHashMap<>();
+//    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
 
     /**
-     * @param i The index of the node.
+     * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
      */
     public double localScore(int i, int... parents) {
+//        S = sorted(X)
+//        key = tuple(S)
+//        if key not in self.cache:
+//        self.cache[key] = np.linalg.slogdet(self.cov[np.ix_(S, S)])[1]
+//        log_prob = self.cache[key]
+//
+//        bisect.insort(S,y)
+//        key = tuple(S)
+//        if key not in self.cache:
+//        self.cache[key] = np.linalg.slogdet(self.cov[np.ix_(S, S)])[1]
+//        log_prob -= self.cache[key]
+//
+//        return self.n/2 * log_prob - self.c * len(X) * np.log(self.n)
+
+//        Arrays.sort(parents);
+//
+//        int[] all = new int[parents.length + 1];
+//        all[0] = i;
+//        Arrays.sort(all);
+//        System.arraycopy(parents, 0, all, 1, parents.length);
+//
+//        Matrix cov1 = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), parents, parents, data, covariances);
+//        double lik = Math.log(MatrixUtils.determinant(cov1.toArray()));
+//
+//        Matrix cov2 = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
+//        lik -= Math.log(MatrixUtils.determinant(cov2.toArray()));
+
+
         int k = parents.length;
-
-        // Only do this once.
-        double n = this.sampleSize;
-
-        double varey;
+        double lik;
 
         Arrays.sort(parents);
-        int[] all = new int[parents.length + 1];
-        all[0] = i;
-        System.arraycopy(parents, 0, all, 1, parents.length);
 
-        if (cache.containsKey(all)) {
-            varey = cache.get(all);
-        } else {
-            try {
-                varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
-                cache.put(all, varey);
-            } catch (SingularMatrixException e) {
-                varey = NaN;
-            }
-
-            cache.put(all, varey);
+//        List<Integer> _all = new ArrayList<>();
+//        _all.add(i);
+//        for (int value : parents) _all.add(value);
+//
+//        if (cache.containsKey(_all)) {
+//            lik = cache.get(_all);
+//        } else {
+        try {
+            double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
+            lik = -(double) (this.sampleSize / 2.0) * log(varey);
+//                cache.put(_all, lik);
+        } catch (SingularMatrixException e) {
+            lik = NaN;
         }
+
+//            cache.put(_all, lik);
+//        }
 
         double c = getPenaltyDiscount();
 
         if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
             // Standard BIC, with penalty discount and structure prior.
-            double _score = -n * log(varey) - c * k * log(n) ; // - 2 * getStructurePrior(k);
+            double _score = lik - c * (k / 2.0) * logN - getStructurePrior(k);
 
             if (Double.isNaN(_score) || Double.isInfinite(_score)) {
                 return Double.NaN;
@@ -537,6 +566,15 @@ public class SemBicScore implements Score {
 
     public void setRuleType(RuleType ruleType) {
         this.ruleType = ruleType;
+    }
+
+    public SemBicScore subset(List<Node> pi2) {
+        int[] cols = new int[pi2.size()];
+        for (int i = 0; i < cols.length; i++) {
+            cols[i] = variables.indexOf(pi2.get(i));
+        }
+        ICovarianceMatrix cov = getCovariances().getSubmatrix(cols);
+        return new SemBicScore(cov);
     }
 
     public enum RuleType {CHICKERING, NANDY}

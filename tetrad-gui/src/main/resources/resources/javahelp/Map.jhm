@@ -97,7 +97,7 @@
     <mapID target="glasso" url="manual/boxes/search/glasso.html"/>
     <mapID target="images" url="manual/boxes/search/images.html"/>
     <mapID target="lingam" url="manual/boxes/search/lingam.html"/>
-    <mapID target="mbfs" url="manual/boxes/search/mbfs.html"/>
+    <mapID target="pc-mb" url="manual/boxes/search/pc-mb.html"/>
     <mapID target="mgm" url="manual/boxes/search/mgm.html"/>
     <mapID target="mimbuild" url="manual/boxes/search/mimbuild.html"/>
     <mapID target="pc" url="manual/boxes/search/pc.html"/>

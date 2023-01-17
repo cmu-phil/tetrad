@@ -21,8 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -65,7 +64,7 @@ public class FasDci {
     /**
      * Specification of which edges are forbidden or required. NOTE: to be implemented later
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
@@ -180,7 +179,7 @@ public class FasDci {
         }
 
         for (int d = 0; d <= _depth; d++) {
-            boolean more = searchAtDepth(this.graph, this.independenceTest, new Knowledge2(),
+            boolean more = searchAtDepth(this.graph, this.independenceTest, new Knowledge(),
                     sepset, d);
 
             if (!more) {
@@ -208,11 +207,11 @@ public class FasDci {
         this.depth = depth;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Cannot set knowledge to null");
         }
@@ -225,7 +224,7 @@ public class FasDci {
      * Removes from the list of nodes any that cannot be parents of x given the background knowledge.
      */
     private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       IKnowledge knowledge) {
+                                       Knowledge knowledge) {
         List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
@@ -244,7 +243,7 @@ public class FasDci {
      * @return true just in case z is a possible parent of x, in the sense that edges are not forbidden from z to x, and
      * edges are not required from either x to z, according to background knowledge.
      */
-    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
@@ -259,7 +258,7 @@ public class FasDci {
      * @return true if there are more changes possible, false if not.
      */
     private boolean searchAtDepth(Graph graph, IndependenceTest independenceTest,
-                                  IKnowledge knowledge, SepsetMapDci sepset, int depth) {
+                                  Knowledge knowledge, SepsetMapDci sepset, int depth) {
 
         boolean more = false;
 

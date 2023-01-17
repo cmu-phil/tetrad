@@ -49,7 +49,7 @@ public class TestFci {
     @Test
     public void testSearch1() {
         checkSearch("X1-->X2,X1-->X3,X2-->X4,X3-->X4",
-                "X1o-oX2,X1o-oX3,X2-->X4,X3-->X4", new Knowledge2()); // With Jiji's R6.
+                "X1o-oX2,X1o-oX3,X2-->X4,X3-->X4", new Knowledge()); // With Jiji's R6.
     }
 
     /**
@@ -57,7 +57,7 @@ public class TestFci {
      */
     @Test
     public void testSearch2() {
-        checkSearch("Z1-->X,Z2-->X,X-->Y", "Z1o->X,Z2o->X,X-->Y", new Knowledge2());
+        checkSearch("Z1-->X,Z2-->X,X-->Y", "Z1o->X,Z2o->X,X-->Y", new Knowledge());
     }
 
 
@@ -66,7 +66,7 @@ public class TestFci {
      */
     @Test
     public void testSearch3() {
-        checkSearch("A-->C,B-->C,B-->D,C-->D", "Ao->C,Bo->C,B-->D,C-->D", new Knowledge2());
+        checkSearch("A-->C,B-->C,B-->D,C-->D", "Ao->C,Bo->C,B-->D,C-->D", new Knowledge());
     }
 
     /**
@@ -74,8 +74,8 @@ public class TestFci {
      */
     @Test
     public void testSearch4() {
-        checkSearch("Latent(G),Latent(R),H-->F,F&lt;--G,G-->A,A&lt;--R,R-->C,B-->C,B-->D,C-->D,F-->D,A-->D",
-                "Ho->F,F&lt;->A,A&lt;->C,Bo->C,B-->D,C-->D,F-->D,A-->D", new Knowledge2());
+        checkSearch("Latent(G),Latent(R),H-->F,F<--G,G-->A,A<--R,R-->C,B-->C,B-->D,C-->D,F-->D,A-->D",
+                "Ho->F,F<->A,A<->C,Bo->C,B-->D,C-->D,F-->D,A-->D", new Knowledge());
     }
 
     /**
@@ -84,7 +84,7 @@ public class TestFci {
      */
     @Test
     public void testSearch5() {
-        checkSearch("A-->C,B-->C,B-->D,C-->D,E", "Ao->C,Bo->C,B-->D,C-->D,E", new Knowledge2());
+        checkSearch("A-->C,B-->C,B-->D,C-->D,E", "Ao->C,Bo->C,B-->D,C-->D,E", new Knowledge());
     }
 
     /**
@@ -92,7 +92,7 @@ public class TestFci {
      */
     @Test
     public void testSearch6() {
-        checkSearch("A-->B", "Ao-oB", new Knowledge2());
+        checkSearch("A-->B", "Ao-oB", new Knowledge());
     }
 
     /**
@@ -102,7 +102,7 @@ public class TestFci {
     public void testSearch7() {
         checkSearch("Latent(E),Latent(G),E-->D,E-->H,G-->H,G-->L,D-->L,D-->M," +
                         "H-->M,L-->M,S-->D,I-->S,P-->S",
-                "D&lt;->H,D-->L,D-->M,H&lt;->L,H-->M,Io->S,L-->M,Po->S,S-->D", new Knowledge2());
+                "D<->H,D-->L,D-->M,H<->L,H-->M,Io->S,L-->M,Po->S,S-->D", new Knowledge());
     }
 
     /**
@@ -112,7 +112,7 @@ public class TestFci {
     @Test
     public void testSearch8() {
         checkSearch("X-->Z,Y-->Z,Z-->B,B-->A,C-->A",
-                "Xo->Z,Yo->Z,Z-->B,B-->A,Co->A", new Knowledge2());
+                "Xo->Z,Yo->Z,Z-->B,B-->A,Co->A", new Knowledge());
     }
 
     /**
@@ -123,8 +123,8 @@ public class TestFci {
     public void testSearch9() {
         checkSearch("Latent(T1),Latent(T2),T1-->A,T1-->B,B-->E,F-->B,C-->F,C-->H," +
                         "H-->D,D-->A,T2-->D,T2-->E",
-//                "A&lt;->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D&lt;->E,D-->A", new Knowledge2()); // Left out E&lt;->A.
-                "A&lt;->B,B-->E,Co-oH,D-->A,E&lt;->A,E&lt;->D,Fo->B,Fo-oC,Ho->D", new Knowledge2());
+                "A<->B,B-->E,Fo->B,Fo-oC,Co-oH,Ho->D,D<->E,D-->A", new Knowledge()); // Left out E<->A.
+//                "A<->B,B-->E,Co-oH,D-->A,E<->A,E<->D,Fo->B,Fo-oC,Ho->D", new Knowledge2());
     }
 
     /**
@@ -133,34 +133,34 @@ public class TestFci {
     @Test
     public void testSearch10() {
         checkSearch("A-->D,A-->B,B-->D,C-->D,D-->E",
-                "Ao->D,Ao-oB,Bo->D,Co->D,D-->E", new Knowledge2());
+                "Ao->D,Ao-oB,Bo->D,Co->D,D-->E", new Knowledge());
     }
 
     @Test
     public void testSearch11() {
         checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
-                "X1o->X2,X3o->X2", new Knowledge2());
+                "X1o->X2,X3o->X2", new Knowledge());
 
         List<String> varNames = new ArrayList<>();
         varNames.add("X1");
         varNames.add("X2");
         varNames.add("X3");
 
-        IKnowledge knowledge = new Knowledge2(varNames);
+        Knowledge knowledge = new Knowledge(varNames);
         knowledge.addToTier(1, "X1");
         knowledge.addToTier(1, "X2");
         knowledge.addToTier(2, "X3");
 
         checkSearch("Latent(L1),Latent(L2),L1-->X1,L1-->X2,L2-->X2,L2-->X3",
-                "X1o-oX2,X2o->X3", knowledge);
+                "X1o->X2,X2<->X3", knowledge);
     }
 
     @Test
     public void testSearch12() {
         checkSearch("Latent(L1),X1-->X2,X3-->X4,L1-->X2,L1-->X4",
-                "X1o->X2,X3o->X4,X2&lt;->X4", new Knowledge2());
+                "X1o->X2,X3o->X4,X2<->X4", new Knowledge());
 
-        Knowledge2 knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
         knowledge.setRequired("X2", "X4");
 
         assertTrue(knowledge.isRequired("X2", "X4"));
@@ -199,7 +199,7 @@ public class TestFci {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkSearch(String inputGraph, String outputGraph, IKnowledge knowledge) {
+    private void checkSearch(String inputGraph, String outputGraph, Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -207,16 +207,26 @@ public class TestFci {
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert(inputGraph);
 
+        System.out.println("Graph = " + graph);
+
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
+
         Fci fci = new Fci(independence);
         fci.setPossibleDsepSearchDone(true);
         fci.setCompleteRuleSetUsed(true);
-        fci.setKnowledge(knowledge);
+        fci.setDoDiscriminatingPathRule(true);
         fci.setMaxPathLength(-1);
+        fci.setKnowledge(knowledge);
+        fci.setVerbose(true);
 
         // Run search
         Graph resultGraph = fci.search();
+        Graph pag = GraphConverter.convert(outputGraph);
+
+        resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
+
+        assertEquals(pag, resultGraph);
     }
 
     //    @Test

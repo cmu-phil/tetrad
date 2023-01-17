@@ -21,8 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -52,7 +51,7 @@ public final class PcAll implements GraphSearch {
     /**
      * Forbidden and required edges for the search.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     /**
      * The maximum number of nodes conditioned on in the search.
      */
@@ -133,7 +132,7 @@ public final class PcAll implements GraphSearch {
     }
 
     public static boolean isArrowpointAllowed1(Node from, Node to,
-                                               IKnowledge knowledge) {
+                                               Knowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
     }
@@ -142,7 +141,7 @@ public final class PcAll implements GraphSearch {
      * Checks if an arrowpoint is allowed by background knowledge.
      */
     public static boolean isArrowpointAllowed(Object from, Object to,
-                                              IKnowledge knowledge) {
+                                              Knowledge knowledge) {
         if (knowledge == null) {
             return true;
 
@@ -211,14 +210,14 @@ public final class PcAll implements GraphSearch {
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     /**
      * Sets the knowledge specification used in the search. Non-null.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -407,7 +406,7 @@ public final class PcAll implements GraphSearch {
 
     //==========================PRIVATE METHODS===========================//
 
-    private void orientUnshieldedTriplesConservative(IKnowledge knowledge) {
+    private void orientUnshieldedTriplesConservative(Knowledge knowledge) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
         this.colliderTriples = new HashSet<>();
@@ -516,7 +515,7 @@ public final class PcAll implements GraphSearch {
         return true;
     }
 
-    private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
+    private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return PcAll.isArrowpointAllowed1(x, y, knowledge) &&
                 PcAll.isArrowpointAllowed1(z, y, knowledge);
     }
@@ -544,7 +543,7 @@ public final class PcAll implements GraphSearch {
      * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-&gt; y &lt;-* z just in
      * case y is in Sepset({x, z}).
      */
-    private void orientCollidersUsingSepsets(SepsetMap set, IKnowledge knowledge, Graph graph, boolean verbose,
+    private void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
                                              ConflictRule conflictRule) {
         if (verbose) {
             System.out.println("FAS Sepset orientation...");

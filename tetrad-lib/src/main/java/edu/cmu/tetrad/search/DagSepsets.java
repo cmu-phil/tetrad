@@ -47,13 +47,13 @@ public class DagSepsets implements SepsetProducer {
     }
 
     @Override
-    public boolean isCollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
 
     @Override
-    public boolean isNoncollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
 //        return true;
         List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && sepset.contains(j);

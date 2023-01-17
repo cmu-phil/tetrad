@@ -34,7 +34,7 @@ public class StatsListEditor extends JPanel {
         this.comparison = comparison;
         this.params = comparison.getParams();
         this.targetGraph = comparison.getTargetGraph();
-        this.referenceGraph = getComparisonGraph(comparison.getReferenceGraph(), this.params);
+        this.referenceGraph = comparison.getReferenceGraph();
         this.dataModel = comparison.getDataModel();
         setup();
     }
@@ -62,7 +62,7 @@ public class StatsListEditor extends JPanel {
         this.area.setBorder(new EmptyBorder(5, 5, 5, 5));
 
         this.area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
-        this.area.setPreferredSize(new Dimension(700, 1200));
+//        this.area.setPreferredSize(new Dimension(1200, 1800));
 
         JScrollPane pane = new JScrollPane(this.area);
         pane.setPreferredSize(new Dimension(700, 700));
@@ -76,7 +76,7 @@ public class StatsListEditor extends JPanel {
     @NotNull
     private String tableTextWithHeader() {
         TextTable table = tableText();
-        return "Comparing target " + this.comparison.getTargetName() + " to reference " + this.comparison.getReferenceName()
+        return "True graph from " + this.comparison.getReferenceName() + "\nTarget graph from " + this.comparison.getTargetName()
                 + "\n\n" + table;
     }
 
@@ -108,12 +108,13 @@ public class StatsListEditor extends JPanel {
 
         for (int i = 0; i < abbr.size(); i++) {
             double value = vals.get(i);
-            table.setToken(i, 2, Double.isNaN(value) ? "-" : "" + nf.format(value));
+            table.setToken(i, 1, Double.isNaN(value) ? "-" : "" + nf.format(value));
             table.setToken(i, 0, abbr.get(i));
-            table.setToken(i, 1, desc.get(i));
+            table.setToken(i, 2, desc.get(i));
         }
 
         table.setJustification(TextTable.LEFT_JUSTIFIED);
+
         return table;
     }
 
@@ -121,9 +122,7 @@ public class StatsListEditor extends JPanel {
     private List<Statistic> statistics() {
         List<Statistic> statistics = new ArrayList<>();
 
-        statistics.add(new BicTrue());
-        statistics.add(new BicEst());
-        statistics.add(new BicDiff());
+        // Others
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
@@ -144,12 +143,10 @@ public class StatsListEditor extends JPanel {
         statistics.add(new F1Arrow());
         statistics.add(new MathewsCorrAdj());
         statistics.add(new MathewsCorrArrow());
-        statistics.add(new SHD());
-        statistics.add(new NumAmbiguousTriples());
-        statistics.add(new PercentAmbiguous());
-        statistics.add(new PercentBidirectedEdges());
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new NumberOfEdgesTrue());
+        statistics.add(new NumCorrectVisibleAncestors());
+        statistics.add(new PercentBidirectedEdges());
         statistics.add(new TailPrecision());
         statistics.add(new TailRecall());
         statistics.add(new TwoCyclePrecision());
@@ -161,6 +158,30 @@ public class StatsListEditor extends JPanel {
         statistics.add(new AverageDegreeTrue());
         statistics.add(new DensityEst());
         statistics.add(new DensityTrue());
+
+
+        // Joe table.
+        statistics.add(new NumDirectedEdges());
+        statistics.add(new NumUndirectedEdges());
+        statistics.add(new NumPartiallyOrientedEdges());
+        statistics.add(new NumNondirectedEdges());
+        statistics.add(new NumBidirectedEdgesEst());
+        statistics.add(new TrueDagPrecisionTails());
+        statistics.add(new TrueDagPrecisionArrow());
+        statistics.add(new BidirectedLatentPrecision());
+
+
+        // Greg table
+        statistics.add(new AncestorPrecision());
+        statistics.add(new AncestorRecall());
+        statistics.add(new AncestorF1());
+        statistics.add(new SemidirectedPrecision());
+        statistics.add(new SemidirectedRecall());
+        statistics.add(new SemidirectedPathF1());
+        statistics.add(new NoSemidirectedPrecision());
+        statistics.add(new NoSemidirectedRecall());
+        statistics.add(new NoSemidirectedF1());
+
         return statistics;
     }
 
@@ -185,6 +206,8 @@ public class StatsListEditor extends JPanel {
         menu.add(pag);
 
         menubar.add(menu);
+
+        this.referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
 
         switch (this.params.getString("graphComparisonType")) {
             case "CPDAG":

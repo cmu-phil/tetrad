@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -34,7 +34,7 @@ import java.util.Set;
 
 /**
  * Implements Meek's complete orientation rule set for PC (Chris Meek (1995), "Causal inference and causal explanation
- * with background IKnowledge"), modified for Conservative PC to check noncolliders against recorded noncolliders before
+ * with background Knowledge"), modified for Conservative PC to check noncolliders against recorded noncolliders before
  * orienting.
  * <p>
  * For now, the fourth rule is always performed.
@@ -43,7 +43,7 @@ import java.util.Set;
  */
 public class MeekRulesCpdag implements ImpliedOrientation {
 
-    private IKnowledge IKnowledge;
+    private edu.cmu.tetrad.data.Knowledge Knowledge;
 
     /**
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
@@ -69,33 +69,33 @@ public class MeekRulesCpdag implements ImpliedOrientation {
 
 
     public Set<Node> orientImplied(Graph graph) {
-        orientUsingMeekRulesLocally(this.IKnowledge, graph);
+        orientUsingMeekRulesLocally(this.Knowledge, graph);
         return null;
     }
 
-    public void setKnowledge(IKnowledge IKnowledge) {
-        this.IKnowledge = IKnowledge;
+    public void setKnowledge(Knowledge Knowledge) {
+        this.Knowledge = Knowledge;
     }
 
     //============================== Private Methods ===================================//
 
-    public void orientUsingMeekRulesLocally(IKnowledge IKnowledge, Graph graph) {
+    public void orientUsingMeekRulesLocally(Knowledge Knowledge, Graph graph) {
 
         this.logger.log("info", "Starting Orientation Step D.");
 
         boolean changed;
 
         do {
-            changed = meekR2(graph, IKnowledge) ||
-                    meekR1Locally(graph, IKnowledge) || meekR3(graph, IKnowledge) ||
-                    meekR4(graph, IKnowledge);
+            changed = meekR2(graph, Knowledge) ||
+                    meekR1Locally(graph, Knowledge) || meekR3(graph, Knowledge) ||
+                    meekR4(graph, Knowledge);
         } while (changed);
 
 
         this.logger.log("info", "Finishing Orientation Step D.");
     }
 
-    public boolean meekR1Locally(Graph graph, IKnowledge IKnowledge) {
+    public boolean meekR1Locally(Graph graph, Knowledge Knowledge) {
         List<Node> nodes = graph.getNodes();
         boolean changed = false;
 
@@ -125,14 +125,14 @@ public class MeekRulesCpdag implements ImpliedOrientation {
                         continue;
                     }
 
-                    if (MeekRulesCpdag.isArrowpointAllowed(a, c, IKnowledge) && !graph.isAncestorOf(c, a)) {
+                    if (MeekRulesCpdag.isArrowpointAllowed(a, c, Knowledge) && !graph.isAncestorOf(c, a)) {
                         graph.setEndpoint(a, c, Endpoint.ARROW);
 
                         this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg(
                                 "Meek R1 triangle (" + b + "-->" + a + "---" + c + ")", graph.getEdge(a, c)));
                         changed = true;
 
-                        meekR2(graph, IKnowledge);
+                        meekR2(graph, Knowledge);
                     }
                 } else if (graph.getEndpoint(c, a) == Endpoint.ARROW &&
                         graph.isUndirectedFromTo(a, b)) {
@@ -140,14 +140,14 @@ public class MeekRulesCpdag implements ImpliedOrientation {
                         continue;
                     }
 
-                    if (MeekRulesCpdag.isArrowpointAllowed(a, b, IKnowledge) && !graph.isAncestorOf(b, a)) {
+                    if (MeekRulesCpdag.isArrowpointAllowed(a, b, Knowledge) && !graph.isAncestorOf(b, a)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
 
                         this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg(
                                 "Meek R1 triangle (" + c + "-->" + a + "---" + b + ")", graph.getEdge(a, b)));
                         changed = true;
 
-                        meekR2(graph, IKnowledge);
+                        meekR2(graph, Knowledge);
                     }
                 }
             }
@@ -156,7 +156,7 @@ public class MeekRulesCpdag implements ImpliedOrientation {
         return changed;
     }
 
-    public boolean meekR2(Graph graph, IKnowledge IKnowledge) {
+    public boolean meekR2(Graph graph, Knowledge Knowledge) {
         List<Node> nodes = graph.getNodes();
         final boolean changed = false;
 
@@ -177,18 +177,18 @@ public class MeekRulesCpdag implements ImpliedOrientation {
                 if (graph.isDirectedFromTo(b, a) &&
                         graph.isDirectedFromTo(a, c) &&
                         graph.isUndirectedFromTo(b, c)) {
-                    if (MeekRulesCpdag.isArrowpointAllowed(b, c, IKnowledge) && !graph.isAncestorOf(c, b)) {
+                    if (MeekRulesCpdag.isArrowpointAllowed(b, c, Knowledge) && !graph.isAncestorOf(c, b)) {
                         graph.setEndpoint(b, c, Endpoint.ARROW);
                         this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(b, c)));
-                        meekR2(graph, IKnowledge);
+                        meekR2(graph, Knowledge);
                     }
                 } else if (graph.isDirectedFromTo(c, a) &&
                         graph.isDirectedFromTo(a, b) &&
                         graph.isUndirectedFromTo(c, b)) {
-                    if (MeekRulesCpdag.isArrowpointAllowed(c, b, IKnowledge) && !graph.isAncestorOf(b, c)) {
+                    if (MeekRulesCpdag.isArrowpointAllowed(c, b, Knowledge) && !graph.isAncestorOf(b, c)) {
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                         this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(c, b)));
-                        meekR2(graph, IKnowledge);
+                        meekR2(graph, Knowledge);
                     }
                 }
             }
@@ -200,7 +200,7 @@ public class MeekRulesCpdag implements ImpliedOrientation {
     /**
      * Meek's rule R3. If a--b, a--c, a--d, c--&gt;b, d--&gt;b, then orient a--&gt;b.
      */
-    public boolean meekR3(Graph graph, IKnowledge IKnowledge) {
+    public boolean meekR3(Graph graph, Knowledge Knowledge) {
 
         List<Node> nodes = graph.getNodes();
         boolean changed = false;
@@ -246,12 +246,12 @@ public class MeekRulesCpdag implements ImpliedOrientation {
 
                     if (graph.isDirectedFromTo(c, b) &&
                             graph.isDirectedFromTo(d, b)) {
-                        if (MeekRulesCpdag.isArrowpointAllowed(a, b, IKnowledge) && !graph.isAncestorOf(b, a)) {
+                        if (MeekRulesCpdag.isArrowpointAllowed(a, b, Knowledge) && !graph.isAncestorOf(b, a)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
 
                             this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R3", graph.getEdge(a, b)));
                             changed = true;
-                            meekR2(graph, IKnowledge);
+                            meekR2(graph, Knowledge);
                             break;
                         }
                     }
@@ -262,8 +262,8 @@ public class MeekRulesCpdag implements ImpliedOrientation {
         return changed;
     }
 
-    public boolean meekR4(Graph graph, IKnowledge IKnowledge) {
-        if (IKnowledge == null) {
+    public boolean meekR4(Graph graph, Knowledge Knowledge) {
+        if (Knowledge == null) {
             return false;
         }
 
@@ -307,22 +307,22 @@ public class MeekRulesCpdag implements ImpliedOrientation {
 
                     if (graph.isDirectedFromTo(b, d) &&
                             graph.isDirectedFromTo(d, c)) {
-                        if (MeekRulesCpdag.isArrowpointAllowed(a, c, IKnowledge) && !graph.isAncestorOf(c, a)) {
+                        if (MeekRulesCpdag.isArrowpointAllowed(a, c, Knowledge) && !graph.isAncestorOf(c, a)) {
                             graph.setEndpoint(a, c, Endpoint.ARROW);
 
                             this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, c)));
                             changed = true;
-                            meekR2(graph, IKnowledge);
+                            meekR2(graph, Knowledge);
                             break;
                         }
                     } else if (graph.isDirectedFromTo(c, d) &&
                             graph.isDirectedFromTo(d, b)) {
-                        if (MeekRulesCpdag.isArrowpointAllowed(a, b, IKnowledge) && !graph.isAncestorOf(b, a)) {
+                        if (MeekRulesCpdag.isArrowpointAllowed(a, b, Knowledge) && !graph.isAncestorOf(b, a)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
 
                             this.logger.log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, b)));
                             changed = true;
-                            meekR2(graph, IKnowledge);
+                            meekR2(graph, Knowledge);
                             break;
                         }
                     }
@@ -357,10 +357,10 @@ public class MeekRulesCpdag implements ImpliedOrientation {
     }
 
     private static boolean isArrowpointAllowed(Object from, Object to,
-                                               IKnowledge IKnowledge) {
-        if (IKnowledge == null) return true;
-        return !IKnowledge.isRequired(to.toString(), from.toString()) &&
-                !IKnowledge.isForbidden(from.toString(), to.toString());
+                                               Knowledge Knowledge) {
+        if (Knowledge == null) return true;
+        return !Knowledge.isRequired(to.toString(), from.toString()) &&
+                !Knowledge.isForbidden(from.toString(), to.toString());
     }
 
     public boolean isAggressivelyPreventCycles() {

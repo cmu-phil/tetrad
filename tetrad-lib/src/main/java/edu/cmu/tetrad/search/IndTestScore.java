@@ -92,7 +92,7 @@ public class IndTestScore implements IndependenceTest {
             if (independent) {
                 NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFact(x, y, z) + " score = " + nf.format(score));
+                        SearchLogUtils.independenceFact(x, y, z) + " score = " + nf.format(bump));
             }
         }
 

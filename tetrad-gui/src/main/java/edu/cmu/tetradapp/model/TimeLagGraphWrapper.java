@@ -21,8 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -108,7 +107,7 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         int numLags = 1; // need to fix this!
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge1 = new Knowledge2();
+        Knowledge knowledge1 = new Knowledge();
         int lag;
         for (Node node : variables) {
             String varName = node.getName();
@@ -212,11 +211,11 @@ public class TimeLagGraphWrapper implements GraphSource, KnowledgeBoxInput {
         this.graph = graph;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         int numLags = 1; // need to fix this!
         List<Node> variables = this.graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge1 = new Knowledge2();
+        Knowledge knowledge1 = new Knowledge();
         int lag;
         for (Node node : variables) {
             String varName = node.getName();

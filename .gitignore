@@ -30,3 +30,11 @@ tetrad-lib/bin/*
 /data-reader/target/
 
 tetrad-gui.log
+/testboostrap/
+/testboostrap/
+/testboostrap/CalibrationConstraintBased/
+/testboostrap/CalibrationConstraintBased/RFCI/
+/testboostrap/CalibrationConstraintBased/RFCI/RandomGraph-Vars20-Edges80-Cases1000-BS5-H0.1-a0.001/
+/testboostrap/CalibrationConstraintBased/RFCI/RandomGraph-Vars20-Edges80-Cases1000-BS5-H0.1-a0.001/BN_v20_e80_c1000_b5_-1.txt
+/testboostrap/CalibrationConstraintBased/RFCI/RandomGraph-Vars20-Edges80-Cases1000-BS5-H0.1-a0.001/PAG_v20_e80_c1000_b5_-1.txt
+/testboostrap/CalibrationConstraintBased/RFCI/RandomGraph-Vars20-Edges80-Cases1000-BS5-H0.1-a0.001/probs_v20_e80_c1000_b5_-1.txt

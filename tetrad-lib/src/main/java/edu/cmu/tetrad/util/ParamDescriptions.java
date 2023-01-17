@@ -37,12 +37,14 @@ public final class ParamDescriptions {
         final String VALUE_TYPE_STRING = "String";
         final String VALUE_TYPE_INTEGER = "Integer";
         final String VALUE_TYPE_DOUBLE = "Double";
+        final String VALUE_TYPE_LONG = "Long";
         final String VALUE_TYPE_BOOLEAN = "Boolean";
 
         Set<String> PARAM_VALUE_TYPES = new HashSet<>(Arrays.asList(
                 VALUE_TYPE_STRING,
                 VALUE_TYPE_INTEGER,
                 VALUE_TYPE_DOUBLE,
+                VALUE_TYPE_LONG,
                 VALUE_TYPE_BOOLEAN
         ));
 
@@ -94,6 +96,12 @@ public final class ParamDescriptions {
                         int upperBoundInt = Integer.parseInt(upperBound);
 
                         paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueInt, lowerBoundInt, upperBoundInt);
+                    } else if (valueType.equalsIgnoreCase(VALUE_TYPE_LONG)) {
+                        Long defaultValueLong = Long.parseLong(defaultValue);
+                        long lowerBoundLong = Long.parseLong(lowerBound);
+                        long upperBoundLong = Long.parseLong(upperBound);
+
+                        paramDescription = new ParamDescription(paramName, shortDescription, longDescription, defaultValueLong, lowerBoundLong, upperBoundLong);
                     } else if (valueType.equalsIgnoreCase(VALUE_TYPE_DOUBLE)) {
                         Double defaultValueDouble = Double.parseDouble(defaultValue);
                         double lowerBoundDouble = Double.parseDouble(lowerBound);

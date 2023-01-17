@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,7 +41,7 @@ class Tier extends JPanel {
     private final String[] tierNames;
     private final JPanel view = new JPanel();
     private final JScrollPane jsp;
-    private static IKnowledge know;
+    private static Knowledge know;
 
     /**
      * A panel with a tier name, and all vars in that tier.
@@ -61,7 +61,7 @@ class Tier extends JPanel {
         this.jsp.setViewportView(this.view);
     }
 
-    public static void setKnowledge(IKnowledge k) {
+    public static void setKnowledge(Knowledge k) {
         Tier.know = k;
     }
 

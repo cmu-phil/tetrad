@@ -20,11 +20,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,14 +73,14 @@ public final class Fges implements GraphSearch, GraphScorer {
     private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
     // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
     private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
-    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
+    //    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
-    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
+    //    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
     private boolean faithfulnessAssumed = true;
     /**
      * Specification of forbidden and required edges.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     /**
      * List of variables in the data set, in order.
      */
@@ -233,7 +232,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * @return the background knowledge.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return knowledge;
     }
 
@@ -243,7 +242,7 @@ public final class Fges implements GraphSearch, GraphScorer {
      * @param knowledge the knowledge object, specifying forbidden and required
      *                  edges.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -525,53 +524,11 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private void bes() {
-        reevaluateBackward(new HashSet<>(variables));
-
-        while (!sortedArrowsBack.isEmpty()) {
-            Arrow arrow = sortedArrowsBack.first();
-            sortedArrowsBack.remove(arrow);
-
-            Node x = arrow.getA();
-            Node y = arrow.getB();
-
-            if (!graph.isAdjacentTo(x, y)) {
-                continue;
-            }
-
-            Edge edge = graph.getEdge(x, y);
-
-            if (edge.pointsTowards(x)) {
-                continue;
-            }
-
-            if (!getNaYX(x, y).equals(arrow.getNaYX())) {
-                continue;
-            }
-
-            if (!new HashSet<>(graph.getParents(y)).equals(new HashSet<>(arrow.getParents()))) {
-                continue;
-            }
-
-            if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX())) {
-                continue;
-            }
-
-            Set<Node> complement = new HashSet<>(arrow.getNaYX());
-            complement.removeAll(arrow.getHOrT());
-
-            double _bump = deleteEval(x, y, complement,
-                    arrow.parents, hashIndices);
-
-            delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX());
-
-            Set<Node> process = revertToCPDAG();
-            process.add(x);
-            process.add(y);
-            process.addAll(graph.getAdjacentNodes(x));
-            process.addAll(graph.getAdjacentNodes(y));
-
-            reevaluateBackward(new HashSet<>(process));
-        }
+        Bes bes = new Bes(score);
+        bes.setDepth(depth);
+        bes.setVerbose(verbose);
+        bes.setKnowledge(knowledge);
+        bes.bes(graph, variables);
     }
 
     // Returns true if knowledge is not empty.
@@ -645,10 +602,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         int chunkSize = getChunkSize(nodes.size());
 
-//        AdjTask task = new AdjTask(new ArrayList<>(nodes), 0, nodes.size());
-//        task.call();
-
-
         for (int i = 0; i < nodes.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
             AdjTask task = new AdjTask(new ArrayList<>(nodes), i, min(nodes.size(), i + chunkSize));
 
@@ -692,7 +645,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         int _depth = min(depth, TNeighbors.size());
 
-        final DepthChoiceGenerator gen = new DepthChoiceGenerator(TNeighbors.size(), _depth);// TNeighbors.size());
+        final SublistGenerator gen = new SublistGenerator(TNeighbors.size(), _depth);// TNeighbors.size());
         int[] choice;
 
         Set<Node> maxT = null;
@@ -785,115 +738,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 //        System.out.println(arrow);
     }
 
-    private void addArrowBackward(Node a, Node b, Set<Node> hOrT, Set<Node> naYX,
-                                  Set<Node> parents, double bump) {
-        Arrow arrow = new Arrow(bump, a, b, hOrT, null, naYX, parents, arrowIndex++);
-        sortedArrowsBack.add(arrow);
-    }
-
-    // Reevaluates arrows after removing an edge from the graph.
-    private void reevaluateBackward(Set<Node> toProcess) {
-        class BackwardTask extends RecursiveTask<Boolean> {
-            private final Node r;
-            private final List<Node> adj;
-            private final Map<Node, Integer> hashIndices;
-            private final int chunk;
-            private final int from;
-            private final int to;
-
-            private BackwardTask(Node r, List<Node> adj, int chunk, int from, int to,
-                                 Map<Node, Integer> hashIndices) {
-                this.adj = adj;
-                this.hashIndices = hashIndices;
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-                this.r = r;
-            }
-
-            @Override
-            protected Boolean compute() {
-                if (to - from <= chunk) {
-                    for (int _w = from; _w < to; _w++) {
-                        final Node w = adj.get(_w);
-                        Edge e = graph.getEdge(w, r);
-
-                        if (e != null) {
-                            if (e.pointsTowards(r)) {
-                                calculateArrowsBackward(w, r);
-                            } else if (e.pointsTowards(w)) {
-                                calculateArrowsBackward(r, w);
-                            } else {
-                                calculateArrowsBackward(w, r);
-                                calculateArrowsBackward(r, w);
-                            }
-                        }
-                    }
-
-                } else {
-                    int mid = (to - from) / 2;
-
-                    List<BackwardTask> tasks = new ArrayList<>();
-
-                    tasks.add(new BackwardTask(r, adj, chunk, from, from + mid, hashIndices));
-                    tasks.add(new BackwardTask(r, adj, chunk, from + mid, to, hashIndices));
-
-                    invokeAll(tasks);
-                }
-
-                return true;
-            }
-        }
-
-        for (Node r : toProcess) {
-            List<Node> adjacentNodes = new ArrayList<>(toProcess);
-            ForkJoinPool.commonPool().invoke(new BackwardTask(r, adjacentNodes, getChunkSize(adjacentNodes.size()), 0,
-                    adjacentNodes.size(), hashIndices));
-        }
-    }
-
-    // Calculates the arrows for the removal in the backward direction.
-    private void calculateArrowsBackward(Node a, Node b) {
-        if (existsKnowledge()) {
-            if (!getKnowledge().noEdgeRequired(a.getName(), b.getName())) {
-                return;
-            }
-        }
-
-        Set<Node> naYX = getNaYX(a, b);
-        Set<Node> parents = new HashSet<>(graph.getParents(b));
-
-        List<Node> _naYX = new ArrayList<>(naYX);
-
-        ArrowConfigBackward config = new ArrowConfigBackward(naYX, parents);
-        ArrowConfigBackward storedConfig = arrowsMapBackward.get(directedEdge(a, b));
-        if (storedConfig != null && storedConfig.equals(config)) return;
-        arrowsMapBackward.put(directedEdge(a, b), new ArrowConfigBackward(naYX, parents));
-
-        int _depth = min(depth, _naYX.size());
-
-        final DepthChoiceGenerator gen = new DepthChoiceGenerator(_naYX.size(), _depth);//_naYX.size());
-        int[] choice;
-        Set<Node> maxComplement = null;
-        double maxBump = Double.NEGATIVE_INFINITY;
-
-        while ((choice = gen.next()) != null) {
-            Set<Node> complement = GraphUtils.asSet(choice, _naYX);
-            double _bump = deleteEval(a, b, complement, parents, hashIndices);
-
-            if (_bump > maxBump) {
-                maxBump = _bump;
-                maxComplement = complement;
-            }
-        }
-
-        if (maxBump > 0) {
-            Set<Node> _H = new HashSet<>(naYX);
-            _H.removeAll(maxComplement);
-            addArrowBackward(a, b, _H, naYX, parents, maxBump);
-        }
-    }
-
     private Set<Node> getCommonAdjacents(Node x, Node y) {
         Set<Node> adj = new HashSet<>(graph.getAdjacentNodes(x));
         adj.retainAll(graph.getAdjacentNodes(y));
@@ -932,16 +776,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         return scoreGraphChange(x, y, set, hashIndices);
     }
 
-    // Evaluate the Delete(X, Y, TNeighbors) operator (Definition 12 from Chickering, 2002).
-    private double deleteEval(Node x, Node y, Set<Node> complement, Set<Node> parents,
-                              Map<Node, Integer> hashIndices) {
-        Set<Node> set = new HashSet<>(complement);
-        set.addAll(parents);
-        set.remove(x);
-
-        return -scoreGraphChange(x, y, set, hashIndices);
-    }
-
     // Do an actual insertion. (Definition 12 from Chickering, 2002).
     private void insert(Node x, Node y, Set<Node> T, double bump) {
         graph.addDirectedEdge(x, y);
@@ -973,63 +807,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
     }
 
-    // Do an actual deletion (Definition 13 from Chickering, 2002).
-    private void delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX) {
-        Edge oldxy = graph.getEdge(x, y);
-
-        Set<Node> diff = new HashSet<>(naYX);
-        diff.removeAll(H);
-
-        graph.removeEdge(oldxy);
-
-        int numEdges = graph.getNumEdges();
-        if (numEdges % 1000 == 0) {
-            out.println("Num edges (backwards) = " + numEdges);
-        }
-
-        if (verbose) {
-            int cond = diff.size() + graph.getParents(y).size();
-
-            String message = (graph.getNumEdges()) + ". DELETE " + x + " --> " + y
-                    + " H = " + H + " NaYX = " + naYX
-                    + " degree = " + GraphUtils.getDegree(graph)
-                    + " indegree = " + GraphUtils.getIndegree(graph)
-                    + " diff = " + diff + " (" + bump + ") "
-                    + " cond = " + cond;
-            TetradLogger.getInstance().forceLogMessage(message);
-        }
-
-        for (Node h : H) {
-            if (graph.isParentOf(h, y) || graph.isParentOf(h, x)) {
-                continue;
-            }
-
-            Edge oldyh = graph.getEdge(y, h);
-
-            graph.removeEdge(oldyh);
-
-            graph.addEdge(directedEdge(y, h));
-
-            if (verbose) {
-                TetradLogger.getInstance().forceLogMessage("--- Directing " + oldyh + " to "
-                        + graph.getEdge(y, h));
-            }
-
-            Edge oldxh = graph.getEdge(x, h);
-
-            if (Edges.isUndirectedEdge(oldxh)) {
-                graph.removeEdge(oldxh);
-
-                graph.addEdge(directedEdge(x, h));
-
-                if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage("--- Directing " + oldxh + " to "
-                            + graph.getEdge(x, h));
-                }
-            }
-        }
-    }
-
     // Test if the candidate insertion is a valid operation
     // (Theorem 15 from Chickering, 2002).
     private boolean validInsert(Node x, Node y, Set<Node> T, Set<Node> naYX) {
@@ -1052,26 +829,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         return isClique(union) && semidirectedPathCondition(y, x, union)
                 && !violatesKnowledge;
-    }
-
-    private boolean validDelete(Node x, Node y, Set<Node> H, Set<Node> naYX) {
-        boolean violatesKnowledge = false;
-
-        if (existsKnowledge()) {
-            for (Node h : H) {
-                if (knowledge.isForbidden(x.getName(), h.getName())) {
-                    violatesKnowledge = true;
-                }
-
-                if (knowledge.isForbidden(y.getName(), h.getName())) {
-                    violatesKnowledge = true;
-                }
-            }
-        }
-
-        Set<Node> diff = new HashSet<>(naYX);
-        diff.removeAll(H);
-        return isClique(diff) && !violatesKnowledge;
     }
 
     // Adds edges required by knowledge.
@@ -1273,8 +1030,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         double _score = 0;
 
         for (Node node : getVariables()) {
-
-//            if (score instanceof SemBicScore) {
             List<Node> x = dag.getParents(node);
 
             int[] parentIndices = new int[x.size()];
@@ -1291,7 +1046,6 @@ public final class Fges implements GraphSearch, GraphScorer {
             }
 
             _score += nodeScore;
-//            }
         }
 
         if (recordScores) {
@@ -1362,7 +1116,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                 + "the more important the edge is to the posterior probability of the IMaGES model. "
                 + "Edges are given in order of their importance so measured.\n\n");
 
-        int i = 0 ;
+        int i = 0;
 
         for (Edge edge : edges) {
             builder.append(++i).append(". ").append(edge).append(" ").append(nf.format(factors.get(edge))).append("\n");
@@ -1426,41 +1180,6 @@ public final class Fges implements GraphSearch, GraphScorer {
         @Override
         public int hashCode() {
             return Objects.hash(T, nayx, parents);
-        }
-    }
-
-    private static class ArrowConfigBackward {
-        private Set<Node> nayx;
-        private Set<Node> parents;
-
-        public ArrowConfigBackward(Set<Node> nayx, Set<Node> parents) {
-            this.setNayx(nayx);
-            this.setParents(parents);
-        }
-
-        public void setNayx(Set<Node> nayx) {
-            this.nayx = nayx;
-        }
-
-        public Set<Node> getParents() {
-            return parents;
-        }
-
-        public void setParents(Set<Node> parents) {
-            this.parents = parents;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            ArrowConfigBackward that = (ArrowConfigBackward) o;
-            return nayx.equals(that.nayx) && parents.equals(that.parents);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(nayx, parents);
         }
     }
 

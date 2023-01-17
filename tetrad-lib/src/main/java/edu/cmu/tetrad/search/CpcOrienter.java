@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -47,7 +47,7 @@ public final class CpcOrienter implements Reorienter {
     /**
      * Forbidden and required edges for the search.
      */
-    private IKnowledge knowledge;
+    private Knowledge knowledge;
 
     /**
      * The maximum number of nodes conditioned on in the search.
@@ -81,7 +81,7 @@ public final class CpcOrienter implements Reorienter {
 
     //=============================CONSTRUCTORS==========================//
 
-    public CpcOrienter(IndependenceTest independenceTest, IKnowledge knowledge) {
+    public CpcOrienter(IndependenceTest independenceTest, Knowledge knowledge) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -100,12 +100,8 @@ public final class CpcOrienter implements Reorienter {
         return this.independenceTest;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public void setDepth(int depth) {
@@ -210,7 +206,7 @@ public final class CpcOrienter implements Reorienter {
     //==========================PRIVATE METHODS===========================//
 
     @SuppressWarnings("SameParameterValue")
-    private void orientUnshieldedTriples(IKnowledge knowledge,
+    private void orientUnshieldedTriples(Knowledge knowledge,
                                          IndependenceTest test, int depth) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
@@ -262,7 +258,7 @@ public final class CpcOrienter implements Reorienter {
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
     }
 
-    private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
+    private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return CpcOrienter.isArrowpointAllowed1(x, y, knowledge) &&
                 CpcOrienter.isArrowpointAllowed1(z, y, knowledge);
     }
@@ -352,7 +348,7 @@ public final class CpcOrienter implements Reorienter {
     }
 
     private static boolean isArrowpointAllowed1(Node from, Node to,
-                                                IKnowledge knowledge) {
+                                                Knowledge knowledge) {
         if (knowledge == null) {
             return true;
         }

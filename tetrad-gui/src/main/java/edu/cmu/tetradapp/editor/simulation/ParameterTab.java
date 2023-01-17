@@ -22,6 +22,7 @@ import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.data.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.ParameterComponents;
@@ -55,7 +56,7 @@ public class ParameterTab extends JPanel {
     private static final String[] SOURCE_GRAPH_ITEMS = {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
-//            SimulationTypes.LINEAR_FISHER_MODEL,
+            SimulationTypes.LINEAR_FISHER_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
             SimulationTypes.TIME_SERIES
@@ -162,6 +163,9 @@ public class ParameterTab extends JPanel {
                         break;
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.LINEAR_FISHER_MODEL:
+                        this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new GeneralSemSimulationSpecial1(randomGraph), this.simulation.getParams());

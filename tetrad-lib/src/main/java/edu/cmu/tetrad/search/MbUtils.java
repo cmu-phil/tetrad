@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
@@ -273,7 +273,7 @@ public class MbUtils {
     private static void doAbbreviatedMbOrientation(Graph graph,
                                                    IndependenceTest test,
                                                    int depth, Node target) {
-        SearchGraphUtils.orientUsingMeekRulesLocally(new Knowledge2(), graph,
+        SearchGraphUtils.orientUsingMeekRulesLocally(new Knowledge(), graph,
                 test, depth);
         MbUtils.trimToMbNodes(graph, target, false);
         MbUtils.trimEdgesAmongParents(graph, target);

@@ -45,9 +45,9 @@ public interface ICovarianceMatrix extends DataModel {
 
     void setName(String name);
 
-    IKnowledge getKnowledge();
+    Knowledge getKnowledge();
 
-    void setKnowledge(IKnowledge knowledge);
+    void setKnowledge(Knowledge knowledge);
 
     ICovarianceMatrix getSubmatrix(int[] indices);
 

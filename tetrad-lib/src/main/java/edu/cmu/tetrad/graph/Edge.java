@@ -60,6 +60,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
     private final List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
 
+    private double probability;
+
     // =========================CONSTRUCTORS============================//
 
     /**
@@ -254,10 +256,6 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
             String n1 = getNode1().getName();
             String n2 = getNode2().getName();
-            if (n1.compareTo(n2) > 0) {// Sort node's names
-                n1 = getNode2().getName();
-                n2 = getNode1().getName();
-            }
 
             for (EdgeTypeProbability etp : edgeTypeDist) {
                 double prob = etp.getProbability();
@@ -271,19 +269,19 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
                             _type = new StringBuilder("-->");
                             break;
                         case at:
-                            _type = new StringBuilder("&lt;--");
+                            _type = new StringBuilder("<--");
                             break;
                         case ca:
                             _type = new StringBuilder("o->");
                             break;
                         case ac:
-                            _type = new StringBuilder("&lt;-o");
+                            _type = new StringBuilder("<-o");
                             break;
                         case cc:
                             _type = new StringBuilder("o-o");
                             break;
                         case aa:
-                            _type = new StringBuilder("&lt;-&gt;");
+                            _type = new StringBuilder("<->");
                             break;
                         case tt:
                             _type = new StringBuilder("---");
@@ -301,9 +299,12 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
                             _type.append(" ").append(property.toString());
                         }
                     }
-                    buf.append("[").append(_type).append("]:").append(String.format("%.4f", etp.getProbability())).append(";");
-
+                    buf.append("[").append(_type).append("]:").append(String.format("%.4f", prob)).append(";");
                 }
+            }
+
+            if (probability > 0.0) {
+                buf.append(String.format("[edge]:%.4f", probability));
             }
         }
 
@@ -427,14 +428,6 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         return this.lineColor;
     }
 
-    public boolean isBold() {
-        return this.bold;
-    }
-
-    public void setBold(boolean bold) {
-        this.bold = bold;
-    }
-
     public void addProperty(Property property) {
         if (!this.properties.contains(property)) {
             this.properties.add(property);
@@ -454,4 +447,13 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     public List<EdgeTypeProbability> getEdgeTypeProbabilities() {
         return this.edgeTypeProbabilities;
     }
+
+    public double getProbability() {
+        return probability;
+    }
+
+    public void setProbability(double probability) {
+        this.probability = probability;
+    }
+
 }

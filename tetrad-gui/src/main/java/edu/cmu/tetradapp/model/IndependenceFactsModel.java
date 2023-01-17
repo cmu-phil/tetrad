@@ -21,9 +21,8 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.IndependenceFacts;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
@@ -53,8 +52,8 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
-    public static IKnowledge serializableInstance() {
-        return new Knowledge2();
+    public static Knowledge serializableInstance() {
+        return new Knowledge();
     }
 
     public void add(IndependenceFact fact) {

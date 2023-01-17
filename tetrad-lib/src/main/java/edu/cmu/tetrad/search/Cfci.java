@@ -22,8 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -59,7 +58,7 @@ public final class Cfci implements GraphSearch {
     /**
      * The background knowledge.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * The variables to search over (optional)
@@ -117,6 +116,7 @@ public final class Cfci implements GraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     private boolean verbose;
+    private boolean doDiscriminatingPathRule;
 
     //============================CONSTRUCTORS============================//
 
@@ -227,6 +227,8 @@ public final class Cfci implements GraphSearch {
                 new SepsetMap(), this.depth));
 
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
+        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(-1);
         fciOrient.setKnowledge(this.knowledge);
         fciOrient.ruleR0(this.graph);
@@ -246,16 +248,12 @@ public final class Cfci implements GraphSearch {
         return this.sepsets;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     /**
@@ -503,6 +501,10 @@ public final class Cfci implements GraphSearch {
         return this.maxReachablePathLength;
     }
 
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
     private enum TripleType {
         COLLIDER, NONCOLLIDER, AMBIGUOUS
     }
@@ -510,7 +512,7 @@ public final class Cfci implements GraphSearch {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+    private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         if (this.verbose) {
             this.logger.log("info", "Starting BK Orientation.");
         }

@@ -41,7 +41,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import org.reflections.Reflections;
@@ -51,7 +50,11 @@ import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics
@@ -61,6 +64,12 @@ import java.util.concurrent.RecursiveTask;
  * @author Daniel Malinsky
  */
 public class Comparison {
+
+    private boolean parallelized = false;
+
+    public void setParallelized(boolean parallelized) {
+        this.parallelized = parallelized;
+    }
 
     public enum ComparisonGraph {
         true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
@@ -296,16 +305,6 @@ public class Comparison {
         double[][][][] allStats = calcStats(algorithmSimulationWrappers, algorithmWrappers, simulationWrappers,
                 statistics, numRuns, stdout);
 
-        // Print out the preliminary information for statistics types, etc.
-        this.out.println();
-        this.out.println("Statistics:");
-        this.out.println();
-
-        for (Statistic stat : statistics.getStatistics()) {
-            this.out.println(stat.getAbbreviation() + " = " + stat.getDescription());
-        }
-
-        this.out.println();
 
         {
             int numTables = allStats.length;
@@ -333,6 +332,7 @@ public class Comparison {
                 }
             }
 
+            this.out.println();
             this.out.println("Simulations:");
             this.out.println();
 
@@ -362,6 +362,18 @@ public class Comparison {
                 }
             }
 
+
+            // Print out the preliminary information for statistics types, etc.
+            this.out.println();
+            this.out.println("Statistics:");
+            this.out.println();
+
+            for (Statistic stat : statistics.getStatistics()) {
+                this.out.println(stat.getAbbreviation() + " = " + stat.getDescription());
+            }
+
+            this.out.println();
+
             if (isSortByUtility()) {
                 this.out.println();
                 this.out.println("Sorting by utility, high to low.");
@@ -389,10 +401,13 @@ public class Comparison {
                 this.out.println("interval [0, 1], with higher being better.");
             }
 
-            this.out.println();
             this.out.println("Graphs are being compared to the " + this.comparisonGraph.toString().replace("_", " ") + ".");
+            this.out.println("All statistics are individually summarized over " + numRuns + " runs using the indicated statistic.");
 
             this.out.println();
+
+            statTables = calcStatTables(allStats, Mode.Average, numTables,
+                    algorithmSimulationWrappers, numStats, statistics);
 
             // Add utilities to table as the last column.
             for (int u = 0; u < numTables; u++) {
@@ -401,9 +416,10 @@ public class Comparison {
                 }
             }
 
-            // Print all of the tables.
+            // Print all the tables.
             printStats(statTables, statistics, Mode.Average, newOrder, algorithmSimulationWrappers,
                     algorithmWrappers, simulationWrappers, utilities, parameters);
+
 
             statTables = calcStatTables(allStats, Mode.StandardDeviation, numTables,
                     algorithmSimulationWrappers, numStats, statistics);
@@ -417,7 +433,7 @@ public class Comparison {
             printStats(statTables, statistics, Mode.StandardDeviation, newOrder, algorithmSimulationWrappers, algorithmWrappers,
                     simulationWrappers, utilities, parameters);
 
-            statTables = calcStatTables(allStats, Mode.WorstCase, numTables, algorithmSimulationWrappers,
+            statTables = calcStatTables(allStats, Mode.MinValue, numTables, algorithmSimulationWrappers,
                     numStats, statistics);
 
             for (int u = 0; u < numTables; u++) {
@@ -426,10 +442,10 @@ public class Comparison {
                 }
             }
 
-            printStats(statTables, statistics, Mode.WorstCase, newOrder, algorithmSimulationWrappers, algorithmWrappers,
+            printStats(statTables, statistics, Mode.MinValue, newOrder, algorithmSimulationWrappers, algorithmWrappers,
                     simulationWrappers, utilities, parameters);
 
-            statTables = calcStatTables(allStats, Mode.MedianCase, numTables, algorithmSimulationWrappers,
+            statTables = calcStatTables(allStats, Mode.MaxValue, numTables, algorithmSimulationWrappers,
                     numStats, statistics);
 
             for (int u = 0; u < numTables; u++) {
@@ -438,15 +454,27 @@ public class Comparison {
                 }
             }
 
-            printStats(statTables, statistics, Mode.MedianCase, newOrder, algorithmSimulationWrappers, algorithmWrappers,
+            printStats(statTables, statistics, Mode.MaxValue, newOrder, algorithmSimulationWrappers, algorithmWrappers,
                     simulationWrappers, utilities, parameters);
 
-            // Add utilities to table as the last column.
+            statTables = calcStatTables(allStats, Mode.MedianValue, numTables, algorithmSimulationWrappers,
+                    numStats, statistics);
+
             for (int u = 0; u < numTables; u++) {
                 for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
                     statTables[u][t][numStats] = utilities[t];
                 }
             }
+
+            printStats(statTables, statistics, Mode.MedianValue, newOrder, algorithmSimulationWrappers, algorithmWrappers,
+                    simulationWrappers, utilities, parameters);
+
+//            // Add utilities to table as the last column.
+//            for (int u = 0; u < numTables; u++) {
+//                for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
+//                    statTables[u][t][numStats] = utilities[t];
+//                }
+//            }
         }
 
         for (int i = 0; i < simulations.getSimulations().size(); i++) {
@@ -483,7 +511,9 @@ public class Comparison {
                     parameters.set(param, simulationWrapper.getValue(param));
                 }
 
-                simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters(), false);
+                if (simulation.getNumDataModels() == 0) {
+                    simulationWrapper.createData(simulationWrapper.getSimulationSpecificParameters(), true);
+                }
 
                 File subdir = dir;
                 if (simulationWrappers.size() > 1) {
@@ -534,9 +564,8 @@ public class Comparison {
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(new DagToPag(graph).convert(), file4, false);
+                        GraphUtils.saveGraph(dagToPag(graph), file4, false);
                     }
-
                 }
 
                 PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
@@ -621,7 +650,7 @@ public class Comparison {
 
                 if (isSavePags()) {
                     File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                    GraphUtils.saveGraph(new DagToPag(graph).convert(), file4, false);
+                    GraphUtils.saveGraph(dagToPag(graph), file4, false);
                 }
             }
         } catch (IOException e) {
@@ -888,8 +917,15 @@ public class Comparison {
             }
         }
 
-        for (AlgorithmTask task : tasks) {
-            task.compute();
+        if (parallelized) {
+            int parallelism = ForkJoinPool.getCommonPoolParallelism() + 10;
+            ForkJoinPool pool = (ForkJoinPool) Executors.newWorkStealingPool(parallelism);
+            pool.invokeAll(tasks);
+            pool.shutdown();
+        } else {
+            for (AlgorithmTask task : tasks) {
+                task.call();
+            }
         }
 
         return allStats;
@@ -1024,7 +1060,7 @@ public class Comparison {
         this.comparisonGraph = comparisonGraph;
     }
 
-    private class AlgorithmTask extends RecursiveTask<Boolean> {
+    private class AlgorithmTask implements Callable<Boolean> {
 
         private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
         private final List<AlgorithmWrapper> algorithmWrappers;
@@ -1049,7 +1085,7 @@ public class Comparison {
         }
 
         @Override
-        protected Boolean compute() {
+        public Boolean call() {
             doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,
                     this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run, this.stdout);
             return true;
@@ -1198,7 +1234,7 @@ public class Comparison {
             } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
                 comparisonGraph = SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueGraph));
             } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
-                comparisonGraph = new DagToPag(new EdgeListGraph(trueGraph)).convert();
+                comparisonGraph = dagToPag(new EdgeListGraph(trueGraph));
             } else {
                 throw new IllegalArgumentException("Unrecognized graph type.");
             }
@@ -1296,7 +1332,7 @@ public class Comparison {
     }
 
     private enum Mode {
-        Average, StandardDeviation, WorstCase, MedianCase
+        Average, StandardDeviation, MinValue, MaxValue, MedianValue
     }
 
     private String getHeader(int u) {
@@ -1375,11 +1411,13 @@ public class Comparison {
                     } else if (mode == Mode.Average) {
                         double mean = StatUtils.mean(allStats[u][i][j]);
                         statTables[u][i][j] = mean;
-                    } else if (mode == Mode.WorstCase) {
+                    } else if (mode == Mode.MinValue) {
                         statTables[u][i][j] = StatUtils.min(allStats[u][i][j]);
+                    } else if (mode == Mode.MaxValue) {
+                        statTables[u][i][j] = StatUtils.max(allStats[u][i][j]);
                     } else if (mode == Mode.StandardDeviation) {
                         statTables[u][i][j] = StatUtils.sd(allStats[u][i][j]);
-                    } else if (mode == Mode.MedianCase) {
+                    } else if (mode == Mode.MedianValue) {
                         statTables[u][i][j] = StatUtils.median(allStats[u][i][j]);
                     } else {
                         throw new IllegalStateException();
@@ -1398,13 +1436,15 @@ public class Comparison {
                             Parameters parameters) {
 
         if (mode == Mode.Average) {
-            this.out.println("AVERAGE STATISTICS");
+            this.out.println("AVERAGE VALUE");
         } else if (mode == Mode.StandardDeviation) {
-            this.out.println("STANDARD DEVIATIONS");
-        } else if (mode == Mode.WorstCase) {
-            this.out.println("WORST CASE");
-        } else if (mode == Mode.MedianCase) {
-            this.out.println("MEDIAN CASE");
+            this.out.println("STANDARD DEVIATION");
+        } else if (mode == Mode.MinValue) {
+            this.out.println("MIN VALUE");
+        } else if (mode == Mode.MaxValue) {
+            this.out.println("MAX VALUE");
+        } else if (mode == Mode.MedianValue) {
+            this.out.println("MEDIAN VALUE");
         } else {
             throw new IllegalStateException();
         }
@@ -1427,7 +1467,7 @@ public class Comparison {
                     + (isShowUtilities() ? 1 : 0);
 
             TextTable table = new TextTable(rows, cols);
-            table.setTabDelimited(isTabDelimitedTables());
+            table.setDelimiter(isTabDelimitedTables() ? TextTable.Delimiter.TAB : TextTable.Delimiter.JUSTIFIED);
 
             int initialColumn = 0;
 
@@ -1763,12 +1803,14 @@ public class Comparison {
 
         @Override
         public void createData(Parameters parameters, boolean newModel) {
-            this.simulation.createData(parameters, newModel);
-            this.graphs = new ArrayList<>();
-            this.dataModels = new ArrayList<>();
-            for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
-                this.graphs.add(this.simulation.getTrueGraph(i));
-                this.dataModels.add(this.simulation.getDataModel(i));
+            if (newModel) {
+                this.simulation.createData(parameters, newModel);
+                this.graphs = new ArrayList<>();
+                this.dataModels = new ArrayList<>();
+                for (int i = 0; i < this.simulation.getNumDataModels(); i++) {
+                    this.graphs.add(this.simulation.getTrueGraph(i));
+                    this.dataModels.add(this.simulation.getDataModel(i));
+                }
             }
         }
 

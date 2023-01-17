@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -10,12 +11,12 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.OtherPermAlgs;
 import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -34,18 +35,20 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class SP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper {
+public class SP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score = null;
     private IndependenceWrapper test;
+
+    private Knowledge knowledge = new Knowledge();
 
     public SP() {
         // Used in reflection; do not delete.
     }
 
-    public SP(ScoreWrapper score, IndependenceWrapper test) {
-        this.score = score;
+    public SP(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
+        this.score = score;
     }
 
     @Override
@@ -57,20 +60,12 @@ public class SP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper
 
             test.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-            OtherPermAlgs otherPermAlgs;
-
-            otherPermAlgs = new OtherPermAlgs(test, score);
-
-            OtherPermAlgs.Method method = OtherPermAlgs.Method.SP;
-
-            otherPermAlgs.setMethod(method);
-            otherPermAlgs.setUsePearl(parameters.getBoolean(Params.GRASP_USE_VERMA_PEARL));
-            otherPermAlgs.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-            otherPermAlgs.bestOrder(score.getVariables());
-            return otherPermAlgs.getGraph(true);
+            edu.cmu.tetrad.search.SP sp = new edu.cmu.tetrad.search.SP(test, score);
+            sp.setKnowledge(knowledge);
+            sp.bestOrder(score.getVariables());
+            return sp.getGraph(true);
         } else {
-            GRaSP algorithm = new GRaSP(this.score, this.test);
+            SP algorithm = new SP(this.test, this.score);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -99,7 +94,7 @@ public class SP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper
     @Override
     public List<String> getParameters() {
         ArrayList<String> params = new ArrayList<>();
-        params.add(Params.GRASP_USE_VERMA_PEARL);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.VERBOSE);
         return params;
     }
@@ -122,6 +117,16 @@ public class SP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
+    }
+
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
 }

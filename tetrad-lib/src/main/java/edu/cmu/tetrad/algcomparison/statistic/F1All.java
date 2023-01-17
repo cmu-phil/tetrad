@@ -31,14 +31,14 @@ public class F1All implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         AdjacencyConfusion adjConfusion = new AdjacencyConfusion(trueGraph, estGraph);
         ArrowConfusion arrowConfusion = new ArrowConfusion(trueGraph, estGraph);
-        int adjTp = adjConfusion.getAdjTp();
-        int adjFp = adjConfusion.getAdjFp();
-        int adjFn = adjConfusion.getAdjFn();
-        int adjTn = adjConfusion.getAdjTn();
-        int arrowTp = arrowConfusion.getArrowsTp();
-        int arrowFp = arrowConfusion.getArrowsFp();
-        int arrowFn = arrowConfusion.getArrowsFn();
-        int arrowTn = arrowConfusion.getArrowsTn();
+        int adjTp = adjConfusion.getTp();
+        int adjFp = adjConfusion.getFp();
+        int adjFn = adjConfusion.getFn();
+        int adjTn = adjConfusion.getTn();
+        int arrowTp = arrowConfusion.getTp();
+        int arrowFp = arrowConfusion.getFp();
+        int arrowFn = arrowConfusion.getFn();
+        int arrowTn = arrowConfusion.getTn();
         double adjPrecision = adjTp / (double) (adjTp + adjFp);
         double adjRecall = adjTp / (double) (adjTp + adjFn);
         double arrowPrecision = arrowTp / (double) (arrowTp + arrowFp);

@@ -53,12 +53,12 @@ public class SepsetsTeyssier implements SepsetProducer {
         return getSepsetGreedy(i, k);
     }
 
-    public boolean isCollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         List<Node> set = getSepsetGreedy(i, k);
         return set != null && !set.contains(j);
     }
 
-    public boolean isNoncollider(Node i, Node j, Node k) {
+    public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
         List<Node> set = getSepsetGreedy(i, k);
         return set != null && set.contains(j);
     }
@@ -111,11 +111,20 @@ public class SepsetsTeyssier implements SepsetProducer {
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
         List<Node> nodes = new ArrayList<>();
+        nodes.addAll(c);
         nodes.add(a);
         nodes.add(b);
-        nodes.addAll(c);
-        this.scorer.score(nodes);
-        return !this.scorer.adjacent(a, b);
+
+        Boss boss = new Boss(scorer);
+        boss.setAlgType(Boss.AlgType.BOSS1);
+        boss.bestOrder(nodes);
+
+//        this.scorer.score(nodes);
+        boolean adjacent = this.scorer.adjacent(a, b);
+
+//        System.out.println("Testing " + SearchLogUtils.independenceFact(a, b, c) + ": " + !adjacent);
+
+        return !adjacent;
     }
 
     @Override

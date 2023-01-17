@@ -473,7 +473,7 @@ public final class LargeScaleSimulation {
 
         if (this.graph instanceof TimeLagGraph) {
             TimeLagGraph lagGraph = (TimeLagGraph) this.graph;
-            IKnowledge knowledge = getKnowledge(lagGraph); //TimeSeriesUtils.getKnowledge(lagGraph);
+            Knowledge knowledge = getKnowledge(lagGraph); //TimeSeriesUtils.getKnowledge(lagGraph);
             List<Node> lag0 = lagGraph.getLag0Nodes();
 
             for (Node y : lag0) {
@@ -574,7 +574,7 @@ public final class LargeScaleSimulation {
     }
 
     // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
-    private List<List<Node>> returnSimilarPairs(Node x, Node y, IKnowledge knowledge) {
+    private List<List<Node>> returnSimilarPairs(Node x, Node y, Knowledge knowledge) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
@@ -665,11 +665,11 @@ public final class LargeScaleSimulation {
         }
     }
 
-    public IKnowledge getKnowledge(Graph graph) {
+    public Knowledge getKnowledge(Graph graph) {
         int numLags;
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
-        IKnowledge knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
         int lag;
         for (Node node : variables) {
             String varName = node.getName();

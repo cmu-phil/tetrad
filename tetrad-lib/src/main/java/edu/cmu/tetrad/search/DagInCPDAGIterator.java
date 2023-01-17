@@ -21,8 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 
 import java.util.*;
@@ -42,15 +41,15 @@ public class DagInCPDAGIterator {
     private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
     private Graph storedGraph;
     private boolean returnedOne;
-    private final IKnowledge knowledge;
+    private final Knowledge knowledge;
     private final LinkedList<Triple> colliders;
     private final boolean allowNewColliders;
 
     public DagInCPDAGIterator(Graph CPDAG) {
-        this(CPDAG, new Knowledge2(), false, true);
+        this(CPDAG, new Knowledge(), false, true);
     }
 
-    public DagInCPDAGIterator(Graph CPDAG, IKnowledge knowledge) {
+    public DagInCPDAGIterator(Graph CPDAG, Knowledge knowledge) {
         this(CPDAG, knowledge, false, true);
     }
 
@@ -63,10 +62,10 @@ public class DagInCPDAGIterator {
      *                                   made. May result in cyclic outputs.
      * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
      */
-    public DagInCPDAGIterator(Graph CPDAG, IKnowledge knowledge, boolean allowArbitraryOrientations,
+    public DagInCPDAGIterator(Graph CPDAG, Knowledge knowledge, boolean allowArbitraryOrientations,
                               boolean allowNewColliders) {
         if (knowledge == null) {
-            this.knowledge = new Knowledge2();
+            this.knowledge = new Knowledge();
         } else {
             this.knowledge = knowledge;
         }
@@ -148,7 +147,7 @@ public class DagInCPDAGIterator {
         return this.storedGraph != null;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
@@ -159,11 +158,11 @@ public class DagInCPDAGIterator {
         private final Edge edge;
         private boolean triedLeft;
         private boolean triedRight;
-        private final IKnowledge knowledge;
+        private final Knowledge knowledge;
         private Map<Graph, Set<Edge>> changedEdges = new HashMap<>();
         private final boolean allowArbitraryOrientation;
 
-        public DecoratedGraph(Graph graph, IKnowledge knowledge, Map<Graph, Set<Edge>> changedEdges, boolean allowArbitraryOrientation) {
+        public DecoratedGraph(Graph graph, Knowledge knowledge, Map<Graph, Set<Edge>> changedEdges, boolean allowArbitraryOrientation) {
             this.graph = graph;
             this.edge = findUndirectedEdge(graph);
             this.knowledge = knowledge;
@@ -282,11 +281,11 @@ public class DagInCPDAGIterator {
 
         private void fail(Graph graph, String label) {
             if (this.knowledge.isViolatedBy(graph)) {
-                throw new IllegalArgumentException("IKnowledge violated: " + label);
+                throw new IllegalArgumentException("Knowledge violated: " + label);
             }
         }
 
-        private IKnowledge getKnowledge() {
+        private Knowledge getKnowledge() {
             return this.knowledge;
         }
 

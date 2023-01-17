@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -82,7 +83,7 @@ public class TestPc {
      */
     @Test
     public void testSearch4() {
-        IKnowledge knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
         knowledge.setForbidden("B", "D");
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
@@ -106,7 +107,7 @@ public class TestPc {
         char[] citesChars = citesString.toCharArray();
         ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
-        IKnowledge knowledge = new Knowledge2();
+        Knowledge knowledge = new Knowledge();
 
         knowledge.addToTier(1, "ABILITY");
         knowledge.addToTier(2, "GPQ");
@@ -179,7 +180,7 @@ public class TestPc {
      * Presents the input graph to FCI and checks to make sure the output of FCI is equivalent to the given output
      * graph.
      */
-    private void checkWithKnowledge(IKnowledge knowledge) {
+    private void checkWithKnowledge(Knowledge knowledge) {
         // Set up graph and node objects.
         Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
 
@@ -683,7 +684,7 @@ public class TestPc {
             DataSet data = im.simulateData(10000, false);
 
 //            Graph comparison = dag;
-            Graph comparison = new DagToPag(dag).convert();
+            Graph comparison = dagToPag(dag);
 //            Graph comparison = new Pc(new IndTestDSep(dag)).search();
 
             IndTestFisherZ test = new IndTestFisherZ(data, 0.1);

@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -156,7 +156,7 @@ public class Ida {
      * sorted low to high in absolute value.
      * <p>
      * 1. First, estimate a pattern P from the data.
-     * 2. Then, consider all combinations C of adjacents of X that include all fo the parents of X in P.
+     * 2. Then, consider all combinations C of siblings Z of X (Z--X) that include all of the parents of X in P.
      * 3. For each such C, regress Y onto {X} U C and record the coefficient beta for X in the regression.
      * 4. Report the list of such betas, sorted low to high.
      *
@@ -172,7 +172,7 @@ public class Ida {
         siblings.removeAll(parents);
         siblings.removeAll(children);
 
-        DepthChoiceGenerator gen = new DepthChoiceGenerator(siblings.size(), siblings.size());
+        SublistGenerator gen = new SublistGenerator(siblings.size(), siblings.size());
         int[] choice;
 
         LinkedList<Double> effects = new LinkedList<>();

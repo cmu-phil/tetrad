@@ -46,12 +46,14 @@ public class EdgeListGraph implements Graph {
 
     static final long serialVersionUID = 23L;
 
+    public enum GraphType {DAG, CPDAG, PAG, UNLABELED}
+
     /**
      * A list of the nodes in the graph, in the order in which they were added.
      *
      * @serial
      */
-    protected final List<Node> nodes;
+    protected List<Node> nodes;
 
     /**
      * The edges in the graph.
@@ -65,7 +67,7 @@ public class EdgeListGraph implements Graph {
      *
      * @serial
      */
-    final Map<Node, Set<Edge>> edgeLists;
+    Map<Node, Set<Edge>> edgeLists;
     private final Map<String, Object> attributes = new HashMap<>();
     /**
      * Fires property change events.
@@ -79,7 +81,7 @@ public class EdgeListGraph implements Graph {
     /**
      * Determines whether one node is an ancestor of another.
      */
-    protected Map<Node, Set<Node>> ancestors;
+    protected Map<Node, Set<Node>> ancestors = new HashMap<>();
     /**
      * @serial
      */
@@ -104,10 +106,14 @@ public class EdgeListGraph implements Graph {
      * A hash from node names to nodes;
      */
     Map<String, Node> namesHash;
-    private boolean cpdag;
+
+    private GraphType graphType = GraphType.UNLABELED;
 
     //==============================CONSTUCTORS===========================//
     private boolean pag;
+
+
+
 
     /**
      * Constructs a new (empty) EdgeListGraph.
@@ -154,8 +160,35 @@ public class EdgeListGraph implements Graph {
             this.namesHash.put(node.getName(), node);
         }
 
-        this.pag = graph.isPag();
-        this.cpdag = graph.isCPDAG();
+        setGraphType(graph.getGraphType());
+    }
+
+    public EdgeListGraph(EdgeListGraph graph) throws IllegalArgumentException {
+        this.nodes = new ArrayList<>(graph.nodes);
+        this.edgeLists = new HashMap<>();
+        for (Node node : nodes) {
+            edgeLists.put(node, new HashSet<>(graph.edgeLists.get(node)));
+        }
+        this.edgesSet = new HashSet<>(graph.edgesSet);
+        this.namesHash = new HashMap<>(graph.namesHash);
+
+        this.ambiguousTriples = new HashSet<>(graph.ambiguousTriples);
+        this.underLineTriples = new HashSet<>(graph.underLineTriples);
+        this.dottedUnderLineTriples = new HashSet<>(graph.dottedUnderLineTriples);
+
+        if (graph.ancestors != null) {
+            this.ancestors = new HashMap<>();
+
+            for (Node node : graph.ancestors.keySet()) {
+                ancestors.put(node, new HashSet<>(graph.ancestors.get(node)));
+            }
+        }
+
+        this.stuffRemovedSinceLastTripleAccess = graph.stuffRemovedSinceLastTripleAccess;
+
+        this.highlightedEdges = new HashSet<>(graph.highlightedEdges);
+
+        setGraphType(graph.getGraphType());
     }
 
     /**
@@ -337,6 +370,9 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean defVisible(Edge edge) {
+        if (getGraphType() != GraphType.PAG) return true;
+        if (!edge.isDirected()) return false;
+
         if (containsEdge(edge)) {
 
             Node A = Edges.getDirectedEdgeTail(edge);
@@ -406,20 +442,20 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * @return true iff there is a directed path from node1 to node2. a
+     * @return true iff there is a (nonempty) directed path from node1 to node2. a
      */
     @Override
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
+        if (node1 == node2) return false;
+
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
 
-        for (Node c : getChildren(node1)) {
-            Q.add(c);
-            V.add(c);
-        }
+        Q.add(node1);
+        V.add(node1);
 
         while (!Q.isEmpty()) {
-            Node t = Q.remove();
+            Node t = Q.poll();
 
             for (Node c : getChildren(t)) {
                 if (c == node2) return true;
@@ -658,7 +694,8 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean isAncestorOf(Node node1, Node node2) {
-        return getAncestors(Collections.singletonList(node2)).contains(node1);
+        return node1 == node2 || existsDirectedPathFromTo(node1, node2);
+//        return getAncestors(Collections.singletonList(node2)).contains(node1);
     }
 
     @Override
@@ -684,9 +721,19 @@ public class EdgeListGraph implements Graph {
     public List<Node> getAncestors(List<Node> nodes) {
         Set<Node> ancestors = new HashSet<>();
 
-        for (Node node : nodes) {
-            collectAncestorsVisit(node, ancestors);
+        for (Node n : getNodes()) {
+            for (Node m : nodes) {
+                if (isAncestorOf(n, m)) {
+                    ancestors.add(n);
+                }
+            }
         }
+
+//        Set<Node> ancestors = new HashSet<>();
+
+//        for (Node node : nodes) {
+//            collectAncestorsVisit(node, ancestors);
+//        }
 
         return new ArrayList<>(ancestors);
     }
@@ -744,31 +791,17 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * True if this graph has been stamped as a cpdag. The search algorithm
-     * should do this.
-     */
-    @Override
-    public boolean isCPDAG() {
-        return this.cpdag;
-    }
-
-    @Override
-    public void setCPDAG(boolean cpdag) {
-        this.cpdag = cpdag;
-    }
-
-    /**
      * True if this graph has been "stamped" as a PAG_of_the_true_DAG. The
      * search algorithm should do this.
      */
     @Override
-    public boolean isPag() {
-        return this.pag;
+    public GraphType getGraphType() {
+        return graphType;
     }
 
     @Override
-    public void setPag(boolean pag) {
-        this.pag = pag;
+    public void setGraphType(GraphType graphType) {
+        this.graphType = graphType;
     }
 
     /**
@@ -1048,7 +1081,7 @@ public class EdgeListGraph implements Graph {
     @Override
     public boolean setEndpoint(Node from, Node to, Endpoint endPoint)
             throws IllegalArgumentException {
-        if (!isAdjacentTo(from, to)) return false;
+        if (!isAdjacentTo(from, to)) throw new IllegalArgumentException("Not adjacent");
 
         Edge edge = getEdge(from, to);
         this.ancestors = null;
@@ -1302,13 +1335,38 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public void reorientAllWith(Endpoint endpoint) {
-        for (Edge edge : new ArrayList<>(this.edgesSet)) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-
-            setEndpoint(a, b, endpoint);
-            setEndpoint(b, a, endpoint);
+        for (Edge edge : getEdges()) {
+            removeEdge(edge);
+            Edge edge2 = new Edge(edge);
+            edge2.setEndpoint1(endpoint);
+            edge2.setEndpoint2(endpoint);
+            addEdge(edge2);
         }
+
+//        for (int i = 0; i < nodes.size(); i++) {
+//            for (int j = i; j < nodes.size(); j++) {
+//                if (isAdjacentTo(nodes.get(i), nodes.get(j))) {
+//                    removeEdges(nodes.get(i), nodes.get(j));
+//
+//                    if (endpoint == Endpoint.ARROW) {
+//                        addBidirectedEdge(nodes.get(i), nodes.get(j));
+//                    } else if (endpoint == Endpoint.CIRCLE) {
+//                        addNondirectedEdge(nodes.get(i), nodes.get(j));
+//                    } else if (endpoint == Endpoint.TAIL) {
+//                        addUndirectedEdge(nodes.get(i), nodes.get(j));
+//                    }
+//                }
+//            }
+//        }
+//
+//
+//        for (Edge edge : new ArrayList<>(this.edgesSet)) {
+//            Node a = edge.getNode1();
+//            Node b = edge.getNode2();
+//
+//            setEndpoint(a, b, endpoint);
+//            setEndpoint(b, a, endpoint);
+//        }
     }
 
     /**
@@ -1529,7 +1587,7 @@ public class EdgeListGraph implements Graph {
             }
         }
 
-        setPag(graph.isPag());
+        setGraphType(graph.getGraphType());
 
         return graph;
     }

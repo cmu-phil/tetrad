@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ProbUtils;
+import org.apache.commons.math3.special.Gamma;
 
 import java.util.List;
 
@@ -113,14 +114,14 @@ public class BDeScore implements LocalDiscreteScore {
         for (int j = 0; j < q; j++) {
             for (int k = 0; k < r; k++) {
                 double nPrimeijk = 1. / (r * q);
-                score += ProbUtils.lngamma(n_ijk[j][k] + nPrimeijk);
-                score -= ProbUtils.lngamma(nPrimeijk);
+                score += Gamma.logGamma(n_ijk[j][k] + nPrimeijk);
+                score -= Gamma.logGamma(nPrimeijk);
             }
 
             double nPrimeij = 1. / q;
 
-            score += ProbUtils.lngamma(nPrimeij);
-            score -= ProbUtils.lngamma(n_ij[j] + nPrimeij);
+            score += Gamma.logGamma(nPrimeij);
+            score -= Gamma.logGamma(n_ij[j] + nPrimeij);
         }
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {

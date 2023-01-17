@@ -20,8 +20,7 @@
 <div class="inner">
 
     <div class="header"><h1>Tetrad Manual</h1>
-        <p>Last updated: May, 11
-            2020</p></div>
+        <p>Last updated: January, 18 2023</p></div>
 
     <!-- Table of Contents, give each section a unique id -->
     <div
@@ -433,14 +432,17 @@
         <li>Number of latent
             nodes
         </li>
-        <li>Number of edges</li>
-        <li>Number of directed edges</li>
+        <li>Number of adjacencies</li>
+        <li>Number of directed edges (not in 2-cycles)</li>
         <li>Number of bidirected edges</li>
         <li>Number of undirected edges</li>
         <li>Max degree</li>
         <li>Max indegree</li>
         <li>Max outdegree</li>
-        <li>Cyclicity</li>
+        <li>Average degree</li>
+        <li>Density</li>
+        <li>Number of latents</li>
+        <li>Cyclic/Acyclic</li>
     </ul>
 
     <h3>Paths</h3>
@@ -495,29 +497,20 @@
         it identical to the other.</p>
 
     <p>Take, for example, the following two graphs. The first is the
-        reference graph, the second is the graph to be compared to it. </p>
+        reference graph, the second is the graph to be compared to it.
+        When the Edgewise Comparison box is opened, a comparison like this
+        appears:</p>
 
-    <!-- Follow this image example to add an image --> <img alt=""
-                                                            src="images/compare_box_1.png" width="360">
+    <img alt=""
+         src="images/compare_box_12.png" width="360">
 
-    <img alt="" src="images/compare_box_2.png" width="360">
-
-    <p>When these two graphs are input into the graph compare box, a
-        window appears which allows you to specify which of the two graphs is the
-        reference graph. When the comparison is complete, the following window
-        results</p>
-
-    <img alt="" src="images/compare_box_3.png" width="450">
-
+    <p>You may choose (by a menu in the upper left part of the box) whether the
+        graph being compared is the original DAG, or the CPDAG of the original
+        DAG, of the PAG of the original DAG</p>
 
     <p>When the listed changes have been made to the second graph, it
         will be identical to the first graph.</p>
 
-    <p>If one of the parent boxes contains multiple graphs, each graph
-        will be compared separately to the reference graph (or the estimated
-        graph will be compared separately to each reference graph, depending on
-        which parent box is selected as the reference), and each comparison will
-        be housed in its own tab, located on the left side of the window.</p>
 
     <h2>Stats List Graph Comparisons</h2>
 
@@ -530,6 +523,10 @@
         comparison is complete, the following window results:</p>
 
     <img alt="" src="images/stats-list-example.png" width="650">
+
+    <p>You may choose (by a menu in the upper left part of the box) whether the
+        graph being compared is the original DAG, or the CPDAG of the original
+        DAG, of the PAG of the original DAG</p>
 
     <p>The first columns gives an abbreviation for the statistic; the
         second columns gives a definition of the statistic. The third columns
@@ -547,12 +544,7 @@
         will be a 3 in the (undirected, directed) cell of the matrix. An
         analogous method is used to represent endpoint errors. For example:</p>
 
-    <img alt="" src="images/compare_box_5.png" width="650">
-
-    <p>If one of the parent boxes contains multiple graphs, then each
-        estimated graph will be individually compared to the reference graph (or
-        vice versa), and the results housed in their own tab, found on the
-        left.</p>
+    <img alt="" src="images/compare_box_13.png" width="650">
 
     <h2>Graph Intersections</h2>
 
@@ -1887,9 +1879,9 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         independent of their causes in the graph, and probabilities for variables
         that are causes of the manipulated variables are unchanged. </p>
 
-    <p>There are five available updater algorithms in Tetrad: the
-        approximate updater, the row summing exact updater, the CPT invariant
-        updater, the Junction Tree Updater, and the SEM updater. All except for
+    <p>There are four available updater algorithms in Tetrad: the
+        approximate updater, the row summing exact updater, and the Junction Tree Updater,
+        and the SEM updater. All except for
         the SEM updater function only when given Bayes instantiated models as
         input; the SEM updater functions when given a SEM instantiated model as
         input. None of the updaters work on cyclic models.</p>
@@ -2019,13 +2011,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         see conditional as well as marginal probabilities, and in “Single
         Variable” mode, you can see joint values. </p>
 
-    <h2>CPT Invariant Exact Updater</h2>
+    <!--    <h2>CPT Invariant Exact Updater</h2>-->
 
-    <p>The CPT invariant exact updater is more accurate than the
-        approximate updater, but slightly faster than the row summing exact
-        updater. Ifs window functions exactly as the approximate updater down,
-        with one exception: in “Multiple Variables” mode, you can see conditional
-        as well as marginal probabilities.</p>
+    <!--    <p>The CPT invariant exact updater is more accurate than the-->
+    <!--        approximate updater, but slightly faster than the row summing exact-->
+    <!--        updater. Ifs window functions exactly as the approximate updater down,-->
+    <!--        with one exception: in “Multiple Variables” mode, you can see conditional-->
+    <!--        as well as marginal probabilities.</p>-->
 
     <h2>Junction Tree Exact Updater</h2>
 
@@ -2328,6 +2320,12 @@ tabs will not appear.</p> -->
         specify graph parameters such as number of variables, maximum and minimum
         degrees, and connectedness.</p>
 
+    <h5>Erdos Renyi DAG</h5>
+
+    <p> This option creates a DAG by randomly adding edgew with a given edge
+        probability. The graph is then oriented as a DAG by choosing a
+        causal order.</p>
+
     <h5>Scale Free DAG</h5>
 
     <p> This option creates a DAG whose variable’s degrees obey a power
@@ -2580,7 +2578,10 @@ tabs will not appear.</p> -->
         the search. </p>
 
     <p>After optionally changing any search parameters, click on "Run
-        Search and Generate Graph" which will execute the search</p>
+        Search and Generate Graph" which will execute the search.</p>
+
+    <p>Notably there are some experimental algorithms available in this box.
+    To see these, select File->Settings->Enable Experimental.</p>
 
 
     <h2>Search Algorithms</h2>
@@ -2844,46 +2845,46 @@ tabs will not appear.</p> -->
         <a href="#verbose">verbose</a> <a href="#meekVerbose">meekVerbose</a></p>
 
 
-    <h3>The IMaGES Discrete Algorithm (BDeu Score)</h3>
+<!--    <h3>The IMaGES Discrete Algorithm (BDeu Score)</h3>-->
 
-    <h4>Description</h4>
+<!--    <h4>Description</h4>-->
 
-    <div id="imgs_disc">
+<!--    <div id="imgs_disc">-->
 
-        <p>Adjusts the discrete BDeu variable score of FGES so allow for
-            multiple datasets as input. The BDeu scores for each data set are
-            averaged at each step of the algorithm, producing a model for all
-            data sets that assumes they have the same graphical structure across
-            dataset. Note that in order to use this algorithm in a nontrivial
-            way, one needs to have loaded or simulated multiple dataset.</p>
+<!--        <p>Adjusts the discrete BDeu variable score of FGES so allow for-->
+<!--            multiple datasets as input. The BDeu scores for each data set are-->
+<!--            averaged at each step of the algorithm, producing a model for all-->
+<!--            data sets that assumes they have the same graphical structure across-->
+<!--            dataset. Note that in order to use this algorithm in a nontrivial-->
+<!--            way, one needs to have loaded or simulated multiple dataset.</p>-->
 
-    </div>
+<!--    </div>-->
 
-    <h4>Input Assumptions</h4>
+<!--    <h4>Input Assumptions</h4>-->
 
-    <p>A set of discrete datasets with the same variables and sample
-        sizes.</p>
+<!--    <p>A set of discrete datasets with the same variables and sample-->
+<!--        sizes.</p>-->
 
-    <h4>Output Format</h4>
+<!--    <h4>Output Format</h4>-->
 
-    <p>A CPDAG, interpreted as a common model for all datasets.</p>
+<!--    <p>A CPDAG, interpreted as a common model for all datasets.</p>-->
 
-    <h4>Parameters</h4>
+<!--    <h4>Parameters</h4>-->
 
-    <p>All of the parameters from FGES are available for IMaGES.
-        Additionally:</p>
+<!--    <p>All of the parameters from FGES are available for IMaGES.-->
+<!--        Additionally:</p>-->
 
-    <p><a href="#numRuns">numRuns</a>, <a
-            href="#randomSelectionSize">randomSelectionSize</a></p>
+<!--    <p><a href="#numRuns">numRuns</a>, <a-->
+<!--            href="#randomSelectionSize">randomSelectionSize</a></p>-->
 
 
-    <h3>The IMaGES Continuous Algorithm (SEM BIC Score)</h3>
+    <h3>The IMaGES Algorithm</h3>
 
     <h4>Description</h4>
 
     <div id="imgs_cont">
 
-        <p>Adjusts the continuous variable score (SEM BIC) of FGES so
+        <p>Adjusts the selected score for FGES so
             allow for multiple datasets as input. The linear, Gaussian BIC scores
             for each data set are averaged at each step of the algorithm,
             producing a model for all data sets that assumes they have the same
@@ -2893,7 +2894,7 @@ tabs will not appear.</p> -->
 
     <h4>Input Assumptions</h4>
 
-    <p>A set of continuous datasets with the same variables and sample
+    <p>A set of datasets consistent with the chosen score with the same variables and sample
         sizes.</p>
 
     <h4>Output Format</h4>
@@ -3030,52 +3031,52 @@ tabs will not appear.</p> -->
             href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
 
 
-    <h3>The RFCI-BSC Algorithm</h3>
+<!--    <h3>The RFCI-BSC Algorithm</h3>-->
 
-    <h4>Description</h4>
+<!--    <h4>Description</h4>-->
 
-    <div id="rfci-bsc">
+<!--    <div id="rfci-bsc">-->
 
-        <p>RFCI-BSC is a combination of the RFCI [Colombo, 2012]
-            algorithm and the Bayesian Scoring of Constraints (BSC) method
-            [Jabbari, 2017] that can generate and probabilistically score
-            multiple models, outputting the most probable one. This search
-            algorithm is a hybrid method that derives a Bayesian probability that
-            the set of independence tests associated with a given causal model
-            are jointly correct. Using this constraint-based scoring method, we
-            are able to score multiple causal models, which possibly contain
-            latent variables, and output the most probable one. See [Jabbari,
-            2017].</p>
+<!--        <p>RFCI-BSC is a combination of the RFCI [Colombo, 2012]-->
+<!--            algorithm and the Bayesian Scoring of Constraints (BSC) method-->
+<!--            [Jabbari, 2017] that can generate and probabilistically score-->
+<!--            multiple models, outputting the most probable one. This search-->
+<!--            algorithm is a hybrid method that derives a Bayesian probability that-->
+<!--            the set of independence tests associated with a given causal model-->
+<!--            are jointly correct. Using this constraint-based scoring method, we-->
+<!--            are able to score multiple causal models, which possibly contain-->
+<!--            latent variables, and output the most probable one. See [Jabbari,-->
+<!--            2017].</p>-->
 
-        <p>Currently, this algorithm can only be accessed if experimental
-            algorithms are activated. One may do so by going to the
-            File menu, selecting Settings, and then making sure the
-            'Experimental' checkbox is checked.</p>
+<!--        <p>Currently, this algorithm can only be accessed if experimental-->
+<!--            algorithms are activated. One may do so by going to the-->
+<!--            File menu, selecting Settings, and then making sure the-->
+<!--            'Experimental' checkbox is checked.</p>-->
 
-    </div>
+<!--    </div>-->
 
-    <h4>Input Assumptions</h4>
+<!--    <h4>Input Assumptions</h4>-->
 
-    <p>The data are discrete only.</p>
+<!--    <p>The data are discrete only.</p>-->
 
-    <h4>Output Format</h4>
+<!--    <h4>Output Format</h4>-->
 
-    <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>
+<!--    <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>-->
 
-    <h4>Parameters</h4>
+<!--    <h4>Parameters</h4>-->
 
-    <p>All of the parameters from RFCI are available for RFCI-BSC.
-        Additionally:</p>
+<!--    <p>All of the parameters from RFCI are available for RFCI-BSC.-->
+<!--        Additionally:</p>-->
 
-    <p><a
-            href="#numRandomizedSearchModels">numRandomizedSearchModels</a>, <a
-            href="#thresholdNoRandomDataSearch">thresholdNoRandomDataSearch</a>, <a
-            href="#cutoffDataSearch">cutoffDataSearch</a>, <a
-            href="#thresholdNoRandomConstrainSearch">thresholdNoRandomConstrainSearch
-    </a>, <a href="#cutoffConstrainSearch">cutoffConstrainSearch</a>, <a
-            href="#numBscBootstrapSamples">numBscBootstrapSamples</a>, <a
-            href="#lowerBound">lowerBound</a>, <a href="#upperBound">upperBound</a>,
-        <a href="#outputRBD">outputRBD</a></p>
+<!--    <p><a-->
+<!--            href="#numRandomizedSearchModels">numRandomizedSearchModels</a>, <a-->
+<!--            href="#thresholdNoRandomDataSearch">thresholdNoRandomDataSearch</a>, <a-->
+<!--            href="#cutoffDataSearch">cutoffDataSearch</a>, <a-->
+<!--            href="#thresholdNoRandomConstrainSearch">thresholdNoRandomConstrainSearch-->
+<!--    </a>, <a href="#cutoffConstrainSearch">cutoffConstrainSearch</a>, <a-->
+<!--            href="#numBscBootstrapSamples">numBscBootstrapSamples</a>, <a-->
+<!--            href="#lowerBound">lowerBound</a>, <a href="#upperBound">upperBound</a>,-->
+<!--        <a href="#outputRBD">outputRBD</a></p>-->
 
     <h3>The GFCI Algorithm</h3>
 
@@ -3370,13 +3371,13 @@ tabs will not appear.</p> -->
 
     <p><a href="#targetName">targetName</a></p>
 
-    <h3>The MBFS Algorithm</h3>
+    <h3>The PC-MB Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="mbfs">
+    <div id="pc-mb">
 
-        <p>Markov blanket fan search. Similar to FGES-MB (see FGES,
+        <p>PC-MB. Similar to FGES-MB (see FGES,
             2016) but using PC as the basic search instead of FGES. The rules of
             the PC search are restricted to just the variables in the Markov
             blanket of a target T, including T; the result is a graph that is a
@@ -4353,7 +4354,7 @@ tabs will not appear.</p> -->
     <div id="parameters"><h2>Search Parameters</h2>
 
         <p>Note: You must specify the "Value Type" of each parameter, and
-            the value type must be one of the following: Integer, Double, String,
+            the value type must be one of the following: Integer, Long, Double, String,
             Boolean.</p> <!-- Insert the parameter descriptions here, must follow
         the same structure and naming conventions -->
 
@@ -4598,19 +4599,85 @@ tabs will not appear.</p> -->
                     id="completeRuleSetUsed_short_desc"> Yes if the complete FCI rule set
         should be used</span></li>
             <li>Long Description: <span
-                    id="completeRuleSetUsed_long_desc"> Yes if the (simpler) final
+                    id="completeRuleSetUsed_long_desc"> No if the (simpler) final
         orientation rules set due to P. Spirtes, guaranteeing arrow
-        completeness, should be used; no if the (fuller) set due to J. Zhang,
+        completeness, should be used; yes if the (fuller) set due to J. Zhang,
         should be used guaranteeing additional tail completeness. </span>
             </li>
             <li>Default Value: <span
-                    id="completeRuleSetUsed_default_value">false</span></li>
+                    id="completeRuleSetUsed_default_value">true</span></li>
             <li>Lower
                 Bound: <span id="completeRuleSetUsed_lower_bound"></span></li>
             <li>Upper Bound: <span
                     id="completeRuleSetUsed_upper_bound"></span></li>
             <li>Value Type:
                 <span id="completeRuleSetUsed_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="doDiscriminatingPathRule">doDiscriminatingPathRule</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="doDiscriminatingPathRule_short_desc">Yes if the discriminating path rule
+                should be done, No if not</span></li>
+            <li>Long Description: <span
+                    id="doDiscriminatingPathRule_long_desc">Yes if the discriminating path
+                    FCI rule (part of the final orientation, requiring an additional test)
+                    should be done, No if not </span>
+            </li>
+            <li>Default Value: <span
+                    id="doDiscriminatingPathRule_default_value">true</span></li>
+            <li>Lower
+                Bound: <span id="doDiscriminatingPathRule_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="doDiscriminatingPathRule_upper_bound"></span></li>
+            <li>Value Type:
+                <span id="doDiscriminatingPathRule_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="doDiscriminatingPathColliderRule">doDiscriminatingPathColliderRule</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="doDiscriminatingPathColliderRule_short_desc">Yes if the discriminating path collider rule
+                should be done, No if not</span></li>
+            <li>Long Description: <span
+                    id="doDiscriminatingPathColliderRule_long_desc">Yes if the discriminating path collider
+                    FCI rule (part of the final orientation, requiring an additional test)
+                    should be done, No if not </span>
+            </li>
+            <li>Default Value: <span
+                    id="doDiscriminatingPathColliderRule_default_value">false</span></li>
+            <li>Lower
+                Bound: <span id="doDiscriminatingPathColliderRule_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="doDiscriminatingPathColliderRule_upper_bound"></span></li>
+            <li>Value Type:
+                <span id="doDiscriminatingPathColliderRule_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="doDiscriminatingPathTailRule">doDiscriminatingPathTailRule</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="doDiscriminatingPathTailRule_short_desc">Yes if the discriminating path tail rule
+                should be done, No if not</span></li>
+            <li>Long Description: <span
+                    id="doDiscriminatingPathTailRule_long_desc">Yes if the discriminating path tail
+                    FCI rule (part of the final orientation, requiring an additional test)
+                    should be done, No if not </span>
+            </li>
+            <li>Default Value: <span
+                    id="doDiscriminatingPathTailRule_default_value">true</span></li>
+            <li>Lower
+                Bound: <span id="doDiscriminatingPathTailRule_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="doDiscriminatingPathTailRule_upper_bound"></span></li>
+            <li>Value Type:
+                <span id="doDiscriminatingPathTailRule_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -4693,21 +4760,21 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="targetNames">targetNames</h3>
-        <ul class="targetNames_list">
-            <li>Short Description: <span id="targetNames_short_desc">Target names
+            id="targets">targets</h3>
+        <ul class="targets_list">
+            <li>Short Description: <span id="targets_short_desc">Target names
         (comma separated)</span></li>
             <li>Long Description: <span
-                    id="targetNames_long_desc">Target names (comma separated).</span>
+                    id="targets_long_desc">Target names (comma separated).</span>
             </li>
             <li>Default Value: <span
-                    id="targetNames_default_value"></span></li>
+                    id="targets_default_value"></span></li>
             <li>Lower Bound: <span
-                    id="targetNames_lower_bound"></span></li>
+                    id="targets_lower_bound"></span></li>
             <li>Upper Bound: <span
-                    id="targetNames_upper_bound"></span></li>
+                    id="targets_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="targetNames_value_type">String</span></li>
+                    id="targets_value_type">String</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -4944,6 +5011,23 @@ tabs will not appear.</p> -->
                 <span id="differentGraphs_upper_bound"></span></li>
             <li>Value Type:
                 <span id="differentGraphs_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="mb">mb</h3>
+        <ul class="mb_list">
+            <li>Short Description: <span id="mb_short_desc">Find Markov blanket(s)</span></li>
+            <li>Long Description: <span
+                    id="mb_long_desc">Looks for the graph over the Markov blanket(s) and target(s) if true</span>
+            </li>
+            <li>Default Value: <span
+                    id="mb_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="mb_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="mb_upper_bound"></span></li>
+            <li>Value Type: <span
+                    id="mb_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="discretize">discretize</h3>
@@ -5504,6 +5588,24 @@ tabs will not appear.</p> -->
                         id="generalSemParameterTemplate_value_type">String</span></li>
         </ul>
 
+        <h3 class="parameter_description" id="imagesMetaAlg">imagesMetaAlg</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="imagesMetaAlg_short_desc">IMaGES "meta" algorithm. 1 = FGES, 2 = BOSS-Tuck</span></li>
+            <li>Long
+                Description: <span id="imagesMetaAlg_long_desc"> Sets the meta algorithm to be optimized using the IMaGES (average BIC) score.</span>
+            </li>
+            <li>Default Value:
+                <span id="imagesMetaAlg_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="imagesMetaAlg_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="imagesMetaAlg_upper_bound">5</span></li>
+            <li>Value Type: <span
+                    id="imagesMetaAlg_value_type">Integer</span></li>
+        </ul>
+
         <h3 class="parameter_description" id="ia">ia</h3>
         <ul
                 class="parameter_description_list">
@@ -6025,24 +6127,16 @@ tabs will not appear.</p> -->
                 <span id="maxIndegree_value_type">Integer</span></li>
         </ul>
 
-        <h3 class="parameter_description"
-            id="zsMaxIndegree">zsMaxIndegree</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="zsMaxIndegree_short_desc">Maximum indegree of true graph (min =
-        0)</span></li>
-            <li>Long Description: <span
-                    id="zsMaxIndegree_long_desc"> This is the maximum number of parents
-        one expects any node to have in the true model.</span></li>
-            <li>Default Value: <span
-                    id="zsMaxIndegree_default_value">4</span></li>
-            <li>Lower Bound: <span
-                    id="zsMaxIndegree_lower_bound">0</span></li>
-            <li>Upper Bound: <span
-                    id="zsMaxIndegree_upper_bound">2147483647</span></li>
-            <li>Value Type:
-                <span id="zsMaxIndegree_value_type">Integer</span></li>
+        <h3 id="zsMaxIndegree" class="parameter_description">zsMaxIndegree</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="zsMaxIndegree_short_desc">Maximum indegree of true graph (min = 0)</span>
+            </li>
+            <li>Long Description: <span id="zsMaxIndegree_long_desc">This is the maximum number of parents one expects any node to have in the true model.</span>
+            </li>
+            <li>Default Value: <span id="zsMaxIndegree_default_value">4</span></li>
+            <li>Lower Bound: <span id="zsMaxIndegree_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="zsMaxIndegree_upper_bound">2147483647</span></li>
+            <li>Value Type: <span id="zsMaxIndegree_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6666,26 +6760,22 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="bossScoreType">bossScoreType</h3>
+            id="bossAlg">bossAlg</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="bossScoreType_short_desc"> Yes if edge count of the model should
-        be minimized, No if BIC should be maximized</span></li>
+                    id="bossAlg_short_desc">Picks the BOSS algorithm type, BOSS1 or BOSS2</span></li>
             <li>Long
-                Description: <span id="bossScoreType_long_desc"> If Yes, the number
-        of edges in the model will be minimized, following Raskutti and Uhler
-        2018. If second, the supplied score of the model (preferably a BIC
-        score) will be optimized, a suggestion made in Solus et al. 2017.
+                Description: <span id="bossAlg_long_desc">1 = BOSS1, 2 = BOSS2, 3 = BOSS3
         </span></li>
             <li>Default Value: <span
-                    id="bossScoreType_default_value">false</span></li>
+                    id="bossAlg_default_value">1</span></li>
             <li>Lower Bound:
-                <span id="bossScoreType_lower_bound"></span></li>
+                <span id="bossAlg_lower_bound">1</span></li>
             <li>Upper Bound:
-                <span id="bossScoreType_upper_bound"></span></li>
+                <span id="bossAlg_upper_bound">3</span></li>
             <li>Value Type:
-                <span id="bossScoreType_value_type">Boolean</span></li>
+                <span id="bossAlg_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -6796,26 +6886,26 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="graspUseVermaPearl">graspUseVermaPearl</h3>
+            id="graspUseRaskuttiUhler">graspUseRaskuttiUhler</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="graspUseVermaPearl_short_desc"> Yes to use Raskutti and Uhler's
+                    id="graspUseRaskuttiUhler_short_desc"> Yes to use Raskutti and Uhler's
         DAG-building method (test), No to use Grow-Shrink (score).</span>
             </li>
-            <li>Long Description: <span id="graspUseVermaPearl_long_desc">
+            <li>Long Description: <span id="graspUseRaskuttiUhler_long_desc">
         Raskutti and Uhler's method adds and edge X->Y if Y ~_||_ X |
         Prefix(Y, pi) \ {X}. Grow-Shrink adds an edge X->Y if X is in the
         Markov blanket of Y where the variable set is restricted to Prefix(Y,
         pi). </span></li>
             <li>Default Value: <span
-                    id="graspUseVermaPearl_default_value">false</span></li>
+                    id="graspUseRaskuttiUhler_default_value">false</span></li>
             <li>Lower
-                Bound: <span id="graspUseVermaPearl_lower_bound"></span></li>
+                Bound: <span id="graspUseRaskuttiUhler_lower_bound"></span></li>
             <li>Upper Bound: <span
-                    id="graspUseVermaPearl_upper_bound"></span></li>
+                    id="graspUseRaskuttiUhler_upper_bound"></span></li>
             <li>Value Type:
-                <span id="graspUseVermaPearl_value_type">Boolean</span></li>
+                <span id="graspUseRaskuttiUhler_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7143,6 +7233,18 @@ tabs will not appear.</p> -->
                     id="penaltyDiscount_value_type">Double</span></li>
         </ul>
 
+        <h3 id="zSRiskBound" class="parameter_description">zSRiskBound</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="zSRiskBound_short_desc">Risk bound</span></li>
+            <li>Long Description: <span id="zSRiskBound_long_desc">
+                This is the probability of getting the true model if a correct model is discovered. Could underfit.</span>
+            </li>
+            <li>Default Value: <span id="zSRiskBound_default_value">0.001</span></li>
+            <li>Lower Bound: <span id="zSRiskBound_lower_bound">0</span></li>
+            <li>Upper Bound: <span id="zSRiskBound_upper_bound">1</span></li>
+            <li>Value Type: <span id="zSRiskBound_value_type">Double</span></li>
+        </ul>
+
         <h3 class="parameter_description" id="ebicGamma">ebicGamma</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
@@ -7178,26 +7280,6 @@ tabs will not appear.</p> -->
                         id="trueErrorVariance_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span
                     id="trueErrorVariance_value_type">Double</span></li>
-        </ul>
-
-        <h3 class="parameter_description"
-            id="zSRiskBound">zSRiskBound</h3>
-        <ul
-                class="parameter_description_list">
-            <li>Short Description: <span
-                    id="zSRiskBound_short_desc">Risk bound</span></li>
-            <li>Long
-                Description: <span id="zSRiskBound_long_desc"> This is the
-        probability of getting the true model if a correct model is
-        discovered. Could underfit.</span></li>
-            <li>Default Value: <span
-                    id="zSRiskBound_default_value">0.001</span></li>
-            <li>Lower Bound:
-                <span id="zSRiskBound_lower_bound">0</span></li>
-            <li>Upper Bound:
-                <span id="zSRiskBound_upper_bound">1</span></li>
-            <li>Value Type:
-                <span id="zSRiskBound_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7309,7 +7391,7 @@ tabs will not appear.</p> -->
                 class="parameter_description_list">
             <li>Short Description: <span
                     id="percentResampleSize_short_desc">The percentage of resample size
-        (min = 0.1)</span></li>
+        (min = 10%)</span></li>
             <li>Long Description: <span
                     id="percentResampleSize_long_desc"> This parameter specifies the
         percentage of records in the bootstrap (as a percentage of the total
@@ -7318,9 +7400,9 @@ tabs will not appear.</p> -->
                     id="percentResampleSize_default_value">90</span></li>
             <li>Lower
                 Bound: <span
-                        id="percentResampleSize_lower_bound">-2147483648</span></li>
+                        id="percentResampleSize_lower_bound">10</span></li>
             <li>Upper Bound: <span
-                    id="percentResampleSize_upper_bound">2147483647</span></li>
+                    id="percentResampleSize_upper_bound">100</span></li>
             <li>Value
                 Type: <span id="percentResampleSize_value_type">Integer</span></li>
         </ul>
@@ -7664,6 +7746,25 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
+            id="seed">seed</h3>
+        <ul
+            class="parameter_description_list">
+            <li>Short Description: <span
+                    id="seed_short_desc">Seed for pseudorandom number generator (min = -1)</span></li>
+            <li>Long Description: <span
+                    id="seed_long_desc">The seed is the initial value of the
+                    internal state of the pseudorandom number generator.</span></li>
+            <li>Default Value: <span
+                    id="seed_default_value">-1</span></li>
+            <li>Lower Bound:
+                <span id="seed_lower_bound">-1</span></li>
+            <li>Upper
+                Bound: <span id="seed_upper_bound">9223372036854775807</span></li>
+            <li>Value Type: <span
+                    id="seed_value_type">Long</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="selfLoopCoef">selfLoopCoef</h3>
         <ul
                 class="parameter_description_list">
@@ -7733,6 +7834,25 @@ tabs will not appear.</p> -->
                     id="semBicStructurePrior_upper_bound">Infinity</span></li>
             <li>Value
                 Type: <span id="semBicStructurePrior_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="poissonLambda">poissonLambda</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="poissonLambda_short_desc">Lambda parameter for the Poisson distribution
+        (> 0)</span></li>
+            <li>Long Description: <span
+                    id="poissonLambda_long_desc"> Lambda parameter for the Poisson distribution</span></li>
+            <li>Default Value: <span
+                    id="poissonLambda_default_value">1</span></li>
+            <li>Lower
+                Bound: <span id="poissonLambda_lower_bound">1e-10</span></li>
+            <li>Upper Bound: <span
+                    id="poissonLambda_upper_bound">Infinity</span></li>
+            <li>Value
+                Type: <span id="poissonLambda_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -8792,6 +8912,9 @@ ga.q = [];
 ga.l = +new Date;
 ga('create', 'UA-XXXXX-Y', 'auto');
 ga('send', 'pageview')
+
+
+
 
 
 </script>

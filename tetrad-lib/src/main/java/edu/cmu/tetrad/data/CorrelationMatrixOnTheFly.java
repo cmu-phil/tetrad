@@ -152,14 +152,14 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * @return the knowledge associated with this data.
      */
-    public final IKnowledge getKnowledge() {
+    public final Knowledge getKnowledge() {
         return this.cov.getKnowledge();
     }
 
     /**
      * Associates knowledge with this data.
      */
-    public final void setKnowledge(IKnowledge knowledge) {
+    public final void setKnowledge(Knowledge knowledge) {
         this.cov.setKnowledge(knowledge);
     }
 

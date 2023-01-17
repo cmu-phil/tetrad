@@ -5,7 +5,7 @@ import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DoubleDataBox;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
@@ -43,7 +43,7 @@ public class RunKemmeren {
 
             System.out.println("Generating Background Knowledge");
 
-            Knowledge2 knowledge = new Knowledge2(dataSet.getVariableNames());
+            Knowledge knowledge = new Knowledge(dataSet.getVariableNames());
 
             System.out.println("Running Search");
 

@@ -13,7 +13,9 @@ import edu.pitt.csb.mgm.EigenDecomposition;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
@@ -47,7 +49,7 @@ public class Kci implements IndependenceTest {
     // Variables in data
     private final List<Node> variables;
     private final double[] h;
-    private final double[][] _data;
+//    private final double[][] _data;
 
     // The alpha level of the test.
     private double alpha;
@@ -88,7 +90,7 @@ public class Kci implements IndependenceTest {
      */
     public Kci(DataSet data, double alpha) {
         this.data = DataUtils.standardizeData(data);
-        _data = data.getDoubleData().transpose().toArray();
+//        _data = data.getDoubleData().transpose().toArray();
 
         this.variables = data.getVariables();
         int n = this.data.getNumRows();
@@ -192,7 +194,6 @@ public class Kci implements IndependenceTest {
             for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
 
             DataSet data = this.data.subsetRowsColumns(_rows, _cols);
-//            data = DataUtils.standardizeData(data);
             double[][] _data = data.getDoubleData().transpose().toArray();
 
             Map<Node, Integer> hash = new HashMap<>();
@@ -383,8 +384,8 @@ public class Kci implements IndependenceTest {
      * @return true just in case independence holds.
      */
     private IndependenceResult isIndependentUnconditional(Node x, Node y, IndependenceFact fact, double[][] _data,
-                                               double[] _h, int N,
-                                               Map<Node, Integer> hash) {
+                                                          double[] _h, int N,
+                                                          Map<Node, Integer> hash) {
         Matrix Ones = new Matrix(N, 1);
         for (int j = 0; j < N; j++) Ones.set(j, 0, 1);
 
@@ -422,7 +423,7 @@ public class Kci implements IndependenceTest {
      * @return true just in case independence holds.
      */
     private IndependenceResult isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact, double[][] _data,
-                                             int N, Matrix H, Matrix I, double[] _h, Map<Node, Integer> hash) {
+                                                        int N, Matrix H, Matrix I, double[] _h, Map<Node, Integer> hash) {
         Matrix kx;
         Matrix ky;
 
@@ -577,13 +578,13 @@ public class Kci implements IndependenceTest {
         return (1.4826 * mad) * pow((4.0 / 3.0) / xCol.length, 0.2);
     }
 
-    private List<Integer> getTopIndices(List<Double> prod, List<Integer> allIndices, double threshold) {
-        double maxEig = prod.get(allIndices.get(0));
+    private List<Integer> getTopIndices(double[] prod, List<Integer> allIndices, double threshold) {
+        double maxEig = prod[allIndices.get(0)];
 
         List<Integer> indices = new ArrayList<>();
 
         for (int i : allIndices) {
-            if (prod.get(i) > maxEig * threshold) {
+            if (prod[i] > maxEig * threshold) {
                 indices.add(i);
             }
         }
@@ -648,7 +649,7 @@ public class Kci implements IndependenceTest {
 
     private double kernelGaussian(double z, double width) {
         z /= width;
-        return exp(-z * z);
+        return exp(-z);
     }
 
     // Euclidean distance.
@@ -656,14 +657,11 @@ public class Kci implements IndependenceTest {
         double sum = 0.0;
 
         for (int col : cols) {
-            double d = (data[col][i] - data[col][j]) / 2;
-
-            if (!Double.isNaN(d)) {
-                sum += d * d;
-            }
+            double d = (data[col][i] - data[col][j]);
+            sum += d * d;
         }
 
-        return sqrt(sum);
+        return sum;
     }
 
     @Override
@@ -705,67 +703,66 @@ public class Kci implements IndependenceTest {
         public Eigendecomposition invoke() {
             List<Integer> topIndices;
 
-            EigenDecomposition ed = new EigenDecomposition(new BlockRealMatrix(this.k.toArray()));
+            if (true) {
+                EigenDecomposition ed = new EigenDecomposition(new BlockRealMatrix(this.k.toArray()));
 
-            double[] arr = ed.getRealEigenvalues();
+                double[] arr = ed.getRealEigenvalues();
 
-            List<Double> evxAll = new ArrayList<>();
-            for (double v : arr) evxAll.add(v);
+                List<Integer> indx = series(arr.length); // 1 2 3...
+                topIndices = getTopIndices(arr, indx, getThreshold());
 
-            List<Integer> indx = series(evxAll.size()); // 1 2 3...
-            topIndices = getTopIndices(evxAll, indx, getThreshold());
+                this.D = new Matrix(topIndices.size(), topIndices.size());
 
-            this.D = new Matrix(topIndices.size(), topIndices.size());
+                for (int i = 0; i < topIndices.size(); i++) {
+                    this.D.set(i, i, sqrt(arr[topIndices.get(i)]));
+                }
 
-            for (int i = 0; i < topIndices.size(); i++) {
-                this.D.set(i, i, sqrt(evxAll.get(topIndices.get(i))));
+                this.topEigenvalues = new ArrayList<>();
+
+                for (int t : topIndices) {
+                    getTopEigenvalues().add(arr[t]);
+                }
+
+                this.V = new Matrix(ed.getEigenvector(0).getDimension(), topIndices.size());
+
+                for (int i = 0; i < topIndices.size(); i++) {
+                    RealVector t = ed.getEigenvector(topIndices.get(i));
+                    this.V.assignColumn(i, new Vector(t.toArray()));
+                }
+            } else {
+                SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(k.toArray()));
+
+                double[] evxAll = svd.getSingularValues();
+
+                List<Integer> indx = series(evxAll.length); // 1 2 3...
+                topIndices = getTopIndices(evxAll, indx, getThreshold());
+
+                D = new Matrix(topIndices.size(), topIndices.size());
+
+                for (int i = 0; i < topIndices.size(); i++) {
+                    D.set(i, i, Math.sqrt(evxAll[topIndices.get(i)]));
+                }
+
+                RealMatrix V0 = svd.getV();
+
+                V = new Matrix(V0.getRowDimension(), topIndices.size());
+
+                for (int i = 0; i < V.columns(); i++) {
+                    double[] t = V0.getColumn(topIndices.get(i));
+                    V.assignColumn(i, new Vector(t));
+                }
+
+                topEigenvalues = new ArrayList<>();
+
+                for (int t : topIndices) {
+                    getTopEigenvalues().add(evxAll[t]);
+                }
+
             }
-
-            this.topEigenvalues = new ArrayList<>();
-
-            for (int t : topIndices) {
-                getTopEigenvalues().add(evxAll.get(t));
-            }
-
-            this.V = new Matrix(ed.getEigenvector(0).getDimension(), topIndices.size());
-
-            for (int i = 0; i < topIndices.size(); i++) {
-                RealVector t = ed.getEigenvector(topIndices.get(i));
-                this.V.assignColumn(i, new Vector(t.toArray()));
-            }
-//            } else {
-//                SingularValueDecomposition svd = new SingularValueDecomposition(new BlockRealMatrix(k.toArray()));
-//
-//                List<Double> evxAll = asList(svd.getSingularValues());
-//
-//                List<Integer> indx = series(evxAll.size()); // 1 2 3...
-//                topIndices = getTopIndices(evxAll, indx, getThreshold());
-//
-//                D = new Matrix(topIndices.size(), topIndices.size());
-//
-//                for (int i = 0; i < topIndices.size(); i++) {
-//                    D.set(i, i, Math.sqrt(evxAll.get(topIndices.get(i))));
-//                }
-//
-//                RealMatrix V0 = svd.getV();
-//
-//                V = new Matrix(V0.getRowDimension(), topIndices.size());
-//
-//                for (int i = 0; i < V.columns(); i++) {
-//                    double[] t = V0.getColumn(topIndices.get(i));
-//                    V.assignColumn(i, new Vector(t));
-//                }
-//
-//                topEigenvalues = new ArrayList<>();
-//
-//                for (int t : topIndices) {
-//                    getTopEigenvalues().add(evxAll.get(t));
-//                }
-//
-//            }
 
             return this;
         }
+
     }
 
 

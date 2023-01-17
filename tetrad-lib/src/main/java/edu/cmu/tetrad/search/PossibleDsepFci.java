@@ -21,8 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -55,7 +54,7 @@ public class PossibleDsepFci {
     /**
      * The background knowledge.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
     private int maxReachablePathLength = -1;
 
     /**
@@ -155,7 +154,7 @@ public class PossibleDsepFci {
      * Removes from the list of nodes any that cannot be parents of x given the background knowledge.
      */
     private List<Node> possibleParents(Node x, List<Node> nodes,
-                                       IKnowledge knowledge) {
+                                       Knowledge knowledge) {
         List<Node> possibleParents = new LinkedList<>();
         String _x = x.getName();
 
@@ -170,7 +169,7 @@ public class PossibleDsepFci {
         return possibleParents;
     }
 
-    private boolean possibleParentOf(String _z, String _x, IKnowledge bk) {
+    private boolean possibleParentOf(String _z, String _x, Knowledge bk) {
         return !(bk.isForbidden(_z, _x) || bk.isRequired(_x, _z));
     }
 
@@ -185,7 +184,7 @@ public class PossibleDsepFci {
      * </pre>
      */
     private List<Node> getPossibleDsep(Node node1, Node node2, int maxPathLength) {
-        List<Node> dsep = GraphUtils.possibleDsep(node1, node2, this.graph, maxPathLength, this.test);
+        List<Node> dsep = GraphUtils.possibleDsep(node1, node2, this.graph, maxPathLength);
 
         dsep.remove(node1);
         dsep.remove(node2);
@@ -208,12 +207,12 @@ public class PossibleDsepFci {
         this.depth = depth;
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     public void setMaxPathLength(int maxReachablePathLength) {

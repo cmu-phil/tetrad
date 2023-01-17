@@ -40,7 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Performs a Bayesian classification of a test set based on a given training set. MBFS is used to select a Markov
+ * Performs a Bayesian classification of a test set based on a given training set. PC-MB is used to select a Markov
  * blanket DAG of the target; this DAG is used to estimate a Bayes model using the training data. The Bayes model is
  * then updated for each case in the test data to produce classifications.
  *
@@ -50,7 +50,7 @@ import java.util.List;
 public class MbClassify implements DiscreteClassifier {
     private DataSet train;
     private DataSet test;
-    private String target;
+    private Node target;
     private double alpha;
     private int depth;
     private double prior;
@@ -86,13 +86,13 @@ public class MbClassify implements DiscreteClassifier {
             double prior = Double.parseDouble(priorString);
             int maxMissing = Integer.parseInt(maxMissingString);
 
-            setup(train, test, targetString, alpha, depth, prior, maxMissing);
+            setup(train, test, target, alpha, depth, prior, maxMissing);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void setup(DataSet train, DataSet test, String target, double alpha,
+    private void setup(DataSet train, DataSet test, Node target, double alpha,
                        int depth, double prior, int maxMissing) {
         this.train = train;
         this.test = test;
@@ -102,7 +102,7 @@ public class MbClassify implements DiscreteClassifier {
         this.prior = prior;
         this.maxMissing = maxMissing;
 
-        this.targetVariable = (DiscreteVariable) train.getVariable(target);
+        this.targetVariable = (DiscreteVariable) target;
 
         if (this.targetVariable == null) {
             throw new IllegalArgumentException("Target variable not in data: " +
@@ -113,7 +113,7 @@ public class MbClassify implements DiscreteClassifier {
     //============================PUBLIC METHODS=========================//
 
     /**
-     * Classifies the test data by Bayesian updating. The procedure is as follows. First, MBFS is run on the training
+     * Classifies the test data by Bayesian updating. The procedure is as follows. First, PC-MB is run on the training
      * data to estimate an MB CPDAG. Bidirected edges are removed; an MB DAG G is selected from the CPDAG that
      * remains. Second, a Bayes model B is estimated using this G and the training data. Third, for each case in the
      * test data, the marginal for the target variable in B is calculated conditioning on values of the other varialbes
@@ -132,10 +132,10 @@ public class MbClassify implements DiscreteClassifier {
     public int[] classify() {
         IndependenceTest indTest = new IndTestChiSquare(this.train, this.alpha);
 
-        Mbfs search = new Mbfs(indTest, this.depth);
+        PcMb search = new PcMb(indTest, this.depth);
         search.setDepth(this.depth);
         List<Node> mbPlusTarget = search.findMb(this.target);
-        mbPlusTarget.add(this.train.getVariable(this.target));
+        mbPlusTarget.add(this.target);
 
         DataSet subset = this.train.subsetColumns(mbPlusTarget);
 
@@ -145,7 +145,7 @@ public class MbClassify implements DiscreteClassifier {
         Graph mbCPDAG = cpdagSearch.search();
 
         TetradLogger.getInstance().log("details", "CPDAG = " + mbCPDAG);
-        MbUtils.trimToMbNodes(mbCPDAG, this.train.getVariable(this.target), true);
+        MbUtils.trimToMbNodes(mbCPDAG, this.target, true);
         TetradLogger.getInstance().log("details", "Trimmed CPDAG = " + mbCPDAG);
 
         // Removing bidirected edges from the CPDAG before selecting a DAG.                                   4

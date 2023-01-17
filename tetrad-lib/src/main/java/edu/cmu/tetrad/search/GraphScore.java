@@ -56,25 +56,27 @@ public class GraphScore implements Score {
     public GraphScore(Graph dag) {
         this.dag = dag;
 
-        this.variables = new ArrayList<>();
+        this.variables = new ArrayList<>(dag.getNodes());
+        this.variables.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        for (Node node : dag.getNodes()) {
-            if (node.getNodeType() == NodeType.MEASURED) {
-                this.variables.add(node);
-            }
-        }
+//        for (Node node : dag.getNodes()) {
+//            if (node.getNodeType() == NodeType.MEASURED) {
+//                this.variables.add(node);
+//            }
+//        }
     }
 
     public GraphScore(IndependenceFacts facts) {
         this.facts = facts;
 
-        this.variables = new ArrayList<>();
+        this.variables = new ArrayList<>(facts.getVariables());
+        this.variables.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        for (Node node : facts.getVariables()) {
-            if (node.getNodeType() == NodeType.MEASURED) {
-                this.variables.add(node);
-            }
-        }
+//        for (Node node : facts.getVariables()) {
+//            if (node.getNodeType() == NodeType.MEASURED) {
+//                this.variables.add(node);
+//            }
+//        }
     }
 
     /**

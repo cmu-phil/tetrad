@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 
 import java.util.List;
@@ -37,12 +37,12 @@ public interface KnowledgeEditable {
     /**
      * @return a copy of the knowledge for this class.
      */
-    IKnowledge getKnowledge();
+    Knowledge getKnowledge();
 
     /**
      * Sets knowledge to a copy of the given object.
      */
-    void setKnowledge(IKnowledge knowledge);
+    void setKnowledge(Knowledge knowledge);
 
     /**
      * @return the source graph. This will be used to arrange the graph in the

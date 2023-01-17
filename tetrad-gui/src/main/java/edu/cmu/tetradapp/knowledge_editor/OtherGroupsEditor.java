@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.knowledge_editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeGroup;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
 
@@ -46,14 +46,14 @@ class OtherGroupsEditor extends JPanel {
     /**
      * The knowledge that is being edited.
      */
-    private final IKnowledge knowledge;
+    private final Knowledge knowledge;
 
     /**
      * The variables in the graph.
      */
     private final List<String> variables;
 
-    public OtherGroupsEditor(IKnowledge knowledge, List<String> vars) {
+    public OtherGroupsEditor(Knowledge knowledge, List<String> vars) {
         if (knowledge == null) {
             throw new NullPointerException("The given knowledge must not be null");
         }

@@ -2,10 +2,11 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -29,17 +30,18 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "IMaGES Continuous",
-        command = "imgs_cont",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Continuous
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "IMaGES Continuous",
+//        command = "imgs_cont",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        dataType = DataType.Continuous
+//)
 @Bootstrapping
+@Experimental
 public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     public ImagesSemBic() {
     }
@@ -51,7 +53,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 for (DataModel dataSet : dataSets) {
-                    DataSet timeSeries = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                        DataSet timeSeries = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
                     if (dataSet.getName() != null) {
                         timeSeries.setName(dataSet.getName());
                     }
@@ -71,28 +73,46 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
         } else {
             ImagesSemBic imagesSemBic = new ImagesSemBic();
 
-            List<DataSet> datasets = new ArrayList<>();
-
-
+            List<DataSet> dataSets2 = new ArrayList<>();
 
             for (DataModel dataModel : dataSets) {
-                dataModel.setKnowledge(knowledge);
-                datasets.add((DataSet) dataModel);
+                dataSets2.add((DataSet) dataModel);
+            }
+
+            List<DataSet> _dataSets = new ArrayList<>();
+
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                for (DataModel dataSet : dataSets2) {
+                    DataSet timeSeries = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                    if (dataSet.getName() != null) {
+                        timeSeries.setName(dataSet.getName());
+                    }
+                    _dataSets.add(timeSeries);
+                }
+
+                dataSets2 = _dataSets;
+                this.knowledge = _dataSets.get(0).getKnowledge();
             }
 
             GeneralResamplingTest search = new GeneralResamplingTest(
-                    datasets,
+                    dataSets2,
                     imagesSemBic,
                     parameters.getInt(Params.NUMBER_RESAMPLING),
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
+            search.setScoreWrapper(null);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(knowledge);
             return search.search();
         }
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+
     }
 
     @Override
@@ -109,6 +129,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
+            search.setScoreWrapper(null);
 
             search.setParameters(parameters);
            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -147,12 +168,12 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     @Override
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     @Override
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

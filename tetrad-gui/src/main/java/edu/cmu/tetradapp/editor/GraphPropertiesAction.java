@@ -39,7 +39,7 @@ import java.text.NumberFormat;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
+public class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
     private GraphWorkbench workbench;
 
     /**
@@ -83,35 +83,88 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
             }
         }
 
+        java.util.List<Node> nodes = getGraph().getNodes();
+
+        int numTwoCycles = 0;
         int numDirectedEdges = 0;
         int numBidirectedEdges = 0;
         int numUndirectedEdges = 0;
 
-        for (Edge edge : getGraph().getEdges()) {
-            if (Edges.isDirectedEdge(edge)) numDirectedEdges++;
-            else if (Edges.isBidirectedEdge(edge)) numBidirectedEdges++;
-            else if (Edges.isUndirectedEdge(edge)) numUndirectedEdges++;
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i; j < nodes.size(); j++) {
+                Node n1 = nodes.get(i);
+                Node n2 = nodes.get(j);
+
+                if (getGraph().getDirectedEdge(n1, n2) != null && getGraph().getDirectedEdge(n2, n1) != null) {
+                    numTwoCycles++;
+                } else if (getGraph().getEdges(n1, n2).size() == 1) {
+                    if (getGraph().getEdge(n1, n2).isDirected()) {
+                        numDirectedEdges++;
+                    } else if (Edges.isBidirectedEdge(getGraph().getEdge(n1, n2))) {
+                        numBidirectedEdges++;
+                    } else if (Edges.isUndirectedEdge(getGraph().getEdge(n1, n2))) {
+                        numUndirectedEdges++;
+                    }
+                }
+            }
         }
+
+//        for (Edge edge : getGraph().getEdges()) {
+//            if (Edges.isDirectedEdge(edge)) {
+//                if (getGraph().containsEdge(edge) && getGraph().containsEdge(edge.reverse())) {
+//                    numTwoCycles++;
+//                } else {
+//                    numDirectedEdges++;
+//                }
+//            }
+//            else if (Edges.isBidirectedEdge(edge)) numBidirectedEdges++;
+//            else if (Edges.isUndirectedEdge(edge)) numUndirectedEdges++;
+//        }
 
         boolean cyclic = getGraph().existsDirectedCycle();
 
+        int numAdjacencies = 0;
+
+        for (
+                int i = 0; i < nodes.size(); i++) {
+            for (int j = i; j < nodes.size(); j++) {
+                if (getGraph().isAdjacentTo(nodes.get(i), nodes.get(j))) {
+                    numAdjacencies++;
+                }
+            }
+        }
+
+        int numEdges = 0;
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i; j < nodes.size(); j++) {
+                numEdges += getGraph().getEdges(nodes.get(i), nodes.get(j)).size();
+            }
+        }
+
         JTextArea textArea = new JTextArea();
         JScrollPane scroll = new JScrollPane(textArea);
-        scroll.setPreferredSize(new Dimension(300, 300));
+        scroll.setPreferredSize(new Dimension(400, 300));
 
-        textArea.append("\nNumber of nodes: " + getGraph().getNumNodes());
+        textArea.append("\nNumber of nodes: " + getGraph(). getNumNodes());
         textArea.append("\nNumber of latents: " + numLatents);
-        textArea.append("\nNumber of edges: " + getGraph().getNumEdges());
-        textArea.append("\nNumber of directed edges: " + numDirectedEdges);
+        textArea.append("\nNumber of edges: " + numEdges);
+        textArea.append("\nNumber of adjacencies: " + numAdjacencies);
+        textArea.append("\nNumber of two-cycles: " + numTwoCycles);
+        textArea.append("\nNumber of directed edges not in two cycles: " + numDirectedEdges);
         textArea.append("\nNumber of bidirected edges: " + numBidirectedEdges);
         textArea.append("\nNumber of undirected edges: " + numUndirectedEdges);
-        textArea.append("\nMax degree: " + getGraph().getConnectivity());
+        textArea.append("\nMax degree: " +
+
+                getGraph().
+
+                        getConnectivity());
         textArea.append("\nMax indegree: " + maxIndegree);
         textArea.append("\nMax outdegree: " + maxOutdegree);
 
-        int numEdges = getGraph().getNumEdges();
+        //        int numEdges = getGraph().getNumEdges();
         int numVars = getGraph().getNumNodes();
-        double avgDegree = 2 * numEdges / ((double) (numVars));
+        double avgDegree = 2 * numAdjacencies / ((double) (numVars));
         double density = avgDegree / (numVars - 1);
 
         textArea.append("\nAverage degree: " + NumberFormat.getInstance().format(avgDegree));
@@ -128,6 +181,12 @@ class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b);
+
+//        Node x = getGraph().getNode("X5");
+
+        for (Node x : getGraph().getNodes()) {
+            System.out.println("district(" + x + ") = " + GraphUtils.district(x, getGraph()));
+        }
 
         EditorWindow window = new EditorWindow(panel,
                 "Graph Properties", "Close", false, workbench);

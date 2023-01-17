@@ -19,6 +19,8 @@ public class ParamDescription {
     private double upperBoundDouble = Double.POSITIVE_INFINITY;
     private int lowerBoundInt = Integer.MIN_VALUE;
     private int upperBoundInt = Integer.MAX_VALUE;
+    private long lowerBoundLong = Long.MIN_VALUE;
+    private long upperBoundLong = Long.MAX_VALUE;
 
     public ParamDescription(String paramName, String shortDescription, String longDescription, Serializable defaultValue) {
         if (paramName == null) {
@@ -143,6 +145,22 @@ public class ParamDescription {
 
     public void setUpperBoundInt(int upperBoundInt) {
         this.upperBoundInt = upperBoundInt;
+    }
+
+    public long getLowerBoundLong() {
+        return lowerBoundLong;
+    }
+
+    public void setLowerBoundLong(long lowerBoundLong) {
+        this.lowerBoundLong = lowerBoundLong;
+    }
+
+    public long getUpperBoundLong() {
+        return upperBoundLong;
+    }
+
+    public void setUpperBoundLong(long upperBoundLong) {
+        this.upperBoundLong = upperBoundLong;
     }
 
 }

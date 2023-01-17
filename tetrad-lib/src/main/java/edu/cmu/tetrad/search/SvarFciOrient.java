@@ -21,8 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
@@ -59,7 +58,7 @@ public final class SvarFciOrient {
      */
     private final SepsetProducer sepsets;
 
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     private boolean changeFlag = true;
 
@@ -133,11 +132,11 @@ public final class SvarFciOrient {
     /**
      * The background knowledge.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -204,7 +203,7 @@ public final class SvarFciOrient {
                     continue;
                 }
 
-                if (this.sepsets.isCollider(a, b, c)) {
+                if (this.sepsets.isUnshieldedCollider(a, b, c)) {
                     if (!isArrowpointAllowed(a, b, graph)) {
                         continue;
                     }
@@ -231,7 +230,7 @@ public final class SvarFciOrient {
 
     private void printWrongColliderMessage(Node a, Node b, Node c, Graph graph) {
         if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
-            System.out.println("R0" + ": Orienting collider by mistake: " + a + "*-&gt;" + b + "&lt;-*" + c);
+            System.out.println("R0" + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
         }
     }
 
@@ -370,7 +369,7 @@ public final class SvarFciOrient {
     }
 
     private boolean isNoncollider(Node a, Node b, Node c) {
-        return this.sepsets.isNoncollider(a, b, c);
+        return this.sepsets.isUnshieldedNoncollider(a, b, c);
     }
 
     //if a*-oc and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
@@ -1160,7 +1159,7 @@ public final class SvarFciOrient {
     /**
      * Orients according to background knowledge
      */
-    private void fciOrientbk(IKnowledge bk, Graph graph, List<Node> variables) {
+    private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
         this.logger.log("info", "Starting BK Orientation.");
 
         for (Iterator<KnowledgeEdge> it =
@@ -1300,7 +1299,7 @@ public final class SvarFciOrient {
         return this.changeFlag;
     }
 
-    private void orientSimilarPairs(Graph graph, IKnowledge knowledge, Node x, Node y, Endpoint mark) {
+    private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y, Endpoint mark) {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return;
         }

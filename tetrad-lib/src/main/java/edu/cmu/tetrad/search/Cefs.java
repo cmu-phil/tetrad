@@ -21,8 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -96,7 +95,7 @@ public final class Cefs {
     /**
      * Knowledge.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * Set of unshielded colliders from the triple orientation step.
@@ -335,14 +334,14 @@ public final class Cefs {
     /**
      * @return the most recently set Knowledge object.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     /**
      * Sets knowledge, to which the algorithm is in fact sensitive.
      */
-    public void setKnowledge(IKnowledge knowledge) {
+    public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
@@ -449,7 +448,7 @@ public final class Cefs {
         double seconds = this.elapsedTime / 1000d;
 
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        TetradLogger.getInstance().log("info", "MB fan search took " + nf.format(seconds) + " seconds.");
+        TetradLogger.getInstance().log("info", "PC-MB took " + nf.format(seconds) + " seconds.");
         TetradLogger.getInstance().log("info", "Number of independence tests performed = " +
                 getNumIndependenceTests());
 
@@ -520,7 +519,7 @@ public final class Cefs {
         }
     }
 
-    private void orientUnshieldedTriples(IKnowledge knowledge, Graph graph,
+    private void orientUnshieldedTriples(Knowledge knowledge, Graph graph,
                                          IndependenceTest test, int depth, List<Node> nodes) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
@@ -679,7 +678,7 @@ public final class Cefs {
      * @return true just in case z is a possible parent of x, in the sense that edges are not forbidden from z to x, and
      * edges are not required from either x to z, according to background knowledge.
      */
-    private boolean possibleParentOf(String z, String x, IKnowledge knowledge) {
+    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
@@ -693,13 +692,13 @@ public final class Cefs {
         return list;
     }
 
-    private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
+    private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return Cefs.isArrowpointAllowed1(x, y, knowledge) &&
                 Cefs.isArrowpointAllowed1(z, y, knowledge);
     }
 
     private static boolean isArrowpointAllowed1(Node from, Node to,
-                                                IKnowledge knowledge) {
+                                                Knowledge knowledge) {
         if (knowledge == null) {
             return true;
         }

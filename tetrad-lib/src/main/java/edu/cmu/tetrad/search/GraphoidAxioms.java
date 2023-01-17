@@ -21,13 +21,15 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.DepthChoiceGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -59,6 +61,83 @@ public class GraphoidAxioms {
         this.textSpecs = new HashMap<>(textSpecs);
     }
 
+    public static void main(String... args) {
+        try {
+            File file = new File(args[0]);
+            int numVars = Integer.parseInt(args[1]);
+            System.out.println(file.getAbsolutePath());
+            FileReader in1 = new FileReader(file);
+            BufferedReader in = new BufferedReader(in1);
+            String line;
+            int index = 0;
+
+            while ((line = in.readLine()) != null) {
+                index++;
+
+                System.out.println("\nLine " + index + " " + line);
+                line = line.trim();
+
+                List<Node> variables = new ArrayList<>();
+
+                for (int i = 0; i < numVars; i++) {
+                    variables.add(new ContinuousVariable("" + i));
+                }
+
+                GraphoidAxioms axioms = getGraphoidAxioms(line, variables);
+                axioms.setTrivialtyAssumed();
+                axioms.setSymmetryAssumed();
+
+                System.out.println(axioms.getIndependenceFacts().getVariableNames());
+
+                axioms.compositionalGraphoid();
+            }
+        } catch (IOException e) {
+            System.out.println("E.g., java -cp tetrad-gui-7.1.3-SNAPSHOT-launch.jar edu.cmu.tetrad.search.GraphoidAxioms  udags5.txt 5\n");
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static GraphoidAxioms getGraphoidAxioms(String line, List<Node> nodes) throws IOException {
+        Set<GraphoidAxioms.GraphoidIndFact> facts = new LinkedHashSet<>();
+        Map<GraphoidAxioms.GraphoidIndFact, String> textSpecs = new HashMap<>();
+
+        if (!line.isEmpty()) {
+            String[] split = line.split(",");
+            for (String ic : split) {
+                Set<Node> x = new HashSet<>();
+                Set<Node> y = new HashSet<>();
+                Set<Node> z = new HashSet<>();
+
+                String[] tokens1 = ic.split("\\|");
+                String[] tokens2 = tokens1[0].split(":");
+
+                for (int i = 0; i < tokens2[0].length(); i++) {
+                    int i1 = Integer.parseInt(tokens2[0].substring(i, i + 1).trim());
+                    x.add(nodes.get(i1));
+                }
+
+                for (int i = 0; i < tokens2[1].length(); i++) {
+                    String substring = tokens2[1].substring(i, i + 1);
+                    int i1 = Integer.parseInt(substring.trim());
+                    y.add(nodes.get(i1));
+                }
+
+                if (tokens1.length == 2) {
+                    for (int i = 0; i < tokens1[1].length(); i++) {
+                        int i1 = Integer.parseInt(tokens1[1].substring(i, i + 1).trim());
+                        z.add(nodes.get(i1));
+                    }
+                }
+
+                GraphoidAxioms.GraphoidIndFact fact = new GraphoidAxioms.GraphoidIndFact(x, y, z);
+                facts.add(fact);
+                textSpecs.put(fact, ic);
+            }
+        }
+
+        return new GraphoidAxioms(facts, nodes, textSpecs);
+    }
+
     public boolean semigraphoid() {
         return symmetry() && decomposition() && weakUnion() && contraction();
     }
@@ -75,18 +154,6 @@ public class GraphoidAxioms {
      * Assumes decompositiona nd composition.
      */
     public IndependenceFacts getIndependenceFacts() {
-//        Set<Node> nodes = new LinkedHashSet<>();
-//
-//        for (GraphoidIndFact ic : facts) {
-//            nodes.addAll(ic.getX());
-//            nodes.addAll(ic.getY());
-//            nodes.addAll(ic.getZ());
-//        }
-
-//        List<Node> nodesList = new ArrayList<>(nodes);
-
-//        Collections.sort(nodesList);
-
         IndependenceFacts ifFacts = new IndependenceFacts();
 
         for (GraphoidIndFact ic : facts) {
@@ -117,6 +184,8 @@ public class GraphoidAxioms {
                 }
             }
 
+            TetradLogger.getInstance().forceLogMessage("Symmetry fails for " + fact);
+
             return false;
         }
 
@@ -136,7 +205,7 @@ public class GraphoidAxioms {
 
             List<Node> YWList = new ArrayList<>(YW);
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(YWList.size(), YWList.size());
+            SublistGenerator gen = new SublistGenerator(YWList.size(), YWList.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -212,7 +281,7 @@ public class GraphoidAxioms {
 
             List<Node> YWList = new ArrayList<>(YW);
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(YW.size(), YW.size());
+            SublistGenerator gen = new SublistGenerator(YW.size(), YW.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -324,7 +393,7 @@ public class GraphoidAxioms {
 
             List<Node> ZWList = new ArrayList<>(ZW);
 
-            DepthChoiceGenerator gen = new DepthChoiceGenerator(ZWList.size(), ZWList.size());
+            SublistGenerator gen = new SublistGenerator(ZWList.size(), ZWList.size());
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -453,56 +522,56 @@ public class GraphoidAxioms {
         }
     }
 
-    public static class GraphoidIndFact {
-        private final Set<Node> X;
-        private final Set<Node> Y;
-        private final Set<Node> Z;
+public static class GraphoidIndFact {
+    private final Set<Node> X;
+    private final Set<Node> Y;
+    private final Set<Node> Z;
 
-        public GraphoidIndFact(Set<Node> X, Set<Node> Y, Set<Node> Z) {
-            if (X.isEmpty() || Y.isEmpty()) throw new IllegalArgumentException("X or Y is empty");
-            if (!disjoint(X, Y, Z)) throw new IllegalArgumentException();
+    public GraphoidIndFact(Set<Node> X, Set<Node> Y, Set<Node> Z) {
+        if (X.isEmpty() || Y.isEmpty()) throw new IllegalArgumentException("X or Y is empty");
+        if (!disjoint(X, Y, Z)) throw new IllegalArgumentException();
 
-            this.X = new HashSet<>(X);
-            this.Y = new HashSet<>(Y);
-            this.Z = new HashSet<>(Z);
-        }
-
-        public Set<Node> getX() {
-            return new HashSet<>(X);
-        }
-
-        public Set<Node> getY() {
-            return new HashSet<>(Y);
-        }
-
-        public Set<Node> getZ() {
-            return new HashSet<>(Z);
-        }
-
-        public int hashCode() {
-            return 1;
-        }
-
-        public boolean equals(Object o) {
-            if (!(o instanceof GraphoidIndFact)) return false;
-            GraphoidIndFact _fact = (GraphoidIndFact) o;
-            return X.equals(_fact.X) && Y.equals(_fact.Y) && Z.equals(_fact.Z);
-        }
-
-        public String toString() {
-            return X + " : " + Y + " | " + Z;
-        }
-
-        private boolean disjoint(Set<Node> set1, Set<Node> set2, Set<Node> set3) {
-            return intersection(set1, set2).isEmpty()
-                    && intersection(set1, set3).isEmpty()
-                    || !intersection(set2, set3).isEmpty();
-        }
-
-        private Set<Node> intersection(Set<Node> set1, Set<Node> set2) {
-            Set<Node> W = new HashSet<>(set1);
-            W.retainAll(set2);
-            return W;
-        }
+        this.X = new HashSet<>(X);
+        this.Y = new HashSet<>(Y);
+        this.Z = new HashSet<>(Z);
     }
+
+    public Set<Node> getX() {
+        return new HashSet<>(X);
+    }
+
+    public Set<Node> getY() {
+        return new HashSet<>(Y);
+    }
+
+    public Set<Node> getZ() {
+        return new HashSet<>(Z);
+    }
+
+    public int hashCode() {
+        return 1;
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof GraphoidIndFact)) return false;
+        GraphoidIndFact _fact = (GraphoidIndFact) o;
+        return X.equals(_fact.X) && Y.equals(_fact.Y) && Z.equals(_fact.Z);
+    }
+
+    public String toString() {
+        return X + " : " + Y + " | " + Z;
+    }
+
+    private boolean disjoint(Set<Node> set1, Set<Node> set2, Set<Node> set3) {
+        return intersection(set1, set2).isEmpty()
+                && intersection(set1, set3).isEmpty()
+                || !intersection(set2, set3).isEmpty();
+    }
+
+    private Set<Node> intersection(Set<Node> set1, Set<Node> set2) {
+        Set<Node> W = new HashSet<>(set1);
+        W.retainAll(set2);
+        return W;
+    }
+}
 }

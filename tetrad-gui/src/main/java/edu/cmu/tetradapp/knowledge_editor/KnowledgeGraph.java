@@ -21,8 +21,7 @@
 
 package edu.cmu.tetradapp.knowledge_editor;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -50,18 +49,19 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     /**
      * @serial
      */
-    private final IKnowledge knowledge;
+    private final Knowledge knowledge;
     private boolean pag;
     private boolean CPDAG;
 
     private final Map<String, Object> attributes = new HashMap<>();
+    private EdgeListGraph.GraphType graphType = EdgeListGraph.GraphType.DAG;
 
     //============================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new directed acyclic graph (DAG).
      */
-    public KnowledgeGraph(IKnowledge knowledge) {
+    public KnowledgeGraph(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }
@@ -75,7 +75,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
      * @see TetradSerializableUtils
      */
     public static KnowledgeGraph serializableInstance() {
-        return new KnowledgeGraph(Knowledge2.serializableInstance());
+        return new KnowledgeGraph(Knowledge.serializableInstance());
     }
 
     //=============================PUBLIC METHODS==========================//
@@ -558,7 +558,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().toString();
     }
 
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
@@ -576,24 +576,12 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return null;
     }
 
-    @Override
-    public boolean isPag() {
-        return this.pag;
+    public void setGraphType(EdgeListGraph.GraphType graphType) {
+        this.graphType = graphType;
     }
 
-    @Override
-    public void setPag(boolean pag) {
-        this.pag = pag;
-    }
-
-    @Override
-    public boolean isCPDAG() {
-        return this.CPDAG;
-    }
-
-    @Override
-    public void setCPDAG(boolean CPDAG) {
-        this.CPDAG = CPDAG;
+    public EdgeListGraph.GraphType getGraphType() {
+        return this.graphType;
     }
 
     @Override

@@ -94,7 +94,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      *
      * @serial Cannot be null.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     private double[][] vectors = null;
 
@@ -376,14 +376,14 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     /**
      * @return the knowledge associated with this data.
      */
-    public final IKnowledge getKnowledge() {
+    public final Knowledge getKnowledge() {
         return this.knowledge.copy();
     }
 
     /**
      * Associates knowledge with this data.
      */
-    public final void setKnowledge(IKnowledge knowledge) {
+    public final void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
         }

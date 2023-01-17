@@ -21,8 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.IKnowledge;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -50,8 +49,8 @@ public class IndTestModel implements SessionModel {
      *
      * @see TetradSerializableUtils
      */
-    public static IKnowledge serializableInstance() {
-        return new Knowledge2();
+    public static Knowledge serializableInstance() {
+        return new Knowledge();
     }
 
 

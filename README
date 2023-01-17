@@ -1,10 +1,10 @@
-NEWS: 7.1.0 RELEASED 2022-05-10 TO THE MAVEN CENTRAL REPOSITORY! HERE:
+NEWS: 7.1.3 RELEASED 2023-01-25 TO THE MAVEN CENTRAL REPOSITORY! HERE:
 
-https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.1.0/
+https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.1.3/
 
-FIXES FOR THIS RELEASE:
+The Dietrich College web page for Tetrad is here (Carnegie Mellon University):
 
-https://github.com/cmu-phil/tetrad/wiki/Fixes-for-version-7.1.0
+https://www.cmu.edu/dietrich/news/news-stories/2020/august/tetrad-sail.html
 
 This is the code for the Tetrad project. The purpose of Tetrad is to make 
 algorithms for inferring causal relationships in data; it is a Java project
@@ -23,7 +23,7 @@ The web page for the Center for Causal Discovery is here:
 
 https://www.ccd.pitt.edu/
 
-We have a project web page here:
+We have a project web page here with all of the relevant links for code and such:
 
 https://sites.google.com/view/tetradcausal
 
@@ -36,14 +36,6 @@ The manual is here:
 https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html
 
 Javadocs can be found by running the javadocs command on the project once checked out.
-
-Downloads directory is here:
-
-https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.1.0/
-
-The wiki is here:
-
-https://github.com/cmu-phil/tetrad/wiki
 
 The issue tracker is here:
 

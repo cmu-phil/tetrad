@@ -21,9 +21,8 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.IKnowledge;
 import edu.cmu.tetrad.data.IndependenceFacts;
-import edu.cmu.tetrad.data.Knowledge2;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
@@ -47,7 +46,7 @@ public final class VcpcFast implements GraphSearch {
     /**
      * Forbidden and required edges for the search.
      */
-    private IKnowledge knowledge = new Knowledge2();
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * The maximum number of nodes conditioned on in the search.
@@ -159,15 +158,15 @@ public final class VcpcFast implements GraphSearch {
     /**
      * @return the knowledge specification used in the search. Non-null.
      */
-    public IKnowledge getKnowledge() {
+    public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
     /**
      * Sets the knowledge specification used in the search. Non-null.
      */
-    public void setKnowledge(IKnowledge knowledge) {
-        this.knowledge = knowledge;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     /**
@@ -547,7 +546,7 @@ public final class VcpcFast implements GraphSearch {
     }
 
 
-    private void orientUnshieldedTriples(IKnowledge knowledge,
+    private void orientUnshieldedTriples(Knowledge knowledge,
                                          IndependenceTest test, int depth) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
@@ -713,13 +712,13 @@ public final class VcpcFast implements GraphSearch {
         COLLIDER, NONCOLLIDER, AMBIGUOUS
     }
 
-    private boolean colliderAllowed(Node x, Node y, Node z, IKnowledge knowledge) {
+    private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return VcpcFast.isArrowpointAllowed1(x, y, knowledge) &&
                 VcpcFast.isArrowpointAllowed1(z, y, knowledge);
     }
 
     public static boolean isArrowpointAllowed1(Node from, Node to,
-                                               IKnowledge knowledge) {
+                                               Knowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
     }

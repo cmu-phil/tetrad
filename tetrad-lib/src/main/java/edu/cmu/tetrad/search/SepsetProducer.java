@@ -31,9 +31,9 @@ import java.util.List;
 public interface SepsetProducer {
     List<Node> getSepset(Node a, Node b);
 
-    boolean isCollider(Node i, Node j, Node k);
+    boolean isUnshieldedCollider(Node i, Node j, Node k);
 
-    boolean isNoncollider(Node a, Node b, Node c);
+    boolean isUnshieldedNoncollider(Node a, Node b, Node c);
 
     double getScore();
 

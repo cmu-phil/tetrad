@@ -82,6 +82,7 @@ public final class SemGraph implements Graph {
     private boolean cpdag;
 
     private final Map<String, Object> attributes = new HashMap<>();
+    private EdgeListGraph.GraphType graphType = EdgeListGraph.GraphType.UNLABELED;
 
     //=========================CONSTRUCTORS============================//
 
@@ -955,24 +956,12 @@ public final class SemGraph implements Graph {
         return null;
     }
 
-    @Override
-    public boolean isPag() {
-        return this.pag;
+    public EdgeListGraph.GraphType getGraphType() {
+        return graphType;
     }
 
-    @Override
-    public void setPag(boolean pag) {
-        this.pag = pag;
-    }
-
-    @Override
-    public boolean isCPDAG() {
-        return this.cpdag;
-    }
-
-    @Override
-    public void setCPDAG(boolean cpdag) {
-        this.cpdag = cpdag;
+    public void setGraphType(EdgeListGraph.GraphType graphType) {
+        this.graphType = graphType;
     }
 
     @Override

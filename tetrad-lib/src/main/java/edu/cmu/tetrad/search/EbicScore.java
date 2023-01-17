@@ -124,24 +124,24 @@ public class EbicScore implements Score {
     }
 
     /**
-     * @param i The index of the node.
+     * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
      */
     public double localScore(int i, int... parents) throws RuntimeException {
-        int pi = parents.length + 1;
+        int pi = parents.length;
         double varRy;
 
         try {
             varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
-        } catch (SingularMatrixException e){
+        } catch (SingularMatrixException e) {
             return Double.NaN;
         }
 
         double gamma = this.gamma;//  1.0 - riskBound;
 
         double score = -(this.N * log(varRy) + (pi * log(this.N)
-                + 2 * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
+                + 2 * pi * gamma * ChoiceGenerator.logCombinations(this.variables.size() - 1, pi)));
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
