@@ -43,6 +43,7 @@ import java.util.regex.Matcher;
 import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 import static java.lang.Math.min;
 import static java.util.Collections.shuffle;
+import java.util.regex.Pattern;
 
 /**
  * Basic graph utilities.
@@ -2489,154 +2490,293 @@ public final class GraphUtils {
 
         return graph;
     }
-
+    
     private static void extractGraphEdges(Graph graph, BufferedReader in) throws IOException {
+        Pattern lineNumPattern = Pattern.compile("^[\\d]+.[\\s]?");
+        Pattern spacePattern = Pattern.compile("\\s+");
+        Pattern semicolonPattern = Pattern.compile(";");
+        Pattern colonPattern = Pattern.compile(":");
         for (String line = in.readLine(); line != null; line = in.readLine()) {
             line = line.trim();
-
             if (line.isEmpty()) {
                 return;
             }
 
-            String[] tokens = line.split("\\s+");
-
-            String number = tokens[0];
-
-            String[] tokensa = number.split("\\.");
-
-            int fromIndex;
-
-            try {
-                Integer.parseInt(tokensa[0]);
-                fromIndex = 1;
-            } catch (NumberFormatException e) {
-                fromIndex = 0;
-            }
-
-            String from = tokens[fromIndex];
-
-            line = line.substring(line.indexOf(from) + from.length()).trim();
-            tokens = line.split("\\s+");
-
-            String edge = tokens[0];
-
-            if ("Attributes:".equals(edge)) break;
-
-            line = line.substring(line.indexOf(edge) + edge.length()).trim();
-            tokens = line.split("\\s+");
-
-            String to = tokens[0];
-            line = line.substring(line.indexOf(to) + to.length()).trim();
-
-            Node _from = graph.getNode(from);
-            Node _to = graph.getNode(to);
-
-            if (_from == null) {
-                graph.addNode(new GraphNode(from));
-                _from = graph.getNode(from);
-            }
-
-            if (_to == null) {
-                graph.addNode(new GraphNode(to));
-                _to = graph.getNode(to);
-            }
-
-            char end1 = edge.charAt(0);
-            char end2 = edge.charAt(2);
-
-            Endpoint _end1;
-            Endpoint _end2;
-
-            if (end1 == '<') {
-                _end1 = Endpoint.ARROW;
-            } else if (end1 == 'o') {
-                _end1 = Endpoint.CIRCLE;
-            } else if (end1 == '-') {
-                _end1 = Endpoint.TAIL;
-            } else {
-                throw new IllegalArgumentException("Unrecognized endpoint: " + end1 + ", for edge " + edge);
-            }
-
-            if (end2 == '>') {
-                _end2 = Endpoint.ARROW;
-            } else if (end2 == 'o') {
-                _end2 = Endpoint.CIRCLE;
-            } else if (end2 == '-') {
-                _end2 = Endpoint.TAIL;
-            } else {
-                throw new IllegalArgumentException("Unrecognized endpoint: " + end2 + ", for edge " + edge);
-            }
-
-            Edge _edge = new Edge(_from, _to, _end1, _end2);
-
-            //Bootstrapping
-            if (line.contains("[no edge]") || line.contains(" --> ") || line.contains(" <-- ") || line.contains(" o-> ") || line.contains(" <-o ") || line.contains(" o-o ") || line.contains(" <-> ") || line.contains(" --- ")) {
-
-                // String bootstrap_format = "[no edge]:0.0000;[n1 --> n2]:0.0000;[n1 &lt;-- n2]:0.0000;[n1 o-> n2]:0.0000;[n1 &lt;-o n2]:0.0000;[n1 o-o n2]:0.0000;[n1 &lt;-> n2]:0.0000;[n1 --- n2]:0.0000;";
-                int last_semicolon = line.lastIndexOf(";");
-                String bootstraps;
-                if (last_semicolon != -1) {
-                    bootstraps = line.substring(0, last_semicolon + 1);
+            line = lineNumPattern.matcher(line).replaceAll("");
+            String[] fields = spacePattern.split(line, 4);
+            Edge edge = getEdge(fields[0], fields[1], fields[2], graph);
+            if (fields.length > 3) {
+                fields = semicolonPattern.split(fields[3]);
+                if (fields.length > 1) {
+                    for (String prop : fields) {
+                        setEdgeTypeProperties(prop, edge, graph, spacePattern, colonPattern);
+                    }
                 } else {
-                    bootstraps = line;
-                }
-
-                line = line.substring(bootstraps.length()).trim();
-
-                String[] bootstrap = bootstraps.split(";");
-                for (String s : bootstrap) {
-                    String[] token = s.split(":");
-                    if (token.length < 2) {
-                        continue;
-                    }
-
-                    String orient = token[0];
-                    double prob = Double.parseDouble(token[1]);
-
-                    if (orient.equalsIgnoreCase("[no edge]")) {
-                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, prob));
-                        _edge.setProbability(1.0 - prob);
-                    } else {
-                        orient = orient.replace("[", "").replace("]", "");
-                        EdgeTypeProbability etp;
-                        if (orient.contains(" --> ")) {
-                            etp = new EdgeTypeProbability(EdgeType.ta, prob);
-                        } else if (orient.contains(" <-- ")) {
-                            etp = new EdgeTypeProbability(EdgeType.at, prob);
-                        } else if (orient.contains(" o-> ")) {
-                            etp = new EdgeTypeProbability(EdgeType.ca, prob);
-                        } else if (orient.contains(" <-o ")) {
-                            etp = new EdgeTypeProbability(EdgeType.ac, prob);
-                        } else if (orient.contains(" o-o ")) {
-                            etp = new EdgeTypeProbability(EdgeType.cc, prob);
-                        } else if (orient.contains(" <-> ")) {
-                            etp = new EdgeTypeProbability(EdgeType.aa, prob);
-                        } else {// [n1 --- n2]
-                            etp = new EdgeTypeProbability(EdgeType.tt, prob);
-                        }
-                        String[] _edge_property = orient.trim().split("\\s+");
-                        if (_edge_property.length > 3) {
-                            for (int j = 3; j < _edge_property.length; j++) {
-                                etp.addProperty(Property.valueOf(_edge_property[j]));
-                            }
-                        }
-                        _edge.addEdgeTypeProbability(etp);
-                    }
-
+                    getEdgeProperties(fields[0], spacePattern)
+                            .forEach(edge::addProperty);
                 }
             }
 
-            if (line.length() > 0) {
-                tokens = line.split("\\s+");
-
-                for (String token : tokens) {
-                    _edge.addProperty(Property.valueOf(token));
-                }
-            }
-
-            graph.addEdge(_edge);
+            graph.addEdge(edge);
         }
     }
+
+    private static void setEdgeTypeProperties(String prop, Edge edge, Graph graph, Pattern spacePattern, Pattern colonPattern) {
+        prop = prop.replace("[", "").replace("]", "");
+        String[] fields = colonPattern.split(prop);
+        if (fields.length == 2) {
+            String bootstrapEdge = fields[0];
+            String bootstrapEdgeTypeProb = fields[1];
+
+            // edge type
+            fields = spacePattern.split(bootstrapEdge, 4);
+            if (fields.length >= 3) {
+                // edge-type probability
+                EdgeTypeProbability.EdgeType edgeType = getEdgeType(fields[1]);
+                List<Edge.Property> properties = new LinkedList<>();
+                if (fields.length > 3) {
+                    // pags
+                    properties.addAll(getEdgeProperties(fields[3], spacePattern));
+                }
+
+                edge.addEdgeTypeProbability(new EdgeTypeProbability(edgeType, properties, Double.parseDouble(bootstrapEdgeTypeProb)));
+            } else {
+                // edge probability
+                if ("edge".equals(bootstrapEdge)) {
+                    fields = spacePattern.split(bootstrapEdgeTypeProb, 2);
+                    if (fields.length > 1) {
+                        edge.setProbability(Double.parseDouble(fields[0]));
+                        getEdgeProperties(fields[1], spacePattern).forEach(edge::addProperty);
+                    } else {
+                        edge.setProbability(Double.parseDouble(bootstrapEdgeTypeProb));
+                    }
+                } else if ("no edge".equals(bootstrapEdge)) {
+                    fields = spacePattern.split(bootstrapEdgeTypeProb);
+                    edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, Double.parseDouble(bootstrapEdgeTypeProb)));
+                }
+            }
+        }
+    }
+
+    private static EdgeTypeProbability.EdgeType getEdgeType(String edgeType) {
+        Endpoint endpointFrom = getEndpoint(edgeType.charAt(0));
+        Endpoint endpointTo = getEndpoint(edgeType.charAt(2));
+
+        if (endpointFrom == Endpoint.TAIL && endpointTo == Endpoint.ARROW) {
+            return EdgeTypeProbability.EdgeType.ta;
+        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.TAIL) {
+            return EdgeTypeProbability.EdgeType.at;
+        } else if (endpointFrom == Endpoint.CIRCLE && endpointTo == Endpoint.ARROW) {
+            return EdgeTypeProbability.EdgeType.ca;
+        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.CIRCLE) {
+            return EdgeTypeProbability.EdgeType.ac;
+        } else if (endpointFrom == Endpoint.CIRCLE && endpointTo == Endpoint.CIRCLE) {
+            return EdgeTypeProbability.EdgeType.cc;
+        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.ARROW) {
+            return EdgeTypeProbability.EdgeType.aa;
+        } else if (endpointFrom == Endpoint.TAIL && endpointTo == Endpoint.TAIL) {
+            return EdgeTypeProbability.EdgeType.tt;
+        } else {
+            return EdgeTypeProbability.EdgeType.nil;
+        }
+    }
+
+    private static List<Edge.Property> getEdgeProperties(String props, Pattern spacePattern) {
+        List<Edge.Property> properties = new LinkedList<>();
+
+        for (String prop : spacePattern.split(props)) {
+            if ("dd".equals(prop)) {
+                properties.add(Edge.Property.dd);
+            } else if ("nl".equals(prop)) {
+                properties.add(Edge.Property.nl);
+            } else if ("pd".equals(prop)) {
+                properties.add(Edge.Property.pd);
+            } else if ("pl".equals(prop)) {
+                properties.add(Edge.Property.pl);
+            }
+        }
+
+        return properties;
+    }
+
+    private static Edge getEdge(String nodeNameFrom, String edgeType, String nodeNameTo, Graph graph) {
+        Node nodeFrom = getNode(nodeNameFrom, graph);
+        Node nodeTo = getNode(nodeNameTo, graph);
+        Endpoint endpointFrom = getEndpoint(edgeType.charAt(0));
+        Endpoint endpointTo = getEndpoint(edgeType.charAt(2));
+
+        return new Edge(nodeFrom, nodeTo, endpointFrom, endpointTo);
+    }
+
+    private static Endpoint getEndpoint(char endpoint) {
+        if (endpoint == '>' || endpoint == '<') {
+            return Endpoint.ARROW;
+        } else if (endpoint == 'o') {
+            return Endpoint.CIRCLE;
+        } else if (endpoint == '-') {
+            return Endpoint.TAIL;
+        } else {
+            throw new IllegalArgumentException(String.format("Unrecognized endpoint: %s.", endpoint));
+        }
+    }
+
+    private static Node getNode(String nodeName, Graph graph) {
+        Node node = graph.getNode(nodeName);
+        if (node == null) {
+            graph.addNode(new GraphNode(nodeName));
+            node = graph.getNode(nodeName);
+        }
+
+        return node;
+    }
+
+//    private static void extractGraphEdges(Graph graph, BufferedReader in) throws IOException {
+//        for (String line = in.readLine(); line != null; line = in.readLine()) {
+//            line = line.trim();
+//
+//            if (line.isEmpty()) {
+//                return;
+//            }
+//
+//            String[] tokens = line.split("\\s+");
+//
+//            String number = tokens[0];
+//
+//            String[] tokensa = number.split("\\.");
+//
+//            int fromIndex;
+//
+//            try {
+//                Integer.parseInt(tokensa[0]);
+//                fromIndex = 1;
+//            } catch (NumberFormatException e) {
+//                fromIndex = 0;
+//            }
+//
+//            String from = tokens[fromIndex];
+//
+//            line = line.substring(line.indexOf(from) + from.length()).trim();
+//            tokens = line.split("\\s+");
+//
+//            String edge = tokens[0];
+//
+//            if ("Attributes:".equals(edge)) break;
+//
+//            line = line.substring(line.indexOf(edge) + edge.length()).trim();
+//            tokens = line.split("\\s+");
+//
+//            String to = tokens[0];
+//            line = line.substring(line.indexOf(to) + to.length()).trim();
+//
+//            Node _from = graph.getNode(from);
+//            Node _to = graph.getNode(to);
+//
+//            if (_from == null) {
+//                graph.addNode(new GraphNode(from));
+//                _from = graph.getNode(from);
+//            }
+//
+//            if (_to == null) {
+//                graph.addNode(new GraphNode(to));
+//                _to = graph.getNode(to);
+//            }
+//
+//            char end1 = edge.charAt(0);
+//            char end2 = edge.charAt(2);
+//
+//            Endpoint _end1;
+//            Endpoint _end2;
+//
+//            if (end1 == '<') {
+//                _end1 = Endpoint.ARROW;
+//            } else if (end1 == 'o') {
+//                _end1 = Endpoint.CIRCLE;
+//            } else if (end1 == '-') {
+//                _end1 = Endpoint.TAIL;
+//            } else {
+//                throw new IllegalArgumentException("Unrecognized endpoint: " + end1 + ", for edge " + edge);
+//            }
+//
+//            if (end2 == '>') {
+//                _end2 = Endpoint.ARROW;
+//            } else if (end2 == 'o') {
+//                _end2 = Endpoint.CIRCLE;
+//            } else if (end2 == '-') {
+//                _end2 = Endpoint.TAIL;
+//            } else {
+//                throw new IllegalArgumentException("Unrecognized endpoint: " + end2 + ", for edge " + edge);
+//            }
+//
+//            Edge _edge = new Edge(_from, _to, _end1, _end2);
+//
+//            //Bootstrapping
+//            if (line.contains("[no edge]") || line.contains(" --> ") || line.contains(" <-- ") || line.contains(" o-> ") || line.contains(" <-o ") || line.contains(" o-o ") || line.contains(" <-> ") || line.contains(" --- ")) {
+//
+//                // String bootstrap_format = "[no edge]:0.0000;[n1 --> n2]:0.0000;[n1 &lt;-- n2]:0.0000;[n1 o-> n2]:0.0000;[n1 &lt;-o n2]:0.0000;[n1 o-o n2]:0.0000;[n1 &lt;-> n2]:0.0000;[n1 --- n2]:0.0000;";
+//                int last_semicolon = line.lastIndexOf(";");
+//                String bootstraps;
+//                if (last_semicolon != -1) {
+//                    bootstraps = line.substring(0, last_semicolon + 1);
+//                } else {
+//                    bootstraps = line;
+//                }
+//
+//                line = line.substring(bootstraps.length()).trim();
+//
+//                String[] bootstrap = bootstraps.split(";");
+//                for (String s : bootstrap) {
+//                    String[] token = s.split(":");
+//                    if (token.length < 2) {
+//                        continue;
+//                    }
+//
+//                    String orient = token[0];
+//                    double prob = Double.parseDouble(token[1]);
+//
+//                    if (orient.equalsIgnoreCase("[no edge]")) {
+//                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, prob));
+//                        _edge.setProbability(1.0 - prob);
+//                    } else {
+//                        orient = orient.replace("[", "").replace("]", "");
+//                        EdgeTypeProbability etp;
+//                        if (orient.contains(" --> ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.ta, prob);
+//                        } else if (orient.contains(" <-- ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.at, prob);
+//                        } else if (orient.contains(" o-> ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.ca, prob);
+//                        } else if (orient.contains(" <-o ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.ac, prob);
+//                        } else if (orient.contains(" o-o ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.cc, prob);
+//                        } else if (orient.contains(" <-> ")) {
+//                            etp = new EdgeTypeProbability(EdgeType.aa, prob);
+//                        } else {// [n1 --- n2]
+//                            etp = new EdgeTypeProbability(EdgeType.tt, prob);
+//                        }
+//                        String[] _edge_property = orient.trim().split("\\s+");
+//                        if (_edge_property.length > 3) {
+//                            for (int j = 3; j < _edge_property.length; j++) {
+//                                etp.addProperty(Property.valueOf(_edge_property[j]));
+//                            }
+//                        }
+//                        _edge.addEdgeTypeProbability(etp);
+//                    }
+//
+//                }
+//            }
+//
+//            if (line.length() > 0) {
+//                tokens = line.split("\\s+");
+//
+//                for (String token : tokens) {
+//                    _edge.addProperty(Property.valueOf(token));
+//                }
+//            }
+//
+//            graph.addEdge(_edge);
+//        }
+//    }
 
     private static void extractGraphNodes(Graph graph, BufferedReader in) throws IOException {
         for (String line = in.readLine(); line != null; line = in.readLine()) {
