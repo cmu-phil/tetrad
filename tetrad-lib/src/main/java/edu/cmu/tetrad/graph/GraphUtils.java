@@ -2550,6 +2550,9 @@ public final class GraphUtils {
                     } else {
                         edge.setProbability(Double.parseDouble(bootstrapEdgeTypeProb));
                     }
+                } else if ("no edge".equals(bootstrapEdge)) {
+                    fields = spacePattern.split(bootstrapEdgeTypeProb);
+                    edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, Double.parseDouble(bootstrapEdgeTypeProb)));
                 }
             }
         }
