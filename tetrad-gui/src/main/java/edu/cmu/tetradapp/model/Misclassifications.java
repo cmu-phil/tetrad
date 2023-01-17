@@ -115,7 +115,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         return "True graph from " + refName + "\nTarget graph from " + targetName +
                 "\n\n\n" +
                 "Edge Misclassification Table" +
-                "\n\n" +
+                "\n" +
                 MisclassificationUtils.edgeMisclassifications(targetGraph, comparisonGraph) +
                 "\n\n" +
                 "Endpoint Misclassification Table:" +

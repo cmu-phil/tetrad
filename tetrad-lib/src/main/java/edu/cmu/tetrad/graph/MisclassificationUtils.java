@@ -100,11 +100,11 @@ public class MisclassificationUtils {
         table2.setToken(0, 1, "-o");
         table2.setToken(0, 2, "->");
         table2.setToken(0, 3, "--");
-        table2.setToken(0, 4, "NULL");
+        table2.setToken(0, 4, "no endpoint");
         table2.setToken(1, 0, "-o");
         table2.setToken(2, 0, "->");
         table2.setToken(3, 0, "--");
-        table2.setToken(4, 0, "NULL");
+        table2.setToken(4, 0, "no endpoint");
 
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -130,13 +130,13 @@ public class MisclassificationUtils {
         table2.setToken(5, 0, "-->");
         table2.setToken(6, 0, "<--");
         table2.setToken(7, 0, "<->");
-        table2.setToken(8, 0, "null");
+        table2.setToken(8, 0, "no edge");
         table2.setToken(0, 1, "---");
         table2.setToken(0, 2, "o-o");
         table2.setToken(0, 3, "o->");
         table2.setToken(0, 4, "-->");
         table2.setToken(0, 5, "<->");
-        table2.setToken(0, 6, "null");
+        table2.setToken(0, 6, "no edge");
 
         int[][] counts = new int[8][6];
 
