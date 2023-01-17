@@ -147,76 +147,78 @@ public class EdgeTypeTable extends JPanel {
     }
 
     private void addEdgeProbabilityData(Edge edge, String[] rowData) {
-        edge.getEdgeTypeProbabilities().forEach(edgeTypeProb -> {
-            String probValue = String.format("%.4f", edgeTypeProb.getProbability());
-            boolean nl, pd, dd;
-            switch (edgeTypeProb.getEdgeType()) {
-                case nil:
-                    rowData[6] = probValue;
-                    break;
-                case ta:
-                    nl = false;
-                    pd = false;
-                    dd = false;
-                    for (Edge.Property p : edgeTypeProb.getProperties()) {
-                        if (p == Edge.Property.dd) {
-                            dd = true;
-                        }
-                        if (p == Edge.Property.nl) {
-                            nl = true;
-                        }
-                        if (p == Edge.Property.pd) {
-                            pd = true;
-                        }
+        edge.getEdgeTypeProbabilities().stream()
+                .filter(edgeTypeProb -> edgeTypeProb.getProbability() > 0)
+                .forEach(edgeTypeProb -> {
+                    String probValue = String.format("%.4f", edgeTypeProb.getProbability());
+                    boolean nl, pd, dd;
+                    switch (edgeTypeProb.getEdgeType()) {
+                        case nil:
+                            rowData[6] = probValue;
+                            break;
+                        case ta:
+                            nl = false;
+                            pd = false;
+                            dd = false;
+                            for (Edge.Property p : edgeTypeProb.getProperties()) {
+                                if (p == Edge.Property.dd) {
+                                    dd = true;
+                                }
+                                if (p == Edge.Property.nl) {
+                                    nl = true;
+                                }
+                                if (p == Edge.Property.pd) {
+                                    pd = true;
+                                }
+                            }
+                            if (nl && dd) {
+                                rowData[12] = probValue;
+                            } else if (nl && pd) {
+                                rowData[10] = probValue;
+                            } else {
+                                rowData[7] = probValue;
+                            }
+                            break;
+                        case at:
+                            nl = false;
+                            pd = false;
+                            dd = false;
+                            for (Edge.Property p : edgeTypeProb.getProperties()) {
+                                if (p == Edge.Property.dd) {
+                                    dd = true;
+                                }
+                                if (p == Edge.Property.nl) {
+                                    nl = true;
+                                }
+                                if (p == Edge.Property.pd) {
+                                    pd = true;
+                                }
+                            }
+                            if (nl && dd) {
+                                rowData[13] = probValue;
+                            } else if (nl && pd) {
+                                rowData[11] = probValue;
+                            } else {
+                                rowData[8] = probValue;
+                            }
+                            break;
+                        case tt:
+                            rowData[9] = probValue;
+                            break;
+                        case ca:
+                            rowData[14] = probValue;
+                            break;
+                        case ac:
+                            rowData[15] = probValue;
+                            break;
+                        case cc:
+                            rowData[16] = probValue;
+                            break;
+                        case aa:
+                            rowData[17] = probValue;
+                            break;
                     }
-                    if (nl && dd) {
-                        rowData[12] = probValue;
-                    } else if (nl && pd) {
-                        rowData[10] = probValue;
-                    } else {
-                        rowData[7] = probValue;
-                    }
-                    break;
-                case at:
-                    nl = false;
-                    pd = false;
-                    dd = false;
-                    for (Edge.Property p : edgeTypeProb.getProperties()) {
-                        if (p == Edge.Property.dd) {
-                            dd = true;
-                        }
-                        if (p == Edge.Property.nl) {
-                            nl = true;
-                        }
-                        if (p == Edge.Property.pd) {
-                            pd = true;
-                        }
-                    }
-                    if (nl && dd) {
-                        rowData[13] = probValue;
-                    } else if (nl && pd) {
-                        rowData[11] = probValue;
-                    } else {
-                        rowData[8] = probValue;
-                    }
-                    break;
-                case tt:
-                    rowData[9] = probValue;
-                    break;
-                case ca:
-                    rowData[14] = probValue;
-                    break;
-                case ac:
-                    rowData[15] = probValue;
-                    break;
-                case cc:
-                    rowData[16] = probValue;
-                    break;
-                case aa:
-                    rowData[17] = probValue;
-                    break;
-            }
-        });
+                });
 
         double maxEdgeProbability = edge.getEdgeTypeProbabilities().stream()
                 .filter(e -> e.getEdgeType() != EdgeTypeProbability.EdgeType.nil)
