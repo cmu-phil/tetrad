@@ -427,8 +427,15 @@ public final class DagEditor extends JPanel
         graph.add(randomGraph);
         graph.addSeparator();
 
-        graph.add(new GraphPropertiesAction(getWorkbench()));
-        graph.add(new PathsAction(getWorkbench()));
+        graph.add(new GraphPropertiesAction(this.workbench));
+        graph.add(new PathsAction(this.workbench));
+        graph.add(new UnderliningsAction(this.workbench));
+
+        graph.add(new JMenuItem(new SelectDirectedAction(this.workbench)));
+        graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
+        graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
+        graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
+//        graph.add(new PagTypeSetter(getWorkbench()));
 
 
         randomGraph.addActionListener(e -> {
@@ -436,7 +443,7 @@ public final class DagEditor extends JPanel
             editor.setParams(this.parameters);
 
             EditorWindow editorWindow = new EditorWindow(editor, "Edit Random Graph Parameters",
-                    "Done", false, this);
+                    "Done", true, this);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
             editorWindow.pack();

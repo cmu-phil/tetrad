@@ -421,6 +421,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new PathsAction(this.workbench));
         graph.add(new UnderliningsAction(this.workbench));
 
+        graph.add(new JMenuItem(new SelectDirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
@@ -524,6 +525,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             });
         });
 
+        graph.add(new JMenuItem(new SelectDirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));

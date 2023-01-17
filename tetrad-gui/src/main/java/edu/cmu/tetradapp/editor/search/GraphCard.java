@@ -91,6 +91,7 @@ public class GraphCard extends JPanel {
         graph.add(new PathsAction(this.workbench));
         graph.add(new UnderliningsAction(this.workbench));
 
+        graph.add(new JMenuItem(new SelectDirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
