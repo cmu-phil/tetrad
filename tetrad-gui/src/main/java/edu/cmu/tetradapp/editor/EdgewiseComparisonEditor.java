@@ -21,11 +21,14 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.EdgewiseComparisonModel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
 
 /**
  * Provides a little display/editor for notes in the session workbench. This may
@@ -42,13 +45,14 @@ public class EdgewiseComparisonEditor extends JPanel {
      */
     private final EdgewiseComparisonModel comparison;
     private JTextArea area;
-    private Graph referenceGraph;
+    private final Parameters params;
 
     /**
      * Constructs the editor given the model
      */
     public EdgewiseComparisonEditor(EdgewiseComparisonModel comparison) {
         this.comparison = comparison;
+        this.params = comparison.getParams();
         setup();
     }
 
@@ -96,30 +100,27 @@ public class EdgewiseComparisonEditor extends JPanel {
 
         menubar.add(menu);
 
-        switch (comparison.getComparisonGraphType()) {
-            case CPDAG:
+        switch (this.params.getString("graphComparisonType")) {
+            case "CPDAG":
                 menu.setText("Compare to CPDAG...");
                 cpdag.setSelected(true);
                 break;
-            case PAG:
+            case "PAG":
                 menu.setText("Compare to PAG...");
                 pag.setSelected(true);
                 break;
-            case DAG:
+            default:
                 menu.setText("Compare to DAG...");
                 graph.setSelected(true);
                 break;
-            default:
-                throw new IllegalArgumentException("Unexpected comparison DAG type: " + comparison.getComparisonGraphType());
         }
 
         graph.addActionListener(e -> {
-            comparison.setComparisonGraphType(EdgewiseComparisonModel.ComparisonType.DAG);
-
+            this.params.set("graphComparisonType", "DAG");
             menu.setText("Compare to DAG...");
             menu.setBackground(Color.WHITE);
 
-            this.area.setText(tableTextWithHeader());
+            this.area.setText(comparison.getComparisonString());
             this.area.moveCaretPosition(0);
             this.area.setSelectionStart(0);
             this.area.setSelectionEnd(0);
@@ -129,12 +130,11 @@ public class EdgewiseComparisonEditor extends JPanel {
         });
 
         cpdag.addActionListener(e -> {
-            comparison.setComparisonGraphType(EdgewiseComparisonModel.ComparisonType.CPDAG);
-
+            this.params.set("graphComparisonType", "CPDAG");
             menu.setText("Compare to CPDAG...");
             menu.setBackground(Color.YELLOW);
 
-            this.area.setText(tableTextWithHeader());
+            this.area.setText(comparison.getComparisonString());
             this.area.moveCaretPosition(0);
             this.area.setSelectionStart(0);
             this.area.setSelectionEnd(0);
@@ -144,12 +144,11 @@ public class EdgewiseComparisonEditor extends JPanel {
         });
 
         pag.addActionListener(e -> {
-            comparison.setComparisonGraphType(EdgewiseComparisonModel.ComparisonType.PAG);
-
+            this.params.set("graphComparisonType", "PAG");
             menu.setText("Compare to PAG...");
             menu.setBackground(Color.GREEN.brighter().brighter());
 
-            this.area.setText(tableTextWithHeader());
+            this.area.setText(comparison.getComparisonString());
             this.area.moveCaretPosition(0);
             this.area.setSelectionStart(0);
             this.area.setSelectionEnd(0);

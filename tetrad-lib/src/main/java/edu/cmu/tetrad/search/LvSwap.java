@@ -218,7 +218,7 @@ public final class LvSwap implements GraphSearch {
             G = new EdgeListGraph(G2);
 
             removeShields(G, allT);
-//            retainUnshieldedColliders(G);
+            retainUnshieldedColliders(G);
             orientColliders(G, allT);
 
             T = new HashSet<>();
@@ -236,22 +236,14 @@ public final class LvSwap implements GraphSearch {
 
                         boolean swapped = scorer.swaptuck(x, y, z);
 
-//                        boolean swapped = false;
-//
-//                        if (scorer.index(x) > scorer.index(y)) {
-//                            scorer.moveTo(x, scorer.index(y));
-//                            swapped = true;
-//                        }
-
-
                         if (!swapped) continue;
 
-                        if (scorer.collider(x, y, z) && !scorer.adjacent(x, z)) {
+                        if (/*scorer.collider(x, y, z) &&*/ !scorer.adjacent(x, z)) {
                             Set<Node> adj = scorer.getAdjacentNodes(x);
                             adj.retainAll(scorer.getAdjacentNodes(z));
 
                             for (Node y2 : adj) {
-                                if (scorer.collider(x, y2, z) && !scorer.adjacent(x, z)) {// && !G.isDefCollider(x, y, z)) {
+                                if (scorer.collider(x, y2, z) /*&& !scorer.adjacent(x, z)*/) {// && !G.isDefCollider(x, y, z)) {
                                     T.add(new Triple(x, y2, z));
                                 }
                             }

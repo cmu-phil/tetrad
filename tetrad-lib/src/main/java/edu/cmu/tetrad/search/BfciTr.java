@@ -126,9 +126,9 @@ public final class BfciTr implements GraphSearch {
         retainUnshieldedColliders(graph, knowledge);
         triangleReduce(graph, scorer, knowledge); // Adds <-> edges to the DAG
 
-        if (this.possibleDsepSearchDone) {
-            removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
-        }
+//        if (this.possibleDsepSearchDone) {
+//            removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
+//        }
 
         // Retain only the unshielded colliders.
         retainUnshieldedColliders(graph, knowledge);
@@ -137,8 +137,8 @@ public final class BfciTr implements GraphSearch {
         SepsetProducer sepsets = new SepsetsGreedy(graph, test, null, depth);
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
-        fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
-        fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathColliderRule(true);//this.doDiscriminatingPathRule);
+        fciOrient.setDoDiscriminatingPathTailRule(true);//this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(graph);
 
@@ -200,7 +200,6 @@ public final class BfciTr implements GraphSearch {
                     perm.add(n);
                 }
 
-
                 perm.add(a);
                 perm.add(b);
 
@@ -225,13 +224,13 @@ public final class BfciTr implements GraphSearch {
                     graph.setEndpoint(a, x, Endpoint.ARROW);
                     graph.setEndpoint(b, x, Endpoint.ARROW);
 
-                    if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
-                        graph.setEndpoint(x, a, Endpoint.ARROW);
-                    }
-
-                    if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
-                        graph.setEndpoint(x, b, Endpoint.ARROW);
-                    }
+//                    if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
+//                        graph.setEndpoint(x, a, Endpoint.ARROW);
+//                    }
+//
+//                    if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
+//                        graph.setEndpoint(x, b, Endpoint.ARROW);
+//                    }
 
                     return true;
                 }

@@ -20,12 +20,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.model.EdgewiseComparisonModel;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.Misclassifications;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
 
 /**
  * Provides a little display/editor for notes in the session workbench. This may
@@ -43,11 +46,14 @@ public class MisclassificationsEditor extends JPanel {
     private final Misclassifications comparison;
     private JTextArea area;
 
+    private final Parameters params;
+
     /**
      * Constructs the editor given the model
      */
     public MisclassificationsEditor(Misclassifications comparison) {
         this.comparison = comparison;
+        this.params = comparison.getParams();
         setup();
     }
 
@@ -95,30 +101,28 @@ public class MisclassificationsEditor extends JPanel {
 
         menubar.add(menu);
 
-        switch (comparison.getComparisonGraphType()) {
-            case CPDAG:
+        switch (this.params.getString("graphComparisonType")) {
+            case "CPDAG":
                 menu.setText("Compare to CPDAG...");
                 cpdag.setSelected(true);
                 break;
-            case PAG:
+            case "PAG":
                 menu.setText("Compare to PAG...");
                 pag.setSelected(true);
                 break;
-            case DAG:
+            default:
                 menu.setText("Compare to DAG...");
                 graph.setSelected(true);
                 break;
-            default:
-                throw new IllegalArgumentException("Unexpected comparison DAG type: " + comparison.getComparisonGraphType());
         }
 
         graph.addActionListener(e -> {
-            comparison.setComparisonGraphType(Misclassifications.ComparisonType.DAG);
-
+            this.params.set("graphComparisonType", "DAG");
             menu.setText("Compare to DAG...");
             menu.setBackground(Color.WHITE);
+            Graph referenceGraph = getComparisonGraph(this.comparison.getReferenceGraph(), this.params);
 
-            this.area.setText(this.comparison.getComparisonString());
+            this.area.setText(comparison.getComparisonString());
             this.area.moveCaretPosition(0);
             this.area.setSelectionStart(0);
             this.area.setSelectionEnd(0);
@@ -128,12 +132,11 @@ public class MisclassificationsEditor extends JPanel {
         });
 
         cpdag.addActionListener(e -> {
-            comparison.setComparisonGraphType(Misclassifications.ComparisonType.CPDAG);
-
+            this.params.set("graphComparisonType", "CPDAG");
             menu.setText("Compare to CPDAG...");
             menu.setBackground(Color.YELLOW);
 
-            this.area.setText(this.comparison.getComparisonString());
+            this.area.setText(comparison.getComparisonString());
             this.area.moveCaretPosition(0);
             this.area.setSelectionStart(0);
             this.area.setSelectionEnd(0);
@@ -143,12 +146,11 @@ public class MisclassificationsEditor extends JPanel {
         });
 
         pag.addActionListener(e -> {
-            comparison.setComparisonGraphType(Misclassifications.ComparisonType.PAG);
-
+            this.params.set("graphComparisonType", "PAG");
             menu.setText("Compare to PAG...");
             menu.setBackground(Color.GREEN.brighter().brighter());
 
-            this.area.setText(this.comparison.getComparisonString());
+            this.area.setText(comparison.getComparisonString());
             this.area.moveCaretPosition(0);
             this.area.setSelectionStart(0);
             this.area.setSelectionEnd(0);

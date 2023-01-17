@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.MisclassificationUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -33,6 +34,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 
 /**
  * Compares a target workbench with a reference workbench by counting errors of
@@ -43,10 +46,6 @@ import java.io.ObjectInputStream;
  */
 public final class Misclassifications implements SessionModel, DoNotAddOldModel {
     static final long serialVersionUID = 23L;
-
-    public enum ComparisonType {DAG, CPDAG, PAG}
-
-    private ComparisonType comparisonType = ComparisonType.DAG;
 
     private final Graph targetGraph;
     private final Graph referenceGraph;
@@ -111,31 +110,17 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         String targetName = getParams().getString("targetGraphName", null);
 
 
-        Graph comparisonGraph;
+        Graph comparisonGraph = getComparisonGraph(referenceGraph, params);
 
-        if (comparisonType == ComparisonType.DAG) {
-            comparisonGraph = this.referenceGraph;
-        } else if (comparisonType == ComparisonType.CPDAG) {
-            comparisonGraph = SearchGraphUtils.cpdagForDag(this.referenceGraph);
-        } else if (comparisonType == ComparisonType.PAG) {
-            comparisonGraph = SearchGraphUtils.dagToPag(this.referenceGraph);
-        } else {
-            throw new IllegalArgumentException("Unexpected compariton type: " + comparisonType);
-        }
-
-        StringBuilder b = new StringBuilder();
-
-        b.append("True graph from " + refName + "\nTarget graph from " + targetName);
-        b.append("\n\n\n");
-        b.append("Edge Misclassification Table");
-        b.append("\n\n");
-        b.append(MisclassificationUtils.edgeMisclassifications(targetGraph, comparisonGraph));
-        b.append("\n\n");
-        b.append("Endpoint Misclassification Table:");
-        b.append("\n\n");
-        b.append(MisclassificationUtils.endpointMisclassification(targetGraph, comparisonGraph));
-
-        return b.toString();
+        return "True graph from " + refName + "\nTarget graph from " + targetName +
+                "\n\n\n" +
+                "Edge Misclassification Table" +
+                "\n\n" +
+                MisclassificationUtils.edgeMisclassifications(targetGraph, comparisonGraph) +
+                "\n\n" +
+                "Endpoint Misclassification Table:" +
+                "\n\n" +
+                MisclassificationUtils.endpointMisclassification(targetGraph, comparisonGraph);
     }
 
     /**
@@ -157,12 +142,26 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
         return this.params;
     }
 
-    public void setComparisonGraphType(ComparisonType comparisonType) {
-        this.comparisonType = comparisonType;
+    public static Graph getComparisonGraph(Graph graph, Parameters params) {
+        String type = params.getString("graphComparisonType");
+
+        if ("DAG".equals(type)) {
+            params.set("graphComparisonType", "DAG");
+            return new EdgeListGraph(graph);
+        } else if ("CPDAG".equals(type)) {
+            params.set("graphComparisonType", "CPDAG");
+            return SearchGraphUtils.cpdagForDag(graph);
+        } else if ("PAG".equals(type)) {
+            params.set("graphComparisonType", "PAG");
+            return dagToPag(graph);
+        } else {
+            params.set("graphComparisonType", "DAG");
+            return new EdgeListGraph(graph);
+        }
     }
 
-    public ComparisonType getComparisonGraphType() {
-        return  this.comparisonType;
+    public Graph getReferenceGraph() {
+        return this.referenceGraph;
     }
 }
 
