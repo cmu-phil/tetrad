@@ -53,7 +53,7 @@ For instructions on how to set this project up in IntelliJ IDEA, see:
 
 https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA
 
-Alternatively, you can run the lifecycle package target and launch the ejar that is  
+Alternatively, you can run the lifecycle package target and launch the "-launch" jar that is  
 built in the target directory, using the call
 
 java -Xmx[g]G -jar *-launch.jar
