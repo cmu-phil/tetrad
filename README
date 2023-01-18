@@ -23,6 +23,10 @@ The link to the causal-cmd repository for Tetrad (which allows Tetrad algorithms
 
 https://github.com/bd2kccd/causal-cmd
 
+All artifacts for Tetrqad and causal-cmd are published in Maven Central, here:
+
+https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/
+
 Please submit issue requests for Tetrad here:
 
 https://github.com/cmu-phil/tetrad/issues
