@@ -99,18 +99,18 @@ public final class LvSwap implements GraphSearch {
     //========================PUBLIC METHODS==========================//
     public Graph search() {
         if (algType == AlgType.Alg1) {
-            return search_1();
+            return lvswap1();
         } else if (algType == AlgType.Alg2) {
-            return search_2();
+            return lvswap2();
         } else if (algType == AlgType.Alg3) {
-            return search_3();
+            return lvswap3();
         }
 
         throw new IllegalArgumentException("Unexpected alg type: " + algType);
     }
 
     // Bryan.
-    public Graph search_1() {
+    public Graph lvswap1() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
@@ -188,7 +188,7 @@ public final class LvSwap implements GraphSearch {
         return G;
     }
 
-    public Graph search_2() {
+    public Graph lvswap2() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
@@ -246,7 +246,7 @@ public final class LvSwap implements GraphSearch {
         return G;
     }
 
-    public Graph search_2b() {
+    public Graph lvswap2c() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
@@ -319,7 +319,7 @@ public final class LvSwap implements GraphSearch {
         return G;
     }
 
-    public Graph search_3() {
+    public Graph lvswap3() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);

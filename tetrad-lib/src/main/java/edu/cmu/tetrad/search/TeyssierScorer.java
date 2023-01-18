@@ -220,7 +220,7 @@ public class TeyssierScorer {
         }
 
         if (index(y) < index(z)) {
-            moveTo(z, index(y));
+//            moveTo(z, index(y));
             moved = true;
         }
 
