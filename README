@@ -19,7 +19,7 @@ java -Xmx[g]G -jar *-launch.jar
 
 where 'g' is the maximum number of Gigabytes you wish to allocate to the process.
 
-The link to the causal-cmd repository for Tetrad is here:
+The link to the causal-cmd repository for Tetrad (which allows Tetrad algorithms to be run at the command line) is here:
 
 https://github.com/bd2kccd/causal-cmd
 
@@ -66,9 +66,6 @@ tetrad
 pitt
 tetradapp
 
-For the command line version, see causal Command:
-
-https://github.com/bd2kccd/causal-cmd
 
 The  tetrad-lib package contains the "model" code; the 
 tetrad-gui package contains the "view" (GUI) code.
