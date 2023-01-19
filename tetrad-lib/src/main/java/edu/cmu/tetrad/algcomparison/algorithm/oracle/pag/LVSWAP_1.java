@@ -85,7 +85,7 @@ public class LVSWAP_1 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-            search.setAlgType(LvSwap.AlgType.Alg1);
+            search.setAlgType(LvSwap.AlgType.LVSwap1);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));

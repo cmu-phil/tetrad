@@ -1,9 +1,11 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.channels.MembershipKey;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -211,7 +213,7 @@ public class TeyssierScorer {
     /**
      * Performs a tuck operation.
      */
-    public boolean swaptuck(Node x, Node y, Node z) {
+    public boolean swaptuck(Node x, Node y, Node z, boolean doZ) {
         boolean moved = false;
 
         if (index(y) < index(x)) {
@@ -219,9 +221,11 @@ public class TeyssierScorer {
             moved = true;
         }
 
-        if (index(y) < index(z)) {
-            moveTo(z, index(y));
-            moved = true;
+        if (doZ) {
+            if (index(y) < index(z)) {
+                moveTo(z, index(y));
+                moved = true;
+            }
         }
 
         return moved;
@@ -231,8 +235,7 @@ public class TeyssierScorer {
         if (index(x) < index(y)) {
 //            moveTo(y, index(x));
             return false;
-        } else
-        if (index(y) < index(x)) {
+        } else if (index(y) < index(x)) {
             moveTo(x, index(y));
             return true;
         }
@@ -433,7 +436,24 @@ public class TeyssierScorer {
      */
     public Graph getGraph(boolean cpDag) {
         if (cpDag) {
-            return findCompelled();
+            List<Node> order = getPi();
+            Graph G1 = new EdgeListGraph(this.variables);
+
+            for (int p = 0; p < order.size(); p++) {
+                for (Node z : getParents(p)) {
+                    G1.addDirectedEdge(z, order.get(p));
+                }
+            }
+
+            GraphUtils.replaceNodes(G1, this.variables);
+
+            MeekRules rules = new MeekRules();
+            rules.setKnowledge(knowledge);
+            rules.orientImplied(G1);
+
+            return G1;
+
+//            return findCompelled();
         } else {
             List<Node> order = getPi();
             Graph G1 = new EdgeListGraph(this.variables);
@@ -449,6 +469,61 @@ public class TeyssierScorer {
             return G1;
         }
     }
+
+    public void orientbk(Knowledge bk, Graph graph, List<Node> variables) {
+        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(to, from, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(from, to, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+    }
+
 
 //    public Graph getGraph(boolean cpDag) {
 //
