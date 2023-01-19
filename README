@@ -13,11 +13,11 @@ https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/te
 
 The application will work on all major platforms once a recent version of the Java JRE is installed, (Corretto 18 is fine, for instance.) On most platforms you will be able to launch it by double clicking the jar file. On a Mac, after an attempt to launch it, you will need to go to the Security and Privacy control panel under System Settings in the Apple menu) and verify taht you wish to open the application.
 
-The jar may also be launched at the command line (with a specifiation of the amount of RAM you will allow it to use) using this command:
+The jar may be launched at the command line (with a specifiation of the amount of RAM you will allow it to use) using this command:
 
 java -Xmx[g]G -jar *-launch.jar
 
-where 'g' is the maximum number of Gigabytes you wish to allocate to the process.
+where 'g' is the maximum number of Gigabytes you wish to allocate to the process. Launching Tetrad in this way will avoid certain security issues on a Mac.
 
 The link to the causal-cmd repository for Tetrad (which allows Tetrad algorithms to be run at the command line) is here:
 
