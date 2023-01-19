@@ -59,9 +59,9 @@ import static java.util.Collections.reverse;
  */
 public final class LvSwap implements GraphSearch {
 
-    public enum AlgType {Alg1, Alg2, Alg3}
+    public enum AlgType {LVSwap1, LVSwap2a, LVSwap2b}
 
-    private AlgType algType = AlgType.Alg1;
+    private AlgType algType = AlgType.LVSwap1;
 
     private Boss.AlgType bossAlgType = Boss.AlgType.BOSS1;
 
@@ -98,12 +98,12 @@ public final class LvSwap implements GraphSearch {
 
     //========================PUBLIC METHODS==========================//
     public Graph search() {
-        if (algType == AlgType.Alg1) {
+        if (algType == AlgType.LVSwap1) {
             return lvswap1();
-        } else if (algType == AlgType.Alg2) {
-            return lvswap2();
-        } else if (algType == AlgType.Alg3) {
-            return lvswap3();
+        } else if (algType == AlgType.LVSwap2a) {
+            return lvswap2a();
+        } else if (algType == AlgType.LVSwap2b) {
+            return lvswap2b();
         }
 
         throw new IllegalArgumentException("Unexpected alg type: " + algType);
@@ -188,7 +188,65 @@ public final class LvSwap implements GraphSearch {
         return G;
     }
 
-    public Graph lvswap2() {
+    public Graph lvswap2a() {
+        TeyssierScorer scorer = new TeyssierScorer(test, score);
+
+        Boss alg = new Boss(scorer);
+        alg.setAlgType(bossAlgType);
+        alg.setUseScore(useScore);
+        alg.setUseRaskuttiUhler(useRaskuttiUhler);
+        alg.setUseDataOrder(useDataOrder);
+        alg.setDepth(depth);
+        alg.setNumStarts(numStarts);
+        alg.setVerbose(verbose);
+
+        alg.bestOrder(this.score.getVariables());
+        Graph G = alg.getGraph(true);
+
+        retainUnshieldedColliders(G);
+
+        scorer.bookmark();
+
+        Set<Triple> T = new HashSet<>();
+
+        for (Node y : scorer.getPi()) {
+            List<Node> adjy = G.getAdjacentNodes(y);
+
+            for (Node x : adjy) {
+                for (Node z : adjy) {
+                    if (!G.isAdjacentTo(x, z)) continue;
+                    if (T.contains(new Triple(x, y, z))) continue;
+
+                    scorer.goToBookmark();
+                    scorer.swaptuck(x, y, z, true);
+
+                    if (!scorer.adjacent(x, z) && scorer.collider(x, y, z)) {
+                        Set<Node> adj = scorer.getAdjacentNodes(x);
+                        adj.retainAll(scorer.getAdjacentNodes(z));
+
+                        for (Node w : adj) {
+                            if (scorer.collider(x, w, z)) {
+                                T.add(new Triple(x, w, z));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        removeShields(G, T);
+        retainUnshieldedColliders(G);
+        orientColliders(G, T);
+
+        finalOrientation(knowledge, G);
+
+        G.setGraphType(EdgeListGraph.GraphType.PAG);
+
+        scorer.goToBookmark();
+        return G;
+    }
+
+    public Graph lvswap2b() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
@@ -218,7 +276,7 @@ public final class LvSwap implements GraphSearch {
                     if (T.contains(new Triple(x, y, z))) continue;
 
                     scorer.goToBookmark();
-                    scorer.swaptuck(x, y, z);
+                    scorer.swaptuck(x, y, z, false);
 
                     if (!scorer.adjacent(x, z) && scorer.collider(x, y, z)) {
                         Set<Node> adj = scorer.getAdjacentNodes(x);
@@ -237,79 +295,6 @@ public final class LvSwap implements GraphSearch {
         removeShields(G, T);
         retainUnshieldedColliders(G);
         orientColliders(G, T);
-
-        finalOrientation(knowledge, G);
-
-        G.setGraphType(EdgeListGraph.GraphType.PAG);
-
-        scorer.goToBookmark();
-        return G;
-    }
-
-    public Graph lvswap2c() {
-        TeyssierScorer scorer = new TeyssierScorer(test, score);
-
-        Boss alg = new Boss(scorer);
-        alg.setAlgType(bossAlgType);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-        alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(depth);
-        alg.setNumStarts(numStarts);
-        alg.setVerbose(verbose);
-
-        alg.bestOrder(this.score.getVariables());
-        Graph G = alg.getGraph(false);
-
-        retainUnshieldedColliders(G);
-
-        Set<Triple> allT = new HashSet<>();
-        Graph G2 = new EdgeListGraph(G);
-
-        Set<Triple> T = new HashSet<>();
-
-        scorer.bookmark();
-
-        do {
-            allT.addAll(T);
-
-            G = new EdgeListGraph(G2);
-
-            removeShields(G, allT);
-            retainUnshieldedColliders(G);
-            orientColliders(G, allT);
-
-            T = new HashSet<>();
-
-            List<Node> nodes = G.getNodes();
-
-            for (Node y : nodes) {
-                for (Node x : G.getAdjacentNodes(y)) {
-                    for (Node z : G.getAdjacentNodes(y)) {
-                        if (x == z) continue;
-
-                        if (!G.isAdjacentTo(x, z)) continue;
-
-                        scorer.goToBookmark();
-
-                        boolean swapped = scorer.swaptuck(x, y, z);
-
-                        if (!swapped) continue;
-
-                        if (!scorer.adjacent(x, z)) {
-                            Set<Node> adj = scorer.getAdjacentNodes(x);
-                            adj.retainAll(scorer.getAdjacentNodes(z));
-
-                            for (Node w : adj) {
-                                if (scorer.collider(x, w, z)) {
-                                    T.add(new Triple(x, w, z));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } while (!allT.containsAll(T));
 
         finalOrientation(knowledge, G);
 

@@ -35,24 +35,24 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-Swap-3",
-        command = "lv-swap-3",
+        name = "LV-Swap-2b",
+        command = "lv-swap-2b",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class LVSWAP_2b implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public LVSWAP_3() {
+    public LVSWAP_2b() {
         // Used for reflection; do not delete.
     }
 
-    public LVSWAP_3(IndependenceWrapper test, ScoreWrapper score) {
+    public LVSWAP_2b(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -85,8 +85,8 @@ public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-            search.setAlgType(LvSwap.AlgType.Alg3);
-            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setAlgType(LvSwap.AlgType.LVSwap2b);
+//            search.setDepth(parameters.getInt(Params.DEPTH));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setDoDefiniteDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
@@ -109,7 +109,7 @@ public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
             return graph;
         } else {
-            LVSWAP_3 algorithm = new LVSWAP_3(this.test, this.score);
+            LVSWAP_2b algorithm = new LVSWAP_2b(this.test, this.score);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
@@ -126,7 +126,7 @@ public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public String getDescription() {
-        return "LV-Swap-3 (BOSS + swap rules) using " + this.test.getDescription()
+        return "LV-Swap-2b (BOSS + swap rules) using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 
@@ -145,7 +145,7 @@ public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.GRASP_USE_SCORE);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.DEPTH);
+//        params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 

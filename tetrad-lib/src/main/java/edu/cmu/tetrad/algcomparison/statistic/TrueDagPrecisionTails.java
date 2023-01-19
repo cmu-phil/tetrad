@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.Params;
 
 import java.util.List;
 
@@ -42,8 +43,13 @@ public class TrueDagPrecisionTails implements Statistic {
                     if (trueGraph.isAncestorOf(x, y)) {
                         tp++;
                     } else {
-                        System.out.println("Should be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));
                         fp++;
+                    }
+
+                    if (trueGraph.isAncestorOf(y, x)) {
+                        System.out.println("Should be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));
+                    } else {
+                        System.out.println("Should be " + x + "o~~>" + y + ": " + estGraph.getEdge(x, y));
                     }
                 }
             }

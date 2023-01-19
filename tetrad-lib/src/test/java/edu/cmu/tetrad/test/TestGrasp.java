@@ -29,8 +29,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES_OLD;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
@@ -2472,7 +2470,7 @@ public final class TestGrasp {
         params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.POSSIBLE_DSEP_DONE, true);
-        params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
+        params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, false);
 
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
@@ -2522,11 +2520,11 @@ public final class TestGrasp {
         }
 
         for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_2(test, score));
+            algorithms.add(new LVSWAP_2a(test, score));
         }
 
         for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_3(test, score));
+            algorithms.add(new LVSWAP_2b(test, score));
         }
 
 
@@ -2548,11 +2546,11 @@ public final class TestGrasp {
 
         // Joe table.
         statistics.add(new NumDirectedEdges());
-        statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new TrueDagPrecisionTails());
+        statistics.add(new TrueDagPrecisionArrow());
+        statistics.add(new NumDirectedShouldBePartiallyDirected());
         statistics.add(new NumBidirectedEdgesEst());
         statistics.add(new BidirectedLatentPrecision());
-
 
         // Greg table
         statistics.add(new AncestorPrecision());
@@ -2684,7 +2682,7 @@ public final class TestGrasp {
 //            algorithms.add(new GFCI(test, score));
 //            algorithms.add(new BFCI(test, score));
             algorithms.add(new LVSWAP_1(test, score));
-            algorithms.add(new LVSWAP_2(test, score));
+            algorithms.add(new LVSWAP_2a(test, score));
 //            algorithms.add(new LVSWAP_3(test, score));
 
             algNames = new ArrayList<>();
