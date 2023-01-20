@@ -19,7 +19,7 @@ On all platforms, the jar may be launched at the command line (with a specificat
 
 java -Xmx[g]G -jar *-launch.jar
 
-where 'g' is the maximum number of Gigabytes you wish to allocate to the process. Launching Tetrad in this way will avoid said security issues on a Mac.
+where 'g' is the maximum number of Gigabytes you wish to allocate to the process.
 
 The link to the causal-cmd repository for Tetrad (which allows Tetrad algorithms to be run at the command line) is here:
 
