@@ -64,5 +64,4 @@ tetrad
 pitt
 tetradapp
 
-The  tetrad-lib package contains the "model" code; the 
-tetrad-gui package contains the "view" (GUI) code.
+The  tetrad-lib package contains the "model" code; the tetrad-gui package contains the "view" (GUI) code.
