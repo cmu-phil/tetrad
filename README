@@ -11,7 +11,7 @@ The jar to launch the Tetrad GUI is here (please download this one and delete an
 
 https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.1.3-1/tetrad-gui-7.1.3-1-launch.jar
 
-The application will work on all major platforms once a recent version of the Java JRE is installed, (Corretto 18 is fine, for instance.) On most platforms you will be able to launch it by double clicking the jar file. On a Mac, this presents some security challenges with MacOS, in that after an attempt to launch it, you will need to go to the Security and Privacy control panel under System Settings in the Apple menu) and verify taht you wish to open the application, and you will have access only to the user directory. However, on all platforms, the jar may be launched at the command line (with a specifiation of the amount of RAM you will allow it to use) using this command:
+The application will work on all major platforms once a recent version of the Java JRE is installed, (Corretto 18 is fine, for instance.) You may be able to launch it by double clicking the jar file name, though on a Mac, this presents some security challenges with MacOS, in that after an attempt to launch it, you will need to go to the Security and Privacy control panel under System Settings in the Apple menu) and verify taht you wish to open the application and you will have access only to the user directory for saving and loading files. However, on all platforms, the jar may be launched at the command line (with a specifiation of the amount of RAM you will allow it to use) using this command:
 
 java -Xmx[g]G -jar *-launch.jar
 
