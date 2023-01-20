@@ -49,7 +49,7 @@ The manual is here:
 
 https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html
 
-Javadocs for each release are included in the Maven Central publication for that release.
+Javadocs and source code for each release are included in the Maven Central publication for that release.
 
 For instructions on how to set this project up in IntelliJ IDEA, see:
 
