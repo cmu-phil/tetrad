@@ -1336,7 +1336,7 @@ public final class SemEstimatorEditor extends JPanel {
             DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
             field.setFilter((value, oldValue) -> {
                 try {
-                    setEdgeValue(edge, new Double(value).toString());
+                    setEdgeValue(edge, "" + value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -1415,7 +1415,7 @@ public final class SemEstimatorEditor extends JPanel {
             DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
             field.setFilter((value, oldValue) -> {
                 try {
-                    setNodeValue(node, new Double(value).toString());
+                    setNodeValue(node, "" + value);
                     return value;
                 } catch (IllegalArgumentException e) {
                     return oldValue;
@@ -1708,7 +1708,7 @@ public final class SemEstimatorEditor extends JPanel {
         private void setEdgeValue(Edge edge, String text) {
             try {
                 Parameter parameter = getEdgeParameter(edge);
-                double d = new Double(text);
+                double d =Double.parseDouble(text);
 
                 if (this.editor.isEditCovariancesAsCorrelations()
                         && parameter.getType() == ParamType.COVAR) {
@@ -1754,7 +1754,7 @@ public final class SemEstimatorEditor extends JPanel {
         private void setNodeValue(Node node, String text) {
             try {
                 Parameter parameter = getNodeParameter(node);
-                double d = new Double(text);
+                double d = Double.parseDouble(text);
 
                 if (parameter.getType() == ParamType.VAR && d >= 0) {
                     semIm().setParamValue(node, node, d * d);
