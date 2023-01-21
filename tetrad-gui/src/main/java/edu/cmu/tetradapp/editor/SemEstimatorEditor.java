@@ -444,11 +444,12 @@ public final class SemEstimatorEditor extends JPanel {
             JMenuBar menuBar = new JMenuBar();
             JMenu file = new JMenu("File");
             menuBar.add(file);
-            file.add(new SaveComponentImage(this.semImGraphicalEditor.getWorkbench(),
-                    "Save Graph Image..."));
-            file.add(this.getCopyMatrixMenuItem());
             JMenuItem saveSemAsXml = new JMenuItem("Save SEM as XML");
             file.add(saveSemAsXml);
+            file.add(this.getCopyMatrixMenuItem());
+            file.addSeparator();
+            file.add(new SaveComponentImage(this.semImGraphicalEditor.getWorkbench(),
+                    "Save Graph Image..."));
 
             saveSemAsXml.addActionListener(e -> {
                 try {
@@ -548,6 +549,7 @@ public final class SemEstimatorEditor extends JPanel {
 
             SemEstimatorEditor.this.targetPanel.add(menuBar, BorderLayout.NORTH);
             add(this.tabbedPane, BorderLayout.CENTER);
+            add(menuBar, BorderLayout.NORTH);
         }
 
         @Override
