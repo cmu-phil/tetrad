@@ -446,8 +446,6 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-        if (node1 == node2) return false;
-
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
 

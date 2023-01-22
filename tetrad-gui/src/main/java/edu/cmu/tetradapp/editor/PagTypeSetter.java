@@ -59,8 +59,9 @@ public class PagTypeSetter extends JCheckBoxMenuItem {
                 SearchGraphUtils.LegalPagRet legalPagRet = SearchGraphUtils.isLegalPag(graph);
 
                 if (!legalPagRet.isLegalPag()) {
-                    int ret = JOptionPane.showConfirmDialog(workbench, "This is not a legal PAG; proceed anyway?" +
-                                    "\n(One reason: " + legalPagRet.getReason() + ")",
+                    int ret = JOptionPane.showConfirmDialog(workbench, "This is not a legal PAG--one reason is as follows:" +
+                                    "\n\n" + legalPagRet.getReason() +
+                                    "\n\nProceed anyway?",
                             "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                     if (ret == JOptionPane.YES_NO_OPTION) {
                         _workbench.setPag(true);
