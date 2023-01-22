@@ -166,7 +166,7 @@ public class RandomUtil {
      * @return Ibid.
      */
     public double nextBeta(double alpha, double beta) {
-        return ProbUtils.betaRand(alpha, beta);
+        return new BetaDistribution(this.randomGenerator, alpha, beta).sample();
     }
 
     /**

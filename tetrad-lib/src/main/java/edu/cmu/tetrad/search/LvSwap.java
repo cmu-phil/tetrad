@@ -272,7 +272,7 @@ public final class LvSwap implements GraphSearch {
 
             for (Node x : adjy) {
                 for (Node z : adjy) {
-                    if (!G.isAdjacentTo(x, z)) continue;
+                    if (!scorer.adjacent(x, z)) continue;
                     if (T.contains(new Triple(x, y, z))) continue;
 
                     scorer.goToBookmark();
