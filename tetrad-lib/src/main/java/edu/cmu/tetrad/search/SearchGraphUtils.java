@@ -777,7 +777,7 @@ public final class SearchGraphUtils {
             if (mag.existsDirectedPathFromTo(n, n))
                 return new LegalPagRet(false,
                         "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself in a" +
-                                "\nMAG in a MAG implied by this graph");
+                                "\nMAG implied by this graph");
         }
 
         for (Edge e : mag.getEdges()) {
