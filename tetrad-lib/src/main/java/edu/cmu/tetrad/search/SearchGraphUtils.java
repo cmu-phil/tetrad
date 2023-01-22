@@ -720,7 +720,6 @@ public final class SearchGraphUtils {
 
     private static boolean orientOneCircle(Graph graph) {
         List<Edge> edges = new ArrayList<>(graph.getEdges());
-//        shuffle(edges);
 
         for (Edge edge : edges) {
             Node x = edge.getNode1();
@@ -807,7 +806,7 @@ public final class SearchGraphUtils {
                 if (!mag.isAdjacentTo(x, y)) {
                     if (mag.existsInducingPath(x, y))
                         return new LegalPagRet(false,
-                                "This is not maximal; is an inducing path between non-adjacent " + x + " and " + y +
+                                "This is not maximal; there is an inducing path between non-adjacent " + x + " and " + y +
                                         " in a MAG implied by this graph");
                 }
             }
