@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -35,7 +36,6 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Math.max;
-import static java.util.Collections.shuffle;
 import static java.util.Collections.sort;
 
 /**
@@ -747,7 +747,7 @@ public final class SearchGraphUtils {
 
     public static class LegalPagRet {
         private final boolean legalPag;
-        private final String reason ;
+        private final String reason;
 
         public LegalPagRet(boolean legalPag, String reason) {
             if (reason == null) throw new NullPointerException("Reason must be given.");
@@ -767,17 +767,53 @@ public final class SearchGraphUtils {
     public static LegalPagRet isLegalPag(Graph pag) {
         Graph mag = pagToMag(pag);
 
+        LegalMagRet legalMag = isLegalMag(mag);
+
+        if (!legalMag.isLegalMag()) {
+            return new LegalPagRet(false, legalMag.getReason() + "\nin a MAG implied by this graph.");
+        }
+
+        Graph pag2 = SearchGraphUtils.dagToPag(mag);
+
+        if (!pag.equals(pag2)) {
+            return new LegalPagRet(false,
+                    "Could be a MAG or between a MAG and a PAG; cannot recover the original graph by finding" +
+                            "\nthe PAG of an implied MAG");
+        }
+
+        return new LegalPagRet(true, "This ia a legal PAG");
+    }
+
+    public static class LegalMagRet {
+        private final boolean legalMag;
+        private final String reason;
+
+        public LegalMagRet(boolean legalPag, String reason) {
+            if (reason == null) throw new NullPointerException("Reason must be given.");
+            this.legalMag = legalPag;
+            this.reason = reason;
+        }
+
+        public boolean isLegalMag() {
+            return legalMag;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+    }
+
+    private static LegalMagRet isLegalMag(Graph mag) {
         for (Node n : mag.getNodes()) {
             if (n.getNodeType() == NodeType.LATENT)
-                return new LegalPagRet(false,
+                return new LegalMagRet(false,
                         "Node " + n + " is not measured");
         }
 
         for (Node n : mag.getNodes()) {
             if (mag.existsDirectedPathFromTo(n, n))
-                return new LegalPagRet(false,
-                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself in a" +
-                                "\nMAG implied by this graph");
+                return new LegalMagRet(false,
+                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
         }
 
         for (Edge e : mag.getEdges()) {
@@ -786,13 +822,11 @@ public final class SearchGraphUtils {
 
             if (Edges.isBidirectedEdge(e)) {
                 if (mag.existsDirectedPathFromTo(x, y))
-                    return new LegalPagRet(false,
-                            "Bidirected edge semantics violated: there is an almost cyclic directed path for " + e + " from " + x + " to " + y +
-                                    "\nin a MAG implied by this graph");
+                    return new LegalMagRet(false,
+                            "Bidirected edge semantics violated: there is an almost cyclic directed path for " + e + " from " + x + " to " + y);
                 if (mag.existsDirectedPathFromTo(y, x))
-                    return new LegalPagRet(false,
-                            "Bidirected edge semantics violated: There is an almost cyclic directed path for " + e + " from " + y + " to " + x +
-                                    "\nin a MAG implied by this graph");
+                    return new LegalMagRet(false,
+                            "Bidirected edge semantics violated: There is an almost cyclic directed path for " + e + " from " + y + " to " + x);
             }
         }
 
@@ -805,22 +839,13 @@ public final class SearchGraphUtils {
 
                 if (!mag.isAdjacentTo(x, y)) {
                     if (mag.existsInducingPath(x, y))
-                        return new LegalPagRet(false,
-                                "This is not maximal; there is an inducing path between non-adjacent " + x + " and " + y +
-                                        " in a MAG implied by this graph");
+                        return new LegalMagRet(false,
+                                "This is not maximal; there is an inducing path between non-adjacent " + x + " and " + y);
                 }
             }
         }
 
-        Graph pag2 = SearchGraphUtils.dagToPag(mag);
-
-        if (!pag.equals(pag2)) {
-            return new LegalPagRet(false,
-                    "Could be a MAG or between a MAG and a PAG; cannot recover the original graph by finding" +
-                            "\nthe PAG of an implied MAG");
-        }
-
-        return new LegalPagRet(true, "This ia a legal PAG");
+        return new LegalMagRet(true, "This ia a legal MAG");
     }
 
     public static void arrangeByKnowledgeTiers(Graph graph,
