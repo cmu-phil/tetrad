@@ -810,6 +810,27 @@ public final class SearchGraphUtils {
                         "Node " + n + " is not measured");
         }
 
+        List<Node> nodes = mag.getNodes();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (mag.getEdges(x, y).size() > 1) {
+                    return new LegalMagRet(false,
+                            "There is more than one edge between " + x + " and " + y);
+                }
+
+                Edge e = mag.getEdge(x, y);
+
+                if (!(Edges.isDirectedEdge(e) || Edges.isBidirectedEdge(e) || Edges.isUndirectedEdge(e))) {
+                    return new LegalMagRet(false,
+                            "Edge " + e + " should be directed, bidirected, or undirected.");
+                }
+            }
+        }
+
         for (Node n : mag.getNodes()) {
             if (mag.existsDirectedPathFromTo(n, n))
                 return new LegalMagRet(false,
@@ -830,8 +851,6 @@ public final class SearchGraphUtils {
             }
         }
 
-        List<Node> nodes = mag.getNodes();
-
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
                 Node x = nodes.get(i);
@@ -841,6 +860,31 @@ public final class SearchGraphUtils {
                     if (mag.existsInducingPath(x, y))
                         return new LegalMagRet(false,
                                 "This is not maximal; there is an inducing path between non-adjacent " + x + " and " + y);
+                }
+            }
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                Edge e = mag.getEdge(x, y);
+
+                if (Edges.isUndirectedEdge(e)) {
+                    for (Node z : mag.getAdjacentNodes(x)) {
+                        if (mag.isParentOf(z, x) || Edges.isBidirectedEdge(mag.getEdge(z, x))) {
+                            return new LegalMagRet(false,
+                                    "For undirected edge " + e + ", " + z + " should not be a parent or a spouse of " + x);
+                        }
+                    }
+
+                    for (Node z : mag.getAdjacentNodes(y)) {
+                        if (mag.isParentOf(z, y) || Edges.isBidirectedEdge(mag.getEdge(z, y))) {
+                            return new LegalMagRet(false,
+                                    "For undirected edge " + e + ", " + z + " should not be a parent or a spouse of " + y);
+                        }
+                    }
                 }
             }
         }
