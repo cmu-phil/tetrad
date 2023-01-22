@@ -920,7 +920,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean existsInducingPath(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node2, node1, this);
+        return GraphUtils.existsInducingPath(node2, node1, this);
     }
 
     /**

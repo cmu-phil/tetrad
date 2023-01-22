@@ -226,7 +226,7 @@ public final class Fci implements GraphSearch {
 
         fciOrient.doFinalOrientation(graph);
 
-        if (SearchGraphUtils.isLegalPag(graph)) {
+        if (SearchGraphUtils.isLegalPag(graph).isLegalPag()) {
             graph.setGraphType(EdgeListGraph.GraphType.PAG);
         }
 

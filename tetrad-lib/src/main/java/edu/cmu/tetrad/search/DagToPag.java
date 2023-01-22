@@ -116,9 +116,7 @@ public final class DagToPag {
         fciOrient.setVerbose(true);
         fciOrient.doFinalOrientation(graph);
 
-        if (SearchGraphUtils.isLegalPag(graph)) {
-            graph.setGraphType(EdgeListGraph.GraphType.PAG);
-        }
+        graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         if (this.verbose) {
             System.out.println("Finishing final orientation");

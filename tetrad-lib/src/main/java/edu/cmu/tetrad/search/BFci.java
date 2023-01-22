@@ -148,7 +148,7 @@ public final class BFci implements GraphSearch {
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 
-        if (SearchGraphUtils.isLegalPag(this.graph)) {
+        if (SearchGraphUtils.isLegalPag(this.graph).isLegalPag()) {
             this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
         }
 

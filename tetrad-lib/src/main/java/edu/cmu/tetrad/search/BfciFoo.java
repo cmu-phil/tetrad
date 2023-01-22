@@ -149,7 +149,7 @@ public final class BfciFoo implements GraphSearch {
         fciOrient.setKnowledge(knowledge2);
         fciOrient.doFinalOrientation(graph);
 
-        if (SearchGraphUtils.isLegalPag(graph)) {
+        if (SearchGraphUtils.isLegalPag(graph).isLegalPag()) {
             graph.setGraphType(EdgeListGraph.GraphType.PAG);
         }
 

@@ -201,7 +201,7 @@ public final class SvarGFci implements GraphSearch {
 
         long time2 = System.currentTimeMillis();
 
-        if (SearchGraphUtils.isLegalPag(this.graph)) {
+        if (SearchGraphUtils.isLegalPag(this.graph).isLegalPag()) {
             this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
         }
 
