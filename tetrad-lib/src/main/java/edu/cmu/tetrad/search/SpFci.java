@@ -168,7 +168,9 @@ public final class SpFci implements GraphSearch {
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 
-        this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
+        if (SearchGraphUtils.isLegalPag(this.graph)) {
+            this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
+        }
 
         return this.graph;
     }

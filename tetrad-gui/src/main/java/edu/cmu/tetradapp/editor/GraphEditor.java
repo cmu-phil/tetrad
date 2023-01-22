@@ -425,6 +425,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
+//        graph.addSeparator();
         graph.add(new PagTypeSetter(getWorkbench()));
 
         menuBar.add(graph);

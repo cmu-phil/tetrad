@@ -139,7 +139,10 @@ public final class GFci implements GraphSearch {
         fciOrient.setKnowledge(this.knowledge);
 
         fciOrient.doFinalOrientation(graph);
-        this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
+
+        if (SearchGraphUtils.isLegalPag(graph)) {
+            graph.setGraphType(EdgeListGraph.GraphType.PAG);
+        }
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 

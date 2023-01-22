@@ -746,6 +746,40 @@ public final class SearchGraphUtils {
         return false;
     }
 
+    public static boolean isLegalPag(Graph pag) {
+        Graph mag = pagToMag(pag);
+
+        for (Node n : mag.getNodes()) {
+            if (n.getNodeType() == NodeType.LATENT) return false;
+            if (mag.existsDirectedPathFromTo(n, n)) return false;
+        }
+
+        for (Edge e : mag.getEdges()) {
+            Node x = e.getNode1();
+            Node y = e.getNode2();
+
+            if (Edges.isBidirectedEdge(e)) {
+                if (mag.existsDirectedPathFromTo(x, y)) return false;
+                if (mag.existsDirectedPathFromTo(y, x)) return false;
+            }
+        }
+
+        List<Node> nodes = mag.getNodes();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (!mag.isAdjacentTo(x, y)) {
+                    if (mag.existsInducingPath(x, y)) return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     public static void arrangeByKnowledgeTiers(Graph graph,
                                                Knowledge knowledge) {
         if (knowledge.getNumTiers() == 0) {

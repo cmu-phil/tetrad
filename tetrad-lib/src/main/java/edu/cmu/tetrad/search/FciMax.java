@@ -230,7 +230,10 @@ public final class FciMax implements GraphSearch {
         fciOrient.fciOrientbk(this.knowledge, graph, graph.getNodes());
         addColliders(graph);
         fciOrient.doFinalOrientation(graph);
-        graph.setGraphType(EdgeListGraph.GraphType.PAG);
+
+        if (SearchGraphUtils.isLegalPag(graph)) {
+            graph.setGraphType(EdgeListGraph.GraphType.PAG);
+        }
 
         long stop = System.currentTimeMillis();
 
