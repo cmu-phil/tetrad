@@ -46,7 +46,7 @@ public class EdgeListGraph implements Graph {
 
     static final long serialVersionUID = 23L;
 
-    public enum GraphType {DAG, CPDAG, PAG, UNLABELED}
+    public enum GraphType {DAG, CPDAG, PAG, MAG, UNLABELED}
 
     /**
      * A list of the nodes in the graph, in the order in which they were added.

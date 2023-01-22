@@ -713,7 +713,7 @@ public final class SearchGraphUtils {
             edge.getProperties().clear();
         }
 
-        GraphUtils.addPagColoring(graph);
+        graph.setGraphType(EdgeListGraph.GraphType.MAG);
 
         return graph;
     }
