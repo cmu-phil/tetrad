@@ -817,7 +817,7 @@ public final class SearchGraphUtils {
 
         if (!pag.equals(pag2)) {
             return new LegalPagRet(false,
-                    "Could be a MAG or between a MAG and PAG; cannot recover the original graph by finding" +
+                    "Could be a MAG or between a MAG and a PAG; cannot recover the original graph by finding" +
                             "\nthe PAG of an implied MAG");
         }
 
