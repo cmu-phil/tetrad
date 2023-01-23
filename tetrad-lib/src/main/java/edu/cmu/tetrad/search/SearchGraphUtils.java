@@ -696,55 +696,7 @@ public final class SearchGraphUtils {
         graph.addEdge(after);
     }
 
-    public static Graph pagToMag1(Graph pag) {
-        Graph graph = new EdgeListGraph(pag);
-        SepsetProducer sepsets = new DagSepsets(graph);
-        FciOrient fciOrient = new FciOrient(sepsets);
-
-        while (true) {
-            boolean oriented = SearchGraphUtils.orientOneCircle(graph);
-            if (!oriented) {
-                break;
-            }
-            fciOrient.doFinalOrientation(graph);
-        }
-
-        for (Edge edge : graph.getEdges()) {
-            edge.getProperties().clear();
-        }
-
-        graph.setGraphType(EdgeListGraph.GraphType.MAG);
-
-        return graph;
-    }
-
-    private static boolean orientOneCircle(Graph graph) {
-        List<Edge> edges = new ArrayList<>(graph.getEdges());
-
-        for (Edge edge : edges) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            if (graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-                if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-                    graph.setEndpoint(x, y, Endpoint.ARROW);
-                } else {
-                    graph.setEndpoint(x, y, Endpoint.TAIL);
-                }
-                return true;
-            } else if (graph.getEndpoint(y, x) == Endpoint.CIRCLE) {
-                if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-                    graph.setEndpoint(y, x, Endpoint.ARROW);
-                } else {
-                    graph.setEndpoint(y, x, Endpoint.TAIL);
-                }
-                return true;
-            }
-        }
-
-        return false;
-    }
-
+    // Zhang 2008 Theorem 2
     public static Graph pagToMag(Graph pag) {
         Graph mag = new EdgeListGraph(pag.getNodes());
         for (Edge e : pag.getEdges()) mag.addEdge(new Edge(e));
