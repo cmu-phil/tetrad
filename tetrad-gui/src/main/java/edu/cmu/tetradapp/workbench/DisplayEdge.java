@@ -165,7 +165,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * The color that unselected edges will be drawn in.
      */
-    private Color lineColor = new Color(78, 117, 175);
+//    private Color lineColor = new Color(78, 117, 175);
+
+    private Color lineColor = DisplayNodeUtils.getNodeFillColor().darker();
+
 
 
     /**
@@ -173,7 +176,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
 
 
-    private Color selectedColor = new Color(221, 66, 32);   // this one
+//    private Color selectedColor = new Color(221, 66, 32);   // this one
+    private Color selectedColor = new Color(244, 150, 20);//DisplayNodeUtils.getNodeSelectedFillColor();   // this one
 
     //    private Color highlightedColor = Color.red.darker().darker();
     private Color highlightedColor = new Color(238, 180, 34);

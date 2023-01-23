@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetradapp.workbench.DisplayEdge;
+import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 import edu.cmu.tetradapp.workbench.PointPair;
 
 import java.awt.*;
@@ -42,6 +43,7 @@ final class SessionEditorEdge extends DisplayEdge {
     private static final int RANDOMIZED = 1;
 
     /* States */
+
     private final Color curr_color = SessionEditorEdge.DIE_BACKGROUND;
     private int sessionEdgeMode;
 
