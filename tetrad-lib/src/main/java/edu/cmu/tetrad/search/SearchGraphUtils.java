@@ -696,7 +696,7 @@ public final class SearchGraphUtils {
         graph.addEdge(after);
     }
 
-    public static Graph pagToMag(Graph pag) {
+    public static Graph pagToMag1(Graph pag) {
         Graph graph = new EdgeListGraph(pag);
         SepsetProducer sepsets = new DagSepsets(graph);
         FciOrient fciOrient = new FciOrient(sepsets);
@@ -743,6 +743,76 @@ public final class SearchGraphUtils {
         }
 
         return false;
+    }
+
+    public static Graph pagToMag(Graph pag) {
+        Graph mag = new EdgeListGraph(pag.getNodes());
+        for (Edge e : pag.getEdges()) mag.addEdge(new Edge(e));
+
+        SepsetProducer sepsets = new DagSepsets(mag);
+        FciOrient fciOrient = new FciOrient(sepsets);
+
+        List<Node> nodes = mag.getNodes();
+
+        Graph pcafci = new EdgeListGraph(nodes);
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = 0; j < nodes.size(); j++) {
+                if (i == j) continue;
+
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (mag.getEndpoint(y, x) == Endpoint.CIRCLE && mag.getEndpoint(x, y) == Endpoint.ARROW) {
+                    mag.setEndpoint(y, x, Endpoint.TAIL);
+                }
+
+                if (mag.getEndpoint(y, x) == Endpoint.TAIL && mag.getEndpoint(x, y) == Endpoint.CIRCLE) {
+                    mag.setEndpoint(x, y, Endpoint.ARROW);
+                }
+
+                if (mag.getEndpoint(y, x) == Endpoint.CIRCLE && mag.getEndpoint(x, y) == Endpoint.CIRCLE) {
+                    pcafci.addEdge(mag.getEdge(x, y));
+                }
+            }
+        }
+
+        for (Edge e : pcafci.getEdges()) {
+            e.setEndpoint1(Endpoint.TAIL);
+            e.setEndpoint2(Endpoint.TAIL);
+        }
+
+        W:
+        while (true) {
+            for (Edge e : pcafci.getEdges()) {
+                if (Edges.isUndirectedEdge(e)) {
+                    Node x = e.getNode1();
+                    Node y = e.getNode2();
+
+                    pcafci.setEndpoint(y, x, Endpoint.TAIL);
+                    pcafci.setEndpoint(x, y, Endpoint.ARROW);
+
+//                    fciOrient.doFinalOrientation(mag);
+
+                    MeekRules meekRules = new MeekRules();
+                    meekRules.setRevertToUnshieldedColliders(false);
+                    meekRules.orientImplied(pcafci);
+
+                    continue W;
+                }
+            }
+
+            break;
+        }
+
+        for (Edge e : pcafci.getEdges()) {
+            mag.removeEdge(e.getNode1(), e.getNode2());
+            mag.addEdge(e);
+        }
+
+        mag.setGraphType(EdgeListGraph.GraphType.MAG);
+
+        return mag;
     }
 
     public static class LegalPagRet {
@@ -817,6 +887,8 @@ public final class SearchGraphUtils {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
+                if (!mag.isAdjacentTo(x, y)) continue;
+
                 if (mag.getEdges(x, y).size() > 1) {
                     return new LegalMagRet(false,
                             "There is more than one edge between " + x + " and " + y);
@@ -868,6 +940,8 @@ public final class SearchGraphUtils {
             for (int j = i + 1; j < nodes.size(); j++) {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
+
+                if (!mag.isAdjacentTo(x, y)) continue;
 
                 Edge e = mag.getEdge(x, y);
 
