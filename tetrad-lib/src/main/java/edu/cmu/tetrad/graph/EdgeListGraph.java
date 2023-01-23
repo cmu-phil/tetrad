@@ -46,7 +46,7 @@ public class EdgeListGraph implements Graph {
 
     static final long serialVersionUID = 23L;
 
-    public enum GraphType {DAG, CPDAG, PAG, UNLABELED}
+    public enum GraphType {DAG, CPDAG, PAG, MAG, UNLABELED}
 
     /**
      * A list of the nodes in the graph, in the order in which they were added.
@@ -446,8 +446,6 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-        if (node1 == node2) return false;
-
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
 
@@ -920,7 +918,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean existsInducingPath(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node2, node1, this);
+        return GraphUtils.existsInducingPath(node2, node1, this);
     }
 
     /**

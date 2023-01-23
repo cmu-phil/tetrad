@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -35,7 +36,6 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Math.max;
-import static java.util.Collections.shuffle;
 import static java.util.Collections.sort;
 
 /**
@@ -696,54 +696,226 @@ public final class SearchGraphUtils {
         graph.addEdge(after);
     }
 
+    // Zhang 2008 Theorem 2
     public static Graph pagToMag(Graph pag) {
-        Graph graph = new EdgeListGraph(pag);
-        SepsetProducer sepsets = new DagSepsets(graph);
+        Graph mag = new EdgeListGraph(pag.getNodes());
+        for (Edge e : pag.getEdges()) mag.addEdge(new Edge(e));
+
+        SepsetProducer sepsets = new DagSepsets(mag);
         FciOrient fciOrient = new FciOrient(sepsets);
 
-        while (true) {
-            boolean oriented = SearchGraphUtils.orientOneCircle(graph);
-            if (!oriented) {
-                break;
+        List<Node> nodes = mag.getNodes();
+
+        Graph pcafci = new EdgeListGraph(nodes);
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = 0; j < nodes.size(); j++) {
+                if (i == j) continue;
+
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (mag.getEndpoint(y, x) == Endpoint.CIRCLE && mag.getEndpoint(x, y) == Endpoint.ARROW) {
+                    mag.setEndpoint(y, x, Endpoint.TAIL);
+                }
+
+                if (mag.getEndpoint(y, x) == Endpoint.TAIL && mag.getEndpoint(x, y) == Endpoint.CIRCLE) {
+                    mag.setEndpoint(x, y, Endpoint.ARROW);
+                }
+
+                if (mag.getEndpoint(y, x) == Endpoint.CIRCLE && mag.getEndpoint(x, y) == Endpoint.CIRCLE) {
+                    pcafci.addEdge(mag.getEdge(x, y));
+                }
             }
-            fciOrient.doFinalOrientation(graph);
         }
 
-        for (Edge edge : graph.getEdges()) {
-            edge.getProperties().clear();
+        for (Edge e : pcafci.getEdges()) {
+            e.setEndpoint1(Endpoint.TAIL);
+            e.setEndpoint2(Endpoint.TAIL);
         }
 
-        GraphUtils.addPagColoring(graph);
+        W:
+        while (true) {
+            for (Edge e : pcafci.getEdges()) {
+                if (Edges.isUndirectedEdge(e)) {
+                    Node x = e.getNode1();
+                    Node y = e.getNode2();
 
-        return graph;
+                    pcafci.setEndpoint(y, x, Endpoint.TAIL);
+                    pcafci.setEndpoint(x, y, Endpoint.ARROW);
+
+//                    fciOrient.doFinalOrientation(mag);
+
+                    MeekRules meekRules = new MeekRules();
+                    meekRules.setRevertToUnshieldedColliders(false);
+                    meekRules.orientImplied(pcafci);
+
+                    continue W;
+                }
+            }
+
+            break;
+        }
+
+        for (Edge e : pcafci.getEdges()) {
+            mag.removeEdge(e.getNode1(), e.getNode2());
+            mag.addEdge(e);
+        }
+
+        mag.setGraphType(EdgeListGraph.GraphType.MAG);
+
+        return mag;
     }
 
-    private static boolean orientOneCircle(Graph graph) {
-        List<Edge> edges = new ArrayList<>(graph.getEdges());
-        shuffle(edges);
+    public static class LegalPagRet {
+        private final boolean legalPag;
+        private final String reason;
 
-        for (Edge edge : edges) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+        public LegalPagRet(boolean legalPag, String reason) {
+            if (reason == null) throw new NullPointerException("Reason must be given.");
+            this.legalPag = legalPag;
+            this.reason = reason;
+        }
 
-            if (graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-                if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-                    graph.setEndpoint(x, y, Endpoint.ARROW);
-                } else {
-                    graph.setEndpoint(x, y, Endpoint.TAIL);
+        public boolean isLegalPag() {
+            return legalPag;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+    }
+
+    public static LegalPagRet isLegalPag(Graph pag) {
+        Graph mag = pagToMag(pag);
+
+        LegalMagRet legalMag = isLegalMag(mag);
+
+        if (!legalMag.isLegalMag()) {
+            return new LegalPagRet(false, legalMag.getReason() + "\nin a MAG implied by this graph.");
+        }
+
+        Graph pag2 = SearchGraphUtils.dagToPag(mag);
+
+        if (!pag.equals(pag2)) {
+            return new LegalPagRet(false,
+                    "Could be a MAG or between a MAG and a PAG; cannot recover the original graph by finding" +
+                            "\nthe PAG of an implied MAG");
+        }
+
+        return new LegalPagRet(true, "This ia a legal PAG");
+    }
+
+    public static class LegalMagRet {
+        private final boolean legalMag;
+        private final String reason;
+
+        public LegalMagRet(boolean legalPag, String reason) {
+            if (reason == null) throw new NullPointerException("Reason must be given.");
+            this.legalMag = legalPag;
+            this.reason = reason;
+        }
+
+        public boolean isLegalMag() {
+            return legalMag;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+    }
+
+    private static LegalMagRet isLegalMag(Graph mag) {
+        for (Node n : mag.getNodes()) {
+            if (n.getNodeType() == NodeType.LATENT)
+                return new LegalMagRet(false,
+                        "Node " + n + " is not measured");
+        }
+
+        List<Node> nodes = mag.getNodes();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (!mag.isAdjacentTo(x, y)) continue;
+
+                if (mag.getEdges(x, y).size() > 1) {
+                    return new LegalMagRet(false,
+                            "There is more than one edge between " + x + " and " + y);
                 }
-                return true;
-            } else if (graph.getEndpoint(y, x) == Endpoint.CIRCLE) {
-                if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-                    graph.setEndpoint(y, x, Endpoint.ARROW);
-                } else {
-                    graph.setEndpoint(y, x, Endpoint.TAIL);
+
+                Edge e = mag.getEdge(x, y);
+
+                if (!(Edges.isDirectedEdge(e) || Edges.isBidirectedEdge(e) || Edges.isUndirectedEdge(e))) {
+                    return new LegalMagRet(false,
+                            "Edge " + e + " should be directed, bidirected, or undirected.");
                 }
-                return true;
             }
         }
 
-        return false;
+        for (Node n : mag.getNodes()) {
+            if (mag.existsDirectedPathFromTo(n, n))
+                return new LegalMagRet(false,
+                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
+        }
+
+        for (Edge e : mag.getEdges()) {
+            Node x = e.getNode1();
+            Node y = e.getNode2();
+
+            if (Edges.isBidirectedEdge(e)) {
+                if (mag.existsDirectedPathFromTo(x, y))
+                    return new LegalMagRet(false,
+                            "Bidirected edge semantics violated: there is an almost cyclic directed path for " + e + " from " + x + " to " + y);
+                if (mag.existsDirectedPathFromTo(y, x))
+                    return new LegalMagRet(false,
+                            "Bidirected edge semantics violated: There is an almost cyclic directed path for " + e + " from " + y + " to " + x);
+            }
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (!mag.isAdjacentTo(x, y)) {
+                    if (mag.existsInducingPath(x, y))
+                        return new LegalMagRet(false,
+                                "This is not maximal; there is an inducing path between non-adjacent " + x + " and " + y);
+                }
+            }
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (!mag.isAdjacentTo(x, y)) continue;
+
+                Edge e = mag.getEdge(x, y);
+
+                if (Edges.isUndirectedEdge(e)) {
+                    for (Node z : mag.getAdjacentNodes(x)) {
+                        if (mag.isParentOf(z, x) || Edges.isBidirectedEdge(mag.getEdge(z, x))) {
+                            return new LegalMagRet(false,
+                                    "For undirected edge " + e + ", " + z + " should not be a parent or a spouse of " + x);
+                        }
+                    }
+
+                    for (Node z : mag.getAdjacentNodes(y)) {
+                        if (mag.isParentOf(z, y) || Edges.isBidirectedEdge(mag.getEdge(z, y))) {
+                            return new LegalMagRet(false,
+                                    "For undirected edge " + e + ", " + z + " should not be a parent or a spouse of " + y);
+                        }
+                    }
+                }
+            }
+        }
+
+        return new LegalMagRet(true, "This ia a legal MAG");
     }
 
     public static void arrangeByKnowledgeTiers(Graph graph,

@@ -21,58 +21,33 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 
 /**
- * Checks to see if a graph is a legal PAG.
+ * Applies PAG coloring to the graph in the workbench.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class PagTypeSetter extends JCheckBoxMenuItem {
+public class PagTypeSetterOld extends JCheckBoxMenuItem {
 
     /**
      * Creates a new copy subsession action for the given desktop and
      * clipboard.
      */
-    public PagTypeSetter(GraphWorkbench workbench) {
-        super("Set type to PAG");
+    public PagTypeSetterOld(GraphWorkbench workbench) {
+        super("f");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
         }
 
         final GraphWorkbench _workbench = workbench;
-
-        Graph graph = workbench.getGraph();
-
         setSelected(workbench.getGraph().getGraphType() == EdgeListGraph.GraphType.PAG);
-        addItemListener(e -> {
-            if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
-                workbench.setPag(false);
-            } else {
-                SearchGraphUtils.LegalPagRet legalPagRet = SearchGraphUtils.isLegalPag(graph);
-
-                if (!legalPagRet.isLegalPag()) {
-                    int ret = JOptionPane.showConfirmDialog(workbench, "This is not a legal PAG--one reason is as follows:" +
-                                    "\n\n" + legalPagRet.getReason() +
-                                    "\n\nProceed anyway?",
-                            "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                    if (ret == JOptionPane.YES_NO_OPTION) {
-                        _workbench.setPag(true);
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(workbench, legalPagRet.getReason());
-                    _workbench.setPag(true);
-                }
-            }
-        });
-
+        addItemListener(e -> _workbench.setPag(e.getStateChange() == ItemEvent.SELECTED));
     }
 }
 

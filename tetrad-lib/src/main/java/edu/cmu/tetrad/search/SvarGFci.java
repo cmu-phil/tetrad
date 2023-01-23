@@ -197,15 +197,13 @@ public final class SvarGFci implements GraphSearch {
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(this.graph);
 
-//        System.out.println("GFCI: Final orientation done");
-
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 
         long time2 = System.currentTimeMillis();
 
-        long elapsedTime = time2 - time1;
-
-        this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
+        if (SearchGraphUtils.isLegalPag(this.graph).isLegalPag()) {
+            this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
+        }
 
         return this.graph;
     }
