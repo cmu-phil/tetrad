@@ -1475,7 +1475,6 @@ public final class DataUtils {
 
                 for (int i = 0; i < xTransformed.length; i++) {
                     xTransformed[i] /= n;
-
                     xTransformed[i] = normalDistribution.inverseCumulativeProbability(xTransformed[i]);
                 }
 
@@ -1484,12 +1483,34 @@ public final class DataUtils {
                 }
 
                 for (int i = 0; i < xTransformed.length; i++) {
-//                    xTransformed[i] /= std;
                     xTransformed[i] *= std1;
                     xTransformed[i] += mu1;
                 }
 
                 double a2Transformed = new AndersonDarlingTest(xTransformed).getASquaredStar();
+
+                double min = Double.POSITIVE_INFINITY;
+                double max = Double.NEGATIVE_INFINITY;
+
+                for (int i = 0; i < xTransformed.length; i++) {
+                    if (xTransformed[i] > max && !Double.isInfinite(xTransformed[i])) {
+                        max = xTransformed[i];
+                    }
+
+                    if (xTransformed[i] < min && !Double.isInfinite(xTransformed[i])) {
+                        min = xTransformed[i];
+                    }
+                }
+
+                for (int i = 0; i < xTransformed.length; i++) {
+                    if (xTransformed[i] == Double.POSITIVE_INFINITY) {
+                        xTransformed[i] = max;
+                    }
+
+                    if (xTransformed[i] < Double.NEGATIVE_INFINITY) {
+                        xTransformed[i] = min;
+                    }
+                }
 
                 System.out.println(dataSet.getVariable(j) + ": A^2* = " + a2Orig + " transformed A^2* = " + a2Transformed);
 

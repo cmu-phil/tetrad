@@ -97,7 +97,7 @@ public class AndersonDarlingTest {
     //============================PRIVATE METHODS========================//
 
     private void runTest() {
-        double[] x = leaveOutNaN(this.data);
+        double[] x = leaveOutNanAndInfinite(this.data);
         int n = x.length;
 
         Arrays.sort(x);
@@ -110,7 +110,6 @@ public class AndersonDarlingTest {
         }
 
         double h = 0.0;
-//        double[] sColumn = new double[n];
 
         int numSummed = 0;
 
@@ -148,11 +147,11 @@ public class AndersonDarlingTest {
         this.p = p;
     }
 
-    private double[] leaveOutNaN(double[] data) {
+    private double[] leaveOutNanAndInfinite(double[] data) {
         int numPresent = 0;
 
         for (double aData1 : data) {
-            if (!Double.isNaN(aData1)) {
+            if (!Double.isNaN(aData1) && !Double.isInfinite(aData1)) {
                 numPresent++;
             }
         }
@@ -165,7 +164,7 @@ public class AndersonDarlingTest {
             List<Double> _leaveOutMissing = new ArrayList<>();
 
             for (double aData : data) {
-                if (!Double.isNaN(aData)) {
+                if (!Double.isNaN(aData) && !Double.isInfinite(aData)) {
                     _leaveOutMissing.add(aData);
                 }
             }
