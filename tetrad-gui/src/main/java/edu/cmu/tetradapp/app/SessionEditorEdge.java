@@ -250,7 +250,7 @@ final class SessionEditorEdge extends DisplayEdge {
                     pp.getTo().translate(-getLocation().x, -getLocation().y);
 
                     setClickRegion(null);
-
+                    
                     g.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x,
                             pp.getTo().y);
                     drawEndpoints(pp, g);

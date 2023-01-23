@@ -114,7 +114,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
     private Shape getShape() {
         return new RoundRectangle2D.Double(0, 0, getSize().width - 1,
-                getSize().height - 1, 15, 15);
+                getSize().height - 1, 10, 10);
     }
 
     public boolean contains(int x, int y) {
