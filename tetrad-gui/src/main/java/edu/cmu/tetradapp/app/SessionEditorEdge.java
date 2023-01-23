@@ -218,13 +218,25 @@ final class SessionEditorEdge extends DisplayEdge {
      */
     public void paint(Graphics g) {
 
+        Graphics2D g2d = (Graphics2D) g;
+
         // NOTE:  For this component, the resetBounds() methods should ALWAYS
         // be called before repaint().
+
+        Stroke s;
+
+        boolean thick = true;
+        float width = thick ? 2.5f : 1.1f;
+
+        Stroke solid = new BasicStroke(width);
+
+        g2d.setStroke(solid);
+
         PointPair pp;
 
         switch (getMode()) {
             case DisplayEdge.HALF_ANCHORED:
-                g.setColor(getLineColor());
+                g2d.setColor(getLineColor());
                 pp = calculateEdge(getNode1(), getRelativeMouseTrackPoint());
 
                 if (pp != null) {
@@ -233,15 +245,15 @@ final class SessionEditorEdge extends DisplayEdge {
 
                     setClickRegion(null);
 
-                    g.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x,
+                    g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x,
                             pp.getTo().y);
-                    drawEndpoints(pp, g);
+                    drawEndpoints(pp, g2d);
                     firePropertyChange("newPointPair", null, pp);
                 }
                 break;
 
             case DisplayEdge.ANCHORED_UNSELECTED:
-                g.setColor(getLineColor());
+                g2d.setColor(getLineColor());
 
                 pp = calculateEdge(getNode1(), getNode2());
 
@@ -250,16 +262,16 @@ final class SessionEditorEdge extends DisplayEdge {
                     pp.getTo().translate(-getLocation().x, -getLocation().y);
 
                     setClickRegion(null);
-                    
-                    g.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x,
+
+                    g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x,
                             pp.getTo().y);
-                    drawEndpoints(pp, g);
+                    drawEndpoints(pp, g2d);
                     firePropertyChange("newPointPair", null, pp);
                 }
                 break;
 
             case DisplayEdge.ANCHORED_SELECTED:
-                g.setColor(getSelectedColor());
+                g2d.setColor(getSelectedColor());
 
                 pp = calculateEdge(getNode1(), getNode2());
 
@@ -269,9 +281,9 @@ final class SessionEditorEdge extends DisplayEdge {
 
                     setClickRegion(null);
 
-                    g.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x,
+                    g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x,
                             pp.getTo().y);
-                    drawEndpoints(pp, g);
+                    drawEndpoints(pp, g2d);
                     firePropertyChange("newPointPair", null, pp);
                 }
                 break;
@@ -283,7 +295,7 @@ final class SessionEditorEdge extends DisplayEdge {
         setConnectedPoints(pp);
 
         if (this.sessionEdgeMode == SessionEditorEdge.RANDOMIZED) {
-            drawDice(g, this.curr_color);
+            drawDice(g2d, this.curr_color);
         }
     }
 
