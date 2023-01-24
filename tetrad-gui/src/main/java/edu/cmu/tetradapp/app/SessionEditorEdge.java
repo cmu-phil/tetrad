@@ -225,8 +225,8 @@ final class SessionEditorEdge extends DisplayEdge {
 
         Stroke s;
 
-        boolean thick = true;
-        float width = thick ? 5f : 1.1f;
+        boolean thick = false;
+        float width = thick ? 3f : 1.1f;
 
         Stroke solid = new BasicStroke(width);
 
@@ -234,7 +234,7 @@ final class SessionEditorEdge extends DisplayEdge {
 
         PointPair pp;
 
-        Color lineColor = new Color(38, 120, 166);
+        Color lineColor = new Color(24, 113, 171, 255);
 
         switch (getMode()) {
             case DisplayEdge.HALF_ANCHORED:
@@ -274,8 +274,8 @@ final class SessionEditorEdge extends DisplayEdge {
                 break;
 
             case DisplayEdge.ANCHORED_SELECTED:
-                g2d.setColor(lineColor);// getLineColor());
-//                g2d.setColor(getSelectedColor());
+//                g2d.setColor(lineColor);// getLineColor());
+                g2d.setColor(getSelectedColor());
 
                 pp = calculateEdge(getNode1(), getNode2());
 
