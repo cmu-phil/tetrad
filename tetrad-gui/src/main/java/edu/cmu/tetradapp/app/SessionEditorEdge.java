@@ -226,7 +226,7 @@ final class SessionEditorEdge extends DisplayEdge {
         Stroke s;
 
         boolean thick = true;
-        float width = thick ? 2.5f : 1.1f;
+        float width = thick ? 5f : 1.1f;
 
         Stroke solid = new BasicStroke(width);
 
@@ -234,9 +234,11 @@ final class SessionEditorEdge extends DisplayEdge {
 
         PointPair pp;
 
+        Color lineColor = new Color(38, 120, 166);
+
         switch (getMode()) {
             case DisplayEdge.HALF_ANCHORED:
-                g2d.setColor(getLineColor());
+                g2d.setColor(lineColor);// getLineColor());
                 pp = calculateEdge(getNode1(), getRelativeMouseTrackPoint());
 
                 if (pp != null) {
@@ -253,7 +255,8 @@ final class SessionEditorEdge extends DisplayEdge {
                 break;
 
             case DisplayEdge.ANCHORED_UNSELECTED:
-                g2d.setColor(getLineColor());
+                g2d.setColor(lineColor);// getLineColor());
+//                g2d.setColor(getLineColor());
 
                 pp = calculateEdge(getNode1(), getNode2());
 
@@ -271,7 +274,8 @@ final class SessionEditorEdge extends DisplayEdge {
                 break;
 
             case DisplayEdge.ANCHORED_SELECTED:
-                g2d.setColor(getSelectedColor());
+                g2d.setColor(lineColor);// getLineColor());
+//                g2d.setColor(getSelectedColor());
 
                 pp = calculateEdge(getNode1(), getNode2());
 

@@ -167,7 +167,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
 //    private Color lineColor = new Color(78, 117, 175);
 
-    private Color lineColor = new Color(46, 122, 152, 255);// DisplayNodeUtils.getNodeFillColor().darker().darker();
+    private Color lineColor = new Color(24, 113, 171, 255);// DisplayNodeUtils.getNodeFillColor().darker().darker();
 
 
 
@@ -431,7 +431,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         // width slightly greater than 1.0. jdramsey 4/16/2005
 //        g2d.setStroke(new BasicStroke(1.000001f));
         Stroke s;
-        float width = thick ? 2.5f : 1.1f;
+        float width = thick ? 3f : 1.1f;
 
         Stroke solid = new BasicStroke(width);
         Stroke dashed = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{9}, 0);
