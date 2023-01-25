@@ -234,7 +234,7 @@ final class SessionEditorEdge extends DisplayEdge {
 
         PointPair pp;
 
-        Color lineColor = new Color(24, 113, 171, 255);
+        Color lineColor = new Color(26, 113, 169, 255);
 
         switch (getMode()) {
             case DisplayEdge.HALF_ANCHORED:

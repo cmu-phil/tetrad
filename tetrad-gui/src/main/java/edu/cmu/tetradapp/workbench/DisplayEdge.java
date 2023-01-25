@@ -167,7 +167,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
 //    private Color lineColor = new Color(78, 117, 175);
 
-    private Color lineColor = new Color(24, 113, 171, 255);// DisplayNodeUtils.getNodeFillColor().darker().darker();
+    private Color lineColor = new Color(26, 113, 169, 255);// DisplayNodeUtils.getNodeFillColor().darker().darker();
 
 
 
