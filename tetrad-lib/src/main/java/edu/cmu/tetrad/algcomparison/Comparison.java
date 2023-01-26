@@ -1471,7 +1471,7 @@ public class Comparison {
                     + (isShowUtilities() ? 1 : 0);
 
             TextTable table = new TextTable(rows, cols);
-            table.setDelimiter(TextTable.Delimiter.TAB);
+            table.setDelimiter(TextTable.Delimiter.JUSTIFIED);
 
             int initialColumn = 0;
 

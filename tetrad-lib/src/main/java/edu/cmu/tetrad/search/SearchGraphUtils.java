@@ -848,11 +848,11 @@ public final class SearchGraphUtils {
     }
 
     private static LegalMagRet isLegalMag(Graph mag) {
-        for (Node n : mag.getNodes()) {
-            if (n.getNodeType() == NodeType.LATENT)
-                return new LegalMagRet(false,
-                        "Node " + n + " is not measured");
-        }
+//        for (Node n : mag.getNodes()) {
+//            if (n.getNodeType() == NodeType.LATENT)
+//                return new LegalMagRet(false,
+//                        "Node " + n + " is not measured");
+//        }
 
         List<Node> nodes = mag.getNodes();
 
