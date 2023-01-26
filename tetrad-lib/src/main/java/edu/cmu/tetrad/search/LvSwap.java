@@ -296,36 +296,6 @@ public final class LvSwap implements GraphSearch {
             }
         }
 
-        for (int i = 0; i < 1; i++) {
-            for (Node y : scorer.getPi()) {
-                List<Node> adjy = G.getAdjacentNodes(y);
-
-                for (Node x : adjy) {
-                    for (Node z : adjy) {
-                        if (!scorer.adjacent(x, z)) continue;
-                        if (T.contains(new Triple(x, y, z))) continue;
-
-                        scorer.goToBookmark();
-                        scorer.swaptuck(x, y, z, false);
-
-                        if (!scorer.adjacent(x, z) && scorer.collider(x, y, z)) {
-                        Set<Node> adj = scorer.getAdjacentNodes(x);
-                        adj.retainAll(scorer.getAdjacentNodes(z));
-//
-//                            Node w = y;
-//
-                        for (Node w : adj) {
-                            if (scorer.collider(x, w, z)) {
-                                T.add(new Triple(x, w, z));
-                                scorer.bookmark();
-                            }
-                        }
-                        }
-                    }
-                }
-            }
-        }
-
         removeShields(G, T);
         retainUnshieldedColliders(G);
         orientColliders(G, T);
@@ -337,6 +307,91 @@ public final class LvSwap implements GraphSearch {
         }
 
         scorer.goToBookmark();
+        return G;
+    }
+
+    public Graph lvswap3() {
+        TeyssierScorer scorer = new TeyssierScorer(test, score);
+
+        Boss alg = new Boss(scorer);
+        alg.setAlgType(bossAlgType);
+        alg.setUseScore(useScore);
+        alg.setUseRaskuttiUhler(useRaskuttiUhler);
+        alg.setUseDataOrder(useDataOrder);
+        alg.setDepth(depth);
+        alg.setNumStarts(numStarts);
+        alg.setVerbose(verbose);
+
+        alg.bestOrder(this.score.getVariables());
+        Graph G = alg.getGraph(true);
+
+        retainUnshieldedColliders(G);
+
+        Graph G2 = new EdgeListGraph(G);
+
+        scorer.bookmark();
+
+        Set<Triple> T = new HashSet<>();
+        Set<Triple> allT = new HashSet<>();
+
+        do {
+            allT.addAll(T);
+
+            G = new EdgeListGraph(G2);
+
+            removeShields(G, allT);
+            retainUnshieldedColliders(G);
+            orientColliders(G, allT);
+
+            T = new HashSet<>();
+            List<Node> nodes = G.getNodes();
+
+            for (Node y : nodes) {
+                for (Node x : G.getAdjacentNodes(y)) {
+                    for (Node z : G.getAdjacentNodes(y)) {
+                        if (x == y) continue;
+                        if (x == z) continue;
+                        if (y == z) continue;
+
+                        if (!G.isAdjacentTo(x, z)) continue;
+
+                        scorer.goToBookmark();
+
+                        List<Node> children = new ArrayList<>(scorer.getAdjacentNodes(y));
+
+                        int _depth = depth < 0 ? children.size() : depth;
+                        _depth = Math.min(_depth, children.size());
+
+                        // Order of increasing size
+                        SublistGenerator gen = new SublistGenerator(children.size(), _depth);
+                        int[] choice;
+
+                        while ((choice = gen.next()) != null) {
+                            if (choice.length == 0) continue;
+                            scorer.goToBookmark();
+
+                            List<Node> Q = GraphUtils.asList(choice, children);
+
+                            for (Node w : Q) {
+                                scorer.moveTo(w, scorer.index(y));
+                            }
+
+                            if (scorer.collider(x, y, z) && !scorer.adjacent(x, z) && !G.isDefCollider(x, y, z)) {
+                                T.add(new Triple(x, y, z));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } while (!allT.containsAll(T));
+
+        finalOrientation(knowledge, G);
+
+        if (SearchGraphUtils.isLegalPag(G).isLegalPag()) {
+            G.setGraphType(EdgeListGraph.GraphType.PAG);
+        }
+
         return G;
     }
 
@@ -386,6 +441,50 @@ public final class LvSwap implements GraphSearch {
         }
     }
 
+    public static void retainColliders(Graph graph) {
+        Graph orig = new EdgeListGraph(graph);
+        graph.reorientAllWith(Endpoint.CIRCLE);
+        List<Node> nodes = graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (orig.isDefCollider(a, b, c)) {
+                    graph.setEndpoint(a, b, Endpoint.ARROW);
+                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                }
+            }
+        }
+    }
+
+
+    public static void retainArrows(Graph graph) {
+        Graph orig = new EdgeListGraph(graph);
+        graph.reorientAllWith(Endpoint.CIRCLE);
+
+        List<Node> nodes = graph.getNodes();
+
+        for (Node x : nodes) {
+            for (Node y : nodes) {
+                if (x == y) continue;
+                if (orig.getEndpoint(x, y) == Endpoint.ARROW) {
+                    graph.setEndpoint(x, y, Endpoint.ARROW);
+                }
+            }
+        }
+    }
+
     private void finalOrientation(Knowledge knowledge2, Graph G) {
         SepsetProducer sepsets = new SepsetsGreedy(G, test, null, depth);
         FciOrient fciOrient = new FciOrient(sepsets);
@@ -403,9 +502,11 @@ public final class LvSwap implements GraphSearch {
             Node x = triple.getX();
             Node w = triple.getZ();
 
-            if (graph.isAdjacentTo(x, w)) {
-                out.println("Removing (swap rule): " + graph.getEdge(x, w));
+            Edge edge = graph.getEdge(x, w);
+
+            if (edge != null) {
                 graph.removeEdge(x, w);
+                out.println("Removing (swap rule): " + edge);
             }
         }
     }

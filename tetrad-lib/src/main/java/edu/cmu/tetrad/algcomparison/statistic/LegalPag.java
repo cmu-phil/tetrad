@@ -1,13 +1,14 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Returns 1 if the estimated graph is a legal PAG, 0 if not.
+ * Legal PAG
  *
  * @author jdramsey
  */
@@ -21,14 +22,29 @@ public class LegalPag implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Legal PAG (1 if legal PAG, 0 if not)";
+        return "Legal PAG";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(estGraph);
+        List<Node> estNodes = estGraph.getNodes();
+
+        estNodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+
+        Graph pag = new EdgeListGraph(estNodes);
+
+        for (Edge edge : estGraph.getEdges()) {
+            pag.addEdge(edge);
+        }
+
+        SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(pag);
         System.out.println(legalPag.getReason());
-        return legalPag.isLegalPag() ? 1.0 : 0.0;
+        if (legalPag.isLegalPag()) {
+            return 1.0;
+        }
+        else {
+            return 0.0;
+        }
     }
 
     @Override

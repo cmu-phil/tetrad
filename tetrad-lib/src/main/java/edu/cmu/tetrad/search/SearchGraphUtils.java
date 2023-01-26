@@ -787,28 +787,6 @@ public final class SearchGraphUtils {
     }
 
     public static LegalPagRet isLegalPag(Graph pag) {
-        for (Node n : pag.getNodes()) {
-            if (pag.existsDirectedPathFromTo(n, n))
-                return new LegalPagRet(false,
-                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself in the graph");
-        }
-
-        for (Edge e : pag.getEdges()) {
-            Node x = e.getNode1();
-            Node y = e.getNode2();
-
-            if (Edges.isBidirectedEdge(e)) {
-                if (pag.existsDirectedPathFromTo(x, y))
-                    return new LegalPagRet(false,
-                            "Bidirected edge semantics violated: there is an almost cyclic directed path for " + e + " from " + x + " to " + y
-                                        + " in the graph");
-                if (pag.existsDirectedPathFromTo(y, x))
-                    return new LegalPagRet(false,
-                            "Bidirected edge semantics violated: There is an almost cyclic directed path for " + e + " from " + y + " to " + x
-                                    + " in the graph");
-            }
-        }
-
         Graph mag = pagToMag(pag);
 
         LegalMagRet legalMag = isLegalMag(mag);
@@ -848,11 +826,11 @@ public final class SearchGraphUtils {
     }
 
     private static LegalMagRet isLegalMag(Graph mag) {
-//        for (Node n : mag.getNodes()) {
-//            if (n.getNodeType() == NodeType.LATENT)
-//                return new LegalMagRet(false,
-//                        "Node " + n + " is not measured");
-//        }
+        for (Node n : mag.getNodes()) {
+            if (n.getNodeType() == NodeType.LATENT)
+                return new LegalMagRet(false,
+                        "Node " + n + " is not measured");
+        }
 
         List<Node> nodes = mag.getNodes();
 
