@@ -41,6 +41,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import org.reflections.Reflections;
@@ -53,8 +54,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
-
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 /**
  * Script to do a comparison of a list of algorithms using a list of statistics
@@ -302,8 +301,13 @@ public class Comparison {
         }
 
         // Run all of the algorithms and compile statistics.
-        double[][][][] allStats = calcStats(algorithmSimulationWrappers, algorithmWrappers, simulationWrappers,
-                statistics, numRuns, stdout);
+        double[][][][] allStats = new double[0][][][];
+        try {
+            allStats = calcStats(algorithmSimulationWrappers, algorithmWrappers, simulationWrappers,
+                    statistics, numRuns, stdout);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
 
         {
@@ -564,8 +568,9 @@ public class Comparison {
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(dagToPag(graph), file4, false);
+                        GraphUtils.saveGraph(new DagToPag(graph).convert(), file4, false);
                     }
+
                 }
 
                 PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
@@ -650,7 +655,7 @@ public class Comparison {
 
                 if (isSavePags()) {
                     File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                    GraphUtils.saveGraph(dagToPag(graph), file4, false);
+                    GraphUtils.saveGraph(new DagToPag(graph).convert(), file4, false);
                 }
             }
         } catch (IOException e) {
@@ -895,21 +900,21 @@ public class Comparison {
 
     private double[][][][] calcStats(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
                                      List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
-                                     Statistics statistics, int numRuns, PrintStream stdout) {
+                                     Statistics statistics, int numRuns, PrintStream stdout) throws Exception {
         final int numGraphTypes = 4;
 
         this.graphTypeUsed = new boolean[4];
 
         double[][][][] allStats = new double[4][algorithmSimulationWrappers.size()][statistics.size() + 1][numRuns];
 
-        List<AlgorithmTask> tasks = new ArrayList<>();
+        List<Callable<Boolean>> tasks = new ArrayList<>();
         int index = 0;
 
         for (int algSimIndex = 0; algSimIndex < algorithmSimulationWrappers.size(); algSimIndex++) {
             for (int runIndex = 0; runIndex < numRuns; runIndex++) {
                 AlgorithmSimulationWrapper algorithmSimulationWrapper = algorithmSimulationWrappers.get(algSimIndex);
                 Run run = new Run(algSimIndex, runIndex, index++, algorithmSimulationWrapper);
-                AlgorithmTask task = new AlgorithmTask(algorithmSimulationWrappers,
+                Callable<Boolean> task = new AlgorithmTask(algorithmSimulationWrappers,
                         algorithmWrappers, simulationWrappers,
                         statistics, numGraphTypes, allStats, run, stdout);
 //                task.compute();
@@ -918,16 +923,15 @@ public class Comparison {
         }
 
         if (parallelized) {
-            int parallelism = ForkJoinPool.getCommonPoolParallelism() + 10;
+            int parallelism = ForkJoinPool.getCommonPoolParallelism() * 10;
             ForkJoinPool pool = (ForkJoinPool) Executors.newWorkStealingPool(parallelism);
             pool.invokeAll(tasks);
             pool.shutdown();
         } else {
-            for (AlgorithmTask task : tasks) {
+            for (Callable<Boolean> task : tasks) {
                 task.call();
             }
         }
-
         return allStats;
     }
 
@@ -1085,7 +1089,7 @@ public class Comparison {
         }
 
         @Override
-        public Boolean call() {
+        public Boolean call() throws Exception {
             doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,
                     this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run, this.stdout);
             return true;
@@ -1234,7 +1238,7 @@ public class Comparison {
             } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
                 comparisonGraph = SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueGraph));
             } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
-                comparisonGraph = dagToPag(new EdgeListGraph(trueGraph));
+                comparisonGraph = new DagToPag(new EdgeListGraph(trueGraph)).convert();
             } else {
                 throw new IllegalArgumentException("Unrecognized graph type.");
             }
@@ -1467,7 +1471,7 @@ public class Comparison {
                     + (isShowUtilities() ? 1 : 0);
 
             TextTable table = new TextTable(rows, cols);
-            table.setDelimiter(isTabDelimitedTables() ? TextTable.Delimiter.TAB : TextTable.Delimiter.JUSTIFIED);
+            table.setDelimiter(TextTable.Delimiter.TAB);
 
             int initialColumn = 0;
 
