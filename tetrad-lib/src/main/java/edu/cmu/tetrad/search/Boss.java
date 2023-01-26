@@ -132,62 +132,111 @@ public class Boss {
         return bestPerm;
     }
 
+//    public void betterMutation1(@NotNull TeyssierScorer scorer) {
+//        double bestScore = scorer.score();
+//        scorer.bookmark();
+//        double s1, s2;
+//
+//        Set<Node> introns1;
+//        Set<Node> introns2;
+//
+//        introns2 = new HashSet<>(scorer.getPi());
+//
+//        int[] range = new int[2];
+//
+//        do {
+//            s1 = scorer.score();
+//
+//            introns1 = introns2;
+//            introns2 = new HashSet<>();
+//
+//            for (int i = 1; i < scorer.size(); i++) {
+//                Node x = scorer.get(i);
+//                if (!introns1.contains(x)) continue;
+//
+//                scorer.bookmark(1);
+//
+//                for (int j = i - 1; j >= 0; j--) {
+//                    if (!scorer.adjacent(scorer.get(j), x)) continue;
+//
+//                    tuck(x, j, scorer, range);
+//
+//                    if (scorer.score() < bestScore || violatesKnowledge(scorer.getPi())) {
+//                        scorer.goToBookmark();
+//                    } else {
+//                        bestScore = scorer.score();
+//
+//                        for (int l = range[0]; l <= range[1]; l++) {
+//                            introns2.add(scorer.get(l));
+//                        }
+//                    }
+//
+//                    scorer.bookmark();
+//
+//                    if (verbose) {
+//                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutation1)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+//                    }
+//                }
+//            }
+//
+//            if (verbose) {
+//                System.out.println();
+//            }
+//
+//            s2 = scorer.score();
+//        } while (s2 > s1);
+//
+//        scorer.goToBookmark(1);
+//    }
+
     public void betterMutation1(@NotNull TeyssierScorer scorer) {
         double bestScore = scorer.score();
+        double originalScore;
         scorer.bookmark();
-        double s1, s2;
 
         Set<Node> introns1;
         Set<Node> introns2;
 
         introns2 = new HashSet<>(scorer.getPi());
-
         int[] range = new int[2];
 
         do {
-            s1 = scorer.score();
+            originalScore = bestScore;
 
             introns1 = introns2;
             introns2 = new HashSet<>();
 
             for (int i = 1; i < scorer.size(); i++) {
                 Node x = scorer.get(i);
-                if (!introns1.contains(x)) continue;
-
-                scorer.bookmark(1);
+//                if (!introns1.contains(x)) continue;
 
                 for (int j = i - 1; j >= 0; j--) {
                     if (!scorer.adjacent(scorer.get(j), x)) continue;
 
                     tuck(x, j, scorer, range);
 
-                    if (scorer.score() < bestScore || violatesKnowledge(scorer.getPi())) {
-                        scorer.goToBookmark();
-                    } else {
-                        bestScore = scorer.score();
-
+                    if (scorer.score() > bestScore || violatesKnowledge(scorer.getPi())) {
                         for (int l = range[0]; l <= range[1]; l++) {
                             introns2.add(scorer.get(l));
                         }
+                        bestScore = scorer.score();
+                        scorer.bookmark();
+                    } else {
+                        scorer.goToBookmark();
                     }
 
-                    scorer.bookmark();
-
                     if (verbose) {
-                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutation1)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
                     }
                 }
             }
-
             if (verbose) {
                 System.out.println();
             }
-
-            s2 = scorer.score();
-        } while (s2 > s1);
-
-        scorer.goToBookmark(1);
+        } while (bestScore > originalScore);
     }
+
 
 
     public void betterMutation2(@NotNull TeyssierScorer scorer) {
@@ -210,7 +259,7 @@ public class Boss {
                 double _sp = NEGATIVE_INFINITY;
                 scorer.bookmark();
 
-                if (!introns1.contains(k)) continue;
+//                if (!introns1.contains(k)) continue;
 
                 for (int j = 0; j < scorer.size(); j++) {
                     scorer.moveTo(k, j);

@@ -917,14 +917,14 @@ public class Comparison {
                 Callable<Boolean> task = new AlgorithmTask(algorithmSimulationWrappers,
                         algorithmWrappers, simulationWrappers,
                         statistics, numGraphTypes, allStats, run, stdout);
-//                task.compute();
+//                task.call();
                 tasks.add(task);
             }
         }
 
         if (parallelized) {
-            int parallelism = ForkJoinPool.getCommonPoolParallelism() * 10;
-            ForkJoinPool pool = (ForkJoinPool) Executors.newWorkStealingPool(parallelism);
+//            int parallelism = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
+            ForkJoinPool pool = (ForkJoinPool) Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() * 10);
             pool.invokeAll(tasks);
             pool.shutdown();
         } else {

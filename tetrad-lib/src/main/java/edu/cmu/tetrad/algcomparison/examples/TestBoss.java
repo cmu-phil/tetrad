@@ -31,6 +31,7 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * Test the degenerate Gaussian score.
@@ -40,14 +41,17 @@ import edu.cmu.tetrad.util.Parameters;
 public class TestBoss {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        parameters.set("numRuns", 10);
-        parameters.set("differentGraphs", true);
-        parameters.set("numMeasures", 60);
-        parameters.set("avgDegree", 6);
-        parameters.set("sampleSize", 1000);
+        parameters.set(Params.NUM_RUNS, 10);
+        parameters.set(Params.DIFFERENT_GRAPHS, true);
+        parameters.set(Params.NUM_MEASURES, 60);
+        parameters.set(Params.AVG_DEGREE, 6);
+        parameters.set(Params.SAMPLE_SIZE, 1000);
 
-        parameters.set("penaltyDiscount", 2);
-        parameters.set("alpha", 1e-2);
+        parameters.set(Params.BOSS_ALG, 1, 2);
+
+        parameters.set(Params.PENALTY_DISCOUNT, 2);
+        parameters.set(Params.SEM_BIC_STRUCTURE_PRIOR, 0);
+        parameters.set(Params.ALPHA, 1e-2);
 
         parameters.set("verbose", false);
 
