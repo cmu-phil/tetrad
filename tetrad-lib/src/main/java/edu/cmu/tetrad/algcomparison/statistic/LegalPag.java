@@ -25,24 +25,8 @@ public class LegalPag implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-//        List<Node> estNodes = estGraph.getNodes();
-//
-//        estNodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-//
-//        Graph pag = SearchGraphUtils.dagToPag(estGraph);
-//
-////        Graph pag = new EdgeListGraph(estNodes);
-////
-////        for (Edge edge : estGraph.getEdges()) {
-////            pag.addEdge(edge);
-////        }
-
         SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(estGraph);
         System.out.println(legalPag.getReason());
-
-//        if (legalPag.isLegalPag() != (estGraph.getGraphType() == EdgeListGraph.GraphType.PAG)) {
-//            throw new IllegalArgumentException("Wasn't correctly labeled as a PAG");
-//        }
 
         if (legalPag.isLegalPag()) {
             return 1.0;
