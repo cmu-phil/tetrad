@@ -67,7 +67,6 @@ public class TestBoss {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new Fges(new SemBicScore()));
         algorithms.add(new BOSS(new FisherZ(), new SemBicScore()));
-        algorithms.add(new BOSSDC(new SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
