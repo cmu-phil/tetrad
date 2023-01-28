@@ -799,6 +799,10 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public void setGraphType(GraphType graphType) {
+        if (graphType == GraphType.PAG) {
+            System.out.println();
+        }
+
         this.graphType = graphType;
     }
 

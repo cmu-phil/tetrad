@@ -49,6 +49,14 @@ public class BOSSDC implements Algorithm, UsesScoreWrapper {
         Score score = this.score.getScore(dataModel, parameters);
         BossDC boss = new BossDC(score);
 
+        if (parameters.getInt(Params.BOSS_ALG) == 1) {
+            boss.setAlgType(Boss.AlgType.BOSS1);
+        } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
+            boss.setAlgType(Boss.AlgType.BOSS2);
+        } else {
+            throw new IllegalArgumentException("Unrecognized boss algorithm type.");
+        }
+
         boss.setDepth(parameters.getInt(Params.DEPTH));
         boss.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
         boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -85,6 +93,7 @@ public class BOSSDC implements Algorithm, UsesScoreWrapper {
         params.add(Params.VERBOSE);
 
         // Parameters
+        params.add(Params.BOSS_ALG);
         params.add(Params.NUM_STARTS);
         params.add(Params.DEPTH);
 

@@ -51,7 +51,7 @@ public class TestBoss {
         parameters.set(Params.COEF_LOW, 0);
         parameters.set(Params.COEF_HIGH, 1);
 
-        parameters.set(Params.BOSS_ALG, 1);
+        parameters.set(Params.BOSS_ALG, 1, 2);
 
         parameters.set(Params.PENALTY_DISCOUNT, 2);
         parameters.set(Params.SEM_BIC_STRUCTURE_PRIOR, 0);

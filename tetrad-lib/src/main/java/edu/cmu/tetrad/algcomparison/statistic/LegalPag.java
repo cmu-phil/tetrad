@@ -1,11 +1,9 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Legal PAG
@@ -22,27 +20,33 @@ public class LegalPag implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Legal PAG";
+        return "1 if the estimated graph passes the Legal PAG check, 0 of not";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        List<Node> estNodes = estGraph.getNodes();
+//        List<Node> estNodes = estGraph.getNodes();
+//
+//        estNodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+//
+//        Graph pag = SearchGraphUtils.dagToPag(estGraph);
+//
+////        Graph pag = new EdgeListGraph(estNodes);
+////
+////        for (Edge edge : estGraph.getEdges()) {
+////            pag.addEdge(edge);
+////        }
 
-        estNodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
-        Graph pag = new EdgeListGraph(estNodes);
-
-        for (Edge edge : estGraph.getEdges()) {
-            pag.addEdge(edge);
-        }
-
-        SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(pag);
+        SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(estGraph);
         System.out.println(legalPag.getReason());
+
+//        if (legalPag.isLegalPag() != (estGraph.getGraphType() == EdgeListGraph.GraphType.PAG)) {
+//            throw new IllegalArgumentException("Wasn't correctly labeled as a PAG");
+//        }
+
         if (legalPag.isLegalPag()) {
             return 1.0;
-        }
-        else {
+        } else {
             return 0.0;
         }
     }

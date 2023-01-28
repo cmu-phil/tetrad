@@ -87,9 +87,9 @@ public class Comparison {
     private boolean sortByUtility;
     private String dataPath;
     private String resultsPath;
-    private boolean saveData = true;
-    private boolean saveCPDAGs;
-    private boolean savePags;
+    private boolean saveData = false;
+    private boolean saveCPDAGs = false;
+    private boolean savePags = false;
     private ComparisonGraph comparisonGraph = ComparisonGraph.true_DAG;
 
     public void compareFromFiles(String filePath, Algorithms algorithms, Statistics statistics, Parameters parameters) {
@@ -927,7 +927,7 @@ public class Comparison {
 
         if (parallelized) {
 //            int parallelism = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 10);
-            ForkJoinPool pool = (ForkJoinPool) Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() * 10);
+            ForkJoinPool pool = (ForkJoinPool) Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
             pool.invokeAll(tasks);
             pool.shutdown();
         } else {

@@ -798,6 +798,8 @@ public final class SearchGraphUtils {
         Graph pag2 = SearchGraphUtils.dagToPag(mag);
 
         if (!pag.equals(pag2)) {
+//            System.out.println("PAG = " + pag + " PAG2 = " + pag2);
+
             return new LegalPagRet(false,
                     "Could be a MAG or between a MAG and a PAG; cannot recover the original graph by finding" +
                             "\nthe PAG of an implied MAG");

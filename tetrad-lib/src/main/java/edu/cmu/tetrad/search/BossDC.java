@@ -24,6 +24,7 @@ public class BossDC {
     private boolean verbose = true;
     private int depth = -1;
     private int numStarts = 1;
+    private Boss.AlgType algType = Boss.AlgType.BOSS1;
     private boolean caching = true;
 
 
@@ -60,11 +61,15 @@ public class BossDC {
 
             s2 = scorer.score();
             do {
-                s1 = s2;
-                divide(scorer, 0, scorer.size() / 2, scorer.size());
+                do {
+                    s1 = s2;
+                    divide(scorer, 0, scorer.size() / 2, scorer.size());
+                    s2 = scorer.score();
+                } while (s2 > s1);
                 besMutation(scorer);
                 s2 = scorer.score();
             } while (s2 > s1);
+
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -84,12 +89,42 @@ public class BossDC {
         if (b < (c - 1)) {
             divide(scorer, b, (b + c) / 2, c);
         }
-        conquer(scorer, a, b, c);
+        if (algType == Boss.AlgType.BOSS1) {
+            conquerRTL(scorer, a, b, c);
+        } else if (algType == Boss.AlgType.BOSS2){
+            conquerLTR(scorer, a, b, c);
+        }
     }
 
-    public void conquer(@NotNull TeyssierScorer scorer, int a, int b, int c) {
-        double bestScore = scorer.score();
-        double currentScore;
+    public void conquerRTL(@NotNull TeyssierScorer scorer, int a, int b, int c) {
+        double currentScore = scorer.score();;
+        double bestScore = currentScore;
+        scorer.bookmark();
+
+        for (int i = b; i < c; i++) {
+            Node x = scorer.get(i);
+
+            for (int j = (b-1); j >= a; j--) {
+                if (!scorer.adjacent(scorer.get(j), x)) continue;
+
+                tuck(x, j, scorer);
+                currentScore = scorer.score();
+
+                if (currentScore > bestScore) {
+                    bestScore = currentScore;
+                    scorer.bookmark();
+                }
+            }
+
+            if (currentScore < bestScore) {
+                scorer.goToBookmark();
+            }
+        }
+    }
+
+    public void conquerLTR(@NotNull TeyssierScorer scorer, int a, int b, int c) {
+        double currentScore = scorer.score();;
+        double bestScore = currentScore;
         scorer.bookmark();
 
         for (int i = b; i < c; i++) {
@@ -193,9 +228,13 @@ public class BossDC {
         this.useDataOrder = useDataOrder;
     }
 
+    public void setAlgType(Boss.AlgType algType) {
+        this.algType = algType;
+    }
+
     public void setCaching(boolean caching) {
         this.caching = caching;
     }
 
-    public enum AlgType {BOSS1, BOSS2, BOSS3}
+    public enum AlgType {BOSS1, BOSS2}
 }

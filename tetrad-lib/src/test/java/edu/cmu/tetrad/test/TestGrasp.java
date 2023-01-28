@@ -2470,7 +2470,7 @@ public final class TestGrasp {
         params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.POSSIBLE_DSEP_DONE, true);
-        params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, false);
+        params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
 
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
