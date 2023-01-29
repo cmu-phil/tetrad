@@ -19,6 +19,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PagSamplingRfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RfciBsc;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
@@ -34,15 +35,25 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LongTextField;
 import edu.cmu.tetradapp.util.StringTextField;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.text.DecimalFormat;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 /**
  * Dec 4, 2017 5:05:42 PM
@@ -106,6 +117,26 @@ public class AlgorithmParameterPanel extends JPanel {
             this.mainPanel.add(createSubPanel(title, params, parameters));
             this.mainPanel.add(Box.createVerticalStrut(10));
 
+        } else if (algorithm instanceof PagSamplingRfci) {
+            String title = algorithm.getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
+            
+            Set<String> params = new LinkedHashSet<>();
+            params.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
+            params.add(Params.VERBOSE);
+            this.mainPanel.add(createSubPanel(title, params, parameters));
+            this.mainPanel.add(Box.createVerticalStrut(10));
+            
+            title = "RFCI Parameters";
+            params.clear();
+            params.addAll(PagSamplingRfci.RFCI_PARAMETERS);
+            this.mainPanel.add(createSubPanel(title, params, parameters));
+            this.mainPanel.add(Box.createVerticalStrut(10));
+            
+            title = "Probabilistic Test Parameters";
+            params.clear();
+            params.addAll(PagSamplingRfci.PROBABILISTIC_TEST_PARAMETERS);
+            this.mainPanel.add(createSubPanel(title, params, parameters));
+            this.mainPanel.add(Box.createVerticalStrut(10));
         } else {
             // add algorithm parameters
             Set<String> params = Params.getAlgorithmParameters(algorithm);
@@ -230,7 +261,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     protected DoubleTextField getDoubleField(String parameter, Parameters parameters,
-                                             double defaultValue, double lowerBound, double upperBound) {
+            double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -260,7 +291,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     protected IntTextField getIntTextField(String parameter, Parameters parameters,
-                                           int defaultValue, double lowerBound, double upperBound) {
+            int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
@@ -287,7 +318,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
         return field;
     }
-    
+
     protected LongTextField getLongTextField(String parameter, Parameters parameters,
             long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
