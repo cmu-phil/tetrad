@@ -1686,8 +1686,6 @@ public final class GraphUtils {
             convertedGraph.addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
-        convertedGraph.setGraphType(EdgeListGraph.GraphType.CPDAG);
-
         return convertedGraph;
     }
 

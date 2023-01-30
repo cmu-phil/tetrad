@@ -28,7 +28,6 @@ import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -744,8 +743,6 @@ public final class SearchGraphUtils {
                     pcafci.setEndpoint(y, x, Endpoint.TAIL);
                     pcafci.setEndpoint(x, y, Endpoint.ARROW);
 
-//                    fciOrient.doFinalOrientation(mag);
-
                     MeekRules meekRules = new MeekRules();
                     meekRules.setRevertToUnshieldedColliders(false);
                     meekRules.orientImplied(pcafci);
@@ -787,22 +784,67 @@ public final class SearchGraphUtils {
     }
 
     public static LegalPagRet isLegalPag(Graph pag) {
+
+        for (Node n : pag.getNodes()) {
+            if (pag.existsDirectedPathFromTo(n, n))
+                return new LegalPagRet(false,
+                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
+        }
+
+        for (Edge e : pag.getEdges()) {
+            Node x = e.getNode1();
+            Node y = e.getNode2();
+
+            if (Edges.isBidirectedEdge(e)) {
+                if (pag.existsDirectedPathFromTo(x, y)) {
+                    List<Node> path = GraphUtils.directedPathsFromTo(
+                            pag, x, y, 100).get(0);
+                    return new LegalPagRet(false,
+                            "Bidirected edge semantics violated: there is a directed path for " + e + " from " + x + " to " + y
+                                    + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+                                    + "An example path is " + GraphUtils.pathString(pag, path));
+                } else if (pag.existsDirectedPathFromTo(y, x)) {
+                    List<Node> path = GraphUtils.directedPathsFromTo(
+                            pag, y, x, 100).get(0);
+                    return new LegalPagRet(false,
+                            "Bidirected edge semantics violated: There is an a directed path for " + e + " from " + y + " to " + x +
+                                    ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+                                    + "An example path is " + GraphUtils.pathString(pag, path));
+                }
+            }
+        }
+
         Graph mag = pagToMag(pag);
+
 
         LegalMagRet legalMag = isLegalMag(mag);
 
         if (!legalMag.isLegalMag()) {
-            return new LegalPagRet(false, legalMag.getReason() + "\nin a MAG implied by this graph.");
+            return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
         }
 
         Graph pag2 = SearchGraphUtils.dagToPag(mag);
 
         if (!pag.equals(pag2)) {
-//            System.out.println("PAG = " + pag + " PAG2 = " + pag2);
+            String edgeMismatch = "";
 
-            return new LegalPagRet(false,
-                    "Could be a MAG or between a MAG and a PAG; cannot recover the original graph by finding" +
-                            "\nthe PAG of an implied MAG");
+            for (Edge e : pag.getEdges()) {
+                Edge e2 = pag2.getEdge(e.getNode1(), e.getNode2());
+
+                if (!e.equals(e2)) {
+                    edgeMismatch = "For example, the original PAG has edge " + e
+                            + " whereas the reconstituted PAG has edge " + e2;
+                }
+            }
+
+            String reason = "Could be a MAG or between a MAG and a PAG; cannot recover the original graph by finding " +
+                    "the PAG of an implied MAG";
+
+            if (!edgeMismatch.equals("")) {
+                reason = reason + ". " + edgeMismatch;
+            }
+
+            return new LegalPagRet(false, reason);
         }
 
         return new LegalPagRet(true, "This ia a legal PAG");
@@ -868,12 +910,19 @@ public final class SearchGraphUtils {
             Node y = e.getNode2();
 
             if (Edges.isBidirectedEdge(e)) {
-                if (mag.existsDirectedPathFromTo(x, y))
+                if (mag.existsDirectedPathFromTo(x, y)) {
+                    List<Node> path = GraphUtils.directedPathsFromTo(mag, x, y, 100).get(0);
                     return new LegalMagRet(false,
-                            "Bidirected edge semantics violated: there is an almost cyclic directed path for " + e + " from " + x + " to " + y);
-                if (mag.existsDirectedPathFromTo(y, x))
+                            "Bidirected edge semantics violated: there is a directed path for " + e + " from " + x + " to " + y
+                                    + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+                                    + "An example path is " + GraphUtils.pathString(mag, path));
+                } else if (mag.existsDirectedPathFromTo(y, x)) {
+                    List<Node> path = GraphUtils.directedPathsFromTo(mag, y, x, 100).get(0);
                     return new LegalMagRet(false,
-                            "Bidirected edge semantics violated: There is an almost cyclic directed path for " + e + " from " + y + " to " + x);
+                            "Bidirected edge semantics violated: There is an a directed path for " + e + " from " + y + " to " + x +
+                                    ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+                                    + "An example path is " + GraphUtils.pathString(mag, path));
+                }
             }
         }
 

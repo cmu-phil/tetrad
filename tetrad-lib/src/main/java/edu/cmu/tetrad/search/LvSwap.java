@@ -253,10 +253,10 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap2b() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        Boss alg = new Boss(scorer);
+        BossDC alg = new BossDC(scorer);
         alg.setAlgType(bossAlgType);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
+//        alg.setUseScore(useScore);
+//        alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
         alg.setDepth(depth);
         alg.setNumStarts(numStarts);
@@ -271,16 +271,35 @@ public final class LvSwap implements GraphSearch {
 
         Set<Triple> T = new HashSet<>();
 
+        List<Node> pi = scorer.getPi();
+
         for (Node y : scorer.getPi()) {
             List<Node> adjy = G.getAdjacentNodes(y);
 
-            for (Node x : adjy) {
-                for (Node z : adjy) {
+            for (Node x : scorer.getPi()) {
+                for (Node z : scorer.getPi()) {
+                    if (y == x) continue;
+                    if (y == z) continue;
+                    if (x == z) continue;
                     if (!scorer.adjacent(x, z)) continue;
                     if (T.contains(new Triple(x, y, z))) continue;
 
                     scorer.goToBookmark();
                     scorer.swaptuck(x, y, z, false);
+
+                    if (!scorer.adjacent(x, z) && scorer.collider(x, y, z)) {
+                        Set<Node> adj = scorer.getAdjacentNodes(x);
+                        adj.retainAll(scorer.getAdjacentNodes(z));
+
+                        for (Node w : adj) {
+                            if (scorer.collider(x, w, z)) {
+                                T.add(new Triple(x, w, z));
+                            }
+                        }
+                    }
+
+                    scorer.goToBookmark();
+                    scorer.swaptuck(x, y, z, true);
 
                     if (!scorer.adjacent(x, z) && scorer.collider(x, y, z)) {
                         Set<Node> adj = scorer.getAdjacentNodes(x);

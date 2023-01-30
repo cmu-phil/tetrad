@@ -28,7 +28,7 @@ import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
-import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
+import edu.cmu.tetrad.algcomparison.statistic.ElapsedCpuTime;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
@@ -39,7 +39,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import org.reflections.Reflections;
@@ -1195,7 +1194,7 @@ public class TimeoutComparison {
 
                     double stat;
 
-                    if (_stat instanceof ElapsedTime) {
+                    if (_stat instanceof ElapsedCpuTime) {
                         stat = elapsed / 1000.0;
                     } else {
                         stat = _stat.getValue(truth[u], est[u], null);

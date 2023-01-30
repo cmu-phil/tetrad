@@ -67,7 +67,7 @@ public class ExampleCompareFromFiles {
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
         statistics.add(new SHD());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);

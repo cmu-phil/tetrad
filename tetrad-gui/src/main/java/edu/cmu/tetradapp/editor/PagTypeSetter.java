@@ -24,10 +24,10 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
-import java.awt.event.ItemEvent;
 
 /**
  * Checks to see if a graph is a legal PAG.
@@ -58,21 +58,48 @@ public class PagTypeSetter extends JCheckBoxMenuItem {
             } else {
                 SearchGraphUtils.LegalPagRet legalPagRet = SearchGraphUtils.isLegalPag(graph);
 
+                String reason = legalPagRet.getReason() + ".";
+                reason = breakDown(reason, 60);
+
                 if (!legalPagRet.isLegalPag()) {
                     int ret = JOptionPane.showConfirmDialog(workbench, "This is not a legal PAG--one reason is as follows:" +
-                                    "\n\n" + legalPagRet.getReason() +
+                                    "\n\n" + reason +
                                     "\n\nProceed anyway?",
                             "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                     if (ret == JOptionPane.YES_NO_OPTION) {
                         _workbench.setPag(true);
                     }
                 } else {
-                    JOptionPane.showMessageDialog(workbench, legalPagRet.getReason());
+                    JOptionPane.showMessageDialog(workbench, reason);
                     _workbench.setPag(true);
                 }
             }
         });
 
+    }
+
+    private String breakDown(String reason, int maxColumns) {
+        StringBuilder buf1 = new StringBuilder();
+        StringBuilder buf2 = new StringBuilder();
+
+        String[] tokens = reason.split(" ");
+
+        for (String token : tokens) {
+            if (buf1.length() + token.length() > maxColumns) {
+                buf2.append(buf1);
+                buf2.append("\n");
+                buf1 = new StringBuilder();
+                buf1.append(token);
+            } else {
+                buf1.append(" ").append(token);
+            }
+        }
+
+        if (buf1.length() > 0) {
+            buf2.append(buf1);
+        }
+
+        return buf2.toString();
     }
 }
 

@@ -73,7 +73,7 @@ public class TestDegenerateGaussian {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
 
         Algorithms algorithms = new Algorithms();

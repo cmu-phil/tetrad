@@ -30,7 +30,7 @@ import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
-import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
+import edu.cmu.tetrad.algcomparison.statistic.ElapsedCpuTime;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
@@ -46,7 +46,6 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import org.reflections.Reflections;
 
-import javax.sound.midi.SysexMessage;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -1163,17 +1162,17 @@ public class Comparison {
                 + " simulationWrapper: " + simulationWrapper.getDescription());
 
         ThreadMXBean thMxB = ManagementFactory.getThreadMXBean();
-        System.out.println(("Current thread count:"+ thMxB.getThreadCount()));
+        System.out.println(("Current thread count:" + thMxB.getThreadCount()));
         //gets current thread cpu time.
-        System.out.println("CurrentThreadCpuTime: "+thMxB.getCurrentThreadCpuTime());
+        System.out.println("CurrentThreadCpuTime: " + thMxB.getCurrentThreadCpuTime());
         //gets curent thread user time.
-        System.out.println("CurrentThreadUserTime:"+thMxB.getCurrentThreadUserTime());
+        System.out.println("CurrentThreadUserTime:" + thMxB.getCurrentThreadUserTime());
         //gets Demon thread count
-        System.out.println("DaemonThreadCount:"+thMxB.getDaemonThreadCount());
+        System.out.println("DaemonThreadCount:" + thMxB.getDaemonThreadCount());
         //gets peaak thread count
-        System.out.println("PeakThreadCount:"+thMxB.getPeakThreadCount());
+        System.out.println("PeakThreadCount:" + thMxB.getPeakThreadCount());
         //gets thread count
-        System.out.println("ThreadCount:"+thMxB.getThreadCount());
+        System.out.println("ThreadCount:" + thMxB.getThreadCount());
 
 //        long start = System.currentTimeMillis();
         long start = thMxB.getCurrentThreadCpuTime();
@@ -1301,7 +1300,7 @@ public class Comparison {
 
                     double stat;
 
-                    if (_stat instanceof ElapsedTime) {
+                    if (_stat instanceof ElapsedCpuTime) {
                         stat = elapsed / 1000.0;
                     } else {
                         stat = _stat.getValue(truth[u], est[u], data);
@@ -1553,9 +1552,12 @@ public class Comparison {
 
                     double stat = statTables[u][newOrder[t]][statIndex];
 
-                    if (stat == 0.0) {
-                        table.setToken(t + 1, initialColumn + statIndex, "-");
-                    } else if (stat == Double.POSITIVE_INFINITY) {
+                    // Messes up statistical analysis of comparison data.
+//                    if (stat == 0.0) {
+//                        table.setToken(t + 1, initialColumn + statIndex, "-");
+//                    } else
+
+                    if (stat == Double.POSITIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "Yes");
                     } else if (stat == Double.NEGATIVE_INFINITY) {
                         table.setToken(t + 1, initialColumn + statIndex, "No");
