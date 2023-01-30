@@ -1260,10 +1260,12 @@ public class PerformanceTests {
 
             System.out.println("Graph done");
 
-            DagToPag dagToPag = new DagToPag(dag);
-            dagToPag.setCompleteRuleSetUsed(false);
-            dagToPag.setMaxPathLength(maxPathLength);
-            Graph truePag = dagToPag.convert();
+//            DagToPag dagToPag = new DagToPag(dag);
+//            dagToPag.setCompleteRuleSetUsed(false);
+//            dagToPag.setMaxPathLength(maxPathLength);
+//            Graph truePag = dagToPag.convert();
+
+            Graph truePag = SearchGraphUtils.dagToPag(dag);
 
             System.out.println("True PAG_of_the_true_DAG done");
 

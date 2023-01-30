@@ -6,8 +6,8 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.XdslXmlParser;
 import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Builder;
@@ -54,9 +54,12 @@ public class TestRfciBsc {
         DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-        DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        Graph PAG_True = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        dagToPag.setCompleteRuleSetUsed(false);
+//        Graph PAG_True = dagToPag.convert();
+
+        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
         IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
@@ -123,9 +126,12 @@ public class TestRfciBsc {
         DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-        DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        Graph PAG_True = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        dagToPag.setCompleteRuleSetUsed(false);
+//        Graph PAG_True = dagToPag.convert();
+
+        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
         IndTestProbabilistic test = new IndTestProbabilistic(dataSet);

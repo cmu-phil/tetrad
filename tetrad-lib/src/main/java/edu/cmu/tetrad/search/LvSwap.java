@@ -211,11 +211,22 @@ public final class LvSwap implements GraphSearch {
 
         Set<Triple> T = new HashSet<>();
 
-        for (Node y : scorer.getPi()) {
-            List<Node> adjy = G.getAdjacentNodes(y);
+        List<Node> pi = scorer.getPi();
 
-            for (Node x : adjy) {
-                for (Node z : adjy) {
+        for (Node y : pi) {
+//            List<Node> adjy = G.getAdjacentNodes(y);
+
+            for (Node x : pi) {
+                for (Node z : pi) {
+                    if (y == x) continue;
+                    if (y == z) continue;
+                    if (x == z) continue;
+
+//        for (Node y : scorer.getPi()) {
+//            List<Node> adjy = G.getAdjacentNodes(y);
+//
+//            for (Node x : adjy) {
+//                for (Node z : adjy) {
                     if (!G.isAdjacentTo(x, z)) continue;
                     if (T.contains(new Triple(x, y, z))) continue;
 
@@ -273,11 +284,11 @@ public final class LvSwap implements GraphSearch {
 
         List<Node> pi = scorer.getPi();
 
-        for (Node y : scorer.getPi()) {
+        for (Node y : pi) {
             List<Node> adjy = G.getAdjacentNodes(y);
 
-            for (Node x : scorer.getPi()) {
-                for (Node z : scorer.getPi()) {
+            for (Node x : pi) {
+                for (Node z : pi) {
                     if (y == x) continue;
                     if (y == z) continue;
                     if (x == z) continue;
@@ -296,6 +307,8 @@ public final class LvSwap implements GraphSearch {
                                 T.add(new Triple(x, w, z));
                             }
                         }
+                    } else {
+                        scorer.bookmark();
                     }
 
                     scorer.goToBookmark();
@@ -324,6 +337,8 @@ public final class LvSwap implements GraphSearch {
         if (SearchGraphUtils.isLegalPag(G).isLegalPag()) {
             G.setGraphType(EdgeListGraph.GraphType.PAG);
         }
+
+        System.out.println(G);
 
         scorer.goToBookmark();
         return G;
