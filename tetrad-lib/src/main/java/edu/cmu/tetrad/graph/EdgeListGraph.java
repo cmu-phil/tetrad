@@ -67,7 +67,7 @@ public class EdgeListGraph implements Graph {
      *
      * @serial
      */
-    Map<Node, Set<Edge>> edgeLists;
+     final Map<Node, Set<Edge>> edgeLists;
     private final Map<String, Object> attributes = new HashMap<>();
     /**
      * Fires property change events.
@@ -93,10 +93,6 @@ public class EdgeListGraph implements Graph {
     private GraphType graphType = GraphType.UNLABELED;
 
     //==============================CONSTUCTORS===========================//
-    private boolean pag;
-
-
-
 
     /**
      * Constructs a new (empty) EdgeListGraph.
@@ -170,7 +166,7 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * Constructs a new graph, with no edges, using the the given variable
+     * Constructs a new graph, with no edges, using the given variable
      * names.
      */
     public EdgeListGraph(List<Node> nodes) {
@@ -671,7 +667,6 @@ public class EdgeListGraph implements Graph {
     @Override
     public boolean isAncestorOf(Node node1, Node node2) {
         return node1 == node2 || existsDirectedPathFromTo(node1, node2);
-//        return getAncestors(Collections.singletonList(node2)).contains(node1);
     }
 
     @Override
@@ -704,12 +699,6 @@ public class EdgeListGraph implements Graph {
                 }
             }
         }
-
-//        Set<Node> ancestors = new HashSet<>();
-
-//        for (Node node : nodes) {
-//            collectAncestorsVisit(node, ancestors);
-//        }
 
         return new ArrayList<>(ancestors);
     }
@@ -1000,7 +989,7 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * @return the set of nodes adjacent to the given node. If there are
+     * @return the list of nodes adjacent to the given node. If there are
      * multiple edges between X and Y, Y will show up twice in the list of
      * adjacencies for X, for optimality; simply create a list an and array from
      * these to eliminate the duplication.
@@ -1190,7 +1179,7 @@ public class EdgeListGraph implements Graph {
      * cannot already be used by any other node in the same graph.
      *
      * @param node the node to be added.
-     * @return true if the the node was added, false if not.
+     * @return true if the node was added, false if not.
      */
     @Override
     public boolean addNode(Node node) {
@@ -1224,7 +1213,7 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * @return the list of edges in the graph. No particular ordering of the
+     * @return the set of edges in the graph. No particular ordering of the
      * edges in the list is guaranteed.
      */
     @Override
@@ -1329,31 +1318,6 @@ public class EdgeListGraph implements Graph {
             edge2.setEndpoint2(endpoint);
             addEdge(edge2);
         }
-
-//        for (int i = 0; i < nodes.size(); i++) {
-//            for (int j = i; j < nodes.size(); j++) {
-//                if (isAdjacentTo(nodes.get(i), nodes.get(j))) {
-//                    removeEdges(nodes.get(i), nodes.get(j));
-//
-//                    if (endpoint == Endpoint.ARROW) {
-//                        addBidirectedEdge(nodes.get(i), nodes.get(j));
-//                    } else if (endpoint == Endpoint.CIRCLE) {
-//                        addNondirectedEdge(nodes.get(i), nodes.get(j));
-//                    } else if (endpoint == Endpoint.TAIL) {
-//                        addUndirectedEdge(nodes.get(i), nodes.get(j));
-//                    }
-//                }
-//            }
-//        }
-//
-//
-//        for (Edge edge : new ArrayList<>(this.edgesSet)) {
-//            Node a = edge.getNode1();
-//            Node b = edge.getNode2();
-//
-//            setEndpoint(a, b, endpoint);
-//            setEndpoint(b, a, endpoint);
-//        }
     }
 
     /**
@@ -1617,21 +1581,6 @@ public class EdgeListGraph implements Graph {
     //===============================PRIVATE METHODS======================//
 
 
-    private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
-        if (ancestors.contains(node)) {
-            return;
-        }
-
-        ancestors.add(node);
-        List<Node> parents = getParents(node);
-
-        if (!parents.isEmpty()) {
-            for (Node parent : parents) {
-                collectAncestorsVisit(parent, ancestors);
-            }
-        }
-    }
-
     private void collectDescendantsVisit(Node node, Set<Node> descendants) {
         descendants.add(node);
         List<Node> children = getChildren(node);
@@ -1771,7 +1720,7 @@ public class EdgeListGraph implements Graph {
      * version to version. A readObject method of this form may be added to any
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help).
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

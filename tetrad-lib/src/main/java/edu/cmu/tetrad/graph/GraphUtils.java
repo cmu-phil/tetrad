@@ -1663,26 +1663,14 @@ public final class GraphUtils {
         }
 
         for (Triple triple : originalGraph.getUnderlineModel().getUnderLines()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
             convertedGraph.getUnderlineModel().addUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
         for (Triple triple : originalGraph.getUnderlineModel().getDottedUnderlines()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
             convertedGraph.getUnderlineModel().addDottedUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
         for (Triple triple : originalGraph.getUnderlineModel().getAmbiguousTriples()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
             convertedGraph.getUnderlineModel().addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
