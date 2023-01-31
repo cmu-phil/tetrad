@@ -516,103 +516,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
 
     void transferAttributes(Graph graph) throws IllegalArgumentException;
 
-    /**
-     * @return the list of ambiguous triples associated with this graph. Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    Set<Triple> getAmbiguousTriples();
-
-    /**
-     * @return the set of underlines associated with this graph. This is used currently by ION, DCI, and CCD.
-     * It used to be used by FCI, but it not in the getModel form.  Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    Set<Triple> getUnderLines();
-
-    /**
-     * @return the set of dotted underlines associated with this graph. This used to be used by FCI, but it is
-     * not used in the getModel form. It is used by CCD.  Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    Set<Triple> getDottedUnderlines();
-
-    /**
-     * @return true iff the triple &lt;x, y, z&gt; is set as ambiguous.  Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    boolean isAmbiguousTriple(Node x, Node y, Node z);
-
-    /**
-     * @return true iff the triple &lt;x, y, z&gt; is set as underlined.  Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    boolean isUnderlineTriple(Node x, Node y, Node z);
-
-    /**
-     * @return true iff the triple &lt;x, y, z&gt; is set as dotted underlined.   Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    boolean isDottedUnderlineTriple(Node x, Node y, Node z);
-
-    /**
-     * Adds the triple &lt;x, y, z&gt; as an ambiguous triple in the graph.
-     *
-     * @throws IllegalArgumentException if &lt;x, y, z&gt; does not lie along a path in the graph.
-     */
-    void addAmbiguousTriple(Node x, Node y, Node Z);
-
-    /**
-     * Adds the triple &lt;x, y, z&gt; as an underline triple in the graph.
-     *
-     * @throws IllegalArgumentException if &lt;x, y, z&gt; does not lie along a path in the graph.
-     */
-    void addUnderlineTriple(Node x, Node y, Node Z);
-
-    /**
-     * Adds the triple &lt;x, y, z&gt; as a dotted underlined triple in the graph.
-     *
-     * @throws IllegalArgumentException if &lt;x, y, z&gt; does not lie along a path in the graph.
-     */
-    void addDottedUnderlineTriple(Node x, Node y, Node Z);
-
-    /**
-     * Removes the triple &lt;x, y, z&gt; from thet set of ambiguous triples.
-     */
-    void removeAmbiguousTriple(Node x, Node y, Node z);
-
-    /**
-     * Removes the triple &lt;x, y, z&gt; from the set of underlined triples.
-     */
-    void removeUnderlineTriple(Node x, Node y, Node z);
-
-    /**
-     * Removes the triple &lt;x, y, z&gt; from the set of dotted underlined triples.
-     */
-    void removeDottedUnderlineTriple(Node x, Node y, Node z);
-
-    /**
-     * Sets the list of ambiguous triples to the triples in the given set.
-     *
-     * @param triples The new set of ambiguous triples. This replaces the old list.
-     * @throws IllegalArgumentException if any triple &lt;x, y, z&gt; in <code>triples</code> does not lie along a path in the graph.
-     */
-    void setAmbiguousTriples(Set<Triple> triples);
-
-    /**
-     * Sets the list of underlined triples to the triples in the given set.
-     *
-     * @param triples The new list of ambiguous triples. This replaces the old list.
-     * @throws IllegalArgumentException if any triple &lt;zx, y, z&gt; in <code>triples</code> does not lie along a path in the graph.
-     */
-    void setUnderLineTriples(Set<Triple> triples);
-
-    /**
-     * Sets the list of dotted underlined triples to the triples in the given set.
-     *
-     * @param triples The new list of dotted underlined triples. This replaces the old list.
-     * @throws IllegalArgumentException if any triple &lt;zx, y, z&gt; in <code>triples</code> does not lie along a path in the graph.
-     */
-    void setDottedUnderLineTriples(Set<Triple> triples);
+    UnderlineModel getUnderlineModel();
 
     /**
      * @return a tier orderering, for acyclic graphs. Undefined for cyclic graphs.
@@ -644,9 +548,6 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      * @return the underlying time lag model, if there is one; otherwise, returns null.
      */
     TimeLagGraph getTimeLagGraph();
-
-
-    void removeTriplesNotInGraph();
 
     List<Node> getSepset(Node n1, Node n2);
 

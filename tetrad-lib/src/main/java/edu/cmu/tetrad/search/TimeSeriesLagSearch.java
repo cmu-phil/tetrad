@@ -354,7 +354,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
 
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.getUnderlineModel().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 } else {
 //                    System.out.println("orientUnshieldedTriples 8");
 

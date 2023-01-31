@@ -74,29 +74,12 @@ public class EdgeListGraph implements Graph {
      */
     protected transient PropertyChangeSupport pcs;
     /**
-     * Set of ambiguous triples. Note the name can't be changed due to
-     * serialization.
-     */
-    protected Set<Triple> ambiguousTriples = Collections.newSetFromMap(new HashMap<>());
-    /**
      * Determines whether one node is an ancestor of another.
      */
     protected Map<Node, Set<Node>> ancestors = new HashMap<>();
-    /**
-     * @serial
-     */
-    Set<Triple> underLineTriples = Collections.newSetFromMap(new HashMap<>());
-    /**
-     * @serial
-     */
-    Set<Triple> dottedUnderLineTriples = Collections.newSetFromMap(new HashMap<>());
-    /**
-     * True iff nodes were removed since the last call to an accessor for
-     * ambiguous, underline, or dotted underline triples. If there are triples
-     * in the lists involving removed nodes, these need to be removed from the
-     * lists first, so as not to cause confusion.
-     */
-    boolean stuffRemovedSinceLastTripleAccess;
+
+    private UnderlineModel underlineModel;
+
     /**
      * The set of highlighted edges.
      */
@@ -123,6 +106,7 @@ public class EdgeListGraph implements Graph {
         this.nodes = new ArrayList<>();
         this.edgesSet = new HashSet<>();
         this.namesHash = new HashMap<>();
+        this.underlineModel = new UnderlineModel(this);
     }
 
     /**
@@ -146,9 +130,7 @@ public class EdgeListGraph implements Graph {
         // Keep attributes from the original graph
         transferAttributes(graph);
 
-        this.ambiguousTriples = graph.getAmbiguousTriples();
-        this.underLineTriples = graph.getUnderLines();
-        this.dottedUnderLineTriples = graph.getDottedUnderlines();
+        this.underlineModel = new UnderlineModel(graph.getUnderlineModel());
 
         for (Edge edge : graph.getEdges()) {
             if (graph.isHighlighted(edge)) {
@@ -172,9 +154,7 @@ public class EdgeListGraph implements Graph {
         this.edgesSet = new HashSet<>(graph.edgesSet);
         this.namesHash = new HashMap<>(graph.namesHash);
 
-        this.ambiguousTriples = new HashSet<>(graph.ambiguousTriples);
-        this.underLineTriples = new HashSet<>(graph.underLineTriples);
-        this.dottedUnderLineTriples = new HashSet<>(graph.dottedUnderLineTriples);
+        this.underlineModel = new UnderlineModel(graph.getUnderlineModel());
 
         if (graph.ancestors != null) {
             this.ancestors = new HashMap<>();
@@ -183,8 +163,6 @@ public class EdgeListGraph implements Graph {
                 ancestors.put(node, new HashSet<>(graph.ancestors.get(node)));
             }
         }
-
-        this.stuffRemovedSinceLastTripleAccess = graph.stuffRemovedSinceLastTripleAccess;
 
         this.highlightedEdges = new HashSet<>(graph.highlightedEdges);
 
@@ -1008,6 +986,11 @@ public class EdgeListGraph implements Graph {
         this.attributes.putAll(graph.getAllAttributes());
     }
 
+    @Override
+    public UnderlineModel getUnderlineModel() {
+        return underlineModel;
+    }
+
     /**
      * Determines whether a node in a graph is exogenous.
      */
@@ -1050,6 +1033,8 @@ public class EdgeListGraph implements Graph {
                     "There is more than one edge between " + node1 + " and "
                             + node2);
         }
+
+        this.underlineModel.removeTriplesNotInGraph();
 
         return removeEdges(edges);
     }
@@ -1477,7 +1462,6 @@ public class EdgeListGraph implements Graph {
             this.edgeLists.put(edge.getNode2(), edgeList2);
 
             this.highlightedEdges.remove(edge);
-            this.stuffRemovedSinceLastTripleAccess = true;
 
             this.ancestors = null;
             getPcs().firePropertyChange("edgeRemoved", edge, null);
@@ -1545,7 +1529,8 @@ public class EdgeListGraph implements Graph {
         this.edgeLists.remove(node);
         this.nodes.remove(node);
         this.namesHash.remove(node.getName());
-        this.stuffRemovedSinceLastTripleAccess = true;
+
+        this.underlineModel.removeTriplesNotInGraph();
 
         getPcs().firePropertyChange("nodeRemoved", node, null);
         return changed;
@@ -1615,116 +1600,8 @@ public class EdgeListGraph implements Graph {
         return _edges;
     }
 
-    @Override
-    public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<>(this.ambiguousTriples);
-    }
 
-    @Override
-    public void setAmbiguousTriples(Set<Triple> triples) {
-        this.ambiguousTriples.clear();
 
-        for (Triple triple : triples) {
-            addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
-        }
-    }
-
-    @Override
-    public Set<Triple> getUnderLines() {
-        return new HashSet<>(this.underLineTriples);
-    }
-
-    @Override
-    public Set<Triple> getDottedUnderlines() {
-//        removeTriplesNotInGraph();
-        return new HashSet<>(this.dottedUnderLineTriples);
-    }
-
-    /**
-     * States whether r-s-r is an underline triple or not.
-     */
-    @Override
-    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
-        return this.ambiguousTriples.contains(new Triple(x, y, z));
-    }
-
-    /**
-     * States whether r-s-r is an underline triple or not.
-     */
-    @Override
-    public boolean isUnderlineTriple(Node x, Node y, Node z) {
-        return this.underLineTriples.contains(new Triple(x, y, z));
-    }
-
-    /**
-     * States whether r-s-r is an underline triple or not.
-     */
-    @Override
-    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
-        return this.dottedUnderLineTriples.contains(new Triple(x, y, z));
-    }
-
-    @Override
-    public void addAmbiguousTriple(Node x, Node y, Node z) {
-        this.ambiguousTriples.add(new Triple(x, y, z));
-    }
-
-    @Override
-    public void addUnderlineTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
-
-        if (!triple.alongPathIn(this)) {
-            return;
-//            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
-        }
-
-        this.underLineTriples.add(new Triple(x, y, z));
-    }
-
-    @Override
-    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
-        Triple triple = new Triple(x, y, z);
-
-        if (!triple.alongPathIn(this)) {
-            return;
-//            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
-        }
-
-        this.dottedUnderLineTriples.add(triple);
-    }
-
-    @Override
-    public void removeAmbiguousTriple(Node x, Node y, Node z) {
-        this.ambiguousTriples.remove(new Triple(x, y, z));
-    }
-
-    @Override
-    public void removeUnderlineTriple(Node x, Node y, Node z) {
-        this.underLineTriples.remove(new Triple(x, y, z));
-    }
-
-    @Override
-    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
-        this.dottedUnderLineTriples.remove(new Triple(x, y, z));
-    }
-
-    @Override
-    public void setUnderLineTriples(Set<Triple> triples) {
-        this.underLineTriples.clear();
-
-        for (Triple triple : triples) {
-            addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
-        }
-    }
-
-    @Override
-    public void setDottedUnderLineTriples(Set<Triple> triples) {
-        this.dottedUnderLineTriples.clear();
-
-        for (Triple triple : triples) {
-            addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
-        }
-    }
 
     @Override
     public List<String> getNodeNames() {
@@ -1738,45 +1615,7 @@ public class EdgeListGraph implements Graph {
     }
 
     //===============================PRIVATE METHODS======================//
-    @Override
-    public void removeTriplesNotInGraph() {
-//        if (!stuffRemovedSinceLastTripleAccess) return;
 
-        for (Triple triple : new HashSet<>(this.ambiguousTriples)) {
-            if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
-                this.ambiguousTriples.remove(triple);
-                continue;
-            }
-
-            if (!isAdjacentTo(triple.getX(), triple.getY()) || !isAdjacentTo(triple.getY(), triple.getZ())) {
-                this.ambiguousTriples.remove(triple);
-            }
-        }
-
-        for (Triple triple : new HashSet<>(this.underLineTriples)) {
-            if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
-                this.underLineTriples.remove(triple);
-                continue;
-            }
-
-            if (!isAdjacentTo(triple.getX(), triple.getY()) || !isAdjacentTo(triple.getY(), triple.getZ())) {
-                this.underLineTriples.remove(triple);
-            }
-        }
-
-        for (Triple triple : new HashSet<>(this.dottedUnderLineTriples)) {
-            if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
-                this.dottedUnderLineTriples.remove(triple);
-                continue;
-            }
-
-            if (!isAdjacentTo(triple.getX(), triple.getY()) || !isAdjacentTo(triple.getY(), triple.getZ())) {
-                this.dottedUnderLineTriples.remove(triple);
-            }
-        }
-
-        this.stuffRemovedSinceLastTripleAccess = false;
-    }
 
     private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
         if (ancestors.contains(node)) {
@@ -1949,22 +1788,6 @@ public class EdgeListGraph implements Graph {
         if (this.edgeLists == null) {
             throw new NullPointerException();
         }
-
-        if (this.ambiguousTriples == null) {
-            this.ambiguousTriples = new HashSet<>();
-        }
-
-        if (this.highlightedEdges == null) {
-            this.highlightedEdges = new HashSet<>();
-        }
-
-        if (this.underLineTriples == null) {
-            this.underLineTriples = new HashSet<>();
-        }
-
-        if (this.dottedUnderLineTriples == null) {
-            this.dottedUnderLineTriples = new HashSet<>();
-        }
     }
 
     public void changeName(String name, String newName) {
@@ -2000,11 +1823,6 @@ public class EdgeListGraph implements Graph {
         return triplesList;
     }
 
-    public void setStuffRemovedSinceLastTripleAccess(
-            boolean stuffRemovedSinceLastTripleAccess) {
-        this.stuffRemovedSinceLastTripleAccess = stuffRemovedSinceLastTripleAccess;
-    }
-
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;
@@ -2024,4 +1842,6 @@ public class EdgeListGraph implements Graph {
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
     }
+
+
 }

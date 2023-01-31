@@ -2453,8 +2453,8 @@ public final class TestGrasp {
 
         Parameters params = new Parameters();
         params.set(Params.ALPHA, 1e-5, 0.0001, 0.001, 0.01, 0.1);
-        params.set(Params.PENALTY_DISCOUNT, 1);
-        params.set(Params.ZS_RISK_BOUND, 0.1, 0.5, 0.9);
+        params.set(Params.PENALTY_DISCOUNT, 1, 2, 4);
+//        params.set(Params.ZS_RISK_BOUND, 0.1, 0.5, 0.9);
         params.set(Params.EBIC_GAMMA, .2, .6, .8);
 
         params.set(Params.SAMPLE_SIZE, 1000, 10000);
@@ -2495,10 +2495,10 @@ public final class TestGrasp {
         IndependenceWrapper test = new FisherZ();
 
         List<ScoreWrapper> scores = new ArrayList<>();
-//        scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+        scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
 //        scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
 //        scores.add(new edu.cmu.tetrad.algcomparison.score.KimEtAlScores());
-        scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
+//        scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
 
         List<Algorithm> algorithms = new ArrayList<>();
 

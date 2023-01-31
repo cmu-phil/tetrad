@@ -569,64 +569,9 @@ public class TimeLagGraph implements Graph {
         getGraph().transferAttributes(graph);
     }
 
-    public Set<Triple> getAmbiguousTriples() {
-        return getGraph().getAmbiguousTriples();
-    }
-
-    public Set<Triple> getUnderLines() {
-        return getGraph().getUnderLines();
-    }
-
-    public Set<Triple> getDottedUnderlines() {
-        return getGraph().getDottedUnderlines();
-    }
-
-    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
-        return getGraph().isAmbiguousTriple(x, y, z);
-    }
-
-    public boolean isUnderlineTriple(Node x, Node y, Node z) {
-        return getGraph().isUnderlineTriple(x, y, z);
-    }
-
-    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
-        return getGraph().isDottedUnderlineTriple(x, y, z);
-    }
-
-    public void addAmbiguousTriple(Node x, Node y, Node z) {
-        getGraph().addAmbiguousTriple(x, y, z);
-    }
-
-    public void addUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().addUnderlineTriple(x, y, z);
-    }
-
-    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().addDottedUnderlineTriple(x, y, z);
-    }
-
-    public void removeAmbiguousTriple(Node x, Node y, Node z) {
-        getGraph().removeAmbiguousTriple(x, y, z);
-    }
-
-    public void removeUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().removeUnderlineTriple(x, y, z);
-    }
-
-    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().removeDottedUnderlineTriple(x, y, z);
-    }
-
-    public void setAmbiguousTriples(Set<Triple> triples) {
-        getGraph().setAmbiguousTriples(triples);
-    }
-
-    public void setUnderLineTriples(Set<Triple> triples) {
-        getGraph().setUnderLineTriples(triples);
-    }
-
-    public void setDottedUnderLineTriples(Set<Triple> triples) {
-        getGraph().setDottedUnderLineTriples(triples);
+    @Override
+    public UnderlineModel getUnderlineModel() {
+        return graph.getUnderlineModel();
     }
 
     public List<Node> getCausalOrdering() {
@@ -651,11 +596,6 @@ public class TimeLagGraph implements Graph {
 
     public TimeLagGraph getTimeLagGraph() {
         return this;
-    }
-
-    @Override
-    public void removeTriplesNotInGraph() {
-        throw new UnsupportedOperationException();
     }
 
     @Override

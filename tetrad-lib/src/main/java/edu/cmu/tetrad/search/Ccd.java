@@ -150,7 +150,7 @@ public final class Ccd implements GraphSearch {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            graph.addUnderlineTriple(a, b, c);
+            graph.getUnderlineModel().addUnderlineTriple(a, b, c);
         }
     }
 
@@ -235,7 +235,7 @@ public final class Ccd implements GraphSearch {
 
             for (Node node : adjx) {
                 if (psi.getEdge(node, x).getProximalEndpoint(x) == Endpoint.ARROW
-                        && psi.isUnderlineTriple(y, x, node)) {
+                        && psi.getUnderlineModel().isUnderlineTriple(y, x, node)) {
                     continue EDGE;
                 }
             }
@@ -321,7 +321,7 @@ public final class Ccd implements GraphSearch {
                 B.add(b);
 
                 if (sepsets.isIndependent(a, c, new ArrayList<>(B))) {
-                    psi.addDottedUnderlineTriple(a, b, c);
+                    psi.getUnderlineModel().addDottedUnderlineTriple(a, b, c);
                     supSepsets.put(new Triple(a, b, c), B);
                     break;
                 }
@@ -332,7 +332,7 @@ public final class Ccd implements GraphSearch {
     private void stepE(Map<Triple, Set<Node>> supSepset, Graph psi) {
         TetradLogger.getInstance().log("info", "\nStep E");
 
-        for (Triple triple : psi.getDottedUnderlines()) {
+        for (Triple triple : psi.getUnderlineModel().getDottedUnderlines()) {
             Node a = triple.getX();
             Node b = triple.getY();
             Node c = triple.getZ();
@@ -390,7 +390,7 @@ public final class Ccd implements GraphSearch {
     }
 
     private void stepF(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets) {
-        for (Triple triple : psi.getDottedUnderlines()) {
+        for (Triple triple : psi.getUnderlineModel().getDottedUnderlines()) {
             Node a = triple.getX();
             Node b = triple.getY();
             Node c = triple.getZ();
@@ -464,7 +464,7 @@ public final class Ccd implements GraphSearch {
             return false;
         }
 
-        if (!(graph.isUnderlineTriple(a, b, c))) {
+        if (!(graph.getUnderlineModel().isUnderlineTriple(a, b, c))) {
             return false;
         }
 

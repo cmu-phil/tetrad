@@ -274,7 +274,7 @@ public final class Cpc implements GraphSearch {
         meekRules.orientImplied(this.graph);
 
         // Remove ambiguities whose status have been determined.
-        Set<Triple> ambiguities = this.graph.getAmbiguousTriples();
+        Set<Triple> ambiguities = this.graph.getUnderlineModel().getAmbiguousTriples();
 
         for (Triple triple : new HashSet<>(ambiguities)) {
             Node x = triple.getX();
@@ -282,11 +282,11 @@ public final class Cpc implements GraphSearch {
             Node z = triple.getZ();
 
             if (this.graph.isDefCollider(x, y, z)) {
-                this.graph.removeAmbiguousTriple(x, y, z);
+                this.graph.getUnderlineModel().removeAmbiguousTriple(x, y, z);
             }
 
             if (this.graph.getEdge(x, y).pointsTowards(x) || this.graph.getEdge(y, z).pointsTowards(z)) {
-                this.graph.removeAmbiguousTriple(x, y, z);
+                this.graph.getUnderlineModel().removeAmbiguousTriple(x, y, z);
             }
         }
 
@@ -399,7 +399,7 @@ public final class Cpc implements GraphSearch {
                 } else {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.getUnderlineModel().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
             }
         }

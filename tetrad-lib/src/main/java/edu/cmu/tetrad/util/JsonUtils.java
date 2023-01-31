@@ -40,24 +40,23 @@ public class JsonUtils {
         // ambiguousTriples
         Set<Triple> ambiguousTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("ambiguousTriples"));
         for (Triple triple : ambiguousTriples) {
-            graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+            graph.getUnderlineModel().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
         }
 
         // underLineTriples
         Set<Triple> underLineTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("underLineTriples"));
         for (Triple triple : underLineTriples) {
-            graph.addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+            graph.getUnderlineModel().addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
 
         // dottedUnderLineTriples
         Set<Triple> dottedUnderLineTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("dottedUnderLineTriples"));
         for (Triple triple : dottedUnderLineTriples) {
-            graph.addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+            graph.getUnderlineModel().addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
 
         // stuffRemovedSinceLastTripleAccess
-        boolean stuffRemovedSinceLastTripleAccess = jObj.getBoolean("stuffRemovedSinceLastTripleAccess");
-        graph.setStuffRemovedSinceLastTripleAccess(stuffRemovedSinceLastTripleAccess);
+        graph.getUnderlineModel().removeTriplesNotInGraph();
 
         // highlightedEdges
         Set<Edge> highlightedEdges = JsonUtils.parseJSONArrayToTetradEdges(graph, jObj.getJSONArray("highlightedEdges"));
