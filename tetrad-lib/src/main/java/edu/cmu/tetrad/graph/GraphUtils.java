@@ -57,7 +57,6 @@ public final class GraphUtils {
      * @param radius  The radius of the circle in pixels; a good default is 150.
      * @param centerx The x coordinate for the center of the layout.
      * @param centery The y coordinate for the center of the layout.
-     * @param radius  The radius of the layout.
      */
     public static void circleLayout(Graph graph, int centerx, int centery, int radius) {
         if (graph == null) {
@@ -130,7 +129,7 @@ public final class GraphUtils {
     public static Graph randomGraphUniform(List<Node> nodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
         int numNodes = nodes.size();
 
-        if (numNodes <= 0) {
+        if (numNodes == 0) {
             throw new IllegalArgumentException("NumNodes most be > 0: " + numNodes);
         }
 
@@ -202,7 +201,7 @@ public final class GraphUtils {
     }
 
     public static Graph randomGraphRandomForwardEdges(List<Node> nodes, int numLatentConfounders, int numEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected, boolean layoutAsCircle) {
-        if (nodes.size() <= 0) {
+        if (nodes.size() == 0) {
             throw new IllegalArgumentException("NumNodes most be > 0");
         }
 
@@ -290,120 +289,6 @@ public final class GraphUtils {
             throw new IllegalArgumentException("For the Bollobas et al. algorithm," + "\napha + beta + gamma = 1, so alpha + beta must be < 1.");
         }
 
-//        System.out.println("# nodes = " + _nodes.size() + " latents = " + numLatentConfounders
-//                + "  alpha = " + alpha + " beta = " + beta + " delta_in = " + delta_in + " delta_out = " + delta_out);
-//        >>> print inspect.getsource(nx.scale_free_graph)
-//        def scale_free_graph(n,
-//                alpha=0.41,
-//                beta=0.54,
-//                gamma=0.05,
-//                delta_in=0.2,
-//                delta_out=0,
-//                create_using=None,
-//                seed=None):
-//        """Return a scale free directed graph.
-//
-//        Parameters
-//                ----------
-//        n : integer
-//        Number of nodes in graph
-//        alpha : float
-//        Probability for adding a new node connected to an existing node
-//        chosen randomly according to the in-degree distribution.
-//                beta : float
-//        Probability for adding an edge between two existing nodes.
-//                One existing node is chosen randomly according the in-degree
-//        distribution and the other chosen randomly according to the out-degree
-//        distribution.
-//                gamma : float
-//        Probability for adding a new node conecgted to an existing node
-//        chosen randomly according to the out-degree distribution.
-//                delta_in : float
-//        Bias for choosing ndoes from in-degree distribution.
-//                delta_out : float
-//        Bias for choosing ndoes from out-degree distribution.
-//                create_using : graph, optional (default MultiDiGraph)
-//        Use this graph instance to start the process (default=3-cycle).
-//        seed : integer, optional
-//        Seed for random number generator
-//
-//                Examples
-//        --------
-//                >>> G=nx.scale_free_graph(100)
-//
-//        Notes
-//                -----
-//                The sum of alpha, beta, and gamma must be 1.
-//
-//        References
-//                ----------
-        //        .. [1] B. Bollob{\'a}s, C. Borgs, J. Chayes, and O. Riordan,
-        //            Directed scale-free graphs,
-        //                    Proceedings of the fourteenth annual ACM-SIAM symposium on
-        //            Discrete algorithm, 132--139, 2003.
-        //            """
-//
-//            def _choose_node(G,distribution,delta):
-//            cumsum=0.0
-//            # normalization
-//            psum=float(sum(distribution.values()))+float(delta)*len(distribution)
-//            r=random.random()
-//            for i in range(0,len(distribution)):
-//            cumsum+=(distribution[i]+delta)/psum
-//            if r < cumsum:
-//            break
-//            return i
-//
-//            if create_using is None:
-//            # start with 3-cycle
-//            G = nx.MultiDiGraph()
-//            G.add_edges_from([(0,1),(1,2),(2,0)])
-//            else:
-//            # keep existing graph structure?
-//            G = create_using
-//            if not (G.is_directed() and G.is_multigraph()):
-//            raise nx.NetworkXError(\
-//                    "MultiDiGraph required in create_using")
-//
-//            if alpha <= 0:
-//            raise ValueError('alpha must be >= 0.')
-//            if beta <= 0:
-//            raise ValueError('beta must be >= 0.')
-//            if gamma <= 0:
-//            raise ValueError('beta must be >= 0.')
-//
-//            if alpha+beta+gamma !=1.0:
-//            raise ValueError('alpha+beta+gamma must equal 1.')
-//
-//            G.name="directed_scale_free_graph(%s,alpha=%s,beta=%s,gamma=%s,delta_in=%s,delta_out=%s)"%(n,alpha,beta,gamma,delta_in,delta_out)
-//
-//            # seed random number generated (uses None as default)
-//                random.seed(seed)
-//
-//                while len(G)<n:
-//                r = random.random()
-//                # random choice in alpha,beta,gamma ranges
-//                if r<alpha:
-//                # alpha
-//                # add new node v
-//                        v = len(G)
-//                # choose w according to in-degree and delta_in
-//                w = _choose_node(G, G.in_degree(),delta_in)
-//                elif r < alpha+beta:
-//                # beta
-//                # choose v according to out-degree and delta_out
-//                v = _choose_node(G, G.out_degree(),delta_out)
-//                # choose w according to in-degree and delta_in
-//                w = _choose_node(G, G.in_degree(),delta_in)
-//                else:
-//                # gamma
-//                # choose v according to out-degree and delta_out
-//                v = _choose_node(G, G.out_degree(),delta_out)
-//                # add new node w
-//                        w = len(G)
-//                G.add_edge(v,w)
-//
-//                return G
         shuffle(_nodes);
 
         LinkedList<Node> nodes = new LinkedList<>();
@@ -638,7 +523,7 @@ public final class GraphUtils {
 
             Edge edge;
 
-            // Make sure you won't created any two cycles (this will be done later, explicitly)
+            // Make sure you won't create any two cycles (this will be done later, explicitly)
             for (int i = 0; i < cycleNodes.size() - 1; i++) {
                 edge = Edges.directedEdge(cycleNodes.get(i + 1), cycleNodes.get(i));
 
@@ -726,7 +611,7 @@ public final class GraphUtils {
 
             Edge edge;
 
-            // Make sure you won't created any two cycles (this will be done later, explicitly)
+            // Make sure you won't create any two cycles (this will be done later, explicitly)
             for (int i = 0; i < cycleNodes.size() - 1; i++) {
                 edge = Edges.directedEdge(cycleNodes.get(i + 1), cycleNodes.get(i));
 
@@ -806,7 +691,7 @@ public final class GraphUtils {
      * Arranges the nodes in the result graph according to their positions in
      * the source graph.
      *
-     * @return true if all of the nodes were arranged, false if not.
+     * @return true if all the nodes were arranged, false if not.
      */
     public static boolean arrangeBySourceGraph(Graph resultGraph, Graph sourceGraph) {
         if (resultGraph == null) {
@@ -927,8 +812,8 @@ public final class GraphUtils {
      * (Joseph Ramsey 8/6/04)
      *
      * @param target a node in the given DAG.
-     * @param dag    the DAG with respect to which a Markov blanket DAG is to to be
-     *               calculated. All of the nodes and edges of the Markov Blanket DAG are in
+     * @param dag    the DAG with respect to which a Markov blanket DAG is to be
+     *               calculated. All the nodes and edges of the Markov Blanket DAG are in
      *               this DAG.
      */
     public static Graph markovBlanketDag(Node target, Graph dag) {
@@ -1007,7 +892,7 @@ public final class GraphUtils {
         return blanket;
     }
 
-    //all adjancencies are directed <=> there is no uncertainty about who the parents of 'node' are.
+    //all adjancencies are directed <=> there is no uncertainty about whom the parents of 'node' are.
     public static boolean allAdjacenciesAreDirected(Node node, Graph graph) {
         List<Edge> nodeEdges = graph.getEdges(node);
         for (Edge edge : nodeEdges) {
@@ -1363,8 +1248,6 @@ public final class GraphUtils {
 
         graph2 = GraphUtils.replaceNodes(graph2, graph1.getNodes());
 
-        assert graph2 != null;
-
         int count = 0;
 
         for (Edge edge1 : graph1.getEdges()) {
@@ -1423,7 +1306,6 @@ public final class GraphUtils {
         int numCorrect = 0;
 
         for (Edge estEdge : edges) {
-            assert correct != null;
             Edge correctEdge = correct.getEdge(estEdge.getNode1(), estEdge.getNode2());
             if (correctEdge == null) {
                 continue;
@@ -1952,35 +1834,6 @@ public final class GraphUtils {
         }
     }
 
-//    public static Graph readerToGraphMyTxt(File file) throws IOException {
-//        List<Node> vars = new ArrayList<>();
-//        int numVars = 33;
-//        for (int i = 1; i <= numVars; i++) vars.add(new ContinuousVariable("X" + i));
-//
-//        Graph graph = new EdgeListGraph(vars);
-//
-//        try {
-//            DataSet datasSet = DataUtils.loadContinuousData(file, "//", '\"',
-//                    "*", false, Delimiter.TAB);
-//
-//            for (int i = 0; i < numVars; i++) {
-//                for (int j = i; j < numVars; j++) {
-//                    if (datasSet.getDouble(i, j) == 1.0 && datasSet.getDouble(j, i) == 1.0) {
-//                        graph.addBidirectedEdge(vars.get(i), vars.get(j));
-//                    } else if (datasSet.getDouble(i, j) == 1.0 && datasSet.getDouble(j, i) == 0.0) {
-//                        graph.addDirectedEdge(vars.get(i), vars.get(j));
-//                    } else if (datasSet.getDouble(i, j) == 0.0 && datasSet.getDouble(j, i) == 1.0) {
-//                        graph.addDirectedEdge(vars.get(j), vars.get(i));
-//                    }
-//                }
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return graph;
-//    }
-
     public static Graph loadGraphRuben(File file) {
         try {
             final String commentMarker = "//";
@@ -2040,25 +1893,8 @@ public final class GraphUtils {
             }
         }
 
-//        computeEdgeProbabilities(graph);
-
         return graph;
     }
-
-//    private static void computeEdgeProbabilities(Graph graph) {
-//        for (Edge edge : graph.getEdges()) {
-//            List<EdgeTypeProbability> edgeTypeProbs = edge.getEdgeTypeProbabilities();
-//            if (!(edgeTypeProbs == null || edgeTypeProbs.isEmpty())) {
-//                double prob = 0;
-//                for (EdgeTypeProbability typeProbability : edgeTypeProbs) {
-//                    if (typeProbability.getEdgeType() != EdgeTypeProbability.EdgeType.nil) {
-//                        prob += typeProbability.getProbability();
-//                    }
-//                }
-//                edge.setProbability(prob);
-//            }
-//        }
-//    }
 
     public static Graph readerToGraphRuben(Reader reader) throws IOException {
         Graph graph = new EdgeListGraph();
@@ -2080,7 +1916,7 @@ public final class GraphUtils {
     }
     
     private static void extractGraphEdges(Graph graph, BufferedReader in) throws IOException {
-        Pattern lineNumPattern = Pattern.compile("^[\\d]+.[\\s]?");
+        Pattern lineNumPattern = Pattern.compile("^\\d+.\\s?");
         Pattern spacePattern = Pattern.compile("\\s+");
         Pattern semicolonPattern = Pattern.compile(";");
         Pattern colonPattern = Pattern.compile(":");
@@ -2217,154 +2053,6 @@ public final class GraphUtils {
 
         return node;
     }
-
-//    private static void extractGraphEdges(Graph graph, BufferedReader in) throws IOException {
-//        for (String line = in.readLine(); line != null; line = in.readLine()) {
-//            line = line.trim();
-//
-//            if (line.isEmpty()) {
-//                return;
-//            }
-//
-//            String[] tokens = line.split("\\s+");
-//
-//            String number = tokens[0];
-//
-//            String[] tokensa = number.split("\\.");
-//
-//            int fromIndex;
-//
-//            try {
-//                Integer.parseInt(tokensa[0]);
-//                fromIndex = 1;
-//            } catch (NumberFormatException e) {
-//                fromIndex = 0;
-//            }
-//
-//            String from = tokens[fromIndex];
-//
-//            line = line.substring(line.indexOf(from) + from.length()).trim();
-//            tokens = line.split("\\s+");
-//
-//            String edge = tokens[0];
-//
-//            if ("Attributes:".equals(edge)) break;
-//
-//            line = line.substring(line.indexOf(edge) + edge.length()).trim();
-//            tokens = line.split("\\s+");
-//
-//            String to = tokens[0];
-//            line = line.substring(line.indexOf(to) + to.length()).trim();
-//
-//            Node _from = graph.getNode(from);
-//            Node _to = graph.getNode(to);
-//
-//            if (_from == null) {
-//                graph.addNode(new GraphNode(from));
-//                _from = graph.getNode(from);
-//            }
-//
-//            if (_to == null) {
-//                graph.addNode(new GraphNode(to));
-//                _to = graph.getNode(to);
-//            }
-//
-//            char end1 = edge.charAt(0);
-//            char end2 = edge.charAt(2);
-//
-//            Endpoint _end1;
-//            Endpoint _end2;
-//
-//            if (end1 == '<') {
-//                _end1 = Endpoint.ARROW;
-//            } else if (end1 == 'o') {
-//                _end1 = Endpoint.CIRCLE;
-//            } else if (end1 == '-') {
-//                _end1 = Endpoint.TAIL;
-//            } else {
-//                throw new IllegalArgumentException("Unrecognized endpoint: " + end1 + ", for edge " + edge);
-//            }
-//
-//            if (end2 == '>') {
-//                _end2 = Endpoint.ARROW;
-//            } else if (end2 == 'o') {
-//                _end2 = Endpoint.CIRCLE;
-//            } else if (end2 == '-') {
-//                _end2 = Endpoint.TAIL;
-//            } else {
-//                throw new IllegalArgumentException("Unrecognized endpoint: " + end2 + ", for edge " + edge);
-//            }
-//
-//            Edge _edge = new Edge(_from, _to, _end1, _end2);
-//
-//            //Bootstrapping
-//            if (line.contains("[no edge]") || line.contains(" --> ") || line.contains(" <-- ") || line.contains(" o-> ") || line.contains(" <-o ") || line.contains(" o-o ") || line.contains(" <-> ") || line.contains(" --- ")) {
-//
-//                // String bootstrap_format = "[no edge]:0.0000;[n1 --> n2]:0.0000;[n1 &lt;-- n2]:0.0000;[n1 o-> n2]:0.0000;[n1 &lt;-o n2]:0.0000;[n1 o-o n2]:0.0000;[n1 &lt;-> n2]:0.0000;[n1 --- n2]:0.0000;";
-//                int last_semicolon = line.lastIndexOf(";");
-//                String bootstraps;
-//                if (last_semicolon != -1) {
-//                    bootstraps = line.substring(0, last_semicolon + 1);
-//                } else {
-//                    bootstraps = line;
-//                }
-//
-//                line = line.substring(bootstraps.length()).trim();
-//
-//                String[] bootstrap = bootstraps.split(";");
-//                for (String s : bootstrap) {
-//                    String[] token = s.split(":");
-//                    if (token.length < 2) {
-//                        continue;
-//                    }
-//
-//                    String orient = token[0];
-//                    double prob = Double.parseDouble(token[1]);
-//
-//                    if (orient.equalsIgnoreCase("[no edge]")) {
-//                        _edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeType.nil, prob));
-//                        _edge.setProbability(1.0 - prob);
-//                    } else {
-//                        orient = orient.replace("[", "").replace("]", "");
-//                        EdgeTypeProbability etp;
-//                        if (orient.contains(" --> ")) {
-//                            etp = new EdgeTypeProbability(EdgeType.ta, prob);
-//                        } else if (orient.contains(" <-- ")) {
-//                            etp = new EdgeTypeProbability(EdgeType.at, prob);
-//                        } else if (orient.contains(" o-> ")) {
-//                            etp = new EdgeTypeProbability(EdgeType.ca, prob);
-//                        } else if (orient.contains(" <-o ")) {
-//                            etp = new EdgeTypeProbability(EdgeType.ac, prob);
-//                        } else if (orient.contains(" o-o ")) {
-//                            etp = new EdgeTypeProbability(EdgeType.cc, prob);
-//                        } else if (orient.contains(" <-> ")) {
-//                            etp = new EdgeTypeProbability(EdgeType.aa, prob);
-//                        } else {// [n1 --- n2]
-//                            etp = new EdgeTypeProbability(EdgeType.tt, prob);
-//                        }
-//                        String[] _edge_property = orient.trim().split("\\s+");
-//                        if (_edge_property.length > 3) {
-//                            for (int j = 3; j < _edge_property.length; j++) {
-//                                etp.addProperty(Property.valueOf(_edge_property[j]));
-//                            }
-//                        }
-//                        _edge.addEdgeTypeProbability(etp);
-//                    }
-//
-//                }
-//            }
-//
-//            if (line.length() > 0) {
-//                tokens = line.split("\\s+");
-//
-//                for (String token : tokens) {
-//                    _edge.addProperty(Property.valueOf(token));
-//                }
-//            }
-//
-//            graph.addEdge(_edge);
-//        }
-//    }
 
     private static void extractGraphNodes(Graph graph, BufferedReader in) throws IOException {
         for (String line = in.readLine(); line != null; line = in.readLine()) {
@@ -2835,7 +2523,7 @@ public final class GraphUtils {
      *
      * @param indices The indices of the desired nodes in <code>nodes</code>.
      * @param nodes   The list of nodes from which we select a sublist.
-     * @return the The sublist selected.
+     * @return The sublist selected.
      */
     public static List<Node> asList(int[] indices, List<Node> nodes) {
         List<Node> list = new LinkedList<>();
@@ -3472,13 +3160,6 @@ public final class GraphUtils {
         return report;
     }
 
-    //        BronKerbosch1(R, P, X):
-    //            if P and X are both empty:
-    //                   report R as a maximal clique
-    //            for each vertex v in P:
-    //                   BronKerbosch1(R â {v}, P â N(v), X â N(v))
-    //                   P := P \ {v}
-    //                   X := X â {v}
     private static void brokKerbosh1(Set<Node> R, Set<Node> P, Set<Node> X, Set<Set<Node>> report, Graph graph) {
         if (P.isEmpty() && X.isEmpty()) {
             report.add(new HashSet<>(R));
@@ -4170,19 +3851,6 @@ public final class GraphUtils {
         public List<Edge> getEdgesRemoved() {
             return this.edgesRemoved;
         }
-
-        public List<Edge> getEdgesReorientedFrom() {
-            return this.edgesReorientedFrom;
-        }
-
-        public List<Edge> getEdgesReorientedTo() {
-            return this.edgesReorientedTo;
-        }
-
-        public List<Edge> getCorrectAdjacencies() {
-            return this.edgesAdjacencies;
-        }
-
         public double getAdjPrec() {
             return this.adjPrec;
         }

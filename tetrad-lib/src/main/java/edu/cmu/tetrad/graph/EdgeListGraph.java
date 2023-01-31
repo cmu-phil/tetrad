@@ -76,7 +76,7 @@ public class EdgeListGraph implements Graph {
 
     private Underlines underlines;
 
-    private Paths paths;
+    private final Paths paths;
 
     /**
      * The set of highlighted edges.
@@ -152,6 +152,9 @@ public class EdgeListGraph implements Graph {
         this.underlines = new Underlines(graph.getUnderlines());
 
         this.highlightedEdges = new HashSet<>(graph.highlightedEdges);
+
+        this.paths = new Paths(this);
+        this.underlines = new Underlines(graph.underlines);
 
         setGraphType(graph.getGraphType());
     }
