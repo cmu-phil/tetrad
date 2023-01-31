@@ -494,16 +494,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return this.graph;
     }
 
-    @Override
-    public List<String> getTriplesClassificationTypes() {
-        return null;
-    }
-
-    @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
-    }
-
     public void setGraphType(EdgeListGraph.GraphType graphType) {
         this.graphType = graphType;
     }

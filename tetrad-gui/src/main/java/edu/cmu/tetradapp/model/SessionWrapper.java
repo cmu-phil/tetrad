@@ -734,16 +734,6 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         return this.propertyChangeSupport;
     }
 
-    @Override
-    public List<String> getTriplesClassificationTypes() {
-        return null;
-    }
-
-    @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
-    }
-
     public void setGraphType(GraphType graphType) {
         this.graphType = graphType;
     }

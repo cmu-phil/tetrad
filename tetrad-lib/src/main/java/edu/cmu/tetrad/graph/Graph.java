@@ -37,7 +37,7 @@ import java.util.*;
  * @author Joseph Ramsey
  * @see Endpoint
  */
-public interface Graph extends TetradSerializable, TripleClassifier {
+public interface Graph extends TetradSerializable {
     long serialVersionUID = 23L;
 
     /**
@@ -228,7 +228,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     List<Edge> getEdges(Node node1, Node node2);
 
     /**
-     * @return the list of edges in the graph.  No particular ordering of the
+     * @return the set of edges in the graph.  No particular ordering of the
      * edges in the list is guaranteed.
      */
     Set<Edge> getEdges();

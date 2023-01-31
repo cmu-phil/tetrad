@@ -873,16 +873,6 @@ public final class SemGraph implements Graph {
         }
     }
 
-    @Override
-    public List<String> getTriplesClassificationTypes() {
-        return null;
-    }
-
-    @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
-    }
-
     public EdgeListGraph.GraphType getGraphType() {
         return graphType;
     }

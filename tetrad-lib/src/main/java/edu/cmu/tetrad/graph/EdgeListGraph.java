@@ -166,7 +166,7 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * Constructs a new graph, with no edges, using the the given variable
+     * Constructs a new graph, with no edges, using the given variable
      * names.
      */
     public EdgeListGraph(List<Node> nodes) {
@@ -1744,32 +1744,6 @@ public class EdgeListGraph implements Graph {
         this.namesHash.remove(name);
         node.setName(newName);
         this.namesHash.put(newName, node);
-    }
-
-    /**
-     * @return the names of the triple classifications. Coordinates with
-     * <code>getTriplesList</code>
-     */
-    @Override
-    public List<String> getTriplesClassificationTypes() {
-        List<String> names = new ArrayList<>();
-        names.add("Underlines");
-        names.add("Dotted Underlines");
-        names.add("Ambiguous Triples");
-        return names;
-    }
-
-    /**
-     * @return the list of triples corresponding to
-     * <code>getTripleClassificationNames</code> for the given node.
-     */
-    @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        List<List<Triple>> triplesList = new ArrayList<>();
-        triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, this));
-        triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, this));
-        triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, this));
-        return triplesList;
     }
 
     @Override

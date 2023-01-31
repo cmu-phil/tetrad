@@ -2,10 +2,12 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-public class UnderlineModel implements TetradSerializable {
+public class UnderlineModel implements TripleClassifier, TetradSerializable {
     static final long serialVersionUID = 23L;
 
     private final Graph graph;
@@ -56,7 +58,6 @@ public class UnderlineModel implements TetradSerializable {
     }
 
     public Set<Triple> getDottedUnderlines() {
-//        removeTriplesNotInGraph();
         return new HashSet<>(this.dottedUnderLineTriples);
     }
 
@@ -167,5 +168,31 @@ public class UnderlineModel implements TetradSerializable {
                 this.dottedUnderLineTriples.remove(triple);
             }
         }
+    }
+
+
+    /**
+     * @return the names of the triple classifications. Coordinates with
+     * <code>getTriplesList</code>
+     */
+    public List<String> getTriplesClassificationTypes() {
+        List<String> names = new ArrayList<>();
+        names.add("Underlines");
+        names.add("Dotted Underlines");
+        names.add("Ambiguous Triples");
+        return names;
+    }
+
+
+    /**
+     * @return the list of triples corresponding to
+     * <code>getTripleClassificationNames</code> for the given node.
+     */
+    public List<List<Triple>> getTriplesLists(Node node) {
+        List<List<Triple>> triplesList = new ArrayList<>();
+        triplesList.add(GraphUtils.getUnderlinedTriplesFromGraph(node, graph));
+        triplesList.add(GraphUtils.getDottedUnderlinedTriplesFromGraph(node, graph));
+        triplesList.add(GraphUtils.getAmbiguousTriplesFromGraph(node, graph));
+        return triplesList;
     }
 }

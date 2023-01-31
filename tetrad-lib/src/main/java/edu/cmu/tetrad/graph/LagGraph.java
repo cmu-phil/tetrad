@@ -416,16 +416,6 @@ public class LagGraph implements Graph {
         this.graph = graph;
     }
 
-    @Override
-    public List<String> getTriplesClassificationTypes() {
-        return null;
-    }
-
-    @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
-    }
-
     public EdgeListGraph.GraphType getGraphType() {
         return graphType;
     }

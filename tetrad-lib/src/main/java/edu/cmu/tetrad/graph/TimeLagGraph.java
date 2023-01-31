@@ -369,16 +369,6 @@ public class TimeLagGraph implements Graph {
         return this.numInitialLags;
     }
 
-    @Override
-    public List<String> getTriplesClassificationTypes() {
-        return null;
-    }
-
-    @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
-    }
-
     public EdgeListGraph.GraphType graphType;
 
     public static class NodeId {
