@@ -166,7 +166,7 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * Constructs a new graph, with no edges, using the given variable
+     * Constructs a new graph, with no edges, using the the given variable
      * names.
      */
     public EdgeListGraph(List<Node> nodes) {
@@ -1179,7 +1179,7 @@ public class EdgeListGraph implements Graph {
      * cannot already be used by any other node in the same graph.
      *
      * @param node the node to be added.
-     * @return true if the node was added, false if not.
+     * @return true if the the node was added, false if not.
      */
     @Override
     public boolean addNode(Node node) {
@@ -1720,7 +1720,7 @@ public class EdgeListGraph implements Graph {
      * version to version. A readObject method of this form may be added to any
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help).
+     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

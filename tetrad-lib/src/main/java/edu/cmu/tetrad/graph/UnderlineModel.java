@@ -33,6 +33,9 @@ public class UnderlineModel implements TetradSerializable {
 
     public UnderlineModel(UnderlineModel underlineModel) {
         this(underlineModel.graph);
+        this.underLineTriples = underlineModel.getUnderLines();
+        this.dottedUnderLineTriples = underlineModel.getDottedUnderlines();
+        this.ambiguousTriples = underlineModel.getAmbiguousTriples();
     }
 
     public Set<Triple> getAmbiguousTriples() {
