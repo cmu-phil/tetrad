@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.PrintStream;
 import java.util.*;
 
+import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
 import static java.util.Collections.reverse;
 
 /**
@@ -194,7 +195,7 @@ public final class LvSwap implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
-        alg.setAlgType(bossAlgType);
+        alg.setAlgType(Boss.AlgType.BOSS2);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
@@ -207,27 +208,31 @@ public final class LvSwap implements GraphSearch {
 
         retainUnshieldedColliders(G);
 
+//        removeByPossibleDsep(G, test, new SepsetMap());
+
+
         scorer.bookmark();
 
         Set<Triple> T = new HashSet<>();
 
         List<Node> pi = scorer.getPi();
 
-        for (Node y : pi) {
-//            List<Node> adjy = G.getAdjacentNodes(y);
-
-            for (Node x : pi) {
-                for (Node z : pi) {
-                    if (y == x) continue;
-                    if (y == z) continue;
-                    if (x == z) continue;
-
-//        for (Node y : scorer.getPi()) {
-//            List<Node> adjy = G.getAdjacentNodes(y);
+//        for (Node y : pi) {
+////            List<Node> adjy = G.getAdjacentNodes(y);
 //
-//            for (Node x : adjy) {
-//                for (Node z : adjy) {
-                    if (!G.isAdjacentTo(x, z)) continue;
+//            for (Node x : pi) {
+//                for (Node z : pi) {
+//                    if (y == x) continue;
+//                    if (y == z) continue;
+//                    if (x == z) continue;
+
+        for (Node y : pi) {
+            List<Node> adjy = G.getAdjacentNodes(y);
+
+            for (Node x : adjy) {
+                for (Node z : adjy) {
+                    if (x == z) continue;
+//                    if (!G.isAdjacentTo(x, z)) continue;
                     if (T.contains(new Triple(x, y, z))) continue;
 
                     scorer.goToBookmark();
@@ -284,14 +289,20 @@ public final class LvSwap implements GraphSearch {
 
         List<Node> pi = scorer.getPi();
 
+//        for (Node y : pi) {
+//            List<Node> adjy = G.getAdjacentNodes(y);
+
+//            for (Node x : pi) {
+//                for (Node z : pi) {
+//                    if (y == x) continue;
+//                    if (y == z) continue;
+//                    if (x == z) continue;
+
         for (Node y : pi) {
             List<Node> adjy = G.getAdjacentNodes(y);
 
-            for (Node x : pi) {
-                for (Node z : pi) {
-                    if (y == x) continue;
-                    if (y == z) continue;
-                    if (x == z) continue;
+            for (Node x : adjy) {
+                for (Node z : adjy) {
                     if (!scorer.adjacent(x, z)) continue;
                     if (T.contains(new Triple(x, y, z))) continue;
 
@@ -337,8 +348,6 @@ public final class LvSwap implements GraphSearch {
         if (SearchGraphUtils.isLegalPag(G).isLegalPag()) {
             G.setGraphType(EdgeListGraph.GraphType.PAG);
         }
-
-        System.out.println(G);
 
         scorer.goToBookmark();
         return G;

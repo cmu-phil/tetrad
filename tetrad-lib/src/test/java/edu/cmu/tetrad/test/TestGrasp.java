@@ -2452,9 +2452,9 @@ public final class TestGrasp {
         RandomUtil.getInstance().setSeed(38482838482L);
 
         Parameters params = new Parameters();
-        params.set(Params.ALPHA, 0.001, 0.01, 0.1);
-        params.set(Params.PENALTY_DISCOUNT, 2, 4);
-        params.set(Params.ZS_RISK_BOUND, 0.1, .3, .8);
+        params.set(Params.ALPHA, 1e-5, 0.0001, 0.001, 0.01, 0.1);
+        params.set(Params.PENALTY_DISCOUNT, 1);
+        params.set(Params.ZS_RISK_BOUND, 0.1, 0.5, 0.9);
         params.set(Params.EBIC_GAMMA, .2, .6, .8);
 
         params.set(Params.SAMPLE_SIZE, 1000, 10000);
@@ -2471,7 +2471,7 @@ public final class TestGrasp {
         params.set(Params.NUM_RUNS, 20);
 
         params.set(Params.BOSS_ALG, 1);
-        params.set(Params.DEPTH, 3);
+        params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.POSSIBLE_DSEP_DONE, true);
@@ -2495,9 +2495,9 @@ public final class TestGrasp {
         IndependenceWrapper test = new FisherZ();
 
         List<ScoreWrapper> scores = new ArrayList<>();
-        scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-        scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
-        scores.add(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore());
+//        scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+//        scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
+//        scores.add(new edu.cmu.tetrad.algcomparison.score.KimEtAlScores());
         scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
 
         List<Algorithm> algorithms = new ArrayList<>();
@@ -2505,30 +2505,30 @@ public final class TestGrasp {
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci(test));
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci(test));
-
-//        for (ScoreWrapper score : scores) {
-//            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS(test, score));
-//        }
-
+//
+////        for (ScoreWrapper score : scores) {
+////            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS(test, score));
+////        }
+//
         for (ScoreWrapper score : scores) {
             algorithms.add(new GFCI(test, score));
         }
-
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new BFCI(test, score));
-        }
-
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_1(test, score));
-        }
+//
+//        for (ScoreWrapper score : scores) {
+//            algorithms.add(new BFCI(test, score));
+//        }
+//
+//        for (ScoreWrapper score : scores) {
+//            algorithms.add(new LVSWAP_1(test, score));
+//        }
 
         for (ScoreWrapper score : scores) {
             algorithms.add(new LVSWAP_2a(test, score));
         }
 
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_2b(test, score));
-        }
+//        for (ScoreWrapper score : scores) {
+//            algorithms.add(new LVSWAP_2b(test, score));
+//        }
 
 
 //            Collections.shuffle(algorithms);
@@ -2556,7 +2556,7 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.DEPTH));
         statistics.add(new ParameterColumn(Params.ZS_RISK_BOUND));
-        statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
+//        statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
 
 //        // Joe table.
 //        statistics.add(new LegalPag());
@@ -2564,7 +2564,9 @@ public final class TestGrasp {
 //        statistics.add(new TrueDagPrecisionTails());
 //        statistics.add(new TrueDagPrecisionArrow());
 //        statistics.add(new NumDirectedShouldBePartiallyDirected());
+        statistics.add(new NumDirectedEdges());
         statistics.add(new NumBidirectedEdgesEst());
+        statistics.add(new TrueDagPrecisionTails());
         statistics.add(new BidirectedLatentPrecision());
 //
 //        // Greg table

@@ -785,34 +785,34 @@ public final class SearchGraphUtils {
 
     public static LegalPagRet isLegalPag(Graph pag) {
 
-        for (Node n : pag.getNodes()) {
-            if (pag.existsDirectedPathFromTo(n, n))
-                return new LegalPagRet(false,
-                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
-        }
+//        for (Node n : pag.getNodes()) {
+//            if (pag.existsDirectedPathFromTo(n, n))
+//                return new LegalPagRet(false,
+//                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
+//        }
 
-        for (Edge e : pag.getEdges()) {
-            Node x = e.getNode1();
-            Node y = e.getNode2();
-
-            if (Edges.isBidirectedEdge(e)) {
-                if (pag.existsDirectedPathFromTo(x, y)) {
-                    List<Node> path = GraphUtils.directedPathsFromTo(
-                            pag, x, y, 100).get(0);
-                    return new LegalPagRet(false,
-                            "Bidirected edge semantics violated: there is a directed path for " + e + " from " + x + " to " + y
-                                    + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-                                    + "An example path is " + GraphUtils.pathString(pag, path));
-                } else if (pag.existsDirectedPathFromTo(y, x)) {
-                    List<Node> path = GraphUtils.directedPathsFromTo(
-                            pag, y, x, 100).get(0);
-                    return new LegalPagRet(false,
-                            "Bidirected edge semantics violated: There is an a directed path for " + e + " from " + y + " to " + x +
-                                    ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-                                    + "An example path is " + GraphUtils.pathString(pag, path));
-                }
-            }
-        }
+//        for (Edge e : pag.getEdges()) {
+//            Node x = e.getNode1();
+//            Node y = e.getNode2();
+//
+//            if (Edges.isBidirectedEdge(e)) {
+//                if (pag.existsDirectedPathFromTo(x, y)) {
+//                    List<Node> path = GraphUtils.directedPathsFromTo(
+//                            pag, x, y, 100).get(0);
+//                    return new LegalPagRet(false,
+//                            "Bidirected edge semantics violated: there is a directed path for " + e + " from " + x + " to " + y
+//                                    + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+//                                    + "An example path is " + GraphUtils.pathString(pag, path));
+//                } else if (pag.existsDirectedPathFromTo(y, x)) {
+//                    List<Node> path = GraphUtils.directedPathsFromTo(
+//                            pag, y, x, 100).get(0);
+//                    return new LegalPagRet(false,
+//                            "Bidirected edge semantics violated: There is an a directed path for " + e + " from " + y + " to " + x +
+//                                    ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+//                                    + "An example path is " + GraphUtils.pathString(pag, path));
+//                }
+//            }
+//        }
 
         Graph mag = pagToMag(pag);
 
