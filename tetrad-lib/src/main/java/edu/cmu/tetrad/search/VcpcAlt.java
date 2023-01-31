@@ -237,7 +237,7 @@ public final class VcpcAlt implements GraphSearch {
         }
 
 
-        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.getUnderlines().getAmbiguousTriples());
+        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.underlines().getAmbiguousTriples());
 
         int[] dims = new int[ambiguousTriples.size()];
 
@@ -264,7 +264,7 @@ public final class VcpcAlt implements GraphSearch {
 
             for (int k = 0; k < combination.length; k++) {
                 Triple triple = ambiguousTriples.get(k);
-                _graph.getUnderlines().removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                _graph.underlines().removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
 
 
                 if (combination[k] == 0) {
@@ -571,7 +571,7 @@ public final class VcpcAlt implements GraphSearch {
                 } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     ambiguousTriples.add(triple);
-                    graph.getUnderlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     Edge edge = Edges.undirectedEdge(x, z);
                     definitelyNonadjacencies.add(edge);
                 } else {

@@ -562,7 +562,7 @@ public final class Cefs {
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    graph.getUnderlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     this.logger.log("tripleClassifications", "Ambiguous triple oriented: " + Triple.pathString(graph, x, y, z));
                 } else {
                     this.noncolliderTriples.add(new Triple(x, y, z));

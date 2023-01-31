@@ -123,7 +123,7 @@ public class GraphChange {
         makeNewEdges(output);
 
         for (Triple t : this.nonColliders)
-            output.getUnderlines().addUnderlineTriple(t.getX(), t.getY(), t.getZ());
+            output.underlines().addUnderlineTriple(t.getX(), t.getY(), t.getZ());
 
         for (Edge e : this.removes)
             if (!output.removeEdge(e))

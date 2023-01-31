@@ -279,7 +279,7 @@ public final class VcpcFast implements GraphSearch {
         meekRules.orientImplied(this.graph);
 
 
-        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.getUnderlines().getAmbiguousTriples());
+        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.underlines().getAmbiguousTriples());
 
         int[] dims = new int[ambiguousTriples.size()];
 
@@ -308,7 +308,7 @@ public final class VcpcFast implements GraphSearch {
 
             for (int k = 0; k < combination.length; k++) {
                 Triple triple = ambiguousTriples.get(k);
-                _graph.getUnderlines().removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                _graph.underlines().removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
 
                 if (combination[k] == 0) {
                     newColliders.get(_graph).add(triple);
@@ -590,7 +590,7 @@ public final class VcpcFast implements GraphSearch {
                 } else if (type == CpcTripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    this.graph.getUnderlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     Edge edge = Edges.undirectedEdge(x, z);
                     this.definitelyNonadjacencies.add(edge);
                 } else {

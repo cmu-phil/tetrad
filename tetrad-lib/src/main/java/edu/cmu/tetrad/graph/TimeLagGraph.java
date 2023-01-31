@@ -476,8 +476,8 @@ public class TimeLagGraph implements Graph {
     }
 
     @Override
-    public Underlines getUnderlines() {
-        return graph.getUnderlines();
+    public Underlines underlines() {
+        return graph.underlines();
     }
 
     @Override

@@ -93,8 +93,8 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     @Override
-    public Underlines getUnderlines() {
-        return graph.getUnderlines();
+    public Underlines underlines() {
+        return graph.underlines();
     }
 
     @Override

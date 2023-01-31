@@ -40,23 +40,23 @@ public class JsonUtils {
         // ambiguousTriples
         Set<Triple> ambiguousTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("ambiguousTriples"));
         for (Triple triple : ambiguousTriples) {
-            graph.getUnderlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+            graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
         }
 
         // underLineTriples
         Set<Triple> underLineTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("underLineTriples"));
         for (Triple triple : underLineTriples) {
-            graph.getUnderlines().addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+            graph.underlines().addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
 
         // dottedUnderLineTriples
         Set<Triple> dottedUnderLineTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("dottedUnderLineTriples"));
         for (Triple triple : dottedUnderLineTriples) {
-            graph.getUnderlines().addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+            graph.underlines().addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
 
         // stuffRemovedSinceLastTripleAccess
-        graph.getUnderlines().removeTriplesNotInGraph();
+        graph.underlines().removeTriplesNotInGraph();
 
         // highlightedEdges
         Set<Edge> highlightedEdges = JsonUtils.parseJSONArrayToTetradEdges(graph, jObj.getJSONArray("highlightedEdges"));

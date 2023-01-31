@@ -120,7 +120,7 @@ public class EdgeListGraph implements Graph {
         // Keep attributes from the original graph
         transferAttributes(graph);
 
-        this.underlines = new Underlines(graph.getUnderlines());
+        this.underlines = new Underlines(graph.underlines());
 
         for (Edge edge : graph.getEdges()) {
             if (graph.isHighlighted(edge)) {
@@ -142,7 +142,7 @@ public class EdgeListGraph implements Graph {
         this.edgesSet = new HashSet<>(graph.edgesSet);
         this.namesHash = new HashMap<>(graph.namesHash);
 
-        this.underlines = new Underlines(graph.getUnderlines());
+        this.underlines = new Underlines(graph.underlines());
 
         this.highlightedEdges = new HashSet<>(graph.highlightedEdges);
 
@@ -513,7 +513,7 @@ public class EdgeListGraph implements Graph {
     }
 
     @Override
-    public Underlines getUnderlines() {
+    public Underlines underlines() {
         return underlines;
     }
 

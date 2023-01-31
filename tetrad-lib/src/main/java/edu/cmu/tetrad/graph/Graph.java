@@ -357,7 +357,7 @@ public interface Graph extends TetradSerializable {
 
     void transferAttributes(Graph graph) throws IllegalArgumentException;
 
-    Underlines getUnderlines();
+    Underlines underlines();
 
     Paths paths();
 

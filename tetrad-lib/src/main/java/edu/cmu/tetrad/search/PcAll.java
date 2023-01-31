@@ -449,7 +449,7 @@ public final class PcAll implements GraphSearch {
                 } else {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    this.graph.getUnderlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
             }
         }

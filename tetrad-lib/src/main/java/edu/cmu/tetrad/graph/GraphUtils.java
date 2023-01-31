@@ -1142,16 +1142,16 @@ public final class GraphUtils {
             convertedGraph.addEdge(newEdge);
         }
 
-        for (Triple triple : originalGraph.getUnderlines().getUnderLines()) {
-            convertedGraph.getUnderlines().addUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        for (Triple triple : originalGraph.underlines().getUnderLines()) {
+            convertedGraph.underlines().addUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
-        for (Triple triple : originalGraph.getUnderlines().getDottedUnderlines()) {
-            convertedGraph.getUnderlines().addDottedUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        for (Triple triple : originalGraph.underlines().getDottedUnderlines()) {
+            convertedGraph.underlines().addDottedUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
-        for (Triple triple : originalGraph.getUnderlines().getAmbiguousTriples()) {
-            convertedGraph.getUnderlines().addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        for (Triple triple : originalGraph.underlines().getAmbiguousTriples()) {
+            convertedGraph.underlines().addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
         return convertedGraph;
@@ -1490,7 +1490,7 @@ public final class GraphUtils {
             edges.appendChild(_edge);
         }
 
-        Set<Triple> ambiguousTriples = graph.getUnderlines().getAmbiguousTriples();
+        Set<Triple> ambiguousTriples = graph.underlines().getAmbiguousTriples();
 
         if (!ambiguousTriples.isEmpty()) {
             Element underlinings = new Element("ambiguities");
@@ -1504,7 +1504,7 @@ public final class GraphUtils {
             }
         }
 
-        Set<Triple> underlineTriples = graph.getUnderlines().getUnderLines();
+        Set<Triple> underlineTriples = graph.underlines().getUnderLines();
 
         if (!underlineTriples.isEmpty()) {
             Element underlinings = new Element("underlines");
@@ -1518,7 +1518,7 @@ public final class GraphUtils {
             }
         }
 
-        Set<Triple> dottedTriples = graph.getUnderlines().getDottedUnderlines();
+        Set<Triple> dottedTriples = graph.underlines().getDottedUnderlines();
 
         if (!dottedTriples.isEmpty()) {
             Element dottedUnderlinings = new Element("dottedUnderlines");
@@ -1700,7 +1700,7 @@ public final class GraphUtils {
         if ("ambiguities".equals(graphElement.getChildElements().get(p).getLocalName())) {
             Element ambiguitiesElement = graphElement.getChildElements().get(p);
             Set<Triple> triples = parseTriples(variables, ambiguitiesElement, "ambiguity");
-            graph.getUnderlines().setAmbiguousTriples(triples);
+            graph.underlines().setAmbiguousTriples(triples);
             p++;
         }
 
@@ -1711,7 +1711,7 @@ public final class GraphUtils {
         if ("underlines".equals(graphElement.getChildElements().get(p).getLocalName())) {
             Element ambiguitiesElement = graphElement.getChildElements().get(p);
             Set<Triple> triples = parseTriples(variables, ambiguitiesElement, "underline");
-            graph.getUnderlines().setUnderLineTriples(triples);
+            graph.underlines().setUnderLineTriples(triples);
             p++;
         }
 
@@ -1722,7 +1722,7 @@ public final class GraphUtils {
         if ("dottedunderlines".equals(graphElement.getChildElements().get(p).getLocalName())) {
             Element ambiguitiesElement = graphElement.getChildElements().get(p);
             Set<Triple> triples = parseTriples(variables, ambiguitiesElement, "dottedunderline");
-            graph.getUnderlines().setDottedUnderLineTriples(triples);
+            graph.underlines().setDottedUnderLineTriples(triples);
         }
 
         return graph;
@@ -2241,7 +2241,7 @@ public final class GraphUtils {
             Node x = adj.get(choice[0]);
             Node z = adj.get(choice[1]);
 
-            if (graph.getUnderlines().isAmbiguousTriple(x, node, z)) {
+            if (graph.underlines().isAmbiguousTriple(x, node, z)) {
                 ambiguousTriples.add(new Triple(x, node, z));
             }
         }
@@ -2255,7 +2255,7 @@ public final class GraphUtils {
      */
     public static List<Triple> getUnderlinedTriplesFromGraph(Node node, Graph graph) {
         List<Triple> underlinedTriples = new ArrayList<>();
-        Set<Triple> allUnderlinedTriples = graph.getUnderlines().getUnderLines();
+        Set<Triple> allUnderlinedTriples = graph.underlines().getUnderLines();
 
         List<Node> adj = graph.getAdjacentNodes(node);
         if (adj.size() < 2) {
@@ -2283,7 +2283,7 @@ public final class GraphUtils {
      */
     public static List<Triple> getDottedUnderlinedTriplesFromGraph(Node node, Graph graph) {
         List<Triple> dottedUnderlinedTriples = new ArrayList<>();
-        Set<Triple> allDottedUnderlinedTriples = graph.getUnderlines().getDottedUnderlines();
+        Set<Triple> allDottedUnderlinedTriples = graph.underlines().getDottedUnderlines();
 
         List<Node> adj = graph.getAdjacentNodes(node);
         if (adj.size() < 2) {
@@ -3197,17 +3197,17 @@ public final class GraphUtils {
             fmt.format("%s%n", graphNodeAttributes);
         }
 
-        Set<Triple> ambiguousTriples = graph.getUnderlines().getAmbiguousTriples();
+        Set<Triple> ambiguousTriples = graph.underlines().getAmbiguousTriples();
         if (!ambiguousTriples.isEmpty()) {
             fmt.format("%n%n%s", GraphUtils.triplesToText(ambiguousTriples, "Ambiguous triples (i.e. list of triples for which there is ambiguous data about whether they are colliders or not):"));
         }
 
-        Set<Triple> underLineTriples = graph.getUnderlines().getUnderLines();
+        Set<Triple> underLineTriples = graph.underlines().getUnderLines();
         if (!underLineTriples.isEmpty()) {
             fmt.format("%n%n%s", GraphUtils.triplesToText(underLineTriples, "Underline triples:"));
         }
 
-        Set<Triple> dottedUnderLineTriples = graph.getUnderlines().getDottedUnderlines();
+        Set<Triple> dottedUnderLineTriples = graph.underlines().getDottedUnderlines();
         if (!dottedUnderLineTriples.isEmpty()) {
             fmt.format("%n%n%s", GraphUtils.triplesToText(dottedUnderLineTriples, "Dotted underline triples:"));
         }

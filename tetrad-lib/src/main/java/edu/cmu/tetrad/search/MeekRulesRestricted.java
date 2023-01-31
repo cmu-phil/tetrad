@@ -86,7 +86,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
         orientUsingMeekRulesLocally(this.knowledge, graph);
         TetradLogger.getInstance().log("impliedOrientations", "Finishing Orientation Step D.");
 
-        graph.getUnderlines().removeTriplesNotInGraph();
+        graph.underlines().removeTriplesNotInGraph();
 
         return this.visitedNodes;
     }
@@ -100,7 +100,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
         orientUsingMeekRulesLocally(this.knowledge, graph);
         TetradLogger.getInstance().log("impliedOrientations", "Finishing Orientation Step D.");
 
-        graph.getUnderlines().removeTriplesNotInGraph();
+        graph.underlines().removeTriplesNotInGraph();
     }
 
     public void setKnowledge(Knowledge knowledge) {
@@ -446,7 +446,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
             return true;
         }
 
-        if (graph.getUnderlines().isAmbiguousTriple(a, b, c)) {
+        if (graph.underlines().isAmbiguousTriple(a, b, c)) {
             return true;
         }
 
