@@ -106,55 +106,6 @@ public interface Graph extends TetradSerializable {
     boolean containsNode(Node node);
 
     /**
-     * @return true iff there is a directed cycle in the graph.
-     */
-    boolean existsDirectedCycle();
-
-    /**
-     * @return true iff there is a directed path from node1 to node2 in the
-     * graph.
-     */
-    boolean existsDirectedPathFromTo(Node node1, Node node2);
-
-    List<Node> findCycle();
-
-    /**
-     * @return true iff there is a semi-directed path from node1 to something in
-     * nodes2 in the graph
-     */
-    boolean existsUndirectedPathFromTo(Node node1, Node node2);
-
-    /**
-     * A semi-directed path from A to B is an undirected path in which no
-     * edge has an arrowhead pointing "back" towards A.
-     *
-     * @return true iff there is a semi-directed path from node1 to something in
-     * nodes2 in the graph
-     */
-    default boolean existsSemiDirectedPathFromTo(Node node1, Node node2) {
-        return existsSemiDirectedPathFromTo(node1, Collections.singleton(node2));
-    }
-    boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes);
-
-    /**
-     * Determines whether an inducing path exists between node1 and node2, given
-     * a set O of observed nodes and a set sem of conditioned nodes.
-     *
-     * @param node1 the first node.
-     * @param node2 the second node.
-     * @return true if an inducing path exists, false if not.
-     */
-    boolean existsInducingPath(Node node1, Node node2);
-
-    /**
-     * @return true iff a trek exists between two nodes in the graph.  A trek
-     * exists if there is a directed path between the two nodes or else, for
-     * some third node in the graph, there is a path to each of the two nodes in
-     * question.
-     */
-    boolean existsTrek(Node node1, Node node2);
-
-    /**
      * Determines whether this graph is equal to some other graph, in the sense
      * that they contain the same nodes and the sets of edges defined over these
      * nodes in the two graphs are isomorphic typewise. That is, if node A and B
@@ -182,11 +133,6 @@ public interface Graph extends TetradSerializable {
     List<Node> getAdjacentNodes(Node node);
 
     /**
-     * @return a mutable list of ancestors for the given nodes.
-     */
-    List<Node> getAncestors(List<Node> nodes);
-
-    /**
      * @return a mutable list of children for a node.
      */
     List<Node> getChildren(Node node);
@@ -194,12 +140,7 @@ public interface Graph extends TetradSerializable {
     /**
      * @return the connectivity of the graph.
      */
-    int getConnectivity();
-
-    /**
-     * @return a mutable list of descendants for the given nodes.
-     */
-    List<Node> getDescendants(List<Node> nodes);
+    int getDegree();
 
     /**
      * @return the edge connecting node1 and node2, provided a unique such edge
@@ -303,18 +244,6 @@ public interface Graph extends TetradSerializable {
     boolean isAdjacentTo(Node node1, Node node2);
 
     /**
-     * Determines whether one node is an ancestor of another.
-     */
-    boolean isAncestorOf(Node node1, Node node2);
-
-    /**
-     * added by ekorber, 2004/06/12
-     *
-     * @return true if node1 is a possible ancestor of node2.
-     */
-    boolean possibleAncestor(Node node1, Node node2);
-
-    /**
      * @return true iff node1 is a child of node2 in the graph.
      */
     boolean isChildOf(Node node1, Node node2);
@@ -323,31 +252,6 @@ public interface Graph extends TetradSerializable {
      * Determines whether node1 is a parent of node2.
      */
     boolean isParentOf(Node node1, Node node2);
-
-    /**
-     * Determines whether one node is a proper ancestor of another.
-     */
-    boolean isProperAncestorOf(Node node1, Node node2);
-
-    /**
-     * Determines whether one node is a proper decendent of another.
-     */
-    boolean isProperDescendentOf(Node node1, Node node2);
-
-    /**
-     * @return true iff node1 is a (non-proper) descendant of node2.
-     */
-    boolean isDescendentOf(Node node1, Node node2);
-
-    /**
-     * A node Y is a definite nondescendent of a node X just in case there is no
-     * semi-directed path from X to Y.
-     * <p>
-     * added by ekorber, 2004/06/12.
-     *
-     * @return true if node 2 is a definite nondecendent of node 1
-     */
-    boolean defNonDescendent(Node node1, Node node2);
 
     /**
      * Added by ekorber, 2004/6/9.
@@ -363,62 +267,9 @@ public interface Graph extends TetradSerializable {
      */
     boolean isDefCollider(Node node1, Node node2, Node node3);
 
-    /**
-     * Determines whether one node is d-connected to another. According to
-     * Spirtes, Richardson and Meek, two nodes are d- connected given some
-     * conditioning set Z if there is an acyclic undirected path U between them,
-     * such that every collider on U is an ancestor of some element in Z and
-     * every non-collider on U is not in Z.  Two elements are d-separated just
-     * in case they are not d-connected.  A collider is a node which two edges
-     * hold in common for which the endpoints leading into the node are both
-     * arrow endpoints.
-     */
-    boolean isDConnectedTo(Node node1, Node node2, List<Node> z);
-
     EdgeListGraph.GraphType getGraphType();
 
     void setGraphType(EdgeListGraph.GraphType graphType);
-
-    /**
-     * Determines whether one node is d-separated from another. Two elements are   E
-     * d-separated just in case they are not d-connected.
-     */
-    boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z);
-
-    /**
-     * Determines if nodes 1 and 2 are possibly d-connected given conditioning
-     * set z.  A path U is possibly-d-connecting if every definite collider on U
-     * is a possible ancestor of a node in z and every definite non-collider is
-     * not in z.
-     * <p>
-     * added by ekorber, 2004/06/15.
-     *
-     * @return true iff nodes 1 and 2 are possibly d-connected given z
-     */
-    boolean possDConnectedTo(Node node1, Node node2, List<Node> z);
-
-    /**
-     * @return true iff there is a single directed edge from node1 to node2 in
-     * the graph.
-     */
-    boolean isDirectedFromTo(Node node1, Node node2);
-
-    /**
-     * @return true iff there is a single undirected edge from node1 to node2 in
-     * the graph.
-     */
-    boolean isUndirectedFromTo(Node node1, Node node2);
-
-    /**
-     * A directed edge A-->B is definitely visible if there is a node C not
-     * adjacent to B such that C*->A is in the PAG_of_the_true_DAG. Added by ekorber,
-     * 2004/06/11.
-     *
-     * @return true if the given edge is definitely visible (Jiji, pg 25)
-     * @throws IllegalArgumentException if the given edge is not a directed edge
-     *                                  in the graph
-     */
-    boolean defVisible(Edge edge);
 
     /**
      * @return true iff the given node is exogenous in the graph.
@@ -517,6 +368,8 @@ public interface Graph extends TetradSerializable {
     void transferAttributes(Graph graph) throws IllegalArgumentException;
 
     UnderlineModel getUnderlineModel();
+
+    Paths getPaths();
 
     /**
      * @return a tier orderering, for acyclic graphs. Undefined for cyclic graphs.

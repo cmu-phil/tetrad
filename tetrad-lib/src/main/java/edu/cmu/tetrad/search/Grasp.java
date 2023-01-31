@@ -418,7 +418,7 @@ public class Grasp {
             Node nodeA = graph.getNode(next.getFrom());
             Node nodeB = graph.getNode(next.getTo());
 
-            if (!graph.isAncestorOf(nodeB, nodeA)) {
+            if (!graph.getPaths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdges(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
 
@@ -440,7 +440,7 @@ public class Grasp {
                 Node nodeB = edge.getNode2();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.getPaths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -451,7 +451,7 @@ public class Grasp {
                 }
 
                 if (!graph.isChildOf(nodeA, nodeB) && knowledge.isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.getPaths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -465,7 +465,7 @@ public class Grasp {
                 Node nodeB = edge.getNode1();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.getPaths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -475,7 +475,7 @@ public class Grasp {
                     }
                 }
                 if (!graph.isChildOf(nodeA, nodeB) && knowledge.isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.getPaths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 

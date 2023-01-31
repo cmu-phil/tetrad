@@ -32,7 +32,7 @@ public class TrueDagPrecisionArrow implements Statistic {
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (estGraph.isAdjacentTo(x, y) && estGraph.getEndpoint(x, y) == Endpoint.ARROW) {
-                    if (!trueGraph.isAncestorOf(y, x)) {
+                    if (!trueGraph.getPaths().isAncestorOf(y, x)) {
                         tp++;
                     } else {
                         System.out.println("Shouldn't be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));

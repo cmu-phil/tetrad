@@ -35,7 +35,7 @@ public class NumDirectedShouldBePartiallyDirected implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (!trueGraph.isAncestorOf(x, y) && !trueGraph.isAncestorOf(y, x) && existsLatentCommonAncestor(trueGraph, edge)) {
+                if (!trueGraph.getPaths().isAncestorOf(x, y) && !trueGraph.getPaths().isAncestorOf(y, x) && existsLatentCommonAncestor(trueGraph, edge)) {
                     tp++;
                 }
             }

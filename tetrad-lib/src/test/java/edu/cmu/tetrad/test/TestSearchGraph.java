@@ -126,8 +126,8 @@ public final class TestSearchGraph {
                         z.add(theRest.get(value));
                     }
 
-                    boolean dConnectedTo = graph.isDConnectedTo(x, y, z);
-                    boolean dConnectedTo1 = graph.isDConnectedTo(y, x, z);
+                    boolean dConnectedTo = graph.getPaths().isDConnectedTo(x, y, z);
+                    boolean dConnectedTo1 = graph.getPaths().isDConnectedTo(y, x, z);
 
                     if (dConnectedTo != dConnectedTo1) {
                         System.out.println(x + " d connected to " + y + " given " + z);
@@ -145,10 +145,10 @@ public final class TestSearchGraph {
     // Trying to trip up the breadth first algorithm.
     public void testDSeparation3() {
         Graph graph = GraphConverter.convert("x-->s1,x-->s2,s1-->s3,s3-->s2,s3&lt;--y");
-        assertTrue(graph.isDSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new ArrayList<>()));
+        assertTrue(graph.getPaths().isDSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new ArrayList<>()));
 
         graph = GraphConverter.convert("1-->2,2&lt;--4,2-->7,2-->3");
-        assertTrue(graph.isDSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new ArrayList<>()));
+        assertTrue(graph.getPaths().isDSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new ArrayList<>()));
 
         graph = GraphConverter.convert("X1-->X5,X1-->X6,X2-->X3,X4-->X6,X5-->X3,X6-->X5,X7-->X3");
         assertTrue(dConnected(graph, "X2", "X4", "X3", "X6"));
@@ -219,7 +219,7 @@ public final class TestSearchGraph {
             _z.add(graph.getNode(name));
         }
 
-        return graph.isDConnectedTo(_x, _y, _z);
+        return graph.getPaths().isDConnectedTo(_x, _y, _z);
     }
 
     public void testAlternativeGraphs() {
@@ -321,7 +321,7 @@ public final class TestSearchGraph {
             Node n1 = edge.getNode1();
             Node n2 = edge.getNode2();
 
-            if (!graph.isAncestorOf(n2, n1)) {
+            if (!graph.getPaths().isAncestorOf(n2, n1)) {
                 graph.removeEdge(edge);
                 graph.addDirectedEdge(n1, n2);
             } else {

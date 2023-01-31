@@ -353,8 +353,8 @@ public final class TsDagToPag {
             }
 
             if (graph.isDefCollider(a, b, c)) {
-                if (!((graph.isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(), x.getName())) ||
-                        (graph.isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
+                if (!((graph.getPaths().isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(), x.getName())) ||
+                        (graph.getPaths().isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
                     continue;
                 }
             }

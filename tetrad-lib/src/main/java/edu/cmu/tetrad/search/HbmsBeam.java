@@ -151,7 +151,7 @@ public final class HbmsBeam implements Hbsms {
                         continue;
                     }
 
-                    if (isCheckingCycles() && graph.existsDirectedCycle()) {
+                    if (isCheckingCycles() && graph.getPaths().existsDirectedCycle()) {
                         continue;
                     }
 
@@ -358,7 +358,7 @@ public final class HbmsBeam implements Hbsms {
                     continue;
                 }
 
-                if (!graph.isAncestorOf(nodes.get(j), nodes.get(i))) {
+                if (!graph.getPaths().isAncestorOf(nodes.get(j), nodes.get(i))) {
                     Edge edge = Edges.directedEdge(nodes.get(i), nodes.get(j));
                     moves.add(new Move(edge, HbmsBeam.Move.Type.ADD));
                 }
@@ -386,7 +386,7 @@ public final class HbmsBeam implements Hbsms {
                 continue;
             }
 
-            if (graph.isAncestorOf(j, i)) {
+            if (graph.getPaths().isAncestorOf(j, i)) {
                 continue;
             }
 
@@ -510,7 +510,7 @@ public final class HbmsBeam implements Hbsms {
                     nodeB = nextNode;
                 }
             }
-            if (!graph.isAncestorOf(nodeB, nodeA)) {
+            if (!graph.getPaths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdge(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
                 TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
@@ -534,7 +534,7 @@ public final class HbmsBeam implements Hbsms {
             }
             if (nodeA != null && nodeB != null && graph.isAdjacentTo(nodeA, nodeB) &&
                     !graph.isChildOf(nodeA, nodeB)) {
-                if (!graph.isAncestorOf(nodeA, nodeB)) {
+                if (!graph.getPaths().isAncestorOf(nodeA, nodeB)) {
                     graph.removeEdges(nodeA, nodeB);
                     graph.addDirectedEdge(nodeB, nodeA);
                     TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));

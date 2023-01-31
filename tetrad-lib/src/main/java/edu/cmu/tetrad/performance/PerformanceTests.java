@@ -1600,8 +1600,8 @@ public class PerformanceTests {
             boolean existsCommonCause = false;
 
             for (Node latent : missingNodes) {
-                if (dag.existsDirectedPathFromTo(latent, edge.getNode1())
-                        && dag.existsDirectedPathFromTo(latent, edge.getNode2())) {
+                if (dag.getPaths().existsDirectedPathFromTo(latent, edge.getNode1())
+                        && dag.getPaths().existsDirectedPathFromTo(latent, edge.getNode2())) {
                     existsCommonCause = true;
                     break;
                 }
@@ -1764,7 +1764,7 @@ public class PerformanceTests {
             Edge edge1 = truePag.getEdge(x, y);
 
             if (ex == Endpoint.ARROW) {
-                if (!dag.isAncestorOf(x, y)) {
+                if (!dag.getPaths().isAncestorOf(x, y)) {
                     correctNonAncestorRelationships++;
                 }
 
@@ -1776,7 +1776,7 @@ public class PerformanceTests {
             }
 
             if (ey == Endpoint.ARROW) {
-                if (!dag.isAncestorOf(y, x)) {
+                if (!dag.getPaths().isAncestorOf(y, x)) {
                     correctNonAncestorRelationships++;
                 }
 
@@ -1845,7 +1845,7 @@ public class PerformanceTests {
             Edge edge1 = truePag.getEdge(x, y);
 
             if (ex == Endpoint.TAIL) {
-                if (dag.isAncestorOf(x, y)) {
+                if (dag.getPaths().isAncestorOf(x, y)) {
                     correctAncestorRelationships++;
                 }
 
@@ -1857,7 +1857,7 @@ public class PerformanceTests {
             }
 
             if (ey == Endpoint.TAIL) {
-                if (dag.isAncestorOf(y, x)) {
+                if (dag.getPaths().isAncestorOf(y, x)) {
                     correctAncestorRelationships++;
                 }
 

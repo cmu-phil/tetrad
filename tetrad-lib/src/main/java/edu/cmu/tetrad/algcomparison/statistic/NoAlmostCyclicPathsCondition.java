@@ -31,9 +31,9 @@ public class NoAlmostCyclicPathsCondition implements Statistic {
             Node y = e.getNode2();
 
             if (Edges.isBidirectedEdge(e)) {
-                if (pag.existsDirectedPathFromTo(x, y)) {
+                if (pag.getPaths().existsDirectedPathFromTo(x, y)) {
                     return 0;
-                } else if (pag.existsDirectedPathFromTo(y, x)) {
+                } else if (pag.getPaths().existsDirectedPathFromTo(y, x)) {
                     return 0;
                 }
             }

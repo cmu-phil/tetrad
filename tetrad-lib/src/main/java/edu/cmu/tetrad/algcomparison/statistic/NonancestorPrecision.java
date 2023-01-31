@@ -32,8 +32,8 @@ public class NonancestorPrecision implements Statistic {
         for (Node x : nodes) {
             for (Node y : nodes) {
 //                if (x == y) continue;
-                if (!estGraph.isAncestorOf(x, y)) {
-                    if (!trueGraph.isAncestorOf(x, y)) {
+                if (!estGraph.getPaths().isAncestorOf(x, y)) {
+                    if (!trueGraph.getPaths().isAncestorOf(x, y)) {
                         tp++;
                     } else {
                         fp++;

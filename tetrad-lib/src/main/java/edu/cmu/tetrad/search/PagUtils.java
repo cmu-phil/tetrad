@@ -105,7 +105,7 @@ public final class PagUtils {
 
                 List<Node> singletonB = new ArrayList<>();
                 singletonB.add(Bd);
-                List<Node> ancestorsOfB = dag.getAncestors(singletonB);
+                List<Node> ancestorsOfB = dag.getPaths().getAncestors(singletonB);
                 if (!ancestorsOfB.contains(Ad)) {
                     return false;
                 }
@@ -126,7 +126,7 @@ public final class PagUtils {
                 Node Ad = dag.getNode(A.getName());
                 Node Bd = dag.getNode(B.getName());
 
-                if (dag.isAncestorOf(Bd, Ad)) {
+                if (dag.getPaths().isAncestorOf(Bd, Ad)) {
                     return false;
                 }
             }
@@ -147,7 +147,7 @@ public final class PagUtils {
             Node Bd = dag.getNode(B.getName());
             Node Cd = dag.getNode(C.getName());
 
-            if (!dag.isAncestorOf(Bd, Ad) && !dag.isAncestorOf(Bd, Cd)) {
+            if (!dag.getPaths().isAncestorOf(Bd, Ad) && !dag.getPaths().isAncestorOf(Bd, Cd)) {
                 return false;
             }
         }
@@ -170,7 +170,7 @@ public final class PagUtils {
                 commonChildrenAC.retainAll(dag.getChildren(Cd));
 
                 for (Node Dd : commonChildrenAC) {
-                    if (dag.isDescendentOf(Bd, Dd)) {
+                    if (dag.getPaths().isDescendentOf(Bd, Dd)) {
                         return false;
                     }
                 }

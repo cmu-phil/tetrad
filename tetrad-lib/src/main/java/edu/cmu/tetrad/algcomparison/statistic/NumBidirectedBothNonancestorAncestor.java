@@ -33,7 +33,7 @@ public class NumBidirectedBothNonancestorAncestor implements Statistic {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                if (!trueGraph.isAncestorOf(x, y) && !trueGraph.isAncestorOf(y, x)) {
+                if (!trueGraph.getPaths().isAncestorOf(x, y) && !trueGraph.getPaths().isAncestorOf(y, x)) {
                     count++;
                 }
             }

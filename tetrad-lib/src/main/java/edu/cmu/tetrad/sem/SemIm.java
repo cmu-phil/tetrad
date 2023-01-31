@@ -1691,7 +1691,7 @@ public final class SemIm implements IM, ISemIm {
 
     public boolean isCyclic() {
         if (!this.cyclicChecked) {
-            this.cyclic = this.semPm.getGraph().existsDirectedCycle();
+            this.cyclic = this.semPm.getGraph().getPaths().existsDirectedCycle();
             this.cyclicChecked = true;
         }
 

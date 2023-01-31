@@ -40,13 +40,13 @@ public class TrueDagPrecisionTails implements Statistic {
                 if (edge == null) continue;
 
                 if (Edges.directedEdge(x, y).equals(edge)) {
-                    if (trueGraph.isAncestorOf(x, y)) {
+                    if (trueGraph.getPaths().isAncestorOf(x, y)) {
                         tp++;
                     } else {
                         fp++;
                     }
 
-                    if (trueGraph.isAncestorOf(y, x)) {
+                    if (trueGraph.getPaths().isAncestorOf(y, x)) {
                         System.out.println("Should be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));
                     } else {
                         System.out.println("Should be " + x + "o~~>" + y + ": " + estGraph.getEdge(x, y));

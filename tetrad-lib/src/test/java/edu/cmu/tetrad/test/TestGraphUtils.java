@@ -73,7 +73,7 @@ public final class TestGraphUtils {
                 List<List<Node>> directedPaths = GraphUtils.directedPathsFromTo(graph, node1, node2, -1);
 
                 for (List<Node> path : directedPaths) {
-                    assertTrue(graph.isAncestorOf(path.get(0), path.get(path.size() - 1)));
+                    assertTrue(graph.getPaths().isAncestorOf(path.get(0), path.get(path.size() - 1)));
                 }
             }
         }
@@ -105,7 +105,7 @@ public final class TestGraphUtils {
                     for (Node n : trek) {
 
                         // Not quite it but good enough for a test.
-                        if (graph.isAncestorOf(n, m0) && graph.isAncestorOf(n, m1)) {
+                        if (graph.getPaths().isAncestorOf(n, m0) && graph.getPaths().isAncestorOf(n, m1)) {
                             continue TREKS;
                         }
                     }
@@ -194,34 +194,34 @@ public final class TestGraphUtils {
         graph.addDirectedEdge(x, y);
         graph.addDirectedEdge(y, x);
 
-        assertTrue(graph.isAncestorOf(a, a));
-        assertTrue(graph.isAncestorOf(b, b));
-        assertTrue(graph.isAncestorOf(x, x));
-        assertTrue(graph.isAncestorOf(y, y));
+        assertTrue(graph.getPaths().isAncestorOf(a, a));
+        assertTrue(graph.getPaths().isAncestorOf(b, b));
+        assertTrue(graph.getPaths().isAncestorOf(x, x));
+        assertTrue(graph.getPaths().isAncestorOf(y, y));
 
-        assertTrue(graph.isAncestorOf(a, x));
-        assertTrue(!graph.isAncestorOf(x, a));
-        assertTrue(graph.isAncestorOf(a, y));
-        assertTrue(!graph.isAncestorOf(y, a));
+        assertTrue(graph.getPaths().isAncestorOf(a, x));
+        assertTrue(!graph.getPaths().isAncestorOf(x, a));
+        assertTrue(graph.getPaths().isAncestorOf(a, y));
+        assertTrue(!graph.getPaths().isAncestorOf(y, a));
 
-        assertTrue(graph.isAncestorOf(a, y));
-        assertTrue(graph.isAncestorOf(b, x));
+        assertTrue(graph.getPaths().isAncestorOf(a, y));
+        assertTrue(graph.getPaths().isAncestorOf(b, x));
 
-        assertTrue(!graph.isAncestorOf(a, b));
-        assertTrue(!graph.isAncestorOf(y, a));
-        assertTrue(!graph.isAncestorOf(x, b));
+        assertTrue(!graph.getPaths().isAncestorOf(a, b));
+        assertTrue(!graph.getPaths().isAncestorOf(y, a));
+        assertTrue(!graph.getPaths().isAncestorOf(x, b));
 
-        assertTrue(graph.isDConnectedTo(a, y, new ArrayList<>()));
-        assertTrue(graph.isDConnectedTo(b, x, new ArrayList<>()));
+        assertTrue(graph.getPaths().isDConnectedTo(a, y, new ArrayList<>()));
+        assertTrue(graph.getPaths().isDConnectedTo(b, x, new ArrayList<>()));
 
-        assertTrue(graph.isDConnectedTo(a, y, Collections.singletonList(x)));
-        assertTrue(graph.isDConnectedTo(b, x, Collections.singletonList(y)));
+        assertTrue(graph.getPaths().isDConnectedTo(a, y, Collections.singletonList(x)));
+        assertTrue(graph.getPaths().isDConnectedTo(b, x, Collections.singletonList(y)));
 
-        assertTrue(graph.isDConnectedTo(a, y, Collections.singletonList(b)));
-        assertTrue(graph.isDConnectedTo(b, x, Collections.singletonList(a)));
+        assertTrue(graph.getPaths().isDConnectedTo(a, y, Collections.singletonList(b)));
+        assertTrue(graph.getPaths().isDConnectedTo(b, x, Collections.singletonList(a)));
 
-        assertTrue(graph.isDConnectedTo(y, a, Collections.singletonList(b)));
-        assertTrue(graph.isDConnectedTo(x, b, Collections.singletonList(a)));
+        assertTrue(graph.getPaths().isDConnectedTo(y, a, Collections.singletonList(b)));
+        assertTrue(graph.getPaths().isDConnectedTo(x, b, Collections.singletonList(a)));
     }
 
     @Test
@@ -240,14 +240,14 @@ public final class TestGraphUtils {
         graph.addDirectedEdge(b, c);
         graph.addDirectedEdge(c, b);
 
-        assertTrue(graph.isAncestorOf(a, b));
-        assertTrue(graph.isAncestorOf(a, c));
+        assertTrue(graph.getPaths().isAncestorOf(a, b));
+        assertTrue(graph.getPaths().isAncestorOf(a, c));
 
-        assertTrue(graph.isDConnectedTo(a, b, Collections.EMPTY_LIST));
-        assertTrue(graph.isDConnectedTo(a, c, Collections.EMPTY_LIST));
+        assertTrue(graph.getPaths().isDConnectedTo(a, b, Collections.EMPTY_LIST));
+        assertTrue(graph.getPaths().isDConnectedTo(a, c, Collections.EMPTY_LIST));
 
-        assertTrue(graph.isDConnectedTo(a, c, Collections.singletonList(b)));
-        assertTrue(graph.isDConnectedTo(c, a, Collections.singletonList(b)));
+        assertTrue(graph.getPaths().isDConnectedTo(a, c, Collections.singletonList(b)));
+        assertTrue(graph.getPaths().isDConnectedTo(c, a, Collections.singletonList(b)));
     }
 
 
@@ -263,8 +263,8 @@ public final class TestGraphUtils {
             Node z1 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
             Node z2 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
 
-            if (graph.isDSeparatedFrom(x, y, list(z1)) && graph.isDSeparatedFrom(x, y, list(z2)) &&
-                    !graph.isDSeparatedFrom(x, y, list(z1, z2))) {
+            if (graph.getPaths().isDSeparatedFrom(x, y, list(z1)) && graph.getPaths().isDSeparatedFrom(x, y, list(z2)) &&
+                    !graph.getPaths().isDSeparatedFrom(x, y, list(z1, z2))) {
                 System.out.println("x = " + x);
                 System.out.println("y = " + y);
                 System.out.println("z1 = " + z1);

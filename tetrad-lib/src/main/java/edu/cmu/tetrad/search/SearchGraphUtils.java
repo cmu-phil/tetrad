@@ -358,7 +358,7 @@ public final class SearchGraphUtils {
                     }
 
                     if (graph.getEndpoint(b, a) == Endpoint.ARROW
-                            && graph.isUndirectedFromTo(a, c)) {
+                            && graph.getPaths().isUndirectedFromTo(a, c)) {
                         if (SearchGraphUtils.existsLocalSepsetWithout(b, a, c, test, graph,
                                 depth)) {
                             continue;
@@ -370,7 +370,7 @@ public final class SearchGraphUtils {
                             changed = true;
                         }
                     } else if (graph.getEndpoint(c, a) == Endpoint.ARROW
-                            && graph.isUndirectedFromTo(a, b)) {
+                            && graph.getPaths().isUndirectedFromTo(a, b)) {
                         if (SearchGraphUtils.existsLocalSepsetWithout(b, a, c, test, graph,
                                 depth)) {
                             continue;
@@ -410,16 +410,16 @@ public final class SearchGraphUtils {
                 Node b = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isDirectedFromTo(b, a)
-                        && graph.isDirectedFromTo(a, c)
-                        && graph.isUndirectedFromTo(b, c)) {
+                if (graph.getPaths().isDirectedFromTo(b, a)
+                        && graph.getPaths().isDirectedFromTo(a, c)
+                        && graph.getPaths().isUndirectedFromTo(b, c)) {
                     if (SearchGraphUtils.isArrowpointAllowed(b, c, knowledge)) {
                         graph.setEndpoint(b, c, Endpoint.ARROW);
                         TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(b, c)));
                     }
-                } else if (graph.isDirectedFromTo(c, a)
-                        && graph.isDirectedFromTo(a, b)
-                        && graph.isUndirectedFromTo(c, b)) {
+                } else if (graph.getPaths().isDirectedFromTo(c, a)
+                        && graph.getPaths().isDirectedFromTo(a, b)
+                        && graph.getPaths().isUndirectedFromTo(c, b)) {
                     if (SearchGraphUtils.isArrowpointAllowed(c, b, knowledge)) {
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                         TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(c, b)));
@@ -450,7 +450,7 @@ public final class SearchGraphUtils {
                 List<Node> otherAdjacents = new LinkedList<>(adjacentNodes);
                 otherAdjacents.remove(b);
 
-                if (!graph.isUndirectedFromTo(a, b)) {
+                if (!graph.getPaths().isUndirectedFromTo(a, b)) {
                     continue;
                 }
 
@@ -466,16 +466,16 @@ public final class SearchGraphUtils {
                         continue;
                     }
 
-                    if (!graph.isUndirectedFromTo(a, c)) {
+                    if (!graph.getPaths().isUndirectedFromTo(a, c)) {
                         continue;
                     }
 
-                    if (!graph.isUndirectedFromTo(a, d)) {
+                    if (!graph.getPaths().isUndirectedFromTo(a, d)) {
                         continue;
                     }
 
-                    if (graph.isDirectedFromTo(c, b)
-                            && graph.isDirectedFromTo(d, b)) {
+                    if (graph.getPaths().isDirectedFromTo(c, b)
+                            && graph.getPaths().isDirectedFromTo(d, b)) {
                         if (SearchGraphUtils.isArrowpointAllowed(a, b, knowledge)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
                             TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R3", graph.getEdge(a, b)));
@@ -521,24 +521,24 @@ public final class SearchGraphUtils {
                     Node b = otherAdjacents.get(combination[0]);
                     Node c = otherAdjacents.get(combination[1]);
 
-                    if (!graph.isUndirectedFromTo(a, b)) {
+                    if (!graph.getPaths().isUndirectedFromTo(a, b)) {
                         continue;
                     }
 
-                    if (!graph.isUndirectedFromTo(a, c)) {
+                    if (!graph.getPaths().isUndirectedFromTo(a, c)) {
                         continue;
                     }
 
-                    if (graph.isDirectedFromTo(b, c)
-                            && graph.isDirectedFromTo(d, c)) {
+                    if (graph.getPaths().isDirectedFromTo(b, c)
+                            && graph.getPaths().isDirectedFromTo(d, c)) {
                         if (SearchGraphUtils.isArrowpointAllowed(a, c, knowledge)) {
                             graph.setEndpoint(a, c, Endpoint.ARROW);
                             TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, c)));
                             changed = true;
                             break;
                         }
-                    } else if (graph.isDirectedFromTo(c, d)
-                            && graph.isDirectedFromTo(d, b)) {
+                    } else if (graph.getPaths().isDirectedFromTo(c, d)
+                            && graph.getPaths().isDirectedFromTo(d, b)) {
                         if (SearchGraphUtils.isArrowpointAllowed(a, b, knowledge)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
                             TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, b)));
@@ -675,7 +675,7 @@ public final class SearchGraphUtils {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                if (Edges.isUndirectedEdge(edge) && !graph.isAncestorOf(y, x)) {
+                if (Edges.isUndirectedEdge(edge) && !graph.getPaths().isAncestorOf(y, x)) {
                     SearchGraphUtils.direct(x, y, dag);
                     rules.orientImplied(dag);
                     continue NEXT;
@@ -900,7 +900,7 @@ public final class SearchGraphUtils {
         }
 
         for (Node n : mag.getNodes()) {
-            if (mag.existsDirectedPathFromTo(n, n))
+            if (mag.getPaths().existsDirectedPathFromTo(n, n))
                 return new LegalMagRet(false,
                         "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
         }
@@ -910,13 +910,13 @@ public final class SearchGraphUtils {
             Node y = e.getNode2();
 
             if (Edges.isBidirectedEdge(e)) {
-                if (mag.existsDirectedPathFromTo(x, y)) {
+                if (mag.getPaths().existsDirectedPathFromTo(x, y)) {
                     List<Node> path = GraphUtils.directedPathsFromTo(mag, x, y, 100).get(0);
                     return new LegalMagRet(false,
                             "Bidirected edge semantics violated: there is a directed path for " + e + " from " + x + " to " + y
                                     + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
                                     + "An example path is " + GraphUtils.pathString(mag, path));
-                } else if (mag.existsDirectedPathFromTo(y, x)) {
+                } else if (mag.getPaths().existsDirectedPathFromTo(y, x)) {
                     List<Node> path = GraphUtils.directedPathsFromTo(mag, y, x, 100).get(0);
                     return new LegalMagRet(false,
                             "Bidirected edge semantics violated: There is an a directed path for " + e + " from " + y + " to " + x +
@@ -932,7 +932,7 @@ public final class SearchGraphUtils {
                 Node y = nodes.get(j);
 
                 if (!mag.isAdjacentTo(x, y)) {
-                    if (mag.existsInducingPath(x, y))
+                    if (mag.getPaths().existsInducingPath(x, y))
                         return new LegalMagRet(false,
                                 "This is not maximal; there is an inducing path between non-adjacent " + x + " and " + y);
                 }
@@ -1363,11 +1363,11 @@ public final class SearchGraphUtils {
             estGraph = SearchGraphUtils.cpdagForDag(estGraph);
 
             // Will check mixedness later.
-            if (trueGraph.existsDirectedCycle()) {
+            if (trueGraph.getPaths().existsDirectedCycle()) {
                 TetradLogger.getInstance().forceLogMessage("SHD failed: True graph couldn't be converted to a CPDAG");
             }
 
-            if (estGraph.existsDirectedCycle()) {
+            if (estGraph.getPaths().existsDirectedCycle()) {
                 TetradLogger.getInstance().forceLogMessage("SHD failed: Estimated graph couldn't be converted to a CPDAG");
                 return -99;
             }

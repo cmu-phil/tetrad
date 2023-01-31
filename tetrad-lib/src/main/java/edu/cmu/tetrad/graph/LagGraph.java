@@ -43,6 +43,8 @@ public class LagGraph implements Graph {
     private final Map<String, Object> attributes = new HashMap<>();
     private EdgeListGraph.GraphType graphType = EdgeListGraph.GraphType.UNLABELED;
 
+    private Paths paths;
+
     // New methods.
     public boolean addVariable(String variable) {
         if (this.variables.contains(variable)) {
@@ -123,35 +125,6 @@ public class LagGraph implements Graph {
         return getGraph().containsNode(node);
     }
 
-    public boolean existsDirectedCycle() {
-        return getGraph().existsDirectedCycle();
-    }
-
-    public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-        return getGraph().existsDirectedPathFromTo(node1, node2);
-    }
-
-    @Override
-    public List<Node> findCycle() {
-        return getGraph().findCycle();
-    }
-
-    public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
-        return getGraph().existsUndirectedPathFromTo(node1, node2);
-    }
-
-    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes) {
-        return getGraph().existsSemiDirectedPathFromTo(node1, nodes);
-    }
-
-    public boolean existsInducingPath(Node node1, Node node2) {
-        return getGraph().existsInducingPath(node1, node2);
-    }
-
-    public boolean existsTrek(Node node1, Node node2) {
-        return getGraph().existsTrek(node1, node2);
-    }
-
     public void fullyConnect(Endpoint endpoint) {
         throw new UnsupportedOperationException();
     }
@@ -164,20 +137,12 @@ public class LagGraph implements Graph {
         return getGraph().getAdjacentNodes(node);
     }
 
-    public List<Node> getAncestors(List<Node> nodes) {
-        return getGraph().getAncestors(nodes);
-    }
-
     public List<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
 
-    public int getConnectivity() {
-        return getGraph().getConnectivity();
-    }
-
-    public List<Node> getDescendants(List<Node> nodes) {
-        return getGraph().getDescendants(nodes);
+    public int getDegree() {
+        return getGraph().getDegree();
     }
 
     public Edge getEdge(Node node1, Node node2) {
@@ -257,10 +222,6 @@ public class LagGraph implements Graph {
         return getGraph().isAncestorOf(node1, node2);
     }
 
-    public boolean possibleAncestor(Node node1, Node node2) {
-        return getGraph().possibleAncestor(node1, node2);
-    }
-
     public boolean isChildOf(Node node1, Node node2) {
         return getGraph().isChildOf(node2, node2);
     }
@@ -269,52 +230,12 @@ public class LagGraph implements Graph {
         return getGraph().isParentOf(node1, node2);
     }
 
-    public boolean isProperAncestorOf(Node node1, Node node2) {
-        return getGraph().isProperAncestorOf(node1, node2);
-    }
-
-    public boolean isProperDescendentOf(Node node1, Node node2) {
-        return getGraph().isProperDescendentOf(node1, node2);
-    }
-
-    public boolean isDescendentOf(Node node1, Node node2) {
-        return getGraph().isDescendentOf(node1, node2);
-    }
-
-    public boolean defNonDescendent(Node node1, Node node2) {
-        return getGraph().defNonDescendent(node1, node2);
-    }
-
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefNoncollider(node1, node2, node3);
     }
 
     public boolean isDefCollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefCollider(node1, node2, node3);
-    }
-
-    public boolean isDConnectedTo(Node node1, Node node2, List<Node> z) {
-        return getGraph().isDConnectedTo(node1, node2, z);
-    }
-
-    public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
-        return getGraph().isDSeparatedFrom(node1, node2, z);
-    }
-
-    public boolean possDConnectedTo(Node node1, Node node2, List<Node> z) {
-        return getGraph().possDConnectedTo(node1, node2, z);
-    }
-
-    public boolean isDirectedFromTo(Node node1, Node node2) {
-        return getGraph().isDirectedFromTo(node1, node2);
-    }
-
-    public boolean isUndirectedFromTo(Node node1, Node node2) {
-        return getGraph().isUndirectedFromTo(node1, node2);
-    }
-
-    public boolean defVisible(Edge edge) {
-        return getGraph().defVisible(edge);
     }
 
     public boolean isExogenous(Node node) {
@@ -372,6 +293,11 @@ public class LagGraph implements Graph {
     @Override
     public UnderlineModel getUnderlineModel() {
         return graph.getUnderlineModel();
+    }
+
+    @Override
+    public Paths getPaths() {
+        return this.paths;
     }
 
     public List<Node> getCausalOrdering() {

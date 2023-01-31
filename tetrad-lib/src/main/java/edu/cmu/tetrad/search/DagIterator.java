@@ -201,8 +201,8 @@ public class DagIterator {
                 throw new IllegalArgumentException();
             }
 
-            if (this.graph.isAncestorOf(this.edge.getNode1(), this.edge.getNode2())
-                    && !this.graph.isAncestorOf(this.edge.getNode2(), this.edge.getNode1())) {
+            if (this.graph.getPaths().isAncestorOf(this.edge.getNode1(), this.edge.getNode2())
+                    && !this.graph.getPaths().isAncestorOf(this.edge.getNode2(), this.edge.getNode1())) {
                 this.wasDirectedLeft = true;
                 return directRight();
             }
@@ -224,8 +224,8 @@ public class DagIterator {
                 throw new IllegalArgumentException();
             }
 
-            if (this.graph.isAncestorOf(this.edge.getNode2(), this.edge.getNode1())
-                    && !this.graph.isAncestorOf(this.edge.getNode1(), this.edge.getNode2())) {
+            if (this.graph.getPaths().isAncestorOf(this.edge.getNode2(), this.edge.getNode1())
+                    && !this.graph.getPaths().isAncestorOf(this.edge.getNode1(), this.edge.getNode2())) {
                 this.wasDirectedRight = true;
                 return directLeft();
             }

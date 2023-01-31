@@ -38,8 +38,8 @@ public class SemidirectedPrecision implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (estGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
-                    if (trueGraph.existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
+                if (estGraph.getPaths().existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
+                    if (trueGraph.getPaths().existsSemiDirectedPathFromTo(x, Collections.singleton(y))) {
                         tp++;
                     } else {
                         fp++;

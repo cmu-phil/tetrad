@@ -28,7 +28,7 @@ public class NumDirectedEdgeVisible implements Statistic {
         Graph pag = SearchGraphUtils.dagToPag(trueGraph);
 
         for (Edge edge : pag.getEdges()) {
-            if (pag.defVisible(edge)) {
+            if (pag.getPaths().defVisible(edge)) {
                 tp++;
             }
         }

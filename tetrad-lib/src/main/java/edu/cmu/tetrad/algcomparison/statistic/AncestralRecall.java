@@ -34,8 +34,8 @@ public class AncestralRecall implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.isAncestorOf(x, y)) {
-                    if (estGraph.isAncestorOf(x, y)) {
+                if (trueGraph.getPaths().isAncestorOf(x, y)) {
+                    if (estGraph.getPaths().isAncestorOf(x, y)) {
                         tp++;
                     } else {
                         fn++;

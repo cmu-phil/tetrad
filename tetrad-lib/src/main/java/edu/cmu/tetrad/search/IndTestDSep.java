@@ -188,7 +188,7 @@ public class IndTestDSep implements IndependenceTest {
         boolean dSeparated;
 
         if (graph != null) {
-            dSeparated = !getGraph().isDConnectedTo(x, y, z);
+            dSeparated = !getGraph().getPaths().isDConnectedTo(x, y, z);
         } else {
             dSeparated = independenceFacts.isIndependent(x, y, z);
         }
@@ -231,7 +231,7 @@ public class IndTestDSep implements IndependenceTest {
             }
         }
 
-        return getGraph().isDSeparatedFrom(x, y, z);
+        return getGraph().getPaths().isDSeparatedFrom(x, y, z);
     }
 
     /**

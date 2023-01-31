@@ -227,7 +227,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             Set<Node> adj = new HashSet<>(selectedVariables);
 
             for (Node node : selectedVariables) {
-                adj.addAll((getSelectedGraph(k).getAncestors(Collections.singletonList(node))));
+                adj.addAll((getSelectedGraph(k).getPaths().getAncestors(Collections.singletonList(node))));
             }
 
             selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
@@ -236,7 +236,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             Set<Node> adj = new HashSet<>(selectedVariables);
 
             for (Node node : selectedVariables) {
-                adj.addAll((getSelectedGraph(k).getDescendants(Collections.singletonList(node))));
+                adj.addAll((getSelectedGraph(k).getPaths().getDescendants(Collections.singletonList(node))));
             }
 
             selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));

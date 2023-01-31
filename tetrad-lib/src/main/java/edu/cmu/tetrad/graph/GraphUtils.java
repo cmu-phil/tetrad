@@ -3366,7 +3366,7 @@ public final class GraphUtils {
      * @return Such a causal order.
      */
     public static List<Node> getCausalOrdering(Graph graph, List<Node> initialOrder) {
-        if (graph.existsDirectedCycle()) {
+        if (graph.getPaths().existsDirectedCycle()) {
             throw new IllegalArgumentException("Graph must be acyclic.");
         }
 
@@ -3752,7 +3752,7 @@ public final class GraphUtils {
 
             graph.addEdge(xyEdge);
 
-            if (graph.defVisible(edge)) {
+            if (graph.getPaths().defVisible(edge)) {
                 edge.addProperty(Property.nl); // solid.
             } else {
                 edge.addProperty(Property.pl); // dashed
@@ -4755,7 +4755,7 @@ public final class GraphUtils {
         Set<Triple> _colliders = new HashSet<>();
 
         for (Triple collider : colliders) {
-            if (graph.isAncestorOf(collider.getY(), b)) {
+            if (graph.getPaths().isAncestorOf(collider.getY(), b)) {
                 _colliders.add(collider);
             }
         }
@@ -4942,7 +4942,7 @@ public final class GraphUtils {
             }
 
             if (graph.isDefCollider(a, b, c)) {
-                if (!(graph.isAncestorOf(b, x) || graph.isAncestorOf(b, y))) {
+                if (!(graph.getPaths().isAncestorOf(b, x) || graph.getPaths().isAncestorOf(b, y))) {
                     continue;
                 }
             }
@@ -5023,7 +5023,7 @@ public final class GraphUtils {
             }
 
             if (graph.isDefCollider(a, b, c)) {
-                if (!(graph.isAncestorOf(b, x) || graph.isAncestorOf(b, y))) {
+                if (!(graph.getPaths().isAncestorOf(b, x) || graph.getPaths().isAncestorOf(b, y))) {
                     return false;
                 }
             }
@@ -5490,7 +5490,7 @@ public final class GraphUtils {
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
-                if (graph.isAncestorOf(x, y)) {
+                if (graph.getPaths().isAncestorOf(x, y)) {
                     knowledge.setForbidden(y.getName(), x.getName());
                 }
             }
@@ -5622,7 +5622,7 @@ public final class GraphUtils {
             }
         }
 
-        return allDirected && !graph.existsDirectedCycle();
+        return allDirected && !graph.getPaths().existsDirectedCycle();
     }
 
     /**
@@ -5635,7 +5635,7 @@ public final class GraphUtils {
         Dag dag = new Dag(graph);
 
         // make sure no nodes in z is a descendant of x
-        if (z.stream().anyMatch(zNode -> dag.isDescendentOf(zNode, x))) {
+        if (z.stream().anyMatch(zNode -> dag.getPaths().isDescendentOf(zNode, x))) {
             return false;
         }
 
@@ -5650,7 +5650,7 @@ public final class GraphUtils {
             });
         });
 
-        return dag.isDSeparatedFrom(x, y, z);
+        return dag.getPaths().isDSeparatedFrom(x, y, z);
     }
 
     private static class EdgeNode {

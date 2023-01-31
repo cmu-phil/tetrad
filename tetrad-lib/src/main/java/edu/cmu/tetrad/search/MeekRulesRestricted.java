@@ -171,7 +171,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
                 continue;
             }
 
-            if (graph.isDirectedFromTo(b, a) && graph.isUndirectedFromTo(a, c)) {
+            if (graph.getPaths().isDirectedFromTo(b, a) && graph.getPaths().isUndirectedFromTo(a, c)) {
                 if (MeekRulesRestricted.isShieldedNoncollider(b, a, c, graph)) {
                     continue;
                 }
@@ -192,7 +192,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
                     TetradLogger.getInstance().log("impliedOrientations", SearchLogUtils.edgeOrientedMsg(
                             "Meek R1 triangle (" + b + "-->" + a + "---" + c + ")", graph.getEdge(a, c)));
                 }
-            } else if (graph.isDirectedFromTo(c, a) && graph.isUndirectedFromTo(a, b)) {
+            } else if (graph.getPaths().isDirectedFromTo(c, a) && graph.getPaths().isUndirectedFromTo(a, b)) {
                 if (MeekRulesRestricted.isShieldedNoncollider(b, a, c, graph)) {
                     continue;
                 }
@@ -235,9 +235,9 @@ public class MeekRulesRestricted implements ImpliedOrientation {
             Node b = adjacentNodes.get(combination[0]);
             Node c = adjacentNodes.get(combination[1]);
 
-            if (graph.isDirectedFromTo(b, a) &&
-                    graph.isDirectedFromTo(a, c) &&
-                    graph.isUndirectedFromTo(b, c)) {
+            if (graph.getPaths().isDirectedFromTo(b, a) &&
+                    graph.getPaths().isDirectedFromTo(a, c) &&
+                    graph.getPaths().isUndirectedFromTo(b, c)) {
                 if (MeekRulesRestricted.isArrowpointAllowed(b, c, knowledge) && doesNotCreateCycle(b, c, graph)) {
                     Edge after = direct(b, c, graph);
                     Node x = after.getNode1();
@@ -253,9 +253,9 @@ public class MeekRulesRestricted implements ImpliedOrientation {
 
                     TetradLogger.getInstance().log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(b, c)));
                 }
-            } else if (graph.isDirectedFromTo(c, a) &&
-                    graph.isDirectedFromTo(a, b) &&
-                    graph.isUndirectedFromTo(c, b)) {
+            } else if (graph.getPaths().isDirectedFromTo(c, a) &&
+                    graph.getPaths().isDirectedFromTo(a, b) &&
+                    graph.getPaths().isUndirectedFromTo(c, b)) {
                 if (MeekRulesRestricted.isArrowpointAllowed(c, b, knowledge) && doesNotCreateCycle(c, b, graph)) {
                     Edge after = direct(c, b, graph);
                     Node x = after.getNode1();
@@ -290,7 +290,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
             List<Node> otherAdjacents = new LinkedList<>(adjacentNodes);
             otherAdjacents.remove(b);
 
-            if (!graph.isUndirectedFromTo(a, b)) {
+            if (!graph.getPaths().isUndirectedFromTo(a, b)) {
                 continue;
             }
 
@@ -305,16 +305,16 @@ public class MeekRulesRestricted implements ImpliedOrientation {
                     continue;
                 }
 
-                if (!graph.isDirectedFromTo(c, a)) {
+                if (!graph.getPaths().isDirectedFromTo(c, a)) {
                     continue;
                 }
 
-                if (!graph.isDirectedFromTo(d, a)) {
+                if (!graph.getPaths().isDirectedFromTo(d, a)) {
                     continue;
                 }
 
-                if (graph.isUndirectedFromTo(b, c) &&
-                        graph.isUndirectedFromTo(b, d)) {
+                if (graph.getPaths().isUndirectedFromTo(b, c) &&
+                        graph.getPaths().isUndirectedFromTo(b, d)) {
                     if (MeekRulesRestricted.isArrowpointAllowed(b, a, knowledge) && doesNotCreateCycle(b, a, graph)) {
                         if (MeekRulesRestricted.isShieldedNoncollider(c, b, d, graph)) {
                             continue;
@@ -368,9 +368,9 @@ public class MeekRulesRestricted implements ImpliedOrientation {
                 Node b = otherAdjacents.get(combination[0]);
                 Node c = otherAdjacents.get(combination[1]);
 
-                if (graph.isDirectedFromTo(b, a) && graph.isDirectedFromTo(a, c)) {
-                    if (graph.isUndirectedFromTo(d, b) &&
-                            graph.isUndirectedFromTo(d, c)) {
+                if (graph.getPaths().isDirectedFromTo(b, a) && graph.getPaths().isDirectedFromTo(a, c)) {
+                    if (graph.getPaths().isUndirectedFromTo(d, b) &&
+                            graph.getPaths().isUndirectedFromTo(d, c)) {
                         if (MeekRulesRestricted.isShieldedNoncollider(c, d, b, graph)) {
                             continue;
                         }
@@ -392,8 +392,8 @@ public class MeekRulesRestricted implements ImpliedOrientation {
 //                            continue;
                         }
                     }
-                } else if (graph.isDirectedFromTo(c, a) && graph.isDirectedFromTo(a, b)) {
-                    if (graph.isUndirectedFromTo(d, b) && graph.isUndirectedFromTo(d, c)) {
+                } else if (graph.getPaths().isDirectedFromTo(c, a) && graph.getPaths().isDirectedFromTo(a, b)) {
+                    if (graph.getPaths().isUndirectedFromTo(d, b) && graph.getPaths().isUndirectedFromTo(d, c)) {
                         if (MeekRulesRestricted.isShieldedNoncollider(c, d, b, graph)) {
                             continue;
                         }
@@ -467,7 +467,7 @@ public class MeekRulesRestricted implements ImpliedOrientation {
      */
     private boolean doesNotCreateCycle(Node x, Node y, Graph graph) {
         if (this.aggressivelyPreventCycles) {
-            return !graph.isAncestorOf(y, x);
+            return !graph.getPaths().isAncestorOf(y, x);
         } else {
             return true;
         }

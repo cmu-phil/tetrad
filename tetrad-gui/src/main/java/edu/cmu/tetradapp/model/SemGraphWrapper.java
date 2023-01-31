@@ -296,7 +296,7 @@ public class SemGraphWrapper implements GraphSource,
             paramSettings.put("# Nodes", Integer.toString(getSemGraph().getNumNodes()));
         }
         paramSettings.put("# Edges", Integer.toString(getSemGraph().getNumEdges()));
-        if (getSemGraph().existsDirectedCycle()) {
+        if (getSemGraph().getPaths().existsDirectedCycle()) {
             paramSettings.put("Cyclic", null);
         }
         return paramSettings;

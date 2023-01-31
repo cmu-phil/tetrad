@@ -32,9 +32,9 @@ public class NoAlmostCyclicPathsInMagCondition implements Statistic {
             Node y = e.getNode2();
 
             if (Edges.isBidirectedEdge(e)) {
-                if (mag.existsDirectedPathFromTo(x, y)) {
+                if (mag.getPaths().existsDirectedPathFromTo(x, y)) {
                     return 0;
-                } else if (mag.existsDirectedPathFromTo(y, x)) {
+                } else if (mag.getPaths().existsDirectedPathFromTo(y, x)) {
                     return 0;
                 }
             }

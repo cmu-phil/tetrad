@@ -543,7 +543,7 @@ public class RfciBsc implements GraphSearch {
             BCInference.OP op;
             double p = 0.0;
 
-            if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.getPaths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -574,7 +574,7 @@ public class RfciBsc implements GraphSearch {
                             }
                         }
                         IndependenceFact parentFact = new IndependenceFact(_X, _Y, _Z);
-                        if (pag.isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
+                        if (pag.getPaths().isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
                             parentValues[parentIndex] = 1;
                         } else {
                             parentValues[parentIndex] = 0;
@@ -631,7 +631,7 @@ public class RfciBsc implements GraphSearch {
         for (IndependenceFact fact : H.keySet()) {
             BCInference.OP op;
 
-            if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.getPaths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;

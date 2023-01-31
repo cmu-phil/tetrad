@@ -39,7 +39,7 @@ public class NumCompatibleVisibleNonancestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.isAncestorOf(x, y)) {
+                if (trueGraph.getPaths().isAncestorOf(x, y)) {
 //                    System.out.println("Ancestor(x, y): " + Edges.directedEdge(x, y));
                     tp++;
                 } else {

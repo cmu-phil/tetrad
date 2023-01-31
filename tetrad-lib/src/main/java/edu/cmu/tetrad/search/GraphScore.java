@@ -96,7 +96,7 @@ public class GraphScore implements Score {
             List<Node> cond = new ArrayList<>(prefix);
             cond.remove(z0);
 
-            if (dag.isDConnectedTo(n, z0, cond)) {
+            if (dag.getPaths().isDConnectedTo(n, z0, cond)) {
                 mb.add(z0);
             }
         }
@@ -132,7 +132,7 @@ public class GraphScore implements Score {
         boolean dSeparatedFrom;
 
         if (dag != null) {
-            dSeparatedFrom = dag.isDSeparatedFrom(_x, _y, _z);
+            dSeparatedFrom = dag.getPaths().isDSeparatedFrom(_x, _y, _z);
         } else if (facts != null) {
             dSeparatedFrom = facts.isIndependent(_x, _y, _z);
         } else {
@@ -217,7 +217,7 @@ public class GraphScore implements Score {
 
     public boolean isDSeparatedFrom(Node x, Node y, List<Node> z) {
         if (dag != null) {
-            return dag.isDSeparatedFrom(x, y, z);
+            return dag.getPaths().isDSeparatedFrom(x, y, z);
         } else if (facts != null) {
             return facts.isIndependent(x, y, z);
         }

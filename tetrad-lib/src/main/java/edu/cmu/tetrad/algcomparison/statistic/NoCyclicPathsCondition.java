@@ -28,7 +28,7 @@ public class NoCyclicPathsCondition implements Statistic {
         Graph pag = estGraph;
 
         for (Node n : pag.getNodes()) {
-            if (pag.existsDirectedPathFromTo(n, n)) {
+            if (pag.getPaths().existsDirectedPathFromTo(n, n)) {
                 return 0;
             }
         }

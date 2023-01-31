@@ -47,7 +47,7 @@ public class TestCheckMarkov {
 
         for (Node x : dag.getNodes()) {
 
-            List<Node> desc = dag.getDescendants(Collections.singletonList(x));
+            List<Node> desc = dag.getPaths().getDescendants(Collections.singletonList(x));
 
             List<Node> nondesc = dag.getNodes();
             nondesc.removeAll(desc);

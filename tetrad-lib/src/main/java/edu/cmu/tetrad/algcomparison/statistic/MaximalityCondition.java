@@ -39,7 +39,7 @@ public class MaximalityCondition implements Statistic {
                 Node y = nodes.get(j);
 
                 if (!mag.isAdjacentTo(x, y)) {
-                    if (mag.existsInducingPath(x, y)) {
+                    if (mag.getPaths().existsInducingPath(x, y)) {
                         return 0.0;
                     }
                 }

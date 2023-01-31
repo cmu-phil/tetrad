@@ -34,7 +34,7 @@ public class TrueDagRecallArrows implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!trueGraph.isAncestorOf(y, x)) {
+                if (!trueGraph.getPaths().isAncestorOf(y, x)) {
                     Edge edge2 = estGraph.getEdge(x, y);
 
                     if (edge2 != null) {

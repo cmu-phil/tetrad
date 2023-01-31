@@ -742,15 +742,15 @@ public class TestDM {
         graph.addDirectedEdge(X3, X0);
 
 
-        System.out.print(graph.existsDirectedPathFromTo(X0, X3));
-        System.out.print(graph.existsDirectedPathFromTo(X3, X0));
+        System.out.print(graph.getPaths().existsDirectedPathFromTo(X0, X3));
+        System.out.print(graph.getPaths().existsDirectedPathFromTo(X3, X0));
 
         for (Node node : graph.getNodes()) {
             System.out.println("Nodes adjacent to " + node + ": " + graph.getAdjacentNodes(node) + "\n");
         }
 
 
-        System.out.println("graph.existsDirectedCycle: " + graph.existsDirectedCycle());
+        System.out.println("graph.existsDirectedCycle: " + graph.getPaths().existsDirectedCycle());
 
 
         System.out.println("Graph structure: " + graph);
@@ -823,7 +823,7 @@ public class TestDM {
         System.out.println("" + search.getDmStructure());
 
 
-        System.out.println("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).existsDirectedCycle());
+        System.out.println("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).getPaths().existsDirectedCycle());
 
 
         System.out.println("Graph structure: " + search);
@@ -916,7 +916,7 @@ public class TestDM {
         System.out.println("" + search.getDmStructure());
 
 
-        System.out.println("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).existsDirectedCycle());
+        System.out.println("graph.existsDirectedCycle: " + search.getDmStructure().latentStructToEdgeListGraph(search.getDmStructure()).getPaths().existsDirectedCycle());
 
 
         System.out.println("Graph structure: " + search);

@@ -30,7 +30,7 @@ public class NumDirectedEdgeAncestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.isAncestorOf(x, y)) {
+                if (trueGraph.getPaths().isAncestorOf(x, y)) {
                     tp++;
                 }
             }

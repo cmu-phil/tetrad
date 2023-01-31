@@ -397,7 +397,7 @@ public final class SampleVcpc implements GraphSearch {
 
             MeekRules rules = new MeekRules();
             rules.orientImplied(graph);
-            if (graph.existsDirectedCycle()) {
+            if (graph.getPaths().existsDirectedCycle()) {
                 CPDAGs.remove(graph);
             }
         }

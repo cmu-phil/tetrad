@@ -823,7 +823,7 @@ public final class MlBayesIm implements BayesIm {
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
 
-        if (graph.existsDirectedCycle()) {
+        if (graph.getPaths().existsDirectedCycle()) {
             throw new IllegalArgumentException("Graph must be acyclic to simulate from discrete Bayes net.");
         }
 

@@ -41,7 +41,7 @@ public class NumCompatibleDirectedEdgeNonAncestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (!trueGraph.isAncestorOf(x, y) && !existsLatentCommonAncestor(trueGraph, edge)) {
+                if (!trueGraph.getPaths().isAncestorOf(x, y) && !existsLatentCommonAncestor(trueGraph, edge)) {
                     tp++;
                 } else {
                     fp++;
