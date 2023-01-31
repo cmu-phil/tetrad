@@ -21,10 +21,8 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
