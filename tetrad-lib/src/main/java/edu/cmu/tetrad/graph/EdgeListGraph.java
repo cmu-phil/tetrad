@@ -73,10 +73,6 @@ public class EdgeListGraph implements Graph {
      * Fires property change events.
      */
     protected transient PropertyChangeSupport pcs;
-    /**
-     * Determines whether one node is an ancestor of another.
-     */
-    protected Map<Node, Set<Node>> ancestors = new HashMap<>();
 
     private UnderlineModel underlineModel;
 
@@ -151,14 +147,6 @@ public class EdgeListGraph implements Graph {
         this.namesHash = new HashMap<>(graph.namesHash);
 
         this.underlineModel = new UnderlineModel(graph.getUnderlineModel());
-
-        if (graph.ancestors != null) {
-            this.ancestors = new HashMap<>();
-
-            for (Node node : graph.ancestors.keySet()) {
-                ancestors.put(node, new HashSet<>(graph.ancestors.get(node)));
-            }
-        }
 
         this.highlightedEdges = new HashSet<>(graph.highlightedEdges);
 
@@ -960,9 +948,6 @@ public class EdgeListGraph implements Graph {
                 throw new IllegalArgumentException();
             }
         }
-
-        this.ancestors = null;
-//        System.out.println("TANSFER AFTER " + getEdges());
     }
 
     @Override
@@ -1060,7 +1045,6 @@ public class EdgeListGraph implements Graph {
         if (!isAdjacentTo(from, to)) throw new IllegalArgumentException("Not adjacent");
 
         Edge edge = getEdge(from, to);
-        this.ancestors = null;
 
         removeEdge(edge);
 
@@ -1157,7 +1141,6 @@ public class EdgeListGraph implements Graph {
                 }
             }
 
-            this.ancestors = null;
             getPcs().firePropertyChange("edgeAdded", null, edge);
             return true;
         }
@@ -1427,7 +1410,6 @@ public class EdgeListGraph implements Graph {
 
             this.highlightedEdges.remove(edge);
 
-            this.ancestors = null;
             getPcs().firePropertyChange("edgeRemoved", edge, null);
             return true;
         }
