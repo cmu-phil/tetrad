@@ -183,10 +183,6 @@ public final class LvSwap implements GraphSearch {
 
         finalOrientation(knowledge, G);
 
-        if (SearchGraphUtils.isLegalPag(G).isLegalPag()) {
-            G.setGraphType(EdgeListGraph.GraphType.PAG);
-        }
-
         return G;
     }
 
@@ -260,10 +256,6 @@ public final class LvSwap implements GraphSearch {
 
 
         finalOrientation(knowledge, G);
-
-        if (SearchGraphUtils.isLegalPag(G).isLegalPag()) {
-            G.setGraphType(EdgeListGraph.GraphType.PAG);
-        }
 
         scorer.goToBookmark();
         return G;
@@ -348,10 +340,6 @@ public final class LvSwap implements GraphSearch {
 
         finalOrientation(knowledge, G);
 
-        if (SearchGraphUtils.isLegalPag(G).isLegalPag()) {
-            G.setGraphType(EdgeListGraph.GraphType.PAG);
-        }
-
         scorer.goToBookmark();
         return G;
     }
@@ -433,10 +421,6 @@ public final class LvSwap implements GraphSearch {
         } while (!allT.containsAll(T));
 
         finalOrientation(knowledge, G);
-
-        if (SearchGraphUtils.isLegalPag(G).isLegalPag()) {
-            G.setGraphType(EdgeListGraph.GraphType.PAG);
-        }
 
         return G;
     }

@@ -51,7 +51,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
      */
     private final Knowledge knowledge;
     private final Map<String, Object> attributes = new HashMap<>();
-    private EdgeListGraph.GraphType graphType = EdgeListGraph.GraphType.DAG;
 
     private final Paths paths;
 
@@ -104,7 +103,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     public List<Node> getCausalOrdering() {
-        return getGraph().getCausalOrdering();
+        return getGraph().paths().getCausalOrdering(getGraph().getNodes());
     }
 
     public void setHighlighted(Edge edge, boolean highlighted) {
@@ -411,14 +410,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     private Graph getGraph() {
         return this.graph;
-    }
-
-    public void setGraphType(EdgeListGraph.GraphType graphType) {
-        this.graphType = graphType;
-    }
-
-    public EdgeListGraph.GraphType getGraphType() {
-        return this.graphType;
     }
 
     @Override

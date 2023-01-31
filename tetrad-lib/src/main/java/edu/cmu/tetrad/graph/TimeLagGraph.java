@@ -61,7 +61,6 @@ public class TimeLagGraph implements Graph {
         this.lag0Nodes = graph.getLag0Nodes();
         this.pag = graph.pag;
         this.cpdag = graph.cpdag;
-        this.graphType = graph.graphType;
         this.paths = new Paths(this.graph);
 
         this.graph.addPropertyChangeListener(evt -> getPcs().firePropertyChange(evt));
@@ -372,8 +371,6 @@ public class TimeLagGraph implements Graph {
         return this.numInitialLags;
     }
 
-    public EdgeListGraph.GraphType graphType;
-
     public static class NodeId {
         private final String name;
         private final int lag;
@@ -681,15 +678,6 @@ public class TimeLagGraph implements Graph {
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
-    }
-
-    @Override
-    public EdgeListGraph.GraphType getGraphType() {
-        return graphType;
-    }
-
-    public void setGraphType(EdgeListGraph.GraphType graphType) {
-        this.graphType = graphType;
     }
 }
 

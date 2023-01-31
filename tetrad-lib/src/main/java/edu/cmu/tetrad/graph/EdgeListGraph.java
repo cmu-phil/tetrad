@@ -46,8 +46,6 @@ public class EdgeListGraph implements Graph {
 
     static final long serialVersionUID = 23L;
 
-    public enum GraphType {DAG, CPDAG, PAG, MAG, UNLABELED}
-
     /**
      * A list of the nodes in the graph, in the order in which they were added.
      *
@@ -68,7 +66,6 @@ public class EdgeListGraph implements Graph {
      * @serial
      */
      final Map<Node, Set<Edge>> edgeLists;
-    private final Map<String, Object> attributes = new HashMap<>();
     /**
      * Fires property change events.
      */
@@ -88,7 +85,7 @@ public class EdgeListGraph implements Graph {
      */
     private final Map<String, Node> namesHash;
 
-    private GraphType graphType = GraphType.UNLABELED;
+    private final Map<String, Object> attributes = new HashMap<>();
 
     //==============================CONSTUCTORS===========================//
 
@@ -136,8 +133,6 @@ public class EdgeListGraph implements Graph {
         for (Node node : this.nodes) {
             this.namesHash.put(node.getName(), node);
         }
-
-        setGraphType(graph.getGraphType());
     }
 
     public EdgeListGraph(EdgeListGraph graph) throws IllegalArgumentException {
@@ -155,8 +150,6 @@ public class EdgeListGraph implements Graph {
 
         this.paths = new Paths(this);
         this.underlines = new Underlines(graph.underlines);
-
-        setGraphType(graph.getGraphType());
     }
 
     /**
@@ -456,24 +449,6 @@ public class EdgeListGraph implements Graph {
 
     public boolean isDSeparatedFrom(List<Node> x, List<Node> y, List<Node> z) {
         return !paths.isDConnectedTo(x, y, z);
-    }
-
-    /**
-     * True if this graph has been "stamped" as a PAG_of_the_true_DAG. The
-     * search algorithm should do this.
-     */
-    @Override
-    public GraphType getGraphType() {
-        return graphType;
-    }
-
-    @Override
-    public void setGraphType(GraphType graphType) {
-        if (this.graphType == GraphType.PAG && graphType != GraphType.PAG) {
-            System.out.println();
-        }
-
-        this.graphType = graphType;
     }
 
     /**
@@ -1104,8 +1079,6 @@ public class EdgeListGraph implements Graph {
             }
         }
 
-        setGraphType(graph.getGraphType());
-
         return graph;
     }
 
@@ -1156,7 +1129,6 @@ public class EdgeListGraph implements Graph {
         return this.pcs;
     }
 
-    @Override
     public List<Node> getCausalOrdering() {
         return paths().getCausalOrdering(this.getNodes());
     }

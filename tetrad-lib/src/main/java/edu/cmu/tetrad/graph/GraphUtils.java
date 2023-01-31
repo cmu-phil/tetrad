@@ -268,8 +268,6 @@ public final class GraphUtils {
             GraphUtils.circleLayout(dag, 200, 200, 150);
         }
 
-        dag.setGraphType(EdgeListGraph.GraphType.DAG);
-
         return dag;
     }
 
@@ -1109,7 +1107,6 @@ public final class GraphUtils {
         }
 
         Graph convertedGraph = new EdgeListGraph(_newNodes);
-        convertedGraph.setGraphType(originalGraph.getGraphType());
 
         for (Edge edge : originalGraph.getEdges()) {
             Node node1 = newNodes.get(edge.getNode1().getName());
@@ -3180,7 +3177,7 @@ public final class GraphUtils {
 
     public static String graphToText(Graph graph) {
         // add edge properties relating to edge coloring of PAGs
-        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+        if (SearchGraphUtils.isLegalPag(graph).isLegalPag()) {
             GraphUtils.addPagColoring(graph);
         }
 

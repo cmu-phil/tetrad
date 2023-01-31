@@ -569,16 +569,6 @@ public final class Dag implements Graph {
         return this.graph;
     }
 
-    public EdgeListGraph.GraphType getGraphType() {
-        return EdgeListGraph.GraphType.DAG;
-    }
-
-    public void setGraphType(EdgeListGraph.GraphType graphType) {
-        if (graphType != EdgeListGraph.GraphType.DAG) {
-            throw new IllegalArgumentException("A DAG must be set to graph type DAG");
-        }
-    }
-
     @Override
     public Map<String, Object> getAllAttributes() {
         return this.attributes;

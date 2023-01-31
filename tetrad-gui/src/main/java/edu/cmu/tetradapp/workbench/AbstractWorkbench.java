@@ -22,8 +22,8 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
 
@@ -205,6 +205,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
 
     private boolean enableEditing = true;
+
+    private boolean overridePagColoring = false;
+
 
     // ==============================CONSTRUCTOR============================//
 
@@ -922,15 +925,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             throw new IllegalArgumentException("Graph model cannot be null.");
         }
 
-        if (graph instanceof SessionWrapper) {
-            this.graph = graph;
-        } else {
-            this.graph = graph;
-
-            if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
-                GraphUtils.addPagColoring(new EdgeListGraph(graph));
-            }
-        }
+        this.graph = graph;
 
         this.modelEdgesToDisplay = new HashMap<>();
         this.modelNodesToDisplay = new HashMap<>();
@@ -1200,7 +1195,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             displayEdge.setHighlighted(true);
         }
 
-        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
 
             // visible edges.
             boolean solid = modelEdge.getProperties().contains(Edge.Property.nl);
@@ -1793,7 +1788,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
             GraphUtils.addPagColoring(new EdgeListGraph(graph));
         }
     }
@@ -1819,7 +1814,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             fireNodeSelection();
         }
 
-        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
             GraphUtils.addPagColoring(new EdgeListGraph(graph));
         }
     }
@@ -1851,7 +1846,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
             GraphUtils.addPagColoring(new EdgeListGraph(graph));
         }
     }
@@ -1911,8 +1906,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 break;
         }
 
-        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
-            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
+           GraphUtils.addPagColoring(new EdgeListGraph(graph));
         }
     }
 
@@ -1956,7 +1951,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 break;
         }
 
-        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
             GraphUtils.addPagColoring(new EdgeListGraph(graph));
         }
     }
@@ -1985,7 +1980,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 break;
         }
 
-        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
             GraphUtils.addPagColoring(new EdgeListGraph(graph));
         }
     }
@@ -2280,13 +2275,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                         "Reorienting that edge would violate graph constraints.");
             }
 
-            if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+            if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
                 GraphUtils.addPagColoring(new EdgeListGraph(graph));
             }
         } catch (IllegalArgumentException e) {
             getGraph().addEdge(edge);
 
-            if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+            if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
                 GraphUtils.addPagColoring(new EdgeListGraph(graph));
             }
 
@@ -2339,7 +2334,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (!added) {
                 getGraph().addEdge(edge);
 
-                if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+                if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
                     GraphUtils.addPagColoring(new EdgeListGraph(graph));
                 }
 
@@ -2350,7 +2345,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
-        if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
             GraphUtils.addPagColoring(new EdgeListGraph(graph));
         }
 
@@ -2408,13 +2403,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         setEnabled(enableEditing);
     }
 
-    public void setPag(boolean pagColoring) {
-        if (pagColoring) {
-            this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
-        } else {
-            this.graph.setGraphType(EdgeListGraph.GraphType.UNLABELED);
-        }
-        setGraph(graph);
+    public void setOverridePagColoring(boolean overridePagColoring) {
+        this.overridePagColoring = overridePagColoring;
     }
 
     /**

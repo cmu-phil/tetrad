@@ -229,10 +229,6 @@ public final class FciMax implements GraphSearch {
         addColliders(graph);
         fciOrient.doFinalOrientation(graph);
 
-        if (SearchGraphUtils.isLegalPag(graph).isLegalPag()) {
-            graph.setGraphType(EdgeListGraph.GraphType.PAG);
-        }
-
         long stop = System.currentTimeMillis();
 
         this.elapsedTime = stop - start;

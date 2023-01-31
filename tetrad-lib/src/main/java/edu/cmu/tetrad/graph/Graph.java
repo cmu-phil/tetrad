@@ -267,10 +267,6 @@ public interface Graph extends TetradSerializable {
      */
     boolean isDefCollider(Node node1, Node node2, Node node3);
 
-    EdgeListGraph.GraphType getGraphType();
-
-    void setGraphType(EdgeListGraph.GraphType graphType);
-
     /**
      * @return true iff the given node is exogenous in the graph.
      */
@@ -370,11 +366,6 @@ public interface Graph extends TetradSerializable {
     Underlines getUnderlines();
 
     Paths paths();
-
-    /**
-     * @return a tier orderering, for acyclic graphs. Undefined for cyclic graphs.
-     */
-    List<Node> getCausalOrdering();
 
     /**
      * Sets an edge to be highlighted.

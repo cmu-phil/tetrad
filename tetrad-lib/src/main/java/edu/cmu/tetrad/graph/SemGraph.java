@@ -82,7 +82,6 @@ public final class SemGraph implements Graph {
     private boolean cpdag;
 
     private final Map<String, Object> attributes = new HashMap<>();
-    private EdgeListGraph.GraphType graphType = EdgeListGraph.GraphType.UNLABELED;
     private final Paths paths;
 
     //=========================CONSTRUCTORS============================//
@@ -168,7 +167,6 @@ public final class SemGraph implements Graph {
         this.errorNodes = new HashMap<>(graph.errorNodes);
         this.pag = graph.pag;
         this.cpdag = graph.cpdag;
-        this.graphType = graph.getGraphType();
 
         if (graph.showErrorTerms) {
             for (Node node : this.graph.getNodes()) {
@@ -800,14 +798,6 @@ public final class SemGraph implements Graph {
                 error.setCenter(node.getCenterX() + 50, node.getCenterY() + 50);
             }
         }
-    }
-
-    public EdgeListGraph.GraphType getGraphType() {
-        return graphType;
-    }
-
-    public void setGraphType(EdgeListGraph.GraphType graphType) {
-        this.graphType = graphType;
     }
 
     @Override

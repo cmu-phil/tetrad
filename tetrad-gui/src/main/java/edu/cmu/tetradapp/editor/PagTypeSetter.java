@@ -51,27 +51,29 @@ public class PagTypeSetter extends JCheckBoxMenuItem {
 
         Graph graph = workbench.getGraph();
 
-        setSelected(workbench.getGraph().getGraphType() == EdgeListGraph.GraphType.PAG);
+        setSelected(SearchGraphUtils.isLegalPag(workbench.getGraph()).isLegalPag());
         addItemListener(e -> {
-            if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
-                workbench.setPag(false);
-            } else {
-                SearchGraphUtils.LegalPagRet legalPagRet = SearchGraphUtils.isLegalPag(graph);
+            SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(graph);
 
-                String reason = legalPagRet.getReason() + ".";
+            if (legalPag.isLegalPag()) {
+                JOptionPane.showMessageDialog(workbench, legalPag.getReason());
+                workbench.setOverridePagColoring(false);
+            } else {
+
+                String reason = legalPag.getReason() + ".";
                 reason = breakDown(reason, 60);
 
-                if (!legalPagRet.isLegalPag()) {
+                if (!legalPag.isLegalPag()) {
                     int ret = JOptionPane.showConfirmDialog(workbench, "This is not a legal PAG--one reason is as follows:" +
                                     "\n\n" + reason +
                                     "\n\nProceed anyway?",
                             "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                     if (ret == JOptionPane.YES_NO_OPTION) {
-                        _workbench.setPag(true);
+                        _workbench.setOverridePagColoring(true);
                     }
                 } else {
                     JOptionPane.showMessageDialog(workbench, reason);
-                    _workbench.setPag(true);
+                    _workbench.setOverridePagColoring(false);
                 }
             }
         });

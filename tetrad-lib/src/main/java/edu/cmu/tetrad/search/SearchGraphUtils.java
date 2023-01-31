@@ -759,8 +759,6 @@ public final class SearchGraphUtils {
             mag.addEdge(e);
         }
 
-        mag.setGraphType(EdgeListGraph.GraphType.MAG);
-
         return mag;
     }
 
@@ -785,8 +783,15 @@ public final class SearchGraphUtils {
 
     public static LegalPagRet isLegalPag(Graph pag) {
 
+        for (Node n : pag.getNodes()) {
+            if (n.getNodeType() != NodeType.MEASURED) {
+                return new LegalPagRet(false,
+                        "Node " + n + " is not measured");
+            }
+        }
+
 //        for (Node n : pag.getNodes()) {
-//            if (pag.existsDirectedPathFromTo(n, n))
+//            if (pag.paths().existsDirectedPathFromTo(n, n))
 //                return new LegalPagRet(false,
 //                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
 //        }
@@ -1812,7 +1817,7 @@ public final class SearchGraphUtils {
             if (!edge1.equals(edge2)) {
                 incorrect.add(adj);
 
-                if (trueGraph.getGraphType() == EdgeListGraph.GraphType.PAG && targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+                if (SearchGraphUtils.isLegalPag(trueGraph).isLegalPag() && SearchGraphUtils.isLegalPag(targetGraph).isLegalPag()) {
                     GraphUtils.addPagColoring(trueGraph);
                     GraphUtils.addPagColoring(targetGraph);
 
@@ -1827,7 +1832,7 @@ public final class SearchGraphUtils {
             }
         }
 
-        if (trueGraph.getGraphType() == EdgeListGraph.GraphType.PAG && targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG) {
+        if (SearchGraphUtils.isLegalPag(trueGraph).isLegalPag() && SearchGraphUtils.isLegalPag(targetGraph).isLegalPag()) {
             builder.append("\n\n" + "Edges incorrectly oriented (incompatible)");
 
             if (incompatible.isEmpty()) {

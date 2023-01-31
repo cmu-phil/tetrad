@@ -146,7 +146,7 @@ public class LinearSineSimulation implements Simulation {
 
         DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
 
-        List<Node> tierOrdering = G.getCausalOrdering();
+        List<Node> tierOrdering = G.paths().getCausalOrdering(G.getNodes());
         int[] tiers = new int[tierOrdering.size()];
         for (int t = 0; t < tierOrdering.size(); t++) {
             tiers[t] = nodes.indexOf(tierOrdering.get(t));
