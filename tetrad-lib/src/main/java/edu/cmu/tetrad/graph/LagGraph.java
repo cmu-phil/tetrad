@@ -291,8 +291,8 @@ public class LagGraph implements Graph {
     }
 
     @Override
-    public UnderlineModel getUnderlineModel() {
-        return graph.getUnderlineModel();
+    public Underlines getUnderlines() {
+        return graph.getUnderlines();
     }
 
     @Override

@@ -248,7 +248,7 @@ public final class CpcOrienter implements Reorienter {
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    this.graph.getUnderlineModel().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.getUnderlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 } else {
                     this.noncolliderTriples.add(new Triple(x, y, z));
                 }

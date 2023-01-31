@@ -74,7 +74,7 @@ public class EdgeListGraph implements Graph {
      */
     private transient PropertyChangeSupport pcs;
 
-    private UnderlineModel underlineModel;
+    private Underlines underlines;
 
     private Paths paths;
 
@@ -100,7 +100,7 @@ public class EdgeListGraph implements Graph {
         this.nodes = new ArrayList<>();
         this.edgesSet = new HashSet<>();
         this.namesHash = new HashMap<>();
-        this.underlineModel = new UnderlineModel(this);
+        this.underlines = new Underlines(this);
         this.paths = new Paths(this);
     }
 
@@ -125,7 +125,7 @@ public class EdgeListGraph implements Graph {
         // Keep attributes from the original graph
         transferAttributes(graph);
 
-        this.underlineModel = new UnderlineModel(graph.getUnderlineModel());
+        this.underlines = new Underlines(graph.getUnderlines());
 
         for (Edge edge : graph.getEdges()) {
             if (graph.isHighlighted(edge)) {
@@ -149,7 +149,7 @@ public class EdgeListGraph implements Graph {
         this.edgesSet = new HashSet<>(graph.edgesSet);
         this.namesHash = new HashMap<>(graph.namesHash);
 
-        this.underlineModel = new UnderlineModel(graph.getUnderlineModel());
+        this.underlines = new Underlines(graph.getUnderlines());
 
         this.highlightedEdges = new HashSet<>(graph.highlightedEdges);
 
@@ -184,9 +184,6 @@ public class EdgeListGraph implements Graph {
     public static EdgeListGraph serializableInstance() {
         return new EdgeListGraph();
     }
-
-
-
 
     /**
      * Adds a directed edge to the graph from node A to node B.
@@ -288,8 +285,6 @@ public class EdgeListGraph implements Graph {
         return edge1.getProximalEndpoint(node2) == Endpoint.ARROW && edge2.getProximalEndpoint(node2) == Endpoint.ARROW;
 
     }
-
-
 
     /**
      * @return the list of children for a node.
@@ -447,8 +442,6 @@ public class EdgeListGraph implements Graph {
         return false;
     }
 
-
-
     @Override
     public List<Node> getSepset(Node x, Node y) {
         return paths.getSepset(x, y);
@@ -520,7 +513,6 @@ public class EdgeListGraph implements Graph {
             throw new NullPointerException("No graph was provided.");
         }
 
-//        System.out.println("TANSFER BEFORE " + graph.getEdges());
         for (Node node : graph.getNodes()) {
             if (!addNode(node)) {
                 throw new IllegalArgumentException();
@@ -545,8 +537,8 @@ public class EdgeListGraph implements Graph {
     }
 
     @Override
-    public UnderlineModel getUnderlineModel() {
-        return underlineModel;
+    public Underlines getUnderlines() {
+        return underlines;
     }
 
     @Override
@@ -597,7 +589,7 @@ public class EdgeListGraph implements Graph {
                             + node2);
         }
 
-        this.underlineModel.removeTriplesNotInGraph();
+        this.underlines.removeTriplesNotInGraph();
 
         return removeEdges(edges);
     }
@@ -1065,7 +1057,7 @@ public class EdgeListGraph implements Graph {
         this.nodes.remove(node);
         this.namesHash.remove(node.getName());
 
-        this.underlineModel.removeTriplesNotInGraph();
+        this.underlines.removeTriplesNotInGraph();
 
         getPcs().firePropertyChange("nodeRemoved", node, null);
         return changed;
@@ -1163,7 +1155,7 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public List<Node> getCausalOrdering() {
-        return GraphUtils.getCausalOrdering(this, this.getNodes());
+        return paths().getCausalOrdering(this.getNodes());
     }
 
     @Override
@@ -1244,6 +1236,4 @@ public class EdgeListGraph implements Graph {
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
     }
-
-
 }

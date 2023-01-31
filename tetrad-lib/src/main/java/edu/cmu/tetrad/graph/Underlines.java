@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class UnderlineModel implements TripleClassifier, TetradSerializable {
+public class Underlines implements TripleClassifier, TetradSerializable {
     static final long serialVersionUID = 23L;
 
     private final Graph graph;
@@ -26,14 +26,14 @@ public class UnderlineModel implements TripleClassifier, TetradSerializable {
      */
     protected Set<Triple> ambiguousTriples;
 
-    public UnderlineModel(Graph graph) {
+    public Underlines(Graph graph) {
         this.graph = graph;
         this.underLineTriples = new HashSet<>();
         this.dottedUnderLineTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
     }
 
-    public UnderlineModel(UnderlineModel underlineModel) {
+    public Underlines(Underlines underlineModel) {
         this(underlineModel.graph);
         this.underLineTriples = underlineModel.getUnderLines();
         this.dottedUnderLineTriples = underlineModel.getDottedUnderlines();

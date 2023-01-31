@@ -706,7 +706,7 @@ public final class PcMb implements MbSearch, GraphSearch {
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    graph.getUnderlineModel().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    graph.getUnderlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
                 } else {
                     this.noncolliderTriples.add(new Triple(x, y, z));

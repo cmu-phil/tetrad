@@ -335,7 +335,7 @@ public class MeekRulesCpdag implements ImpliedOrientation {
 
     private static boolean isShieldedNoncollider(Node a, Node b, Node c,
                                                  Graph graph) {
-        if (graph.getUnderlineModel().isAmbiguousTriple(a, b, c)) {
+        if (graph.getUnderlines().isAmbiguousTriple(a, b, c)) {
             return true;
         }
 

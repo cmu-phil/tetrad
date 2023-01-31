@@ -211,7 +211,7 @@ public class PossibleDConnectingPath {
             if (pag.isDefCollider(previous, current, adj)) {
                 pass = isConditionClosure;
             } else {
-                pass = !isCondition || !pag.getUnderlineModel().isUnderlineTriple(previous, current, adj) && PossibleDConnectingPath.isOpen(pag, previous, current, adj);
+                pass = !isCondition || !pag.getUnderlines().isUnderlineTriple(previous, current, adj) && PossibleDConnectingPath.isOpen(pag, previous, current, adj);
             }
 
             if (pass) {
@@ -258,7 +258,7 @@ public class PossibleDConnectingPath {
             if (pag.isDefCollider(previous, current, adj)) {
                 pass = isConditionClosure;
             } else {
-                pass = !isCondition || !pag.getUnderlineModel().isUnderlineTriple(previous, current, adj) && PossibleDConnectingPath.isOpen(pag, previous, current, adj);
+                pass = !isCondition || !pag.getUnderlines().isUnderlineTriple(previous, current, adj) && PossibleDConnectingPath.isOpen(pag, previous, current, adj);
             }
 
             if (pass) {

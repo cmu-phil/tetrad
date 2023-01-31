@@ -102,7 +102,7 @@ public class Ion {
             }
             for (Triple triple : getAllTriples(pag)) {
                 if (pag.isDefNoncollider(triple.getX(), triple.getY(), triple.getZ())) {
-                    pag.getUnderlineModel().addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+                    pag.getUnderlines().addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
             }
         }
@@ -264,7 +264,7 @@ public class Ion {
                             boolean okay = true;
                             for (Triple collider : gc.getColliders()) {
 
-                                if (pag.getUnderlineModel().isUnderlineTriple(collider.getX(), collider.getY(), collider.getZ())) {
+                                if (pag.getUnderlines().isUnderlineTriple(collider.getX(), collider.getY(), collider.getZ())) {
                                     okay = false;
                                     break;
 
@@ -429,7 +429,7 @@ public class Ion {
                                     continue;
                                 }
                                 // makes each triple a noncollider
-                                pag.getUnderlineModel().addUnderlineTriple(trek.get(i - 2), trek.get(i - 1), trek.get(i));
+                                pag.getUnderlines().addUnderlineTriple(trek.get(i - 2), trek.get(i - 1), trek.get(i));
                             }
                         }
                         // stop looping once the empty set is found
@@ -496,9 +496,9 @@ public class Ion {
             }
             for (Graph outputPag : this.finalResult) {
                 if (!predictsFalseIndependence(associations, outputPag)) {
-                    Set<Triple> underlineTriples = new HashSet<>(outputPag.getUnderlineModel().getUnderLines());
+                    Set<Triple> underlineTriples = new HashSet<>(outputPag.getUnderlines().getUnderLines());
                     for (Triple triple : underlineTriples) {
-                        outputPag.getUnderlineModel().removeUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+                        outputPag.getUnderlines().removeUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
                     }
                     outputSet.add(outputPag);
                 }
@@ -675,10 +675,10 @@ public class Ion {
                     }
                 }
             }
-            for (Triple triple : pag.getUnderlineModel().getUnderLines()) {
+            for (Triple triple : pag.getUnderlines().getUnderLines()) {
                 Triple graphTriple = new Triple(graph.getNode(triple.getX().getName()), graph.getNode(triple.getY().getName()), graph.getNode(triple.getZ().getName()));
                 if (graphTriple.alongPathIn(graph)) {
-                    graph.getUnderlineModel().addUnderlineTriple(graphTriple.getX(), graphTriple.getY(), graphTriple.getZ());
+                    graph.getUnderlines().addUnderlineTriple(graphTriple.getX(), graphTriple.getY(), graphTriple.getZ());
                     this.definiteNoncolliders.add(graphTriple);
                 }
             }
@@ -826,7 +826,7 @@ public class Ion {
         Set<Triple> possibleTriples = new HashSet<>();
         for (Triple triple : getAllTriples(pag)) {
             if (pag.isAdjacentTo(triple.getX(), triple.getY()) && pag.isAdjacentTo(triple.getY(), triple.getZ())
-                    && !pag.getUnderlineModel().isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ()) &&
+                    && !pag.getUnderlines().isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ()) &&
                     !this.definiteNoncolliders.contains(triple) &&
                     !pag.isDefCollider(triple.getX(), triple.getY(), triple.getZ())) {
                 possibleTriples.add(triple);
@@ -887,7 +887,7 @@ public class Ion {
                     if ((!conditions.contains(current)) && i > 0) {
                         Triple colider = new Triple(possPath.get(i - 1), current, next);
 
-                        if (possible.getPag().getUnderlineModel().isUnderlineTriple(possPath.get(i - 1), current, next))
+                        if (possible.getPag().getUnderlines().isUnderlineTriple(possPath.get(i - 1), current, next))
                             continue;
 
                         Edge edge1 = possible.getPag().getEdge(colider.getX(), colider.getY());

@@ -340,7 +340,7 @@ public final class Dag implements Graph {
      * @return a tier ordering for the nodes in this graph.
      */
     public List<Node> getCausalOrdering() {
-        return GraphUtils.getCausalOrdering(this, this.getNodes());
+        return paths.getCausalOrdering(this.getNodes());
     }
 
     public void setHighlighted(Edge edge, boolean highlighted) {
@@ -526,8 +526,8 @@ public final class Dag implements Graph {
     }
 
     @Override
-    public UnderlineModel getUnderlineModel() {
-        return graph.getUnderlineModel();
+    public Underlines getUnderlines() {
+        return graph.getUnderlines();
     }
 
     @Override

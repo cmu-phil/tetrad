@@ -20,6 +20,51 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Finds a causal order for the given graph that is follows the order
+     * of the given initialorder as possible.
+     *
+     * @param initialOrder The order to try to get as close to as possible.
+     * @return Such a causal order.
+     */
+    public List<Node> getCausalOrdering(List<Node> initialOrder) {
+        if (graph.paths().existsDirectedCycle()) {
+            throw new IllegalArgumentException("Graph must be acyclic.");
+        }
+
+        List<Node> found = new ArrayList<>();
+        HashSet<Node> __found = new HashSet<>();
+        boolean _found = true;
+
+//        while (_found) {
+//            _found = false;
+//
+//            for (Node node : initialOrder) {
+//                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
+//                    found.add(node);
+//                    __found.add(node);
+//                    _found = true;
+//                }
+//            }
+//        }
+
+        T:
+        while (_found) {
+            _found = false;
+
+            for (Node node : initialOrder) {
+                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
+                    found.add(node);
+                    __found.add(node);
+                    _found = true;
+                    continue T;
+                }
+            }
+        }
+
+        return found;
+    }
+
+    /**
      * @return the connected components of the given graph, as a list of lists
      * of nodes.
      */
@@ -547,7 +592,7 @@ public class Paths implements TetradSerializable {
 
         boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW && e2.getProximalEndpoint(b) == Endpoint.ARROW;
 
-        if ((!collider || graph.getUnderlineModel().isUnderlineTriple(a, b, c)) && !z.contains(b)) {
+        if ((!collider || graph.getUnderlines().isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
         }
 
@@ -590,7 +635,7 @@ public class Paths implements TetradSerializable {
     private boolean reachable(Node a, Node b, Node c, List<Node> z) {
         boolean collider = graph.isDefCollider(a, b, c);
 
-        if ((!collider || graph.getUnderlineModel().isUnderlineTriple(a, b, c)) && !z.contains(b)) {
+        if ((!collider || graph.getUnderlines().isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
         }
 

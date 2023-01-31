@@ -215,7 +215,7 @@ public final class SemGraph implements Graph {
      * @throws IllegalStateException if the graph is cyclic.
      */
     public List<Node> getCausalOrdering() {
-        return GraphUtils.getCausalOrdering(this, this.getNodes());
+        return paths.getCausalOrdering(this.getNodes());
     }
 
     public void setHighlighted(Edge edge, boolean highlighted) {
@@ -304,8 +304,8 @@ public final class SemGraph implements Graph {
     }
 
     @Override
-    public UnderlineModel getUnderlineModel() {
-        return graph.getUnderlineModel();
+    public Underlines getUnderlines() {
+        return graph.getUnderlines();
     }
 
     @Override

@@ -282,7 +282,7 @@ public final class CpcStable implements GraphSearch {
                     }
                 } else {
                     Triple triple = new Triple(x, y, z);
-                    this.graph.getUnderlineModel().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.getUnderlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
             }
         }

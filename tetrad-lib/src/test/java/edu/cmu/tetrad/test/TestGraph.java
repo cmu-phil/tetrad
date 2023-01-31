@@ -64,17 +64,17 @@ public final class TestGraph {
         Set<Triple> ambiguousTriples = new HashSet<>();
         ambiguousTriples.add(pickRandomTriple(graph));
         ambiguousTriples.add(pickRandomTriple(graph));
-        graph.getUnderlineModel().setAmbiguousTriples(ambiguousTriples);
+        graph.getUnderlines().setAmbiguousTriples(ambiguousTriples);
 
         Set<Triple> underlineTriples = new HashSet<>();
         underlineTriples.add(pickRandomTriple(graph));
         underlineTriples.add(pickRandomTriple(graph));
-        graph.getUnderlineModel().setUnderLineTriples(underlineTriples);
+        graph.getUnderlines().setUnderLineTriples(underlineTriples);
 
         Set<Triple> dottedUnderlineTriples = new HashSet<>();
         dottedUnderlineTriples.add(pickRandomTriple(graph));
         dottedUnderlineTriples.add(pickRandomTriple(graph));
-        graph.getUnderlineModel().setDottedUnderLineTriples(dottedUnderlineTriples);
+        graph.getUnderlines().setDottedUnderLineTriples(dottedUnderlineTriples);
 
         Map<String, Node> nodes = new HashMap<>();
 
@@ -110,39 +110,39 @@ public final class TestGraph {
         graph.addDirectedEdge(y, z);
         graph.addDirectedEdge(z, w);
 
-        graph.getUnderlineModel().addAmbiguousTriple(x, z, w);
-        graph.getUnderlineModel().addUnderlineTriple(x, z, w);
-        graph.getUnderlineModel().addDottedUnderlineTriple(x, z, w);
+        graph.getUnderlines().addAmbiguousTriple(x, z, w);
+        graph.getUnderlines().addUnderlineTriple(x, z, w);
+        graph.getUnderlines().addDottedUnderlineTriple(x, z, w);
 
-        graph.getUnderlineModel().addUnderlineTriple(y, z, w);
-        graph.getUnderlineModel().addUnderlineTriple(y, z, x);
+        graph.getUnderlines().addUnderlineTriple(y, z, w);
+        graph.getUnderlines().addUnderlineTriple(y, z, x);
 
-        assertTrue(graph.getUnderlineModel().getAmbiguousTriples().size() == 1);
-        assertTrue(graph.getUnderlineModel().getUnderLines().size() == 3);
-        assertTrue(graph.getUnderlineModel().getDottedUnderlines().size() == 1);
+        assertTrue(graph.getUnderlines().getAmbiguousTriples().size() == 1);
+        assertTrue(graph.getUnderlines().getUnderLines().size() == 3);
+        assertTrue(graph.getUnderlines().getDottedUnderlines().size() == 1);
 
-        assertTrue(graph.getUnderlineModel().isAmbiguousTriple(x, z, w));
-        assertTrue(!graph.getUnderlineModel().isAmbiguousTriple(y, z, w));
+        assertTrue(graph.getUnderlines().isAmbiguousTriple(x, z, w));
+        assertTrue(!graph.getUnderlines().isAmbiguousTriple(y, z, w));
 
-        graph.getUnderlineModel().removeAmbiguousTriple(x, z, w);
-        graph.getUnderlineModel().removeUnderlineTriple(x, z, w);
-        graph.getUnderlineModel().removeDottedUnderlineTriple(x, z, w);
+        graph.getUnderlines().removeAmbiguousTriple(x, z, w);
+        graph.getUnderlines().removeUnderlineTriple(x, z, w);
+        graph.getUnderlines().removeDottedUnderlineTriple(x, z, w);
 
-        assertTrue(graph.getUnderlineModel().getAmbiguousTriples().size() == 0);
-        assertTrue(graph.getUnderlineModel().getUnderLines().size() == 2);
-        assertTrue(graph.getUnderlineModel().getDottedUnderlines().size() == 0);
+        assertTrue(graph.getUnderlines().getAmbiguousTriples().size() == 0);
+        assertTrue(graph.getUnderlines().getUnderLines().size() == 2);
+        assertTrue(graph.getUnderlines().getDottedUnderlines().size() == 0);
 
-        graph.getUnderlineModel().addAmbiguousTriple(x, z, w);
-        graph.getUnderlineModel().addUnderlineTriple(x, z, w);
-        graph.getUnderlineModel().addDottedUnderlineTriple(x, z, w);
+        graph.getUnderlines().addAmbiguousTriple(x, z, w);
+        graph.getUnderlines().addUnderlineTriple(x, z, w);
+        graph.getUnderlines().addDottedUnderlineTriple(x, z, w);
 
         graph.removeNode(z);
 
-        graph.getUnderlineModel().removeTriplesNotInGraph();
+        graph.getUnderlines().removeTriplesNotInGraph();
 
-        assertTrue(graph.getUnderlineModel().getAmbiguousTriples().size() == 0);
-        assertTrue(graph.getUnderlineModel().getUnderLines().size() == 0);
-        assertTrue(graph.getUnderlineModel().getDottedUnderlines().size() == 0);
+        assertTrue(graph.getUnderlines().getAmbiguousTriples().size() == 0);
+        assertTrue(graph.getUnderlines().getUnderLines().size() == 0);
+        assertTrue(graph.getUnderlines().getDottedUnderlines().size() == 0);
 
         graph.addNode(z);
 
@@ -150,20 +150,20 @@ public final class TestGraph {
         graph.addDirectedEdge(y, z);
         graph.addDirectedEdge(z, w);
 
-        graph.getUnderlineModel().addAmbiguousTriple(x, z, w);
-        graph.getUnderlineModel().addUnderlineTriple(x, z, w);
-        graph.getUnderlineModel().addDottedUnderlineTriple(x, z, w);
+        graph.getUnderlines().addAmbiguousTriple(x, z, w);
+        graph.getUnderlines().addUnderlineTriple(x, z, w);
+        graph.getUnderlines().addDottedUnderlineTriple(x, z, w);
 
-        graph.getUnderlineModel().addUnderlineTriple(y, z, w);
-        graph.getUnderlineModel().addUnderlineTriple(y, z, x);
+        graph.getUnderlines().addUnderlineTriple(y, z, w);
+        graph.getUnderlines().addUnderlineTriple(y, z, x);
 
         graph.removeEdge(z, w);
 
-        graph.getUnderlineModel().removeTriplesNotInGraph();
+        graph.getUnderlines().removeTriplesNotInGraph();
 
-        assertTrue(graph.getUnderlineModel().getAmbiguousTriples().size() == 0);
-        assertTrue(graph.getUnderlineModel().getUnderLines().size() == 1);
-        assertTrue(graph.getUnderlineModel().getDottedUnderlines().size() == 0);
+        assertTrue(graph.getUnderlines().getAmbiguousTriples().size() == 0);
+        assertTrue(graph.getUnderlines().getUnderLines().size() == 1);
+        assertTrue(graph.getUnderlines().getDottedUnderlines().size() == 0);
 
         graph.addDirectedEdge(z, w);
 
@@ -171,13 +171,13 @@ public final class TestGraph {
         triples.add(new Triple(x, z, w));
         triples.add(new Triple(x, y, z));
 
-        graph.getUnderlineModel().setAmbiguousTriples(triples);
+        graph.getUnderlines().setAmbiguousTriples(triples);
 
         triples.remove(new Triple(x, y, z));
 
-        graph.getUnderlineModel().setAmbiguousTriples(triples);
-        graph.getUnderlineModel().setUnderLineTriples(triples);
-        graph.getUnderlineModel().setDottedUnderLineTriples(triples);
+        graph.getUnderlines().setAmbiguousTriples(triples);
+        graph.getUnderlines().setUnderLineTriples(triples);
+        graph.getUnderlines().setDottedUnderLineTriples(triples);
     }
 
 
