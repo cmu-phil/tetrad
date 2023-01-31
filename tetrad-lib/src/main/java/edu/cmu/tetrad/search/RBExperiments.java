@@ -222,9 +222,12 @@ public class RBExperiments {
         DataSet data = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-        DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        Graph PAG_True = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        dagToPag.setCompleteRuleSetUsed(false);
+//        Graph PAG_True = dagToPag.convert();
+
+        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+
         PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
 
         // run RFCI to get a PAG using chi-squared test

@@ -95,10 +95,12 @@ public class TestGFci {
         gFci.setFaithfulnessAssumed(true);
         Graph outGraph = gFci.search();
 
-        DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        dagToPag.setMaxPathLength(maxPathLength);
-        Graph truePag = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        dagToPag.setCompleteRuleSetUsed(false);
+//        dagToPag.setMaxPathLength(maxPathLength);
+//        Graph truePag = dagToPag.convert();
+
+        Graph truePag = SearchGraphUtils.dagToPag(dag);
 
         outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
 
@@ -177,9 +179,11 @@ public class TestGFci {
             gfci.setFaithfulnessAssumed(true);
             Graph pag1 = gfci.search();
 
-            DagToPag dagToPag = new DagToPag(dag);
-            dagToPag.setCompleteRuleSetUsed(false);
-            Graph pag2 = dagToPag.convert();
+//            DagToPag dagToPag = new DagToPag(dag);
+//            dagToPag.setCompleteRuleSetUsed(false);
+//            Graph pag2 = dagToPag.convert();
+
+            Graph pag2 = SearchGraphUtils.dagToPag(dag);
 
             assertEquals(pag2, pag1);
         }
@@ -223,9 +227,6 @@ public class TestGFci {
         long stop = System.currentTimeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
-
-        DagToPag dagToPag = new DagToPag(g);
-        dagToPag.setVerbose(false);
     }
 
     @Test
@@ -254,9 +255,6 @@ public class TestGFci {
         long stop = System.currentTimeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
-
-        DagToPag dagToPag = new DagToPag(g);
-        dagToPag.setVerbose(false);
     }
 
     @Test

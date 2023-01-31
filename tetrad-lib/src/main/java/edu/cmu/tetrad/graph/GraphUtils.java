@@ -1616,12 +1616,16 @@ public final class GraphUtils {
      */
     public static Graph replaceNodes(Graph originalGraph, List<Node> newVariables) {
         Map<String, Node> newNodes = new HashMap<>();
+        List<Node> _newNodes = new ArrayList<>();
 
         for (Node node : newVariables) {
-            newNodes.put(node.getName(), node);
+            if (node.getNodeType() != NodeType.LATENT) {
+                newNodes.put(node.getName(), node);
+                _newNodes.add(node);
+            }
         }
 
-        Graph convertedGraph = new EdgeListGraph(newVariables);
+        Graph convertedGraph = new EdgeListGraph(_newNodes);
         convertedGraph.setGraphType(originalGraph.getGraphType());
 
         for (Edge edge : originalGraph.getEdges()) {
@@ -1630,8 +1634,8 @@ public final class GraphUtils {
 
             if (node1 == null) {
                 node1 = edge.getNode1();
-
             }
+
             if (!convertedGraph.containsNode(node1)) {
                 convertedGraph.addNode(node1);
             }
@@ -1681,8 +1685,6 @@ public final class GraphUtils {
 
             convertedGraph.addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
-
-        convertedGraph.setGraphType(EdgeListGraph.GraphType.CPDAG);
 
         return convertedGraph;
     }

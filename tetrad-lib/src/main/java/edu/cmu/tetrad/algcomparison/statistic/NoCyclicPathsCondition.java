@@ -4,40 +4,36 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
-
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 /**
- * The bidirected true positives.
- *
  * @author jdramsey
  */
-public class BidirectedTrue implements Statistic {
+public class NoCyclicPathsCondition implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "BT";
+        return "NoCyclic";
     }
 
     @Override
     public String getDescription() {
-        return "Number of estimated bidirected edges";
+        return "1 if the no cyclic paths condition passes, 0 if not";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = dagToPag(trueGraph);
+        Graph pag = estGraph;
 
-        int t = 0;
-
-        for (Edge edge : pag.getEdges()) {
-            if (Edges.isBidirectedEdge(edge)) t++;
+        for (Node n : pag.getNodes()) {
+            if (pag.existsDirectedPathFromTo(n, n)) {
+                return 0;
+            }
         }
 
-        System.out.println("True # bidirected edges = " + t);
-
-        return t;
+        return 1;
     }
 
     @Override

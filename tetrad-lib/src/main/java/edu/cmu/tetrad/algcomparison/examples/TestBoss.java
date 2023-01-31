@@ -23,65 +23,65 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmBNTPc;
-import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmPcalgPc;
-import edu.cmu.tetrad.algcomparison.algorithm.external.ExternalAlgorithmTetrad;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
-
-//import edu.cmu.tetrad.algcomparison.independence.MNLRLRT;
+import edu.cmu.tetrad.util.Params;
 
 /**
- * An example script to load in data sets and graphs from files and analyze them. The
- * files loaded must be in the same format as
+ * Test the degenerate Gaussian score.
  *
- * new Comparison().saveDataSetAndGraphs("comparison/save1", simulation, parameters);
- *
- * saves them. For other formats, specialty data loaders can be written to implement the
- * Simulation interface.
- *
- * @author jdramsey
+ * @author bandrews
  */
-public class CompareExternalAlgorithms {
+public class TestBoss {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
+        parameters.set(Params.NUM_RUNS, 10);
+        parameters.set(Params.DIFFERENT_GRAPHS, true);
+        parameters.set(Params.NUM_MEASURES, 60);
+        parameters.set(Params.AVG_DEGREE, 6);
+        parameters.set(Params.SAMPLE_SIZE, 1000);
+        parameters.set(Params.COEF_LOW, 0);
+        parameters.set(Params.COEF_HIGH, 1);
 
-        parameters.set("numRuns", 10);
+        parameters.set(Params.BOSS_ALG, 1, 2);
+
+        parameters.set(Params.PENALTY_DISCOUNT, 2);
+        parameters.set(Params.SEM_BIC_STRUCTURE_PRIOR, 0);
+        parameters.set(Params.ALPHA, 1e-2);
+
+        parameters.set("verbose", false);
 
         Statistics statistics = new Statistics();
-
-        statistics.add(new ParameterColumn("numMeasures"));
-        statistics.add(new ParameterColumn("avgDegree"));
-        statistics.add(new ParameterColumn("sampleSize"));
         statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new F1Adj());
-        statistics.add(new F1Arrow());
-        statistics.add(new F1All());
         statistics.add(new ElapsedCpuTime());
 
-        statistics.setWeight("AP", 1.0);
-        statistics.setWeight("AR", 0.5);
-        statistics.setWeight("AHP", 1.0);
-        statistics.setWeight("AHR", 0.5);
-
         Algorithms algorithms = new Algorithms();
+//        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new BOSS(new FisherZ(), new SemBicScore()));
 
-        algorithms.add(new ExternalAlgorithmTetrad("PC_(\"Peter_and_Clark\"),_Priority_Rule,_using_Fisher_Z_test,_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmPcalgPc("PC_pcalg_defaults_alpha_=_0.001"));
-        algorithms.add(new ExternalAlgorithmBNTPc("learn_struct_pdag_pc_alpha_=_0.001"));
+        Simulations simulations = new Simulations();
+        simulations.add(new SemSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
+
         comparison.setShowAlgorithmIndices(true);
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
+        comparison.setParallelized(true);
 
-        comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_1",
-                "/Users/user/causal-comparisons/condition_1",
-                algorithms, statistics, parameters);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
+
+        comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
     }
 }
 

@@ -10,17 +10,17 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author jdramsey
  */
-public class ElapsedTime implements Statistic {
+public class ElapsedCpuTime implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "E";
+        return "E-CPU";
     }
 
     @Override
     public String getDescription() {
-        return "Elapsed Time in Seconds";
+        return "Elapsed CPU Time in Seconds";
     }
 
     @Override

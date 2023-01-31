@@ -1485,7 +1485,7 @@ public final class SemIm implements IM, ISemIm {
         }
     }
 
-    public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
+    public DataSet  simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
         double errorParam1 = params.getDouble(Params.SIMULATION_PARAM1);
         double errorParam2 = params.getDouble(Params.SIMULATION_PARAM2);

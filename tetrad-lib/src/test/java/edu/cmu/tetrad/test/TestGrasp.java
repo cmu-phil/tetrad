@@ -152,7 +152,7 @@ public final class TestGrasp {
 
         params.set(Params.PENALTY_DISCOUNT, 2);
         params.set(Params.ZS_RISK_BOUND, 0.001); //, 0.01, 0.1);
-        params.set(Params.EBIC_GAMMA, 0.8);
+        params.set(Params.EBIC_GAMMA, 0.2, 0.6, 0.8);
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 3);
@@ -192,7 +192,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -335,7 +335,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -428,7 +428,7 @@ public final class TestGrasp {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new F1Adj());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setSaveData(false);
@@ -574,7 +574,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -644,7 +644,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -708,7 +708,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -756,7 +756,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -807,7 +807,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -875,7 +875,7 @@ public final class TestGrasp {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new BicEst());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -938,7 +938,7 @@ public final class TestGrasp {
         statistics.add(new SHD());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -998,7 +998,7 @@ public final class TestGrasp {
         statistics.add(new SHD());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -1061,7 +1061,7 @@ public final class TestGrasp {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new F1Adj());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -1987,7 +1987,7 @@ public final class TestGrasp {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new SHD());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -2056,7 +2056,7 @@ public final class TestGrasp {
         statistics.add(new NumberOfEdgesTrue());
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new SHD());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -2452,6 +2452,11 @@ public final class TestGrasp {
         RandomUtil.getInstance().setSeed(38482838482L);
 
         Parameters params = new Parameters();
+        params.set(Params.ALPHA, 1e-5, 0.0001, 0.001, 0.01, 0.1);
+        params.set(Params.PENALTY_DISCOUNT, 1);
+        params.set(Params.ZS_RISK_BOUND, 0.1, 0.5, 0.9);
+        params.set(Params.EBIC_GAMMA, .2, .6, .8);
+
         params.set(Params.SAMPLE_SIZE, 1000, 10000);
         params.set(Params.NUM_MEASURES, 30);
         params.set(Params.AVG_DEGREE, 6);
@@ -2466,11 +2471,11 @@ public final class TestGrasp {
         params.set(Params.NUM_RUNS, 20);
 
         params.set(Params.BOSS_ALG, 1);
-        params.set(Params.DEPTH, 3);
+        params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.POSSIBLE_DSEP_DONE, true);
-        params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, false);
+        params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
 
         // Flags
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
@@ -2480,9 +2485,7 @@ public final class TestGrasp {
 
         // default for kim et al. is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
-        params.set(Params.PENALTY_DISCOUNT, 1);
-        params.set(Params.ALPHA, 0.01);
-        params.set(Params.ZS_RISK_BOUND, 0.2);
+//        params.set(Params.ALPHA, 0.01);
         params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 3);
 
         params.set(Params.DIFFERENT_GRAPHS, true);
@@ -2492,40 +2495,40 @@ public final class TestGrasp {
         IndependenceWrapper test = new FisherZ();
 
         List<ScoreWrapper> scores = new ArrayList<>();
-        scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-        scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
-        scores.add(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore());
+//        scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+//        scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
+//        scores.add(new edu.cmu.tetrad.algcomparison.score.KimEtAlScores());
         scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
 
         List<Algorithm> algorithms = new ArrayList<>();
 
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci(test));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci(test));
-
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS(test, score));
-        }
-
+//
+////        for (ScoreWrapper score : scores) {
+////            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS(test, score));
+////        }
+//
         for (ScoreWrapper score : scores) {
             algorithms.add(new GFCI(test, score));
         }
-
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new BFCI(test, score));
-        }
-
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_1(test, score));
-        }
+//
+//        for (ScoreWrapper score : scores) {
+//            algorithms.add(new BFCI(test, score));
+//        }
+//
+//        for (ScoreWrapper score : scores) {
+//            algorithms.add(new LVSWAP_1(test, score));
+//        }
 
         for (ScoreWrapper score : scores) {
             algorithms.add(new LVSWAP_2a(test, score));
         }
 
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_2b(test, score));
-        }
+//        for (ScoreWrapper score : scores) {
+//            algorithms.add(new LVSWAP_2b(test, score));
+//        }
 
 
 //            Collections.shuffle(algorithms);
@@ -2541,29 +2544,44 @@ public final class TestGrasp {
 
         Statistics statistics = new Statistics();
 
+        statistics.add(new LegalPag());
+//        statistics.add(new NoAlmostCyclicPathsCondition());
+//        statistics.add(new NoCyclicPathsCondition());
+        statistics.add(new NoAlmostCyclicPathsInMagCondition());
+        statistics.add(new NoCyclicPathsInMagCondition());
+        statistics.add(new MaximalityCondition());
+
+        statistics.add(new ParameterColumn(Params.ALPHA));
+        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.DEPTH));
+        statistics.add(new ParameterColumn(Params.ZS_RISK_BOUND));
+//        statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
 
-        // Joe table.
+//        // Joe table.
+//        statistics.add(new LegalPag());
+//        statistics.add(new NumDirectedEdges());
+//        statistics.add(new TrueDagPrecisionTails());
+//        statistics.add(new TrueDagPrecisionArrow());
+//        statistics.add(new NumDirectedShouldBePartiallyDirected());
         statistics.add(new NumDirectedEdges());
-        statistics.add(new TrueDagPrecisionTails());
-        statistics.add(new TrueDagPrecisionArrow());
-        statistics.add(new NumDirectedShouldBePartiallyDirected());
         statistics.add(new NumBidirectedEdgesEst());
+        statistics.add(new TrueDagPrecisionTails());
         statistics.add(new BidirectedLatentPrecision());
+//
+//        // Greg table
+//        statistics.add(new AncestorPrecision());
+//        statistics.add(new AncestorRecall());
+//        statistics.add(new AncestorF1());
+//        statistics.add(new SemidirectedPrecision());
+//        statistics.add(new SemidirectedRecall());
+//        statistics.add(new SemidirectedPathF1());
+//        statistics.add(new NoSemidirectedPrecision());
+//        statistics.add(new NoSemidirectedRecall());
+//        statistics.add(new NoSemidirectedF1());
 
-        // Greg table
-        statistics.add(new AncestorPrecision());
-        statistics.add(new AncestorRecall());
-        statistics.add(new AncestorF1());
-        statistics.add(new SemidirectedPrecision());
-        statistics.add(new SemidirectedRecall());
-        statistics.add(new SemidirectedPathF1());
-        statistics.add(new NoSemidirectedPrecision());
-        statistics.add(new NoSemidirectedRecall());
-        statistics.add(new NoSemidirectedF1());
 
-        statistics.add(new ElapsedTime());
+//        statistics.add(new ElapsedTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -2850,7 +2868,7 @@ public final class TestGrasp {
             statistics.add(new ArrowheadRecall());
             statistics.add(new ArrowheadPrecisionCommonEdges());
             statistics.add(new ArrowheadRecallCommonEdges());
-            statistics.add(new ElapsedTime());
+            statistics.add(new ElapsedCpuTime());
 
             Comparison comparison = new Comparison();
             comparison.setShowAlgorithmIndices(true);
@@ -2915,7 +2933,7 @@ public final class TestGrasp {
             statistics.add(new ArrowheadRecall());
             statistics.add(new ArrowheadPrecisionCommonEdges());
             statistics.add(new ArrowheadRecallCommonEdges());
-            statistics.add(new ElapsedTime());
+            statistics.add(new ElapsedCpuTime());
 
             Comparison comparison = new Comparison();
             comparison.setShowAlgorithmIndices(true);

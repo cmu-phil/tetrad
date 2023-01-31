@@ -1,34 +1,37 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.BidirectedConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
-
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 
 /**
- * The bidirected false negatives.
- *
  * @author jdramsey
  */
-public class BidirectedFP implements Statistic {
+public class NoCyclicPathsInMagCondition implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "BFP";
+        return "NoCyclicInMag";
     }
 
     @Override
     public String getDescription() {
-        return "Number of false positive bidirected edges";
+        return "1 if the no cyclic paths condition passes in MAG, 0 if not";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = dagToPag(trueGraph);
-        BidirectedConfusion confusion = new BidirectedConfusion(pag, estGraph);
-        return confusion.getFp();
+        Graph mag = SearchGraphUtils.pagToMag(estGraph);
+
+        for (Node n : mag.getNodes()) {
+            if (mag.existsDirectedPathFromTo(n, n)) {
+                return 0;
+            }
+        }
+
+        return 1;
     }
 
     @Override

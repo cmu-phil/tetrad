@@ -121,7 +121,7 @@ public class TimeoutComparisonTest {
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
         statistics.add(new SHD());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         return statistics;
     }

@@ -67,7 +67,7 @@ public class TestConditionalGaussianSimulation {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AHP", 1.0);
         statistics.setWeight("AHR", 1.0);
