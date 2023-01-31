@@ -535,13 +535,17 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public List<Node> getDescendants(List<Node> nodes) {
-        Set<Node> descendants = new HashSet<>();
+        Set<Node> ancestors = new HashSet<>();
 
-        for (Node node : nodes) {
-            collectDescendantsVisit(node, descendants);
+        for (Node n : getNodes()) {
+            for (Node m : nodes) {
+                if (isDescendentOf(n, m)) {
+                    ancestors.add(n);
+                }
+            }
         }
 
-        return new LinkedList<>(descendants);
+        return new ArrayList<>(ancestors);
     }
 
     /**
@@ -1561,37 +1565,6 @@ public class EdgeListGraph implements Graph {
     }
 
     //===============================PRIVATE METHODS======================//
-
-
-    private void collectDescendantsVisit(Node node, Set<Node> descendants) {
-        descendants.add(node);
-        List<Node> children = getChildren(node);
-
-        if (!children.isEmpty()) {
-            for (Node child : children) {
-                doChildClosureVisit(child, descendants);
-            }
-        }
-    }
-
-    /**
-     * closure under the child relation
-     */
-    private void doChildClosureVisit(Node node, Set<Node> closure) {
-        if (!closure.contains(node)) {
-            closure.add(node);
-
-            for (Edge edge1 : getEdges(node)) {
-                Node sub = Edges.traverseDirected(node, edge1);
-
-                if (sub == null) {
-                    continue;
-                }
-
-                doChildClosureVisit(sub, closure);
-            }
-        }
-    }
 
     /**
      * @return this object.
