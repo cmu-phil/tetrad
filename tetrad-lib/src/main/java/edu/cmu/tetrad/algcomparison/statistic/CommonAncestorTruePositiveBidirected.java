@@ -43,8 +43,8 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
 
         for (Node c : trueGraph.getNodes()) {
 //            if (c == edge.getNode1() || c == edge.getNode2()) continue;
-            if (trueGraph.getPaths().isAncestorOf(c, edge.getNode1())
-                    && trueGraph.getPaths().isAncestorOf(c, edge.getNode2())) {
+            if (trueGraph.paths().isAncestorOf(c, edge.getNode1())
+                    && trueGraph.paths().isAncestorOf(c, edge.getNode2())) {
                 return true;
             }
         }

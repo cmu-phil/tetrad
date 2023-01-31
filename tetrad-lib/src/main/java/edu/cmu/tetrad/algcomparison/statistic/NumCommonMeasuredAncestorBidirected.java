@@ -50,8 +50,8 @@ public class NumCommonMeasuredAncestorBidirected implements Statistic {
     }
 
     public static boolean existsCommonAncestor(Graph trueGraph, Edge edge) {
-        List<Node> nodes = trueGraph.getPaths().getAncestors(Collections.singletonList(edge.getNode1()));
-        nodes.retainAll(trueGraph.getPaths().getAncestors(Collections.singletonList(edge.getNode2())));
+        List<Node> nodes = trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode1()));
+        nodes.retainAll(trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode2())));
         return !nodes.isEmpty();
     }
 }

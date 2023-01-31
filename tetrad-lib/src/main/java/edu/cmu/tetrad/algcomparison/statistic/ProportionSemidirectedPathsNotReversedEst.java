@@ -35,8 +35,8 @@ public class ProportionSemidirectedPathsNotReversedEst implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (estGraph.getPaths().existsSemiDirectedPathFromTo(x, y)) {
-                    if (!trueGraph.getPaths().existsSemiDirectedPathFromTo(y, x)) {
+                if (estGraph.paths().existsSemiDirectedPathFromTo(x, y)) {
+                    if (!trueGraph.paths().existsSemiDirectedPathFromTo(y, x)) {
                         tp++;
                     } else {
                         fp++;

@@ -369,7 +369,7 @@ public interface Graph extends TetradSerializable {
 
     UnderlineModel getUnderlineModel();
 
-    Paths getPaths();
+    Paths paths();
 
     /**
      * @return a tier orderering, for acyclic graphs. Undefined for cyclic graphs.

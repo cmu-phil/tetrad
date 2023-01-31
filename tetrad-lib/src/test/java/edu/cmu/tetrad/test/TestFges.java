@@ -484,7 +484,7 @@ public class TestFges {
     }
 
     private boolean ancestral(Node x, Node y, Graph graph) {
-        return graph.getPaths().isAncestorOf(x, y) || graph.getPaths().isAncestorOf(y, x);
+        return graph.paths().isAncestorOf(x, y) || graph.paths().isAncestorOf(y, x);
     }
 
     /**
@@ -1428,7 +1428,7 @@ public class TestFges {
 
             Graph dag = dagFromCPDAG(CPDAG);
 
-            assertFalse(dag.getPaths().existsDirectedCycle());
+            assertFalse(dag.paths().existsDirectedCycle());
         }
     }
 

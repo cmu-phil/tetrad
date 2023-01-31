@@ -2,9 +2,6 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-
-import java.util.List;
 
 /**
  * @author jdramsey
@@ -31,9 +28,9 @@ public class NoAlmostCyclicPathsCondition implements Statistic {
             Node y = e.getNode2();
 
             if (Edges.isBidirectedEdge(e)) {
-                if (pag.getPaths().existsDirectedPathFromTo(x, y)) {
+                if (pag.paths().existsDirectedPathFromTo(x, y)) {
                     return 0;
-                } else if (pag.getPaths().existsDirectedPathFromTo(y, x)) {
+                } else if (pag.paths().existsDirectedPathFromTo(y, x)) {
                     return 0;
                 }
             }

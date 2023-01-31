@@ -199,7 +199,7 @@ public final class HbsmsGes implements Hbsms {
 
                         tryInsert(_x, _y, tSubset, graph2);
 
-                        if (graph2.getPaths().existsDirectedCycle()) {
+                        if (graph2.paths().existsDirectedCycle()) {
                             continue;
                         }
 

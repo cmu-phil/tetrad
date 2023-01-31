@@ -41,7 +41,7 @@ public class TrueDagRecallTails implements Statistic {
 
                 if (edge == null) continue;
 
-                if (trueGraph.getPaths().isAncestorOf(x, y)) {
+                if (trueGraph.paths().isAncestorOf(x, y)) {
                     if (Edges.directedEdge(x, y).equals(edge)) {
                         tp++;
                     } else {

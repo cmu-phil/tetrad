@@ -94,7 +94,7 @@ public final class Dag implements Graph {
      *                                  reason be converted into a DAG.
      */
     public Dag(Graph graph) throws IllegalArgumentException {
-        if (graph.getPaths().existsDirectedCycle()) {
+        if (graph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException("That graph was not acyclic.");
         }
 
@@ -201,7 +201,7 @@ public final class Dag implements Graph {
     }
 
     public boolean defNonDescendent(Node node1, Node node2) {
-        return getGraph().getPaths().defNonDescendent(node1, node2);
+        return getGraph().paths().defNonDescendent(node1, node2);
     }
 
     public boolean existsDirectedCycle() {
@@ -209,7 +209,7 @@ public final class Dag implements Graph {
     }
 
     public boolean defVisible(Edge edge) {
-        return getGraph().getPaths().defVisible(edge);
+        return getGraph().paths().defVisible(edge);
     }
 
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
@@ -221,7 +221,7 @@ public final class Dag implements Graph {
     }
 
     public boolean existsTrek(Node node1, Node node2) {
-        return getGraph().getPaths().existsTrek(node1, node2);
+        return getGraph().paths().existsTrek(node1, node2);
     }
 
     public boolean equals(Object o) {
@@ -531,7 +531,7 @@ public final class Dag implements Graph {
     }
 
     @Override
-    public Paths getPaths() {
+    public Paths paths() {
         return paths;
     }
 

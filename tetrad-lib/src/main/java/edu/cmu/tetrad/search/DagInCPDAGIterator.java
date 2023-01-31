@@ -202,9 +202,9 @@ public class DagInCPDAGIterator {
             Node node1 = this.edge.getNode1();
             Node node2 = this.edge.getNode2();
 
-            return (!this.triedLeft && !this.graph.getPaths().isAncestorOf(node1, node2) &&
+            return (!this.triedLeft && !this.graph.paths().isAncestorOf(node1, node2) &&
                     !getKnowledge().isForbidden(node2.getName(), node1.getName())) ||
-                    (!this.triedRight && !this.graph.getPaths().isAncestorOf(node2, node1) &&
+                    (!this.triedRight && !this.graph.paths().isAncestorOf(node2, node1) &&
                             !getKnowledge().isForbidden(node1.getName(), node2.getName()));
 
         }
@@ -214,7 +214,7 @@ public class DagInCPDAGIterator {
                 return null;
             }
 
-            if (!this.triedLeft && !this.graph.getPaths().isAncestorOf(this.edge.getNode1(), this.edge.getNode2()) &&
+            if (!this.triedLeft && !this.graph.paths().isAncestorOf(this.edge.getNode1(), this.edge.getNode2()) &&
                     !getKnowledge().isForbidden(this.edge.getNode2().getName(), this.edge.getNode1().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
@@ -247,7 +247,7 @@ public class DagInCPDAGIterator {
                         isAllowArbitraryOrientation());
             }
 
-            if (!this.triedRight && !this.graph.getPaths().isAncestorOf(this.edge.getNode2(), this.edge.getNode1()) &&
+            if (!this.triedRight && !this.graph.paths().isAncestorOf(this.edge.getNode2(), this.edge.getNode1()) &&
                     !getKnowledge().isForbidden(this.edge.getNode1().getName(), this.edge.getNode2().getName())) {
                 Set<Edge> edges = new HashSet<>();
 

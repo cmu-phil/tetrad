@@ -32,8 +32,8 @@ public class NonancestorRecall implements Statistic {
         for (Node x : nodes) {
             for (Node y : nodes) {
 //                if (x == y) continue;
-                if (!trueGraph.getPaths().isAncestorOf(x, y)) {
-                    if (!estGraph.getPaths().isAncestorOf(x, y)) {
+                if (!trueGraph.paths().isAncestorOf(x, y)) {
+                    if (!estGraph.paths().isAncestorOf(x, y)) {
                         tp++;
                     } else {
                         fn++;

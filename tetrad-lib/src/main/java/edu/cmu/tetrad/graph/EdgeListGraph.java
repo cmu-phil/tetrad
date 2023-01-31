@@ -550,7 +550,7 @@ public class EdgeListGraph implements Graph {
     }
 
     @Override
-    public Paths getPaths() {
+    public Paths paths() {
         return paths;
     }
 

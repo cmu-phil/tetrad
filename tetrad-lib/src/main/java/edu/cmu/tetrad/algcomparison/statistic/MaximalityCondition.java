@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -39,7 +37,7 @@ public class MaximalityCondition implements Statistic {
                 Node y = nodes.get(j);
 
                 if (!mag.isAdjacentTo(x, y)) {
-                    if (mag.getPaths().existsInducingPath(x, y)) {
+                    if (mag.paths().existsInducingPath(x, y)) {
                         return 0.0;
                     }
                 }

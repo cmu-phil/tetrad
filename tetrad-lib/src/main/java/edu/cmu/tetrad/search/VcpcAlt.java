@@ -338,7 +338,7 @@ public final class VcpcAlt implements GraphSearch {
 
             MeekRules rules = new MeekRules();
             rules.orientImplied(graph);
-            if (graph.getPaths().existsDirectedCycle()) {
+            if (graph.paths().existsDirectedCycle()) {
                 patterns.remove(graph);
             }
         }

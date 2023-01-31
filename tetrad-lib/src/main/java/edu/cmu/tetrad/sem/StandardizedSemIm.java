@@ -135,7 +135,7 @@ public class StandardizedSemIm implements Simulator {
         this.semGraph.setShowErrorTerms(true);
         this.sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
-        if (this.semGraph.getPaths().existsDirectedCycle()) {
+        if (this.semGraph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException("The cyclic case is not handled.");
         }
 

@@ -399,7 +399,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             System.out.println(this.bayesIm.getDag());
         }
 
-        List<Node> dNodes = dag.getPaths().getAncestors(sNodes);
+        List<Node> dNodes = dag.paths().getAncestors(sNodes);
 
         // create a Bayes IM with the dag G_dNodes
         Dag gD = new Dag(this.bayesIm.getDag().subgraph(dNodes));
@@ -804,7 +804,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                            QList qT) {
         Dag graphT = new Dag(this.bayesIm.getDag().subgraph(nodesT));
 
-        List<Node> nodesA = graphT.getPaths().getAncestors(nodesC);
+        List<Node> nodesA = graphT.paths().getAncestors(nodesC);
 
         int nNodes = this.bayesIm.getNumNodes();
         QList qC = new QList(nNodes);

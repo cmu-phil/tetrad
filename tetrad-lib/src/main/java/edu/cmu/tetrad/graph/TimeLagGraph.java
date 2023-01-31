@@ -484,7 +484,7 @@ public class TimeLagGraph implements Graph {
     }
 
     @Override
-    public Paths getPaths() {
+    public Paths paths() {
         return this.paths;
     }
 

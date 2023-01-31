@@ -32,7 +32,6 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -188,7 +187,7 @@ public class IndTestDSep implements IndependenceTest {
         boolean dSeparated;
 
         if (graph != null) {
-            dSeparated = !getGraph().getPaths().isDConnectedTo(x, y, z);
+            dSeparated = !getGraph().paths().isDConnectedTo(x, y, z);
         } else {
             dSeparated = independenceFacts.isIndependent(x, y, z);
         }
@@ -231,7 +230,7 @@ public class IndTestDSep implements IndependenceTest {
             }
         }
 
-        return getGraph().getPaths().isDSeparatedFrom(x, y, z);
+        return getGraph().paths().isDSeparatedFrom(x, y, z);
     }
 
     /**

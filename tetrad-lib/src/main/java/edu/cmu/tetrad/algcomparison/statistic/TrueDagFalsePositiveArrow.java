@@ -6,7 +6,6 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -47,13 +46,13 @@ public class TrueDagFalsePositiveArrow implements Statistic {
 
         for (Edge edge : estGraph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.ARROW) {
-                if (trueGraph.getPaths().isAncestorOf(edge.getNode1(), edge.getNode2())) {
+                if (trueGraph.paths().isAncestorOf(edge.getNode1(), edge.getNode2())) {
                     fp++;
                 }
             }
 
             if (edge.getEndpoint2() == Endpoint.ARROW) {
-                if (trueGraph.getPaths().isAncestorOf(edge.getNode2(), edge.getNode1())) {
+                if (trueGraph.paths().isAncestorOf(edge.getNode2(), edge.getNode1())) {
                     fp++;
                 }
             }

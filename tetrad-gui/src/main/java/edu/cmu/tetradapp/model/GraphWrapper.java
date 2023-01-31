@@ -202,7 +202,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         Map<String, String> paramSettings = new HashMap<>();
         paramSettings.put("# Vars", Integer.toString(getGraph().getNumNodes()));
         paramSettings.put("# Edges", Integer.toString(getGraph().getNumEdges()));
-        if (getGraph().getPaths().existsDirectedCycle()) paramSettings.put("Cyclic", null);
+        if (getGraph().paths().existsDirectedCycle()) paramSettings.put("Cyclic", null);
         return paramSettings;
     }
 

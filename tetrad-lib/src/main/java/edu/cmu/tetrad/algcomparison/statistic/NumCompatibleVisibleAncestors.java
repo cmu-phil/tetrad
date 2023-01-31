@@ -41,7 +41,7 @@ public class NumCompatibleVisibleAncestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.getPaths().isAncestorOf(x, y)) {
+                if (trueGraph.paths().isAncestorOf(x, y)) {
                     tp++;
                 } else {
                     fp++;

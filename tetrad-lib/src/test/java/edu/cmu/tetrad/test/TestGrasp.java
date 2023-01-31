@@ -2802,8 +2802,8 @@ public final class TestGrasp {
             List<Node> parents = graph.getParents(x);
 
             for (Node y : graph.getNodes()) {
-                if (!graph.getPaths().isDescendentOf(y, x) && !parents.contains(y)) {
-                    if (!graph.getPaths().isDSeparatedFrom(x, y, parents)) {
+                if (!graph.paths().isDescendentOf(y, x) && !parents.contains(y)) {
+                    if (!graph.paths().isDSeparatedFrom(x, y, parents)) {
                         System.out.println("Failure! " + SearchLogUtils.dependenceFactMsg(x, y, parents, 1.0));
                     }
                 }

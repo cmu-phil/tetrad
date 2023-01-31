@@ -243,7 +243,7 @@ public final class ExploreAutisticsNeurotypicals {
         Node n2 = trek.get(trek.size() - 1);
 
         for (Node n : trek) {
-            if (graph.getPaths().isAncestorOf(n, n1) && graph.getPaths().isAncestorOf(n, n2)) {
+            if (graph.paths().isAncestorOf(n, n1) && graph.paths().isAncestorOf(n, n2)) {
                 return n;
             }
         }

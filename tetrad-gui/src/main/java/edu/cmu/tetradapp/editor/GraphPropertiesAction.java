@@ -121,7 +121,7 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
 //            else if (Edges.isUndirectedEdge(edge)) numUndirectedEdges++;
 //        }
 
-        boolean cyclic = getGraph().getPaths().existsDirectedCycle();
+        boolean cyclic = getGraph().paths().existsDirectedCycle();
 
         int numAdjacencies = 0;
 

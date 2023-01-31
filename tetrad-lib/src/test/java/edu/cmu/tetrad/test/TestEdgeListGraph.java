@@ -76,11 +76,11 @@ public final class TestEdgeListGraph {
         assertEquals(children, Collections.singletonList(this.x2));
         assertEquals(parents, Collections.singletonList(this.x3));
 
-        assertTrue(this.graph.getPaths().isDConnectedTo(this.x1, this.x3, Collections.EMPTY_LIST));
+        assertTrue(this.graph.paths().isDConnectedTo(this.x1, this.x3, Collections.EMPTY_LIST));
         this.graph.removeNode(this.x2);
 
         // No cycles.
-        assertTrue(!this.graph.getPaths().existsDirectedCycle());
+        assertTrue(!this.graph.paths().existsDirectedCycle());
 
         // Copy the graph.
         Graph graph2 = new EdgeListGraph(this.graph);
@@ -102,7 +102,7 @@ public final class TestEdgeListGraph {
         this.graph.addNode(this.x4);
         this.graph.addNode(this.x5);
 
-        assertTrue(!this.graph.getPaths().existsDirectedCycle());
+        assertTrue(!this.graph.paths().existsDirectedCycle());
 
         this.graph.addDirectedEdge(this.x1, this.x3);
 
@@ -122,7 +122,7 @@ public final class TestEdgeListGraph {
         this.graph.setEndpoint(this.x4, this.x3, Endpoint.ARROW);
         this.graph.setEndpoint(this.x3, this.x4, Endpoint.ARROW);
 
-        assertTrue(this.graph.getPaths().existsDirectedCycle());
+        assertTrue(this.graph.paths().existsDirectedCycle());
     }
 
     @Test

@@ -38,8 +38,8 @@ public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
     }
 
     public static boolean existsLatentCommonAncestor(Graph trueGraph, Edge edge) {
-        List<Node> nodes = trueGraph.getPaths().getAncestors(Collections.singletonList(edge.getNode1()));
-        nodes.retainAll(trueGraph.getPaths().getAncestors(Collections.singletonList(edge.getNode2())));
+        List<Node> nodes = trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode1()));
+        nodes.retainAll(trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode2())));
 
         for (Node c : nodes) {
             if (c.getNodeType() == NodeType.LATENT) {

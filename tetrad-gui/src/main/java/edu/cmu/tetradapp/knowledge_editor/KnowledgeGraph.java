@@ -99,7 +99,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     }
 
     @Override
-    public Paths getPaths() {
+    public Paths paths() {
         return this.paths;
     }
 

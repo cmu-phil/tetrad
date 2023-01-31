@@ -43,7 +43,7 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
     public PagFromDagGraphWrapper(Graph graph) {
         super(graph);
 
-        if (graph.getPaths().existsDirectedCycle()) {
+        if (graph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 

@@ -296,7 +296,7 @@ public class LagGraph implements Graph {
     }
 
     @Override
-    public Paths getPaths() {
+    public Paths paths() {
         return this.paths;
     }
 

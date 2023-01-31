@@ -377,7 +377,7 @@ public class Ion {
                         }
                         // reject if null, predicts false independencies or has cycle
                         if (predictsFalseIndependence(associations, changed)
-                                || changed.getPaths().existsDirectedCycle()) {
+                                || changed.paths().existsDirectedCycle()) {
                             reject.add(changed);
                         }
                         // makes orientations preventing definite noncolliders from becoming colliders
@@ -767,7 +767,7 @@ public class Ion {
                         for (Node node : subset) {
                             pagSubset.add(pag.getNode(node.getName()));
                         }
-                        if (pag.getPaths().isDSeparatedFrom(pagX, pagY, new ArrayList<>(pagSubset))) {
+                        if (pag.paths().isDSeparatedFrom(pagX, pagY, new ArrayList<>(pagSubset))) {
                             if (!pag.isAdjacentTo(pagX, pagY)) {
                                 addIndep = true;
                                 indep.addMoreZ(new ArrayList<>(subset));
@@ -813,7 +813,7 @@ public class Ion {
     private boolean predictsFalseIndependence(Set<IonIndependenceFacts> associations, Graph pag) {
         for (IonIndependenceFacts assocFact : associations)
             for (List<Node> conditioningSet : assocFact.getZ())
-                if (pag.getPaths().isDSeparatedFrom(
+                if (pag.paths().isDSeparatedFrom(
                         assocFact.getX(), assocFact.getY(), conditioningSet))
                     return true;
         return false;
@@ -1215,7 +1215,7 @@ public class Ion {
         if ((graph.isAdjacentTo(a, c)) &&
                 (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
                 (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
-            if (graph.getPaths().isDirectedFromTo(a, b) && graph.getPaths().isDirectedFromTo(b, c)) {
+            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
                 graph.setEndpoint(c, a, Endpoint.TAIL);
                 this.changeFlag = true;
             }
