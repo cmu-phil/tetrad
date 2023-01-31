@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -70,29 +71,52 @@ public class PagSamplingRfci implements GraphSearch {
     private List<Graph> runSearches() {
         List<Graph> graphs = new LinkedList<>();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(numRandomizedSearchModels);
+        ExecutorService pool = Executors.newFixedThreadPool(numRandomizedSearchModels);
         try {
             while (graphs.size() < numRandomizedSearchModels) {
                 List<Callable<Graph>> callableTasks = createSearchTasks(numRandomizedSearchModels - graphs.size());
-                List<Future<Graph>> futures = executorService.invokeAll(callableTasks);
-                futures.forEach(e -> {
+                List<Future<Graph>> completedTasks = pool.invokeAll(callableTasks);
+                for (Future<Graph> completedTask : completedTasks) {
                     try {
-                        Graph graph = e.get();
-                        if (SearchGraphUtils.isLegalPag(graph).isLegalPag()) {
+                        Graph graph = completedTask.get();
+                        if (graph != null && SearchGraphUtils.isLegalPag(graph).isLegalPag()) {
                             graphs.add(graph);
                         }
                     } catch (ExecutionException | InterruptedException exception) {
                         exception.printStackTrace(System.err);
                     }
-                });
+                }
             }
         } catch (InterruptedException exception) {
             exception.printStackTrace(System.err);
         } finally {
-            executorService.shutdown();
+            shutdownAndAwaitTermination(pool);
         }
 
         return graphs;
+    }
+
+    /**
+     * Call shutdown to reject incoming tasks, and then calling shutdownNow, if
+     * necessary, to cancel any lingering tasks.
+     *
+     * @param pool
+     * @see
+     * https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html
+     */
+    private void shutdownAndAwaitTermination(ExecutorService pool) {
+        pool.shutdown();
+        try {
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                pool.shutdownNow();
+                if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                    System.err.println("Pool did not terminate");
+                }
+            }
+        } catch (InterruptedException ie) {
+            pool.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     public Knowledge getKnowledge() {
@@ -174,19 +198,24 @@ public class PagSamplingRfci implements GraphSearch {
 
         @Override
         public Graph call() throws Exception {
-            IndTestProbabilistic independenceTest = new IndTestProbabilistic(dataSet);
-            independenceTest.setThreshold(threshold);
-            independenceTest.setCutoff(cutoff);
-            independenceTest.setPriorEquivalentSampleSize(priorEquivalentSampleSize);
+            try {
+                IndTestProbabilistic independenceTest = new IndTestProbabilistic(dataSet);
+                independenceTest.setThreshold(threshold);
+                independenceTest.setCutoff(cutoff);
+                independenceTest.setPriorEquivalentSampleSize(priorEquivalentSampleSize);
 
-            Rfci rfci = new Rfci(independenceTest);
-            rfci.setKnowledge(knowledge);
-            rfci.setDepth(depth);
-            rfci.setMaxPathLength(maxPathLength);
-            rfci.setCompleteRuleSetUsed(completeRuleSetUsed);
-            rfci.setVerbose(verbose);
+                Rfci rfci = new Rfci(independenceTest);
+                rfci.setDepth(depth);
+                rfci.setMaxPathLength(maxPathLength);
+                rfci.setCompleteRuleSetUsed(completeRuleSetUsed);
+                rfci.setVerbose(verbose);
 
-            return rfci.search();
+                return rfci.search();
+            } catch (Exception exception) {
+                exception.printStackTrace(System.err);
+
+                return null;
+            }
         }
 
     }
