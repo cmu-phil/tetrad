@@ -269,10 +269,10 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap2b() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        BossDC alg = new BossDC(scorer);
-        alg.setAlgType(bossAlgType);
-//        alg.setUseScore(useScore);
-//        alg.setUseRaskuttiUhler(useRaskuttiUhler);
+        Boss alg = new Boss(scorer);
+        alg.setAlgType(Boss.AlgType.BOSS2);
+        alg.setUseScore(useScore);
+        alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
         alg.setDepth(depth);
         alg.setNumStarts(numStarts);
