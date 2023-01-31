@@ -31,7 +31,7 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.*;
+import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
@@ -124,7 +124,7 @@ public final class GFci implements GraphSearch {
         modifiedR0(fgesGraph, sepsets);
 
         if (this.possibleDsepSearchDone) {
-            removeByPossibleDsep(graph, independenceTest, null);
+            graph.paths().removeByPossibleDsep(independenceTest, null);
         }
 
 //        retainUnshieldedColliders(this.graph);

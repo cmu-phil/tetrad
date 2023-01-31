@@ -2371,7 +2371,7 @@ public final class TestGrasp {
         SemGraph graph = imsd.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
 
-        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(graph, x1, x4, -1);
+        List<List<Node>> paths = graph.paths().allDirectedPathsFromTo(x1, x4, -1);
 
         if (paths.size() < 2) return false;
 
@@ -3386,7 +3386,7 @@ public final class TestGrasp {
 
                 System.out.println("<x, y> = <" + x + ", " + y + ">");
 
-                List<List<Node>> treks = GraphUtils.treks(graph, x, y, 4);
+                List<List<Node>> treks = graph.paths().treks(x, y, 4);
 
                 if (treks.size() >= 2) {
                     IndependenceFact fact = new IndependenceFact(x, y, new ArrayList<>());
@@ -3395,7 +3395,7 @@ public final class TestGrasp {
 
                     count++;
                 } else {
-                    List<List<Node>> paths = GraphUtils.allPathsFromTo(graph, x, y, 4);
+                    List<List<Node>> paths = graph.paths().allPathsFromTo(x, y, 4);
 
                     if (paths.size() >= 1) {
                         List<List<Node>> nonTrekPaths = new ArrayList<>();

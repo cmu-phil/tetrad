@@ -118,8 +118,7 @@ public final class KamadaKawaiLayout {
         getMonitor().setMillisToPopup(0);
         getMonitor().setProgress(0);
 
-        List<List<Node>> components =
-                GraphUtils.connectedComponents(this.graph);
+        List<List<Node>> components = this.graph.paths().connectedComponents();
 
         components.sort((o1, o2) -> {
             int i1 = o1.size();

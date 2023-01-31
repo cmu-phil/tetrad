@@ -451,7 +451,7 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public List<Node> getSepset(Node x, Node y) {
-        return GraphUtils.getSepset(x, y, this);
+        return paths.getSepset(x, y);
     }
 
     public boolean isDSeparatedFrom(Node x, Node y, List<Node> z) {

@@ -148,7 +148,7 @@ public final class DagToPag {
 
                 if (graph.isAdjacentTo(n1, n2)) continue;
 
-                List<Node> inducingPath = GraphUtils.getInducingPath(n1, n2, this.dag);
+                List<Node> inducingPath =  this.dag.paths().getInducingPath(n1, n2);
 
                 boolean exists = inducingPath != null;
 
@@ -247,7 +247,7 @@ public final class DagToPag {
             if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
 //            if (!edge.pointsTowards(x)) continue;
 
-            if (GraphUtils.existsInducingPathVisit(graph, x, b, x, y, path)) {
+            if (graph.paths().existsInducingPathVisit(x, b, x, y, path)) {
                 return true;
             }
         }

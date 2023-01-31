@@ -85,8 +85,7 @@ public final class FruchtermanReingoldLayout {
     public void doLayout() {
         GraphUtils.circleLayout(this.graph, 300, 300, 200);
 
-        List<List<Node>> components =
-                GraphUtils.connectedComponents(this.graph());
+        List<List<Node>> components = this.graph.paths().connectedComponents();
 
         components.sort((o1, o2) -> {
             int i1 = o1.size();

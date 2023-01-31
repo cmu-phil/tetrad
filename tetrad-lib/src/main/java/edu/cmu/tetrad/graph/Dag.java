@@ -366,7 +366,7 @@ public final class Dag implements Graph {
     @Override
     public List<Node> getSepset(Node n1, Node n2) {
 //        return graph.getSepset(n1, n2);
-        return GraphUtils.getSepset(n1, n2, this);
+        return paths.getSepset(n1, n2);
     }
 
     @Override
@@ -379,7 +379,7 @@ public final class Dag implements Graph {
     }
 
     public boolean isAncestorOf(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
+        return node1 == node2 || paths.existsDirectedPathFromTo(node1, node2);
     }
 
     public boolean isParentOf(Node node1, Node node2) {

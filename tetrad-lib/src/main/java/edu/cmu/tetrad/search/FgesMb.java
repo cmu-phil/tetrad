@@ -972,7 +972,7 @@ public final class FgesMb {
                             adj = new ArrayList<>(g);
                         } else if (FgesMb.this.mode == Mode.allowUnfaithfulness) {
                             HashSet<Node> D = new HashSet<>(
-                                    GraphUtils.getDconnectedVars(x, new ArrayList<>(), FgesMb.this.graph));
+                                    FgesMb.this.graph.paths().getDconnectedVars(x, new ArrayList<>()));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {

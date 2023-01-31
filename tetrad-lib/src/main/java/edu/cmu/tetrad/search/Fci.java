@@ -30,8 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
-
 /**
  * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
@@ -205,7 +203,7 @@ public final class Fci implements GraphSearch {
 
         if (isPossibleDsepSearchDone()) {
             new FciOrient(sepsets1).ruleR0(graph);
-            removeByPossibleDsep(graph, independenceTest, sepsets);
+            graph.paths().removeByPossibleDsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);

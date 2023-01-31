@@ -791,7 +791,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
                         Node y = nodes.get(i);
                         List<Node> cond = new ArrayList<>();
-                        Set<Node> D = new HashSet<>(GraphUtils.getDconnectedVars(y, cond, TsFges2.this.graph));
+                        Set<Node> D = new HashSet<>(TsFges2.this.graph.paths().getDconnectedVars(y, cond));
                         D.remove(y);
                         TsFges2.this.effectEdgesGraph.getAdjacentNodes(y).forEach(D::remove);
 
@@ -1067,7 +1067,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
                             adj = new ArrayList<>(g);
                         } else if (TsFges2.this.mode == Mode.allowUnfaithfulness) {
-                            HashSet<Node> D = new HashSet<>(GraphUtils.getDconnectedVars(x, new ArrayList<>(), TsFges2.this.graph));
+                            HashSet<Node> D = new HashSet<>(TsFges2.this.graph.paths().getDconnectedVars(x, new ArrayList<>()));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {

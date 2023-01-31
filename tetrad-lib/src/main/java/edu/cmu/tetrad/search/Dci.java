@@ -830,7 +830,7 @@ public class Dci {
                 for (int k = 2; k <= size; k++) {
                     newPaths.put(k, new HashMap<>());
                 }
-                for (List<Node> trek : GraphUtils.treks(Dci.this.currentGraph, Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()), -1)) {
+                for (List<Node> trek : Dci.this.currentGraph.paths().treks(Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()), -1)) {
                     boolean inMarginal = true;
                     for (Node node : trek) {
                         if (!Dci.this.currentMarginalSet.contains(node)) {
@@ -975,8 +975,8 @@ public class Dci {
             for (Triple triple : colliders.keySet()) {
                 List<Set<Edge>> edgeSet = new ArrayList<>();
                 List<List<Node>> treks = new ArrayList<>();
-                treks.addAll(GraphUtils.treks(graph, triple.getY(), colliders.get(triple).getFirst(), -1));
-                treks.addAll(GraphUtils.treks(graph, triple.getY(), colliders.get(triple).getSecond(), -1));
+                treks.addAll(graph.paths().treks(triple.getY(), colliders.get(triple).getFirst(), -1));
+                treks.addAll(graph.paths().treks(triple.getY(), colliders.get(triple).getSecond(), -1));
                 for (List<Node> trek : treks) {
                     Set<Edge> edges = new HashSet<>();
                     boolean okay = true;

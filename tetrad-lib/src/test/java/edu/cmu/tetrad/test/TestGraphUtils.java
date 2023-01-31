@@ -70,7 +70,7 @@ public final class TestGraphUtils {
                 Node node1 = graph.getNodes().get(i);
                 Node node2 = graph.getNodes().get(j);
 
-                List<List<Node>> directedPaths = GraphUtils.directedPathsFromTo(graph, node1, node2, -1);
+                List<List<Node>> directedPaths = graph.paths().directedPathsFromTo(node1, node2, -1);
 
                 for (List<Node> path : directedPaths) {
                     assertTrue(graph.paths().isAncestorOf(path.get(0), path.get(path.size() - 1)));
@@ -95,7 +95,7 @@ public final class TestGraphUtils {
                 Node node1 = graph.getNodes().get(i);
                 Node node2 = graph.getNodes().get(j);
 
-                List<List<Node>> treks = GraphUtils.treks(graph, node1, node2, -1);
+                List<List<Node>> treks = graph.paths().treks(node1, node2, -1);
 
                 TREKS:
                 for (List<Node> trek : treks) {

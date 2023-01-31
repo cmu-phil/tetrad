@@ -911,13 +911,13 @@ public final class SearchGraphUtils {
 
             if (Edges.isBidirectedEdge(e)) {
                 if (mag.paths().existsDirectedPathFromTo(x, y)) {
-                    List<Node> path = GraphUtils.directedPathsFromTo(mag, x, y, 100).get(0);
+                    List<Node> path = mag.paths().directedPathsFromTo(x, y, 100).get(0);
                     return new LegalMagRet(false,
                             "Bidirected edge semantics violated: there is a directed path for " + e + " from " + x + " to " + y
                                     + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
                                     + "An example path is " + GraphUtils.pathString(mag, path));
                 } else if (mag.paths().existsDirectedPathFromTo(y, x)) {
-                    List<Node> path = GraphUtils.directedPathsFromTo(mag, y, x, 100).get(0);
+                    List<Node> path = mag.paths().directedPathsFromTo(y, x, 100).get(0);
                     return new LegalMagRet(false,
                             "Bidirected edge semantics violated: There is an a directed path for " + e + " from " + y + " to " + x +
                                     ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
@@ -1725,11 +1725,11 @@ public final class SearchGraphUtils {
                 if (printStars) {
                     boolean directedInGraph2 = false;
 
-                    if (Edges.isDirectedEdge(edge1) && GraphUtils.existsSemidirectedPath(node1, node2, targetGraph)) {
+                    if (Edges.isDirectedEdge(edge1) && targetGraph.paths().existsSemidirectedPath(node1, node2)) {
                         directedInGraph2 = true;
                     } else if ((Edges.isUndirectedEdge(edge1) || Edges.isBidirectedEdge(edge1))
-                            && (GraphUtils.existsSemidirectedPath(node1, node2, targetGraph)
-                            || GraphUtils.existsSemidirectedPath(node2, node1, targetGraph))) {
+                            && (targetGraph.paths().existsSemidirectedPath(node1, node2)
+                            || targetGraph.paths().existsSemidirectedPath(node2, node1))) {
                         directedInGraph2 = true;
                     }
 
@@ -1758,11 +1758,11 @@ public final class SearchGraphUtils {
                 if (printStars) {
                     boolean directedInGraph1 = false;
 
-                    if (Edges.isDirectedEdge(edge) && GraphUtils.existsSemidirectedPath(node1, node2, trueGraph)) {
+                    if (Edges.isDirectedEdge(edge) && trueGraph.paths().existsSemidirectedPath(node1, node2)) {
                         directedInGraph1 = true;
                     } else if ((Edges.isUndirectedEdge(edge) || Edges.isBidirectedEdge(edge))
-                            && (GraphUtils.existsSemidirectedPath(node1, node2, trueGraph)
-                            || GraphUtils.existsSemidirectedPath(node2, node1, trueGraph))) {
+                            && (trueGraph.paths().existsSemidirectedPath(node1, node2)
+                            || trueGraph.paths().existsSemidirectedPath(node2, node1))) {
                         directedInGraph1 = true;
                     }
 

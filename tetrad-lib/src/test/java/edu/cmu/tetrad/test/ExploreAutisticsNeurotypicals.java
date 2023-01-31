@@ -216,7 +216,7 @@ public final class ExploreAutisticsNeurotypicals {
 
             for (Graph graph : __graphs) {
                 row++;
-                List<List<Node>> treks = GraphUtils.treks(graph, fusiformLeft, fusiformRight, 7);
+                List<List<Node>> treks = graph.paths().treks(fusiformLeft, fusiformRight, 7);
 
                 for (List<Node> trek : treks) {
 
@@ -298,7 +298,7 @@ public final class ExploreAutisticsNeurotypicals {
 
         for (List<Graph> __graphs : graphs) {
             for (Graph graph : __graphs) {
-                List<List<Node>> treks = GraphUtils.treks(graph, fusiformLeft, fusiformRight, maxLength);
+                List<List<Node>> treks = graph.paths().treks(fusiformLeft, fusiformRight, maxLength);
 
                 for (List<Node> trek : treks) {
                     for (int i = 0; i < trek.size() - 2; i++) {

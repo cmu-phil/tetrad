@@ -92,7 +92,7 @@ public final class SemGraph implements Graph {
      */
     public SemGraph() {
         this.graph = new EdgeListGraph();
-        this.paths = new Paths(this.graph);
+        this.paths = new Paths(this);
     }
 
     /**
@@ -152,7 +152,7 @@ public final class SemGraph implements Graph {
             }
         }
 
-        this.paths = new Paths(this.graph);
+        this.paths = new Paths(this);
     }
 
     /**
@@ -187,7 +187,7 @@ public final class SemGraph implements Graph {
             }
         }
 
-        this.paths = new Paths(this.graph);
+        this.paths = new Paths(this);
     }
 
     /**
