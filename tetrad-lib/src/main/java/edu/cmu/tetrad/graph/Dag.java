@@ -246,10 +246,6 @@ public final class Dag implements Graph {
         return getGraph().getEndpoint(node1, node2);
     }
 
-    public Endpoint[][] getEndpointMatrix() {
-        return getGraph().getEndpointMatrix();
-    }
-
     public List<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }

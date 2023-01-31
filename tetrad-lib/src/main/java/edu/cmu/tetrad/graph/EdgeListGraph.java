@@ -65,15 +65,7 @@ public class EdgeListGraph implements Graph {
      *
      * @serial
      */
-     final Map<Node, Set<Edge>> edgeLists;
-    /**
-     * Fires property change events.
-     */
-    private transient PropertyChangeSupport pcs;
-
-    private Underlines underlines;
-
-    private final Paths paths;
+    final Map<Node, Set<Edge>> edgeLists;
 
     /**
      * The set of highlighted edges.
@@ -85,7 +77,13 @@ public class EdgeListGraph implements Graph {
      */
     private final Map<String, Node> namesHash;
 
+    private Underlines underlines;
+
+    private final Paths paths;
+
     private final Map<String, Object> attributes = new HashMap<>();
+
+    private transient PropertyChangeSupport pcs;
 
     //==============================CONSTUCTORS===========================//
 
@@ -648,31 +646,6 @@ public class EdgeListGraph implements Graph {
     }
 
     /**
-     * @return a matrix of endpoints for the nodes in this graph, with nodes in
-     * the same order as getNodes().
-     */
-    @Override
-    public Endpoint[][] getEndpointMatrix() {
-        int size = this.nodes.size();
-        Endpoint[][] endpoints = new Endpoint[size][size];
-
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                if (i == j) {
-                    continue;
-                }
-
-                Node nodei = this.nodes.get(i);
-                Node nodej = this.nodes.get(j);
-
-                endpoints[i][j] = getEndpoint(nodei, nodej);
-            }
-        }
-
-        return endpoints;
-    }
-
-    /**
      * Adds an edge to the graph.
      *
      * @param edge the edge to be added
@@ -704,16 +677,6 @@ public class EdgeListGraph implements Graph {
             return true;
         }
 
-    }
-
-    /**
-     * Adds a PropertyChangeListener to the graph.
-     *
-     * @param l the property change listener.
-     */
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        getPcs().addPropertyChangeListener(l);
     }
 
     /**
@@ -1104,8 +1067,6 @@ public class EdgeListGraph implements Graph {
     }
 
 
-
-
     @Override
     public List<String> getNodeNames() {
         List<String> names = new ArrayList<>();
@@ -1211,4 +1172,16 @@ public class EdgeListGraph implements Graph {
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
     }
+
+    /**
+     * Adds a PropertyChangeListener to the graph.
+     *
+     * @param l the property change listener.
+     */
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        getPcs().addPropertyChangeListener(l);
+    }
+
+
 }

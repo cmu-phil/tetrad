@@ -544,11 +544,6 @@ public class TimeLagGraph implements Graph {
         return getGraph().getNodesOutTo(node, endpoint);
     }
 
-    public Endpoint[][] getEndpointMatrix() {
-        return getGraph().getEndpointMatrix();
-    }
-
-
     public void addPropertyChangeListener(PropertyChangeListener l) {
         getPcs().addPropertyChangeListener(l);
         getGraph().addPropertyChangeListener(l);

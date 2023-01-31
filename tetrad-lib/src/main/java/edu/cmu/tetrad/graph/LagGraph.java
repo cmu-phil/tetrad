@@ -168,10 +168,6 @@ public class LagGraph implements Graph {
         return getGraph().getEndpoint(node1, node2);
     }
 
-    public Endpoint[][] getEndpointMatrix() {
-        return getGraph().getEndpointMatrix();
-    }
-
     public int getIndegree(Node node) {
         return getGraph().getIndegree(node);
     }

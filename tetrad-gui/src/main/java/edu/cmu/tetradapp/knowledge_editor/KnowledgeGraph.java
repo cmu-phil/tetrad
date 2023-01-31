@@ -148,10 +148,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         getGraph().reorientAllWith(endpoint);
     }
 
-    public Endpoint[][] getEndpointMatrix() {
-        return getGraph().getEndpointMatrix();
-    }
-
     public List<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }

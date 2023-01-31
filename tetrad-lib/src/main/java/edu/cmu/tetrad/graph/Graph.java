@@ -180,12 +180,6 @@ public interface Graph extends TetradSerializable {
     Endpoint getEndpoint(Node node1, Node node2);
 
     /**
-     * @return a matrix of endpoints for the nodes in this graph, with nodes in
-     * the same order as getNodes().
-     */
-    Endpoint[][] getEndpointMatrix();
-
-    /**
      * @return the number of arrow endpoints adjacent to a node.
      */
     int getIndegree(Node node);

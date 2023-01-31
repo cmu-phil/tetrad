@@ -323,10 +323,6 @@ public final class SemGraph implements Graph {
         throw new UnsupportedOperationException();
     }
 
-    public Endpoint[][] getEndpointMatrix() {
-        return getGraph().getEndpointMatrix();
-    }
-
     public List<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
