@@ -1173,15 +1173,8 @@ public class EdgeListGraph implements Graph {
         this.attributes.put(key, value);
     }
 
-    /**
-     * Adds a PropertyChangeListener to the graph.
-     *
-     * @param l the property change listener.
-     */
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         getPcs().addPropertyChangeListener(l);
     }
-
-
 }
