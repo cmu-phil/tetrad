@@ -213,7 +213,7 @@ public class TestFges {
     public void testExplore5() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
         Fges fges = new Fges(new GraphScore(graph));
-        fges.setFaithfulnessAssumed(false);
+        fges.setFaithfulnessAssumed(true);
         Graph CPDAG = fges.search();
         assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
     }

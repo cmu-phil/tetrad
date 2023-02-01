@@ -685,7 +685,7 @@ public class PerformanceTests {
         fci.setVerbose(false);
         fci.setMaxPathLength(maxPathLength);
         fci.setMaxDegree(depth);
-        fci.setFaithfulnessAssumed(false);
+        fci.setFaithfulnessAssumed(true);
         fci.setCompleteRuleSetUsed(true);
         Graph outGraph = fci.search();
 
@@ -958,7 +958,6 @@ public class PerformanceTests {
         final int structurePrior = 10;
         final int samplePrior = 10;
         final int maxIndegree = -1;
-//        boolean faithfulness = false;
 
         List<int[][]> allCounts = new ArrayList<>();
         List<double[]> comparisons = new ArrayList<>();

@@ -20,7 +20,6 @@ import java.util.regex.Pattern;
  */
 public class GraphPersistence {
 
-
     public static Graph loadGraph(File file) {
 
         Element root;
@@ -354,10 +353,8 @@ public class GraphPersistence {
 
         try {
             out = new PrintWriter(new FileOutputStream(file));
-//            out.print(graph);
 
             if (xml) {
-//                out.println(graphToPcalg(graph));
                 out.print(graphToXml(graph));
             } else {
                 out.print(graph);
@@ -418,8 +415,6 @@ public class GraphPersistence {
             graph.addEdge(edge);
         }
     }
-
-
 
     private static void setEdgeTypeProperties(String prop, Edge edge, Graph graph, Pattern spacePattern, Pattern colonPattern) {
         prop = prop.replace("[", "").replace("]", "");
@@ -570,16 +565,6 @@ public class GraphPersistence {
 
         return graph;
     }
-
-
-
-    /**
-     * A standard matrix graph representation for directed graphs. a[i][j] = 1
-     * is j-->i and -1 if i-->j.
-     *
-     * @throws IllegalArgumentException if <code>graph</code> is not a directed
-     *                                  graph.
-     */
 
     /**
      * Converts a graph to a Graphviz .dot file
