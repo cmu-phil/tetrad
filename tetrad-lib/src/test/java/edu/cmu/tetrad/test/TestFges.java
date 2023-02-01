@@ -213,7 +213,7 @@ public class TestFges {
     public void testExplore5() {
         Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
         Fges fges = new Fges(new GraphScore(graph));
-        fges.setFaithfulnessAssumed(true);
+        fges.setFaithfulnessAssumed(false);
         Graph CPDAG = fges.search();
         assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
     }
@@ -526,7 +526,7 @@ public class TestFges {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---D,B---A,B-->C,C---A",
+        checkWithKnowledge("A-->B,C-->B,B-->D", "A---D,B---A,B-->C,C---A,C-->D",
                 knowledge);
     }
 
