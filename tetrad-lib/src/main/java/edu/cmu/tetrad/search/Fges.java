@@ -114,9 +114,6 @@ public final class Fges implements GraphSearch, GraphScorer {
     // Where printed output is sent.
     private PrintStream out = System.out;
 
-    // A initial adjacencies graph.
-    private Graph adjacencies = null;
-
     // The graph being constructed.
     private Graph graph;
 
@@ -190,8 +187,8 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         graph = new EdgeListGraph(getVariables());
 
-        if (adjacencies != null) {
-            adjacencies = GraphUtils.replaceNodes(adjacencies, getVariables());
+        if (boundGraph != null) {
+            boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
         }
 
         if (initialGraph != null) {
@@ -313,22 +310,6 @@ public final class Fges implements GraphSearch, GraphScorer {
      */
     public void setOut(PrintStream out) {
         this.out = out;
-    }
-
-    /**
-     * @return the set of preset adjacenies for the algorithm; edges not in this
-     * adjacencies graph will not be added.
-     */
-    public Graph getAdjacencies() {
-        return adjacencies;
-    }
-
-    /**
-     * Sets the set of preset adjacenies for the algorithm; edges not in this
-     * adjacencies graph will not be added.
-     */
-    public void setAdjacencies(Graph adjacencies) {
-        this.adjacencies = adjacencies;
     }
 
     /**
@@ -586,7 +567,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                     }
 
                     for (Node x : adj) {
-                        if (adjacencies != null && !(adjacencies.isAdjacentTo(x, y))) {
+                        if (boundGraph != null && !(boundGraph.isAdjacentTo(x, y))) {
                             continue;
                         }
 
@@ -619,7 +600,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Calculates the new arrows for an a->b edge.
     private void calculateArrowsForward(Node a, Node b) {
-        if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) {
+        if (boundGraph != null && !boundGraph.isAdjacentTo(a, b)) {
             return;
         }
 
@@ -1316,7 +1297,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                         }
                     }
 
-                    if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+                    if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) {
                         continue;
                     }
 

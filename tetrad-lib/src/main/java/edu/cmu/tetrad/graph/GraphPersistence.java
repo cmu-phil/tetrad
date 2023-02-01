@@ -87,37 +87,6 @@ public class GraphPersistence {
         throw new IllegalStateException();
     }
 
-    public static Graph loadGraphGcpCausaldag(File file) {
-        System.out.println("KK " + file.getAbsolutePath());
-        File parentFile = file.getParentFile().getParentFile();
-        parentFile = new File(parentFile, "data");
-        File dataFile = new File(parentFile, file.getName().replace("causaldag.gsp", "data"));
-
-        System.out.println(dataFile.getAbsolutePath());
-
-        List<Node> variables = null;
-
-        try {
-            ContinuousTabularDatasetFileReader reader = new ContinuousTabularDatasetFileReader(dataFile.toPath(), Delimiter.TAB);
-            Data data = reader.readInData();
-
-            DataSet dataSet = (DataSet) DataConvertUtils.toDataModel(data);
-
-            variables = dataSet.getVariables();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            Reader in1 = new FileReader(file);
-            return GraphPersistence.readerToGraphCausaldag(in1, variables);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new IllegalStateException();
-        }
-    }
-
     private static int[][] incidenceMatrix(Graph graph) throws IllegalArgumentException {
         List<Node> nodes = graph.getNodes();
         int[][] m = new int[nodes.size()][nodes.size()];
@@ -148,6 +117,7 @@ public class GraphPersistence {
     }
 
 
+    // Bayes net toolbox.
     public static Graph loadGraphBNTPcMatrix(List<Node> vars, DataSet dataSet) {
         Graph graph = new EdgeListGraph(vars);
 
@@ -534,37 +504,6 @@ public class GraphPersistence {
         return JsonUtils.parseJSONObjectToTetradGraph(json.toString());
     }
 
-
-    public static Graph readerToGraphCausaldag(Reader reader, List<Node> variables) throws IOException {
-        Graph graph = new EdgeListGraph(variables);
-        try (BufferedReader in = new BufferedReader(reader)) {
-            for (String line = in.readLine(); line != null; line = in.readLine()) {
-                line = line.trim();
-
-                String[] tokens = line.split("[\\[\\]]");
-
-                for (String t : tokens) {
-//                    System.out.println(t);
-
-                    String[] tokens2 = t.split("[,|]");
-
-                    if (tokens2[0].isEmpty()) continue;
-
-                    Node x = variables.get(Integer.parseInt(tokens2[0]));
-
-                    for (int j = 1; j < tokens2.length; j++) {
-                        if (tokens2[j].isEmpty()) continue;
-
-                        Node y = variables.get(Integer.parseInt(tokens2[j]));
-
-                        graph.addDirectedEdge(y, x);
-                    }
-                }
-            }
-        }
-
-        return graph;
-    }
 
     /**
      * Converts a graph to a Graphviz .dot file

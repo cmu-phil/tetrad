@@ -460,7 +460,7 @@ public class Paths implements TetradSerializable {
     }
 
     public boolean isDConnectedTo(List<Node> x, List<Node> y, List<Node> z) {
-        Set<Node> zAncestors = zAncestors(z);
+        Set<Node> ancestors = ancestorsOf(z);
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
         Set<OrderedPair<Node>> V = new HashSet<>();
@@ -488,7 +488,7 @@ public class Paths implements TetradSerializable {
                 }
 
                 boolean collider = graph.isDefCollider(a, b, c);
-                if (!((collider && zAncestors.contains(b)) || (!collider && !z.contains(b)))) {
+                if (!((collider && ancestors.contains(b)) || (!collider && !z.contains(b)))) {
                     continue;
                 }
 
@@ -649,7 +649,7 @@ public class Paths implements TetradSerializable {
     }
 
 
-    private Set<Node> zAncestors(List<Node> z) {
+    private Set<Node> ancestorsOf(List<Node> z) {
         Queue<Node> Q = new ArrayDeque<>();
         Set<Node> V = new HashSet<>();
 
