@@ -130,7 +130,7 @@ public final class TestGraphUtils {
         Graph g = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
                 30, 15, 15, false));
 
-        String x = GraphUtils.graphToDot(g);
+        String x = GraphPersistence.graphToDot(g);
         String[] tokens = x.split("\n");
         int length = tokens.length;
         assertEquals(7, length);

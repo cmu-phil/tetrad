@@ -282,9 +282,9 @@ public class TestRicf {
     public void test3() {
         try {
             File datapath = new File("/Users/josephramsey/Downloads/data6.txt");
-            DataSet dataSet = DataUtils.loadContinuousData(datapath, "//", '\"',
+            DataSet dataSet = DataPersistence.loadContinuousData(datapath, "//", '\"',
                     "*", true, Delimiter.TAB);
-            Graph mag = GraphUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
+            Graph mag = GraphPersistence.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
 
             ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
 

@@ -4,10 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fask;
@@ -60,7 +57,7 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
                                 + "will orient the edges in the input graph using the data");
             }
 
-            DataSet dataSet = DataUtils.getContinuousDataSet(dataModel);
+            DataSet dataSet = DataPersistence.getContinuousDataSet(dataModel);
 
             Fask fask = new Fask(dataSet, new SemBicScore(dataSet), new IndTestFisherZ(dataSet, 0.01));
             fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);

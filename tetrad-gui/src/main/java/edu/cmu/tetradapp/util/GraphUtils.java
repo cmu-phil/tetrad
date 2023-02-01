@@ -99,7 +99,7 @@ public class GraphUtils {
                         newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
                         randomGraphConnected, true);
                 edu.cmu.tetrad.graph.GraphUtils.arrangeBySourceGraph(graph, _graph);
-                HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphUtils.grabLayout(nodes);
+                HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphPersistence.grabLayout(nodes);
                 edu.cmu.tetrad.graph.GraphUtils.arrangeByLayout(graph, layout);
             } else {
                 if (graphUniformlySelected) {
@@ -112,7 +112,7 @@ public class GraphUtils {
                             randomGraphMaxOutdegree,
                             randomGraphConnected);
                     edu.cmu.tetrad.graph.GraphUtils.arrangeBySourceGraph(graph, _graph);
-                    HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphUtils.grabLayout(nodes);
+                    HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphPersistence.grabLayout(nodes);
                     edu.cmu.tetrad.graph.GraphUtils.arrangeByLayout(graph, layout);
                 } else {
                     if (graphChooseFixed) {
@@ -125,7 +125,7 @@ public class GraphUtils {
                                     randomGraphMaxOutdegree,
                                     randomGraphConnected);
                             edu.cmu.tetrad.graph.GraphUtils.arrangeBySourceGraph(graph, _graph);
-                            HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphUtils.grabLayout(nodes);
+                            HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphPersistence.grabLayout(nodes);
                             edu.cmu.tetrad.graph.GraphUtils.arrangeByLayout(graph, layout);
                         } while (graph.getNumEdges() < newGraphNumEdges);
                     }

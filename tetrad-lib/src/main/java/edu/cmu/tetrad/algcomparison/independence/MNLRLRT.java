@@ -3,8 +3,8 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataPersistence;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndTestMNLRLRT;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -29,7 +29,7 @@ public class MNLRLRT implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        return new IndTestMNLRLRT(DataUtils.getMixedDataSet(dataSet), parameters.getDouble("alpha"));
+        return new IndTestMNLRLRT(DataPersistence.getMixedDataSet(dataSet), parameters.getDouble("alpha"));
     }
 
     @Override

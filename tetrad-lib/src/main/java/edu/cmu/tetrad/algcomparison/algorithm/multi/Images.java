@@ -157,11 +157,11 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(DataUtils.getMixedDataSet(dataSet)), parameters);
+            return search(Collections.singletonList(DataPersistence.getMixedDataSet(dataSet)), parameters);
         } else {
             Images images = new Images();
 
-            List<DataSet> dataSets = Collections.singletonList(DataUtils.getMixedDataSet(dataSet));
+            List<DataSet> dataSets = Collections.singletonList(DataPersistence.getMixedDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
                     images,
                     parameters.getInt(Params.NUMBER_RESAMPLING),

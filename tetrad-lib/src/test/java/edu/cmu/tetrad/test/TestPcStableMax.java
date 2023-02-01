@@ -96,7 +96,7 @@ public class TestPcStableMax {
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
-        ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
+        ICovarianceMatrix dataSet = DataPersistence.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
                 '\"', "*");
 
         Knowledge knowledge = new Knowledge();

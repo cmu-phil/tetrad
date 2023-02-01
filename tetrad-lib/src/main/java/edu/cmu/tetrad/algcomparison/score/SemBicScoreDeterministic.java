@@ -1,8 +1,8 @@
 package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataPersistence;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
@@ -29,7 +29,7 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         edu.cmu.tetrad.search.SemBicScoreDeterministic semBicScore
-                = new edu.cmu.tetrad.search.SemBicScoreDeterministic(DataUtils.getCovMatrix(dataSet));
+                = new edu.cmu.tetrad.search.SemBicScoreDeterministic(DataPersistence.getCovMatrix(dataSet));
         semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         semBicScore.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
         return semBicScore;

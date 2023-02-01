@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.graph.GraphUtils;
 
 import javax.swing.*;
@@ -67,7 +68,7 @@ class LoadGraphPcalg extends AbstractAction {
 
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
-        Graph graph = GraphUtils.loadGraphPcalg(file);
+        Graph graph = GraphPersistence.loadGraphPcalg(file);
         GraphUtils.circleLayout(graph, 200, 200, 150);
         this.graphEditable.setGraph(graph);
     }

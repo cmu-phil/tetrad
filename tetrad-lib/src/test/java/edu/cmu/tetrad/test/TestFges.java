@@ -552,7 +552,7 @@ public class TestFges {
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
-        ICovarianceMatrix cov = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
+        ICovarianceMatrix cov = DataPersistence.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
         Knowledge knowledge = new Knowledge();
 
@@ -593,7 +593,7 @@ public class TestFges {
 
 
         try {
-            trueGraph = GraphUtils.readerToGraphTxt(trueString);
+            trueGraph = GraphPersistence.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {

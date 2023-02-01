@@ -552,7 +552,7 @@ public class Comparison {
                     File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
                     Graph graph = simulationWrapper.getTrueGraph(j);
 
-                    GraphUtils.saveGraph(graph, file2, false);
+                    GraphPersistence.saveGraph(graph, file2, false);
 
                     if (isSaveData()) {
                         File file = new File(dir2, "data." + (j + 1) + ".txt");
@@ -564,12 +564,12 @@ public class Comparison {
 
                     if (isSaveCPDAGs()) {
                         File file3 = new File(dir3, "cpdag." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
+                        GraphPersistence.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(SearchGraphUtils.dagToPag(graph), file4, false);
+                        GraphPersistence.saveGraph(SearchGraphUtils.dagToPag(graph), file4, false);
                     }
 
                 }
@@ -641,7 +641,7 @@ public class Comparison {
                 File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
                 Graph graph = simulation.getTrueGraph(j);
 
-                GraphUtils.saveGraph(graph, file2, false);
+                GraphPersistence.saveGraph(graph, file2, false);
 
                 File file = new File(dir2, "data." + (j + 1) + ".txt");
                 Writer out = new FileWriter(file);
@@ -651,12 +651,12 @@ public class Comparison {
 
                 if (isSaveCPDAGs()) {
                     File file3 = new File(dir3, "cpdag." + (j + 1) + ".txt");
-                    GraphUtils.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
+                    GraphPersistence.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
                 }
 
                 if (isSavePags()) {
                     File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                    GraphUtils.saveGraph(SearchGraphUtils.dagToPag(graph), file4, false);
+                    GraphPersistence.saveGraph(SearchGraphUtils.dagToPag(graph), file4, false);
                 }
             }
         } catch (IOException e) {

@@ -3,11 +3,9 @@ package edu.cmu.tetrad.data.simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -49,7 +47,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
-                    DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
+                    DataSet data = DataPersistence.loadContinuousData(file, "//", '\"',
                             "*", true, Delimiter.TAB);
                     this.dataSets.add(data);
                 } catch (Exception e) {
@@ -71,7 +69,7 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
             File file = files[0];
 
             System.out.println("Loading graph from " + file.getAbsolutePath());
-            this.graph = GraphUtils.loadGraphTxt(file);
+            this.graph = GraphPersistence.loadGraphTxt(file);
 
             GraphUtils.circleLayout(this.graph, 225, 200, 150);
         }

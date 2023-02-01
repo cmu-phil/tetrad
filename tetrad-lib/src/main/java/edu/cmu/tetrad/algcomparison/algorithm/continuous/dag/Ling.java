@@ -4,10 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -36,7 +33,7 @@ public class Ling implements Algorithm {
 
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet _dataSet = DataUtils.getContinuousDataSet(dataSet);
+            DataSet _dataSet = DataPersistence.getContinuousDataSet(dataSet);
             edu.cmu.tetrad.search.Ling lingam = new edu.cmu.tetrad.search.Ling(_dataSet);
 //            lingam.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             edu.cmu.tetrad.search.Ling.StoredGraphs search = lingam.search();

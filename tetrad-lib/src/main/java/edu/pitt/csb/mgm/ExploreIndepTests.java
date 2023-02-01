@@ -23,6 +23,7 @@ package edu.pitt.csb.mgm;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.search.PcStable;
@@ -37,7 +38,7 @@ public class ExploreIndepTests {
     public static void main(String[] args) {
         try {
             String path = ExampleMixedSearch.class.getResource("test_data").getPath();
-            Graph trueGraph = SearchGraphUtils.cpdagFromDag(GraphUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt")));
+            Graph trueGraph = SearchGraphUtils.cpdagFromDag(GraphPersistence.loadGraphTxt(new File(path, "DAG_0_graph.txt")));
             DataSet ds = MixedUtils.loadDataSet(path, "DAG_0_data.txt");
 
             IndTestMultinomialLogisticRegression indMix = new IndTestMultinomialLogisticRegression(ds, .05);

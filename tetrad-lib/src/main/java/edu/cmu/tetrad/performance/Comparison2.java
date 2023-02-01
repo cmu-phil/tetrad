@@ -3,10 +3,7 @@ package edu.cmu.tetrad.performance;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.performance.ComparisonParameters.IndependenceTestType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
@@ -67,7 +64,7 @@ public class Comparison2 {
                 if (file.getName().startsWith("graph") && file.getName().contains(String.valueOf(params.getGraphNum()))
                         && file.getName().endsWith(".g.txt")) {
                     params.setGraphFile(file.getName());
-                    trueDag = GraphUtils.loadGraphTxt(file);
+                    trueDag = GraphPersistence.loadGraphTxt(file);
                     break;
                 }
 
