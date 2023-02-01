@@ -1191,7 +1191,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
-        if (this.graph.isHighlighted(modelEdge)) {
+        if (modelEdge.isHighlighted()) {
             displayEdge.setHighlighted(true);
         }
 

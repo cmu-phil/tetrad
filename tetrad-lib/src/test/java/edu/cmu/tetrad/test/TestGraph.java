@@ -199,13 +199,13 @@ public final class TestGraph {
         graph.addEdge(e1);
         graph.addEdge(e2);
 
-        graph.setHighlighted(graph.getEdge(x1, x2), true);
-        assertTrue(graph.isHighlighted(graph.getEdge(x1, x2)));
-        assertTrue(!graph.isHighlighted(graph.getEdge(x2, x3)));
+        graph.getEdge(x1, x2).setHighlighted(true);
+        assertTrue(graph.getEdge(x1, x2).isHighlighted());
+        assertFalse(graph.getEdge(x2, x3).isHighlighted());
 
         graph.removeEdge(e1);
 
-        assertFalse(graph.isHighlighted(Edges.directedEdge(x1, x2)));
+        assertFalse(Edges.directedEdge(x1, x2).isHighlighted());
     }
 
     private Triple pickRandomTriple(Graph graph) {

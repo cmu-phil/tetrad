@@ -37,8 +37,6 @@ public class LagGraph implements Graph {
     private Dag graph = new Dag();
     private final List<String> variables = new ArrayList<>();
     private final Map<String, List<Node>> laggedVariables = new HashMap<>();
-    private boolean pag;
-    private boolean CPDAG;
 
     private final Map<String, Object> attributes = new HashMap<>();
 
@@ -297,14 +295,6 @@ public class LagGraph implements Graph {
 
     public List<Node> getCausalOrdering() {
         return getGraph().getCausalOrdering();
-    }
-
-    public void setHighlighted(Edge edge, boolean highlighted) {
-        getGraph().setHighlighted(edge, highlighted);
-    }
-
-    public boolean isHighlighted(Edge edge) {
-        return getGraph().isHighlighted(edge);
     }
 
     public boolean isParameterizable(Node node) {

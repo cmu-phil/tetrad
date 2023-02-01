@@ -222,7 +222,7 @@ public class DagInCPDAGIterator {
                 graph.removeEdges(this.edge.getNode1(), this.edge.getNode2());
 
                 graph.addDirectedEdge(this.edge.getNode2(), this.edge.getNode1());
-                graph.setHighlighted(graph.getEdge(this.edge.getNode2(), this.edge.getNode1()), true);
+                graph.getEdge(this.edge.getNode2(), this.edge.getNode1()).setHighlighted(true);
 
                 edges.add(graph.getEdge(this.edge.getNode2(), this.edge.getNode1()));
                 edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
@@ -238,7 +238,8 @@ public class DagInCPDAGIterator {
                 this.getChangedEdges().put(graph, edges);
 
                 for (Edge edge : edges) {
-                    graph.setHighlighted(edge, true);
+                    edge.setHighlighted(true);
+//                    graph.setHighlighted(edge, true);
                 }
 
                 this.triedLeft = true;
@@ -254,7 +255,7 @@ public class DagInCPDAGIterator {
                 Graph graph = new EdgeListGraph(this.graph);
                 graph.removeEdges(this.edge.getNode1(), this.edge.getNode2());
                 graph.addDirectedEdge(this.edge.getNode1(), this.edge.getNode2());
-                graph.setHighlighted(graph.getEdge(this.edge.getNode1(), this.edge.getNode2()), true);
+                graph.getEdge(this.edge.getNode1(), this.edge.getNode2()).setHighlighted(true);
 
                 edges.add(graph.getEdge(this.edge.getNode1(), this.edge.getNode2()));
                 edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
@@ -266,7 +267,7 @@ public class DagInCPDAGIterator {
                 this.getChangedEdges().put(graph, edges);
 
                 for (Edge edge : edges) {
-                    graph.setHighlighted(edge, true);
+                    edge.setHighlighted(true);
                 }
 
                 this.triedRight = true;

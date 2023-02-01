@@ -122,12 +122,6 @@ public class EdgeListGraph implements Graph {
 
         this.underlines = new Underlines(graph.underlines());
 
-        for (Edge edge : graph.getEdges()) {
-            if (graph.isHighlighted(edge)) {
-                setHighlighted(edge, true);
-            }
-        }
-
         for (Node node : this.nodes) {
             this.namesHash.put(node.getName(), node);
         }
@@ -1092,16 +1086,6 @@ public class EdgeListGraph implements Graph {
 
     public List<Node> getCausalOrdering() {
         return paths().getCausalOrdering(this.getNodes());
-    }
-
-    @Override
-    public void setHighlighted(Edge edge, boolean highlighted) {
-        this.highlightedEdges.add(edge);
-    }
-
-    @Override
-    public boolean isHighlighted(Edge edge) {
-        return this.highlightedEdges != null && this.highlightedEdges.contains(edge);
     }
 
     @Override

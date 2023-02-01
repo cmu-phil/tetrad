@@ -42,6 +42,7 @@ import java.util.List;
 public class Edge implements TetradSerializable, Comparable<Edge> {
     static final long serialVersionUID = 23L;
 
+
     public enum Property {
         dd, nl, pd, pl
     }
@@ -54,7 +55,9 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     // Usual coloring--set to something else for a special line color.
     private transient Color lineColor;
 
-    private boolean bold;
+    private boolean bold = false;
+
+    private boolean highlighted = false;
 
     private final List<Property> properties = new ArrayList<>();
 
@@ -456,4 +459,11 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         this.probability = probability;
     }
 
+    public boolean isHighlighted() {
+        return highlighted;
+    }
+
+    public void setHighlighted(boolean highlighted) {
+        this.highlighted = highlighted;
+    }
 }

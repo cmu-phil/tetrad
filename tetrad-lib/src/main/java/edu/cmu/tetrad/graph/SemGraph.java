@@ -145,12 +145,6 @@ public final class SemGraph implements Graph {
 
         }
 
-        for (Edge edge : graph.getEdges()) {
-            if (graph.isHighlighted(edge)) {
-                setHighlighted(edge, true);
-            }
-        }
-
         this.paths = new Paths(this);
     }
 
@@ -179,11 +173,11 @@ public final class SemGraph implements Graph {
         this.showErrorTerms = graph.showErrorTerms;
         setShowErrorTerms(this.showErrorTerms);
 
-        for (Edge edge : graph.getEdges()) {
-            if (graph.isHighlighted(edge)) {
-                setHighlighted(edge, true);
-            }
-        }
+//        for (Edge edge : graph.getEdges()) {
+//            if (graph.isHighlighted(edge)) {
+//                setHighlighted(edge, true);
+//            }
+//        }
 
         this.paths = new Paths(this);
     }
@@ -216,13 +210,13 @@ public final class SemGraph implements Graph {
         return paths.getCausalOrdering(this.getNodes());
     }
 
-    public void setHighlighted(Edge edge, boolean highlighted) {
-        getGraph().setHighlighted(edge, highlighted);
-    }
-
-    public boolean isHighlighted(Edge edge) {
-        return getGraph().isHighlighted(edge);
-    }
+//    public void setHighlighted(Edge edge, boolean highlighted) {
+//        getGraph().setHighlighted(edge, highlighted);
+//    }
+//
+//    public boolean isHighlighted(Edge edge) {
+//        return getGraph().isHighlighted(edge);
+//    }
 
     public boolean isParameterizable(Node node) {
         return getGraph().isParameterizable(node);

@@ -61,7 +61,7 @@ public class JsonUtils {
         // highlightedEdges
         Set<Edge> highlightedEdges = JsonUtils.parseJSONArrayToTetradEdges(graph, jObj.getJSONArray("highlightedEdges"));
         for (Edge edge : highlightedEdges) {
-            graph.setHighlighted(edge, true);
+            edge.setHighlighted(true);
         }
 
         return graph;

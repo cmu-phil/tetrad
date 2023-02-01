@@ -109,12 +109,6 @@ public final class Dag implements Graph {
         resetDPath();
         reconstituteDpath();
 
-        for (Edge edge : graph.getEdges()) {
-            if (graph.isHighlighted(edge)) {
-                setHighlighted(edge, true);
-            }
-        }
-
         this.paths = new Paths(graph);
     }
 
@@ -337,14 +331,6 @@ public final class Dag implements Graph {
      */
     public List<Node> getCausalOrdering() {
         return paths.getCausalOrdering(this.getNodes());
-    }
-
-    public void setHighlighted(Edge edge, boolean highlighted) {
-        getGraph().setHighlighted(edge, highlighted);
-    }
-
-    public boolean isHighlighted(Edge edge) {
-        return getGraph().isHighlighted(edge);
     }
 
     public boolean isParameterizable(Node node) {

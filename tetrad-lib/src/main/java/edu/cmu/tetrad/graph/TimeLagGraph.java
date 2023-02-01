@@ -489,14 +489,6 @@ public class TimeLagGraph implements Graph {
         return getGraph().getCausalOrdering();
     }
 
-    public void setHighlighted(Edge edge, boolean highlighted) {
-        getGraph().setHighlighted(edge, highlighted);
-    }
-
-    public boolean isHighlighted(Edge edge) {
-        return getGraph().isHighlighted(edge);
-    }
-
     public boolean isParameterizable(Node node) {
         return getNodeId(node).getLag() < getNumInitialLags();
     }

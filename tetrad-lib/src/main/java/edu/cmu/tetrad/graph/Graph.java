@@ -362,17 +362,6 @@ public interface Graph extends TetradSerializable {
     Paths paths();
 
     /**
-     * Sets an edge to be highlighted.
-     */
-    void setHighlighted(Edge edge, boolean highlighted);
-
-    /**
-     * @return true just in case the given edge is highlighted.
-     * @throws IllegalArgumentException if the given edge is not in the graph.
-     */
-    boolean isHighlighted(Edge edge);
-
-    /**
      * @return true if the given node is parameterizable.
      */
     boolean isParameterizable(Node node);

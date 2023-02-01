@@ -102,18 +102,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return this.paths;
     }
 
-    public List<Node> getCausalOrdering() {
-        return getGraph().paths().getCausalOrdering(getGraph().getNodes());
-    }
-
-    public void setHighlighted(Edge edge, boolean highlighted) {
-        getGraph().setHighlighted(edge, highlighted);
-    }
-
-    public boolean isHighlighted(Edge edge) {
-        return getGraph().isHighlighted(edge);
-    }
-
     public boolean isParameterizable(Node node) {
         return false;
     }
