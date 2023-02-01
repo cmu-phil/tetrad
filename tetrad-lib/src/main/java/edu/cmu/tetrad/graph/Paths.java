@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 public class Paths implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    Graph graph;
+    private final Graph graph;
 
     public Paths(Graph graph) {
         if (graph == null) throw new NullPointerException("Null graph");
@@ -771,7 +771,6 @@ public class Paths implements TetradSerializable {
         OrderedPair<Node> e = null;
         int distance = 0;
 
-        assert graph != null;
         Set<Node> adjacentNodes = new HashSet<>(graph.getAdjacentNodes(x));
 
         for (Node b : adjacentNodes) {
@@ -993,6 +992,7 @@ public class Paths implements TetradSerializable {
         if (z.stream().anyMatch(zNode -> dag.paths().isDescendentOf(zNode, x))) {
             return false;
         }
+
 
         // make sure zNodes bock every path between node x and node y that contains an arrow into node x
         List<List<Node>> directedPaths = allDirectedPathsFromTo(x, y, -1);
