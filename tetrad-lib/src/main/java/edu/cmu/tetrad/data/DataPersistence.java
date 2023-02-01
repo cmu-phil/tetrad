@@ -57,7 +57,7 @@ public class DataPersistence {
 
     @NotNull
     public static DataSet loadMixedData(File file, String commentMarker, char quoteCharacter,
-                                        String missingValueMarker, boolean hasHeader, Delimiter delimiter)
+                                        String missingValueMarker, boolean hasHeader, int maxNumCategories, Delimiter delimiter)
             throws IOException {
         TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
         DataColumn[] dataColumns = columnReader.readInDataColumns(new int[]{1}, false);
@@ -70,6 +70,7 @@ public class DataPersistence {
         dataReader.setCommentMarker(commentMarker);
         dataReader.setMissingDataMarker(missingValueMarker);
         dataReader.setQuoteCharacter(quoteCharacter);
+        dataReader.determineDiscreteDataColumns(dataColumns, maxNumCategories, hasHeader);
 
         Data data = dataReader.read(dataColumns, hasHeader);
         DataModel dataModel = DataConvertUtils.toDataModel(data);
