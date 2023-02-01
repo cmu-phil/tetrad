@@ -438,6 +438,28 @@ public class DataPersistence {
         return (DataSet) dataModel;
     }
 
+    @NotNull
+    public static DataSet loadMixedData(File file, String commentMarker, char quoteCharacter,
+                                           String missingValueMarker, boolean hasHeader, Delimiter delimiter)
+            throws IOException {
+        TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
+        DataColumn[] dataColumns = columnReader.readInDataColumns(new int[]{1}, false);
+
+        columnReader.setCommentMarker(commentMarker);
+
+        TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
+
+        // Need to specify commentMarker, .... again to the TabularDataFileReader
+        dataReader.setCommentMarker(commentMarker);
+        dataReader.setMissingDataMarker(missingValueMarker);
+        dataReader.setQuoteCharacter(quoteCharacter);
+
+        Data data = dataReader.read(dataColumns, hasHeader);
+        DataModel dataModel = DataConvertUtils.toDataModel(data);
+
+        return (DataSet) dataModel;
+    }
+
     /**
      * Reads in a covariance matrix. The format is as follows.
      * <pre>
