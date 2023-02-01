@@ -21,33 +21,6 @@ import java.util.regex.Pattern;
 public class GraphPersistence {
 
 
-    /**
-     * @param graph The graph to be saved.
-     * @param file  The file to save it in.
-     * @param xml   True if to be saved in XML, false if in text.
-     * @return I have no idea whey I'm returning this; it's already closed...
-     */
-    public static PrintWriter saveGraph(Graph graph, File file, boolean xml) {
-        PrintWriter out;
-
-        try {
-            out = new PrintWriter(new FileOutputStream(file));
-//            out.print(graph);
-
-            if (xml) {
-//                out.println(graphToPcalg(graph));
-                out.print(graphToXml(graph));
-            } else {
-                out.print(graph);
-            }
-            out.flush();
-            out.close();
-        } catch (IOException e1) {
-            throw new IllegalArgumentException("Output file could not " + "be opened: " + file);
-        }
-        return out;
-    }
-
     public static Graph loadGraph(File file) {
 
         Element root;
@@ -115,198 +88,6 @@ public class GraphPersistence {
         throw new IllegalStateException();
     }
 
-    public static Graph readerToGraphTxt(String graphString) throws IOException {
-        return readerToGraphTxt(new CharArrayReader(graphString.toCharArray()));
-    }
-
-    public static Graph readerToGraphTxt(Reader reader) throws IOException {
-        Graph graph = new EdgeListGraph();
-        try (BufferedReader in = new BufferedReader(reader)) {
-            for (String line = in.readLine(); line != null; line = in.readLine()) {
-                line = line.trim();
-                switch (line) {
-                    case "Graph Nodes:":
-                        extractGraphNodes(graph, in);
-                        break;
-                    case "Graph Edges:":
-                        extractGraphEdges(graph, in);
-                        break;
-                }
-            }
-        }
-
-        return graph;
-    }
-
-    public static Graph readerToGraphRuben(Reader reader) throws IOException {
-        Graph graph = new EdgeListGraph();
-        try (BufferedReader in = new BufferedReader(reader)) {
-            for (String line = in.readLine(); line != null; line = in.readLine()) {
-                line = line.trim();
-                switch (line) {
-                    case "Graph Nodes:":
-                        extractGraphNodes(graph, in);
-                        break;
-                    case "Graph Edges:":
-                        extractGraphEdges(graph, in);
-                        break;
-                }
-            }
-        }
-
-        return graph;
-    }
-
-    private static void extractGraphEdges(Graph graph, BufferedReader in) throws IOException {
-        Pattern lineNumPattern = Pattern.compile("^\\d+.\\s?");
-        Pattern spacePattern = Pattern.compile("\\s+");
-        Pattern semicolonPattern = Pattern.compile(";");
-        Pattern colonPattern = Pattern.compile(":");
-        for (String line = in.readLine(); line != null; line = in.readLine()) {
-            line = line.trim();
-            if (line.isEmpty()) {
-                return;
-            }
-
-            line = lineNumPattern.matcher(line).replaceAll("");
-            String[] fields = spacePattern.split(line, 4);
-            Edge edge = getEdge(fields[0], fields[1], fields[2], graph);
-            if (fields.length > 3) {
-                fields = semicolonPattern.split(fields[3]);
-                if (fields.length > 1) {
-                    for (String prop : fields) {
-                        setEdgeTypeProperties(prop, edge, graph, spacePattern, colonPattern);
-                    }
-                } else {
-                    getEdgeProperties(fields[0], spacePattern)
-                            .forEach(edge::addProperty);
-                }
-            }
-
-            graph.addEdge(edge);
-        }
-    }
-
-
-
-    private static void setEdgeTypeProperties(String prop, Edge edge, Graph graph, Pattern spacePattern, Pattern colonPattern) {
-        prop = prop.replace("[", "").replace("]", "");
-        String[] fields = colonPattern.split(prop);
-        if (fields.length == 2) {
-            String bootstrapEdge = fields[0];
-            String bootstrapEdgeTypeProb = fields[1];
-
-            // edge type
-            fields = spacePattern.split(bootstrapEdge, 4);
-            if (fields.length >= 3) {
-                // edge-type probability
-                EdgeTypeProbability.EdgeType edgeType = getEdgeType(fields[1]);
-                List<Edge.Property> properties = new LinkedList<>();
-                if (fields.length > 3) {
-                    // pags
-                    properties.addAll(getEdgeProperties(fields[3], spacePattern));
-                }
-
-                edge.addEdgeTypeProbability(new EdgeTypeProbability(edgeType, properties, Double.parseDouble(bootstrapEdgeTypeProb)));
-            } else {
-                // edge probability
-                if ("edge".equals(bootstrapEdge)) {
-                    fields = spacePattern.split(bootstrapEdgeTypeProb, 2);
-                    if (fields.length > 1) {
-                        edge.setProbability(Double.parseDouble(fields[0]));
-                        getEdgeProperties(fields[1], spacePattern).forEach(edge::addProperty);
-                    } else {
-                        edge.setProbability(Double.parseDouble(bootstrapEdgeTypeProb));
-                    }
-                } else if ("no edge".equals(bootstrapEdge)) {
-                    fields = spacePattern.split(bootstrapEdgeTypeProb);
-                    edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, Double.parseDouble(bootstrapEdgeTypeProb)));
-                }
-            }
-        }
-    }
-
-    private static EdgeTypeProbability.EdgeType getEdgeType(String edgeType) {
-        Endpoint endpointFrom = getEndpoint(edgeType.charAt(0));
-        Endpoint endpointTo = getEndpoint(edgeType.charAt(2));
-
-        if (endpointFrom == Endpoint.TAIL && endpointTo == Endpoint.ARROW) {
-            return EdgeTypeProbability.EdgeType.ta;
-        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.TAIL) {
-            return EdgeTypeProbability.EdgeType.at;
-        } else if (endpointFrom == Endpoint.CIRCLE && endpointTo == Endpoint.ARROW) {
-            return EdgeTypeProbability.EdgeType.ca;
-        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.CIRCLE) {
-            return EdgeTypeProbability.EdgeType.ac;
-        } else if (endpointFrom == Endpoint.CIRCLE && endpointTo == Endpoint.CIRCLE) {
-            return EdgeTypeProbability.EdgeType.cc;
-        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.ARROW) {
-            return EdgeTypeProbability.EdgeType.aa;
-        } else if (endpointFrom == Endpoint.TAIL && endpointTo == Endpoint.TAIL) {
-            return EdgeTypeProbability.EdgeType.tt;
-        } else {
-            return EdgeTypeProbability.EdgeType.nil;
-        }
-    }
-
-    private static List<Edge.Property> getEdgeProperties(String props, Pattern spacePattern) {
-        List<Edge.Property> properties = new LinkedList<>();
-
-        for (String prop : spacePattern.split(props)) {
-            if ("dd".equals(prop)) {
-                properties.add(Edge.Property.dd);
-            } else if ("nl".equals(prop)) {
-                properties.add(Edge.Property.nl);
-            } else if ("pd".equals(prop)) {
-                properties.add(Edge.Property.pd);
-            } else if ("pl".equals(prop)) {
-                properties.add(Edge.Property.pl);
-            }
-        }
-
-        return properties;
-    }
-
-    private static void extractGraphNodes(Graph graph, BufferedReader in) throws IOException {
-        for (String line = in.readLine(); line != null; line = in.readLine()) {
-            line = line.trim();
-            if (line.isEmpty()) {
-                break;
-            }
-
-            String[] tokens = line.split("[,;]");
-
-            for (String token : tokens) {
-                if (token.startsWith("(") && token.endsWith(")")) {
-                    token = token.replace("(", "");
-                    token = token.replace(")", "");
-                    Node node = new GraphNode(token);
-                    node.setNodeType(NodeType.LATENT);
-                    graph.addNode(node);
-                } else {
-                    Node node = new GraphNode(token);
-                    node.setNodeType(NodeType.MEASURED);
-                    graph.addNode(node);
-                }
-            }
-
-//            Arrays.stream(line.split("[,;]")).map(GraphNode::new).forEach(graph::addNode);
-        }
-    }
-
-    public static Graph readerToGraphJson(Reader reader) throws IOException {
-        BufferedReader in = new BufferedReader(reader);
-
-        StringBuilder json = new StringBuilder();
-        String line;
-
-        while ((line = in.readLine()) != null) {
-            json.append(line.trim());
-        }
-
-        return JsonUtils.parseJSONObjectToTetradGraph(json.toString());
-    }
-
     public static Graph loadGraphGcpCausaldag(File file) {
         System.out.println("KK " + file.getAbsolutePath());
         File parentFile = file.getParentFile().getParentFile();
@@ -338,68 +119,6 @@ public class GraphPersistence {
         }
     }
 
-    public static Graph readerToGraphCausaldag(Reader reader, List<Node> variables) throws IOException {
-        Graph graph = new EdgeListGraph(variables);
-        try (BufferedReader in = new BufferedReader(reader)) {
-            for (String line = in.readLine(); line != null; line = in.readLine()) {
-                line = line.trim();
-
-                String[] tokens = line.split("[\\[\\]]");
-
-                for (String t : tokens) {
-//                    System.out.println(t);
-
-                    String[] tokens2 = t.split("[,|]");
-
-                    if (tokens2[0].isEmpty()) continue;
-
-                    Node x = variables.get(Integer.parseInt(tokens2[0]));
-
-                    for (int j = 1; j < tokens2.length; j++) {
-                        if (tokens2[j].isEmpty()) continue;
-
-                        Node y = variables.get(Integer.parseInt(tokens2[j]));
-
-                        graph.addDirectedEdge(y, x);
-                    }
-                }
-            }
-        }
-
-        return graph;
-    }
-
-    public static String loadGraphRMatrix(Graph graph) throws IllegalArgumentException {
-        int[][] m = GraphPersistence.incidenceMatrix(graph);
-
-        TextTable table = new TextTable(m[0].length + 1, m.length + 1);
-
-        for (int i = 0; i < m.length; i++) {
-            for (int j = 0; j < m[0].length; j++) {
-                table.setToken(i + 1, j + 1, m[i][j] + "");
-            }
-        }
-
-        for (int i = 0; i < m.length; i++) {
-            table.setToken(i + 1, 0, (i + 1) + "");
-        }
-
-        List<Node> nodes = graph.getNodes();
-
-        for (int j = 0; j < m[0].length; j++) {
-            table.setToken(0, j + 1, nodes.get(j).getName());
-        }
-
-        return table.toString();
-    }
-
-    /**
-     * A standard matrix graph representation for directed graphs. a[i][j] = 1
-     * is j-->i and -1 if i-->j.
-     *
-     * @throws IllegalArgumentException if <code>graph</code> is not a directed
-     *                                  graph.
-     */
     private static int[][] incidenceMatrix(Graph graph) throws IllegalArgumentException {
         List<Node> nodes = graph.getNodes();
         int[][] m = new int[nodes.size()][nodes.size()];
@@ -575,6 +294,292 @@ public class GraphPersistence {
             throw new IllegalStateException();
         }
     }
+
+    public static String loadGraphRMatrix(Graph graph) throws IllegalArgumentException {
+        int[][] m = GraphPersistence.incidenceMatrix(graph);
+
+        TextTable table = new TextTable(m[0].length + 1, m.length + 1);
+
+        for (int i = 0; i < m.length; i++) {
+            for (int j = 0; j < m[0].length; j++) {
+                table.setToken(i + 1, j + 1, m[i][j] + "");
+            }
+        }
+
+        for (int i = 0; i < m.length; i++) {
+            table.setToken(i + 1, 0, (i + 1) + "");
+        }
+
+        List<Node> nodes = graph.getNodes();
+
+        for (int j = 0; j < m[0].length; j++) {
+            table.setToken(0, j + 1, nodes.get(j).getName());
+        }
+
+        return table.toString();
+    }
+
+
+    public static Graph readerToGraphTxt(String graphString) throws IOException {
+        return readerToGraphTxt(new CharArrayReader(graphString.toCharArray()));
+    }
+
+    public static Graph readerToGraphTxt(Reader reader) throws IOException {
+        Graph graph = new EdgeListGraph();
+        try (BufferedReader in = new BufferedReader(reader)) {
+            for (String line = in.readLine(); line != null; line = in.readLine()) {
+                line = line.trim();
+                switch (line) {
+                    case "Graph Nodes:":
+                        extractGraphNodes(graph, in);
+                        break;
+                    case "Graph Edges:":
+                        extractGraphEdges(graph, in);
+                        break;
+                }
+            }
+        }
+
+        return graph;
+    }
+
+    /**
+     * @param graph The graph to be saved.
+     * @param file  The file to save it in.
+     * @param xml   True if to be saved in XML, false if in text.
+     * @return I have no idea whey I'm returning this; it's already closed...
+     */
+    public static PrintWriter saveGraph(Graph graph, File file, boolean xml) {
+        PrintWriter out;
+
+        try {
+            out = new PrintWriter(new FileOutputStream(file));
+//            out.print(graph);
+
+            if (xml) {
+//                out.println(graphToPcalg(graph));
+                out.print(graphToXml(graph));
+            } else {
+                out.print(graph);
+            }
+            out.flush();
+            out.close();
+        } catch (IOException e1) {
+            throw new IllegalArgumentException("Output file could not " + "be opened: " + file);
+        }
+        return out;
+    }
+
+    public static Graph readerToGraphRuben(Reader reader) throws IOException {
+        Graph graph = new EdgeListGraph();
+        try (BufferedReader in = new BufferedReader(reader)) {
+            for (String line = in.readLine(); line != null; line = in.readLine()) {
+                line = line.trim();
+                switch (line) {
+                    case "Graph Nodes:":
+                        extractGraphNodes(graph, in);
+                        break;
+                    case "Graph Edges:":
+                        extractGraphEdges(graph, in);
+                        break;
+                }
+            }
+        }
+
+        return graph;
+    }
+
+    private static void extractGraphEdges(Graph graph, BufferedReader in) throws IOException {
+        Pattern lineNumPattern = Pattern.compile("^\\d+.\\s?");
+        Pattern spacePattern = Pattern.compile("\\s+");
+        Pattern semicolonPattern = Pattern.compile(";");
+        Pattern colonPattern = Pattern.compile(":");
+        for (String line = in.readLine(); line != null; line = in.readLine()) {
+            line = line.trim();
+            if (line.isEmpty()) {
+                return;
+            }
+
+            line = lineNumPattern.matcher(line).replaceAll("");
+            String[] fields = spacePattern.split(line, 4);
+            Edge edge = getEdge(fields[0], fields[1], fields[2], graph);
+            if (fields.length > 3) {
+                fields = semicolonPattern.split(fields[3]);
+                if (fields.length > 1) {
+                    for (String prop : fields) {
+                        setEdgeTypeProperties(prop, edge, graph, spacePattern, colonPattern);
+                    }
+                } else {
+                    getEdgeProperties(fields[0], spacePattern)
+                            .forEach(edge::addProperty);
+                }
+            }
+
+            graph.addEdge(edge);
+        }
+    }
+
+
+
+    private static void setEdgeTypeProperties(String prop, Edge edge, Graph graph, Pattern spacePattern, Pattern colonPattern) {
+        prop = prop.replace("[", "").replace("]", "");
+        String[] fields = colonPattern.split(prop);
+        if (fields.length == 2) {
+            String bootstrapEdge = fields[0];
+            String bootstrapEdgeTypeProb = fields[1];
+
+            // edge type
+            fields = spacePattern.split(bootstrapEdge, 4);
+            if (fields.length >= 3) {
+                // edge-type probability
+                EdgeTypeProbability.EdgeType edgeType = getEdgeType(fields[1]);
+                List<Edge.Property> properties = new LinkedList<>();
+                if (fields.length > 3) {
+                    // pags
+                    properties.addAll(getEdgeProperties(fields[3], spacePattern));
+                }
+
+                edge.addEdgeTypeProbability(new EdgeTypeProbability(edgeType, properties, Double.parseDouble(bootstrapEdgeTypeProb)));
+            } else {
+                // edge probability
+                if ("edge".equals(bootstrapEdge)) {
+                    fields = spacePattern.split(bootstrapEdgeTypeProb, 2);
+                    if (fields.length > 1) {
+                        edge.setProbability(Double.parseDouble(fields[0]));
+                        getEdgeProperties(fields[1], spacePattern).forEach(edge::addProperty);
+                    } else {
+                        edge.setProbability(Double.parseDouble(bootstrapEdgeTypeProb));
+                    }
+                } else if ("no edge".equals(bootstrapEdge)) {
+                    fields = spacePattern.split(bootstrapEdgeTypeProb);
+                    edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, Double.parseDouble(bootstrapEdgeTypeProb)));
+                }
+            }
+        }
+    }
+
+    private static EdgeTypeProbability.EdgeType getEdgeType(String edgeType) {
+        Endpoint endpointFrom = getEndpoint(edgeType.charAt(0));
+        Endpoint endpointTo = getEndpoint(edgeType.charAt(2));
+
+        if (endpointFrom == Endpoint.TAIL && endpointTo == Endpoint.ARROW) {
+            return EdgeTypeProbability.EdgeType.ta;
+        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.TAIL) {
+            return EdgeTypeProbability.EdgeType.at;
+        } else if (endpointFrom == Endpoint.CIRCLE && endpointTo == Endpoint.ARROW) {
+            return EdgeTypeProbability.EdgeType.ca;
+        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.CIRCLE) {
+            return EdgeTypeProbability.EdgeType.ac;
+        } else if (endpointFrom == Endpoint.CIRCLE && endpointTo == Endpoint.CIRCLE) {
+            return EdgeTypeProbability.EdgeType.cc;
+        } else if (endpointFrom == Endpoint.ARROW && endpointTo == Endpoint.ARROW) {
+            return EdgeTypeProbability.EdgeType.aa;
+        } else if (endpointFrom == Endpoint.TAIL && endpointTo == Endpoint.TAIL) {
+            return EdgeTypeProbability.EdgeType.tt;
+        } else {
+            return EdgeTypeProbability.EdgeType.nil;
+        }
+    }
+
+    private static List<Edge.Property> getEdgeProperties(String props, Pattern spacePattern) {
+        List<Edge.Property> properties = new LinkedList<>();
+
+        for (String prop : spacePattern.split(props)) {
+            if ("dd".equals(prop)) {
+                properties.add(Edge.Property.dd);
+            } else if ("nl".equals(prop)) {
+                properties.add(Edge.Property.nl);
+            } else if ("pd".equals(prop)) {
+                properties.add(Edge.Property.pd);
+            } else if ("pl".equals(prop)) {
+                properties.add(Edge.Property.pl);
+            }
+        }
+
+        return properties;
+    }
+
+    private static void extractGraphNodes(Graph graph, BufferedReader in) throws IOException {
+        for (String line = in.readLine(); line != null; line = in.readLine()) {
+            line = line.trim();
+            if (line.isEmpty()) {
+                break;
+            }
+
+            String[] tokens = line.split("[,;]");
+
+            for (String token : tokens) {
+                if (token.startsWith("(") && token.endsWith(")")) {
+                    token = token.replace("(", "");
+                    token = token.replace(")", "");
+                    Node node = new GraphNode(token);
+                    node.setNodeType(NodeType.LATENT);
+                    graph.addNode(node);
+                } else {
+                    Node node = new GraphNode(token);
+                    node.setNodeType(NodeType.MEASURED);
+                    graph.addNode(node);
+                }
+            }
+
+//            Arrays.stream(line.split("[,;]")).map(GraphNode::new).forEach(graph::addNode);
+        }
+    }
+
+    public static Graph readerToGraphJson(Reader reader) throws IOException {
+        BufferedReader in = new BufferedReader(reader);
+
+        StringBuilder json = new StringBuilder();
+        String line;
+
+        while ((line = in.readLine()) != null) {
+            json.append(line.trim());
+        }
+
+        return JsonUtils.parseJSONObjectToTetradGraph(json.toString());
+    }
+
+
+    public static Graph readerToGraphCausaldag(Reader reader, List<Node> variables) throws IOException {
+        Graph graph = new EdgeListGraph(variables);
+        try (BufferedReader in = new BufferedReader(reader)) {
+            for (String line = in.readLine(); line != null; line = in.readLine()) {
+                line = line.trim();
+
+                String[] tokens = line.split("[\\[\\]]");
+
+                for (String t : tokens) {
+//                    System.out.println(t);
+
+                    String[] tokens2 = t.split("[,|]");
+
+                    if (tokens2[0].isEmpty()) continue;
+
+                    Node x = variables.get(Integer.parseInt(tokens2[0]));
+
+                    for (int j = 1; j < tokens2.length; j++) {
+                        if (tokens2[j].isEmpty()) continue;
+
+                        Node y = variables.get(Integer.parseInt(tokens2[j]));
+
+                        graph.addDirectedEdge(y, x);
+                    }
+                }
+            }
+        }
+
+        return graph;
+    }
+
+
+
+    /**
+     * A standard matrix graph representation for directed graphs. a[i][j] = 1
+     * is j-->i and -1 if i-->j.
+     *
+     * @throws IllegalArgumentException if <code>graph</code> is not a directed
+     *                                  graph.
+     */
 
     /**
      * Converts a graph to a Graphviz .dot file
