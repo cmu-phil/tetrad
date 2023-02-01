@@ -131,8 +131,6 @@ public class Underlines implements TripleClassifier, TetradSerializable {
     }
 
     public void removeTriplesNotInGraph() {
-//        if (!stuffRemovedSinceLastTripleAccess) return;
-
         for (Triple triple : new HashSet<>(this.ambiguousTriples)) {
             if (!graph.containsNode(triple.getX()) || !graph.containsNode(triple.getY())
                     || !graph.containsNode(triple.getZ())) {
