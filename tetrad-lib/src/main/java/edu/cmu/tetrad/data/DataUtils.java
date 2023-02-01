@@ -629,25 +629,6 @@ public final class DataUtils {
      * @return the submatrix of m with variables in the order of the x variables.
      */
     public static Matrix subMatrix(ICovarianceMatrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
-//        if (x == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (y == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (z == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        for (Node node : z) {
-//            if (node == null) {
-//                throw new NullPointerException();
-//            }
-//        }
-
-        // Create index array for the given variables.
         int[] indices = new int[2 + z.size()];
 
         indices[0] = indexMap.get(x);
@@ -656,8 +637,6 @@ public final class DataUtils {
         for (int i = 0; i < z.size(); i++) {
             indices[i + 2] = indexMap.get(z.get(i));
         }
-
-        // Extract submatrix of correlation matrix using this index array.
 
         return m.getSelection(indices, indices);
     }
@@ -881,14 +860,6 @@ public final class DataUtils {
         return means;
     }
 
-    public static void remean(Matrix data, Vector means) {
-        for (int j = 0; j < data.columns(); j++) {
-            for (int i = 0; i < data.rows(); i++) {
-                data.set(i, j, data.get(i, j) + means.get(j));
-            }
-        }
-    }
-
     public static Matrix cov(Matrix data) {
         for (int j = 0; j < data.columns(); j++) {
             double sum = 0.0;
@@ -919,32 +890,6 @@ public final class DataUtils {
         }
 
         return prod;
-    }
-
-    public static void simpleTest() {
-        double[][] d = {
-                {1, 2},
-                {3, 4},
-                {5, 6},
-        };
-
-        RealMatrix m = new BlockRealMatrix(d);
-
-        System.out.println(m);
-
-        System.out.println(DataUtils.times(m.transpose(), m));
-
-        System.out.println(MatrixUtils.transposeWithoutCopy(m).multiply(m));
-
-        Matrix n = new Matrix(m.getData());
-
-        System.out.println(n);
-
-        RealMatrix q = new BlockRealMatrix(n.toArray());
-
-        RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
-        RealMatrix q2 = DataUtils.times(q1, q);
-        System.out.println(new Matrix(q2.getData()));
     }
 
     private static RealMatrix times(RealMatrix m, RealMatrix n) {
@@ -1482,13 +1427,13 @@ public final class DataUtils {
                 double min = Double.POSITIVE_INFINITY;
                 double max = Double.NEGATIVE_INFINITY;
 
-                for (int i = 0; i < xTransformed.length; i++) {
-                    if (xTransformed[i] > max && !Double.isInfinite(xTransformed[i])) {
-                        max = xTransformed[i];
+                for (double v : xTransformed) {
+                    if (v > max && !Double.isInfinite(v)) {
+                        max = v;
                     }
 
-                    if (xTransformed[i] < min && !Double.isInfinite(xTransformed[i])) {
-                        min = xTransformed[i];
+                    if (v < min && !Double.isInfinite(v)) {
+                        min = v;
                     }
                 }
 
@@ -1596,8 +1541,6 @@ public final class DataUtils {
         double rho = (n * sum - n * m) / (m * (n * n - n));
         return n / (1. + (n - 1.) * rho);
     }
-
-
 }
 
 
