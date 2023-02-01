@@ -31,50 +31,9 @@ import java.io.ObjectStreamException;
  *
  * @author Joseph Ramsey
  */
-public final class Endpoint implements TetradSerializable {
+public enum Endpoint implements TetradSerializable {
+    TAIL, ARROW, CIRCLE, STAR, NULL;
     static final long serialVersionUID = 23L;
-
-    public static final Endpoint TAIL = new Endpoint("Tail");
-    public static final Endpoint ARROW = new Endpoint("Arrow");
-    public static final Endpoint CIRCLE = new Endpoint("Circle");
-    private static final Endpoint STAR = new Endpoint("Star");
-    public static final Endpoint NULL = new Endpoint("Null");
-
-    /**
-     * The name of this type.
-     */
-    private final transient String name;
-
-    /**
-     * Protected constructor for the types; this allows for extension in case
-     * anyone wants to add formula types.
-     */
-    private Endpoint(String name) {
-        this.name = name;
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static Endpoint serializableInstance() {
-        return Endpoint.TAIL;
-    }
-
-    /**
-     * Prints out the name of the type.
-     */
-    public String toString() {
-        return this.name;
-    }
-
-    // Declarations required for serialization.
-    private static int nextOrdinal;
-    private final int ordinal = Endpoint.nextOrdinal++;
-    public static final Endpoint[] TYPES = {Endpoint.TAIL, Endpoint.ARROW, Endpoint.CIRCLE, Endpoint.STAR, Endpoint.NULL};
-
-    Object readResolve() throws ObjectStreamException {
-        return Endpoint.TYPES[this.ordinal]; // Canonicalize.
-    }
 }
 
 
