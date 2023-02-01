@@ -720,7 +720,6 @@ public class PerformanceTests {
 //        RandomUtil.getInstance().setSeed(4828384343999L);
         final double penaltyDiscount = 4.0;
         final int maxIndegree = 5;
-        final boolean faithfulness = true;
 
 //        RandomUtil.getInstance().setSeed(50304050454L);
 
@@ -825,7 +824,6 @@ public class PerformanceTests {
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
                 fges.setOut(System.out);
-                fges.setFaithfulnessAssumed(faithfulness);
 
                 long timeb = System.currentTimeMillis();
 
@@ -866,7 +864,6 @@ public class PerformanceTests {
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
                 fges.setOut(System.out);
-                fges.setFaithfulnessAssumed(faithfulness);
 
                 long timeb = System.currentTimeMillis();
 

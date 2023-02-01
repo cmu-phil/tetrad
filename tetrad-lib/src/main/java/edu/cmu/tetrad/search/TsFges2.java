@@ -168,7 +168,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     /**
      * True if one-edge faithfulness is assumed. Speeds the algorithm up.
      */
-    private boolean faithfulnessAssumed = true;
+    private boolean faithfulnessAssumed = false;
 
     // Bounds the indegree of the graph.
     private int maxIndegree = -1;
@@ -195,7 +195,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = true;
+        this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
     /**

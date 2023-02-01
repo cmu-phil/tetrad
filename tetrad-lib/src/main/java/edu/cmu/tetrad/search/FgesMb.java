@@ -133,7 +133,7 @@ public final class FgesMb {
     /**
      * True if one-edge faithfulness is assumed. Speeds the algorithm up.
      */
-    private boolean faithfulnessAssumed = true;
+    private boolean faithfulnessAssumed = false;
 
     //===========================CONSTRUCTORS=============================//
     private boolean parallelized = false;

@@ -162,7 +162,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     private Graph adjacencies;
 
     // True if it is assumed that zero effect adjacencies are not in the graph.
-    private boolean faithfulnessAssumed = true;
+    private boolean faithfulnessAssumed = false;
 
     // A utility map to help with orientation.
     private final WeakHashMap<Node, Set<Node>> neighbors = new WeakHashMap<>();

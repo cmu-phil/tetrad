@@ -76,7 +76,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     //    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
     //    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
-    private boolean faithfulnessAssumed = true;
+    private boolean faithfulnessAssumed = false;
     /**
      * Specification of forbidden and required edges.
      */
