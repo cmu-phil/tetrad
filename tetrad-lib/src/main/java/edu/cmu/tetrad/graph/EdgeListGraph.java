@@ -68,11 +68,6 @@ public class EdgeListGraph implements Graph {
     final Map<Node, Set<Edge>> edgeLists;
 
     /**
-     * The set of highlighted edges.
-     */
-    private Set<Edge> highlightedEdges = new HashSet<>();
-
-    /**
      * A hash from node names to nodes;
      */
     private final Map<String, Node> namesHash;
@@ -137,8 +132,6 @@ public class EdgeListGraph implements Graph {
         this.namesHash = new HashMap<>(graph.namesHash);
 
         this.underlines = new Underlines(graph.underlines());
-
-        this.highlightedEdges = new HashSet<>(graph.highlightedEdges);
 
         this.paths = new Paths(this);
         this.underlines = new Underlines(graph.underlines);
@@ -923,8 +916,6 @@ public class EdgeListGraph implements Graph {
 
             this.edgeLists.put(edge.getNode1(), edgeList1);
             this.edgeLists.put(edge.getNode2(), edgeList2);
-
-            this.highlightedEdges.remove(edge);
 
             getPcs().firePropertyChange("edgeRemoved", edge, null);
             return true;
