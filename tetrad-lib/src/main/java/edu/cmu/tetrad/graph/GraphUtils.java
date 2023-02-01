@@ -20,29 +20,19 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.*;
-import edu.pitt.dbmi.data.reader.Data;
-import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
-import nu.xom.*;
 
-import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
-import java.util.regex.Matcher;
 
 import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 import static java.lang.Math.min;
 import static java.util.Collections.shuffle;
-import java.util.regex.Pattern;
 
 /**
  * Basic graph utilities.
@@ -2601,7 +2591,7 @@ public final class GraphUtils {
         mb.add(x);
 
         for (Node d : G.getAdjacentNodes(x)) {
-            mbVisit(d, path, G, mb);
+            pagMbVisit(d, path, G, mb);
         }
 
         mb.remove(x);
@@ -2609,7 +2599,7 @@ public final class GraphUtils {
         return mb;
     }
 
-    public static void mbVisit(Node c, LinkedList<Node> path, Graph G, Set<Node> mb) {
+    private static void pagMbVisit(Node c, LinkedList<Node> path, Graph G, Set<Node> mb) {
         if (path.contains(c)) return;
         if (mb.contains(c)) return;
         path.add(c);
@@ -2627,7 +2617,7 @@ public final class GraphUtils {
         mb.add(c);
 
         for (Node d : G.getAdjacentNodes(c)) {
-            mbVisit(d, path, G, mb);
+            pagMbVisit(d, path, G, mb);
         }
 
         path.remove(c);

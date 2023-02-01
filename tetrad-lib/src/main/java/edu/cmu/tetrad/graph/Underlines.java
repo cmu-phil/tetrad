@@ -11,20 +11,9 @@ public class Underlines implements TripleClassifier, TetradSerializable {
     static final long serialVersionUID = 23L;
 
     private final Graph graph;
-
-    /**
-     * @serial
-     */
-    Set<Triple> underLineTriples;
-    /**
-     * @serial
-     */
-    Set<Triple> dottedUnderLineTriples;
-
-    /**
-     * Set of ambiguous triples.
-     */
-    protected Set<Triple> ambiguousTriples;
+    private Set<Triple> underLineTriples;
+    private Set<Triple> dottedUnderLineTriples;
+    private Set<Triple> ambiguousTriples;
 
     public Underlines(Graph graph) {
         this.graph = graph;
@@ -52,7 +41,6 @@ public class Underlines implements TripleClassifier, TetradSerializable {
         }
     }
 
-
     public Set<Triple> getUnderLines() {
         return new HashSet<>(this.underLineTriples);
     }
@@ -67,7 +55,6 @@ public class Underlines implements TripleClassifier, TetradSerializable {
     public boolean isAmbiguousTriple(Node x, Node y, Node z) {
         return this.ambiguousTriples.contains(new Triple(x, y, z));
     }
-
 
     /**
      * States whether r-s-r is an underline triple or not.
