@@ -85,7 +85,6 @@ public class Underlines implements TripleClassifier, TetradSerializable {
 
         if (!triple.alongPathIn(graph)) {
             return;
-//            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
         }
 
         this.underLineTriples.add(new Triple(x, y, z));
@@ -96,7 +95,6 @@ public class Underlines implements TripleClassifier, TetradSerializable {
 
         if (!triple.alongPathIn(graph)) {
             return;
-//            throw new IllegalArgumentException("<" + x + ", " + y + ", " + z + "> must lie along a path in the graph.");
         }
 
         this.dottedUnderLineTriples.add(triple);
