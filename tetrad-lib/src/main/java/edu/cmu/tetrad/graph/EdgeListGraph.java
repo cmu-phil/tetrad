@@ -1075,10 +1075,6 @@ public class EdgeListGraph implements Graph {
         return this.pcs;
     }
 
-    public List<Node> getCausalOrdering() {
-        return paths().getCausalOrdering(this.getNodes());
-    }
-
     @Override
     public boolean isParameterizable(Node node) {
         return true;

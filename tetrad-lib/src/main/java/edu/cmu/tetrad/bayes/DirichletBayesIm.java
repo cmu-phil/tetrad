@@ -857,7 +857,7 @@ public final class DirichletBayesIm implements BayesIm {
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
         Dag dag = new Dag(graph);
-        List<Node> tierOrdering = dag.getCausalOrdering();
+        List<Node> tierOrdering = dag.paths().getCausalOrdering(dag.getNodes());
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {

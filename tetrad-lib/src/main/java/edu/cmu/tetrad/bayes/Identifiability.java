@@ -689,7 +689,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         Dag graphH = new Dag(graphWhole.getDag().subgraph(h));
 
         // tier ordering
-        List<Node> tierOrdering = graphH.getCausalOrdering();
+        List<Node> tierOrdering = graphH.paths().getCausalOrdering(graphH.getNodes());
 
         // convert to the indices of the original graph
         // (from which the subgraph was obtained)
