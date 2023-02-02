@@ -69,7 +69,7 @@ public class TestGFci {
             vars.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph dag = RandomGraph.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false);
+        Graph dag = RandomGraph.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false, 50000);
 
         DataSet data;
 

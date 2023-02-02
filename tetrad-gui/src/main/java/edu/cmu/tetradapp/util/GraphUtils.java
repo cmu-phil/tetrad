@@ -107,7 +107,7 @@ public class GraphUtils {
                             randomGraphMaxDegree,
                             randomGraphMaxIndegree,
                             randomGraphMaxOutdegree,
-                            randomGraphConnected);
+                            randomGraphConnected, 50000);
                     edu.cmu.tetrad.graph.GraphUtils.arrangeBySourceGraph(graph, _graph);
                     HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphPersistence.grabLayout(nodes);
                     edu.cmu.tetrad.graph.GraphUtils.arrangeByLayout(graph, layout);
