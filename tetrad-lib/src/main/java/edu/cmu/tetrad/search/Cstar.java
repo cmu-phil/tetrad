@@ -408,7 +408,7 @@ public class Cstar {
 
     private DataSet readData(File dir) {
         try {
-            DataSet dataSet = DataPersistence.loadContinuousData(new File(dir, "data.txt"), "//", '*', "*", true, Delimiter.TAB);
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(new File(dir, "data.txt"), "//", '*', "*", true, Delimiter.TAB);
 
             TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
 
@@ -647,7 +647,7 @@ public class Cstar {
 
     private double[][] loadMatrix(File file) {
         try {
-            DataSet dataSet = DataPersistence.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB);
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB);
 
 //            TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
 

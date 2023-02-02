@@ -34,7 +34,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
         try {
             File file = new File(this.path);
             System.out.println("Loading data from " + file.getAbsolutePath());
-            this.dataSet = DataPersistence.loadContinuousData(file, "//", '\"',
+            this.dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
         } catch (IOException e) {
             e.printStackTrace();

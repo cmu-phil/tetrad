@@ -30,7 +30,7 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
 
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Discretizer discretizer = new Discretizer(DataPersistence.getContinuousDataSet(dataSet));
+            Discretizer discretizer = new Discretizer(SimpleDataLoader.getContinuousDataSet(dataSet));
             List<Node> nodes = dataSet.getVariables();
 
             for (Node node : nodes) {
@@ -40,7 +40,7 @@ public class MixedFgesDiscretingContinuousVariables implements Algorithm {
             }
 
             dataSet = discretizer.discretize();
-            DataSet _dataSet = DataPersistence.getDiscreteDataSet(dataSet);
+            DataSet _dataSet = SimpleDataLoader.getDiscreteDataSet(dataSet);
             Fges fges = new Fges(this.score.getScore(_dataSet, parameters));
             fges.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph p = fges.search();

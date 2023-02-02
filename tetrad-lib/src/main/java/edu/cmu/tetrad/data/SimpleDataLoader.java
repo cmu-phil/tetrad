@@ -17,8 +17,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class DataPersistence {
+public class SimpleDataLoader {
 
+    /**
+     * Loads a dataset from a file
+     *
+     * @param file               The text file to load the data from.
+     * @param commentMarker      The comment marker as a string--e.g., "//".
+     * @param quoteCharacter     The quote character, e.g., '\"'.
+     * @param missingValueMarker The missing value marker as a string--e.g., "NA".
+     * @param hasHeader          True if the first row of the data contains variable names.
+     * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
+     * @return The loaded DataSet.
+     * @throws IOException If an error occurred in reading the file.
+     */
     @NotNull
     public static DataSet loadContinuousData(File file, String commentMarker, char quoteCharacter,
                                              String missingValueMarker, boolean hasHeader, Delimiter delimiter)
@@ -33,6 +45,18 @@ public class DataPersistence {
         return (DataSet) DataConvertUtils.toContinuousDataModel(data);
     }
 
+    /**
+     * Loads a dataset from a file
+     *
+     * @param file               The text file to load the data from.
+     * @param commentMarker      The comment marker as a string--e.g., "//".
+     * @param quoteCharacter     The quote character, e.g., '\"'.
+     * @param missingValueMarker The missing value marker as a string--e.g., "NA".
+     * @param hasHeader          True if the first row of the data contains variable names.
+     * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
+     * @return The loaded DataSet.
+     * @throws IOException If an error occurred in reading the file.
+     */
     @NotNull
     public static DataSet loadDiscreteData(File file, String commentMarker, char quoteCharacter,
                                            String missingValueMarker, boolean hasHeader, Delimiter delimiter)
@@ -55,6 +79,20 @@ public class DataPersistence {
         return (DataSet) dataModel;
     }
 
+    /**
+     * Loads a dataset from a file
+     *
+     * @param file               The text file to load the data from.
+     * @param commentMarker      The comment marker as a string--e.g., "//".
+     * @param quoteCharacter     The quote character, e.g., '\"'.
+     * @param missingValueMarker The missing value marker as a string--e.g., "NA".
+     * @param hasHeader          True if the first row of the data contains variable names.
+     * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
+     * @param maxNumCategories   The maximum number of distinct entries in a columns alloed
+     *                           in order for the column to be parsed as discrete.
+     * @return The loaded DataSet.
+     * @throws IOException If an error occurred in reading the file.
+     */
     @NotNull
     public static DataSet loadMixedData(File file, String commentMarker, char quoteCharacter,
                                         String missingValueMarker, boolean hasHeader, int maxNumCategories, Delimiter delimiter)
@@ -79,7 +117,7 @@ public class DataPersistence {
     }
 
     /**
-     * Reads in a covariance matrix. The format is as follows.
+     * Parses a covariance matrix from a char[] array. The format is as follows.
      * <pre>
      * /covariance
      * 100
@@ -94,10 +132,10 @@ public class DataPersistence {
      *                           new FileReader(file), " \t", "//");
      * </pre> The initial "/covariance" is optional.
      */
-    public static ICovarianceMatrix parseCovariance(char[] chars, String commentMarker,
-                                                    DelimiterType delimiterType,
-                                                    char quoteChar,
-                                                    String missingValueMarker) {
+    public static ICovarianceMatrix loadCovarianceMatrix(char[] chars, String commentMarker,
+                                                         DelimiterType delimiterType,
+                                                         char quoteChar,
+                                                         String missingValueMarker) {
 
         // Do first pass to get a description of the file.
         CharArrayReader reader = new CharArrayReader(chars);
@@ -116,18 +154,23 @@ public class DataPersistence {
      * Parses the given files for a tabular data set, returning a
      * RectangularDataSet if successful.
      *
+     * @param file               The text file to load the data from.
+     * @param commentMarker      The comment marker as a string--e.g., "//".
+     * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
+     * @param quoteCharacter     The quote character, e.g., '\"'.
+     * @param missingValueMarker The missing value marker as a string--e.g., "NA".
      * @throws IOException if the file cannot be read.
      */
-    public static ICovarianceMatrix parseCovariance(File file, String commentMarker,
-                                                    DelimiterType delimiterType,
-                                                    char quoteChar,
-                                                    String missingValueMarker) throws IOException {
+    public static ICovarianceMatrix loadCovarianceMatrix(File file, String commentMarker,
+                                                         DelimiterType delimiter,
+                                                         char quoteCharacter,
+                                                         String missingValueMarker) throws IOException {
         FileReader reader = null;
 
         try {
             reader = new FileReader(file);
             ICovarianceMatrix covarianceMatrix = doCovariancePass(reader, commentMarker,
-                    delimiterType, quoteChar, missingValueMarker);
+                    delimiter, quoteCharacter, missingValueMarker);
 
             TetradLogger.getInstance().log("info", "\nCovariance matrix loaded!");
             return covarianceMatrix;
@@ -142,7 +185,7 @@ public class DataPersistence {
         }
     }
 
-    static ICovarianceMatrix doCovariancePass(Reader reader, String commentMarker, DelimiterType delimiterType,
+    private static ICovarianceMatrix doCovariancePass(Reader reader, String commentMarker, DelimiterType delimiterType,
                                               char quoteChar, String missingValueMarker) {
         TetradLogger.getInstance().log("info", "\nDATA LOADING PARAMETERS:");
         TetradLogger.getInstance().log("info", "File type = COVARIANCE");
@@ -255,6 +298,9 @@ public class DataPersistence {
         return covarianceMatrix;
     }
 
+    /**
+     * Returns the datamodel case to DataSet if it is discrete.
+     */
     public static DataSet getDiscreteDataSet(DataModel dataSet) {
         if (!(dataSet instanceof DataSet) || !dataSet.isDiscrete()) {
             throw new IllegalArgumentException("Sorry, I was expecting a discrete data set.");
@@ -263,6 +309,9 @@ public class DataPersistence {
         return (DataSet) dataSet;
     }
 
+    /**
+     * Returns the datamodel case to DataSet if it is continuous.
+     */
     public static DataSet getContinuousDataSet(DataModel dataSet) {
         if (!(dataSet instanceof DataSet) || !dataSet.isContinuous()) {
             throw new IllegalArgumentException("Sorry, I was expecting a (tabular) continuous data set.");
@@ -271,6 +320,9 @@ public class DataPersistence {
         return (DataSet) dataSet;
     }
 
+    /**
+     * Returns the datamodel case to DataSet if it is mixed.
+     */
     public static DataSet getMixedDataSet(DataModel dataSet) {
         if (!(dataSet instanceof DataSet)) {
             throw new IllegalArgumentException("Sorry, I was expecting a (tabular) mixed data set.");
@@ -280,7 +332,11 @@ public class DataPersistence {
     }
 
 
-    public static ICovarianceMatrix getCovMatrix(DataModel dataModel) {
+    /**
+     * Returns the model cast to ICovarianceMatrix if already a covariance matric,
+     * or else returns the covariance matrix for a dataset.
+     */
+    public static ICovarianceMatrix getCovarianceMatrix(DataModel dataModel) {
         if (dataModel == null) {
             throw new IllegalArgumentException("Expecting either a tabular dataset or a covariance matrix.");
         }
@@ -296,38 +352,26 @@ public class DataPersistence {
 
     @NotNull
     public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet) {
-        ICovarianceMatrix cov;
-
-//        if (dataSet.getNumRows() < 1000) {
-//            cov = new CovarianceMatrixOnTheFly(dataSet);
-//        } else {
-        cov = new CovarianceMatrix(dataSet);
-//        }
-
-        return cov;
+        return new CovarianceMatrix(dataSet);
     }
 
     @NotNull
     public static ICovarianceMatrix getCorrelationMatrix(DataSet dataSet) {
-        ICovarianceMatrix cov;
-
-//        if (dataSet.getNumRows() < 1000) {
-//            cov = new CorrelationMatrixOnTheFly(new CovarianceMatrixOnTheFly(dataSet));
-//        } else {
-        cov = new CovarianceMatrix(dataSet);
-//        }
-
-        return cov;
+        return new CorrelationMatrix(dataSet);
     }
 
     /**
      * Loads knowledge from a file. Assumes knowledge is the only thing in the
      * file. No jokes please. :)
+     *
+     * @param file               The text file to load the data from.
+     * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
+     * @param commentMarker      The comment marker as a string--e.g., "//".
      */
-    public static Knowledge loadKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
+    public static Knowledge loadKnowledge(File file, DelimiterType delimiter, String commentMarker) throws IOException {
         FileReader reader = new FileReader(file);
         Lineizer lineizer = new Lineizer(reader, commentMarker);
-        Knowledge knowledge = loadKnowledge(lineizer, delimiterType.getPattern());
+        Knowledge knowledge = loadKnowledge(lineizer, delimiter.getPattern());
         TetradLogger.getInstance().reset();
         return knowledge;
     }
@@ -343,7 +387,7 @@ public class DataPersistence {
      * 4 x5
      * </pre>
      */
-    public static Knowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
+    private static Knowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
         Knowledge knowledge = new Knowledge();
 
         String line = lineizer.nextLine();

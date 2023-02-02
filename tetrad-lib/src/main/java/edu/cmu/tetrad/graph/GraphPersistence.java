@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.data.DataPersistence;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Data;
@@ -55,7 +55,7 @@ public class GraphPersistence {
             final String missingValueMarker = "*";
             final boolean hasHeader = false;
 
-            DataSet dataSet = DataPersistence.loadContinuousData(file, commentMarker, quoteCharacter, missingValueMarker, hasHeader, Delimiter.TAB);
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, commentMarker, quoteCharacter, missingValueMarker, hasHeader, Delimiter.TAB);
 
             List<Node> nodes = dataSet.getVariables();
             Graph graph = new EdgeListGraph(nodes);
@@ -198,7 +198,7 @@ public class GraphPersistence {
 
     public static Graph loadGraphPcalg(File file) {
         try {
-            DataSet dataSet = DataPersistence.loadContinuousData(file, "//", '\"',
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.COMMA);
 
             List<Node> nodes = dataSet.getVariables();
