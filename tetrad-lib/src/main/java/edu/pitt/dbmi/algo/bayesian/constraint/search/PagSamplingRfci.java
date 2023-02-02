@@ -7,7 +7,7 @@ import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.util.FrequencyProbability;
+import edu.cmu.tetrad.util.GraphTools;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -55,7 +55,7 @@ public class PagSamplingRfci implements GraphSearch {
 
     @Override
     public Graph search() {
-        return FrequencyProbability.createHighEdgeProbabilityGraph(runSearches());
+        return GraphTools.createHighEdgeProbabilityGraph(runSearches());
     }
 
     List<Callable<Graph>> createSearchTasks(int numOfTasks) {

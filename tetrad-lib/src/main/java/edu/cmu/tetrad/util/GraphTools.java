@@ -21,9 +21,9 @@ import java.util.Set;
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */
-public final class FrequencyProbability {
+public final class GraphTools {
 
-    private FrequencyProbability() {
+    private GraphTools() {
     }
 
     /**
