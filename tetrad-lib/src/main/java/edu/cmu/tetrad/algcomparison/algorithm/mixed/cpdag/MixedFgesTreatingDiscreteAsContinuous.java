@@ -26,7 +26,7 @@ public class MixedFgesTreatingDiscreteAsContinuous implements Algorithm {
 
     public Graph search(DataModel Dk, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet mixedDataSet = DataUtils.getMixedDataSet(Dk);
+            DataSet mixedDataSet = DataPersistence.getMixedDataSet(Dk);
             mixedDataSet = DataUtils.convertNumericalDiscreteToContinuous(mixedDataSet);
             SemBicScore score = new SemBicScore(new CovarianceMatrix(mixedDataSet));
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));

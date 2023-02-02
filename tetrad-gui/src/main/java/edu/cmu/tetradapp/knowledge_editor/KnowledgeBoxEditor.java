@@ -164,7 +164,7 @@ public class KnowledgeBoxEditor extends JPanel {
             Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
 
             try {
-                Knowledge knowledge = DataUtils.loadKnowledge(selectedFile, DelimiterType.WHITESPACE, "//");
+                Knowledge knowledge = DataPersistence.loadKnowledge(selectedFile, DelimiterType.WHITESPACE, "//");
                 setKnowledge(knowledge);
                 resetTabbedPane();
             } catch (Exception e1) {

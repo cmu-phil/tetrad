@@ -347,7 +347,7 @@ public class TestFci {
     private boolean ancestral(Node n, Node q, Graph pag) {
         if (n == q) return false;
 
-        if (pag.isAncestorOf(n, q)) {
+        if (pag.paths().isAncestorOf(n, q)) {
             return true;
         } else {
             List<Node> adj = uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<>());

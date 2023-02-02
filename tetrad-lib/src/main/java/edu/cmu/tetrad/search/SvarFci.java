@@ -240,10 +240,6 @@ public final class SvarFci implements GraphSearch {
         fciOrient.ruleR0(this.graph);
         fciOrient.doFinalOrientation(this.graph);
 
-        if (SearchGraphUtils.isLegalPag(this.graph).isLegalPag()) {
-            this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
-        }
-
         return this.graph;
     }
 

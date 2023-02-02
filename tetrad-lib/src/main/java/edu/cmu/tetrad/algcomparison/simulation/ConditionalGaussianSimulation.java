@@ -218,7 +218,7 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         Map<Combination, Double> paramValues = new HashMap<>();
 
-        List<Node> tierOrdering = G.getCausalOrdering();
+        List<Node> tierOrdering = G.paths().getCausalOrdering(G.getNodes());
 
         int[] tiers = new int[tierOrdering.size()];
 

@@ -33,7 +33,7 @@ public class NumCorrectVisibleAncestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (/*!existsCommonAncestor(trueGraph, edge) &&*/ trueGraph.isAncestorOf(x, y)) {
+                if (/*!existsCommonAncestor(trueGraph, edge) &&*/ trueGraph.paths().isAncestorOf(x, y)) {
                     tp++;
 
 //                    System.out.println("Correct visible edge: " + edge);

@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
@@ -36,8 +34,8 @@ public class AncestralPrecision implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (estGraph.isAncestorOf(x, y)) {
-                    if (trueGraph.isAncestorOf(x, y)) {
+                if (estGraph.paths().isAncestorOf(x, y)) {
+                    if (trueGraph.paths().isAncestorOf(x, y)) {
                         tp++;
                     } else {
                         fp++;

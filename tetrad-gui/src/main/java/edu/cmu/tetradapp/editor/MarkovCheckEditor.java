@@ -119,7 +119,7 @@ public class MarkovCheckEditor extends JPanel {
                     "\n    " + missingVars);
         }
 
-        if (sourceGraph.existsDirectedCycle()) {
+        if (sourceGraph.paths().existsDirectedCycle()) {
             JOptionPane.showMessageDialog(
                     JOptionUtils.centeringComp().getTopLevelAncestor(),
                     "That graph is not a DAG. For linear models, this is OK, but for nonlinear models," +
@@ -572,7 +572,7 @@ public class MarkovCheckEditor extends JPanel {
 
                 // Listing all facts before checking any (in preparation for parallelization).
                 for (Node x : dag.getNodes()) {
-                    List<Node> desc = dag.getDescendants(Collections.singletonList(x));
+                    List<Node> desc = dag.paths().getDescendants(Collections.singletonList(x));
                     List<Node> nondesc = dag.getNodes();
                     nondesc.removeAll(desc);
                     nondesc.removeAll(dag.getParents(x));

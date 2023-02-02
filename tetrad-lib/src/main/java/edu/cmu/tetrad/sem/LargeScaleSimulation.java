@@ -83,7 +83,7 @@ public final class LargeScaleSimulation {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
 
-        List<Node> causalOrdering = graph.getCausalOrdering();
+        List<Node> causalOrdering = graph.paths().getCausalOrdering(graph.getNodes());
         this.tierIndices = new int[causalOrdering.size()];
         for (int i = 0; i < this.tierIndices.length; i++) {
             this.tierIndices[i] = this.variableNodes.indexOf(causalOrdering.get(i));

@@ -484,7 +484,7 @@ public class TestFges {
     }
 
     private boolean ancestral(Node x, Node y, Graph graph) {
-        return graph.isAncestorOf(x, y) || graph.isAncestorOf(y, x);
+        return graph.paths().isAncestorOf(x, y) || graph.paths().isAncestorOf(y, x);
     }
 
     /**
@@ -526,7 +526,7 @@ public class TestFges {
         knowledge.setForbidden("D", "B");
         knowledge.setForbidden("C", "B");
 
-        checkWithKnowledge("A-->B,C-->B,B-->D", "A---D,B---A,B-->C,C---A",
+        checkWithKnowledge("A-->B,C-->B,B-->D", "A---D,B---A,B-->C,C---A,C-->D",
                 knowledge);
     }
 
@@ -552,7 +552,7 @@ public class TestFges {
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
-        ICovarianceMatrix cov = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
+        ICovarianceMatrix cov = DataPersistence.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
         Knowledge knowledge = new Knowledge();
 
@@ -593,7 +593,7 @@ public class TestFges {
 
 
         try {
-            trueGraph = GraphUtils.readerToGraphTxt(trueString);
+            trueGraph = GraphPersistence.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
@@ -1428,7 +1428,7 @@ public class TestFges {
 
             Graph dag = dagFromCPDAG(CPDAG);
 
-            assertFalse(dag.existsDirectedCycle());
+            assertFalse(dag.paths().existsDirectedCycle());
         }
     }
 

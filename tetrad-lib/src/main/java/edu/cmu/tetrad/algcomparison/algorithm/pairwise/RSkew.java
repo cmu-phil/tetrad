@@ -4,10 +4,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs2;
@@ -56,7 +53,7 @@ public class RSkew implements Algorithm, TakesExternalGraph {
             }
 
             List<DataSet> dataSets = new ArrayList<>();
-            dataSets.add(DataUtils.getContinuousDataSet(dataSet));
+            dataSets.add(DataPersistence.getContinuousDataSet(dataSet));
 
             Lofs2 lofs = new Lofs2(this.externalGraph, dataSets);
             lofs.setRule(Lofs2.Rule.RSkew);

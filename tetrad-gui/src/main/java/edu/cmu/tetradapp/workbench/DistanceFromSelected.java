@@ -201,7 +201,7 @@ final class DistanceFromSelected {
             if (!children.isEmpty() && cMin < pMax + 2) {
                 int diff = (pMax + 2) - cMin;
                 List<Node> descendants =
-                        graph.getDescendants(Collections.singletonList(node));
+                        graph.paths().getDescendants(Collections.singletonList(node));
                 descendants.retainAll(keySet);
                 descendants.remove(node);
 

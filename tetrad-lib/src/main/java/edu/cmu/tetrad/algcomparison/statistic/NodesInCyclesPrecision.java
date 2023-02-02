@@ -47,7 +47,7 @@ public class NodesInCyclesPrecision implements Statistic {
         Set<Node> inCycle = new HashSet<>();
 
         for (Node x : graph.getNodes()) {
-            if (GraphUtils.existsDirectedPathFromTo(x, x, graph)) {
+            if (graph.paths().existsDirectedPathFromTo(x, x)) {
                 inCycle.add(x);
             }
         }

@@ -574,7 +574,7 @@ public class Dci {
         if ((graph.isAdjacentTo(a, c)) &&
                 (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
                 (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
-            if (graph.isDirectedFromTo(a, b) && graph.isDirectedFromTo(b, c)) {
+            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
                 graph.setEndpoint(c, a, Endpoint.TAIL);
                 this.changeFlag = true;
             }
@@ -830,7 +830,7 @@ public class Dci {
                 for (int k = 2; k <= size; k++) {
                     newPaths.put(k, new HashMap<>());
                 }
-                for (List<Node> trek : GraphUtils.treks(Dci.this.currentGraph, Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()), -1)) {
+                for (List<Node> trek : Dci.this.currentGraph.paths().treks(Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()), -1)) {
                     boolean inMarginal = true;
                     for (Node node : trek) {
                         if (!Dci.this.currentMarginalSet.contains(node)) {
@@ -975,8 +975,8 @@ public class Dci {
             for (Triple triple : colliders.keySet()) {
                 List<Set<Edge>> edgeSet = new ArrayList<>();
                 List<List<Node>> treks = new ArrayList<>();
-                treks.addAll(GraphUtils.treks(graph, triple.getY(), colliders.get(triple).getFirst(), -1));
-                treks.addAll(GraphUtils.treks(graph, triple.getY(), colliders.get(triple).getSecond(), -1));
+                treks.addAll(graph.paths().treks(triple.getY(), colliders.get(triple).getFirst(), -1));
+                treks.addAll(graph.paths().treks(triple.getY(), colliders.get(triple).getSecond(), -1));
                 for (List<Node> trek : treks) {
                     Set<Edge> edges = new HashSet<>();
                     boolean okay = true;
@@ -1035,7 +1035,7 @@ public class Dci {
                     visited.remove(next);
                     continue;
                 }
-                if (!graph.possibleAncestor(next, node2)) {
+                if (!graph.paths().possibleAncestor(next, node2)) {
                     path.removeLast();
                     visited.remove(next);
                     continue;
@@ -1324,7 +1324,7 @@ public class Dci {
                     && !graph.isDefCollider(triple.getX(), triple.getY(), triple.getZ()) &&
                     graph.isAdjacentTo(triple.getX(), triple.getY()) &&
                     graph.isAdjacentTo(triple.getY(), triple.getZ()) &&
-                    !graph.isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ())) {
+                    !graph.underlines().isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ())) {
                 this.currentPossibleColliders.add(triple);
             }
         }
@@ -1412,8 +1412,8 @@ public class Dci {
                                 continue;
                             }
                         }
-                        if (!graph.existsDirectedCycle()) {
-                            graph.setUnderLineTriples(new HashSet<>());
+                        if (!graph.paths().existsDirectedCycle()) {
+                            graph.underlines().setUnderLineTriples(new HashSet<>());
                             this.output.add(graph);
                         }
                     }
@@ -1790,7 +1790,7 @@ public class Dci {
                         continue;
                     }
                     for (List<Node> condSet : sepset.getSet(x, y)) {
-                        if (!graph.isDSeparatedFrom(x, y, condSet)) {
+                        if (!graph.paths().isDSeparatedFrom(x, y, condSet)) {
                             return true;
                         }
                     }
@@ -1910,7 +1910,7 @@ public class Dci {
                 System.out.println("Resolving inconsistencies... " + c + " of " + cs + " (" + p + " of " + pairs.size() + " pairs)");
                 c++;
                 List<Node> z = new ArrayList<>(set);
-                if (allInd.isDConnectedTo(pair.getFirst(), pair.getSecond(), z)) {
+                if (allInd.paths().isDConnectedTo(pair.getFirst(), pair.getSecond(), z)) {
                     continue;
                 }
                 combinedSepset.set(pair.getFirst(), pair.getSecond(), new ArrayList<>(set));
@@ -1983,7 +1983,7 @@ public class Dci {
                     for (Set<Node> inpset : pset) {
                         List<Node> cond = new ArrayList<>(inpset);
                         cond.add(node);
-                        if (fciResult.isDSeparatedFrom(x, y, cond)) {
+                        if (fciResult.paths().isDSeparatedFrom(x, y, cond)) {
                             newSepset.set(x, y, cond);
                         }
                     }
@@ -2016,7 +2016,7 @@ public class Dci {
             int ps = (int) Math.pow(2, possibleNodes.size());
             for (Set<Node> condSet : new PowerSet<>(possibleNodes)) {
                 System.out.println("Getting closure set... " + c + " of " + ps + "(" + p + " of " + pairs.size() + " remaining)");
-                if (graph.isDSeparatedFrom(x, y, new ArrayList<>(condSet))) {
+                if (graph.paths().isDSeparatedFrom(x, y, new ArrayList<>(condSet))) {
                     sepset.set(x, y, new ArrayList<>(condSet));
                 }
                 c++;

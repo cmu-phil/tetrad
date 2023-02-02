@@ -531,7 +531,7 @@ public class PerformanceTests {
 
         SearchGraphUtils.graphComparison(trueCPDAG, outGraph, this.out);
 
-        this.out.println("# ambiguous triples = " + outGraph.getAmbiguousTriples().size());
+        this.out.println("# ambiguous triples = " + outGraph.underlines().getAmbiguousTriples().size());
 
         this.out.close();
     }
@@ -685,7 +685,7 @@ public class PerformanceTests {
         fci.setVerbose(false);
         fci.setMaxPathLength(maxPathLength);
         fci.setMaxDegree(depth);
-        fci.setFaithfulnessAssumed(false);
+        fci.setFaithfulnessAssumed(true);
         fci.setCompleteRuleSetUsed(true);
         Graph outGraph = fci.search();
 
@@ -720,7 +720,6 @@ public class PerformanceTests {
 //        RandomUtil.getInstance().setSeed(4828384343999L);
         final double penaltyDiscount = 4.0;
         final int maxIndegree = 5;
-        final boolean faithfulness = true;
 
 //        RandomUtil.getInstance().setSeed(50304050454L);
 
@@ -825,7 +824,6 @@ public class PerformanceTests {
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
                 fges.setOut(System.out);
-                fges.setFaithfulnessAssumed(faithfulness);
 
                 long timeb = System.currentTimeMillis();
 
@@ -866,7 +864,6 @@ public class PerformanceTests {
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
                 fges.setOut(System.out);
-                fges.setFaithfulnessAssumed(faithfulness);
 
                 long timeb = System.currentTimeMillis();
 
@@ -958,7 +955,6 @@ public class PerformanceTests {
         final int structurePrior = 10;
         final int samplePrior = 10;
         final int maxIndegree = -1;
-//        boolean faithfulness = false;
 
         List<int[][]> allCounts = new ArrayList<>();
         List<double[]> comparisons = new ArrayList<>();
@@ -1383,7 +1379,7 @@ public class PerformanceTests {
         } else {
 //            dag = DataGraphUtils.randomDagRandomFowardEdges(vars, 0, numEdges);
             dag = GraphUtils.randomGraph(vars, 0, numEdges, 100, 100, 100, false);
-            List<Node> ordering = dag.getCausalOrdering();
+            List<Node> ordering = dag.paths().getCausalOrdering(dag.getNodes());
         }
         System.out.println("DAG = " + dag);
 
@@ -1600,8 +1596,8 @@ public class PerformanceTests {
             boolean existsCommonCause = false;
 
             for (Node latent : missingNodes) {
-                if (dag.existsDirectedPathFromTo(latent, edge.getNode1())
-                        && dag.existsDirectedPathFromTo(latent, edge.getNode2())) {
+                if (dag.paths().existsDirectedPathFromTo(latent, edge.getNode1())
+                        && dag.paths().existsDirectedPathFromTo(latent, edge.getNode2())) {
                     existsCommonCause = true;
                     break;
                 }
@@ -1764,7 +1760,7 @@ public class PerformanceTests {
             Edge edge1 = truePag.getEdge(x, y);
 
             if (ex == Endpoint.ARROW) {
-                if (!dag.isAncestorOf(x, y)) {
+                if (!dag.paths().isAncestorOf(x, y)) {
                     correctNonAncestorRelationships++;
                 }
 
@@ -1776,7 +1772,7 @@ public class PerformanceTests {
             }
 
             if (ey == Endpoint.ARROW) {
-                if (!dag.isAncestorOf(y, x)) {
+                if (!dag.paths().isAncestorOf(y, x)) {
                     correctNonAncestorRelationships++;
                 }
 
@@ -1845,7 +1841,7 @@ public class PerformanceTests {
             Edge edge1 = truePag.getEdge(x, y);
 
             if (ex == Endpoint.TAIL) {
-                if (dag.isAncestorOf(x, y)) {
+                if (dag.paths().isAncestorOf(x, y)) {
                     correctAncestorRelationships++;
                 }
 
@@ -1857,7 +1853,7 @@ public class PerformanceTests {
             }
 
             if (ey == Endpoint.TAIL) {
-                if (dag.isAncestorOf(y, x)) {
+                if (dag.paths().isAncestorOf(y, x)) {
                     correctAncestorRelationships++;
                 }
 

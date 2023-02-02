@@ -175,7 +175,7 @@ public class TestGFci {
                     10, 10, 10, false);
 
             GFci gfci = new GFci(new IndTestDSep(dag), new GraphScore(dag));
-            gfci.setCompleteRuleSetUsed(false);
+            gfci.setCompleteRuleSetUsed(true);
             gfci.setFaithfulnessAssumed(true);
             Graph pag1 = gfci.search();
 

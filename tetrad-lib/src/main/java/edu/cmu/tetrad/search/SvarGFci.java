@@ -199,12 +199,6 @@ public final class SvarGFci implements GraphSearch {
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 
-        long time2 = System.currentTimeMillis();
-
-        if (SearchGraphUtils.isLegalPag(this.graph).isLegalPag()) {
-            this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
-        }
-
         return this.graph;
     }
 

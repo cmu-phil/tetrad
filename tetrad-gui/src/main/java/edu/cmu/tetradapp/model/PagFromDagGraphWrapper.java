@@ -43,16 +43,11 @@ public class PagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldM
     public PagFromDagGraphWrapper(Graph graph) {
         super(graph);
 
-        if (graph.existsDirectedCycle()) {
+        if (graph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException("The source graph is not a DAG.");
         }
 
-//        DagToPag p = new DagToPag(graph);
-//        p.setCompleteRuleSetUsed(true);
-//        p.setMaxPathLength(-1);
-//        Graph pag = p.convert();
         Graph pag = SearchGraphUtils.dagToPag(graph);
-        pag.setGraphType(EdgeListGraph.GraphType.PAG);
         setGraph(pag);
 
         TetradLogger.getInstance().log("info", "\nGenerating allow_latent_common_causes from DAG.");

@@ -105,7 +105,7 @@ public class TestPc {
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
-        ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
+        ICovarianceMatrix dataSet = DataPersistence.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
         Knowledge knowledge = new Knowledge();
 
@@ -140,7 +140,7 @@ public class TestPc {
 
 
         try {
-            trueGraph = GraphUtils.readerToGraphTxt(trueString);
+            trueGraph = GraphPersistence.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
@@ -377,8 +377,8 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint1() == Endpoint.ARROW) {
-                    if (!dag.isAncestorOf(edge.getNode1(), edge.getNode2()) &&
-                            dag.existsTrek(edge.getNode1(), edge.getNode2())) {
+                    if (!dag.paths().isAncestorOf(edge.getNode1(), edge.getNode2()) &&
+                            dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
                         arrowsTp++;
                     } else {
                         arrowsFp++;
@@ -388,8 +388,8 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint2() == Endpoint.ARROW) {
-                    if (!dag.isAncestorOf(edge.getNode2(), edge.getNode1()) &&
-                            dag.existsTrek(edge.getNode1(), edge.getNode2())) {
+                    if (!dag.paths().isAncestorOf(edge.getNode2(), edge.getNode1()) &&
+                            dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
                         arrowsTp++;
                     } else {
                         arrowsFp++;
@@ -399,7 +399,7 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint1() == Endpoint.TAIL) {
-                    if (dag.existsDirectedPathFromTo(edge.getNode1(), edge.getNode2())) {
+                    if (dag.paths().existsDirectedPathFromTo(edge.getNode1(), edge.getNode2())) {
                         tailsTp++;
                     } else {
                         tailsFp++;
@@ -409,7 +409,7 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint2() == Endpoint.TAIL) {
-                    if (dag.existsDirectedPathFromTo(edge.getNode2(), edge.getNode1())) {
+                    if (dag.paths().existsDirectedPathFromTo(edge.getNode2(), edge.getNode1())) {
                         tailsTp++;
                     } else {
                         tailsFp++;
@@ -419,9 +419,9 @@ public class TestPc {
                 }
 
                 if (Edges.isBidirectedEdge(edge)) {
-                    if (!dag.isAncestorOf(edge.getNode1(), edge.getNode2())
-                            && !dag.isAncestorOf(edge.getNode2(), edge.getNode1())
-                            && dag.existsTrek(edge.getNode1(), edge.getNode2())) {
+                    if (!dag.paths().isAncestorOf(edge.getNode1(), edge.getNode2())
+                            && !dag.paths().isAncestorOf(edge.getNode2(), edge.getNode1())
+                            && dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
                         bidirectedTp++;
                     } else {
                         bidirectedFp++;
@@ -497,7 +497,7 @@ public class TestPc {
                 Edge e = out.getEdge(n, m);
                 Endpoint proximalEndpoint = e.getProximalEndpoint(n);
                 if (proximalEndpoint == Endpoint.CIRCLE || proximalEndpoint == Endpoint.TAIL) {
-                    List<Node> descendants = out.getDescendants(Collections.singletonList(m));
+                    List<Node> descendants = out.paths().getDescendants(Collections.singletonList(m));
 
                     for (Node o : descendants) {
                         if (!revised.isAdjacentTo(m, o)) {

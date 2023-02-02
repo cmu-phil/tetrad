@@ -1,8 +1,8 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataPersistence;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
@@ -26,7 +26,7 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
     @Override
     public edu.cmu.tetrad.search.IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         return new IndTestMultinomialLogisticRegressionWald(
-                DataUtils.getMixedDataSet(dataSet),
+                DataPersistence.getMixedDataSet(dataSet),
                 parameters.getDouble("alpha"),
                 false);
     }

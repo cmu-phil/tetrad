@@ -27,7 +27,7 @@ public class NumVisibleEst implements Statistic {
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isDirectedEdge(edge)) {
-                if (estGraph.defVisible(edge)) {
+                if (estGraph.paths().defVisible(edge)) {
                     tp++;
                 }
             }

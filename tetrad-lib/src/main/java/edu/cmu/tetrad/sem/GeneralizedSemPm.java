@@ -816,21 +816,6 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
     }
 
     /**
-     * Returns the variable node for the given error node.
-     *
-     * @param errorNode the error node.
-     */
-    public Node getVariableNode(Node errorNode) {
-        int index = this.errorNodes.indexOf(errorNode);
-
-        if (index == -1) {
-            throw new NullPointerException(errorNode + " is not an error node in this model.");
-        }
-
-        return this.variableNodes.get(index);
-    }
-
-    /**
      * @param node The variable node in question.
      * @return the error node for the given node.
      */

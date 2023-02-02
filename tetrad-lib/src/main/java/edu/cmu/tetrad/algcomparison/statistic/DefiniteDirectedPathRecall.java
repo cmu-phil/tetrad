@@ -36,8 +36,8 @@ public class DefiniteDirectedPathRecall implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (cpdag.existsDirectedPathFromTo(x, y)) {
-                    if (estGraph.existsDirectedPathFromTo(x, y)) {
+                if (cpdag.paths().existsDirectedPathFromTo(x, y)) {
+                    if (estGraph.paths().existsDirectedPathFromTo(x, y)) {
                         tp++;
                     } else {
                         fn++;

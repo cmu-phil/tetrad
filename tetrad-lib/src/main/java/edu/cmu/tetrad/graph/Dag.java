@@ -62,10 +62,8 @@ public final class Dag implements Graph {
 
     private Map<Node, Integer> nodesHash = new HashMap<>();
 
-    private boolean pag;
-    private boolean CPDAG;
-
     private final Map<String, Object> attributes = new HashMap<>();
+    private Paths paths;
 
     //===============================CONSTRUCTORS=======================//
 
@@ -77,12 +75,14 @@ public final class Dag implements Graph {
         // Must use EdgeListGraph because property change events are correctly implemeted. Don't change it!
         // unless you fix that or the interface will break the interface! jdramsey 2015-6-5
         this.graph = new EdgeListGraph();
+        this.paths = new Paths(this.graph);
 
         reconstituteDpath();
     }
 
     public Dag(List<Node> nodes) {
         this.graph = new EdgeListGraph(nodes);
+        this.paths = new Paths(this.graph);
         reconstituteDpath();
     }
 
@@ -94,7 +94,7 @@ public final class Dag implements Graph {
      *                                  reason be converted into a DAG.
      */
     public Dag(Graph graph) throws IllegalArgumentException {
-        if (graph.existsDirectedCycle()) {
+        if (graph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException("That graph was not acyclic.");
         }
 
@@ -109,11 +109,7 @@ public final class Dag implements Graph {
         resetDPath();
         reconstituteDpath();
 
-        for (Edge edge : graph.getEdges()) {
-            if (graph.isHighlighted(edge)) {
-                setHighlighted(edge, true);
-            }
-        }
+        this.paths = new Paths(graph);
     }
 
     /**
@@ -199,7 +195,7 @@ public final class Dag implements Graph {
     }
 
     public boolean defNonDescendent(Node node1, Node node2) {
-        return getGraph().defNonDescendent(node1, node2);
+        return getGraph().paths().defNonDescendent(node1, node2);
     }
 
     public boolean existsDirectedCycle() {
@@ -207,7 +203,7 @@ public final class Dag implements Graph {
     }
 
     public boolean defVisible(Edge edge) {
-        return getGraph().defVisible(edge);
+        return getGraph().paths().defVisible(edge);
     }
 
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
@@ -219,7 +215,7 @@ public final class Dag implements Graph {
     }
 
     public boolean existsTrek(Node node1, Node node2) {
-        return getGraph().existsTrek(node1, node2);
+        return getGraph().paths().existsTrek(node1, node2);
     }
 
     public boolean equals(Object o) {
@@ -235,24 +231,6 @@ public final class Dag implements Graph {
         return this.dpath[index1][index2] == 1;
     }
 
-    @Override
-    public List<Node> findCycle() {
-        return getGraph().findCycle();
-    }
-
-    public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
-        return false;
-    }
-
-
-    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes) {
-        return getGraph().existsSemiDirectedPathFromTo(node1, nodes);
-    }
-
-    public boolean existsInducingPath(Node node1, Node node2) {
-        return getGraph().existsInducingPath(node1, node2);
-    }
-
     public void fullyConnect(Endpoint endpoint) {
         throw new UnsupportedOperationException();
         //graph.fullyConnect(endpoint);
@@ -260,10 +238,6 @@ public final class Dag implements Graph {
 
     public Endpoint getEndpoint(Node node1, Node node2) {
         return getGraph().getEndpoint(node1, node2);
-    }
-
-    public Endpoint[][] getEndpointMatrix() {
-        return getGraph().getEndpointMatrix();
     }
 
     public List<Node> getAdjacentNodes(Node node) {
@@ -280,6 +254,11 @@ public final class Dag implements Graph {
 
     public List<Node> getNodes() {
         return getGraph().getNodes();
+    }
+
+    @Override
+    public List<String> getNodeNames() {
+        return graph.getNodeNames();
     }
 
     public Set<Edge> getEdges() {
@@ -314,12 +293,8 @@ public final class Dag implements Graph {
         return getGraph().getChildren(node);
     }
 
-    public int getConnectivity() {
-        return getGraph().getConnectivity();
-    }
-
-    public List<Node> getDescendants(List<Node> nodes) {
-        return getGraph().getDescendants(nodes);
+    public int getDegree() {
+        return getGraph().getDegree();
     }
 
     public Edge getEdge(Node node1, Node node2) {
@@ -355,15 +330,7 @@ public final class Dag implements Graph {
      * @return a tier ordering for the nodes in this graph.
      */
     public List<Node> getCausalOrdering() {
-        return GraphUtils.getCausalOrdering(this, this.getNodes());
-    }
-
-    public void setHighlighted(Edge edge, boolean highlighted) {
-        getGraph().setHighlighted(edge, highlighted);
-    }
-
-    public boolean isHighlighted(Edge edge) {
-        return getGraph().isHighlighted(edge);
+        return paths.getCausalOrdering(this.getNodes());
     }
 
     public boolean isParameterizable(Node node) {
@@ -379,14 +346,9 @@ public final class Dag implements Graph {
     }
 
     @Override
-    public void removeTriplesNotInGraph() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public List<Node> getSepset(Node n1, Node n2) {
 //        return graph.getSepset(n1, n2);
-        return GraphUtils.getSepset(n1, n2, this);
+        return paths.getSepset(n1, n2);
     }
 
     @Override
@@ -399,48 +361,19 @@ public final class Dag implements Graph {
     }
 
     public boolean isAncestorOf(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
-    }
-
-    public boolean isDirectedFromTo(Node node1, Node node2) {
-        return getGraph().isDirectedFromTo(node1, node2);
-    }
-
-    public boolean isUndirectedFromTo(Node node1, Node node2) {
-        return false;
+        return node1 == node2 || paths.existsDirectedPathFromTo(node1, node2);
     }
 
     public boolean isParentOf(Node node1, Node node2) {
         return getGraph().isParentOf(node1, node2);
     }
 
-    public boolean isProperAncestorOf(Node node1, Node node2) {
-        return node1 != node2 && isAncestorOf(node1, node2);
-    }
-
-    public boolean isProperDescendentOf(Node node1, Node node2) {
-        return node1 != node2 && isDescendentOf(node1, node2);
-    }
-
     public boolean isExogenous(Node node) {
         return getGraph().isExogenous(node);
     }
 
-    public boolean isDConnectedTo(Node node1, Node node2,
-                                  List<Node> conditioningNodes) {
-        return getGraph().isDConnectedTo(node1, node2, conditioningNodes);
-    }
-
-    public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
-        return getGraph().isDSeparatedFrom(node1, node2, z);
-    }
-
     public boolean isChildOf(Node node1, Node node2) {
         return getGraph().isChildOf(node1, node2);
-    }
-
-    public boolean isDescendentOf(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node2, node1, this);
     }
 
     public boolean removeEdge(Node node1, Node node2) {
@@ -518,18 +451,6 @@ public final class Dag implements Graph {
         //graph.reorientAllWith(endpoint);
     }
 
-    public boolean possibleAncestor(Node node1, Node node2) {
-        return getGraph().possibleAncestor(node1, node2);
-    }
-
-    public List<Node> getAncestors(List<Node> nodes) {
-        return getGraph().getAncestors(nodes);
-    }
-
-    public boolean possDConnectedTo(Node node1, Node node2, List<Node> z) {
-        return getGraph().possDConnectedTo(node1, node2, z);
-    }
-
     private void resetDPath() {
         this.dpath = null;
         dpathNewEdges().clear();
@@ -586,80 +507,14 @@ public final class Dag implements Graph {
         this.getGraph().transferAttributes(graph);
     }
 
-    public Set<Triple> getAmbiguousTriples() {
-        return getGraph().getAmbiguousTriples();
+    @Override
+    public Underlines underlines() {
+        return graph.underlines();
     }
 
-    public Set<Triple> getUnderLines() {
-        return getGraph().getUnderLines();
-    }
-
-    public Set<Triple> getDottedUnderlines() {
-        return getGraph().getDottedUnderlines();
-    }
-
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
-        return getGraph().isAmbiguousTriple(x, y, z);
-    }
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isUnderlineTriple(Node x, Node y, Node z) {
-        return getGraph().isUnderlineTriple(x, y, z);
-    }
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
-        return getGraph().isDottedUnderlineTriple(x, y, z);
-    }
-
-    public void addAmbiguousTriple(Node x, Node y, Node z) {
-        getGraph().addAmbiguousTriple(x, y, z);
-    }
-
-    public void addUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().addUnderlineTriple(x, y, z);
-    }
-
-    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().addDottedUnderlineTriple(x, y, z);
-    }
-
-    public void removeAmbiguousTriple(Node x, Node y, Node z) {
-        getGraph().removeAmbiguousTriple(x, y, z);
-    }
-
-    public void removeUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().removeUnderlineTriple(x, y, z);
-    }
-
-    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().removeDottedUnderlineTriple(x, y, z);
-    }
-
-
-    public void setAmbiguousTriples(Set<Triple> triples) {
-        getGraph().setAmbiguousTriples(triples);
-    }
-
-    public void setUnderLineTriples(Set<Triple> triples) {
-        getGraph().setUnderLineTriples(triples);
-    }
-
-
-    public void setDottedUnderLineTriples(Set<Triple> triples) {
-        getGraph().setDottedUnderLineTriples(triples);
-    }
-
-    public List<String> getNodeNames() {
-        return getGraph().getNodeNames();
+    @Override
+    public Paths paths() {
+        return paths;
     }
 
     public String toString() {
@@ -694,26 +549,6 @@ public final class Dag implements Graph {
 
     private Graph getGraph() {
         return this.graph;
-    }
-
-    @Override
-    public List<String> getTriplesClassificationTypes() {
-        return null;
-    }
-
-    @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
-    }
-
-    public EdgeListGraph.GraphType getGraphType() {
-        return EdgeListGraph.GraphType.DAG;
-    }
-
-    public void setGraphType(EdgeListGraph.GraphType graphType) {
-        if (graphType != EdgeListGraph.GraphType.DAG) {
-            throw new IllegalArgumentException("A DAG must be set to graph type DAG");
-        }
     }
 
     @Override

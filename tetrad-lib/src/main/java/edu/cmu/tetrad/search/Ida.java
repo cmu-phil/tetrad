@@ -114,7 +114,7 @@ public class Ida {
     public double trueEffect(Node x, Node y, Graph trueDag) {
         if (x == y) throw new IllegalArgumentException("x == y");
 
-        if (!trueDag.isAncestorOf(x, y)) return 0.0;
+        if (!trueDag.paths().isAncestorOf(x, y)) return 0.0;
 
         trueDag = GraphUtils.replaceNodes(trueDag, this.dataSet.getVariables());
 

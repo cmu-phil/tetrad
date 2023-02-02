@@ -27,6 +27,7 @@ import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
@@ -235,7 +236,7 @@ public class StabilityUtils {
     //some tests...
     public static void main(String[] args) {
         final String fn = "/Users/ajsedgewick/tetrad_mgm_runs/run2/networks/DAG_0_graph.txt";
-        Graph trueGraph = GraphUtils.loadGraphTxt(new File(fn));
+        Graph trueGraph = GraphPersistence.loadGraphTxt(new File(fn));
         DataSet ds = null;
         try {
             ds = MixedUtils.loadData("/Users/ajsedgewick/tetrad_mgm_runs/run2/data/", "DAG_0_data.txt");

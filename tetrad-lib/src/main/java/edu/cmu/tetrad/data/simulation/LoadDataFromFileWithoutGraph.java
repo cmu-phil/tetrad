@@ -3,10 +3,7 @@ package edu.cmu.tetrad.data.simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.statistic.utils.SimulationPath;
 import edu.cmu.tetrad.algcomparison.utils.ParameterValues;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -37,7 +34,7 @@ public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath,
         try {
             File file = new File(this.path);
             System.out.println("Loading data from " + file.getAbsolutePath());
-            this.dataSet = DataUtils.loadContinuousData(file, "//", '\"',
+            this.dataSet = DataPersistence.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
         } catch (IOException e) {
             e.printStackTrace();

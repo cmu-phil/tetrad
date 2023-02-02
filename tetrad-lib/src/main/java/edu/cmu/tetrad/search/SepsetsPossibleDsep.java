@@ -115,7 +115,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     }
 
     private List<Node> getPossibleDsep(Node x, Node y, int maxPathLength) {
-        List<Node> dsep = GraphUtils.possibleDsep(x, y, this.graph, maxPathLength);
+        List<Node> dsep = this.graph.paths().possibleDsep(x, y, maxPathLength);
 
         if (this.verbose) {
             System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + dsep);

@@ -73,7 +73,7 @@ class IonLegalPairs implements LegalPairs {
             return true;
         }
 
-        return this.graph.isUnderlineTriple(x, y, z);
+        return this.graph.underlines().isUnderlineTriple(x, y, z);
     }
 }
 

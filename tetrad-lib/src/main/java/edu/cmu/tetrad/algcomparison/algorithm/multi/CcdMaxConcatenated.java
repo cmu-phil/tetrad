@@ -86,11 +86,11 @@ public class CcdMaxConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+            return search(Collections.singletonList(DataPersistence.getContinuousDataSet(dataSet)), parameters);
         } else {
             CcdMaxConcatenated algorithm = new CcdMaxConcatenated(this.test);
 
-            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            List<DataSet> dataSets = Collections.singletonList(DataPersistence.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
                     algorithm,
                     parameters.getInt(Params.NUMBER_RESAMPLING),

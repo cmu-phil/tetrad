@@ -171,7 +171,7 @@ public final class TsDagToPag {
                 Node n1 = measured.get(i);
                 Node n2 = measured.get(j);
 
-                List<Node> inducingPath = GraphUtils.getInducingPath(n1, n2, this.dag);
+                List<Node> inducingPath = this.dag.paths().getInducingPath(n1, n2);
 
                 boolean exists = inducingPath != null;
 
@@ -353,8 +353,8 @@ public final class TsDagToPag {
             }
 
             if (graph.isDefCollider(a, b, c)) {
-                if (!((graph.isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(), x.getName())) ||
-                        (graph.isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
+                if (!((graph.paths().isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(), x.getName())) ||
+                        (graph.paths().isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
                     continue;
                 }
             }

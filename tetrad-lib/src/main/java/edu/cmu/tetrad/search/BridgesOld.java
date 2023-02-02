@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
 import static java.util.Collections.shuffle;
 
 /**
@@ -59,7 +58,7 @@ public class BridgesOld {
                     Node b = Edges.getDirectedEdgeTail(edge);
 
                     for (Node c : g.getAdjacentNodes(b)) {
-                        if (c == a || existsSemidirectedPath(c, a, g)) {
+                        if (c == a || g.paths().existsSemidirectedPath(c, a)) {
                             g.removeEdge(g.getEdge(b, c));
                             g.addDirectedEdge(c, b);
                         }

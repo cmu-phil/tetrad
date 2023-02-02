@@ -102,7 +102,7 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     private void addTreks(Node node1, Node node2, Graph graph, JTextArea textArea) {
-        List<List<Node>> treks = GraphUtils.allPathsFromTo(graph, node1, node2, 8);
+        List<List<Node>> treks = graph.paths().allPathsFromTo(node1, node2, 8);
 
         if (treks.isEmpty()) {
             return;

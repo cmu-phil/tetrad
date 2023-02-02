@@ -2371,7 +2371,7 @@ public final class TestGrasp {
         SemGraph graph = imsd.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
 
-        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(graph, x1, x4, -1);
+        List<List<Node>> paths = graph.paths().allDirectedPathsFromTo(x1, x4, -1);
 
         if (paths.size() < 2) return false;
 
@@ -2453,8 +2453,8 @@ public final class TestGrasp {
 
         Parameters params = new Parameters();
         params.set(Params.ALPHA, 1e-5, 0.0001, 0.001, 0.01, 0.1);
-        params.set(Params.PENALTY_DISCOUNT, 1);
-        params.set(Params.ZS_RISK_BOUND, 0.1, 0.5, 0.9);
+        params.set(Params.PENALTY_DISCOUNT, 1, 2, 4);
+//        params.set(Params.ZS_RISK_BOUND, 0.1, 0.5, 0.9);
         params.set(Params.EBIC_GAMMA, .2, .6, .8);
 
         params.set(Params.SAMPLE_SIZE, 1000, 10000);
@@ -2495,10 +2495,10 @@ public final class TestGrasp {
         IndependenceWrapper test = new FisherZ();
 
         List<ScoreWrapper> scores = new ArrayList<>();
-//        scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+        scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
 //        scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
 //        scores.add(new edu.cmu.tetrad.algcomparison.score.KimEtAlScores());
-        scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
+//        scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
 
         List<Algorithm> algorithms = new ArrayList<>();
 
@@ -2802,8 +2802,8 @@ public final class TestGrasp {
             List<Node> parents = graph.getParents(x);
 
             for (Node y : graph.getNodes()) {
-                if (!graph.isDescendentOf(y, x) && !parents.contains(y)) {
-                    if (!graph.isDSeparatedFrom(x, y, parents)) {
+                if (!graph.paths().isDescendentOf(y, x) && !parents.contains(y)) {
+                    if (!graph.paths().isDSeparatedFrom(x, y, parents)) {
                         System.out.println("Failure! " + SearchLogUtils.dependenceFactMsg(x, y, parents, 1.0));
                     }
                 }
@@ -3302,7 +3302,7 @@ public final class TestGrasp {
             Fges fges = new Fges(score);
             Graph cpdag1 = fges.search();
 
-            List<Node> pi = GraphUtils.getCausalOrdering(cpdag1, cpdag1.getNodes());
+            List<Node> pi = cpdag1.paths().getCausalOrdering(cpdag1.getNodes());
 
             TeyssierScorer scorer = new TeyssierScorer(test, score);
             scorer.setUseScore(false);
@@ -3338,7 +3338,7 @@ public final class TestGrasp {
             Fges fges = new Fges(score);
             Graph cpdag = fges.search();
 
-            List<Node> pi1 = GraphUtils.getCausalOrdering(cpdag, cpdag.getNodes());
+            List<Node> pi1 = cpdag.paths().getCausalOrdering(cpdag.getNodes());
 
             List<Node> pi2 = new ArrayList<>(pi1);
             shuffle(pi2);
@@ -3386,7 +3386,7 @@ public final class TestGrasp {
 
                 System.out.println("<x, y> = <" + x + ", " + y + ">");
 
-                List<List<Node>> treks = GraphUtils.treks(graph, x, y, 4);
+                List<List<Node>> treks = graph.paths().treks(x, y, 4);
 
                 if (treks.size() >= 2) {
                     IndependenceFact fact = new IndependenceFact(x, y, new ArrayList<>());
@@ -3395,7 +3395,7 @@ public final class TestGrasp {
 
                     count++;
                 } else {
-                    List<List<Node>> paths = GraphUtils.allPathsFromTo(graph, x, y, 4);
+                    List<List<Node>> paths = graph.paths().allPathsFromTo(x, y, 4);
 
                     if (paths.size() >= 1) {
                         List<List<Node>> nonTrekPaths = new ArrayList<>();

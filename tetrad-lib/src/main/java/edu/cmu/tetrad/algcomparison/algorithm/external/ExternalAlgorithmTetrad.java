@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -66,7 +67,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
         int index = getIndex(dataSet);
         File file = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
         System.out.println(file.getAbsolutePath());
-        Graph graph = GraphUtils.loadGraphTxt(file);
+        Graph graph = GraphPersistence.loadGraphTxt(file);
         GraphUtils.circleLayout(graph, 225, 200, 150);
         return graph;
     }

@@ -116,7 +116,7 @@ public class DataGraphUtils {
             Node measure = nodes.get(k);
 
             if (graph1.getEdge(latent, measure) != null ||
-                    graph1.isAncestorOf(measure, latent)) {
+                    graph1.paths().isAncestorOf(measure, latent)) {
                 i--;
                 misses++;
                 continue;
@@ -164,7 +164,7 @@ public class DataGraphUtils {
             Node measure2 = nodes.get(k);
 
             if (graph1.getEdge(measure1, measure2) != null ||
-                    graph1.isAncestorOf(measure2, measure1)) {
+                    graph1.paths().isAncestorOf(measure2, measure1)) {
                 i--;
                 misses++;
                 continue;

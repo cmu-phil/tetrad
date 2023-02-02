@@ -33,7 +33,7 @@ public class NumCorrectPDAncestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.isAncestorOf(x, y)) {
+                if (trueGraph.paths().isAncestorOf(x, y)) {
                     tp++;
                 } else {
                     fp++;

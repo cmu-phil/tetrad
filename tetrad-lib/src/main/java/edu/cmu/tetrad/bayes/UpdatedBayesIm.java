@@ -404,7 +404,7 @@ public final class UpdatedBayesIm implements BayesIm {
             for (Node node2 : nodesInEvidence) {
                 Node node1 = nodesInGraph.get(i);
 
-                if (getBayesIm().getDag().isAncestorOf(node1, node2)
+                if (getBayesIm().getDag().paths().isAncestorOf(node1, node2)
                         || getBayesIm().getDag().isChildOf(node1, node2)) {
                     ancestorsOfEvidence[i] = true;
                 }
@@ -569,7 +569,7 @@ public final class UpdatedBayesIm implements BayesIm {
 
             // Added the condition node == node2 since the updater was corrected to exclude this.
             // jdramsey 12.13.2014
-            if (node == node2 || this.bayesIm.getDag().isDConnectedTo(node, node2, conditionedNodes)) {
+            if (node == node2 || this.bayesIm.getDag().paths().isDConnectedTo(node, node2, conditionedNodes)) {
                 relevantVars[i] = true;
             }
         }
