@@ -206,7 +206,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     private boolean enableEditing = true;
 
-    private boolean overridePagColoring = false;
+    private boolean doPagColoring = false;
 
 
     // ==============================CONSTRUCTOR============================//
@@ -1195,7 +1195,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             displayEdge.setHighlighted(true);
         }
 
-        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
+        if (doPagColoring) {
 
             // visible edges.
             boolean solid = modelEdge.getProperties().contains(Edge.Property.nl);
@@ -1788,9 +1788,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
-            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-        }
+//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
+//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+//        }
     }
 
     private void nodeClicked(Object source, MouseEvent e) {
@@ -1814,9 +1814,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             fireNodeSelection();
         }
 
-        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
-            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-        }
+//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
+//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+//        }
     }
 
     private void reorientEdge(Object source, MouseEvent e) {
@@ -1846,9 +1846,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
-            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-        }
+//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
+//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+//        }
     }
 
     private void fireModelChanged() {
@@ -1906,9 +1906,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 break;
         }
 
-        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
-           GraphUtils.addPagColoring(new EdgeListGraph(graph));
-        }
+//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
+//           GraphUtils.addPagColoring(new EdgeListGraph(graph));
+//        }
     }
 
     private void launchPopup(MouseEvent e) {
@@ -1951,9 +1951,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 break;
         }
 
-        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
-            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-        }
+//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
+//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+//        }
     }
 
     private void handleMouseDragged(MouseEvent e) {
@@ -1980,9 +1980,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 break;
         }
 
-        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
-            GraphUtils.addPagColoring(new EdgeListGraph(graph));
-        }
+//        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || doPagColoring) {
+//            GraphUtils.addPagColoring(new EdgeListGraph(graph));
+//        }
     }
 
     private void handleMouseEntered(MouseEvent e) {
@@ -2274,14 +2274,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "Reorienting that edge would violate graph constraints.");
             }
-
-            if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
-                GraphUtils.addPagColoring(new EdgeListGraph(graph));
-            }
         } catch (IllegalArgumentException e) {
             getGraph().addEdge(edge);
 
-            if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
+            if (doPagColoring) {
                 GraphUtils.addPagColoring(new EdgeListGraph(graph));
             }
 
@@ -2334,7 +2330,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (!added) {
                 getGraph().addEdge(edge);
 
-                if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
+                if (doPagColoring) {
                     GraphUtils.addPagColoring(new EdgeListGraph(graph));
                 }
 
@@ -2345,7 +2341,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
-        if (SearchGraphUtils.isLegalPag(graph).isLegalPag() || overridePagColoring) {
+        if (doPagColoring) {
             GraphUtils.addPagColoring(new EdgeListGraph(graph));
         }
 
@@ -2403,8 +2399,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         setEnabled(enableEditing);
     }
 
-    public void setOverridePagColoring(boolean overridePagColoring) {
-        this.overridePagColoring = overridePagColoring;
+    public void setDoPagColoring(boolean doPagColoring) {
+        this.doPagColoring = doPagColoring;
+        setGraph(graph);
+        revalidate();
+        repaint();
+    }
+
+    public boolean isDoPagColoring() {
+        return this.doPagColoring;
     }
 
     /**

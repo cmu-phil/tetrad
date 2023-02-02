@@ -1012,7 +1012,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public String toString() {
-        return GraphUtils.graphToText(this);
+        return GraphUtils.graphToText(this, false);
     }
 
     @Override

@@ -1455,9 +1455,8 @@ public final class GraphUtils {
         }
     }
 
-    public static String graphToText(Graph graph) {
-        // add edge properties relating to edge coloring of PAGs
-        if (SearchGraphUtils.isLegalPag(graph).isLegalPag()) {
+    public static String graphToText(Graph graph, boolean doPagColoring) {
+        if (doPagColoring) {
             GraphUtils.addPagColoring(graph);
         }
 

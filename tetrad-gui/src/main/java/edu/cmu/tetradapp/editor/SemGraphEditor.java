@@ -514,7 +514,7 @@ public final class SemGraphEditor extends JPanel
         graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
-        graph.add(new PagTypeSetter(getWorkbench()));
+        graph.add(new PagColorer(getWorkbench()));
 
         return graph;
     }
