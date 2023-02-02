@@ -37,7 +37,6 @@ public class GeneralResamplingTest {
      * An initial graph to start from.
      */
     private Graph externalGraph;
-    private int numNoGraphs = 0;
 
     public GeneralResamplingTest(
             DataSet data,
@@ -256,7 +255,7 @@ public class GeneralResamplingTest {
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
@@ -300,10 +299,10 @@ public class GeneralResamplingTest {
         }
 
         this.graphs = this.resamplingSearch.search();
-        this.numNoGraphs = this.resamplingSearch.getNumNograph();
+        int numNoGraphs = this.resamplingSearch.getNumNograph();
 
         TetradLogger.getInstance().forceLogMessage(
-                "Bootstrappiung: Number of searches that didn't return a graph = " + this.numNoGraphs);
+                "Bootstrappiung: Number of searches that didn't return a graph = " + numNoGraphs);
 
         if (this.verbose) {
             this.out.println("Resampling number is : " + this.graphs.size());
@@ -333,12 +332,8 @@ public class GeneralResamplingTest {
      * @return set of undirected edges
      */
     private Set<Edge> createUndirectedEdges(List<Graph> graphs) {
-        Set<Edge> edges = new HashSet();
-        graphs.forEach(graph -> {
-            graph.getEdges().forEach(edge -> {
-                edges.add(new Edge(edge.getNode1(), edge.getNode2(), Endpoint.NULL, Endpoint.NULL));
-            });
-        });
+        Set<Edge> edges = new HashSet<>();
+        graphs.forEach(graph -> graph.getEdges().forEach(edge -> edges.add(new Edge(edge.getNode1(), edge.getNode2(), Endpoint.NULL, Endpoint.NULL))));
 
         return edges;
     }
@@ -464,12 +459,12 @@ public class GeneralResamplingTest {
 
         }
 
-        graph = computeEdgeProbabilities(graph);
+        computeEdgeProbabilities(graph);
 
         return graph;
     }
 
-    private static Graph computeEdgeProbabilities(Graph graph) {
+    private static void computeEdgeProbabilities(Graph graph) {
         for (Edge edge : graph.getEdges()) {
             List<EdgeTypeProbability> edgeTypeProbs = edge.getEdgeTypeProbabilities();
             if (!(edgeTypeProbs == null || edgeTypeProbs.isEmpty())) {
@@ -482,8 +477,6 @@ public class GeneralResamplingTest {
                 edge.setProbability(prob);
             }
         }
-
-        return graph;
     }
 
     private List<EdgeTypeProbability> getProbabilities(Node node1, Node node2) {
@@ -553,10 +546,6 @@ public class GeneralResamplingTest {
         }
 
         return edgeTypeProbabilities;
-    }
-
-    public int getNumNoGraphs() {
-        return numNoGraphs;
     }
 
     public void setScoreWrapper(ScoreWrapper scoreWrapper) {
