@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataPersistence;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.DiscreteMixedScore;
@@ -30,7 +30,7 @@ public class DiscreteMixedBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         DiscreteMixedScore discreteMixedScore
-                = new DiscreteMixedScore(DataPersistence.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"));
+                = new DiscreteMixedScore(SimpleDataLoader.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"));
         discreteMixedScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return discreteMixedScore;
     }

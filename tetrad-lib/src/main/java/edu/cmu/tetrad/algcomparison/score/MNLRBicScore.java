@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataPersistence;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.MNLRScore;
@@ -29,7 +29,7 @@ public class MNLRBicScore implements ScoreWrapper {
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        return new MNLRScore(DataPersistence.getMixedDataSet(dataSet),
+        return new MNLRScore(SimpleDataLoader.getMixedDataSet(dataSet),
                 1,
                 parameters.getInt("fDegree", 1));
     }

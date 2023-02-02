@@ -53,7 +53,7 @@ public class R2 implements Algorithm, TakesExternalGraph {
             }
 
             List<DataSet> dataSets = new ArrayList<>();
-            dataSets.add(DataPersistence.getContinuousDataSet(dataSet));
+            dataSets.add(SimpleDataLoader.getContinuousDataSet(dataSet));
 
             Lofs2 lofs = new Lofs2(this.externalGraph, dataSets);
             lofs.setRule(Lofs2.Rule.R2);

@@ -67,7 +67,7 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
         System.out.println(file.getAbsolutePath());
 
         try {
-            DataSet dataSet2 = DataPersistence.loadContinuousData(file, "//", '\"',
+            DataSet dataSet2 = SimpleDataLoader.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
             System.out.println("Loading graph from " + file.getAbsolutePath());
             Graph graph = GraphPersistence.loadGraphBNTPcMatrix(dataSet.getVariables(), dataSet2);

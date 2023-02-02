@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataPersistence;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestDegenerateGaussianLRT;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -30,7 +30,7 @@ public class DegenerateGaussianLRT implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestDegenerateGaussianLRT test = new IndTestDegenerateGaussianLRT(DataPersistence.getMixedDataSet(dataSet));
+        IndTestDegenerateGaussianLRT test = new IndTestDegenerateGaussianLRT(SimpleDataLoader.getMixedDataSet(dataSet));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         return test;
     }

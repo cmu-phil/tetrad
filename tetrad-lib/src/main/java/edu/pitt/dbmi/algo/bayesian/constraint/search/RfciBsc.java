@@ -79,7 +79,7 @@ public class RfciBsc implements GraphSearch {
         IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getIndependenceTest();
 
         // create empirical data for constraints
-        DataSet dataSet = DataPersistence.getDiscreteDataSet(_test.getData());
+        DataSet dataSet = SimpleDataLoader.getDiscreteDataSet(_test.getData());
 
         this.pAGs.clear();
 

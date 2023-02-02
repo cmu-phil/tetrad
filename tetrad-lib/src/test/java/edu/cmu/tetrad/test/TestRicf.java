@@ -282,7 +282,7 @@ public class TestRicf {
     public void test3() {
         try {
             File datapath = new File("/Users/josephramsey/Downloads/data6.txt");
-            DataSet dataSet = DataPersistence.loadContinuousData(datapath, "//", '\"',
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(datapath, "//", '\"',
                     "*", true, Delimiter.TAB);
             Graph mag = GraphPersistence.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
 

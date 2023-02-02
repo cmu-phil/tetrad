@@ -42,7 +42,7 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
             System.out.println("Loading data from " + file.getAbsolutePath());
 
             try {
-                DataSet dataSet = DataPersistence.loadContinuousData(file, "//", '\"',
+                DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
                         "*", true, Delimiter.TAB);
                 this.dataSets.add(dataSet);
 

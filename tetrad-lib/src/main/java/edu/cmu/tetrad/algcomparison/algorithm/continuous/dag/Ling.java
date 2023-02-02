@@ -33,7 +33,7 @@ public class Ling implements Algorithm {
 
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet _dataSet = DataPersistence.getContinuousDataSet(dataSet);
+            DataSet _dataSet = SimpleDataLoader.getContinuousDataSet(dataSet);
             edu.cmu.tetrad.search.Ling lingam = new edu.cmu.tetrad.search.Ling(_dataSet);
 //            lingam.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             edu.cmu.tetrad.search.Ling.StoredGraphs search = lingam.search();

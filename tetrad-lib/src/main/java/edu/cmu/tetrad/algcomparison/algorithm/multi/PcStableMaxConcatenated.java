@@ -94,11 +94,11 @@ public class PcStableMaxConcatenated implements MultiDataSetAlgorithm, HasKnowle
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(DataPersistence.getContinuousDataSet(dataSet)), parameters);
+            return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
         } else {
             PcStableMaxConcatenated pcStableMaxConcatenated = new PcStableMaxConcatenated(this.test, this.compareToTrue);
 
-            List<DataSet> dataSets = Collections.singletonList(DataPersistence.getContinuousDataSet(dataSet));
+            List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
                     pcStableMaxConcatenated,
                     parameters.getInt(Params.NUMBER_RESAMPLING),

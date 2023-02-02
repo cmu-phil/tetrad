@@ -37,7 +37,7 @@ public class Lingam implements Algorithm {
             lingam.setFastIcaA(parameters.getDouble(Params.FAST_ICA_A));
             lingam.setFastMaxIter(parameters.getInt(Params.FAST_ICA_MAX_ITER));
             lingam.setFastIcaTolerance(parameters.getDouble(Params.FAST_ICA_TOLERANCE));
-            return lingam.search(DataPersistence.getContinuousDataSet(dataSet));
+            return lingam.search(SimpleDataLoader.getContinuousDataSet(dataSet));
         } else {
             Lingam algorithm = new Lingam();
 

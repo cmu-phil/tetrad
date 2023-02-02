@@ -77,7 +77,7 @@ public class ZhangShenBoundScore implements Score {
      * Constructs the score using a covariance matrix.
      */
     public ZhangShenBoundScore(DataSet dataSet) {
-        this(DataPersistence.getCovarianceMatrix(dataSet));
+        this(SimpleDataLoader.getCovarianceMatrix(dataSet));
         this.data = dataSet.getDoubleData();
     }
 

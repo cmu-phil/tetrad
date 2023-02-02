@@ -789,13 +789,13 @@ public class MixedUtils {
 
     public static DataSet loadDataSet(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
-        return DataPersistence.loadContinuousData(file, "//", '\"',
+        return SimpleDataLoader.loadContinuousData(file, "//", '\"',
                 "*", true, Delimiter.TAB);
     }
 
     public static DataSet loadDelim(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
-        return DataPersistence.loadContinuousData(file, "//", '\"',
+        return SimpleDataLoader.loadContinuousData(file, "//", '\"',
                 "*", false, Delimiter.TAB);
     }
 
@@ -814,7 +814,7 @@ public class MixedUtils {
 
     public static DataSet loadData(String dir, String filename) throws IOException {
         File file = new File(dir, filename);
-        return DataPersistence.loadContinuousData(file, "//", '\"',
+        return SimpleDataLoader.loadContinuousData(file, "//", '\"',
                 "*", true, Delimiter.TAB);
     }
 
