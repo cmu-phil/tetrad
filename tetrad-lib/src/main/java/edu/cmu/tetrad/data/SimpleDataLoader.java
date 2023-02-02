@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 public class SimpleDataLoader {
 
     /**
-     * Loads a dataset from a file
+     * Loads a continuous dataset from a file.
      *
      * @param file               The text file to load the data from.
      * @param commentMarker      The comment marker as a string--e.g., "//".
@@ -46,7 +46,7 @@ public class SimpleDataLoader {
     }
 
     /**
-     * Loads a dataset from a file
+     * Loads a discrete dataset from a file.
      *
      * @param file               The text file to load the data from.
      * @param commentMarker      The comment marker as a string--e.g., "//".
@@ -80,7 +80,7 @@ public class SimpleDataLoader {
     }
 
     /**
-     * Loads a dataset from a file
+     * Loads a mixed dataset from a file.
      *
      * @param file               The text file to load the data from.
      * @param commentMarker      The comment marker as a string--e.g., "//".
