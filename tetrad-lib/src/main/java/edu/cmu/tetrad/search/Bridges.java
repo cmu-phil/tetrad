@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -264,7 +265,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
      * @return the resulting Pattern.
      */
     public Set<Node> search2(Graph graph, List<Node> variables) {
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         topGraphs.clear();
 
         this.graph = graph;
@@ -289,7 +290,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
 //        change = fes(new ArrayList<>(change));
 //        change = bes(new ArrayList<>(change));
 
-        long endTime = System.currentTimeMillis();
+        long endTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.elapsedTime = endTime - start;
 
         if (verbose) {
@@ -493,7 +494,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
     }
 
     private void initializeEffectEdges(final List<Node> nodes) {
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
@@ -515,7 +516,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
             ForkJoinPool.commonPool().invokeAll(tasks);
         }
 
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (verbose) {
             out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");

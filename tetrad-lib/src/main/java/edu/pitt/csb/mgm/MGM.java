@@ -37,6 +37,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.StatUtils;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1304,9 +1305,9 @@ public class MGM extends ConvexProximal implements GraphSearch {
      * @return
      */
     public Graph search() {
-        long startTime = System.currentTimeMillis();
+        long startTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         learnEdges(1000); //unlikely to hit this limit
-        this.elapsedTime = System.currentTimeMillis() - startTime;
+        this.elapsedTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - startTime;
         return graphFromMGM();
     }
 
@@ -1435,14 +1436,14 @@ public class MGM extends ConvexProximal implements GraphSearch {
 
             DoubleMatrix2D test = xIn.copy();
             DoubleMatrix2D test2 = xIn.copy();
-            long t = System.currentTimeMillis();
+            long t = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
             for (int i = 0; i < 50000; i++) {
                 test2 = xIn.copy();
                 test.assign(test2);
             }
-            System.out.println("assign Time: " + (System.currentTimeMillis() - t));
+            System.out.println("assign Time: " + (ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - t));
 
-            t = System.currentTimeMillis();
+            t = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
             double[][] xArr = xIn.toArray();
             for (int i = 0; i < 50000; i++) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -1453,16 +1454,16 @@ public class MGM extends ConvexProximal implements GraphSearch {
                 test2 = xIn.copy();
                 test = test2;
             }
-            System.out.println("equals Time: " + (System.currentTimeMillis() - t));
+            System.out.println("equals Time: " + (ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - t));
 
 
             System.out.println("Init nll: " + model.smoothValue(model.params.toMatrix1D()));
             System.out.println("Init reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
 
-            t = System.currentTimeMillis();
+            t = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
             model.learnEdges(700);
             //model.learn(1e-7, 700);
-            System.out.println("Orig Time: " + (System.currentTimeMillis() - t));
+            System.out.println("Orig Time: " + (ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - t));
 
             System.out.println("nll: " + model.smoothValue(model.params.toMatrix1D()));
             System.out.println("reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));

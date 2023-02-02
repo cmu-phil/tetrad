@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +41,7 @@ public class BossMB {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order, List<Node> targets) {
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer2(this.score);
@@ -60,7 +61,7 @@ public class BossMB {
                 shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
+            this.start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             makeValidKnowledgeOrder(order);
 
@@ -117,7 +118,7 @@ public class BossMB {
 
         this.graph = SearchGraphUtils.cpdagForDag(this.graph);
 
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
@@ -161,7 +162,7 @@ public class BossMB {
 
             scorer.bookmark();
 
-            System.out.println("After snips: # vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s") + " order = " + scorer.getPi());
+            System.out.println("After snips: # vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start) / 1000.0 + " s") + " order = " + scorer.getPi());
 
 
             for (Node x : scorer.getPi()) {
@@ -174,7 +175,7 @@ public class BossMB {
                             scorer.bookmark();
 
                             if (verbose) {
-                                System.out.println("# vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                                System.out.println("# vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start) / 1000.0 + " s"));
                             }
                         } else {
                             scorer.goToBookmark();

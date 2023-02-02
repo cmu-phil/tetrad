@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.PcStable;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 
 /**
  * Created by ajsedgewick on 9/10/15.
@@ -49,17 +50,17 @@ public class ExploreIndepTests {
             PcStable s2 = new PcStable(indWalLin);
             PcStable s3 = new PcStable(indWalLog);
 
-            long time = System.currentTimeMillis();
+            long time = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
             Graph g1 = SearchGraphUtils.cpdagFromDag(s1.search());
-            System.out.println("Mix Time " + ((System.currentTimeMillis() - time) / 1000.0));
+            System.out.println("Mix Time " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - time) / 1000.0));
 
-            time = System.currentTimeMillis();
+            time = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
             Graph g2 = SearchGraphUtils.cpdagFromDag(s2.search());
-            System.out.println("Wald lin Time " + ((System.currentTimeMillis() - time) / 1000.0));
+            System.out.println("Wald lin Time " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - time) / 1000.0));
 
-            time = System.currentTimeMillis();
+            time = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
             Graph g3 = SearchGraphUtils.cpdagFromDag(s3.search());
-            System.out.println("Wald log Time " + ((System.currentTimeMillis() - time) / 1000.0));
+            System.out.println("Wald log Time " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - time) / 1000.0));
 
             System.out.println(MixedUtils.EdgeStatHeader);
             System.out.println(MixedUtils.stringFrom2dArray(MixedUtils.allEdgeStats(trueGraph, g1)));

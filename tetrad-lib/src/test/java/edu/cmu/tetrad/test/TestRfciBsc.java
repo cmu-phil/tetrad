@@ -16,6 +16,7 @@ import nu.xom.ParsingException;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,11 +77,11 @@ public class TestRfciBsc {
         rfciBsc.setOutputRBD(true);
         rfciBsc.setVerbose(true);
 
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         rfciBsc.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
         System.out.println("\nBSC-I: " + rfciBsc.getBscI());
@@ -148,11 +149,11 @@ public class TestRfciBsc {
         rfciBsc.setOutputRBD(true);
         rfciBsc.setVerbose(true);
 
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         rfciBsc.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
         System.out.println("\nBSC-I: " + rfciBsc.getBscI());

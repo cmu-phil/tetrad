@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.lang.management.ManagementFactory;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -169,7 +170,7 @@ public final class PcMb implements MbSearch, GraphSearch {
      * @param targets The targets variable.
      */
     public Graph search(List<Node> targets) {
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
@@ -626,7 +627,7 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     private void finishUp(long start, Graph graph) {
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.elapsedTime = stop - start;
         double seconds = this.elapsedTime / 1000d;
 

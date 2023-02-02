@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
+import java.lang.management.ManagementFactory;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -201,7 +202,7 @@ public class Dci {
      * Begins the DCI search procedure, described at each step
      */
     public List<Graph> search() {
-        this.elapsedTime = System.currentTimeMillis();
+        this.elapsedTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         /*
          * Step 1 - Create the complete graph
@@ -285,7 +286,7 @@ public class Dci {
         /*
          * Step 6 - returns the output set of consistent graphs
          */
-        this.elapsedTime = System.currentTimeMillis() - this.elapsedTime;
+        this.elapsedTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - this.elapsedTime;
         System.out.println(this.output.size());
         return new ArrayList<>(this.output);
     }

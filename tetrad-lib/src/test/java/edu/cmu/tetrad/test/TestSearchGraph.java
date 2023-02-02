@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.lang.management.ManagementFactory;
 import java.util.*;
 
 import static java.lang.Math.log;
@@ -180,11 +181,11 @@ public final class TestSearchGraph {
 
         Rfci fci = new Rfci(test);
         Fas fas = new Fas(test);
-        start = System.currentTimeMillis();
+        start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         fci.setDepth(depth);
         fci.setVerbose(false);
         fci.search(fas, fas.getNodes());
-        stop = System.currentTimeMillis();
+        stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("DSEP RFCI");
         System.out.println("# dsep checks = " + fas.getNumIndependenceTests());
@@ -198,10 +199,10 @@ public final class TestSearchGraph {
 
         Rfci fci3 = new Rfci(test2);
         Fas fas2 = new Fas(test2);
-        start = System.currentTimeMillis();
+        start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         fci3.setDepth(depth);
         fci3.search(fas2, fas2.getNodes());
-        stop = System.currentTimeMillis();
+        stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("FISHER Z RFCI");
         System.out.println("# indep checks = " + fas.getNumIndependenceTests());

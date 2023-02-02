@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.util.List;
 
 /**
@@ -202,7 +203,7 @@ public class PcStable implements GraphSearch {
             this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
         }
 
-        long startTime = System.currentTimeMillis();
+        long startTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
@@ -238,7 +239,7 @@ public class PcStable implements GraphSearch {
             this.logger.log("graph", "\nReturning this graph: " + this.graph);
         }
 
-        this.elapsedTime = System.currentTimeMillis() - startTime;
+        this.elapsedTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - startTime;
 
         if (verbose) {
             this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");

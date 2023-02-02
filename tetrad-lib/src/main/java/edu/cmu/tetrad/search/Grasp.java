@@ -10,6 +10,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.management.ManagementFactory;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -63,7 +64,7 @@ public class Grasp {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
@@ -93,7 +94,7 @@ public class Grasp {
                 shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
+            this.start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             makeValidKnowledgeOrder(order);
 
@@ -111,7 +112,7 @@ public class Grasp {
 
         this.scorer.score(bestPerm);
 
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
@@ -180,7 +181,7 @@ public class Grasp {
             TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
                     + " Score = " + scorer.score()
                     + " (GRaSP)"
-                    + " Elapsed " + ((System.currentTimeMillis() - this.start) / 1000.0 + " s"));
+                    + " Elapsed " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();

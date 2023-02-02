@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -198,7 +199,7 @@ public final class FgesMb {
     public Graph search(List<Node> targets) {
 
         // Assumes one-edge faithfulness.
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (targets == null) {
             throw new NullPointerException();
@@ -236,7 +237,7 @@ public final class FgesMb {
         fes();
         bes();
 
-        long endTime = System.currentTimeMillis();
+        long endTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.elapsedTime = endTime - start;
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 

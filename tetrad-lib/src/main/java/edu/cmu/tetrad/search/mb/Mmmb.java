@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.MbSearch;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.lang.management.ManagementFactory;
 import java.util.*;
 
 /**
@@ -111,14 +112,14 @@ public final class Mmmb implements MbSearch {
     public List<Node> findMb(Node target) {
         TetradLogger.getInstance().log("info", "target = " + target);
         this.numIndTests = 0;
-        long time = System.currentTimeMillis();
+        long time = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.pc = new HashMap<>();
         this.trimmed = new HashSet<>();
 
         List<Node> nodes = mmmb(target);
 
-        long time2 = System.currentTimeMillis() - time;
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - time;
         TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));
         TetradLogger.getInstance().log("info", "Number of independence tests performed: " +
                 this.numIndTests);

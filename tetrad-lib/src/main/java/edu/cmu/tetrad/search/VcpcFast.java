@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.lang.management.ManagementFactory;
 import java.util.*;
 
 /**
@@ -250,7 +251,7 @@ public final class VcpcFast implements GraphSearch {
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime = System.currentTimeMillis();
+        long startTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
 
@@ -446,7 +447,7 @@ public final class VcpcFast implements GraphSearch {
         System.out.println("VCPC:");
 
 //        System.out.println("# of patterns: " + patterns.size());
-        long endTime = System.currentTimeMillis();
+        long endTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.elapsedTime = endTime - startTime;
 
         System.out.println("Search Time (seconds):" + (this.elapsedTime) / 1000 + " s");

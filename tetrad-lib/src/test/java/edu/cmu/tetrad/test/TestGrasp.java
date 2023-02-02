@@ -63,6 +63,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -1199,7 +1200,7 @@ public final class TestGrasp {
     public void bryanCheckDensityClaims() {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         boolean usePearl = true;
         int numVars = 5; // Will change this in OtherParams.sp() too
 
@@ -1494,10 +1495,10 @@ public final class TestGrasp {
 
                 }
 
-                System.out.println("\tExists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (System.currentTimeMillis() - start) / 1000.0 + " s)");
+                System.out.println("\tExists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start) / 1000.0 + " s)");
             }
 
-            System.out.println("\nTOTAL: exists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (System.currentTimeMillis() - start) / 1000.0 + " s)");
+            System.out.println("\nTOTAL: exists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start) / 1000.0 + " s)");
         } catch (Exception e) {
             e.printStackTrace();
         }

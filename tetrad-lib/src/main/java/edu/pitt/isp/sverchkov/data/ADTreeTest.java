@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -74,26 +75,26 @@ public class ADTreeTest {
         }
 
         // create the tree
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         ADTree<Node, Short> adTree = new ADTree<>(dataTable);
-        System.out.printf("Generated tree in %s millis%n", System.currentTimeMillis() - start);
+        System.out.printf("Generated tree in %s millis%n", ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start);
 
         // the query is an arbitrary map of vars and their values
         TreeMap<Node, Short> query = new TreeMap<>();
         query.put(ADTreeTest.node(pm, "X1"), (short) 1);
         query.put(ADTreeTest.node(pm, "X5"), (short) 0);
-        start = System.currentTimeMillis();
+        start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         System.out.printf("Count is %d%n", adTree.count(query));
-        System.out.printf("Query in %s ms%n", System.currentTimeMillis() - start);
+        System.out.printf("Query in %s ms%n", ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start);
 
         query.clear();
         query.put(ADTreeTest.node(pm, "X1"), (short) 1);
         query.put(ADTreeTest.node(pm, "X2"), (short) 1);
         query.put(ADTreeTest.node(pm, "X5"), (short) 0);
         query.put(ADTreeTest.node(pm, "X10"), (short) 1);
-        start = System.currentTimeMillis();
+        start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         System.out.printf("Count is %d%n", adTree.count(query));
-        System.out.printf("Query in %s ms%n", System.currentTimeMillis() - start);
+        System.out.printf("Query in %s ms%n", ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start);
 
 
     }

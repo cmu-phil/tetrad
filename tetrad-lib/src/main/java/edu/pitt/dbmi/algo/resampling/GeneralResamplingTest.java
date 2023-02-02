@@ -12,6 +12,7 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.util.*;
 
 /**
@@ -268,7 +269,7 @@ public class GeneralResamplingTest {
     public Graph search() {
         long start, stop;
 
-        start = System.currentTimeMillis();
+        start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (this.algorithm != null) {
             this.resamplingSearch.setAlgorithm(this.algorithm);
@@ -307,14 +308,14 @@ public class GeneralResamplingTest {
         if (this.verbose) {
             this.out.println("Resampling number is : " + this.graphs.size());
         }
-        stop = System.currentTimeMillis();
+        stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         if (this.verbose) {
             this.out.println("Processing time of total resamplings : " + (stop - start) / 1000.0 + " sec");
         }
 
-        start = System.currentTimeMillis();
+        start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         Graph graph = generateSamplingGraph();
-        stop = System.currentTimeMillis();
+        stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         if (this.verbose) {
             this.out.println("Final Resampling Search Result:");
             this.out.println(GraphUtils.graphToText(graph, false));

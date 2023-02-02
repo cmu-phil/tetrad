@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.lang.management.ManagementFactory;
 import java.util.*;
 
 /**
@@ -142,11 +143,11 @@ public class Ion2 {
      */
     public List<Graph> search() {
 
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         TetradLogger.getInstance().log("info", "Starting ION Search.");
         logGraphs("\nInitial Pags: ", this.input);
         TetradLogger.getInstance().log("info", "Transfering local information.");
-        long steps = System.currentTimeMillis();
+        long steps = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         /*
          * Step 1 - Create the empty graph
@@ -167,7 +168,7 @@ public class Ion2 {
         for (NodePair pair : nonIntersection(graph)) {
             graph.addEdge(new Edge(pair.getFirst(), pair.getSecond(), Endpoint.CIRCLE, Endpoint.CIRCLE));
         }
-        TetradLogger.getInstance().log("info", "Steps 1-2: " + (System.currentTimeMillis() - steps) / 1000. + "s");
+        TetradLogger.getInstance().log("info", "Steps 1-2: " + (ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - steps) / 1000. + "s");
         System.out.println("step2");
         System.out.println(graph);
 
@@ -176,7 +177,7 @@ public class Ion2 {
          *
          * Branch and prune step that blocks problematic undirectedPaths, possibly d-connecting undirectedPaths
          */
-        steps = System.currentTimeMillis();
+        steps = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         Queue<Graph> searchPags = new LinkedList<>();
         // place graph constructed in step 2 into the queue
         searchPags.offer(graph);
@@ -303,9 +304,9 @@ public class Ion2 {
                             break;
                         }
                     }
-                    float starthitset = System.currentTimeMillis();
+                    float starthitset = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
                     Collection<GraphChange> hittingSets = IonHittingSet.findHittingSet(possibleChanges);
-                    this.recHitTimes.add((System.currentTimeMillis() - starthitset) / 1000.);
+                    this.recHitTimes.add((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - starthitset) / 1000.);
                     // Part 3.c - checks the newly constructed graphs from 3.b and rejects those that
                     // cycles or produce independencies known not to occur from the input PAGs or
                     // include undirectedPaths from definite nonancestors
@@ -407,7 +408,7 @@ public class Ion2 {
                 }
             }
         }
-        TetradLogger.getInstance().log("info", "Step 3: " + (System.currentTimeMillis() - steps) / 1000. + "s");
+        TetradLogger.getInstance().log("info", "Step 3: " + (ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - steps) / 1000. + "s");
         Queue<Graph> step3Pags = new LinkedList<>(step3PagsSet);
 
         /*
@@ -416,7 +417,7 @@ public class Ion2 {
          * Finds redundant undirectedPaths and uses this information to expand the list
          * of possible graphs
          */
-        steps = System.currentTimeMillis();
+        steps = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         Map<Edge, Boolean> necEdges;
         Set<Graph> outputPags = new HashSet<>();
 
@@ -484,7 +485,7 @@ public class Ion2 {
         outputPags = removeMoreSpecific(outputPags);
 //        outputPags = applyKnowledge(outputPags);
 
-        TetradLogger.getInstance().log("info", "Step 4: " + (System.currentTimeMillis() - steps) / 1000. + "s");
+        TetradLogger.getInstance().log("info", "Step 4: " + (ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - steps) / 1000. + "s");
 
         /*
          * Step 5
@@ -492,7 +493,7 @@ public class Ion2 {
          * Generate the Markov equivalence classes for graphs and accept only
          * those that do not predict false d-separations
          */
-        steps = System.currentTimeMillis();
+        steps = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         Set<Graph> outputSet = new HashSet<>();
         for (Graph pag : outputPags) {
             Set<Triple> unshieldedPossibleColliders = new HashSet<>();
@@ -526,8 +527,8 @@ public class Ion2 {
         outputSet = checkPaths(outputSet);
 
         this.output.addAll(outputSet);
-        TetradLogger.getInstance().log("info", "Step 5: " + (System.currentTimeMillis() - steps) / 1000. + "s");
-        this.runtime = ((System.currentTimeMillis() - start) / 1000.);
+        TetradLogger.getInstance().log("info", "Step 5: " + (ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - steps) / 1000. + "s");
+        this.runtime = ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start) / 1000.);
         logGraphs("\nReturning output (" + this.output.size() + " Graphs):", this.output);
         double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;

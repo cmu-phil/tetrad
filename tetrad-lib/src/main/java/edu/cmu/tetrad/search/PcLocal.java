@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.lang.management.ManagementFactory;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -117,7 +118,7 @@ public class PcLocal implements GraphSearch {
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      */
     public Graph search() {
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (this.externalGraph != null) {
             this.graph = new EdgeListGraph(this.externalGraph);
@@ -162,7 +163,7 @@ public class PcLocal implements GraphSearch {
 
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.elapsedTime = time2 - time1;
 
         return this.graph;

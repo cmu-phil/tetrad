@@ -23,6 +23,7 @@ package edu.cmu.tetrad.session;
 
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.lang.management.ManagementFactory;
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -132,12 +133,12 @@ public final class SimulationStudy {
         final boolean simulation = true;
 
         TetradLogger.getInstance().forceLogMessage("\n\n===STARTING SIMULATION STUDY===");
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         execute(tierOrdering, doRepetition, simulation, overwrite);
 
         TetradLogger.getInstance().forceLogMessage("\n\n===FINISHING SIMULATION STUDY===");
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (time2 - time1) / 1000. + " s");
     }
 

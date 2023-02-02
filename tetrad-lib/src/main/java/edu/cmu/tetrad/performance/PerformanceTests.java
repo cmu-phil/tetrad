@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -54,7 +55,7 @@ public class PerformanceTests {
 
         init(new File("long.pc." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("Making list of vars");
 
@@ -83,7 +84,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -97,7 +98,7 @@ public class PerformanceTests {
         System.out.println("Covariance matrix done");
 
 
-        long time3 = System.currentTimeMillis();
+        long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -114,7 +115,7 @@ public class PerformanceTests {
 
         this.out.println(outGraph);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("# Vars = " + numVars);
         this.out.println("# Edges = " + (int) (numVars * edgeFactor));
@@ -183,7 +184,7 @@ public class PerformanceTests {
 
         init(new File("long.pcstable." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC Stable algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         Graph dag = makeDag(numVars, edgeFactor);
 
@@ -199,7 +200,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -210,7 +211,7 @@ public class PerformanceTests {
 
         System.out.println("Covariance matrix done");
 
-        long time3 = System.currentTimeMillis();
+        long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -224,7 +225,7 @@ public class PerformanceTests {
 
 //        out.println(estCPDAG);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("# Cases = " + numCases);
         this.out.println("alpha = " + alpha);
@@ -251,7 +252,7 @@ public class PerformanceTests {
 
         init(new File("long.pcstablemax." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC Max algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         Graph dag = makeDag(numVars, edgeFactor);
 
@@ -267,7 +268,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -278,7 +279,7 @@ public class PerformanceTests {
 
         System.out.println("Covariance matrix done");
 
-        long time3 = System.currentTimeMillis();
+        long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -292,7 +293,7 @@ public class PerformanceTests {
 
 //        out.println(estCPDAG);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("# Cases = " + numCases);
         this.out.println("alpha = " + alpha);
@@ -317,7 +318,7 @@ public class PerformanceTests {
     public void testFges(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
         init(new File("long.fges." + numVars + "." + edgeFactor + "." + penaltyDiscount + ".txt"), "Tests performance of the FGES algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         Graph dag = makeDag(numVars, edgeFactor);
 
@@ -333,7 +334,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -343,7 +344,7 @@ public class PerformanceTests {
 
         System.out.println("Covariance matrix done");
 
-        long time3 = System.currentTimeMillis();
+        long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -356,7 +357,7 @@ public class PerformanceTests {
 
 //        out.println(estCPDAG);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("# Cases = " + numCases);
         this.out.println("penalty discount = " + penaltyDiscount);
@@ -384,7 +385,7 @@ public class PerformanceTests {
 
         init(new File("long.cpc." + numVars + ".txt"), "Tests performance of the CPC algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("Making list of vars");
 
@@ -413,7 +414,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -427,7 +428,7 @@ public class PerformanceTests {
         System.out.println("Covariance matrix done");
 
 
-        long time3 = System.currentTimeMillis();
+        long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -444,7 +445,7 @@ public class PerformanceTests {
 
         this.out.println(outGraph);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("# Vars = " + numVars);
         this.out.println("# Edges = " + (int) (numVars * edgeFactor));
@@ -466,7 +467,7 @@ public class PerformanceTests {
 
         init(new File("long.cpcstable." + numVars + ".txt"), "Tests performance of the CPC algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("Making list of vars");
 
@@ -489,7 +490,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -500,7 +501,7 @@ public class PerformanceTests {
 
         System.out.println("Covariance matrix done");
 
-        long time3 = System.currentTimeMillis();
+        long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -517,7 +518,7 @@ public class PerformanceTests {
 
 //        out.println(outGraph);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("# Cases = " + numCases);
 
@@ -542,7 +543,7 @@ public class PerformanceTests {
 
         init(new File("long.fci." + numVars + ".txt"), "Tests performance of the FCI algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("Making list of vars");
 
@@ -571,7 +572,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -583,7 +584,7 @@ public class PerformanceTests {
         System.out.println("Covariance matrix done");
 
 
-        long time3 = System.currentTimeMillis();
+        long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -600,7 +601,7 @@ public class PerformanceTests {
 
         this.out.println(outGraph);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("# Vars = " + numVars);
         this.out.println("# Edges = " + (int) (numVars * edgeFactor));
@@ -625,7 +626,7 @@ public class PerformanceTests {
 
         init(new File("long.gfci." + numVars + ".txt"), "Tests performance of the FCI-GES algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("Making list of vars");
 
@@ -661,7 +662,7 @@ public class PerformanceTests {
 
         System.out.println("Num measured vars = " + data.getNumColumns());
 
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -671,7 +672,7 @@ public class PerformanceTests {
 
         System.out.println("Covariance matrix done");
 
-        long time3 = System.currentTimeMillis();
+        long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -693,7 +694,7 @@ public class PerformanceTests {
 
         System.out.println(MisclassificationUtils.edgeMisclassifications(outGraph, dagToPag(dag)));
 
-        long time4 = System.currentTimeMillis();
+        long time4 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("# Vars = " + numVars);
         this.out.println("# Edges = " + (int) (numVars * edgeFactor));
@@ -777,7 +778,7 @@ public class PerformanceTests {
 
             System.out.println("Graph done");
 
-            long time1 = System.currentTimeMillis();
+            long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             this.out.println("Graph done");
 
@@ -798,14 +799,14 @@ public class PerformanceTests {
 
                 System.out.println(new Date());
 
-                long time2 = System.currentTimeMillis();
+                long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
                 this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
                 System.out.println(new Date());
 
                 System.out.println("Making covariance matrix");
 
-                long time3 = System.currentTimeMillis();
+                long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
                 ICovarianceMatrix cov = new CovarianceMatrix(data);
 
@@ -819,17 +820,17 @@ public class PerformanceTests {
                 System.out.println(new Date());
                 System.out.println("\nStarting FGES");
 
-                long timea = System.currentTimeMillis();
+                long timea = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
                 fges.setOut(System.out);
 
-                long timeb = System.currentTimeMillis();
+                long timeb = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
                 estCPDAG = fges.search();
 
-                long timec = System.currentTimeMillis();
+                long timec = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
                 this.out.println("Time for FGES constructor " + (timeb - timea) + " ms");
                 this.out.println("Time for FGES search " + (timec - timea) + " ms");
@@ -846,11 +847,11 @@ public class PerformanceTests {
 
                 System.out.println("Finishing simulation");
 
-                long time2 = System.currentTimeMillis();
+                long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
                 this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
-                long time3 = System.currentTimeMillis();
+                long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
                 BDeuScore score = new BDeuScore(data);
                 score.setStructurePrior(1);
@@ -859,17 +860,17 @@ public class PerformanceTests {
                 System.out.println(new Date());
                 System.out.println("\nStarting FGES");
 
-                long timea = System.currentTimeMillis();
+                long timea = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
                 fges.setOut(System.out);
 
-                long timeb = System.currentTimeMillis();
+                long timeb = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
                 estCPDAG = fges.search();
 
-                long timec = System.currentTimeMillis();
+                long timec = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
                 this.out.println("Time consructing BDeu score " + (timea - time3) + " ms");
                 this.out.println("Time for FGES constructor " + (timeb - timea) + " ms");
@@ -979,7 +980,7 @@ public class PerformanceTests {
 
         System.out.println("Graph done");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         this.out.println("Graph done");
 
@@ -1016,14 +1017,14 @@ public class PerformanceTests {
 
             System.out.println(new Date());
 
-            long time2 = System.currentTimeMillis();
+            long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
             System.out.println(new Date());
 
             System.out.println("Making covariance matrix");
 
-            long time3 = System.currentTimeMillis();
+            long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 
@@ -1067,11 +1068,11 @@ public class PerformanceTests {
 
             System.out.println("Finishing simulation");
 
-            long time2 = System.currentTimeMillis();
+            long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
-            long time3 = System.currentTimeMillis();
+            long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             BDeuScore score = new BDeuScore(data);
             score.setStructurePrior(structurePrior);
@@ -1080,7 +1081,7 @@ public class PerformanceTests {
             System.out.println(new Date());
             System.out.println("\nStarting FGES");
 
-            long time4 = System.currentTimeMillis();
+            long time4 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             fges = new FgesMb(score);
             fges.setVerbose(false);
@@ -1090,7 +1091,7 @@ public class PerformanceTests {
             fges.setMaxDegree(maxIndegree);
             fges.setCycleBound(-1);
 
-            long timeb = System.currentTimeMillis();
+            long timeb = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             this.out.println("Time consructing BDeu score " + (time4 - time3) + " ms");
             this.out.println("Time for FGES-MB constructor " + (timeb - time4) + " ms");
@@ -1104,11 +1105,11 @@ public class PerformanceTests {
 
             Node target = vars.get(RandomUtil.getInstance().nextInt(vars.size()));
             System.out.println("Target = " + target);
-            long timea = System.currentTimeMillis();
+            long timea = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             estCPDAG = fges.search(target);
 
-            long timed = System.currentTimeMillis();
+            long timed = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             elapsed = timed - timea;
 
@@ -1123,7 +1124,7 @@ public class PerformanceTests {
 
             Graph trueMbGraph = CPDAG.subgraph(new ArrayList<>(mb));
 
-            long timec = System.currentTimeMillis();
+            long timec = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             this.out.println("Time for FGES-MB search " + (timec - timea) + " ms");
             this.out.println();
@@ -1295,7 +1296,7 @@ public class PerformanceTests {
 //            out.println("\n\n\n========================FCI run " + (run + 1));
             this.out.println("\n\n\n========================TGFCI run " + (run + 1));
 
-            long ta1 = System.currentTimeMillis();
+            long ta1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
 //            FCI fci = new FCI(independenceTest);
             GFci fci = new GFci(independenceTest, score);
@@ -1306,7 +1307,7 @@ public class PerformanceTests {
             fci.setFaithfulnessAssumed(faithfulnessAssumed);
             estPag = fci.search();
 
-            long ta2 = System.currentTimeMillis();
+            long ta2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             estPag = GraphUtils.replaceNodes(estPag, truePag.getNodes());
 

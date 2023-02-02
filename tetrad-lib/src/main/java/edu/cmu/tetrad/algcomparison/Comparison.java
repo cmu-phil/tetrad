@@ -1173,7 +1173,7 @@ public class Comparison {
         //gets thread count
         System.out.println("ThreadCount:" + thMxB.getThreadCount());
 
-//        long start = System.currentTimeMillis();
+//        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         long start = thMxB.getCurrentThreadCpuTime();
         Graph graphOut;
 
@@ -1224,7 +1224,7 @@ public class Comparison {
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
         int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
-//        long stop = System.currentTimeMillis();
+//        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         long stop = thMxB.getCurrentThreadCpuTime();
 
         long elapsed = (stop - start) / 1000000L;

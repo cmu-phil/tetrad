@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
 
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -270,7 +271,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
         storeGraph(graph);
 
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.score = 0.0;
 
         // Do forward search.
@@ -279,7 +280,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         // Do backward search.
         bes(graph);
 
-        long endTime = System.currentTimeMillis();
+        long endTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.elapsedTime = endTime - start;
         this.logger.log("graph", "\nReturning this graph: " + graph);
 
@@ -486,7 +487,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     // Simultaneously finds the first edge to add to an empty graph and finds all length 1 undirectedPaths that are
     // not canceled by other undirectedPaths (the "effect edges")
     private Graph getEffectEdges(List<Node> nodes) {
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         Graph effectEdgesGraph = new EdgeListGraph(nodes);
         Set<Node> emptySet = new HashSet<>(0);
 
@@ -583,7 +584,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         buildIndexing(nodes);
         this.pool.invoke(new EffectTask(this.minChunk, 0, nodes.size()));
 
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (this.verbose) {
             this.out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");

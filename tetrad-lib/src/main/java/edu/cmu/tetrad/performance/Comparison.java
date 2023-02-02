@@ -9,6 +9,7 @@ import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.ScoreType;
 import edu.cmu.tetrad.util.TextTable;
 
+import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -176,7 +177,7 @@ public class Comparison {
             throw new IllegalArgumentException("Algorithm not set.");
         }
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
@@ -224,7 +225,7 @@ public class Comparison {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }
 
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         long elapsed = time2 - time1;
         result.setElapsed(elapsed);

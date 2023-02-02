@@ -48,6 +48,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -1045,7 +1046,7 @@ public class TestFges {
             Graph out;
             final double penalty = 2;
 
-            long start = System.currentTimeMillis();
+            long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             switch (t) {
                 case 0:
@@ -1080,7 +1081,7 @@ public class TestFges {
             truth[2] = getSubgraph(dag, true, false, data);
             truth[3] = getSubgraph(dag, false, false, data);
 
-            long stop = System.currentTimeMillis();
+            long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             long elapsed = stop - start;
             totalElapsed += elapsed;

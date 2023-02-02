@@ -17,6 +17,7 @@ import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReade
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -128,7 +129,7 @@ public class Comparison2 {
                 throw new IllegalArgumentException("Algorithm not set.");
             }
 
-            long time1 = System.currentTimeMillis();
+            long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
                 Pc search = new Pc(test);
@@ -171,7 +172,7 @@ public class Comparison2 {
                 throw new IllegalArgumentException("Unrecognized algorithm.");
             }
 
-            long time2 = System.currentTimeMillis();
+            long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             long elapsed = time2 - time1;
             result.setElapsed(elapsed);
@@ -368,7 +369,7 @@ public class Comparison2 {
             throw new IllegalArgumentException("Algorithm not set.");
         }
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
             if (test == null) {
@@ -434,7 +435,7 @@ public class Comparison2 {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }
 
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         long elapsed = time2 - time1;
         result.setElapsed(elapsed);

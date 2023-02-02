@@ -3,6 +3,7 @@ package edu.cmu.tetrad.calibration;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,10 +73,10 @@ class BootstrapWorker extends Thread {
 
     @Override
     public void run() {
-        this.start_time = System.currentTimeMillis();
+        this.start_time = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         Graph outGraph = DFC.learnBNRFCI(bootstrapSample, DFC.depth, truePag);
         addToList(outGraph);
-        this.end_time = System.currentTimeMillis();
+        this.end_time = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
     }
 
     public synchronized void addToList(Graph outGraph) {

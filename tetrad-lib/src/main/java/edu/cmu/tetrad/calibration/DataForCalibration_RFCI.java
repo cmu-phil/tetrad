@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -121,7 +122,7 @@ public class DataForCalibration_RFCI {
 
         Graph estPag;
 
-        long time1 = System.currentTimeMillis();
+        long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
 //        if (algorithm.equals("RFCI")) {
 
@@ -142,7 +143,7 @@ public class DataForCalibration_RFCI {
 //            System.out.println("invalid search algorithm");
 //            return;
 //        }
-        long time2 = System.currentTimeMillis();
+        long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("Elapsed (running RFCI on the data): " + (time2 - time1) / 1000 + " sec");
 
@@ -160,7 +161,7 @@ public class DataForCalibration_RFCI {
         BootstrapWorker.BootstrapNum = numBootstrapSamples;
 
         long start, stop;
-        start = System.currentTimeMillis();
+        start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         for (int i1 = 0; i1 < numBootstrapSamples; i1++) {
             DataSet bootstrapSample = DFC.bootStrapSampling(data, data.getNumRows());
             if (algorithm.equals("RFCI")) {
@@ -180,7 +181,7 @@ public class DataForCalibration_RFCI {
             e.printStackTrace();
         }
 
-        stop = System.currentTimeMillis();
+        stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         System.out.println("Bootstrap finished in " + (stop - start) + " ms");
         // estimate P_ij
         System.out.println("Probability estimates...");
@@ -192,9 +193,9 @@ public class DataForCalibration_RFCI {
             return;
         }
 
-        start = System.currentTimeMillis();
+        start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         DFC.probDistribution(truePag, estPag, frequency, DFC.outProb, algorithm);
-        stop = System.currentTimeMillis();
+        stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         System.out.println("probDistribution finished in " + (stop - start) + " ms");
         System.out.println("Writing Probs File: done!");
 

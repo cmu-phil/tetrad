@@ -36,6 +36,7 @@ import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReade
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -220,11 +221,11 @@ public class TestGFci {
         GFci gFci = new GFci(test, score);
         gFci.setFaithfulnessAssumed(true);
 
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         gFci.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
     }
@@ -248,11 +249,11 @@ public class TestGFci {
         GFci gFci = new GFci(test, bDeuScore);
         gFci.setFaithfulnessAssumed(true);
 
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         gFci.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
     }
@@ -279,11 +280,11 @@ public class TestGFci {
         gFci.setCompleteRuleSetUsed(false);
         gFci.setVerbose(true);
 
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         gFci.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
     }

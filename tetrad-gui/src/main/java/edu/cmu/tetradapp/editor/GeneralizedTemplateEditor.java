@@ -38,6 +38,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.management.ManagementFactory;
 import java.text.ParseException;
 import java.util.List;
 import java.util.*;
@@ -70,7 +71,7 @@ class GeneralizedTemplateEditor extends JComponent {
      * The time that the selectded text should be colored. (Must do this all indirectly using a thread because we cannot
      * saveTemplate to the text pane.
      */
-    private long recolorTime = System.currentTimeMillis();
+    private long recolorTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
     /**
      * The text pane in which parsed text is rendered, typed, and colored.
@@ -374,7 +375,7 @@ class GeneralizedTemplateEditor extends JComponent {
                 StyleConstants.setForeground(black, Color.BLACK);
 
                 while (!this.stop) {
-                    if (System.currentTimeMillis() < GeneralizedTemplateEditor.this.recolorTime) {
+                    if (ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() < GeneralizedTemplateEditor.this.recolorTime) {
                         continue;
                     }
 
@@ -804,7 +805,7 @@ class GeneralizedTemplateEditor extends JComponent {
             this.color = Color.BLACK;
             this.start = 0;
             this.stringWidth = expressionString.length();
-            this.recolorTime = System.currentTimeMillis();
+            this.recolorTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             String startsWithText = this.startsWithField.getValue().trim();
 
@@ -831,7 +832,7 @@ class GeneralizedTemplateEditor extends JComponent {
             this.color = Color.RED;
             this.start = e.getErrorOffset();
             this.stringWidth = parser.getNextOffset() - e.getErrorOffset();
-            this.recolorTime = System.currentTimeMillis();
+            this.recolorTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         }
 
         this.latestParser = parser;

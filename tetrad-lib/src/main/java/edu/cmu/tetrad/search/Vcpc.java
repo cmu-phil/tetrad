@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.lang.management.ManagementFactory;
 import java.util.*;
 
 /**
@@ -233,7 +234,7 @@ public final class Vcpc implements GraphSearch {
         Vcfas fas = new Vcfas(independenceTest);
         this.definitelyNonadjacencies = new HashSet<>();
 
-        long startTime = System.currentTimeMillis();
+        long startTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         List<Node> allNodes = independenceTest.getVariables();
 
@@ -420,7 +421,7 @@ public final class Vcpc implements GraphSearch {
 
         System.out.println("VCPC:");
 
-        long endTime = System.currentTimeMillis();
+        long endTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.elapsedTime = endTime - startTime;
 
         System.out.println("Search Time (seconds):" + (this.elapsedTime) / 1000 + " s");

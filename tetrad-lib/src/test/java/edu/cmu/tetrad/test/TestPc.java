@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -351,11 +352,11 @@ public class TestPc {
                     throw new IllegalStateException();
             }
 
-            long start = System.currentTimeMillis();
+            long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             Graph out = search.search();
 
-            long stop = System.currentTimeMillis();
+            long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             long elapsed = stop - start;
             totalElapsed += elapsed;
@@ -744,9 +745,9 @@ public class TestPc {
 
             out = trim(out, target);
 
-            long start = System.currentTimeMillis();
+            long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
-            long stop = System.currentTimeMillis();
+            long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             long elapsed = stop - start;
 

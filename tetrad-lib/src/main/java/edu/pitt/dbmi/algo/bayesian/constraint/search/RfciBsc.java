@@ -13,6 +13,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
@@ -74,7 +75,7 @@ public class RfciBsc implements GraphSearch {
     @Override
     public Graph search() {
         long stop = 0;
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getIndependenceTest();
 
@@ -362,7 +363,7 @@ public class RfciBsc implements GraphSearch {
             this.out.println("graphRBD:\n" + this.graphRBD);
             this.out.println("graphRBI:\n" + this.graphRBI);
 
-            stop = System.currentTimeMillis();
+            stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             this.out.println("Elapsed " + (stop - start) + " ms");
         }

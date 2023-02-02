@@ -7,6 +7,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.management.ManagementFactory;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -63,7 +64,7 @@ public class Boss {
         scorer.setKnowledge(knowledge);
 
         List<Node> bestPerm;
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         order = new ArrayList<>(order);
 
         this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
@@ -87,7 +88,7 @@ public class Boss {
                 shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
+            this.start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
             makeValidKnowledgeOrder(order);
 
@@ -121,7 +122,7 @@ public class Boss {
 
         this.scorer.score(bestPerm);
 
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("\nFinal " + algType + " order = " + this.scorer.getPi());
@@ -174,7 +175,7 @@ public class Boss {
 //                    scorer.bookmark();
 //
 //                    if (verbose) {
-//                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutation1)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+//                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutation1)" + " Elapsed " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start) / 1000.0 + " s"));
 //                    }
 //                }
 //            }
@@ -226,8 +227,8 @@ public class Boss {
                     }
 
                     if (verbose) {
-                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start) / 1000.0 + " s"));
+                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start) / 1000.0 + " s"));
                     }
                 }
             }
@@ -282,7 +283,7 @@ public class Boss {
                     }
 
                     if (verbose) {
-                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start) / 1000.0 + " s"));
                     }
                 }
 
@@ -337,14 +338,14 @@ public class Boss {
                     }
 
                     if (verbose) {
-                        System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start) / 1000.0 + " s"));
                     }
                 }
 
                 scorer.bookmark();
 
                 if (verbose) {
-                    System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                    System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - start) / 1000.0 + " s"));
                 }
             }
 

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -253,10 +254,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         fes();
         bes();
 
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.totalScore = 0.0;
 
-        long endTime = System.currentTimeMillis();
+        long endTime = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.elapsedTime = endTime - start;
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
@@ -588,7 +589,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         this.neighbors = new ConcurrentHashMap<>();
         Set<Node> emptySet = new HashSet<>();
 
-        long start = System.currentTimeMillis();
+        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
 
         class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
@@ -631,7 +632,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
         this.pool.invoke(new InitializeFromEmptyGraphTask());
 
-        long stop = System.currentTimeMillis();
+        long stop = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 
         if (this.verbose) {
             this.out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");

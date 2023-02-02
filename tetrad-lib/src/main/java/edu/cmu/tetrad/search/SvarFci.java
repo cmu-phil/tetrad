@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.lang.management.ManagementFactory;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -180,7 +181,7 @@ public final class SvarFci implements GraphSearch {
         // The original FCI, with or without JiJi Zhang's orientation rules
         //        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
         if (isPossibleDsepSearchDone()) {
-//            long time1 = System.currentTimeMillis();
+//            long time1 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
             SvarFciOrient svarFciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
             svarFciOrient.setKnowledge(this.knowledge);
             svarFciOrient.ruleR0(this.graph);
@@ -205,11 +206,11 @@ public final class SvarFci implements GraphSearch {
             }
 
 
-//            long time2 = System.currentTimeMillis();
+//            long time2 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 //            logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
 //
 //            // Step FCI D.
-//            long time3 = System.currentTimeMillis();
+//            long time3 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 //
 //            System.out.println("Starting possible dsep search");
 //            PossibleDsepFci possibleDSep = new PossibleDsepFci(graph, independenceTest);
@@ -217,7 +218,7 @@ public final class SvarFci implements GraphSearch {
 //            possibleDSep.setKnowledge(getKnowledge());
 //            possibleDSep.setMaxPathLength(maxPathLength);
 //            this.sepsets.addAll(possibleDSep.search());
-//            long time4 = System.currentTimeMillis();
+//            long time4 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
 //            logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
 //            System.out.println("Starting possible dsep search");
 
@@ -226,10 +227,10 @@ public final class SvarFci implements GraphSearch {
         }
 
         // Step CI C (Zhang's step F3.)
-        long time5 = System.currentTimeMillis();
+        long time5 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
 
-        long time6 = System.currentTimeMillis();
+        long time6 = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
         this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
 
         SvarFciOrient fciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);

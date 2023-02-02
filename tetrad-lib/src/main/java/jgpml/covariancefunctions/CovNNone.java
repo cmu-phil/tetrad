@@ -303,7 +303,7 @@ public class CovNNone implements CovarianceFunction {
 
 //            System.out.println("")
 //
-//        long start = System.currentTimeMillis()
+//        long start = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime()
 
         Matrix d = cf.computeDerivatives(logtheta, X, 1);
 
