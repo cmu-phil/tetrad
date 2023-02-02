@@ -1012,7 +1012,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public String toString() {
-        return GraphUtils.graphToText(this);
+        return GraphUtils.graphToText(this, false);
     }
 
     @Override
@@ -1073,10 +1073,6 @@ public class EdgeListGraph implements Graph {
             this.pcs = new PropertyChangeSupport(this);
         }
         return this.pcs;
-    }
-
-    public List<Node> getCausalOrdering() {
-        return paths().getCausalOrdering(this.getNodes());
     }
 
     @Override

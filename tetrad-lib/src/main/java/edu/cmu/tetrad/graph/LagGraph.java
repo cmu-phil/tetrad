@@ -212,7 +212,7 @@ public class LagGraph implements Graph {
     }
 
     public boolean isAncestorOf(Node node1, Node node2) {
-        return getGraph().isAncestorOf(node1, node2);
+        return getGraph().paths().isAncestorOf(node1, node2);
     }
 
     public boolean isChildOf(Node node1, Node node2) {
@@ -294,7 +294,7 @@ public class LagGraph implements Graph {
     }
 
     public List<Node> getCausalOrdering() {
-        return getGraph().getCausalOrdering();
+        return getGraph().paths().getCausalOrdering(getGraph().getNodes());
     }
 
     public boolean isParameterizable(Node node) {

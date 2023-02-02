@@ -32,14 +32,14 @@ import javax.swing.*;
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class PagTypeSetter extends JCheckBoxMenuItem {
+public class PagColorer extends JCheckBoxMenuItem {
 
     /**
      * Creates a new copy subsession action for the given desktop and
      * clipboard.
      */
-    public PagTypeSetter(GraphWorkbench workbench) {
-        super("Set type to PAG");
+    public PagColorer(GraphWorkbench workbench) {
+        super("Add PAG Coloring if a Legal PAG");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
@@ -49,14 +49,16 @@ public class PagTypeSetter extends JCheckBoxMenuItem {
 
         Graph graph = workbench.getGraph();
 
-        setSelected(SearchGraphUtils.isLegalPag(workbench.getGraph()).isLegalPag());
-        addItemListener(e -> {
-            SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(graph);
+        setSelected(workbench.isDoPagColoring());
 
-            if (legalPag.isLegalPag()) {
-                JOptionPane.showMessageDialog(workbench, legalPag.getReason());
-                workbench.setOverridePagColoring(false);
+        addItemListener(e -> {
+            workbench.setDoPagColoring(!workbench.isDoPagColoring());
+
+            if (!workbench.isDoPagColoring()) {
+                JOptionPane.showMessageDialog(workbench, "Legal PAG coloring is turned off.");
+                workbench.setDoPagColoring(false);
             } else {
+                SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(graph);
 
                 String reason = legalPag.getReason() + ".";
                 reason = breakDown(reason, 60);
@@ -67,11 +69,11 @@ public class PagTypeSetter extends JCheckBoxMenuItem {
                                     "\n\nProceed anyway?",
                             "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                     if (ret == JOptionPane.YES_NO_OPTION) {
-                        _workbench.setOverridePagColoring(true);
+                        _workbench.setDoPagColoring(true);
                     }
                 } else {
                     JOptionPane.showMessageDialog(workbench, reason);
-                    _workbench.setOverridePagColoring(false);
+//                    _workbench.setDoPagColoring(false);
                 }
             }
         });
