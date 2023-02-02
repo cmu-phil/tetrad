@@ -562,36 +562,6 @@ public final class FciOrient {
      * the left endpoint, and a,b,c as arguments.
      */
     private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
-//        if (this.dag != null) {
-//            if (this.dag.isAncestorOf(b, c) && doDiscriminatingPathTailRule) {
-//                graph.setEndpoint(c, b, Endpoint.TAIL);
-//
-//                if (this.verbose) {
-//                    this.logger.forceLogMessage(
-//                            "R4: Definite discriminating path collider rule d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
-//                }
-//            } else if (doDiscriminatingPathColliderRule) {
-//                if (!isArrowpointAllowed(a, b, graph, knowledge)) {
-//                    return false;
-//                }
-//
-//                if (!isArrowpointAllowed(c, b, graph, knowledge)) {
-//                    return false;
-//                }
-//
-//                graph.setEndpoint(a, b, Endpoint.ARROW);
-//                graph.setEndpoint(c, b, Endpoint.ARROW);
-//
-//                if (verbose) {
-//                    this.logger.forceLogMessage("R4: DDP Collider, d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
-//                }
-//            }
-//
-//            this.changeFlag = true;
-//
-//            return true;
-//        }
-
         if (graph.isAdjacentTo(d, c)) {
             throw new IllegalArgumentException();
         }
