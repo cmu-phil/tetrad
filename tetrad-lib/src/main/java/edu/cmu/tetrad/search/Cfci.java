@@ -340,7 +340,7 @@ public final class Cfci implements GraphSearch {
                 } else {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    getGraph().underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     if (this.verbose) {
                         TetradLogger.getInstance().log("tripleClassifications", "AmbiguousTriples: " + Triple.pathString(this.graph, x, y, z));
                     }

@@ -142,7 +142,7 @@ public class Mimbuild {
         graph = search.getGraph(true);
 
         this.structureGraph = new EdgeListGraph(graph);
-        GraphUtils.fruchtermanReingoldLayout(this.structureGraph);
+        LayoutUtil.fruchtermanReingoldLayout(this.structureGraph);
 
         return this.structureGraph;
     }

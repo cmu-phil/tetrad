@@ -218,7 +218,7 @@ public class TestRicf {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 20,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 20,
                 5, 5, 5, false));
         new Ricf().cliques(graph);
     }
@@ -265,7 +265,7 @@ public class TestRicf {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 10,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 10,
                 30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -282,9 +282,9 @@ public class TestRicf {
     public void test3() {
         try {
             File datapath = new File("/Users/josephramsey/Downloads/data6.txt");
-            DataSet dataSet = DataUtils.loadContinuousData(datapath, "//", '\"',
+            DataSet dataSet = DataPersistence.loadContinuousData(datapath, "//", '\"',
                     "*", true, Delimiter.TAB);
-            Graph mag = GraphUtils.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
+            Graph mag = GraphPersistence.loadGraphTxt(new File("/Users/josephramsey/Downloads/graph3.txt"));
 
             ICovarianceMatrix cov = new CovarianceMatrix(dataSet);
 
@@ -302,7 +302,7 @@ public class TestRicf {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        Graph g1 = GraphUtils.randomGraph(nodes1, 0, 5,
+        Graph g1 = RandomGraph.randomGraph(nodes1, 0, 5,
                 0, 0, 0, false);
         List<Node> nodes = new ArrayList<>();
 
@@ -310,7 +310,7 @@ public class TestRicf {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph g2 = GraphUtils.randomGraph(nodes, 0, 5,
+        Graph g2 = RandomGraph.randomGraph(nodes, 0, 5,
                 0, 0, 0, false);
 
         SemPm pm = new SemPm(g1);

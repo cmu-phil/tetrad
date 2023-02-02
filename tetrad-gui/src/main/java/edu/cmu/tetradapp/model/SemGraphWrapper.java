@@ -175,7 +175,7 @@ public class SemGraphWrapper implements GraphSource,
             setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        GraphUtils.circleLayout(getGraph(), 200, 200, 150);
+        LayoutUtil.circleLayout(getGraph(), 200, 200, 150);
     }
 
     public SemGraphWrapper(BayesPmWrapper wrapper) {
@@ -296,7 +296,7 @@ public class SemGraphWrapper implements GraphSource,
             paramSettings.put("# Nodes", Integer.toString(getSemGraph().getNumNodes()));
         }
         paramSettings.put("# Edges", Integer.toString(getSemGraph().getNumEdges()));
-        if (getSemGraph().existsDirectedCycle()) {
+        if (getSemGraph().paths().existsDirectedCycle()) {
             paramSettings.put("Cyclic", null);
         }
         return paramSettings;

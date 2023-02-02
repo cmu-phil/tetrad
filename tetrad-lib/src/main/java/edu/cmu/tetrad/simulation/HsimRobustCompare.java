@@ -3,10 +3,7 @@ package edu.cmu.tetrad.simulation;
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
@@ -45,7 +42,7 @@ public class HsimRobustCompare {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph odag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
+        Graph odag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
 
         BayesPm bayesPm = new BayesPm(odag, 2, 2);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);

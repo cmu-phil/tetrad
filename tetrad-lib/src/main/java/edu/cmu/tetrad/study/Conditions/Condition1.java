@@ -60,7 +60,7 @@ public class Condition1 {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
@@ -102,7 +102,7 @@ public class Condition1 {
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
         statistics.add(new F1All());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);

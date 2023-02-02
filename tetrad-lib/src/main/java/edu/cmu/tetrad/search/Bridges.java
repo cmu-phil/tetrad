@@ -34,7 +34,6 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
-import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Collections.shuffle;
@@ -225,7 +224,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
                     // node into parents of the proximal node
 
                     for (Node c : g.getAdjacentNodes(b)) {
-                        if (existsSemidirectedPath(c, a, g)) {
+                        if (g.paths().existsSemidirectedPath(c, a)) {
                             g.removeEdge(g.getEdge(b, c));
                             g.addDirectedEdge(c, b);
                             change.add(b);
@@ -1188,7 +1187,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
             Node nodeA = graph.getNode(next.getFrom());
             Node nodeB = graph.getNode(next.getTo());
 
-            if (!graph.isAncestorOf(nodeB, nodeA)) {
+            if (!graph.paths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdges(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
 
@@ -1210,7 +1209,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
                 Node nodeB = edge.getNode2();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -1221,7 +1220,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
                 }
 
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -1235,7 +1234,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
                 Node nodeB = edge.getNode1();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -1245,7 +1244,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
                     }
                 }
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 

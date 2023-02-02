@@ -41,49 +41,17 @@ public final class Dag implements Graph {
      */
     private final Graph graph;
 
-    /**
-     * A dpath matrix for the DAG. If used, it is updated (where necessary) each
-     * time the getDirectedPath method is called with whatever edges are stored
-     * in the dpathNewEdges list. New edges that are added are appended to the
-     * dpathNewEdges list. When edges are removed and when nodes are added or
-     * removed, dpath is set to null.
-     */
-    private transient byte[][] dpath;
-
-    /**
-     * New edges that need to be added to the dpath matrix.
-     */
-    private transient LinkedList<Edge> dpathNewEdges = new LinkedList<>();
-
-    /**
-     * The order of nodes used for dpath.
-     */
-    private transient List<Node> dpathNodes;
-
-    private Map<Node, Integer> nodesHash = new HashMap<>();
-
-    private boolean pag;
-    private boolean CPDAG;
-
-    private final Map<String, Object> attributes = new HashMap<>();
-
     //===============================CONSTRUCTORS=======================//
 
     /**
      * Constructs a new directed acyclic graph (DAG).
      */
     public Dag() {
-
-        // Must use EdgeListGraph because property change events are correctly implemeted. Don't change it!
-        // unless you fix that or the interface will break the interface! jdramsey 2015-6-5
         this.graph = new EdgeListGraph();
-
-        reconstituteDpath();
     }
 
     public Dag(List<Node> nodes) {
         this.graph = new EdgeListGraph(nodes);
-        reconstituteDpath();
     }
 
     /**
@@ -94,7 +62,7 @@ public final class Dag implements Graph {
      *                                  reason be converted into a DAG.
      */
     public Dag(Graph graph) throws IllegalArgumentException {
-        if (graph.existsDirectedCycle()) {
+        if (graph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException("That graph was not acyclic.");
         }
 
@@ -102,17 +70,8 @@ public final class Dag implements Graph {
 
         transferNodesAndEdges(graph);
 
-        for (Node node : this.graph.getNodes()) {
+        for (Node node :this.graph.getNodes()) {
             node.getAllAttributes().clear();
-        }
-
-        resetDPath();
-        reconstituteDpath();
-
-        for (Edge edge : graph.getEdges()) {
-            if (graph.isHighlighted(edge)) {
-                setHighlighted(edge, true);
-            }
         }
     }
 
@@ -128,551 +87,6 @@ public final class Dag implements Graph {
 
     //===============================PUBLIC METHODS======================//
 
-    public boolean addBidirectedEdge(Node node1, Node node2) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean addEdge(Edge edge) {
-        reconstituteDpath();
-        Node _node1 = Edges.getDirectedEdgeTail(edge);
-        Node _node2 = Edges.getDirectedEdgeHead(edge);
-
-        int i = this.dpathNodes.indexOf(_node1);
-        int j = this.dpathNodes.indexOf(_node2);
-
-        if (this.dpath[j][i] == 1) {
-            return false;
-        }
-
-        adjustDPath(i, j);
-
-        boolean added = getGraph().addEdge(edge);
-
-        if (added) {
-            dpathNewEdges().add(edge);
-        }
-
-        return added;
-    }
-
-    public boolean addDirectedEdge(Node node1, Node node2) {
-        return addEdge(Edges.directedEdge(node1, node2));
-    }
-
-    public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean addNode(Node node) {
-        boolean added = getGraph().addNode(node);
-
-        if (added) {
-            resetDPath();
-            reconstituteDpath();
-        }
-
-        return added;
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        getGraph().addPropertyChangeListener(l);
-    }
-
-    public boolean addUndirectedEdge(Node node1, Node node2) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean addNondirectedEdge(Node node1, Node node2) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void clear() {
-        getGraph().clear();
-    }
-
-    public boolean containsEdge(Edge edge) {
-        return getGraph().containsEdge(edge);
-    }
-
-    public boolean containsNode(Node node) {
-        return getGraph().containsNode(node);
-    }
-
-    public boolean defNonDescendent(Node node1, Node node2) {
-        return getGraph().defNonDescendent(node1, node2);
-    }
-
-    public boolean existsDirectedCycle() {
-        return false;
-    }
-
-    public boolean defVisible(Edge edge) {
-        return getGraph().defVisible(edge);
-    }
-
-    public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
-        return getGraph().isDefNoncollider(node1, node2, node3);
-    }
-
-    public boolean isDefCollider(Node node1, Node node2, Node node3) {
-        return getGraph().isDefCollider(node1, node2, node3);
-    }
-
-    public boolean existsTrek(Node node1, Node node2) {
-        return getGraph().existsTrek(node1, node2);
-    }
-
-    public boolean equals(Object o) {
-        return o instanceof Dag && getGraph().equals(o);
-    }
-
-    public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-
-
-        int index1 = this.nodesHash.get(node1);
-        int index2 = this.nodesHash.get(node2);
-
-        return this.dpath[index1][index2] == 1;
-    }
-
-    @Override
-    public List<Node> findCycle() {
-        return getGraph().findCycle();
-    }
-
-    public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
-        return false;
-    }
-
-
-    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes) {
-        return getGraph().existsSemiDirectedPathFromTo(node1, nodes);
-    }
-
-    public boolean existsInducingPath(Node node1, Node node2) {
-        return getGraph().existsInducingPath(node1, node2);
-    }
-
-    public void fullyConnect(Endpoint endpoint) {
-        throw new UnsupportedOperationException();
-        //graph.fullyConnect(endpoint);
-    }
-
-    public Endpoint getEndpoint(Node node1, Node node2) {
-        return getGraph().getEndpoint(node1, node2);
-    }
-
-    public Endpoint[][] getEndpointMatrix() {
-        return getGraph().getEndpointMatrix();
-    }
-
-    public List<Node> getAdjacentNodes(Node node) {
-        return getGraph().getAdjacentNodes(node);
-    }
-
-    public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
-        return getGraph().getNodesInTo(node, endpoint);
-    }
-
-    public List<Node> getNodesOutTo(Node node, Endpoint n) {
-        return getGraph().getNodesOutTo(node, n);
-    }
-
-    public List<Node> getNodes() {
-        return getGraph().getNodes();
-    }
-
-    public Set<Edge> getEdges() {
-        return getGraph().getEdges();
-    }
-
-    public List<Edge> getEdges(Node node) {
-        return getGraph().getEdges(node);
-    }
-
-    public List<Edge> getEdges(Node node1, Node node2) {
-        return getGraph().getEdges(node1, node2);
-    }
-
-    public Node getNode(String name) {
-        return getGraph().getNode(name);
-    }
-
-    public int getNumEdges() {
-        return getGraph().getNumEdges();
-    }
-
-    public int getNumNodes() {
-        return getGraph().getNumNodes();
-    }
-
-    public int getNumEdges(Node node) {
-        return getGraph().getNumEdges(node);
-    }
-
-    public List<Node> getChildren(Node node) {
-        return getGraph().getChildren(node);
-    }
-
-    public int getConnectivity() {
-        return getGraph().getConnectivity();
-    }
-
-    public List<Node> getDescendants(List<Node> nodes) {
-        return getGraph().getDescendants(nodes);
-    }
-
-    public Edge getEdge(Node node1, Node node2) {
-        return getGraph().getEdge(node1, node2);
-    }
-
-    public Edge getDirectedEdge(Node node1, Node node2) {
-        return getGraph().getDirectedEdge(node1, node2);
-    }
-
-    public List<Node> getParents(Node node) {
-        return getGraph().getParents(node);
-    }
-
-    public int getIndegree(Node node) {
-        return getGraph().getIndegree(node);
-    }
-
-    @Override
-    public int getDegree(Node node) {
-        return getGraph().getDegree(node);
-    }
-
-    public int getOutdegree(Node node) {
-        return getGraph().getOutdegree(node);
-    }
-
-    /**
-     * This method returns the nodes of a digraph in such an order that as one
-     * iterates through the list, the parents of each node have already been
-     * encountered in the list.
-     *
-     * @return a tier ordering for the nodes in this graph.
-     */
-    public List<Node> getCausalOrdering() {
-        return GraphUtils.getCausalOrdering(this, this.getNodes());
-    }
-
-    public void setHighlighted(Edge edge, boolean highlighted) {
-        getGraph().setHighlighted(edge, highlighted);
-    }
-
-    public boolean isHighlighted(Edge edge) {
-        return getGraph().isHighlighted(edge);
-    }
-
-    public boolean isParameterizable(Node node) {
-        return getGraph().isParameterizable(node);
-    }
-
-    public boolean isTimeLagModel() {
-        return getGraph().isTimeLagModel();
-    }
-
-    public TimeLagGraph getTimeLagGraph() {
-        return getGraph().getTimeLagGraph();
-    }
-
-    @Override
-    public void removeTriplesNotInGraph() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<Node> getSepset(Node n1, Node n2) {
-//        return graph.getSepset(n1, n2);
-        return GraphUtils.getSepset(n1, n2, this);
-    }
-
-    @Override
-    public void setNodes(List<Node> nodes) {
-        this.graph.setNodes(nodes);
-    }
-
-    public boolean isAdjacentTo(Node nodeX, Node nodeY) {
-        return getGraph().isAdjacentTo(nodeX, nodeY);
-    }
-
-    public boolean isAncestorOf(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node1, node2, this);
-    }
-
-    public boolean isDirectedFromTo(Node node1, Node node2) {
-        return getGraph().isDirectedFromTo(node1, node2);
-    }
-
-    public boolean isUndirectedFromTo(Node node1, Node node2) {
-        return false;
-    }
-
-    public boolean isParentOf(Node node1, Node node2) {
-        return getGraph().isParentOf(node1, node2);
-    }
-
-    public boolean isProperAncestorOf(Node node1, Node node2) {
-        return node1 != node2 && isAncestorOf(node1, node2);
-    }
-
-    public boolean isProperDescendentOf(Node node1, Node node2) {
-        return node1 != node2 && isDescendentOf(node1, node2);
-    }
-
-    public boolean isExogenous(Node node) {
-        return getGraph().isExogenous(node);
-    }
-
-    public boolean isDConnectedTo(Node node1, Node node2,
-                                  List<Node> conditioningNodes) {
-        return getGraph().isDConnectedTo(node1, node2, conditioningNodes);
-    }
-
-    public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
-        return getGraph().isDSeparatedFrom(node1, node2, z);
-    }
-
-    public boolean isChildOf(Node node1, Node node2) {
-        return getGraph().isChildOf(node1, node2);
-    }
-
-    public boolean isDescendentOf(Node node1, Node node2) {
-        return node1 == node2 || GraphUtils.existsDirectedPathFromTo(node2, node1, this);
-    }
-
-    public boolean removeEdge(Node node1, Node node2) {
-        boolean removed = getGraph().removeEdge(node1, node2);
-
-        if (removed) {
-            resetDPath();
-            reconstituteDpath();
-        }
-
-        return removed;
-    }
-
-    public boolean removeEdges(Node node1, Node node2) {
-        boolean removed = getGraph().removeEdges(node1, node2);
-
-        if (removed) {
-            resetDPath();
-            reconstituteDpath();
-        }
-
-        return removed;
-    }
-
-    public boolean setEndpoint(Node node1, Node node2, Endpoint endpoint) {
-        boolean ret = getGraph().setEndpoint(node1, node2, endpoint);
-
-        resetDPath();
-        reconstituteDpath();
-
-        return ret;
-    }
-
-    public Graph subgraph(List<Node> nodes) {
-        return getGraph().subgraph(nodes);
-    }
-
-    public boolean removeEdge(Edge edge) {
-        boolean removed = getGraph().removeEdge(edge);
-        resetDPath();
-        reconstituteDpath();
-        return removed;
-    }
-
-    public boolean removeEdges(Collection<Edge> edges) {
-        boolean change = false;
-
-        for (Edge edge : edges) {
-            boolean _change = removeEdge(edge);
-            change = change || _change;
-        }
-
-        return change;
-
-        //return graph.removeEdges(edges);
-    }
-
-    public boolean removeNode(Node node) {
-        boolean removed = getGraph().removeNode(node);
-
-        if (removed) {
-            resetDPath();
-            reconstituteDpath();
-        }
-
-        return removed;
-    }
-
-    public boolean removeNodes(List<Node> nodes) {
-        return getGraph().removeNodes(nodes);
-    }
-
-    public void reorientAllWith(Endpoint endpoint) {
-        throw new UnsupportedOperationException();
-        //graph.reorientAllWith(endpoint);
-    }
-
-    public boolean possibleAncestor(Node node1, Node node2) {
-        return getGraph().possibleAncestor(node1, node2);
-    }
-
-    public List<Node> getAncestors(List<Node> nodes) {
-        return getGraph().getAncestors(nodes);
-    }
-
-    public boolean possDConnectedTo(Node node1, Node node2, List<Node> z) {
-        return getGraph().possDConnectedTo(node1, node2, z);
-    }
-
-    private void resetDPath() {
-        this.dpath = null;
-        dpathNewEdges().clear();
-        dpathNewEdges().addAll(getEdges());
-    }
-
-    private void reconstituteDpath() {
-        if (this.dpath == null) {
-            this.dpathNodes = getNodes();
-            int numNodes = this.dpathNodes.size();
-            this.dpath = new byte[numNodes][numNodes];
-        }
-
-        while (!dpathNewEdges().isEmpty()) {
-            Edge edge = dpathNewEdges().removeFirst();
-            Node _node1 = Edges.getDirectedEdgeTail(edge);
-            Node _node2 = Edges.getDirectedEdgeHead(edge);
-            int i = this.dpathNodes.indexOf(_node1);
-            int j = this.dpathNodes.indexOf(_node2);
-            adjustDPath(i, j);
-        }
-
-        this.nodesHash = new HashMap<>();
-
-        for (int i = 0; i < this.dpathNodes.size(); i++) {
-            this.nodesHash.put(this.dpathNodes.get(i), i);
-        }
-    }
-
-    private void adjustDPath(int i, int j) {
-        this.dpath[i][j] = 1;
-
-        for (int k = 0; k < this.dpathNodes.size(); k++) {
-            if (this.dpath[k][i] == 1) {
-                this.dpath[k][j] = 1;
-            }
-
-            if (this.dpath[j][k] == 1) {
-                this.dpath[i][k] = 1;
-            }
-        }
-    }
-
-    public void transferNodesAndEdges(Graph graph)
-            throws IllegalArgumentException {
-        this.getGraph().transferNodesAndEdges(graph);
-        for (Node node : this.getGraph().getNodes()) {
-            node.getAllAttributes().clear();
-        }
-    }
-
-    public void transferAttributes(Graph graph)
-            throws IllegalArgumentException {
-        this.getGraph().transferAttributes(graph);
-    }
-
-    public Set<Triple> getAmbiguousTriples() {
-        return getGraph().getAmbiguousTriples();
-    }
-
-    public Set<Triple> getUnderLines() {
-        return getGraph().getUnderLines();
-    }
-
-    public Set<Triple> getDottedUnderlines() {
-        return getGraph().getDottedUnderlines();
-    }
-
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
-        return getGraph().isAmbiguousTriple(x, y, z);
-    }
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isUnderlineTriple(Node x, Node y, Node z) {
-        return getGraph().isUnderlineTriple(x, y, z);
-    }
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
-        return getGraph().isDottedUnderlineTriple(x, y, z);
-    }
-
-    public void addAmbiguousTriple(Node x, Node y, Node z) {
-        getGraph().addAmbiguousTriple(x, y, z);
-    }
-
-    public void addUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().addUnderlineTriple(x, y, z);
-    }
-
-    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().addDottedUnderlineTriple(x, y, z);
-    }
-
-    public void removeAmbiguousTriple(Node x, Node y, Node z) {
-        getGraph().removeAmbiguousTriple(x, y, z);
-    }
-
-    public void removeUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().removeUnderlineTriple(x, y, z);
-    }
-
-    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().removeDottedUnderlineTriple(x, y, z);
-    }
-
-
-    public void setAmbiguousTriples(Set<Triple> triples) {
-        getGraph().setAmbiguousTriples(triples);
-    }
-
-    public void setUnderLineTriples(Set<Triple> triples) {
-        getGraph().setUnderLineTriples(triples);
-    }
-
-
-    public void setDottedUnderLineTriples(Set<Triple> triples) {
-        getGraph().setDottedUnderLineTriples(triples);
-    }
-
-    public List<String> getNodeNames() {
-        return getGraph().getNodeNames();
-    }
-
-    public String toString() {
-        return getGraph().toString();
-    }
-
-    private LinkedList<Edge> dpathNewEdges() {
-        if (this.dpathNewEdges == null) {
-            this.dpathNewEdges = new LinkedList<>();
-        }
-        return this.dpathNewEdges;
-    }
-
     /**
      * Adds semantic checks to the default deserialization method. This method
      * must have the standard signature for a readObject method, and the body of
@@ -681,60 +95,291 @@ public final class Dag implements Graph {
      * version to version. A readObject method of this form may be added to any
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.)
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
+    }
 
-        if (getGraph() == null) {
-            throw new NullPointerException();
+    public boolean addBidirectedEdge(Node node1, Node node2) {
+        return this.graph.addBidirectedEdge(node1, node2);
+    }
+
+    public boolean addDirectedEdge(Node node1, Node node2) {
+        return addEdge(Edges.directedEdge(node1, node2));
+    }
+
+    public boolean addUndirectedEdge(Node node1, Node node2) {
+        throw new UnsupportedOperationException("Disallowed for a DAG.");
+    }
+
+    public boolean addNondirectedEdge(Node node1, Node node2) {
+        throw new UnsupportedOperationException("Disallowed for a DAG.");
+    }
+
+    public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
+        throw new UnsupportedOperationException("Disallowed for a DAG.");
+    }
+
+    public boolean addEdge(Edge edge) {
+        if (!Edges.isDirectedEdge(edge)) {
+            throw new IllegalArgumentException("Only directed edges may be added to a DAG.");
+        }
+
+        Node x = Edges.getDirectedEdgeTail(edge);
+        Node y = Edges.getDirectedEdgeHead(edge);
+
+        if (paths().isAncestorOf(y, x)) {
+            throw new IllegalArgumentException("Adding that edge would create a cycle: " + edge);
+        }
+
+        return this.graph.addEdge(edge);
+    }
+
+    public boolean addNode(Node node) {
+        return this.graph.addNode(node);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener e) {
+        this.graph.addPropertyChangeListener(e);
+    }
+
+    public void clear() {
+        this.graph.clear();
+    }
+
+    public boolean containsEdge(Edge edge) {
+        return this.graph.containsEdge(edge);
+    }
+
+    public boolean containsNode(Node node) {
+        return this.graph.containsNode(node);
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof Graph)) return false;
+        return this.graph.equals(o);
+    }
+
+    public void fullyConnect(Endpoint endpoint) {
+        throw new UnsupportedOperationException("Cannot fully connect a DAG with a single endpoint type.");
+    }
+
+    public void reorientAllWith(Endpoint endpoint) {
+        throw new UnsupportedOperationException("Cannot reorient all edges in a DAG with a single endpoint type.");
+    }
+
+    public List<Node> getAdjacentNodes(Node node) {
+        return this.graph.getAdjacentNodes(node);
+    }
+
+    public List<Node> getChildren(Node node) {
+        return this.graph.getChildren(node);
+    }
+
+    public int getDegree() {
+        return this.graph.getDegree();
+    }
+
+    public Edge getEdge(Node node1, Node node2) {
+        return this.graph.getEdge(node1, node2);
+    }
+
+    public Edge getDirectedEdge(Node node1, Node node2) {
+        return this.graph.getDirectedEdge(node1, node2);
+    }
+
+    public List<Edge> getEdges(Node node) {
+        return this.graph.getEdges(node);
+    }
+
+    public List<Edge> getEdges(Node node1, Node node2) {
+        return this.graph.getEdges(node1, node2);
+    }
+
+    public Set<Edge> getEdges() {
+        return this.graph.getEdges();
+    }
+
+    public Endpoint getEndpoint(Node node1, Node node2) {
+        return this.graph.getEndpoint(node1, node2);
+    }
+
+    public int getIndegree(Node node) {
+        return this.graph.getIndegree(node);
+    }
+
+    public int getDegree(Node node) {
+        return this.graph.getDegree(node);
+    }
+
+    public Node getNode(String name) {
+        return this.graph.getNode(name);
+    }
+
+    public List<Node> getNodes() {
+        return this.graph.getNodes();
+    }
+
+    public List<String> getNodeNames() {
+        return this.graph.getNodeNames();
+    }
+
+    public int getNumEdges() {
+        return this.graph.getNumEdges();
+    }
+
+    public int getNumEdges(Node node) {
+        return this.graph.getNumEdges(node);
+    }
+
+    public int getNumNodes() {
+        return this.graph.getNumNodes();
+    }
+
+    public int getOutdegree(Node node) {
+        return this.graph.getOutdegree(node);
+    }
+
+    public List<Node> getParents(Node node) {
+        return this.graph.getParents(node);
+    }
+
+    public boolean isAdjacentTo(Node node1, Node node2) {
+        return this.graph.isAdjacentTo(node1, node2);
+    }
+
+    public boolean isChildOf(Node node1, Node node2) {
+        return this.graph.isChildOf(node1, node2);
+    }
+
+    public boolean isParentOf(Node node1, Node node2) {
+        return this.graph.isParentOf(node1, node2);
+    }
+
+    public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
+        return this.graph.isDefNoncollider(node1, node2, node3);
+    }
+
+    public boolean isDefCollider(Node node1, Node node2, Node node3) {
+        return this.graph.isDefCollider(node1, node2, node3);
+    }
+
+    public boolean isExogenous(Node node) {
+        return this.graph.isExogenous(node);
+    }
+
+    public List<Node> getNodesInTo(Node node, Endpoint n) {
+        return this.graph.getNodesInTo(node, n);
+    }
+
+    public List<Node> getNodesOutTo(Node node, Endpoint n) {
+        return this.graph.getNodesOutTo(node, n);
+    }
+
+    public boolean removeEdge(Edge edge) {
+        return this.graph.removeEdge(edge);
+    }
+
+    public boolean removeEdge(Node node1, Node node2) {
+        return this.graph.removeEdge(node1, node2);
+    }
+
+    public boolean removeEdges(Node node1, Node node2) {
+        return this.graph.removeEdges(node1, node2);
+    }
+
+    public boolean removeEdges(Collection<Edge> edges) {
+        return this.graph.removeEdges(edges);
+    }
+
+    public boolean removeNode(Node node) {
+        return this.graph.removeNode(node);
+    }
+
+    public boolean removeNodes(List<Node> nodes) {
+        return this.graph.removeNodes(nodes);
+    }
+
+    public boolean setEndpoint(Node from, Node to, Endpoint endPoint) {
+        throw new UnsupportedOperationException("Setting a single endpoint for a DAG is disallowed.");
+    }
+
+    public Graph subgraph(List<Node> nodes) {
+        return this.graph.subgraph(nodes);
+    }
+
+    public String toString() {
+        return this.graph.toString();
+    }
+
+    public void transferNodesAndEdges(Graph graph) throws IllegalArgumentException {
+        if (graph == null) {
+            throw new NullPointerException("No graph was provided.");
+        }
+
+        for (Node node : graph.getNodes()) {
+            if (!addNode(node)) {
+                throw new IllegalArgumentException();
+            }
+        }
+
+        for (Edge edge : graph.getEdges()) {
+            if (!addEdge(edge)) {
+                throw new IllegalArgumentException();
+            }
         }
     }
 
-    private Graph getGraph() {
-        return this.graph;
+    public void transferAttributes(Graph graph) throws IllegalArgumentException {
+        this.graph.transferAttributes(graph);
     }
 
-    @Override
-    public List<String> getTriplesClassificationTypes() {
-        return null;
+    public Underlines underlines() {
+        return this.graph.underlines();
     }
 
-    @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
+    public Paths paths() {
+        return this.graph.paths();
     }
 
-    public EdgeListGraph.GraphType getGraphType() {
-        return EdgeListGraph.GraphType.DAG;
+    public boolean isParameterizable(Node node) {
+        return this.graph.isParameterizable(node);
     }
 
-    public void setGraphType(EdgeListGraph.GraphType graphType) {
-        if (graphType != EdgeListGraph.GraphType.DAG) {
-            throw new IllegalArgumentException("A DAG must be set to graph type DAG");
-        }
+    public boolean isTimeLagModel() {
+        return this.graph.isTimeLagModel();
     }
 
-    @Override
+    public TimeLagGraph getTimeLagGraph() {
+        return this.graph.getTimeLagGraph();
+    }
+
+    public List<Node> getSepset(Node n1, Node n2) {
+        return this.graph.getSepset(n1, n2);
+    }
+
+    public void setNodes(List<Node> nodes) {
+        this.graph.setNodes(nodes);
+    }
+
     public Map<String, Object> getAllAttributes() {
-        return this.attributes;
+        return this.graph.getAllAttributes();
     }
 
-    @Override
     public Object getAttribute(String key) {
-        return this.attributes.get(key);
+        return this.graph.getAttribute(key);
     }
 
-    @Override
     public void removeAttribute(String key) {
-        this.attributes.remove(key);
+        this.graph.removeAttribute(key);
     }
 
-    @Override
     public void addAttribute(String key, Object value) {
-        this.attributes.put(key, value);
+        this.graph.addAttribute(key, value);
     }
+
 }
 
 

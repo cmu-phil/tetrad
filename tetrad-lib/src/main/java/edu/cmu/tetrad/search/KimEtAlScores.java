@@ -108,7 +108,7 @@ public class KimEtAlScores implements Score {
 //        }
 
 //        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet.getVariables(), cov, dataSet.getNumRows());
-        ICovarianceMatrix covarianceMatrix = (DataUtils.getCovarianceMatrix(dataSet));
+        ICovarianceMatrix covarianceMatrix = (DataPersistence.getCovarianceMatrix(dataSet));
 
         this.data = dataSet.getDoubleData();
         this.dataSet = dataSet;

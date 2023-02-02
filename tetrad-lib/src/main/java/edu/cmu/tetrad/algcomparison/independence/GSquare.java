@@ -2,8 +2,8 @@ package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataPersistence;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.search.IndTestGSquare;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -28,7 +28,7 @@ public class GSquare implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        return new IndTestGSquare(DataUtils.getDiscreteDataSet(dataSet), parameters.getDouble("alpha"));
+        return new IndTestGSquare(DataPersistence.getDiscreteDataSet(dataSet), parameters.getDouble("alpha"));
     }
 
     @Override

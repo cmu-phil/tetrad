@@ -24,6 +24,7 @@ package edu.pitt.csb.mgm;
 import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.graph.GraphUtils;
 
 import java.io.File;
@@ -36,7 +37,7 @@ public class ExampleMixedSearch {
     public static void main(String[] args) {
         try {
             String path = args[0];
-            Graph trueGraph = GraphUtils.loadGraphTxt(new File(path, "DAG_0_graph.txt"));
+            Graph trueGraph = GraphPersistence.loadGraphTxt(new File(path, "DAG_0_graph.txt"));
             DataSet data = MixedUtils.loadDataSet(path, "DAG_0_data.txt");
 
             //lambda is a sparsity parameter, higher values result in sparser graphs

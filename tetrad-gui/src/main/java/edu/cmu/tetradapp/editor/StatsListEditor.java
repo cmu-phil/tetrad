@@ -182,6 +182,8 @@ public class StatsListEditor extends JPanel {
         statistics.add(new NoSemidirectedRecall());
         statistics.add(new NoSemidirectedF1());
 
+        statistics.add(new LegalPag());
+
         return statistics;
     }
 

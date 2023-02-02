@@ -823,11 +823,11 @@ public final class MlBayesIm implements BayesIm {
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
 
-        if (graph.existsDirectedCycle()) {
+        if (graph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException("Graph must be acyclic to simulate from discrete Bayes net.");
         }
 
-        List<Node> tierOrdering = graph.getCausalOrdering();
+        List<Node> tierOrdering = graph.paths().getCausalOrdering(graph.getNodes());
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -844,7 +844,7 @@ public final class MlBayesIm implements BayesIm {
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
-        List<Node> tierOrdering = graph.getCausalOrdering();
+        List<Node> tierOrdering = graph.paths().getCausalOrdering(graph.getNodes());
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -871,7 +871,7 @@ public final class MlBayesIm implements BayesIm {
         DataSet fullData = new BoxDataSet(new VerticalIntDataBox(sampleSize, variables.size()), variables);
 
         Graph contemporaneousDag = timeSeriesGraph.subgraph(lag0Nodes);
-        List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
+        List<Node> tierOrdering = contemporaneousDag.paths().getCausalOrdering(contemporaneousDag.getNodes());
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -936,7 +936,7 @@ public final class MlBayesIm implements BayesIm {
 
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
-        List<Node> tierOrdering = graph.getCausalOrdering();
+        List<Node> tierOrdering = graph.paths().getCausalOrdering(graph.getNodes());
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {

@@ -1,12 +1,10 @@
 package edu.cmu.tetrad.data.simulation;
 
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.GraphPersistence;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -51,18 +49,18 @@ public class LoadDataAndGraphs implements Simulation {
                     try {
                         File file2 = new File(path + "/graph/graph." + (i + 1) + ".txt");
                         this.stdout.println("Loading graph from " + file2.getAbsolutePath());
-                        this.graphs.add(GraphUtils.loadGraphTxt(file2));
+                        this.graphs.add(GraphPersistence.loadGraphTxt(file2));
                     } catch (Exception e) {
                         this.graphs.add(null);
                     }
 
-                    GraphUtils.circleLayout(this.graphs.get(i), 225, 200, 150);
+                    LayoutUtil.circleLayout(this.graphs.get(i), 225, 200, 150);
 
                     File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 
                     this.stdout.println("Loading data from " + file1.getAbsolutePath());
 
-                    DataSet ds = DataUtils.loadContinuousData(file1, "//", '\"',
+                    DataSet ds = DataPersistence.loadContinuousData(file1, "//", '\"',
                             "*", true, Delimiter.TAB);
 
                     this.dataSets.add(ds);

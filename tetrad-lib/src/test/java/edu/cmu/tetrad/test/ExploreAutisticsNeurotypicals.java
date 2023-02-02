@@ -22,10 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
@@ -95,8 +92,8 @@ public final class ExploreAutisticsNeurotypicals {
                 Fges search = new Fges(score);
                 search.setVerbose(false);
                 Graph graph = search.search();
-                GraphUtils.saveGraph(graph, file, false);
-                graphs.add(GraphUtils.undirectedGraph(GraphUtils.loadGraphTxt(file)));
+                GraphPersistence.saveGraph(graph, file, false);
+                graphs.add(GraphUtils.undirectedGraph(GraphPersistence.loadGraphTxt(file)));
             }
 
             allGraphs.add(graphs);
@@ -126,7 +123,7 @@ public final class ExploreAutisticsNeurotypicals {
                 for (int i = 0; i < prefixes.length; i++) {
                     if (file.getName().startsWith(prefixes[i]) && !file.getName().endsWith(".graph.txt")
                             && !file.getName().contains("tet")) {
-                        DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
+                        DataSet data = DataPersistence.loadContinuousData(file, "//", '\"',
                                 "*", true, Delimiter.TAB);
 
                         allDataSets.get(i).add(data);
@@ -216,7 +213,7 @@ public final class ExploreAutisticsNeurotypicals {
 
             for (Graph graph : __graphs) {
                 row++;
-                List<List<Node>> treks = GraphUtils.treks(graph, fusiformLeft, fusiformRight, 7);
+                List<List<Node>> treks = graph.paths().treks(fusiformLeft, fusiformRight, 7);
 
                 for (List<Node> trek : treks) {
 
@@ -243,7 +240,7 @@ public final class ExploreAutisticsNeurotypicals {
         Node n2 = trek.get(trek.size() - 1);
 
         for (Node n : trek) {
-            if (graph.isAncestorOf(n, n1) && graph.isAncestorOf(n, n2)) {
+            if (graph.paths().isAncestorOf(n, n1) && graph.paths().isAncestorOf(n, n2)) {
                 return n;
             }
         }
@@ -298,7 +295,7 @@ public final class ExploreAutisticsNeurotypicals {
 
         for (List<Graph> __graphs : graphs) {
             for (Graph graph : __graphs) {
-                List<List<Node>> treks = GraphUtils.treks(graph, fusiformLeft, fusiformRight, maxLength);
+                List<List<Node>> treks = graph.paths().treks(fusiformLeft, fusiformRight, maxLength);
 
                 for (List<Node> trek : treks) {
                     for (int i = 0; i < trek.size() - 2; i++) {
@@ -506,7 +503,7 @@ public final class ExploreAutisticsNeurotypicals {
         try {
             final String path = "/Users/jdramsey/Documents/LAB_NOTEBOOK.2012.04.20/data/USM_Datasets";
             File file = new File(path, "concat_usm_dataset_madelyn.txt");
-            DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
+            DataSet data = DataPersistence.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
 
             ContinuousVariable avg = new ContinuousVariable("Avg");

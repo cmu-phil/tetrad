@@ -76,7 +76,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     //    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
     //    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
-    private boolean faithfulnessAssumed = true;
+    private boolean faithfulnessAssumed = false;
     /**
      * Specification of forbidden and required edges.
      */
@@ -113,9 +113,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Where printed output is sent.
     private PrintStream out = System.out;
-
-    // An initial adjacencies graph.
-    private Graph adjacencies = null;
 
     // The graph being constructed.
     private Graph graph;
@@ -190,8 +187,8 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         graph = new EdgeListGraph(getVariables());
 
-        if (adjacencies != null) {
-            adjacencies = GraphUtils.replaceNodes(adjacencies, getVariables());
+        if (boundGraph != null) {
+            boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
         }
 
         if (initialGraph != null) {
@@ -313,22 +310,6 @@ public final class Fges implements GraphSearch, GraphScorer {
      */
     public void setOut(PrintStream out) {
         this.out = out;
-    }
-
-    /**
-     * @return the set of preset adjacenies for the algorithm; edges not in this
-     * adjacencies graph will not be added.
-     */
-    public Graph getAdjacencies() {
-        return adjacencies;
-    }
-
-    /**
-     * Sets the set of preset adjacenies for the algorithm; edges not in this
-     * adjacencies graph will not be added.
-     */
-    public void setAdjacencies(Graph adjacencies) {
-        this.adjacencies = adjacencies;
     }
 
     /**
@@ -542,7 +523,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                     }
 
                     for (Node x : adj) {
-                        if (adjacencies != null && !(adjacencies.isAdjacentTo(x, y))) {
+                        if (boundGraph != null && !(boundGraph.isAdjacentTo(x, y))) {
                             continue;
                         }
 
@@ -575,7 +556,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     // Calculates the new arrows for an a->b edge.
     private void calculateArrowsForward(Node a, Node b) {
-        if (adjacencies != null && !adjacencies.isAdjacentTo(a, b)) {
+        if (boundGraph != null && !boundGraph.isAdjacentTo(a, b)) {
             return;
         }
 
@@ -799,7 +780,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             Node nodeA = graph.getNode(next.getFrom());
             Node nodeB = graph.getNode(next.getTo());
 
-            if (!graph.isAncestorOf(nodeB, nodeA)) {
+            if (!graph.paths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdges(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
 
@@ -821,7 +802,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                 Node nodeB = edge.getNode2();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -832,7 +813,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                 }
 
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -846,7 +827,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                 Node nodeB = edge.getNode1();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -856,7 +837,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                     }
                 }
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -1272,7 +1253,7 @@ public final class Fges implements GraphSearch, GraphScorer {
                         }
                     }
 
-                    if (adjacencies != null && !adjacencies.isAdjacentTo(x, y)) {
+                    if (boundGraph != null && !boundGraph.isAdjacentTo(x, y)) {
                         continue;
                     }
 

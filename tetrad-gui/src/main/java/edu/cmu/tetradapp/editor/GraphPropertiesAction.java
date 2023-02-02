@@ -121,7 +121,7 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
 //            else if (Edges.isUndirectedEdge(edge)) numUndirectedEdges++;
 //        }
 
-        boolean cyclic = getGraph().existsDirectedCycle();
+        boolean cyclic = getGraph().paths().existsDirectedCycle();
 
         int numAdjacencies = 0;
 
@@ -158,7 +158,7 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
 
                 getGraph().
 
-                        getConnectivity());
+                        getDegree());
         textArea.append("\nMax indegree: " + maxIndegree);
         textArea.append("\nMax outdegree: " + maxOutdegree);
 

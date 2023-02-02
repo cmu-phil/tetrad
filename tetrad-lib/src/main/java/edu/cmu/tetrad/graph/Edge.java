@@ -42,6 +42,7 @@ import java.util.List;
 public class Edge implements TetradSerializable, Comparable<Edge> {
     static final long serialVersionUID = 23L;
 
+
     public enum Property {
         dd, nl, pd, pl
     }
@@ -54,11 +55,13 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     // Usual coloring--set to something else for a special line color.
     private transient Color lineColor;
 
-    private boolean bold;
+    private boolean bold = false;
 
-    private final List<Property> properties = new ArrayList<>();
+    private boolean highlighted = false;
 
-    private final List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
+    private List<Property> properties = new ArrayList<>();
+
+    private List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
 
     private double probability;
 
@@ -100,6 +103,10 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         this(edge.node1, edge.node2, edge.endpoint1, edge.endpoint2);
         this.lineColor = edge.getLineColor();
         this.bold = edge.bold;
+        this.highlighted = edge.highlighted;
+        this.properties = new ArrayList<>(edge.properties);
+        this.edgeTypeProbabilities = new ArrayList<>(edge.edgeTypeProbabilities);
+        this.probability = edge.probability;
     }
 
     /**
@@ -398,7 +405,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * version to version. A readObject method of this form may be added to any
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.)
      */
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
@@ -456,4 +463,11 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         this.probability = probability;
     }
 
+    public boolean isHighlighted() {
+        return highlighted;
+    }
+
+    public void setHighlighted(boolean highlighted) {
+        this.highlighted = highlighted;
+    }
 }

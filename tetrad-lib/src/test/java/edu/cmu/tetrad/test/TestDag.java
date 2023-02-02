@@ -76,16 +76,16 @@ public final class TestDag {
         assertTrue(parents.contains(x3));
         assertTrue(parents.contains(x5));
 
-        assertTrue(graph.isDConnectedTo(x1, x3, Collections.EMPTY_LIST));
+        assertTrue(graph.paths().isDConnectedTo(x1, x3, Collections.EMPTY_LIST));
 
-        assertTrue(graph.existsDirectedPathFromTo(x1, x4));
-        assertTrue(!graph.existsDirectedPathFromTo(x1, x5));
+        assertTrue(graph.paths().existsDirectedPathFromTo(x1, x4));
+        assertTrue(!graph.paths().existsDirectedPathFromTo(x1, x5));
 
-        assertTrue(graph.isAncestorOf(x2, x4));
-        assertTrue(!graph.isAncestorOf(x4, x2));
+        assertTrue(graph.paths().isAncestorOf(x2, x4));
+        assertTrue(!graph.paths().isAncestorOf(x4, x2));
 
-        assertTrue(graph.isDescendentOf(x4, x2));
-        assertTrue(!graph.isDescendentOf(x2, x4));
+        assertTrue(graph.paths().isDescendentOf(x4, x2));
+        assertTrue(!graph.paths().isDescendentOf(x2, x4));
     }
 
     private void checkCopy(Graph graph) {

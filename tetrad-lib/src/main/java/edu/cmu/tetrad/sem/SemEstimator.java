@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.*;
@@ -194,7 +194,7 @@ public final class SemEstimator implements TetradSerializable {
 
         // Create the Sem from the SemPm and CovarianceMatrix.
         SemIm semIm = new SemIm(getSemPm(), getCovMatrix());
-        GraphUtils.arrangeBySourceGraph(semIm.getSemPm().getGraph(),
+        LayoutUtil.arrangeBySourceGraph(semIm.getSemPm().getGraph(),
                 getSemPm().getGraph());
 
         // Optimize the Sem.
@@ -302,7 +302,7 @@ public final class SemEstimator implements TetradSerializable {
 
         SemOptimizer optimizer;
 
-        if (containsFixedParam() || getSemPm().getGraph().existsDirectedCycle() ||
+        if (containsFixedParam() || getSemPm().getGraph().paths().existsDirectedCycle() ||
                 SemEstimator.containsCovarParam(getSemPm())) {
             optimizer = new SemOptimizerPowell();
         } else if (containsLatent) {

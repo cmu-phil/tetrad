@@ -98,11 +98,11 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+            return search(Collections.singletonList(DataPersistence.getContinuousDataSet(dataSet)), parameters);
         } else {
             FaskVote imagesSemBic = new FaskVote();
 
-            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            List<DataSet> dataSets = Collections.singletonList(DataPersistence.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(
                     dataSets,
                     imagesSemBic,

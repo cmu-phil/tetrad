@@ -209,10 +209,6 @@ public final class Rfci implements GraphSearch {
         this.logger.log("info", "Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
         this.logger.log("info", "Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");
 
-        if (SearchGraphUtils.isLegalPag(this.graph).isLegalPag()) {
-            this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
-        }
-
         return this.graph;
     }
 

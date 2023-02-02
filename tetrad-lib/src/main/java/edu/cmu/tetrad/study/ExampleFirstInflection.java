@@ -99,7 +99,7 @@ public class ExampleFirstInflection {
         statistics.add(new ArrowheadRecall());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 0.25);
         statistics.setWeight("AR", 0.25);

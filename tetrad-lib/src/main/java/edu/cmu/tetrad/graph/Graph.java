@@ -37,7 +37,7 @@ import java.util.*;
  * @author Joseph Ramsey
  * @see Endpoint
  */
-public interface Graph extends TetradSerializable, TripleClassifier {
+public interface Graph extends TetradSerializable {
     long serialVersionUID = 23L;
 
     /**
@@ -106,55 +106,6 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     boolean containsNode(Node node);
 
     /**
-     * @return true iff there is a directed cycle in the graph.
-     */
-    boolean existsDirectedCycle();
-
-    /**
-     * @return true iff there is a directed path from node1 to node2 in the
-     * graph.
-     */
-    boolean existsDirectedPathFromTo(Node node1, Node node2);
-
-    List<Node> findCycle();
-
-    /**
-     * @return true iff there is a semi-directed path from node1 to something in
-     * nodes2 in the graph
-     */
-    boolean existsUndirectedPathFromTo(Node node1, Node node2);
-
-    /**
-     * A semi-directed path from A to B is an undirected path in which no
-     * edge has an arrowhead pointing "back" towards A.
-     *
-     * @return true iff there is a semi-directed path from node1 to something in
-     * nodes2 in the graph
-     */
-    default boolean existsSemiDirectedPathFromTo(Node node1, Node node2) {
-        return existsSemiDirectedPathFromTo(node1, Collections.singleton(node2));
-    }
-    boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> nodes);
-
-    /**
-     * Determines whether an inducing path exists between node1 and node2, given
-     * a set O of observed nodes and a set sem of conditioned nodes.
-     *
-     * @param node1 the first node.
-     * @param node2 the second node.
-     * @return true if an inducing path exists, false if not.
-     */
-    boolean existsInducingPath(Node node1, Node node2);
-
-    /**
-     * @return true iff a trek exists between two nodes in the graph.  A trek
-     * exists if there is a directed path between the two nodes or else, for
-     * some third node in the graph, there is a path to each of the two nodes in
-     * question.
-     */
-    boolean existsTrek(Node node1, Node node2);
-
-    /**
      * Determines whether this graph is equal to some other graph, in the sense
      * that they contain the same nodes and the sets of edges defined over these
      * nodes in the two graphs are isomorphic typewise. That is, if node A and B
@@ -182,11 +133,6 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     List<Node> getAdjacentNodes(Node node);
 
     /**
-     * @return a mutable list of ancestors for the given nodes.
-     */
-    List<Node> getAncestors(List<Node> nodes);
-
-    /**
      * @return a mutable list of children for a node.
      */
     List<Node> getChildren(Node node);
@@ -194,12 +140,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     /**
      * @return the connectivity of the graph.
      */
-    int getConnectivity();
-
-    /**
-     * @return a mutable list of descendants for the given nodes.
-     */
-    List<Node> getDescendants(List<Node> nodes);
+    int getDegree();
 
     /**
      * @return the edge connecting node1 and node2, provided a unique such edge
@@ -228,7 +169,7 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     List<Edge> getEdges(Node node1, Node node2);
 
     /**
-     * @return the list of edges in the graph.  No particular ordering of the
+     * @return the set of edges in the graph.  No particular ordering of the
      * edges in the list is guaranteed.
      */
     Set<Edge> getEdges();
@@ -237,12 +178,6 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      * @return the endpoint along the edge from node to node2 at the node2 end.
      */
     Endpoint getEndpoint(Node node1, Node node2);
-
-    /**
-     * @return a matrix of endpoints for the nodes in this graph, with nodes in
-     * the same order as getNodes().
-     */
-    Endpoint[][] getEndpointMatrix();
 
     /**
      * @return the number of arrow endpoints adjacent to a node.
@@ -303,18 +238,6 @@ public interface Graph extends TetradSerializable, TripleClassifier {
     boolean isAdjacentTo(Node node1, Node node2);
 
     /**
-     * Determines whether one node is an ancestor of another.
-     */
-    boolean isAncestorOf(Node node1, Node node2);
-
-    /**
-     * added by ekorber, 2004/06/12
-     *
-     * @return true if node1 is a possible ancestor of node2.
-     */
-    boolean possibleAncestor(Node node1, Node node2);
-
-    /**
      * @return true iff node1 is a child of node2 in the graph.
      */
     boolean isChildOf(Node node1, Node node2);
@@ -323,31 +246,6 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      * Determines whether node1 is a parent of node2.
      */
     boolean isParentOf(Node node1, Node node2);
-
-    /**
-     * Determines whether one node is a proper ancestor of another.
-     */
-    boolean isProperAncestorOf(Node node1, Node node2);
-
-    /**
-     * Determines whether one node is a proper decendent of another.
-     */
-    boolean isProperDescendentOf(Node node1, Node node2);
-
-    /**
-     * @return true iff node1 is a (non-proper) descendant of node2.
-     */
-    boolean isDescendentOf(Node node1, Node node2);
-
-    /**
-     * A node Y is a definite nondescendent of a node X just in case there is no
-     * semi-directed path from X to Y.
-     * <p>
-     * added by ekorber, 2004/06/12.
-     *
-     * @return true if node 2 is a definite nondecendent of node 1
-     */
-    boolean defNonDescendent(Node node1, Node node2);
 
     /**
      * Added by ekorber, 2004/6/9.
@@ -362,63 +260,6 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      * @return true if node 2 is a definite collider between 1 and 3
      */
     boolean isDefCollider(Node node1, Node node2, Node node3);
-
-    /**
-     * Determines whether one node is d-connected to another. According to
-     * Spirtes, Richardson and Meek, two nodes are d- connected given some
-     * conditioning set Z if there is an acyclic undirected path U between them,
-     * such that every collider on U is an ancestor of some element in Z and
-     * every non-collider on U is not in Z.  Two elements are d-separated just
-     * in case they are not d-connected.  A collider is a node which two edges
-     * hold in common for which the endpoints leading into the node are both
-     * arrow endpoints.
-     */
-    boolean isDConnectedTo(Node node1, Node node2, List<Node> z);
-
-    EdgeListGraph.GraphType getGraphType();
-
-    void setGraphType(EdgeListGraph.GraphType graphType);
-
-    /**
-     * Determines whether one node is d-separated from another. Two elements are   E
-     * d-separated just in case they are not d-connected.
-     */
-    boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z);
-
-    /**
-     * Determines if nodes 1 and 2 are possibly d-connected given conditioning
-     * set z.  A path U is possibly-d-connecting if every definite collider on U
-     * is a possible ancestor of a node in z and every definite non-collider is
-     * not in z.
-     * <p>
-     * added by ekorber, 2004/06/15.
-     *
-     * @return true iff nodes 1 and 2 are possibly d-connected given z
-     */
-    boolean possDConnectedTo(Node node1, Node node2, List<Node> z);
-
-    /**
-     * @return true iff there is a single directed edge from node1 to node2 in
-     * the graph.
-     */
-    boolean isDirectedFromTo(Node node1, Node node2);
-
-    /**
-     * @return true iff there is a single undirected edge from node1 to node2 in
-     * the graph.
-     */
-    boolean isUndirectedFromTo(Node node1, Node node2);
-
-    /**
-     * A directed edge A-->B is definitely visible if there is a node C not
-     * adjacent to B such that C*->A is in the PAG_of_the_true_DAG. Added by ekorber,
-     * 2004/06/11.
-     *
-     * @return true if the given edge is definitely visible (Jiji, pg 25)
-     * @throws IllegalArgumentException if the given edge is not a directed edge
-     *                                  in the graph
-     */
-    boolean defVisible(Edge edge);
 
     /**
      * @return true iff the given node is exogenous in the graph.
@@ -516,119 +357,9 @@ public interface Graph extends TetradSerializable, TripleClassifier {
 
     void transferAttributes(Graph graph) throws IllegalArgumentException;
 
-    /**
-     * @return the list of ambiguous triples associated with this graph. Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    Set<Triple> getAmbiguousTriples();
+    Underlines underlines();
 
-    /**
-     * @return the set of underlines associated with this graph. This is used currently by ION, DCI, and CCD.
-     * It used to be used by FCI, but it not in the getModel form.  Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    Set<Triple> getUnderLines();
-
-    /**
-     * @return the set of dotted underlines associated with this graph. This used to be used by FCI, but it is
-     * not used in the getModel form. It is used by CCD.  Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    Set<Triple> getDottedUnderlines();
-
-    /**
-     * @return true iff the triple &lt;x, y, z&gt; is set as ambiguous.  Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    boolean isAmbiguousTriple(Node x, Node y, Node z);
-
-    /**
-     * @return true iff the triple &lt;x, y, z&gt; is set as underlined.  Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    boolean isUnderlineTriple(Node x, Node y, Node z);
-
-    /**
-     * @return true iff the triple &lt;x, y, z&gt; is set as dotted underlined.   Triples &lt;x, y, z&gt; that no longer
-     * lie along a path in the getModel graph are removed.
-     */
-    boolean isDottedUnderlineTriple(Node x, Node y, Node z);
-
-    /**
-     * Adds the triple &lt;x, y, z&gt; as an ambiguous triple in the graph.
-     *
-     * @throws IllegalArgumentException if &lt;x, y, z&gt; does not lie along a path in the graph.
-     */
-    void addAmbiguousTriple(Node x, Node y, Node Z);
-
-    /**
-     * Adds the triple &lt;x, y, z&gt; as an underline triple in the graph.
-     *
-     * @throws IllegalArgumentException if &lt;x, y, z&gt; does not lie along a path in the graph.
-     */
-    void addUnderlineTriple(Node x, Node y, Node Z);
-
-    /**
-     * Adds the triple &lt;x, y, z&gt; as a dotted underlined triple in the graph.
-     *
-     * @throws IllegalArgumentException if &lt;x, y, z&gt; does not lie along a path in the graph.
-     */
-    void addDottedUnderlineTriple(Node x, Node y, Node Z);
-
-    /**
-     * Removes the triple &lt;x, y, z&gt; from thet set of ambiguous triples.
-     */
-    void removeAmbiguousTriple(Node x, Node y, Node z);
-
-    /**
-     * Removes the triple &lt;x, y, z&gt; from the set of underlined triples.
-     */
-    void removeUnderlineTriple(Node x, Node y, Node z);
-
-    /**
-     * Removes the triple &lt;x, y, z&gt; from the set of dotted underlined triples.
-     */
-    void removeDottedUnderlineTriple(Node x, Node y, Node z);
-
-    /**
-     * Sets the list of ambiguous triples to the triples in the given set.
-     *
-     * @param triples The new set of ambiguous triples. This replaces the old list.
-     * @throws IllegalArgumentException if any triple &lt;x, y, z&gt; in <code>triples</code> does not lie along a path in the graph.
-     */
-    void setAmbiguousTriples(Set<Triple> triples);
-
-    /**
-     * Sets the list of underlined triples to the triples in the given set.
-     *
-     * @param triples The new list of ambiguous triples. This replaces the old list.
-     * @throws IllegalArgumentException if any triple &lt;zx, y, z&gt; in <code>triples</code> does not lie along a path in the graph.
-     */
-    void setUnderLineTriples(Set<Triple> triples);
-
-    /**
-     * Sets the list of dotted underlined triples to the triples in the given set.
-     *
-     * @param triples The new list of dotted underlined triples. This replaces the old list.
-     * @throws IllegalArgumentException if any triple &lt;zx, y, z&gt; in <code>triples</code> does not lie along a path in the graph.
-     */
-    void setDottedUnderLineTriples(Set<Triple> triples);
-
-    /**
-     * @return a tier orderering, for acyclic graphs. Undefined for cyclic graphs.
-     */
-    List<Node> getCausalOrdering();
-
-    /**
-     * Sets an edge to be highlighted.
-     */
-    void setHighlighted(Edge edge, boolean highlighted);
-
-    /**
-     * @return true just in case the given edge is highlighted.
-     * @throws IllegalArgumentException if the given edge is not in the graph.
-     */
-    boolean isHighlighted(Edge edge);
+    Paths paths();
 
     /**
      * @return true if the given node is parameterizable.
@@ -644,9 +375,6 @@ public interface Graph extends TetradSerializable, TripleClassifier {
      * @return the underlying time lag model, if there is one; otherwise, returns null.
      */
     TimeLagGraph getTimeLagGraph();
-
-
-    void removeTriplesNotInGraph();
 
     List<Node> getSepset(Node n1, Node n2);
 

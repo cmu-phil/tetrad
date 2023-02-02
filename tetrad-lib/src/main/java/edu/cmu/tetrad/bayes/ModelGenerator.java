@@ -44,7 +44,7 @@ public final class ModelGenerator {
     public static List<Graph> generate(Graph graph) {
 
         //Make sure the argument contains no cycles.
-        if (graph.existsDirectedCycle()) {
+        if (graph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException(
                     "Input must not contain cycles.");
         }
@@ -74,7 +74,7 @@ public final class ModelGenerator {
             Edge newEdge = new Edge(n1, n2, e2, e1);
 
             toAdd.removeEdge(allEdge);
-            if (!toAdd.existsDirectedPathFromTo(n1, n2)) {
+            if (!toAdd.paths().existsDirectedPathFromTo(n1, n2)) {
                 toAdd.addEdge(newEdge);
                 graphs.add(toAdd);
             }
@@ -102,7 +102,7 @@ public final class ModelGenerator {
 
                     Graph toAdd1 = new EdgeListGraph(graph);
                     //Make sure adding this edge won't introduce a cycle.
-                    if (!toAdd1.existsDirectedPathFromTo(node1, node2)) {  //
+                    if (!toAdd1.paths().existsDirectedPathFromTo(node1, node2)) {  //
                         Edge newN2N1 = new Edge(node2, node1, Endpoint.TAIL,
                                 Endpoint.ARROW);
                         toAdd1.addEdge(newN2N1);
@@ -112,7 +112,7 @@ public final class ModelGenerator {
                     //Now create the graph with the edge added in the other direction
                     Graph toAdd2 = new EdgeListGraph(graph);
                     //Make sure adding this edge won't introduce a cycle.
-                    if (!toAdd2.existsDirectedPathFromTo(node2, node1)) {
+                    if (!toAdd2.paths().existsDirectedPathFromTo(node2, node1)) {
                         Edge newN1N2 = new Edge(node1, node2, Endpoint.TAIL,
                                 Endpoint.ARROW);
                         toAdd2.addEdge(newN1N2);

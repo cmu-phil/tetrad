@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.search.XdslXmlParser;
 import edu.cmu.tetradapp.model.BayesImWrapper;
 import nu.xom.Builder;
@@ -85,7 +85,7 @@ class LoadBayesImXsdlXmlAction extends AbstractAction {
             }
 
             if (!allSpecified) {
-                GraphUtils.circleLayout(bayesIm.getBayesPm().getDag(), 200, 200, 150);
+                LayoutUtil.circleLayout(bayesIm.getBayesPm().getDag(), 200, 200, 150);
             }
 
             this.bayesImWrapper.setBayesIm(bayesIm);

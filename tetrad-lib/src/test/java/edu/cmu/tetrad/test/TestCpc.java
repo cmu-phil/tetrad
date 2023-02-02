@@ -88,7 +88,7 @@ public class TestCpc {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, numEdges,
+        Dag trueGraph = new Dag(RandomGraph.randomGraph(nodes, 0, numEdges,
                 7, 5, 5, false));
 
         SemPm semPm = new SemPm(trueGraph);
@@ -109,7 +109,7 @@ public class TestCpc {
     private void checkSearch(String inputGraph, String outputGraph) {
 
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphUtils.convert(inputGraph);
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -119,7 +119,7 @@ public class TestCpc {
         Graph resultGraph = search.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphUtils.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -135,7 +135,7 @@ public class TestCpc {
      */
     private void checkWithKnowledge(String input, Knowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(input);
+        Graph graph = GraphUtils.convert(input);
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -149,7 +149,7 @@ public class TestCpc {
         Graph resultGraph = cpc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
+        Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
         System.out.println("true graph = " + trueGraph + " result graph = " + resultGraph + " knowledge = " + knowledge);

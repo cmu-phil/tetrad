@@ -698,7 +698,7 @@ public final class MlBayesImObs implements BayesIm {
         DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
 
         Graph contemporaneousDag = timeSeriesGraph.subgraph(lag0Nodes);
-        List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
+        List<Node> tierOrdering = contemporaneousDag.paths().getCausalOrdering(contemporaneousDag.getNodes());
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -851,7 +851,7 @@ public final class MlBayesImObs implements BayesIm {
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
         Dag dag = new Dag(graph);
-        List<Node> tierOrdering = dag.getCausalOrdering();
+        List<Node> tierOrdering = dag.paths().getCausalOrdering(dag.getNodes());
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {

@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.FruchtermanReingoldLayout;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.*;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -65,9 +62,9 @@ public final class TestFruchtermanReingoldLayout {
 
         Dag dag2 = new Dag(dag);
 
-        GraphUtils.circleLayout(dag, 200, 200, 150);
+        LayoutUtil.circleLayout(dag, 200, 200, 150);
 
-        FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(dag);
+        LayoutUtil.FruchtermanReingoldLayout layout = new LayoutUtil.FruchtermanReingoldLayout(dag);
         layout.doLayout();
 
         assertEquals(dag, dag2);
@@ -90,7 +87,7 @@ public final class TestFruchtermanReingoldLayout {
 
         Dag dag2 = new Dag(dag);
 
-        FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(dag);
+        LayoutUtil.FruchtermanReingoldLayout layout = new LayoutUtil.FruchtermanReingoldLayout(dag);
         layout.doLayout();
 
         assertEquals(dag, dag2);

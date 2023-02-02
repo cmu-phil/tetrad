@@ -21,27 +21,25 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
-import java.awt.event.ItemEvent;
 
 /**
  * Checks to see if a graph is a legal PAG.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
-public class PagTypeSetter extends JCheckBoxMenuItem {
+public class PagColorer extends JCheckBoxMenuItem {
 
     /**
      * Creates a new copy subsession action for the given desktop and
      * clipboard.
      */
-    public PagTypeSetter(GraphWorkbench workbench) {
-        super("Set type to PAG");
+    public PagColorer(GraphWorkbench workbench) {
+        super("Add PAG Coloring if a Legal PAG");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
@@ -51,28 +49,59 @@ public class PagTypeSetter extends JCheckBoxMenuItem {
 
         Graph graph = workbench.getGraph();
 
-        setSelected(workbench.getGraph().getGraphType() == EdgeListGraph.GraphType.PAG);
-        addItemListener(e -> {
-            if (graph.getGraphType() == EdgeListGraph.GraphType.PAG) {
-                workbench.setPag(false);
-            } else {
-                SearchGraphUtils.LegalPagRet legalPagRet = SearchGraphUtils.isLegalPag(graph);
+        setSelected(workbench.isDoPagColoring());
 
-                if (!legalPagRet.isLegalPag()) {
+        addItemListener(e -> {
+            workbench.setDoPagColoring(!workbench.isDoPagColoring());
+
+            if (!workbench.isDoPagColoring()) {
+                JOptionPane.showMessageDialog(workbench, "Legal PAG coloring is turned off.");
+                workbench.setDoPagColoring(false);
+            } else {
+                SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(graph);
+
+                String reason = legalPag.getReason() + ".";
+                reason = breakDown(reason, 60);
+
+                if (!legalPag.isLegalPag()) {
                     int ret = JOptionPane.showConfirmDialog(workbench, "This is not a legal PAG--one reason is as follows:" +
-                                    "\n\n" + legalPagRet.getReason() +
+                                    "\n\n" + reason +
                                     "\n\nProceed anyway?",
                             "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                     if (ret == JOptionPane.YES_NO_OPTION) {
-                        _workbench.setPag(true);
+                        _workbench.setDoPagColoring(true);
                     }
                 } else {
-                    JOptionPane.showMessageDialog(workbench, legalPagRet.getReason());
-                    _workbench.setPag(true);
+                    JOptionPane.showMessageDialog(workbench, reason);
+//                    _workbench.setDoPagColoring(false);
                 }
             }
         });
 
+    }
+
+    private String breakDown(String reason, int maxColumns) {
+        StringBuilder buf1 = new StringBuilder();
+        StringBuilder buf2 = new StringBuilder();
+
+        String[] tokens = reason.split(" ");
+
+        for (String token : tokens) {
+            if (buf1.length() + token.length() > maxColumns) {
+                buf2.append(buf1);
+                buf2.append("\n");
+                buf1 = new StringBuilder();
+                buf1.append(token);
+            } else {
+                buf1.append(" ").append(token);
+            }
+        }
+
+        if (buf1.length() > 0) {
+            buf2.append(buf1);
+        }
+
+        return buf2.toString();
     }
 }
 

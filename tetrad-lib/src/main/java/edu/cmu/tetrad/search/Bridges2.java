@@ -26,8 +26,6 @@ import edu.cmu.tetrad.graph.*;
 import java.io.PrintStream;
 import java.util.*;
 
-import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
-
 /**
  * GesSearch is an implementation of the GES algorithm, as specified in
  * Chickering (2002) "Optimal structure identification with greedy search"
@@ -127,7 +125,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
                     // node into parents of the proximal node
 
                     for (Node c : g.getAdjacentNodes(b)) {
-                        if (existsSemidirectedPath(c, a, g)) {
+                        if (g.paths().existsSemidirectedPath(c, a)) {
                             g.removeEdge(g.getEdge(b, c));
                             g.addDirectedEdge(c, b);
                         }

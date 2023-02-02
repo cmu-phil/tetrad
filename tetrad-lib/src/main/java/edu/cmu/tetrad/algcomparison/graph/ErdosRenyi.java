@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -25,7 +24,7 @@ public class ErdosRenyi implements RandomGraph {
         final int max = Integer.MAX_VALUE;
         int e = (int) (p * t);
 
-        return GraphUtils.randomGraphRandomForwardEdges(
+        return edu.cmu.tetrad.graph.RandomGraph.randomGraphRandomForwardEdges(
                 m + l, l, e, max, max, max, false);
     }
 

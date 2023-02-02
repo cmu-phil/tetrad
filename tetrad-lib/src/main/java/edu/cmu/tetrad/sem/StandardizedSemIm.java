@@ -135,7 +135,7 @@ public class StandardizedSemIm implements Simulator {
         this.semGraph.setShowErrorTerms(true);
         this.sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
-        if (this.semGraph.existsDirectedCycle()) {
+        if (this.semGraph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException("The cyclic case is not handled.");
         }
 
@@ -857,7 +857,7 @@ public class StandardizedSemIm implements Simulator {
                     coef2 = 1;
                 }
 
-                List<List<Node>> treks = GraphUtils.treksIncludingBidirected(this.semGraph, node1, node2);
+                List<List<Node>> treks = this.semGraph.paths().treksIncludingBidirected(node1, node2);
 
                 double cov = 0.0;
 

@@ -194,7 +194,7 @@ public class RBExperiments {
         // set the "numLatentConfounders" percentage of variables to be latent
         int numVars = im.getNumNodes();
         int LV = (int) Math.floor(numLatentConfounders * numVars);
-        GraphUtils.fixLatents4(LV, dag);
+        RandomGraph.fixLatents4(LV, dag);
         System.out.println("Variables set to be latent:" + getLatents(dag));
 
         // create output directory and files
@@ -222,9 +222,12 @@ public class RBExperiments {
         DataSet data = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-        DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        Graph PAG_True = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        dagToPag.setCompleteRuleSetUsed(false);
+//        Graph PAG_True = dagToPag.convert();
+
+        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+
         PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
 
         // run RFCI to get a PAG using chi-squared test
@@ -714,7 +717,7 @@ public class RBExperiments {
             BCInference.OP op;
             double p = 0.0;
 
-            if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -745,7 +748,7 @@ public class RBExperiments {
                             }
                         }
                         IndependenceFact parentFact = new IndependenceFact(X, Y, Z);
-                        if (pag.isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
+                        if (pag.paths().isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
                             parentValues[parentIndex] = 1;
                         } else {
                             parentValues[parentIndex] = 0;
@@ -802,7 +805,7 @@ public class RBExperiments {
         for (IndependenceFact fact : H.keySet()) {
             BCInference.OP op;
 
-            if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;

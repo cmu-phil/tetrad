@@ -3,7 +3,6 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.algcomparison.statistic.utils.BidirectedConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagToPag;
 
 import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 

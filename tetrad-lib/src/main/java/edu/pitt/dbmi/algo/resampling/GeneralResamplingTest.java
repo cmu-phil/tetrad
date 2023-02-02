@@ -317,7 +317,7 @@ public class GeneralResamplingTest {
         stop = System.currentTimeMillis();
         if (this.verbose) {
             this.out.println("Final Resampling Search Result:");
-            this.out.println(GraphUtils.graphToText(graph));
+            this.out.println(GraphUtils.graphToText(graph, false));
             this.out.println();
             this.out.println("probDistribution finished in " + (stop - start) + " ms");
         }
@@ -357,7 +357,7 @@ public class GeneralResamplingTest {
                 }
                 if (this.verbose) {
                     this.out.println("Resampling Search Result (" + i + "):");
-                    this.out.println(GraphUtils.graphToText(g));
+                    this.out.println(GraphUtils.graphToText(g, true));
                     this.out.println();
                     i++;
                 }

@@ -474,7 +474,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
             Graph oldGraph = getSemIm().getSemPm().getGraph();
 
-            GraphUtils.arrangeBySourceGraph(getSemIm().getSemPm().getGraph(), oldGraph);
+            LayoutUtil.arrangeBySourceGraph(getSemIm().getSemPm().getGraph(), oldGraph);
             this.matrixSelection = matrixSelection;
             impliedMatricesPanel().setMatrixSelection(matrixSelection);
 

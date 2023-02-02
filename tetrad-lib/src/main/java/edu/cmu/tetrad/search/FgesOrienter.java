@@ -162,7 +162,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     private Graph adjacencies;
 
     // True if it is assumed that zero effect adjacencies are not in the graph.
-    private boolean faithfulnessAssumed = true;
+    private boolean faithfulnessAssumed = false;
 
     // A utility map to help with orientation.
     private final WeakHashMap<Node, Set<Node>> neighbors = new WeakHashMap<>();
@@ -1238,7 +1238,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             Node nodeA = graph.getNode(next.getFrom());
             Node nodeB = graph.getNode(next.getTo());
 
-            if (!graph.isAncestorOf(nodeB, nodeA)) {
+            if (!graph.paths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdges(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
                 TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
@@ -1253,7 +1253,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 Node nodeB = edge.getNode2();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -1261,7 +1261,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 }
 
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -1272,14 +1272,14 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 Node nodeB = edge.getNode1();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                     }
                 }
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));

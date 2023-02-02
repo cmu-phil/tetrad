@@ -1182,7 +1182,7 @@ public final class SemIm implements IM, ISemIm {
 
         Graph contemporaneousDag = timeSeriesGraph.subgraph(timeSeriesGraph.getLag0Nodes());
 
-        List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
+        List<Node> tierOrdering = contemporaneousDag.paths().getCausalOrdering(contemporaneousDag.getNodes());
 
         for (int currentStep = 0; currentStep < sampleSize; currentStep++) {
             for (Node to : tierOrdering) {
@@ -1344,7 +1344,7 @@ public final class SemIm implements IM, ISemIm {
 
         // Create some index arrays to hopefully speed up the simulation.
         Graph graph = new EdgeListGraph(getSemPm().getGraph());
-        List<Node> tierOrdering = graph.getCausalOrdering();
+        List<Node> tierOrdering = graph.paths().getCausalOrdering(graph.getNodes());
 
         int[] tierIndices = new int[variableNodes.size()];
 
@@ -1485,7 +1485,7 @@ public final class SemIm implements IM, ISemIm {
         }
     }
 
-    public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
+    public DataSet  simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
         double errorParam1 = params.getDouble(Params.SIMULATION_PARAM1);
         double errorParam2 = params.getDouble(Params.SIMULATION_PARAM2);
@@ -1691,7 +1691,7 @@ public final class SemIm implements IM, ISemIm {
 
     public boolean isCyclic() {
         if (!this.cyclicChecked) {
-            this.cyclic = this.semPm.getGraph().existsDirectedCycle();
+            this.cyclic = this.semPm.getGraph().paths().existsDirectedCycle();
             this.cyclicChecked = true;
         }
 

@@ -84,7 +84,6 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     private final boolean highlighted = false;
     private boolean pag;
     private boolean CPDAG;
-    private GraphType graphType;
 
     //==========================CONSTRUCTORS=======================//
 
@@ -732,24 +731,6 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         }
 
         return this.propertyChangeSupport;
-    }
-
-    @Override
-    public List<String> getTriplesClassificationTypes() {
-        return null;
-    }
-
-    @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
-    }
-
-    public void setGraphType(GraphType graphType) {
-        this.graphType = graphType;
-    }
-
-    public GraphType getGraphType() {
-        return this.graphType;
     }
 
     /**

@@ -3,10 +3,7 @@ package edu.cmu.tetrad.performance;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.performance.ComparisonParameters.IndependenceTestType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
@@ -67,7 +64,7 @@ public class Comparison2 {
                 if (file.getName().startsWith("graph") && file.getName().contains(String.valueOf(params.getGraphNum()))
                         && file.getName().endsWith(".g.txt")) {
                     params.setGraphFile(file.getName());
-                    trueDag = GraphUtils.loadGraphTxt(file);
+                    trueDag = GraphPersistence.loadGraphTxt(file);
                     break;
                 }
 
@@ -114,11 +111,11 @@ public class Comparison2 {
                 nodes.add(new ContinuousVariable("X" + (i + 1)));
             }
 
-            trueDag = GraphUtils.randomGraphRandomForwardEdges(
+            trueDag = RandomGraph.randomGraphRandomForwardEdges(
                     nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
-                trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                trueDag = RandomGraph.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                 trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
                 System.out.println("Creating Time Lag Graph : " + trueDag);
@@ -210,11 +207,11 @@ public class Comparison2 {
                     nodes.add(new ContinuousVariable("X" + (i + 1)));
                 }
 
-                trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                trueDag = RandomGraph.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
-                    trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                    trueDag = RandomGraph.randomGraphRandomForwardEdges(
                             nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                     trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
                     System.out.println("Creating Time Lag Graph : " + trueDag);
@@ -275,7 +272,7 @@ public class Comparison2 {
                     nodes.add(new DiscreteVariable("X" + (i + 1), 3));
                 }
 
-                trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                trueDag = RandomGraph.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
                 if (params.getDataType() == null) {

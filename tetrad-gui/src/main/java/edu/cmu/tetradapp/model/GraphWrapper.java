@@ -133,7 +133,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        GraphUtils.circleLayout(getGraph(), 200, 200, 150);
+        LayoutUtil.circleLayout(getGraph(), 200, 200, 150);
     }
 
     public GraphWrapper(GeneralizedSemImWrapper wrapper) {
@@ -202,7 +202,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         Map<String, String> paramSettings = new HashMap<>();
         paramSettings.put("# Vars", Integer.toString(getGraph().getNumNodes()));
         paramSettings.put("# Edges", Integer.toString(getGraph().getNumEdges()));
-        if (getGraph().existsDirectedCycle()) paramSettings.put("Cyclic", null);
+        if (getGraph().paths().existsDirectedCycle()) paramSettings.put("Cyclic", null);
         return paramSettings;
     }
 

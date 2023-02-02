@@ -14,7 +14,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.LvSwap;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
@@ -105,7 +105,7 @@ public class LVSWAP_2a implements Algorithm, UsesScoreWrapper, TakesIndependence
 
             Graph graph = search.search();
 
-            GraphUtils.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.circleLayout(graph, 200, 200, 150);
 
             return graph;
         } else {

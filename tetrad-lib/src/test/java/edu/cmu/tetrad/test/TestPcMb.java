@@ -44,7 +44,7 @@ public class TestPcMb {
      */
     @Test
     public void testGenerateDaglist() {
-        Graph graph = GraphConverter.convert("T-->X1,T-->X2,X1-->X2,T-->X3,X4-->T");
+        Graph graph = GraphUtils.convert("T-->X1,T-->X2,X1-->X2,T-->X3,X4-->T");
 
         IndTestDSep test = new IndTestDSep(graph);
         PcMb search = new PcMb(test, -1);
@@ -71,7 +71,7 @@ public class TestPcMb {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph dag = GraphUtils.randomGraph(nodes1, 0, 10,
+        Graph dag = RandomGraph.randomGraph(nodes1, 0, 10,
                 5, 5, 5, false);
 
         IndependenceTest test = new IndTestDSep(dag);

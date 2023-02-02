@@ -502,7 +502,7 @@ public final class SemGraphEditor extends JPanel
                     if (addCycles) {
                         int newGraphNumMeasuredNodes = SemGraphEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
                         int newGraphNumEdges = SemGraphEditor.this.parameters.getInt("newGraphNumEdges", 10);
-                        graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 6);
+                        graph1 = RandomGraph.randomCyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 6);
                     }
 
                     getWorkbench().setGraph(graph1);
@@ -514,7 +514,7 @@ public final class SemGraphEditor extends JPanel
         graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
-        graph.add(new PagTypeSetter(getWorkbench()));
+        graph.add(new PagColorer(getWorkbench()));
 
         return graph;
     }

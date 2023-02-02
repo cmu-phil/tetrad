@@ -5,7 +5,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,8 +37,8 @@ public class NoSemidirectedRecall implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!cpdag.existsSemiDirectedPathFromTo(x, y)) {
-                    if (!estGraph.existsSemiDirectedPathFromTo(x, y)) {
+                if (!cpdag.paths().existsSemiDirectedPathFromTo(x, y)) {
+                    if (!estGraph.paths().existsSemiDirectedPathFromTo(x, y)) {
                         tp++;
                     } else {
                         fn++;

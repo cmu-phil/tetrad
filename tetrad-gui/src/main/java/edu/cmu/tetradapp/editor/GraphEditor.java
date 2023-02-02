@@ -426,7 +426,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
 //        graph.addSeparator();
-        graph.add(new PagTypeSetter(getWorkbench()));
+        graph.add(new PagColorer(getWorkbench()));
 
         menuBar.add(graph);
 
@@ -518,7 +518,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                     if (addCycles) {
                         int newGraphNumMeasuredNodes = GraphEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
                         int newGraphNumEdges = GraphEditor.this.parameters.getInt("newGraphNumEdges", 10);
-                        graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
+                        graph1 = RandomGraph.randomCyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
                     }
 
                     getWorkbench().setGraph(graph1);
@@ -530,7 +530,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));
-        graph.add(new PagTypeSetter(getWorkbench()));
+        graph.add(new PagColorer(getWorkbench()));
 
         // Only show these menu options for graph that has interventional nodes - Zhou
         if (isHasInterventional()) {

@@ -79,7 +79,7 @@ public class TestSimulatedFmri {
         statistics.add(new TwoCycleFalsePositive());
         statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
         statistics.setWeight("AHR", 1.0);
         statistics.setWeight("2CP", 1.0);
         statistics.setWeight("2CR", 1.0);
@@ -224,7 +224,7 @@ public class TestSimulatedFmri {
         statistics.add(new TwoCycleFalsePositive());
         statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
         statistics.setWeight("AHR", 1.0);
         statistics.setWeight("2CP", 1.0);
         statistics.setWeight("2CR", 1.0);
@@ -285,7 +285,7 @@ public class TestSimulatedFmri {
         statistics.add(new TwoCycleFalsePositive());
         statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 1.0);

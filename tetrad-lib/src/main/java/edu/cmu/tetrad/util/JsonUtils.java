@@ -40,29 +40,28 @@ public class JsonUtils {
         // ambiguousTriples
         Set<Triple> ambiguousTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("ambiguousTriples"));
         for (Triple triple : ambiguousTriples) {
-            graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+            graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
         }
 
         // underLineTriples
         Set<Triple> underLineTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("underLineTriples"));
         for (Triple triple : underLineTriples) {
-            graph.addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+            graph.underlines().addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
 
         // dottedUnderLineTriples
         Set<Triple> dottedUnderLineTriples = JsonUtils.parseJSONArrayToTetradTriples(jObj.getJSONArray("dottedUnderLineTriples"));
         for (Triple triple : dottedUnderLineTriples) {
-            graph.addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+            graph.underlines().addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
         }
 
         // stuffRemovedSinceLastTripleAccess
-        boolean stuffRemovedSinceLastTripleAccess = jObj.getBoolean("stuffRemovedSinceLastTripleAccess");
-        graph.setStuffRemovedSinceLastTripleAccess(stuffRemovedSinceLastTripleAccess);
+        graph.underlines().removeTriplesNotInGraph();
 
         // highlightedEdges
         Set<Edge> highlightedEdges = JsonUtils.parseJSONArrayToTetradEdges(graph, jObj.getJSONArray("highlightedEdges"));
         for (Edge edge : highlightedEdges) {
-            graph.setHighlighted(edge, true);
+            edge.setHighlighted(true);
         }
 
         return graph;
@@ -99,10 +98,12 @@ public class JsonUtils {
     }
 
     public static Edge parseJSONObjectToTetradEdge(Graph graph, JSONObject jObj) {
+        Endpoint[] TYPES = new Endpoint[] {Endpoint.TAIL, Endpoint.ARROW, Endpoint.CIRCLE, Endpoint.STAR, Endpoint.NULL};
+
         Node node1 = graph.getNode(jObj.getJSONObject("node1").getString("name"));
         Node node2 = graph.getNode(jObj.getJSONObject("node2").getString("name"));
-        Endpoint endpoint1 = Endpoint.TYPES[jObj.getJSONObject("endpoint1").getInt("ordinal")];
-        Endpoint endpoint2 = Endpoint.TYPES[jObj.getJSONObject("endpoint2").getInt("ordinal")];
+        Endpoint endpoint1 = TYPES[jObj.getJSONObject("endpoint1").getInt("ordinal")];
+        Endpoint endpoint2 = TYPES[jObj.getJSONObject("endpoint2").getInt("ordinal")];
         Edge edge = new Edge(node1, node2, endpoint1, endpoint2);
 
         try {

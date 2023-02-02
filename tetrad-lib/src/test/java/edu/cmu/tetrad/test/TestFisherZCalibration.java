@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -42,7 +43,7 @@ public class TestFisherZCalibration {
         final int numDraws = 2000;
         final int sampleSize = 2000;
 
-        Graph graph = GraphUtils.randomDag(20, 0, 40, 100,
+        Graph graph = RandomGraph.randomDag(20, 0, 40, 100,
                 100, 100, false);
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);

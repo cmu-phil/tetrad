@@ -94,13 +94,16 @@ public class DataForCalibration_RFCI {
 
         System.out.println("Graph simulation done");
 
-        final DagToPag dagToPag = new DagToPag(dag);
+////        final DagToPag dagToPag = new DagToPag(dag);
+//
+//
+//        // MP: What is it doing? Complete is used to be RFCI, False will result in running FCI
+//        dagToPag.setCompleteRuleSetUsed(true);
+//
+//        Graph truePag = dagToPag.convert();
 
+        Graph truePag = SearchGraphUtils.dagToPag(dag);
 
-        // MP: What is it doing? Complete is used to be RFCI, False will result in running FCI
-        dagToPag.setCompleteRuleSetUsed(true);
-
-        Graph truePag = dagToPag.convert();
         System.out.println("true PAG construction Done!");
 
         truePag = GraphUtils.replaceNodes(truePag, dag.getNodes());
@@ -334,7 +337,7 @@ public class DataForCalibration_RFCI {
         }
 
         System.out.println("Making dag");
-        return GraphUtils.randomGraphRandomForwardEdges(vars, numLatentConfounders, numEdges, 30, 15, 15, false, true);//randomGraphRandomForwardEdges(vars, 0,numEdges);
+        return RandomGraph.randomGraphRandomForwardEdges(vars, numLatentConfounders, numEdges, 30, 15, 15, false, true);//randomGraphRandomForwardEdges(vars, 0,numEdges);
     }
 
     public DataSet bootStrapSampling(DataSet data, int bootsrapSampleSize) {

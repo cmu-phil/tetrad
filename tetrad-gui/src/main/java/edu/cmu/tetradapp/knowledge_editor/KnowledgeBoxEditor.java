@@ -21,7 +21,7 @@
 package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -164,7 +164,7 @@ public class KnowledgeBoxEditor extends JPanel {
             Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
 
             try {
-                Knowledge knowledge = DataUtils.loadKnowledge(selectedFile, DelimiterType.WHITESPACE, "//");
+                Knowledge knowledge = DataPersistence.loadKnowledge(selectedFile, DelimiterType.WHITESPACE, "//");
                 setKnowledge(knowledge);
                 resetTabbedPane();
             } catch (Exception e1) {
@@ -686,11 +686,11 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         }
 
-        boolean arrangedAll = GraphUtils.arrangeBySourceGraph(graph,
+        boolean arrangedAll = LayoutUtil.arrangeBySourceGraph(graph,
                 this.edgeWorkbench.getGraph());
 
         if (!arrangedAll) {
-            GraphUtils.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.circleLayout(graph, 200, 200, 150);
         }
 
         this.edgeWorkbench.setGraph(graph);

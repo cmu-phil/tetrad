@@ -79,7 +79,6 @@ public final class FciOrient {
     private boolean verbose;
 
     private Graph truePag;
-    private Graph dag;
     private boolean doDiscriminatingPathColliderRule = true;
     private boolean doDiscriminatingPathTailRule = true;
 
@@ -91,14 +90,6 @@ public final class FciOrient {
      */
     public FciOrient(SepsetProducer sepsets) {
         this.sepsets = sepsets;
-
-        if (sepsets instanceof SepsetsGreedy) {
-            SepsetsGreedy _sepsets = (SepsetsGreedy) sepsets;
-            this.dag = _sepsets.getDag();
-        } else if (sepsets instanceof DagSepsets) {
-            DagSepsets _sepsets = (DagSepsets) sepsets;
-            this.dag = _sepsets.getDag();
-        }
     }
 
     //========================PUBLIC METHODS==========================//
@@ -139,7 +130,7 @@ public final class FciOrient {
             throw new NullPointerException();
         }
 
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
@@ -338,34 +329,6 @@ public final class FciOrient {
                 //choice gen doesnt do diff orders, so must switch A & C around.
                 ruleR1(A, B, C, graph);
                 ruleR1(C, B, A, graph);
-                ruleR2(A, B, C, graph);
-                ruleR2(C, B, A, graph);
-            }
-        }
-    }
-
-    public void rulesR2cycle(Graph graph) {
-        List<Node> nodes = graph.getNodes();
-
-        for (Node B : nodes) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            List<Node> adj = graph.getAdjacentNodes(B);
-
-            if (adj.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adj.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null && !Thread.currentThread().isInterrupted()) {
-                Node A = adj.get(combination[0]);
-                Node C = adj.get(combination[1]);
-
-                //choice gen doesnt do diff orders, so must switch A & C around.
                 ruleR2(A, B, C, graph);
                 ruleR2(C, B, A, graph);
             }
@@ -599,31 +562,6 @@ public final class FciOrient {
      * the left endpoint, and a,b,c as arguments.
      */
     private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
-        if (this.dag != null) {
-            if (this.dag.isAncestorOf(b, c) && doDiscriminatingPathTailRule) {
-                graph.setEndpoint(c, b, Endpoint.TAIL);
-            } else if (doDiscriminatingPathColliderRule) {
-                if (!isArrowpointAllowed(a, b, graph, knowledge)) {
-                    return false;
-                }
-
-                if (!isArrowpointAllowed(c, b, graph, knowledge)) {
-                    return false;
-                }
-
-                graph.setEndpoint(a, b, Endpoint.ARROW);
-                graph.setEndpoint(c, b, Endpoint.ARROW);
-
-                if (verbose) {
-                    this.logger.forceLogMessage("R4: DDP Collider, d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
-                }
-            }
-
-            this.changeFlag = true;
-
-            return true;
-        }
-
         if (graph.isAdjacentTo(d, c)) {
             throw new IllegalArgumentException();
         }
@@ -1040,7 +978,7 @@ public final class FciOrient {
      *
      * @param a The node A.
      * @param c The node C.
-     * @return Whether or not R9 was succesfully applied.
+     * @return Whether R9 was succesfully applied.
      */
     private boolean ruleR9(Node a, Node c, Graph graph) {
         Edge e = graph.getEdge(a, c);
@@ -1300,8 +1238,8 @@ public final class FciOrient {
         this.doDiscriminatingPathColliderRule = skip;
     }
 
-    public void setDoDiscriminatingPathTailRule(boolean skip) {
-        this.doDiscriminatingPathTailRule = skip;
+    public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
+        this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 
 }

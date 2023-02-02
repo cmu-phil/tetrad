@@ -30,10 +30,7 @@ import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphConverter;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
@@ -1483,7 +1480,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
      * test non penalty use cases
      */
     private static void runTests2() {
-        Graph g = GraphConverter.convert("X1-->X2,X3-->X2,X4-->X5");
+        Graph g = GraphUtils.convert("X1-->X2,X3-->X2,X4-->X5");
         //simple graph pm im gen example
 
         HashMap<String, Integer> nd = new HashMap<>();

@@ -466,7 +466,7 @@ public final class DagEditor extends JPanel
                     if (addCycles) {
                         int newGraphNumMeasuredNodes = DagEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
                         int newGraphNumEdges = DagEditor.this.parameters.getInt("newGraphNumEdges", 10);
-                        graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
+                        graph1 = RandomGraph.randomCyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
                     }
 
                     getWorkbench().setGraph(graph1);

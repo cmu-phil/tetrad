@@ -290,8 +290,8 @@ public class PcLocal implements GraphSearch {
                 Node z = adjy.get(i);
                 Node w = adjy.get(j);
 
-                if (this.graph.isAncestorOf(y, z)) continue;
-                if (this.graph.isAncestorOf(y, w)) continue;
+                if (this.graph.paths().isAncestorOf(y, z)) continue;
+                if (this.graph.paths().isAncestorOf(y, w)) continue;
 
 //                if (z == w) continue;
                 if (this.graph.isAdjacentTo(z, w)) continue;

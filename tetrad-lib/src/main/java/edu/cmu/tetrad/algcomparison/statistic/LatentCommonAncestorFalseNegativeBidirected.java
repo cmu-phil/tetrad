@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag;
 
 import java.util.List;
 

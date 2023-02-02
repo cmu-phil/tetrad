@@ -35,9 +35,9 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.DagToPag;
+import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -183,8 +183,10 @@ public class TestGeneralResamplingTest {
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
-        DagToPag dagToPag = new DagToPag(dag);
-        Graph truePag = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        Graph truePag = dagToPag.convert();
+
+        Graph truePag = SearchGraphUtils.dagToPag(dag);
 
         int[] causalOrdering = new int[numVars];
 
@@ -243,8 +245,10 @@ public class TestGeneralResamplingTest {
 
         Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numLatentConfounders);
 
-        DagToPag dagToPag = new DagToPag(dag);
-        Graph truePag = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        Graph truePag = dagToPag.convert();
+
+        Graph truePag = SearchGraphUtils.dagToPag(dag);
 
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
@@ -299,8 +303,10 @@ public class TestGeneralResamplingTest {
 
         Graph dag = TestGeneralResamplingTest.makeContinuousDAG(numLatentConfounders);
 
-        DagToPag dagToPag = new DagToPag(dag);
-        Graph truePag = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        Graph truePag = dagToPag.convert();
+
+        Graph truePag = SearchGraphUtils.dagToPag(dag);
 
         int[] causalOrdering = new int[numVars];
 
@@ -361,8 +367,10 @@ public class TestGeneralResamplingTest {
 
         Graph dag = TestGeneralResamplingTest.makeDiscreteDAG(numLatentConfounders);
 
-        DagToPag dagToPag = new DagToPag(dag);
-        Graph truePag = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        Graph truePag = dagToPag.convert();
+
+        Graph truePag = SearchGraphUtils.dagToPag(dag);
 
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
@@ -484,7 +492,7 @@ public class TestGeneralResamplingTest {
             vars.add(new ContinuousVariable(Integer.toString(i)));
         }
 
-        return GraphUtils.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
+        return RandomGraph.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
     }
 
     private static Graph makeDiscreteDAG(int numLatentConfounders) {
@@ -499,7 +507,7 @@ public class TestGeneralResamplingTest {
         }
 
         // System.out.println("Making dag");
-        return GraphUtils.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
+        return RandomGraph.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
     }
 
 }

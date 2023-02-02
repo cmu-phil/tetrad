@@ -6,8 +6,8 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.XdslXmlParser;
 import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Builder;
@@ -40,7 +40,7 @@ public class TestRfciBsc {
         final long seed = 878376L;
         RandomUtil.getInstance().setSeed(seed);
 
-        Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X1-->X5,X2-->X3,X2-->X4,X2-->X6,X3-->X4,X4-->X5,X5-->X6");
+        Graph g = GraphUtils.convert("X1-->X2,X1-->X3,X1-->X4,X1-->X5,X2-->X3,X2-->X4,X2-->X6,X3-->X4,X4-->X5,X5-->X6");
         Dag dag = new Dag(g);
 
         // set a number of latent variables
@@ -54,9 +54,12 @@ public class TestRfciBsc {
         DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-        DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        Graph PAG_True = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        dagToPag.setCompleteRuleSetUsed(false);
+//        Graph PAG_True = dagToPag.convert();
+
+        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
         IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
@@ -113,7 +116,7 @@ public class TestRfciBsc {
 
         // set a number of latent variables
         final int LV = 4;
-        GraphUtils.fixLatents4(LV, dag);
+        RandomGraph.fixLatents4(LV, dag);
         System.out.println("Variables set to be latent:" + TestRfciBsc.getLatents(dag));
 
         // simulate data from instantiated model
@@ -123,9 +126,12 @@ public class TestRfciBsc {
         DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-        DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        Graph PAG_True = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        dagToPag.setCompleteRuleSetUsed(false);
+//        Graph PAG_True = dagToPag.convert();
+
+        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
         IndTestProbabilistic test = new IndTestProbabilistic(dataSet);

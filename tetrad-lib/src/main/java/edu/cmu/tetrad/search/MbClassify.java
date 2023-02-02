@@ -22,8 +22,8 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.bayes.*;
+import edu.cmu.tetrad.data.DataPersistence;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
@@ -76,9 +76,9 @@ public class MbClassify implements DiscreteClassifier {
 
             TetradLogger.getInstance().log("info", s);
 
-            DataSet train = DataUtils.loadContinuousData(new File(trainPath), "//", '\"',
+            DataSet train = DataPersistence.loadContinuousData(new File(trainPath), "//", '\"',
                     "*", true, Delimiter.TAB);
-            DataSet test = DataUtils.loadContinuousData(new File(testPath), "//", '\"',
+            DataSet test = DataPersistence.loadContinuousData(new File(testPath), "//", '\"',
                     "*", true, Delimiter.TAB);
 
             double alpha = Double.parseDouble(alphaString);

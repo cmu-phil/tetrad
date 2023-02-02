@@ -454,7 +454,7 @@ public class LayoutUtils {
             }
         }
 
-        GraphUtils.circleLayout(graph, 225, 200, 150);
+        LayoutUtil.circleLayout(graph, 225, 200, 150);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.layered;
     }
@@ -469,7 +469,7 @@ public class LayoutUtils {
         }
 
         Graph sourceGraph = layoutEditable.getSourceGraph();
-        GraphUtils.arrangeBySourceGraph(graph, sourceGraph);
+        LayoutUtil.arrangeBySourceGraph(graph, sourceGraph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.source;
     }
@@ -513,7 +513,7 @@ public class LayoutUtils {
         int centery = r.y + m;
 
 //        DataGraphUtils.circleLayout(graph, 200, 200, 150);
-        GraphUtils.circleLayout(graph, centerx, centery, radius);
+        LayoutUtil.circleLayout(graph, centerx, centery, radius);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.circle;
     }
@@ -545,7 +545,7 @@ public class LayoutUtils {
             double stopEnergy = Preferences.userRoot().getDouble(
                     "kamadaKawaiLayoutStopEnergy", 1.0);
 
-            GraphUtils.kamadaKawaiLayout(graph, initializeRandomly,
+            LayoutUtil.kamadaKawaiLayout(graph, initializeRandomly,
                     naturalEdgeLength, springConstant, stopEnergy);
             layoutEditable.layoutByGraph(graph);
             LayoutUtils.layout = Layout.kamadaKawai;
@@ -564,7 +564,7 @@ public class LayoutUtils {
             }
         }
 
-        GraphUtils.fruchtermanReingoldLayout(graph);
+        LayoutUtil.fruchtermanReingoldLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.fruchtermReingold;
     }

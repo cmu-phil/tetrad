@@ -27,7 +27,7 @@ import edu.cmu.tetrad.bayes.BayesProperties;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphConverter;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public final class TestBayesBicScorer {
         RandomUtil.getInstance().setSeed(492834924L);
 
 //        Graph graph = GraphConverter.convert("X1,X2,X4,X4,X5,X6,X7,X8");
-        Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X6,X6-->X7");
+        Graph graph = GraphUtils.convert("X1-->X2,X2-->X3,X3-->X6,X6-->X7");
 //        Graph graph2 = GraphConverter.convert("X1,X2,X3,X7-->X6,X9,X10,X11,X12");
 
         final int numCategories = 8;
