@@ -48,7 +48,7 @@ public class DataGraphUtils {
 
         do {
 //            dag = DataGraphUtils.randomGraphUniform(numStructuralNodes, numStructuralNodes, numStructuralEdges, 4, 3, 3, false);
-            dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numStructuralEdges,
+            dag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numStructuralEdges,
                     30, 15, 15, false, true);
         } while (dag.getNumEdges() != numStructuralEdges);
 
@@ -220,8 +220,8 @@ public class DataGraphUtils {
         }
 
         if (arrangeGraph) {
-            edu.cmu.tetrad.graph.GraphUtils.circleLayout(graph1, 200, 200, 150);
-            edu.cmu.tetrad.graph.GraphUtils.fruchtermanReingoldLayout(graph1);
+            LayoutUtil.circleLayout(graph1, 200, 200, 150);
+            LayoutUtil.fruchtermanReingoldLayout(graph1);
         }
 
         return graph1;
@@ -267,7 +267,7 @@ public class DataGraphUtils {
             }
         }
 
-        GraphUtils.fruchtermanReingoldLayout(mim);
+        LayoutUtil.fruchtermanReingoldLayout(mim);
 
         return mim;
     }

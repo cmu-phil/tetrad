@@ -23,10 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphConverter;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -65,7 +62,7 @@ public final class TestDiscreteProbs extends TestCase {
     }
 
     public void testCreateUsingBayesIm() {
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Graph graph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);

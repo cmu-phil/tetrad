@@ -22,10 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
@@ -240,8 +237,8 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
         try {
             Graph graph = new MarshalledObject<>(searchGraph).get();
-            GraphUtils.circleLayout(graph, 200, 200, 150);
-            GraphUtils.fruchtermanReingoldLayout(graph);
+            LayoutUtil.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.fruchtermanReingoldLayout(graph);
             setResultGraph(graph);
             setClusters(MimUtils.convertToClusters(graph, getData().getVariables()));
         } catch (Exception e) {

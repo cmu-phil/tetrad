@@ -3,10 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.external;
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphPersistence;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.BufferedReader;
@@ -68,7 +65,7 @@ public class ExternalAlgorithmTetrad extends ExternalAlgorithm {
         File file = new File(this.path, "/results/" + this.extDir + "/" + (this.simIndex + 1) + "/graph." + index + ".txt");
         System.out.println(file.getAbsolutePath());
         Graph graph = GraphPersistence.loadGraphTxt(file);
-        GraphUtils.circleLayout(graph, 225, 200, 150);
+        LayoutUtil.circleLayout(graph, 225, 200, 150);
         return graph;
     }
 

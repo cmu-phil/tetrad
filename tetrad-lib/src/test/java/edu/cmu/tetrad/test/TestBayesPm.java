@@ -39,7 +39,7 @@ public final class TestBayesPm {
 
     @Test
     public void testInitializeFixed() {
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Graph graph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag, 3, 3);
 
@@ -52,7 +52,7 @@ public final class TestBayesPm {
 
     @Test
     public void testInitializeRandom() {
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Graph graph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag, 2, 5);
         List<Node> nodes = dag.getNodes();
@@ -66,7 +66,7 @@ public final class TestBayesPm {
 
     @Test
     public void testChangeNumValues() {
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Graph graph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
 
         Node x1 = dag.getNode("X1");
@@ -81,7 +81,7 @@ public final class TestBayesPm {
 
     @Test
     public void testEquals() {
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Graph graph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
 
         BayesPm bayesPm = new BayesPm(dag, 3, 3);

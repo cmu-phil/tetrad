@@ -970,7 +970,7 @@ public class MixedUtils {
     //main for testing
     public static void main(String[] args) {
         //Graph g = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4");
-        Graph g = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4, X5-->X4");
+        Graph g = GraphUtils.convert("X1-->X2,X2-->X3,X3-->X4, X5-->X4");
         //simple graph pm im gen example
 
         HashMap<String, Integer> nd = new HashMap<>();

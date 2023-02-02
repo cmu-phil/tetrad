@@ -21,10 +21,16 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphGeneratorRandomNumEdges;
-import edu.cmu.tetrad.graph.UniformGraphGenerator;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -34,134 +40,15 @@ import static org.junit.Assert.assertEquals;
 public final class TestUniformGraphGenerator {
 
     @Test
-    public void testRandomDag1() {
+    public void test1() {
         RandomUtil.getInstance().setSeed(3848283L);
 
-        UniformGraphGenerator generator =
-                new UniformGraphGenerator(UniformGraphGenerator.ANY_DAG);
-        generator.setNumNodes(20);
-        generator.setMaxDegree(3);
-        generator.setNumIterations(50000);
-        generator.generate();
+        List<Node> nodes = new ArrayList<>();
+        for (int i = 0; i < 20; i++) nodes.add(new ContinuousVariable("X" + i));
 
-        assertEquals(19, generator.getDag().getNumEdges());
-    }
+        Graph dag = RandomGraph.randomGraphUniform(nodes, 3, 30, 3, 3, 3, false, 50000);
 
-    @Test
-    public void testRandomDag2() {
-        RandomUtil.getInstance().setSeed(3848283L);
-
-        UniformGraphGenerator generator =
-                new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
-        generator.setNumNodes(50);
-        generator.setMaxDegree(4);
-        generator.setMaxEdges(20);
-        generator.generate();
-
-        assertEquals(49, generator.getDag().getNumEdges());
-    }
-
-    @Test
-    public void testRandomDag3() {
-        RandomUtil.getInstance().setSeed(3848283L);
-
-        UniformGraphGenerator generator =
-                new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
-        generator.setNumNodes(20);
-        generator.setMaxDegree(3);
-        generator.setNumIterations(20000);
-        generator.generate();
-
-        assertEquals(19, generator.getDag().getNumEdges());
-    }
-
-    @Test
-    public void testRandomDag4() {
-        RandomUtil.getInstance().setSeed(3848283L);
-
-        UniformGraphGenerator generator =
-                new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
-        generator.setNumNodes(20);
-        generator.setMaxInDegree(1);
-        generator.setMaxDegree(3);
-        generator.generate();
-
-        assertEquals(19, generator.getDag().getNumEdges());
-    }
-
-    @Test
-    public void testRandomDag5() {
-        RandomUtil.getInstance().setSeed(3848283L);
-
-        UniformGraphGenerator generator =
-                new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
-        generator.setNumNodes(20);
-        generator.setMaxDegree(3);
-        generator.generate();
-
-        assertEquals(19, generator.getDag().getNumEdges());
-    }
-
-    @Test
-    public void testRandomDag6() {
-        RandomUtil.getInstance().setSeed(3848283L);
-
-        UniformGraphGenerator generator =
-                new UniformGraphGenerator(UniformGraphGenerator.ANY_DAG);
-        generator.setNumNodes(40);
-        generator.setMaxDegree(39);
-        generator.setMaxInDegree(2);
-
-        generator.setMaxEdges(10);
-        generator.generate();
-
-        assertEquals(10, generator.getDag().getNumEdges());
-    }
-
-    @Test
-    public void testRandomDag7() {
-        RandomUtil.getInstance().setSeed(3848283L);
-
-        UniformGraphGenerator generator =
-                new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
-        generator.setNumNodes(20);
-        generator.setMaxInDegree(2);
-        generator.setMaxOutDegree(3);
-        generator.generate();
-
-        assertEquals(19, generator.getDag().getNumEdges());
-    }
-
-    @Test
-    public void testRandomDag8() {
-        RandomUtil.getInstance().setSeed(3848283L);
-
-        UniformGraphGenerator generator =
-                new UniformGraphGenerator(UniformGraphGenerator.CONNECTED_DAG);
-        generator.setNumNodes(15);
-        generator.setMaxDegree(14);
-        generator.generate();
-
-        assertEquals(14, generator.getDag().getNumEdges());
-    }
-
-    /**
-     * Tests the second version of the generator that generates random DAGs
-     * (unconnected only) with #edges in a given range.
-     */
-    @Test
-    public void testRandomDag9() {
-        final int N = 25;
-        final int E = N * (N - 1) / 2;
-
-        GraphGeneratorRandomNumEdges generator =
-                new GraphGeneratorRandomNumEdges(UniformGraphGenerator.ANY_DAG);
-        generator.setNumNodes(N);
-        generator.setMaxEdges(E);
-        generator.setMinEdges(E - 5);
-        generator.generate();
-
-        assertEquals(295, generator.getDag().getNumEdges());
+        assertEquals(27, dag.getNumEdges());
     }
 }
 

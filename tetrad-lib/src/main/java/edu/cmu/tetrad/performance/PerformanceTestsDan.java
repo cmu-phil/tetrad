@@ -116,9 +116,9 @@ public class PerformanceTestsDan {
             for (int i = 0; i < numVars; i++) vars.add(new GraphNode("X" + (i + 1)));
 
 //        Graph dag = DataGraphUtils.randomDagQuick2(varsWithLatents, 0, (int) (varsWithLatents.size() * edgesPerNode));
-            Graph dag = GraphUtils.randomGraph(vars, 0, (int) (vars.size() * edgesPerNode), 5, 5, 5, false);
+            Graph dag = RandomGraph.randomGraph(vars, 0, (int) (vars.size() * edgesPerNode), 5, 5, 5, false);
 
-            GraphUtils.fixLatents1(numLatents, dag);
+            RandomGraph.fixLatents1(numLatents, dag);
 
 
             out3.println(dag);

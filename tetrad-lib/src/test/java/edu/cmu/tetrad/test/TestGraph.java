@@ -58,7 +58,7 @@ public final class TestGraph {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes1, 0, 10,
                 30, 15, 15, false));
 
         Set<Triple> ambiguousTriples = new HashSet<>();

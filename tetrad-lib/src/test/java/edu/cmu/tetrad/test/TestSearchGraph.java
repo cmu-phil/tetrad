@@ -55,7 +55,7 @@ public final class TestSearchGraph {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        EdgeListGraph graph = new EdgeListGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 7,
+        EdgeListGraph graph = new EdgeListGraph(new Dag(RandomGraph.randomGraph(nodes1, 0, 7,
                 30, 15, 15, true)));
 
         List<Node> nodes = graph.getNodes();
@@ -102,7 +102,7 @@ public final class TestSearchGraph {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        EdgeListGraph graph = new EdgeListGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 14,
+        EdgeListGraph graph = new EdgeListGraph(new Dag(RandomGraph.randomGraph(nodes1, 0, 14,
                 30, 15, 15, true)));
 
         List<Node> nodes = graph.getNodes();
@@ -144,22 +144,22 @@ public final class TestSearchGraph {
 
     // Trying to trip up the breadth first algorithm.
     public void testDSeparation3() {
-        Graph graph = GraphConverter.convert("x-->s1,x-->s2,s1-->s3,s3-->s2,s3&lt;--y");
+        Graph graph = GraphUtils.convert("x-->s1,x-->s2,s1-->s3,s3-->s2,s3&lt;--y");
         assertTrue(graph.paths().isDSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new ArrayList<>()));
 
-        graph = GraphConverter.convert("1-->2,2&lt;--4,2-->7,2-->3");
+        graph = GraphUtils.convert("1-->2,2&lt;--4,2-->7,2-->3");
         assertTrue(graph.paths().isDSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new ArrayList<>()));
 
-        graph = GraphConverter.convert("X1-->X5,X1-->X6,X2-->X3,X4-->X6,X5-->X3,X6-->X5,X7-->X3");
+        graph = GraphUtils.convert("X1-->X5,X1-->X6,X2-->X3,X4-->X6,X5-->X3,X6-->X5,X7-->X3");
         assertTrue(dConnected(graph, "X2", "X4", "X3", "X6"));
 
-        graph = GraphConverter.convert("X1&lt;--X2,X1&lt;--X3,X2-->X3,X3&lt;--X4");
+        graph = GraphUtils.convert("X1&lt;--X2,X1&lt;--X3,X2-->X3,X3&lt;--X4");
         assertTrue(dConnected(graph, "X1", "X4", "X3"));
 
-        graph = GraphConverter.convert("X2-->X7,X3-->X2,X5-->X1,X5-->X2,X6-->X1,X7-->X6,X2->X4");
+        graph = GraphUtils.convert("X2-->X7,X3-->X2,X5-->X1,X5-->X2,X6-->X1,X7-->X6,X2->X4");
         assertTrue(dConnected(graph, "X1", "X3"));
 
-        graph = GraphConverter.convert("1-->3,1-->4,2-->5,4-->5,4-->7,6-->5,7-->3");
+        graph = GraphUtils.convert("1-->3,1-->4,2-->5,4-->5,4-->7,6-->5,7-->3");
         assertTrue(dConnected(graph, "1", "4"));
     }
 
@@ -170,7 +170,7 @@ public final class TestSearchGraph {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 20, 100,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 20, 100,
                 5, 5, 5, false));
 
         long start, stop;

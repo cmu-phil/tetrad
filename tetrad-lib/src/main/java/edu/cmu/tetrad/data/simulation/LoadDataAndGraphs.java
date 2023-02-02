@@ -4,7 +4,7 @@ import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphPersistence;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -54,7 +54,7 @@ public class LoadDataAndGraphs implements Simulation {
                         this.graphs.add(null);
                     }
 
-                    GraphUtils.circleLayout(this.graphs.get(i), 225, 200, 150);
+                    LayoutUtil.circleLayout(this.graphs.get(i), 225, 200, 150);
 
                     File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 

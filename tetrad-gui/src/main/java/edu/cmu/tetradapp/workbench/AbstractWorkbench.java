@@ -820,7 +820,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     public void layoutByGraph(Graph layoutGraph) {
-        GraphUtils.arrangeBySourceGraph(this.graph, layoutGraph);
+        LayoutUtil.arrangeBySourceGraph(this.graph, layoutGraph);
 
         for (Node modelNode : this.graph.getNodes()) {
             DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(modelNode);

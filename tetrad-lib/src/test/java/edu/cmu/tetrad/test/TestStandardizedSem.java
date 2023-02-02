@@ -57,7 +57,7 @@ public class TestStandardizedSem {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+        SemGraph graph = new SemGraph(new Dag(RandomGraph.randomGraph(nodes, 0, 5,
                 30, 15, 15, false)));
 
         SemPm pm = new SemPm(graph);
@@ -167,7 +167,7 @@ public class TestStandardizedSem {
             nodes.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(nodes, 0, 10,
+        SemGraph graph = new SemGraph(new Dag(RandomGraph.randomGraph(nodes, 0, 10,
                 30, 15, 15, false)));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -268,7 +268,7 @@ public class TestStandardizedSem {
             nodes1.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        SemGraph graph = new SemGraph(new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
+        SemGraph graph = new SemGraph(new Dag(RandomGraph.randomGraph(nodes1, 0, 5,
                 30, 15, 15, false)));
 
         List<Node> nodes = graph.getNodes();

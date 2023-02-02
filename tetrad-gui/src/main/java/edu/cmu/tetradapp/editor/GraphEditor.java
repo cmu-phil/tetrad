@@ -518,7 +518,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                     if (addCycles) {
                         int newGraphNumMeasuredNodes = GraphEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
                         int newGraphNumEdges = GraphEditor.this.parameters.getInt("newGraphNumEdges", 10);
-                        graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
+                        graph1 = RandomGraph.randomCyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
                     }
 
                     getWorkbench().setGraph(graph1);

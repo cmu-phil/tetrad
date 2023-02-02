@@ -3,10 +3,7 @@ package edu.cmu.tetrad.simulation;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.TextTable;
 
@@ -200,6 +197,6 @@ public class HsimUtils {
         for (int i = 0; i < numVars; i++) {
             varslist.add(new ContinuousVariable("X" + i));
         }
-        return GraphUtils.randomGraphRandomForwardEdges(varslist, 0, numEdges, 30, 15, 15, false, true);
+        return RandomGraph.randomGraphRandomForwardEdges(varslist, 0, numEdges, 30, 15, 15, false, true);
     }
 }

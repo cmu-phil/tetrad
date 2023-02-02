@@ -24,8 +24,8 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import org.junit.Test;
 
@@ -47,7 +47,7 @@ public class TestLargeSemSimulator {
         List<Node> nodes = new ArrayList<>();
         for (int i = 1; i <= 10; i++) nodes.add(new ContinuousVariable("X" + i));
 
-        Graph graph = GraphUtils.randomGraph(nodes, 0, 10, 5, 5, 5, false);
+        Graph graph = RandomGraph.randomGraph(nodes, 0, 10, 5, 5, 5, false);
 
         LargeScaleSimulation simulator = new LargeScaleSimulation(graph);
         DataSet dataset = simulator.simulateDataFisher(1000);

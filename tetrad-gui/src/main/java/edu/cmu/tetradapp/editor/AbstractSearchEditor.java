@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.search.IndTestType;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -361,9 +361,9 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         }
 
         if (latestWorkbenchGraph == null) {
-            GraphUtils.arrangeBySourceGraph(resultGraph, sourceGraph);
+            LayoutUtil.arrangeBySourceGraph(resultGraph, sourceGraph);
         } else {
-            GraphUtils.arrangeBySourceGraph(resultGraph, latestWorkbenchGraph);
+            LayoutUtil.arrangeBySourceGraph(resultGraph, latestWorkbenchGraph);
         }
 
         this.workbench = new GraphWorkbench(resultGraph);

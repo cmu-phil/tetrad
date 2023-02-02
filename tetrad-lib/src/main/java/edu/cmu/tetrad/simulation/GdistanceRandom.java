@@ -2,7 +2,7 @@ package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import java.util.ArrayList;
@@ -47,9 +47,9 @@ public class GdistanceRandom {
         //make 2 random dags over the vars in locationMap
         int numVars = GdistanceRandom.locationMap.getNumColumns();
         if (this.verbose) System.out.println("generating pair of random dags");
-        Graph dag1 = GraphUtils.randomGraphRandomForwardEdges(GdistanceRandom.locationMap.getVariables(), 0, this.numEdges1, numVars, numVars, numVars, false, false);
+        Graph dag1 = RandomGraph.randomGraphRandomForwardEdges(GdistanceRandom.locationMap.getVariables(), 0, this.numEdges1, numVars, numVars, numVars, false, false);
         if (this.verbose) System.out.println(dag1);
-        Graph dag2 = GraphUtils.randomGraphRandomForwardEdges(GdistanceRandom.locationMap.getVariables(), 0, this.numEdges2, numVars, numVars, numVars, false, false);
+        Graph dag2 = RandomGraph.randomGraphRandomForwardEdges(GdistanceRandom.locationMap.getVariables(), 0, this.numEdges2, numVars, numVars, numVars, false, false);
 
         //convert those dags to CPDAGs
         if (this.verbose) System.out.println("converting dags to CPDAGs");

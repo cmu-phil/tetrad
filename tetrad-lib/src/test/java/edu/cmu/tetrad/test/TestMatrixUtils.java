@@ -22,10 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Matrix;
@@ -153,7 +150,7 @@ public class TestMatrixUtils {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 10, 30, 15, 15, false));
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 10, 30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
 

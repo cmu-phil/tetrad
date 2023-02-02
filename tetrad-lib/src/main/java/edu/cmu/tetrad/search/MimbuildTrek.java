@@ -140,7 +140,7 @@ public class MimbuildTrek {
         graph = search.search();
 
         this.structureGraph = new EdgeListGraph(graph);
-        GraphUtils.fruchtermanReingoldLayout(this.structureGraph);
+        LayoutUtil.fruchtermanReingoldLayout(this.structureGraph);
 
         return this.structureGraph;
     }

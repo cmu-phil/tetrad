@@ -47,7 +47,7 @@ public final class TestGraphUtils {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag dag = new Dag(GraphUtils.randomGraph(nodes, 0, 50,
+        Dag dag = new Dag(RandomGraph.randomGraph(nodes, 0, 50,
                 4, 3, 3, false));
 
         assertEquals(50, dag.getNumNodes());
@@ -62,7 +62,7 @@ public final class TestGraphUtils {
             nodes.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 6,
                 3, 3, 3, false));
 
         for (int i = 0; i < graph.getNodes().size(); i++) {
@@ -87,7 +87,7 @@ public final class TestGraphUtils {
             nodes.add(new ContinuousVariable("X" + (i1 + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 15,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 15,
                 3, 3, 3, false));
 
         for (int i = 0; i < graph.getNodes().size(); i++) {
@@ -127,7 +127,7 @@ public final class TestGraphUtils {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph g = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+        Graph g = new Dag(RandomGraph.randomGraph(nodes, 0, 5,
                 30, 15, 15, false));
 
         String x = GraphPersistence.graphToDot(g);
@@ -255,7 +255,7 @@ public final class TestGraphUtils {
         final int numNodes = 5;
 
         for (int i = 0; i < 100000; i++) {
-            Graph graph = GraphUtils.randomGraphRandomForwardEdges(numNodes, 0, numNodes, 10, 10, 10, true);
+            Graph graph = RandomGraph.randomGraphRandomForwardEdges(numNodes, 0, numNodes, 10, 10, 10, true);
 
             List<Node> nodes = graph.getNodes();
             Node x = nodes.get(RandomUtil.getInstance().nextInt(numNodes));

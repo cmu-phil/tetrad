@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.Kci;
 import edu.cmu.tetrad.search.SearchLogUtils;
@@ -25,7 +26,7 @@ public class TestCheckMarkov {
         int numIndep = 0;
         int total = 0;
 
-        Graph dag = GraphUtils.randomDag(10, 0, 10, 100, 100,
+        Graph dag = RandomGraph.randomDag(10, 0, 10, 100, 100,
                 100, false);
 
         SemPm pm = new SemPm(dag);

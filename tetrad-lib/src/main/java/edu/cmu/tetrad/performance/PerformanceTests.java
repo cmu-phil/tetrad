@@ -68,7 +68,7 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false, true);
 
         System.out.println("Graph done");
@@ -152,7 +152,7 @@ public class PerformanceTests {
             final double edgeFactor = 1.0;
             final int numCases = 1000;
 
-            Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+            Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                     30, 15, 15, false, true);
 
             out2.println(graph);
@@ -398,7 +398,7 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false, true);
 
         System.out.println("Graph done");
@@ -556,7 +556,7 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false, true);
 
         System.out.println("Graph done");
@@ -641,7 +641,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, numLatentConfounders, (int) (numVars * edgeFactor),
+        Graph dag = RandomGraph.randomGraphRandomForwardEdges(vars, numLatentConfounders, (int) (numVars * edgeFactor),
                 10, 10, 10, false, false);
 
         System.out.println("Graph done");
@@ -1375,10 +1375,10 @@ public class PerformanceTests {
 
         Graph dag;
         if (false) {
-            dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
+            dag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
         } else {
 //            dag = DataGraphUtils.randomDagRandomFowardEdges(vars, 0, numEdges);
-            dag = GraphUtils.randomGraph(vars, 0, numEdges, 100, 100, 100, false);
+            dag = RandomGraph.randomGraph(vars, 0, numEdges, 100, 100, 100, false);
             List<Node> ordering = dag.paths().getCausalOrdering(dag.getNodes());
         }
         System.out.println("DAG = " + dag);
@@ -1431,7 +1431,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgeFactor),
+        Graph dag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgeFactor),
                 30, 15, 15, false, true);
 
         System.out.println("DAG = " + dag);
@@ -1497,7 +1497,7 @@ public class PerformanceTests {
         System.out.println("Making dag");
 
         //        printDegreeDistribution(dag, out);
-        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+        return RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 12, 15, false, true);
     }
 
@@ -1963,7 +1963,7 @@ public class PerformanceTests {
     private Graph getLatentGraph(List<Node> vars, double edgeFactor, int numLatents) {
         int numEdges = (int) (vars.size() * edgeFactor);
 
-        return GraphUtils.randomGraph(vars,
+        return RandomGraph.randomGraph(vars,
                 numLatents, numEdges, 3, 3, 3, false);
     }
 
@@ -1972,7 +1972,7 @@ public class PerformanceTests {
         final int numVars = 30000;
         final int numEdges = 60000;
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(numVars, 0, numEdges,
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(numVars, 0, numEdges,
                 30, 30, 30, false);
 
         TreeMap<Integer, Integer> degreeCounts = new TreeMap<>();

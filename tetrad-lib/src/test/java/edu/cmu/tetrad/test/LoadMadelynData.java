@@ -5,7 +5,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphPersistence;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
@@ -59,7 +59,7 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
         File file2 = new File(parent + "/structure_" + this.structure + "_graph.txt");
         System.out.println("Loading graph from " + file2.getAbsolutePath());
         this.graph = GraphPersistence.loadGraphTxt(file2);
-        GraphUtils.circleLayout(this.graph, 225, 200, 150);
+        LayoutUtil.circleLayout(this.graph, 225, 200, 150);
 
         if (parameters.get("numRuns") != null) {
             parameters.set("numRuns", parameters.get("numRuns"));

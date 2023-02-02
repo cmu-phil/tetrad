@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
@@ -187,8 +187,8 @@ public class RegressionEditor extends JPanel {
     private void runRegression() {
         this.runner.execute();
         Graph graph = this.runner.getOutGraph();
-        GraphUtils.circleLayout(graph, 200, 200, 150);
-        GraphUtils.fruchtermanReingoldLayout(graph);
+        LayoutUtil.circleLayout(graph, 200, 200, 150);
+        LayoutUtil.fruchtermanReingoldLayout(graph);
         this.workbench.setGraph(graph);
         RegressionResult report = this.runner.getResult();
         this.reportText.setText(report.toString());

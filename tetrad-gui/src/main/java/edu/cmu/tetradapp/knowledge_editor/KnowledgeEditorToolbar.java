@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
@@ -228,7 +228,7 @@ class KnowledgeEditorToolbar extends JPanel {
             this.workbench.setEdgeMode(KnowledgeWorkbench.REQUIRED_EDGE);
         } else if ("Source Layout".equals(nodeType)) {
             KnowledgeGraph graph = (KnowledgeGraph) this.workbench.getGraph();
-            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+            LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
             this.workbench.setGraph(graph);
         } else if ("Knowledge Layout".equals(nodeType)) {
             KnowledgeGraph graph = (KnowledgeGraph) this.workbench.getGraph();

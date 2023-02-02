@@ -40,7 +40,7 @@ public class TestRfciBsc {
         final long seed = 878376L;
         RandomUtil.getInstance().setSeed(seed);
 
-        Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X1-->X5,X2-->X3,X2-->X4,X2-->X6,X3-->X4,X4-->X5,X5-->X6");
+        Graph g = GraphUtils.convert("X1-->X2,X1-->X3,X1-->X4,X1-->X5,X2-->X3,X2-->X4,X2-->X6,X3-->X4,X4-->X5,X5-->X6");
         Dag dag = new Dag(g);
 
         // set a number of latent variables
@@ -116,7 +116,7 @@ public class TestRfciBsc {
 
         // set a number of latent variables
         final int LV = 4;
-        GraphUtils.fixLatents4(LV, dag);
+        RandomGraph.fixLatents4(LV, dag);
         System.out.println("Variables set to be latent:" + TestRfciBsc.getLatents(dag));
 
         // simulate data from instantiated model

@@ -35,8 +35,8 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.Parameters;
@@ -492,7 +492,7 @@ public class TestGeneralResamplingTest {
             vars.add(new ContinuousVariable(Integer.toString(i)));
         }
 
-        return GraphUtils.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
+        return RandomGraph.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
     }
 
     private static Graph makeDiscreteDAG(int numLatentConfounders) {
@@ -507,7 +507,7 @@ public class TestGeneralResamplingTest {
         }
 
         // System.out.println("Making dag");
-        return GraphUtils.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
+        return RandomGraph.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
     }
 
 }
