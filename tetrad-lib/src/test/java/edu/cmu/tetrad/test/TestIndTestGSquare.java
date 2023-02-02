@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.DataPersistence;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestGSquare;
@@ -89,7 +89,7 @@ public class TestIndTestGSquare {
         String filename = this.discreteFiles[1];
         System.out.println("Loading " + filename);
 
-        return DataPersistence.loadDiscreteData(new File(filename),
+        return SimpleDataLoader.loadDiscreteData(new File(filename),
                 "//", '\"', "-99", true, Delimiter.TAB);
     }
 }

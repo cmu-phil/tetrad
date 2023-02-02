@@ -60,7 +60,7 @@ public class LoadDataAndGraphs implements Simulation {
 
                     this.stdout.println("Loading data from " + file1.getAbsolutePath());
 
-                    DataSet ds = DataPersistence.loadContinuousData(file1, "//", '\"',
+                    DataSet ds = SimpleDataLoader.loadContinuousData(file1, "//", '\"',
                             "*", true, Delimiter.TAB);
 
                     this.dataSets.add(ds);

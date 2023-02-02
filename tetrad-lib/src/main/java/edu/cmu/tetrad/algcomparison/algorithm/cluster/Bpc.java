@@ -37,7 +37,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            ICovarianceMatrix cov = DataPersistence.getCovMatrix(dataSet);
+            ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataSet);
             double alpha = parameters.getDouble(Params.ALPHA);
 
             boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);

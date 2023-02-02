@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataPersistence;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.BDeuScore;
 import edu.cmu.tetrad.search.IndTestScore;
@@ -31,7 +31,7 @@ public class BDeuTest implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        BDeuScore score = new BDeuScore(DataPersistence.getDiscreteDataSet(dataSet));
+        BDeuScore score = new BDeuScore(SimpleDataLoader.getDiscreteDataSet(dataSet));
         score.setSamplePrior(parameters.getDouble(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         return new IndTestScore(score);

@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataPersistence;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -32,7 +32,7 @@ public class Kci implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        edu.cmu.tetrad.search.Kci kci = new edu.cmu.tetrad.search.Kci(DataPersistence.getContinuousDataSet(dataSet),
+        edu.cmu.tetrad.search.Kci kci = new edu.cmu.tetrad.search.Kci(SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA));
         kci.setApproximate(parameters.getBoolean(Params.KCI_USE_APPROMATION));
         kci.setWidthMultiplier(parameters.getDouble(Params.KERNEL_MULTIPLIER));

@@ -37,7 +37,7 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet dataSet = DataPersistence.getContinuousDataSet(dataModel);
+            DataSet dataSet = SimpleDataLoader.getContinuousDataSet(dataModel);
             dataSet = dataSet.copy();
 
             dataSet = DataUtils.standardizeData(dataSet);

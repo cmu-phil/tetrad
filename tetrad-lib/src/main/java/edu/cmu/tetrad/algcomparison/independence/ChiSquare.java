@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataPersistence;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndTestChiSquare;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -28,7 +28,7 @@ public class ChiSquare implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        return new IndTestChiSquare(DataPersistence.getDiscreteDataSet(dataSet), parameters.getDouble("alpha"));
+        return new IndTestChiSquare(SimpleDataLoader.getDiscreteDataSet(dataSet), parameters.getDouble("alpha"));
     }
 
     @Override

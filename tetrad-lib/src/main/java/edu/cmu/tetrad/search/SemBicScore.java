@@ -117,7 +117,7 @@ public class SemBicScore implements Score {
 
     @NotNull
     private ICovarianceMatrix getiCovarianceMatrix(DataSet dataSet) {
-        ICovarianceMatrix cov = DataPersistence.getCovarianceMatrix(dataSet);
+        ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataSet);
         return cov;
     }
 

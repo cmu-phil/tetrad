@@ -57,7 +57,7 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
                                 + "will orient the edges in the input graph using the data");
             }
 
-            DataSet dataSet = DataPersistence.getContinuousDataSet(dataModel);
+            DataSet dataSet = SimpleDataLoader.getContinuousDataSet(dataModel);
 
             Fask fask = new Fask(dataSet, new SemBicScore(dataSet), new IndTestFisherZ(dataSet, 0.01));
             fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);

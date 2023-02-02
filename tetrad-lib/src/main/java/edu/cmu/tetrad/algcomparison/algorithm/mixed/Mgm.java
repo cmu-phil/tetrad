@@ -69,7 +69,7 @@ public class Mgm implements Algorithm {
         }
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DataSet _ds = DataPersistence.getMixedDataSet(ds);
+            DataSet _ds = SimpleDataLoader.getMixedDataSet(ds);
 
             double mgmParam1 = parameters.getDouble(Params.MGM_PARAM1);
             double mgmParam2 = parameters.getDouble(Params.MGM_PARAM2);

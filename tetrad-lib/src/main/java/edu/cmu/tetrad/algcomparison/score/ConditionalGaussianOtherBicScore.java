@@ -2,7 +2,7 @@ package edu.cmu.tetrad.algcomparison.score;
 
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataPersistence;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ConditionalGaussianOtherScore;
@@ -30,7 +30,7 @@ public class ConditionalGaussianOtherBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         ConditionalGaussianOtherScore conditionalGaussianScore
-                = new ConditionalGaussianOtherScore(DataPersistence.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"));
+                = new ConditionalGaussianOtherScore(SimpleDataLoader.getMixedDataSet(dataSet), parameters.getDouble("structurePrior"));
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt("numCategoriesToDiscretize"));
         return conditionalGaussianScore;
     }

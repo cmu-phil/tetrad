@@ -39,7 +39,7 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
             for (int i = 1; i <= 20; i++) {
                 File f = new File(this.path, this.prefix + i + ".txt");
                 try {
-                    this.covs.add(DataPersistence.parseCovariance(f, "//", DelimiterType.WHITESPACE, '\"', "*"));
+                    this.covs.add(SimpleDataLoader.loadCovarianceMatrix(f, "//", DelimiterType.WHITESPACE, '\"', "*"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

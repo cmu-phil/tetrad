@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.DataPersistence;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DMSearch;
@@ -1184,7 +1184,7 @@ public class TestDM {
         DataSet data = null;
 
         try {
-            data = DataPersistence.loadContinuousData(file, "//", '"',
+            data = SimpleDataLoader.loadContinuousData(file, "//", '"',
                     "*", true, Delimiter.WHITESPACE);
         } catch (IOException e) {
             System.out.println("Failed to read in data.");
