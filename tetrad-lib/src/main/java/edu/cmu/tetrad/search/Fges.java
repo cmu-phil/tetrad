@@ -114,14 +114,14 @@ public final class Fges implements GraphSearch, GraphScorer {
     // Where printed output is sent.
     private PrintStream out = System.out;
 
-    // A initial adjacencies graph.
+    // An initial adjacencies graph.
     private Graph adjacencies = null;
 
     // The graph being constructed.
     private Graph graph;
 
     // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
-    // The ordering doesn't matter; it just have to be transitive.
+    // The ordering doesn't matter; it just has to be transitive.
     private int arrowIndex = 0;
 
     // The BIC score of the model.
@@ -144,7 +144,7 @@ public final class Fges implements GraphSearch, GraphScorer {
      * Construct a Score and pass it in here. The totalScore should return a
      * positive value in case of conditional dependence and a negative values in
      * case of conditional independence. See Chickering (2002), locally
-     * consistent scoring criterion. This by default uses all of the processors on
+     * consistent scoring criterion. This by default uses all the processors on
      * the machine.
      */
     public Fges(Score score) {
@@ -336,50 +336,6 @@ public final class Fges implements GraphSearch, GraphScorer {
      */
     public void setBoundGraph(Graph boundGraph) {
         this.boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
-    }
-
-    /**
-     * For BIC totalScore, a multiplier on the penalty term. For continuous
-     * searches.
-     *
-     * @deprecated Use the getters on the individual scores instead.
-     */
-    public double getPenaltyDiscount() {
-        if (score instanceof ISemBicScore) {
-            return ((ISemBicScore) score).getPenaltyDiscount();
-        } else {
-            return 2.0;
-        }
-    }
-
-    /**
-     * For BIC totalScore, a multiplier on the penalty term. For continuous
-     * searches.
-     *
-     * @deprecated Use the setters on the individual scores instead.
-     */
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        if (score instanceof ISemBicScore) {
-            ((ISemBicScore) score).setPenaltyDiscount(penaltyDiscount);
-        }
-    }
-
-    /**
-     * @deprecated Use the setters on the individual scores instead.
-     */
-    public void setSamplePrior(double samplePrior) {
-        if (score instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) score).setSamplePrior(samplePrior);
-        }
-    }
-
-    /**
-     * @deprecated Use the setters on the individual scores instead.
-     */
-    public void setStructurePrior(double expectedNumParents) {
-        if (score instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) score).setStructurePrior(expectedNumParents);
-        }
     }
 
     /**
@@ -962,7 +918,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         return true;
     }
 
-    // Returns true iff every semidirected path from from to to contains an element of cond.
+    // Returns true iff every semidirected path contains an element of cond.
     private boolean semidirectedPathCondition(Node from, Node to, Set<Node> cond) {
         if (from == to) throw new IllegalArgumentException();
 
