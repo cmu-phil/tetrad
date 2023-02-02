@@ -7,6 +7,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -93,7 +94,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
                 Graph structureGraph = mimbuild.search(partition, latentNames, cov);
                 GraphUtils.circleLayout(structureGraph, 200, 200, 150);
-                GraphUtils.fruchtermanReingoldLayout(structureGraph);
+                LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 
                 ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
 
@@ -101,7 +102,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
                 Graph fullGraph = mimbuild.getFullGraph();
                 GraphUtils.circleLayout(fullGraph, 200, 200, 150);
-                GraphUtils.fruchtermanReingoldLayout(fullGraph);
+                LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
                 return fullGraph;
             }

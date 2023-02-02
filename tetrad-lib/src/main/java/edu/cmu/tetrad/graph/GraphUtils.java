@@ -69,20 +69,6 @@ public final class GraphUtils {
         }
     }
 
-    public static void kamadaKawaiLayout(Graph graph, boolean randomlyInitialized, double naturalEdgeLength, double springConstant, double stopEnergy) {
-        KamadaKawaiLayout layout = new KamadaKawaiLayout(graph);
-        layout.setRandomlyInitialized(randomlyInitialized);
-        layout.setNaturalEdgeLength(naturalEdgeLength);
-        layout.setSpringConstant(springConstant);
-        layout.setStopEnergy(stopEnergy);
-        layout.doLayout();
-    }
-
-    public static void fruchtermanReingoldLayout(Graph graph) {
-        FruchtermanReingoldLayout layout = new FruchtermanReingoldLayout(graph);
-        layout.doLayout();
-    }
-
     /**
      * Arranges the nodes in the result graph according to their positions in
      * the source graph.
@@ -117,13 +103,6 @@ public final class GraphUtils {
         }
 
         return arrangedAll;
-    }
-
-    public static void arrangeByLayout(Graph graph, HashMap<String, PointXy> layout) {
-        for (Node node : graph.getNodes()) {
-            PointXy point = layout.get(node.getName());
-            node.setCenter(point.getX(), point.getY());
-        }
     }
 
     /**

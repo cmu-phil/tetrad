@@ -66,7 +66,7 @@ public class ExtractStructureModelWrapper extends GraphWrapper implements DoNotA
             throw new RuntimeException(e);
         }
 
-        GraphUtils.fruchtermanReingoldLayout(graph3);
+        LayoutUtil.fruchtermanReingoldLayout(graph3);
         setGraph(graph3);
 
         TetradLogger.getInstance().log("info", "\nGenerating CPDAG from DAG.");

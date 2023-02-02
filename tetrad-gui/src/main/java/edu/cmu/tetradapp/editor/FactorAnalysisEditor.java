@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetradapp.model.FactorAnalysisRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -76,7 +77,7 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
         display.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         GraphUtils.circleLayout(graph, 225, 200, 150);
-        GraphUtils.fruchtermanReingoldLayout(graph);
+        LayoutUtil.fruchtermanReingoldLayout(graph);
 
         GraphWorkbench workbench = new GraphWorkbench(graph);
 

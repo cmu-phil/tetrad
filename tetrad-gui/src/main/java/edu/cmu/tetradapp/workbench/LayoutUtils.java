@@ -545,7 +545,7 @@ public class LayoutUtils {
             double stopEnergy = Preferences.userRoot().getDouble(
                     "kamadaKawaiLayoutStopEnergy", 1.0);
 
-            GraphUtils.kamadaKawaiLayout(graph, initializeRandomly,
+            LayoutUtil.kamadaKawaiLayout(graph, initializeRandomly,
                     naturalEdgeLength, springConstant, stopEnergy);
             layoutEditable.layoutByGraph(graph);
             LayoutUtils.layout = Layout.kamadaKawai;
@@ -564,7 +564,7 @@ public class LayoutUtils {
             }
         }
 
-        GraphUtils.fruchtermanReingoldLayout(graph);
+        LayoutUtil.fruchtermanReingoldLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.fruchtermReingold;
     }

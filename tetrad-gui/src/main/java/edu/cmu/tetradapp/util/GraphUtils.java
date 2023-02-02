@@ -97,7 +97,7 @@ public class GraphUtils {
                         randomGraphConnected, true);
                 edu.cmu.tetrad.graph.GraphUtils.arrangeBySourceGraph(graph, _graph);
                 HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphPersistence.grabLayout(nodes);
-                edu.cmu.tetrad.graph.GraphUtils.arrangeByLayout(graph, layout);
+                LayoutUtil.arrangeByLayout(graph, layout);
             } else {
                 if (graphUniformlySelected) {
 
@@ -110,7 +110,7 @@ public class GraphUtils {
                             randomGraphConnected, 50000);
                     edu.cmu.tetrad.graph.GraphUtils.arrangeBySourceGraph(graph, _graph);
                     HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphPersistence.grabLayout(nodes);
-                    edu.cmu.tetrad.graph.GraphUtils.arrangeByLayout(graph, layout);
+                    LayoutUtil.arrangeByLayout(graph, layout);
                 } else {
                     if (graphChooseFixed) {
                         do {
@@ -123,7 +123,7 @@ public class GraphUtils {
                                     randomGraphConnected);
                             edu.cmu.tetrad.graph.GraphUtils.arrangeBySourceGraph(graph, _graph);
                             HashMap<String, PointXy> layout = edu.cmu.tetrad.graph.GraphPersistence.grabLayout(nodes);
-                            edu.cmu.tetrad.graph.GraphUtils.arrangeByLayout(graph, layout);
+                            LayoutUtil.arrangeByLayout(graph, layout);
                         } while (graph.getNumEdges() < newGraphNumEdges);
                     }
                 }

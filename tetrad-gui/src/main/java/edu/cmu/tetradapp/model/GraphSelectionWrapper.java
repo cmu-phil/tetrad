@@ -110,7 +110,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
         for (int i = 0; i < graphs.size(); i++) {
             Graph graph = selectionGraphs.get(i);
-            GraphUtils.fruchtermanReingoldLayout(graph);
+            LayoutUtil.fruchtermanReingoldLayout(graph);
         }
 
         // No variable is selected by default - Updated 11/19/2018 by Zhou

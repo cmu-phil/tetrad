@@ -221,7 +221,7 @@ public class DataGraphUtils {
 
         if (arrangeGraph) {
             edu.cmu.tetrad.graph.GraphUtils.circleLayout(graph1, 200, 200, 150);
-            edu.cmu.tetrad.graph.GraphUtils.fruchtermanReingoldLayout(graph1);
+            LayoutUtil.fruchtermanReingoldLayout(graph1);
         }
 
         return graph1;
@@ -267,7 +267,7 @@ public class DataGraphUtils {
             }
         }
 
-        GraphUtils.fruchtermanReingoldLayout(mim);
+        LayoutUtil.fruchtermanReingoldLayout(mim);
 
         return mim;
     }

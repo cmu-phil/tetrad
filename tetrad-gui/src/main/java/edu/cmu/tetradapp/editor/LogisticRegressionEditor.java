@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -139,7 +140,7 @@ public class LogisticRegressionEditor extends JPanel {
             print(regressionRunner.getResult(), regressionRunner.getAlpha());
             Graph outGraph = regressionRunner.getOutGraph();
             GraphUtils.circleLayout(outGraph, 200, 200, 150);
-            GraphUtils.fruchtermanReingoldLayout(outGraph);
+            LayoutUtil.fruchtermanReingoldLayout(outGraph);
             workbench.setGraph(outGraph);
             TetradLogger.getInstance().log("result", this.modelParameters.getText());
         });

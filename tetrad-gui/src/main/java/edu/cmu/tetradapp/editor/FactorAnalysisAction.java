@@ -142,7 +142,7 @@ public class FactorAnalysisAction extends AbstractAction {
         }
 
         GraphUtils.circleLayout(graph, 225, 200, 150);
-        GraphUtils.fruchtermanReingoldLayout(graph);
+        LayoutUtil.fruchtermanReingoldLayout(graph);
 
         GraphWorkbench workbench = new GraphWorkbench(graph);
 
