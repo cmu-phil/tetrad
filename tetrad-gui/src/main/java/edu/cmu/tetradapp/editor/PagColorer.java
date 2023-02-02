@@ -39,7 +39,7 @@ public class PagColorer extends JCheckBoxMenuItem {
      * clipboard.
      */
     public PagColorer(GraphWorkbench workbench) {
-        super("Add PAG Coloring");
+        super("Add/Remove PAG Coloring");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
@@ -53,10 +53,8 @@ public class PagColorer extends JCheckBoxMenuItem {
         setSelected(workbench.isDoPagColoring());
 
         addItemListener(e -> {
-            if (workbench.isDoPagColoring()) {
+            if (!isSelected()) {
                 workbench.setDoPagColoring(false);
-                setSelected(false);
-//                JOptionPane.showMessageDialog(workbench, "PAG coloring is turned off.");
             } else {
                 int ret = JOptionPane.showConfirmDialog(workbench,
                         breakDown("Would you like to verify that this is a legal PAG?", 60),
@@ -66,24 +64,17 @@ public class PagColorer extends JCheckBoxMenuItem {
                     String reason = breakDown(legalPag.getReason(), 60);
 
                     if (!legalPag.isLegalPag()) {
-                        int ret2 = JOptionPane.showConfirmDialog(workbench, "This is not a legal PAG--one reason is as follows:" +
-                                        "\n\n" + reason +
-                                        "\n\nProceed anyway?",
-                                "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                        if (ret2 == JOptionPane.YES_NO_OPTION) {
-                            _workbench.setDoPagColoring(true);
-                            setSelected(true);
-
-                        } else {
-                            _workbench.setDoPagColoring(false);
-                            setSelected(false);
-                        }
+                        JOptionPane.showMessageDialog(workbench,
+                                "This is not a legal PAG--one reason is as follows:" +
+                                        "\n\n" + reason + ".",
+                                "Legal PAG check",
+                                JOptionPane.WARNING_MESSAGE);
                     } else {
-                        _workbench.setDoPagColoring(true);
-                        setSelected(true);
                         JOptionPane.showMessageDialog(workbench, reason);
                     }
                 }
+
+                _workbench.setDoPagColoring(true);
             }
         });
 
