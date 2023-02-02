@@ -39,7 +39,7 @@ public class PagColorer extends JCheckBoxMenuItem {
      * clipboard.
      */
     public PagColorer(GraphWorkbench workbench) {
-        super("Add PAG Coloring if a Legal PAG");
+        super("Add PAG Coloring");
 
         if (workbench == null) {
             throw new NullPointerException("Desktop must not be null.");
@@ -49,31 +49,40 @@ public class PagColorer extends JCheckBoxMenuItem {
 
         Graph graph = workbench.getGraph();
 
+        _workbench.setDoPagColoring(workbench.isDoPagColoring());
         setSelected(workbench.isDoPagColoring());
 
         addItemListener(e -> {
-            workbench.setDoPagColoring(!workbench.isDoPagColoring());
-
-            if (!workbench.isDoPagColoring()) {
-                JOptionPane.showMessageDialog(workbench, "Legal PAG coloring is turned off.");
+            if (workbench.isDoPagColoring()) {
                 workbench.setDoPagColoring(false);
+                setSelected(false);
+//                JOptionPane.showMessageDialog(workbench, "PAG coloring is turned off.");
             } else {
-                SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(graph);
+                int ret = JOptionPane.showConfirmDialog(workbench,
+                        breakDown("Would you like to verify that this is a legal PAG?", 60),
+                        "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (ret == JOptionPane.YES_NO_OPTION) {
+                    SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(graph);
+                    String reason = breakDown(legalPag.getReason(), 60);
 
-                String reason = legalPag.getReason() + ".";
-                reason = breakDown(reason, 60);
+                    if (!legalPag.isLegalPag()) {
+                        int ret2 = JOptionPane.showConfirmDialog(workbench, "This is not a legal PAG--one reason is as follows:" +
+                                        "\n\n" + reason +
+                                        "\n\nProceed anyway?",
+                                "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                        if (ret2 == JOptionPane.YES_NO_OPTION) {
+                            _workbench.setDoPagColoring(true);
+                            setSelected(true);
 
-                if (!legalPag.isLegalPag()) {
-                    int ret = JOptionPane.showConfirmDialog(workbench, "This is not a legal PAG--one reason is as follows:" +
-                                    "\n\n" + reason +
-                                    "\n\nProceed anyway?",
-                            "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                    if (ret == JOptionPane.YES_NO_OPTION) {
+                        } else {
+                            _workbench.setDoPagColoring(false);
+                            setSelected(false);
+                        }
+                    } else {
                         _workbench.setDoPagColoring(true);
+                        setSelected(true);
+                        JOptionPane.showMessageDialog(workbench, reason);
                     }
-                } else {
-                    JOptionPane.showMessageDialog(workbench, reason);
-//                    _workbench.setDoPagColoring(false);
                 }
             }
         });
