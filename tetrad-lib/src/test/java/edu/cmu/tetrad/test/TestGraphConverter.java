@@ -61,7 +61,7 @@ public class TestGraphConverter {
         graph.addNondirectedEdge(x5, x2);
         graph.addPartiallyOrientedEdge(x3, x5);
 
-        Graph convertedGraph = GraphConverter.convert(
+        Graph convertedGraph = GraphUtils.convert(
                 "X1-->X2,X1---X3,X2<->X4,X3o->X4," + "X5<--X1,X5o-oX2,X5<-oX3");
 
         convertedGraph = GraphUtils.replaceNodes(convertedGraph, graph.getNodes());

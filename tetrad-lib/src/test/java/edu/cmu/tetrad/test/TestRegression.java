@@ -55,7 +55,7 @@ public class TestRegression {
         }
 
         RandomUtil.getInstance().setSeed(342233L);
-        Graph graph = new Dag(GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 5, 3,
+        Graph graph = new Dag(RandomGraph.randomGraphRandomForwardEdges(nodes, 0, 5, 3,
                 3, 3, false, true));
 
         SemPm pm = new SemPm(graph);

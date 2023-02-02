@@ -155,7 +155,7 @@ public class TestPc {
     private void checkSearch(String inputGraph, String outputGraph) {
 
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphUtils.convert(inputGraph);
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -166,7 +166,7 @@ public class TestPc {
         Graph resultGraph = pc.search(new Fas(independence), independence.getVariables());
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphUtils.convert(outputGraph);
 
         // PrintUtil out problem and graphs.
 
@@ -182,7 +182,7 @@ public class TestPc {
      */
     private void checkWithKnowledge(Knowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
+        Graph graph = GraphUtils.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -196,7 +196,7 @@ public class TestPc {
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
+        Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");
 
 //        System.out.println("Knowledge = " + knowledge);
         System.out.println("True graph = " + graph);
@@ -209,7 +209,7 @@ public class TestPc {
     @Test
     public void checknumCPDAGsToStore() {
         for (int i = 0; i < 2; i++) {
-            Graph graph = GraphUtils.randomGraph(100, 0, 100, 100,
+            Graph graph = RandomGraph.randomGraph(100, 0, 100, 100,
                     100, 100, false);
             IndTestDSep test = new IndTestDSep(graph);
             Pc pc = new Pc(test);
@@ -313,7 +313,7 @@ public class TestPc {
                 names.add(name);
             }
 
-            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
+            Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
                     10, 10, 10, false);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
@@ -677,7 +677,7 @@ public class TestPc {
                 names.add(name);
             }
 
-            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
+            Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
                     10, 10, 10, false);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);

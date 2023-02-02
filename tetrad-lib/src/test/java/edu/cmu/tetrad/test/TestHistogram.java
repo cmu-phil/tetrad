@@ -29,8 +29,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Histogram;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -60,7 +60,7 @@ public final class TestHistogram {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 5, 30, 15, 15, false));
+        Dag trueGraph = new Dag(RandomGraph.randomGraph(nodes, 0, 5, 30, 15, 15, false));
         final int sampleSize = 1000;
 
         // Continuous

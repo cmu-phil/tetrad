@@ -69,7 +69,7 @@ public class TestGFci {
             vars.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph dag = GraphUtils.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false);
+        Graph dag = RandomGraph.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false);
 
         DataSet data;
 
@@ -171,7 +171,7 @@ public class TestGFci {
         final int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
-            Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,
+            Graph dag = RandomGraph.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
 
             GFci gfci = new GFci(new IndTestDSep(dag), new GraphScore(dag));
@@ -202,7 +202,7 @@ public class TestGFci {
             variables.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph g = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
+        Graph g = RandomGraph.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
 
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm);
@@ -233,7 +233,7 @@ public class TestGFci {
     public void testRandomDiscreteData() {
         final int sampleSize = 1000;
 
-        Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
+        Graph g = GraphUtils.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(g);
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);

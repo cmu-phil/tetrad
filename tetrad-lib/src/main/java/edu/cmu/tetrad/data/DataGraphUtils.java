@@ -48,7 +48,7 @@ public class DataGraphUtils {
 
         do {
 //            dag = DataGraphUtils.randomGraphUniform(numStructuralNodes, numStructuralNodes, numStructuralEdges, 4, 3, 3, false);
-            dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numStructuralEdges,
+            dag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numStructuralEdges,
                     30, 15, 15, false, true);
         } while (dag.getNumEdges() != numStructuralEdges);
 

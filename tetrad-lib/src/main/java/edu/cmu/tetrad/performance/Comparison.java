@@ -3,10 +3,7 @@ package edu.cmu.tetrad.performance;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.ScoreType;
@@ -62,7 +59,7 @@ public class Comparison {
                     nodes.add(new ContinuousVariable("X" + (i + 1)));
                 }
 
-                trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                trueDag = RandomGraph.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
                 if (params.getDataType() == null) {
@@ -82,7 +79,7 @@ public class Comparison {
                     nodes.add(new DiscreteVariable("X" + (i + 1), 3));
                 }
 
-                trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                trueDag = RandomGraph.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
                 if (params.getDataType() == null) {

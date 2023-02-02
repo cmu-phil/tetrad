@@ -82,7 +82,7 @@ public class TestFges {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
+        Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
 //        printDegreeDistribution(dag, System.out);
 
         int[] causalOrdering = new int[vars.size()];
@@ -155,7 +155,7 @@ public class TestFges {
             vars.add(new ContinuousVariable("X" + i));
         }
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+        Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false, true);
 //        printDegreeDistribution(dag, out);
 
@@ -195,7 +195,7 @@ public class TestFges {
 
     @Test
     public void testExplore3() {
-        Graph graph = GraphConverter.convert("A-->B,A-->C,B-->D,C-->D");
+        Graph graph = GraphUtils.convert("A-->B,A-->C,B-->D,C-->D");
         Fges fges = new Fges(new GraphScore(graph));
         Graph CPDAG = fges.search();
         assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
@@ -203,7 +203,7 @@ public class TestFges {
 
     @Test
     public void testExplore4() {
-        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
+        Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
         Fges fges = new Fges(new GraphScore(graph));
         Graph CPDAG = fges.search();
         assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
@@ -211,7 +211,7 @@ public class TestFges {
 
     @Test
     public void testExplore5() {
-        Graph graph = GraphConverter.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
+        Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,A->E,B-->F,C-->F,D-->F,E-->F");
         Fges fges = new Fges(new GraphScore(graph));
         fges.setFaithfulnessAssumed(false);
         Graph CPDAG = fges.search();
@@ -300,7 +300,7 @@ public class TestFges {
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
-            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             GraphScore fgesScore = new GraphScore(dag);
 
             Fges fges = new Fges(fgesScore);
@@ -609,7 +609,7 @@ public class TestFges {
     private void checkSearch(String inputGraph, String outputGraph) {
 
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphUtils.convert(inputGraph);
 
         // Set up search.
         Fges fges = new Fges(new GraphScore(graph));
@@ -618,7 +618,7 @@ public class TestFges {
         Graph resultGraph = fges.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphUtils.convert(outputGraph);
 
         // PrintUtil out problem and graphs.
 
@@ -635,7 +635,7 @@ public class TestFges {
     private void checkWithKnowledge(String inputGraph, String answerGraph,
                                     Knowledge knowledge) {
         // Set up graph and node objects.
-        Graph input = GraphConverter.convert(inputGraph);
+        Graph input = GraphUtils.convert(inputGraph);
 
         // Set up search.
         Fges fges = new Fges(new GraphScore(input));
@@ -647,7 +647,7 @@ public class TestFges {
         Graph result = fges.search();
 
         // Build comparison graph.
-        Graph answer = GraphConverter.convert(answerGraph);
+        Graph answer = GraphUtils.convert(answerGraph);
 //        Graph answer = new PC(new IndTestDSep(input)).search();
 
 //        System.out.println("Input = " + input);
@@ -666,7 +666,7 @@ public class TestFges {
         final int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
-            Graph dag = GraphUtils.randomDag(numNodes, 0, aveDegree * numNodes / 2, 10, 10, 10, false);
+            Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomDag(numNodes, 0, aveDegree * numNodes / 2, 10, 10, 10, false);
             Fges fges = new Fges(new GraphScore(dag));
             fges.setFaithfulnessAssumed(true);
             fges.setVerbose(true);
@@ -704,7 +704,7 @@ public class TestFges {
                 for (int sampleSize : sampleSizeOptions) {
                     for (int q = 0; q < 1; q++) {
                         for (int i = 0; i < numIterations; i++) {
-                            Graph dag = GraphUtils.randomDag(numNodes, 0,
+                            Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomDag(numNodes, 0,
                                     (avgDegree * numNodes) / 2, 100, 100, 100, false);
                             SemPm pm = new SemPm(dag);
                             SemIm im = new SemIm(pm, params);
@@ -746,8 +746,8 @@ public class TestFges {
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
-            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
-            Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph knowledgeGraph = edu.cmu.tetrad.graph.RandomGraph.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
 
             Knowledge knowledge = forbiddenKnowledge(knowledgeGraph);
@@ -780,8 +780,8 @@ public class TestFges {
 
         for (int i = 0; i < numIterations; i++) {
             System.out.println("Iteration " + (i + 1));
-            Graph dag = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
-            Graph knowledgeGraph = GraphUtils.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
+            Graph knowledgeGraph = edu.cmu.tetrad.graph.RandomGraph.randomDag(numNodes, 0, numNodes, 10, 10, 10, false);
             knowledgeGraph = GraphUtils.replaceNodes(knowledgeGraph, dag.getNodes());
 
             Knowledge knowledge = requiredKnowledge(knowledgeGraph);
@@ -1038,7 +1038,7 @@ public class TestFges {
                 nodes.add(new ContinuousVariable(name));
             }
 
-            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 60,
+            Graph dag = edu.cmu.tetrad.graph.RandomGraph.randomGraphRandomForwardEdges(nodes, 0, 60,
                     10, 10, 10, false);
             DataSet data = getMixedDataAjStyle(dag, numCategories, 1000);
 
@@ -1417,7 +1417,7 @@ public class TestFges {
     public void test7() {
         for (int i = 0; i < 10; i++) {
 
-            Graph graph = GraphUtils.randomGraph(10, 0,
+            Graph graph = edu.cmu.tetrad.graph.RandomGraph.randomGraph(10, 0,
                     10, 10, 10, 10, false);
             SemPm semPm = new SemPm(graph);
             SemIm semIm = new SemIm(semPm);
@@ -1568,7 +1568,7 @@ public class TestFges {
         final int N = 1000;
         final int numCond = 3;
 
-        Graph graph = GraphUtils.randomGraph(10, 0, 20, 100,
+        Graph graph = edu.cmu.tetrad.graph.RandomGraph.randomGraph(10, 0, 20, 100,
                 100, 100, false);
         List<Node> nodes = graph.getNodes();
         buildIndexing(nodes);

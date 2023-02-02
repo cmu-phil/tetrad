@@ -23,10 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
@@ -55,7 +52,7 @@ public class TestDagScorer {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph dag = new Dag(GraphUtils.randomGraph(nodes, 0, 10,
+        Graph dag = new Dag(RandomGraph.randomGraph(nodes, 0, 10,
                 30, 15, 15, false));
 
         SemPm pm = new SemPm(dag);

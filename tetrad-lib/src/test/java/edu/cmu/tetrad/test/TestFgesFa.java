@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GesMe;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -38,7 +38,7 @@ public class TestFgesFa {
 
     public void test1() {
 
-        Graph graph = GraphUtils.randomGraph(10, 0, 10,
+        Graph graph = RandomGraph.randomGraph(10, 0, 10,
                 100, 100, 100, false);
 
         System.out.println(graph);

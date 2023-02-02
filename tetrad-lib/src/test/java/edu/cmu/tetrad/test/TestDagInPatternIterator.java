@@ -48,7 +48,7 @@ public class TestDagInPatternIterator {
         }
 
         RandomUtil.getInstance().setSeed(342233L);
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(nodes, 0, 10, 3,
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(nodes, 0, 10, 3,
                 3, 3, false, true);
         Graph p = new EdgeListGraph(graph);
 
@@ -173,7 +173,7 @@ public class TestDagInPatternIterator {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag dag1 = new Dag(GraphUtils.randomGraph(nodes1, 0, 3,
+        Dag dag1 = new Dag(RandomGraph.randomGraph(nodes1, 0, 3,
                 30, 15, 15, false));
 
         Graph CPDAG = SearchGraphUtils.cpdagForDag(dag1);

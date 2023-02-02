@@ -1,10 +1,7 @@
 package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.data.DataGraphUtils;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.PointXy;
 
@@ -95,7 +92,7 @@ public class GraphUtils {
             }
 
             if (graphRandomFoward) {
-                graph = edu.cmu.tetrad.graph.GraphUtils.randomGraphRandomForwardEdges(nodes, newGraphNumLatents,
+                graph = RandomGraph.randomGraphRandomForwardEdges(nodes, newGraphNumLatents,
                         newGraphNumEdges, randomGraphMaxDegree, randomGraphMaxIndegree, randomGraphMaxOutdegree,
                         randomGraphConnected, true);
                 edu.cmu.tetrad.graph.GraphUtils.arrangeBySourceGraph(graph, _graph);
@@ -104,7 +101,7 @@ public class GraphUtils {
             } else {
                 if (graphUniformlySelected) {
 
-                    graph = edu.cmu.tetrad.graph.GraphUtils.randomGraphUniform(nodes,
+                    graph = RandomGraph.randomGraphUniform(nodes,
                             newGraphNumLatents,
                             newGraphNumEdges,
                             randomGraphMaxDegree,
@@ -117,7 +114,7 @@ public class GraphUtils {
                 } else {
                     if (graphChooseFixed) {
                         do {
-                            graph = edu.cmu.tetrad.graph.GraphUtils.randomGraph(nodes,
+                            graph = RandomGraph.randomGraph(nodes,
                                     newGraphNumLatents,
                                     newGraphNumEdges,
                                     randomGraphMaxDegree,
@@ -133,13 +130,13 @@ public class GraphUtils {
             }
 
             if (addCycles) {
-                graph = edu.cmu.tetrad.graph.GraphUtils.cyclicGraph2(numNodes, newGraphNumEdges, 8);
+                graph = RandomGraph.randomCyclicGraph2(numNodes, newGraphNumEdges, 8);
             } else {
                 graph = new EdgeListGraph(graph);
             }
 
             int randomGraphMinNumCycles = parameters.getInt("randomGraphMinNumCycles", 0);
-            edu.cmu.tetrad.graph.GraphUtils.addTwoCycles(graph, randomGraphMinNumCycles);
+            RandomGraph.addTwoCycles(graph, randomGraphMinNumCycles);
         }
 
         return graph;
@@ -173,7 +170,7 @@ public class GraphUtils {
 
     private static Graph makeRandomScaleFree(int numNodes, int numLatents, double alpha,
                                              double beta, double deltaIn, double deltaOut) {
-        return edu.cmu.tetrad.graph.GraphUtils.scaleFreeGraph(numNodes, numLatents,
+        return RandomGraph.randomScaleFreeGraph(numNodes, numLatents,
                 alpha, beta, deltaIn, deltaOut);
     }
 

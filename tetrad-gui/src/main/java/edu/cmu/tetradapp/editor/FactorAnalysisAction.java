@@ -206,7 +206,7 @@ public class FactorAnalysisAction extends AbstractAction {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 9,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 9,
                 30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);

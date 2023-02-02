@@ -337,7 +337,7 @@ public class DataForCalibration_RFCI {
         }
 
         System.out.println("Making dag");
-        return GraphUtils.randomGraphRandomForwardEdges(vars, numLatentConfounders, numEdges, 30, 15, 15, false, true);//randomGraphRandomForwardEdges(vars, 0,numEdges);
+        return RandomGraph.randomGraphRandomForwardEdges(vars, numLatentConfounders, numEdges, 30, 15, 15, false, true);//randomGraphRandomForwardEdges(vars, 0,numEdges);
     }
 
     public DataSet bootStrapSampling(DataSet data, int bootsrapSampleSize) {

@@ -97,7 +97,7 @@ public class TestSemIm {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
+        Graph randomGraph = new Dag(RandomGraph.randomGraph(nodes, 0, 8, 30, 15, 15, false));
         SemPm semPm1 = new SemPm(randomGraph);
         SemIm semIm1 = new SemIm(semPm1);
 
@@ -116,7 +116,7 @@ public class TestSemIm {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
+        Graph randomGraph = new Dag(RandomGraph.randomGraph(nodes, 0, 8, 30, 15, 15, false));
         SemPm semPm = new SemPm(randomGraph);
         SemIm semIm = new SemIm(semPm);
 

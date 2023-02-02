@@ -1078,7 +1078,7 @@ public final class TestGrasp {
 
         for (int i = 0; i < 100; i++) {
 
-            Graph g = GraphUtils.randomGraph(20, 0, 40,
+            Graph g = RandomGraph.randomGraph(20, 0, 40,
                     100, 100, 100, false);
             SemPm pm = new SemPm(g);
             SemIm im = new SemIm(pm);
@@ -2679,7 +2679,7 @@ public final class TestGrasp {
 
         for (int i = 0; i < 40; i++) {
 
-            Graph trueGraph = GraphUtils.randomGraph(20, 8, 40,
+            Graph trueGraph = RandomGraph.randomGraph(20, 8, 40,
                     100, 100, 100, false);
 
             Graph truePag = SearchGraphUtils.dagToPag(trueGraph);
@@ -2796,7 +2796,7 @@ public final class TestGrasp {
     }
 
     public void testDsep() {
-        Graph graph = GraphUtils.randomGraph(20, 0, 40, 100, 100, 100, false);
+        Graph graph = RandomGraph.randomGraph(20, 0, 40, 100, 100, 100, false);
 
         for (Node x : graph.getNodes()) {
             List<Node> parents = graph.getParents(x);
@@ -3193,7 +3193,7 @@ public final class TestGrasp {
 
                         int numEdges = (int) (a * m / 2.);
 
-                        Graph graph = GraphUtils.randomGraph(m, 0,
+                        Graph graph = RandomGraph.randomGraph(m, 0,
                                 numEdges, 100, 100, 100, false);
 
                         Parameters parameters = new Parameters();
@@ -3294,7 +3294,7 @@ public final class TestGrasp {
         // This just checks to make sure the causalOrdering method is behaving correctly.
 
         for (int k = 0; k < 100; k++) {
-            Graph g = GraphUtils.randomGraph(10, 0, 15, 100,
+            Graph g = RandomGraph.randomGraph(10, 0, 15, 100,
                     100, 100, false);
             IndTestDSep test = new IndTestDSep(g);
             GraphScore score = new GraphScore(g);
@@ -3325,7 +3325,7 @@ public final class TestGrasp {
         int all = 0;
 
         for (int k = 0; k < 100; k++) {
-            Graph g = GraphUtils.randomGraph(20, 0, 30, 100,
+            Graph g = RandomGraph.randomGraph(20, 0, 30, 100,
                     100, 100, false);
             SemPm pm = new SemPm(g);
             SemIm im = new SemIm(pm);
@@ -3367,7 +3367,7 @@ public final class TestGrasp {
 
     //    @Test
     public void testAddUnfaithfulIndependencies() {
-        Graph graph = GraphUtils.randomGraph(7, 0, 15, 100, 100,
+        Graph graph = RandomGraph.randomGraph(7, 0, 15, 100, 100,
                 100, false);
 
         System.out.println("Source = " + graph);//SearchGraphUtils.cpdagForDag(graph));

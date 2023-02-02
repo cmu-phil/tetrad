@@ -111,11 +111,11 @@ public class Comparison2 {
                 nodes.add(new ContinuousVariable("X" + (i + 1)));
             }
 
-            trueDag = GraphUtils.randomGraphRandomForwardEdges(
+            trueDag = RandomGraph.randomGraphRandomForwardEdges(
                     nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
-                trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                trueDag = RandomGraph.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                 trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
                 System.out.println("Creating Time Lag Graph : " + trueDag);
@@ -207,11 +207,11 @@ public class Comparison2 {
                     nodes.add(new ContinuousVariable("X" + (i + 1)));
                 }
 
-                trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                trueDag = RandomGraph.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
-                    trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                    trueDag = RandomGraph.randomGraphRandomForwardEdges(
                             nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
                     trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
                     System.out.println("Creating Time Lag Graph : " + trueDag);
@@ -272,7 +272,7 @@ public class Comparison2 {
                     nodes.add(new DiscreteVariable("X" + (i + 1), 3));
                 }
 
-                trueDag = GraphUtils.randomGraphRandomForwardEdges(
+                trueDag = RandomGraph.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
 
                 if (params.getDataType() == null) {

@@ -194,7 +194,7 @@ public class RBExperiments {
         // set the "numLatentConfounders" percentage of variables to be latent
         int numVars = im.getNumNodes();
         int LV = (int) Math.floor(numLatentConfounders * numVars);
-        GraphUtils.fixLatents4(LV, dag);
+        RandomGraph.fixLatents4(LV, dag);
         System.out.println("Variables set to be latent:" + getLatents(dag));
 
         // create output directory and files

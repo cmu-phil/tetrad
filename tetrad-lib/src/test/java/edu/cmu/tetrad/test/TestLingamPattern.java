@@ -58,7 +58,7 @@ public class TestLingamPattern {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 6,
                 4, 4, 4, false));
 
         List<Distribution> variableDistributions = new ArrayList<>();

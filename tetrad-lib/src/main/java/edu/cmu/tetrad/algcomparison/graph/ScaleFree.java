@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ public class ScaleFree implements RandomGraph {
 
     @Override
     public edu.cmu.tetrad.graph.Graph createGraph(Parameters parameters) {
-        return GraphUtils.scaleFreeGraph(
+        return edu.cmu.tetrad.graph.RandomGraph.randomScaleFreeGraph(
                 parameters.getInt("numMeasures") + parameters.getInt("numLatents"),
                 parameters.getInt("numLatents"),
                 parameters.getDouble("scaleFreeAlpha"),
