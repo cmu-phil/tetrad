@@ -28,7 +28,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import javax.swing.*;
 
 /**
- * Checks to see if a graph is a legal PAG.
+ * Colors a graph using the PAG coloring. Optionally checks to make sure it's  legal PAG.
  *
  * @author Joseph Ramsey jdramsey@andrew.cmu.edu
  */
