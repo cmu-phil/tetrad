@@ -175,7 +175,7 @@ public class SemGraphWrapper implements GraphSource,
             setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        GraphUtils.circleLayout(getGraph(), 200, 200, 150);
+        LayoutUtil.circleLayout(getGraph(), 200, 200, 150);
     }
 
     public SemGraphWrapper(BayesPmWrapper wrapper) {

@@ -32,6 +32,70 @@ public class LayoutUtil {
     }
 
     /**
+     * Arranges the nodes in the graph in a circle.
+     *
+     * @param radius  The radius of the circle in pixels; a good default is 150.
+     * @param centerx The x coordinate for the center of the layout.
+     * @param centery The y coordinate for the center of the layout.
+     */
+    public static void circleLayout(Graph graph, int centerx, int centery, int radius) {
+        if (graph == null) {
+            return;
+        }
+        List<Node> nodes = graph.getNodes();
+        Collections.sort(nodes);
+
+        double rad = 6.28 / nodes.size();
+        double phi = .75 * 6.28;    // start from 12 o'clock.
+
+        for (Node node : nodes) {
+            int centerX = centerx + (int) (radius * Math.cos(phi));
+            int centerY = centery + (int) (radius * Math.sin(phi));
+
+            node.setCenterX(centerX);
+            node.setCenterY(centerY);
+
+            phi += rad;
+        }
+    }
+
+    /**
+     * Arranges the nodes in the result graph according to their positions in
+     * the source graph.
+     *
+     * @return true if all the nodes were arranged, false if not.
+     */
+    public static boolean arrangeBySourceGraph(Graph resultGraph, Graph sourceGraph) {
+        if (resultGraph == null) {
+            throw new IllegalArgumentException("Graph must not be null.");
+        }
+
+        if (sourceGraph == null) {
+            circleLayout(resultGraph, 200, 200, 150);
+            return true;
+        }
+
+        boolean arrangedAll = true;
+
+        // There is a source graph. Position the nodes in the
+        // result graph correspondingly.
+        for (Node o : resultGraph.getNodes()) {
+            String name = o.getName();
+            Node sourceNode = sourceGraph.getNode(name);
+
+            if (sourceNode == null) {
+                arrangedAll = false;
+                continue;
+            }
+
+            o.setCenterX(sourceNode.getCenterX());
+            o.setCenterY(sourceNode.getCenterY());
+        }
+
+        return arrangedAll;
+    }
+
+    /**
      * Lays out a graph by placing springs between the nodes and letting the system
      * settle (one node at a time).
      *
@@ -110,7 +174,7 @@ public class LayoutUtil {
         //============================PUBLIC METHODS==========================//
 
         public void doLayout() {
-            GraphUtils.circleLayout(this.graph, 300, 300, 200);
+            circleLayout(this.graph, 300, 300, 200);
 
             this.monitor = new ProgressMonitor(null, "Energy settling...",
                     "Energy = ?", 0, 100);
@@ -576,7 +640,7 @@ public class LayoutUtil {
         //============================PUBLIC METHODS==========================//
 
         public void doLayout() {
-            GraphUtils.circleLayout(this.graph, 300, 300, 200);
+            circleLayout(this.graph, 300, 300, 200);
 
             List<List<Node>> components = this.graph.paths().connectedComponents();
 

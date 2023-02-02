@@ -127,7 +127,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
             setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        GraphUtils.circleLayout(getGraph(), 200, 200, 150);
+        LayoutUtil.circleLayout(getGraph(), 200, 200, 150);
     }
 
     public DagWrapper(BayesPmWrapper wrapper) {

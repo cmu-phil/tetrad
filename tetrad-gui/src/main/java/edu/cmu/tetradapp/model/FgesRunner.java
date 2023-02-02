@@ -22,10 +22,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.Triple;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -206,11 +203,11 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
         Graph graph = this.fges.search();
 
         if (getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+            LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (((Knowledge) getParams().get("knowledge", new Knowledge())).isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, (Knowledge) getParams().get("knowledge", new Knowledge()));
         } else {
-            GraphUtils.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.circleLayout(graph, 200, 200, 150);
         }
 
         setResultGraph(graph);

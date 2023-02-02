@@ -78,7 +78,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 }
 
                 Graph structureGraph = mimbuild.search(partition, latentNames, cov);
-                GraphUtils.circleLayout(structureGraph, 200, 200, 150);
+                LayoutUtil.circleLayout(structureGraph, 200, 200, 150);
                 LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 
                 ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
@@ -86,7 +86,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
 
                 Graph fullGraph = mimbuild.getFullGraph();
-                GraphUtils.circleLayout(fullGraph, 200, 200, 150);
+                LayoutUtil.circleLayout(fullGraph, 200, 200, 150);
                 LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
                 return fullGraph;

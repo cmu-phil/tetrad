@@ -220,7 +220,7 @@ public class DataGraphUtils {
         }
 
         if (arrangeGraph) {
-            edu.cmu.tetrad.graph.GraphUtils.circleLayout(graph1, 200, 200, 150);
+            LayoutUtil.circleLayout(graph1, 200, 200, 150);
             LayoutUtil.fruchtermanReingoldLayout(graph1);
         }
 

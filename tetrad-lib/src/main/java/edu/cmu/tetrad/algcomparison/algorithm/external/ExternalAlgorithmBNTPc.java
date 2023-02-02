@@ -2,10 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphPersistence;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
@@ -75,7 +72,7 @@ public class ExternalAlgorithmBNTPc extends ExternalAlgorithm {
             System.out.println("Loading graph from " + file.getAbsolutePath());
             Graph graph = GraphPersistence.loadGraphBNTPcMatrix(dataSet.getVariables(), dataSet2);
 
-            GraphUtils.circleLayout(graph, 225, 200, 150);
+            LayoutUtil.circleLayout(graph, 225, 200, 150);
 
             return graph;
         } catch (IOException e) {

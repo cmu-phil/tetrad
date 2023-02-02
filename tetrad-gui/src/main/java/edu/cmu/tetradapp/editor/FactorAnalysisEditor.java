@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetradapp.model.FactorAnalysisRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -76,7 +75,7 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
         display.setEditable(false);
         display.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
-        GraphUtils.circleLayout(graph, 225, 200, 150);
+        LayoutUtil.circleLayout(graph, 225, 200, 150);
         LayoutUtil.fruchtermanReingoldLayout(graph);
 
         GraphWorkbench workbench = new GraphWorkbench(graph);
@@ -130,10 +129,10 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
 
     protected void doDefaultArrangement(Graph resultGraph) {
         if (getLatestWorkbenchGraph() != null) {   //(alreadyLaidOut) {
-            GraphUtils.arrangeBySourceGraph(resultGraph,
+            LayoutUtil.arrangeBySourceGraph(resultGraph,
                     getLatestWorkbenchGraph());
         } else {
-            GraphUtils.circleLayout(resultGraph, 200, 200, 150);
+            LayoutUtil.circleLayout(resultGraph, 200, 200, 150);
         }
     }
 

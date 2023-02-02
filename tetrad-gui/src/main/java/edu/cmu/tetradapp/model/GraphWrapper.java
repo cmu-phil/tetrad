@@ -133,7 +133,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        GraphUtils.circleLayout(getGraph(), 200, 200, 150);
+        LayoutUtil.circleLayout(getGraph(), 200, 200, 150);
     }
 
     public GraphWrapper(GeneralizedSemImWrapper wrapper) {

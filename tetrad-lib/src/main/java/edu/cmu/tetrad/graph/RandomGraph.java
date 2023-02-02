@@ -80,7 +80,7 @@ public class RandomGraph {
         // dag. Arrange the nodes in a circle.
         fixLatents1(numLatentConfounders, dag);
 
-        GraphUtils.circleLayout(dag, 200, 200, 150);
+        LayoutUtil.circleLayout(dag, 200, 200, 150);
 
         return dag;
     }
@@ -180,7 +180,7 @@ public class RandomGraph {
         fixLatents4(numLatentConfounders, dag);
 
         if (layoutAsCircle) {
-            GraphUtils.circleLayout(dag, 200, 200, 150);
+            LayoutUtil.circleLayout(dag, 200, 200, 150);
         }
 
         return dag;
@@ -274,7 +274,7 @@ public class RandomGraph {
 
         fixLatents1(numLatentConfounders, G);
 
-        GraphUtils.circleLayout(G, 200, 200, 150);
+        LayoutUtil.circleLayout(G, 200, 200, 150);
 
         return G;
     }
@@ -474,7 +474,7 @@ public class RandomGraph {
             }
         }
 
-        GraphUtils.circleLayout(graph, 200, 200, 150);
+        LayoutUtil.circleLayout(graph, 200, 200, 150);
 
         return graph;
     }
@@ -578,7 +578,7 @@ public class RandomGraph {
             }
         }
 
-        GraphUtils.circleLayout(graph, 200, 200, 150);
+        LayoutUtil.circleLayout(graph, 200, 200, 150);
 
         return graph;
     }
@@ -886,7 +886,7 @@ public class RandomGraph {
             }
 
             //        System.out.println("Arranging in circle.");
-            GraphUtils.circleLayout(dag, 200, 200, 150);
+            LayoutUtil.circleLayout(dag, 200, 200, 150);
 
             //System.out.println("DAG conversion completed.");
 

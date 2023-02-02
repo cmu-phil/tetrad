@@ -23,7 +23,6 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ClusterUtils;
@@ -148,7 +147,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         CovarianceMatrix cov = new CovarianceMatrix(data);
 
         Graph structureGraph = mimbuild.search(partition, latentNames, cov);
-        GraphUtils.circleLayout(structureGraph, 200, 200, 150);
+        LayoutUtil.circleLayout(structureGraph, 200, 200, 150);
         LayoutUtil.fruchtermanReingoldLayout(structureGraph);
 
         ICovarianceMatrix latentsCov = mimbuild.getLatentsCov();
@@ -156,7 +155,7 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         TetradLogger.getInstance().log("details", "Latent covs = \n" + latentsCov);
 
         Graph fullGraph = mimbuild.getFullGraph();
-        GraphUtils.circleLayout(fullGraph, 200, 200, 150);
+        LayoutUtil.circleLayout(fullGraph, 200, 200, 150);
         LayoutUtil.fruchtermanReingoldLayout(fullGraph);
 
         setResultGraph(fullGraph);

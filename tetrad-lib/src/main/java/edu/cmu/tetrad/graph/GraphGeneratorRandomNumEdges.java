@@ -242,7 +242,7 @@ public final class GraphGeneratorRandomNumEdges {
             }
         }
 
-        GraphUtils.circleLayout(dag, 200, 200, 150);
+        LayoutUtil.circleLayout(dag, 200, 200, 150);
         return dag;
     }
 
