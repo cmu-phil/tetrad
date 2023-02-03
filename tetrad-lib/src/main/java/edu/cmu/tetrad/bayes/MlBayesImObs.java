@@ -758,11 +758,11 @@ public final class MlBayesImObs implements BayesIm {
 //        return simulateData(sampleSize, latentDataSaved);
 //    }
 
-    public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(seed);
-        return simulateDataHelper(dataSet, latentDataSaved);
-    }
+//    public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateDataHelper(dataSet, latentDataSaved);
+//    }
 
     /**
      * Simulates a sample with the given sample size.

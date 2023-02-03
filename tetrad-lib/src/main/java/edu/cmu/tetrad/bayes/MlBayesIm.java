@@ -931,20 +931,20 @@ public final class MlBayesIm implements BayesIm {
 //        return simulateData(sampleSize, latentDataSaved);
 //    }
 
-    public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
-        RandomUtil.getInstance().setSeed(seed);
-
-        // Get a tier ordering and convert it to an int array.
-        Graph graph = getBayesPm().getDag();
-        List<Node> tierOrdering = graph.paths().getCausalOrdering(graph.getNodes());
-        int[] tiers = new int[tierOrdering.size()];
-
-        for (int i = 0; i < tierOrdering.size(); i++) {
-            tiers[i] = getNodeIndex(tierOrdering.get(i));
-        }
-
-        return simulateDataHelper(dataSet, latentDataSaved, tiers);
-    }
+//    public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
+//        RandomUtil.getInstance().setSeed(seed);
+//
+//        // Get a tier ordering and convert it to an int array.
+//        Graph graph = getBayesPm().getDag();
+//        List<Node> tierOrdering = graph.paths().getCausalOrdering(graph.getNodes());
+//        int[] tiers = new int[tierOrdering.size()];
+//
+//        for (int i = 0; i < tierOrdering.size(); i++) {
+//            tiers[i] = getNodeIndex(tierOrdering.get(i));
+//        }
+//
+//        return simulateDataHelper(dataSet, latentDataSaved, tiers);
+//    }
 
     /**
      * Simulates a sample with the given sample size.
