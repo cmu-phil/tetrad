@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.util;
 
-import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
@@ -29,7 +28,6 @@ import org.apache.commons.math3.random.Well44497b;
 
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.RandomAccess;
 
 /**
@@ -53,7 +51,7 @@ public class RandomUtil {
      * The singleton instance.
      */
     private static final RandomUtil randomUtil = new RandomUtil();
-    private static final int SHUFFLE_THRESHOLD        =    5;
+    private static final int SHUFFLE_THRESHOLD = 5;
     private RandomGenerator randomGenerator;
 
 
@@ -77,19 +75,20 @@ public class RandomUtil {
      * This is just the RandomUtil.shuffle method (thanks!) but using the Tetrad
      * RandomUtil to get random numbers. The purpose of this copying is to allow
      * shuffles to happen deterministically given the Randomutils seed.
+     *
      * @param list The list to be shuffled.
      */
     public static void shuffle(List<?> list) {
         int size = list.size();
         if (size < SHUFFLE_THRESHOLD || list instanceof RandomAccess) {
-            for (int i=size; i>1; i--)
-                swap(list, i-1, getInstance().nextInt(i));
+            for (int i = size; i > 1; i--)
+                swap(list, i - 1, getInstance().nextInt(i));
         } else {
             Object[] arr = list.toArray();
 
             // Shuffle array
-            for (int i=size; i>1; i--)
-                swap(arr, i-1, getInstance().nextInt(i));
+            for (int i = size; i > 1; i--)
+                swap(arr, i - 1, getInstance().nextInt(i));
 
             // Dump array back into list
             // instead of using a raw type here, it's possible to capture
