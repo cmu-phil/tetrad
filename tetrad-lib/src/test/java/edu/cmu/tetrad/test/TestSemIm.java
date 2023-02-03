@@ -210,8 +210,8 @@ public class TestSemIm {
         B.set(1, 0, 5);
         B.set(1, 1, 0);
 
-        Matrix I = TetradAlgebra.identity(2);
-        Matrix iMinusB = TetradAlgebra.identity(2).minus(B);
+        Matrix I = Matrix.identity(2);
+        Matrix iMinusB = Matrix.identity(2).minus(B);
         Matrix reduced = iMinusB.inverse();
         Vector e = new Vector(2);
 

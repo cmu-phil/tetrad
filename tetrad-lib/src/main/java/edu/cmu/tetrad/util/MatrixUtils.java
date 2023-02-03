@@ -317,7 +317,7 @@ public final class MatrixUtils {
      * @return the identity matrix of the given order.
      */
     public static double[][] identity(int size) {
-        return TetradAlgebra.identity(size).toArray();
+        return Matrix.identity(size).toArray();
     }
 
     /**
@@ -454,7 +454,7 @@ public final class MatrixUtils {
 
         final int sampleSize = 10000;
 
-        Matrix iMinusBInverse = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef).inverse();
+        Matrix iMinusBInverse = Matrix.identity(edgeCoef.rows()).minus(edgeCoef).inverse();
 
         Matrix sample = new Matrix(sampleSize, edgeCoef.columns());
         Vector e = new Vector((edgeCoef.columns()));

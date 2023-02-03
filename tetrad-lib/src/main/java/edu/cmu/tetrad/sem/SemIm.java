@@ -1494,7 +1494,7 @@ public final class SemIm implements IM, ISemIm {
 
         // Calculate inv(I - edgeCoefC)
         Matrix B = edgeCoef().transpose();
-        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix iMinusBInv = Matrix.identity(B.rows()).minus(B).inverse();
 
         // Pick error values e, for each calculate inv * e.
         Matrix sim = new Matrix(sampleSize, numVars);
@@ -1558,7 +1558,7 @@ public final class SemIm implements IM, ISemIm {
         // Calculate inv(I - edgeCoefC)
         Matrix edgeCoef = edgeCoef().copy().transpose();
 
-        Matrix iMinusB = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
+        Matrix iMinusB = Matrix.identity(edgeCoef.rows()).minus(edgeCoef);
 
         Matrix inv = iMinusB.inverse();
 

@@ -23,8 +23,10 @@ package edu.cmu.tetrad.data;
 
 import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Vector;
-import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -304,7 +306,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         List<Node> variables = new ArrayList<>();
         Node x = new ContinuousVariable("X");
         variables.add(x);
-        Matrix matrix = TetradAlgebra.identity(1);
+        Matrix matrix = Matrix.identity(1);
         return new CovarianceMatrix(variables, matrix, 100); //
     }
 
