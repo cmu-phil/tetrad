@@ -331,13 +331,13 @@ public interface BayesIm extends VariableSource, IM, Simulator {
      */
     DataSet simulateData(int sampleSize, boolean latentDataSaved);
 
-    /**
-     * Simulates a sample with the given sample size.
-     *
-     * @param sampleSize the sample size.
-     * @return the simulated sample as a DataSet.
-     */
-    DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved);
+//    /**
+//     * Simulates a sample with the given sample size.
+//     *
+//     * @param sampleSize the sample size.
+//     * @return the simulated sample as a DataSet.
+//     */
+//    DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved);
 
     /**
      * Overwrites the given dataSet with a new simulated dataSet, to avoid

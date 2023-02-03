@@ -10,5 +10,5 @@ public interface Simulator extends TetradSerializable {
 
     DataSet simulateData(int sampleSize, boolean latentDataSaved);
 
-    DataSet simulateData(int sampleSize, long sampleSeed, boolean latentDataSaved);
+//    DataSet simulateData(int sampleSize, long sampleSeed, boolean latentDataSaved);
 }

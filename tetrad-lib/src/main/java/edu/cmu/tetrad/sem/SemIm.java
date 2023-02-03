@@ -1219,20 +1219,20 @@ public final class SemIm implements IM, ISemIm {
         return latentDataSaved ? fullData : DataUtils.restrictToMeasured(fullData);
     }
 
-    /**
-     * This simulate method uses the implied covariance metrix directly to
-     * simulate data, instead of going tier by tier. It should work for cyclic
-     * graphs as well as acyclic graphs.
-     *
-     * @param sampleSize how many data points in sample
-     * @param seed       a seed for random number generation
-     */
-    @Override
-    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(seed);
-        return simulateData(sampleSize, latentDataSaved);
-    }
+//    /**
+//     * This simulate method uses the implied covariance metrix directly to
+//     * simulate data, instead of going tier by tier. It should work for cyclic
+//     * graphs as well as acyclic graphs.
+//     *
+//     * @param sampleSize how many data points in sample
+//     * @param seed       a seed for random number generation
+//     */
+//    @Override
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateData(sampleSize, latentDataSaved);
+//    }
 
     /**
      * Simulates data from this Sem using a Cholesky decomposition of the

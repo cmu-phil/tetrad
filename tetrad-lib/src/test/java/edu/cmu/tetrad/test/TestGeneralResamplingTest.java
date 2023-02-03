@@ -41,12 +41,14 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Aug 17, 2017 2:28:48 PM
@@ -134,7 +136,9 @@ public class TestGeneralResamplingTest {
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
-        DataSet data = im.simulateData(numCases, seed, false);
+        RandomUtil.getInstance().setSeed(seed);
+
+        DataSet data = im.simulateData(numCases,false);
 
         Parameters parameters = new Parameters();
         parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
@@ -253,7 +257,9 @@ public class TestGeneralResamplingTest {
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
-        DataSet data = im.simulateData(numCases, seed, false);
+        RandomUtil.getInstance().setSeed(seed);
+
+        DataSet data = im.simulateData(numCases,false);
 
         Parameters parameters = new Parameters();
         parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
@@ -375,7 +381,9 @@ public class TestGeneralResamplingTest {
         BayesPm pm = new BayesPm(dag, 2, 3);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
 
-        DataSet data = im.simulateData(numCases, seed, false);
+        RandomUtil.getInstance().setSeed(seed);
+
+        DataSet data = im.simulateData(numCases, false);
 
         Parameters parameters = new Parameters();
         parameters.set(Params.STRUCTURE_PRIOR, structurePrior);

@@ -791,24 +791,24 @@ public final class DirichletBayesIm implements BayesIm {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * Simulates a random sample with the number of cases equal to
-     * <code>sampleSize</code>.
-     *
-     * @param sampleSize      the sample size.
-     * @param seed            the random number generator seed allows you recreate the
-     *                        simulated data by passing in the same seed (so you don't have to store
-     *                        the sample data
-     * @param latentDataSaved true iff data for latent variables should be
-     *                        included in the simulated data set.
-     * @return the simulated sample as a DataSet.
-     */
-    public DataSet simulateData(int sampleSize, long seed,
-                                boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(seed);
-        return simulateData(sampleSize, latentDataSaved);
-    }
+//    /**
+//     * Simulates a random sample with the number of cases equal to
+//     * <code>sampleSize</code>.
+//     *
+//     * @param sampleSize      the sample size.
+//     * @param seed            the random number generator seed allows you recreate the
+//     *                        simulated data by passing in the same seed (so you don't have to store
+//     *                        the sample data
+//     * @param latentDataSaved true iff data for latent variables should be
+//     *                        included in the simulated data set.
+//     * @return the simulated sample as a DataSet.
+//     */
+//    public DataSet simulateData(int sampleSize, long seed,
+//                                boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateData(sampleSize, latentDataSaved);
+//    }
 
     /**
      * Simulates a sample with the given sample size.

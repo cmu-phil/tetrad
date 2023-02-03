@@ -55,6 +55,10 @@ public class SemSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
+        if (parameters.getLong(Params.SEED) != -1L) {
+            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+        }
+
         Graph graph = this.randomGraph.createGraph(parameters);
 
         this.dataSets = new ArrayList<>();
@@ -134,6 +138,7 @@ public class SemSimulation implements Simulation {
         parameters.add(Params.SIMULATION_ERROR_TYPE);
         parameters.add(Params.SIMULATION_PARAM1);
         parameters.add(Params.SIMULATION_PARAM2);
+        parameters.add(Params.SEED);
 
         return parameters;
     }

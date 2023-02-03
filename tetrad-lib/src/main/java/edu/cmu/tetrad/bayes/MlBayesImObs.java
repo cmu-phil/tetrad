@@ -743,20 +743,20 @@ public final class MlBayesImObs implements BayesIm {
         return fullData;
     }
 
-    /**
-     * Simulates a sample with the given sample size.
-     *
-     * @param sampleSize the sample size.
-     * @param seed       the random number generator seed allows you recreate the
-     *                   simulated data by passing in the same seed (so you don't have to store
-     *                   the sample data
-     * @return the simulated sample as a DataSet.
-     */
-    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(seed);
-        return simulateData(sampleSize, latentDataSaved);
-    }
+//    /**
+//     * Simulates a sample with the given sample size.
+//     *
+//     * @param sampleSize the sample size.
+//     * @param seed       the random number generator seed allows you recreate the
+//     *                   simulated data by passing in the same seed (so you don't have to store
+//     *                   the sample data
+//     * @return the simulated sample as a DataSet.
+//     */
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateData(sampleSize, latentDataSaved);
+//    }
 
     public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
         RandomUtil random = RandomUtil.getInstance();
