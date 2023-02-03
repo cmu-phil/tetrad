@@ -434,7 +434,7 @@ public class TestFges {
         int fn2 = 0;
 
         for (int i = 0; i < numSamples; i++) {
-            Collections.shuffle(nodes);
+            RandomUtil.shuffle(nodes);
             Node x = nodes.get(0);
             Node y = nodes.get(1);
 
@@ -921,7 +921,7 @@ public class TestFges {
 
         List<Node> nodes = g.getNodes();
 
-        Collections.shuffle(nodes);
+        RandomUtil.shuffle(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
             if (i < nodes.size() / 2) {
@@ -1581,7 +1581,7 @@ public class TestFges {
         int count = 1;
 
         for (int i = 0; i < 10000; i++) {
-            Collections.shuffle(nodes);
+            RandomUtil.shuffle(nodes);
 
             Node x = nodes.get(0);
             Node y = nodes.get(1);

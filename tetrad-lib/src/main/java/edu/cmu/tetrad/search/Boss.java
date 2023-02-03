@@ -10,8 +10,8 @@ import org.jetbrains.annotations.NotNull;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.util.Collections.shuffle;
 
 /**
  * Implements the BOSS algorithm.

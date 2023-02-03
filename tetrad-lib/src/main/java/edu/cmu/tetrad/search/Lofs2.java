@@ -1662,7 +1662,7 @@ public class Lofs2 {
         setDataSets(this.dataSets);
 
         Set<Edge> edgeList1 = graph.getEdges();
-//        Collections.shuffle(edgeList1);
+//        RandomUtil.shuffle(edgeList1);
 
         for (Edge adj : edgeList1) {
             Node x = adj.getNode1();

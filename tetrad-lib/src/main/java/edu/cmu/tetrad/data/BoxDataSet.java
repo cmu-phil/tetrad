@@ -24,6 +24,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -1140,7 +1141,7 @@ public final class BoxDataSet implements DataSet {
             permutation.add(i);
         }
 
-        Collections.shuffle(permutation);
+        RandomUtil.shuffle(permutation);
 
         DataBox data2 = this.dataBox.like();
 

@@ -72,9 +72,9 @@ public class TestFisherZCalibration {
         int ds = 0;
 
         for (int i = 0; i < 2000; i++) {
-            Collections.shuffle(variables);
-            Collections.shuffle(variables);
-            Collections.shuffle(variables);
+            RandomUtil.shuffle(variables);
+            RandomUtil.shuffle(variables);
+            RandomUtil.shuffle(variables);
 
             Node x = variables.get(0);
             Node y = variables.get(1);

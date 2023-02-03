@@ -34,9 +34,9 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.util.Collections.shuffle;
 
 /**
  * GesSearch is an implementation of the GES algorithm, as specified in
@@ -179,6 +179,10 @@ public final class Bridges implements GraphSearch, GraphScorer {
     }
 
     public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    public Bridges(int depth) {
         this.depth = depth;
     }
 

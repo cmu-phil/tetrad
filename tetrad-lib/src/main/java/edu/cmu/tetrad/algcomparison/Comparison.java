@@ -1198,7 +1198,7 @@ public class Comparison {
                 for (int i = 0; i < numDataModels; i++) {
                     indices.add(i);
                 }
-                Collections.shuffle(indices);
+                RandomUtil.shuffle(indices);
 
                 List<DataModel> dataModels = new ArrayList<>();
                 int randomSelectionSize = algorithmWrapper.getAlgorithmSpecificParameters().getInt(

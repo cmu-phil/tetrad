@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,9 +12,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static java.util.Collections.shuffle;
-
 
 /**
  * Implements the GRASP algorithms, with various execution flags.
@@ -57,7 +55,7 @@ public class BossMB {
 
         for (int r = 0; r < this.numStarts; r++) {
             if ((r == 0 && !this.useDataOrder) || r > 0) {
-                shuffle(order);
+                RandomUtil.shuffle(order);
             }
 
             this.start = System.currentTimeMillis();

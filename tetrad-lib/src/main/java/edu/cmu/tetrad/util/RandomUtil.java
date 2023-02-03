@@ -27,7 +27,10 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.RandomAccess;
 
 /**
  * Provides a common random number generator to be used throughout Tetrad, to avoid problems that happen when random
@@ -50,6 +53,7 @@ public class RandomUtil {
      * The singleton instance.
      */
     private static final RandomUtil randomUtil = new RandomUtil();
+    private static final int SHUFFLE_THRESHOLD        =    5;
     private RandomGenerator randomGenerator;
 
 
@@ -67,6 +71,50 @@ public class RandomUtil {
      */
     public static RandomUtil getInstance() {
         return RandomUtil.randomUtil;
+    }
+
+    /**
+     * This is just the RandomUtil.shuffle method (thanks!) but using the Tetrad
+     * RandomUtil to get random numbers. The purpose of this copying is to allow
+     * shuffles to happen deterministically given the Randomutils seed.
+     * @param list The list to be shuffled.
+     */
+    public static void shuffle(List<?> list) {
+        int size = list.size();
+        if (size < SHUFFLE_THRESHOLD || list instanceof RandomAccess) {
+            for (int i=size; i>1; i--)
+                swap(list, i-1, getInstance().nextInt(i));
+        } else {
+            Object[] arr = list.toArray();
+
+            // Shuffle array
+            for (int i=size; i>1; i--)
+                swap(arr, i-1, getInstance().nextInt(i));
+
+            // Dump array back into list
+            // instead of using a raw type here, it's possible to capture
+            // the wildcard but it will require a call to a supplementary
+            // private method
+            ListIterator it = list.listIterator();
+            for (Object e : arr) {
+                it.next();
+                it.set(e);
+            }
+        }
+    }
+
+    private static void swap(List<?> list, int i, int j) {
+        // instead of using a raw type here, it's possible to capture
+        // the wildcard but it will require a call to a supplementary
+        // private method
+        final List l = list;
+        l.set(i, l.set(j, l.get(i)));
+    }
+
+    private static void swap(Object[] arr, int i, int j) {
+        Object tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
     }
 
     //=======================================PUBLIC METHODS=================================//

@@ -542,7 +542,7 @@ public class MixedUtils {
         for (int i = 0; i < a.length; i++) {
             l.add(i, a[i]);
         }
-        Collections.shuffle(l);
+        RandomUtil.shuffle(l);
         for (int i = 0; i < a.length; i++) {
             out[i] = l.get(i);
         }
@@ -556,7 +556,7 @@ public class MixedUtils {
         for (int i = 0; i < a.length; i++) {
             l.add(i, a[i]);
         }
-        Collections.shuffle(l);
+        RandomUtil.shuffle(l);
         for (int i = 0; i < a.length; i++) {
             out[i] = l.get(i);
         }

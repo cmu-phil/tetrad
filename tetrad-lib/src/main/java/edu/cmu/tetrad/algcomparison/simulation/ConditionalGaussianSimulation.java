@@ -153,11 +153,11 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         List<Node> nodes = G.getNodes();
 
-        Collections.shuffle(nodes);
+        RandomUtil.shuffle(nodes);
 
         if (this.shuffledOrder == null) {
             List<Node> shuffledNodes = new ArrayList<>(nodes);
-            Collections.shuffle(shuffledNodes);
+            RandomUtil.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
 

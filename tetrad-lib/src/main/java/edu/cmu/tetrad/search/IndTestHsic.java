@@ -33,6 +33,7 @@ import edu.cmu.tetrad.search.kernel.KernelGaussian;
 import edu.cmu.tetrad.search.kernel.KernelUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
@@ -241,7 +242,7 @@ public final class IndTestHsic implements IndependenceTest {
                 for (int j = 0; j < m; j++) {
                     indicesList.add(j);
                 }
-                Collections.shuffle(indicesList);
+                RandomUtil.shuffle(indicesList);
                 for (int j = 0; j < m; j++) {
                     double shuffleVal = this.dataSet.getDouble(indicesList.get(j), ycol);
                     shuffleData.setDouble(j, ycol, shuffleVal);
@@ -252,7 +253,7 @@ public final class IndTestHsic implements IndependenceTest {
                 for (List<Integer> integers : clusterAssign) {
                     List<Integer> shuffleCluster = new ArrayList<>(integers);
 
-                    Collections.shuffle(shuffleCluster);
+                    RandomUtil.shuffle(shuffleCluster);
 
                     for (int k = 0; k < shuffleCluster.size(); k++) {
                         // first swap y;

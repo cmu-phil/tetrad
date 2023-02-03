@@ -11,6 +11,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -120,7 +121,7 @@ public class SemThenDiscretize implements Simulation {
 
         if (this.shuffledOrder == null) {
             List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
-            Collections.shuffle(shuffledNodes);
+            RandomUtil.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
 

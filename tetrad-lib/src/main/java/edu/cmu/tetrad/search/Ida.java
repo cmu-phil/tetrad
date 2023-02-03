@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -57,7 +58,7 @@ public class Ida {
         Map<Node, Double> allEffects = calculateMinimumEffectsOnY(y);
 
         List<Node> nodes = new ArrayList<>(allEffects.keySet());
-        Collections.shuffle(nodes);
+        RandomUtil.shuffle(nodes);
 
         nodes.sort((o1, o2) -> Double.compare(abs(allEffects.get(o2)), abs(allEffects.get(o1))));
 

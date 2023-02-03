@@ -11,6 +11,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.csb.mgm.MixedUtils;
 import org.apache.commons.lang3.RandomUtils;
 
@@ -134,11 +135,11 @@ public class LeeHastieSimulation implements Simulation {
 
         List<Node> nodes = dag.getNodes();
 
-        Collections.shuffle(nodes);
+        RandomUtil.shuffle(nodes);
 
         if (this.shuffledOrder == null) {
             List<Node> shuffledNodes = new ArrayList<>(nodes);
-            Collections.shuffle(shuffledNodes);
+            RandomUtil.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
 
