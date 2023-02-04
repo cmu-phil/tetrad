@@ -5,6 +5,7 @@ import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -13,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Implements a degenerate Gaussian BIC score for FGES.
@@ -193,7 +194,7 @@ public class SemBicScoreDGWrapper implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(log(this.dataSet.getNumRows()));
+        return (int) FastMath.ceil(log(this.dataSet.getNumRows()));
     }
 
     @Override

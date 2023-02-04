@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -35,7 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Implements a degenerate Gaussian BIC score for FGES.
@@ -62,7 +63,7 @@ public class DegenerateGaussianScore implements Score {
     private final Map<Integer, List<Integer>> embedding;
 
     // A constant.
-    private static final double L2PE = log(2.0 * Math.PI * Math.E);
+    private static final double L2PE = log(2.0 * FastMath.PI * FastMath.E);
 
     private final Map<Node, Integer> nodesHash;
 
@@ -263,7 +264,7 @@ public class DegenerateGaussianScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(log(this.dataSet.getNumRows()));
+        return (int) FastMath.ceil(log(this.dataSet.getNumRows()));
     }
 
     @Override

@@ -13,6 +13,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class FgesMeasurement implements Algorithm, HasKnowledge {
                 for (int i = 0; i < dataSet.getNumRows(); i++) {
                     for (int j = 0; j < dataSet.getNumColumns(); j++) {
                         double d = dataSet.getDouble(i, j);
-                        double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
                         dataSet.setDouble(i, j, d + norm);
                     }
                 }

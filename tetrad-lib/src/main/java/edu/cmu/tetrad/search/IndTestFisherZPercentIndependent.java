@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Calculates independence from pooled residuals.

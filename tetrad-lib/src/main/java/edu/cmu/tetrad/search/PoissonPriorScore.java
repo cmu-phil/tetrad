@@ -30,7 +30,7 @@ import org.apache.commons.math3.special.Gamma;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Implements Poisson prior score (Bryan).

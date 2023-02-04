@@ -28,6 +28,7 @@ import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Mult;
 import cern.jet.math.PlusMult;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * A translation from Tibshirani's 2008 Fortran implementation of glasso.
@@ -165,7 +166,7 @@ public class Glasso {
         for (int j = 0; j < n; j++) {
             for (int k = 0; k < n; k++) {
                 if (j == k) continue;
-                shr += Math.abs(ss.get(j, k));
+                shr += FastMath.abs(ss.get(j, k));
             }
         }
 
@@ -185,7 +186,7 @@ public class Glasso {
                 } else {
                     ww.set(j, j, ss.get(j, j) + rho.get(j, j));
                 }
-                wwi.set(j, j, 1.0 / Math.max(ww.get(j, j), eps));
+                wwi.set(j, j, 1.0 / FastMath.max(ww.get(j, j), eps));
             }
             return new Result(wwi, niter);
         }
@@ -307,7 +308,7 @@ public class Glasso {
                     ww.set(m, j, ww.get(j, m));
                 }
 
-                dlx = Math.max(dlx, sum_abs_diff(ww.viewColumn(m), ws));
+                dlx = FastMath.max(dlx, sum_abs_diff(ww.viewColumn(m), ws));
 //                xs(:,m)=x
                 xs.viewColumn(m).assign(x);
             }
@@ -327,7 +328,7 @@ public class Glasso {
 
         for (int i = 0; i < m.rows(); i++) {
             for (int j = 0; j < m.columns(); j++) {
-                sum += Math.abs(m.get(i, j));
+                sum += FastMath.abs(m.get(i, j));
             }
         }
 
@@ -338,7 +339,7 @@ public class Glasso {
         double sum = 0.0;
 
         for (int i = 0; i < x.size(); i++) {
-            sum += Math.abs(x.get(i) - y.get(i));
+            sum += FastMath.abs(x.get(i) - y.get(i));
         }
 
         return sum;
@@ -391,13 +392,13 @@ public class Glasso {
                 // a plus in the paper.
                 double t = s.get(j) + vv.get(j, j) * xj;
 
-                if (Math.abs(t) - ro.get(j) > 0.0) {
-                    x.set(j, Math.signum(t) * (Math.abs(t) - ro.get(j)) / vv.get(j, j));
+                if (FastMath.abs(t) - ro.get(j) > 0.0) {
+                    x.set(j, FastMath.signum(t) * (FastMath.abs(t) - ro.get(j)) / vv.get(j, j));
                 }
 
                 if (x.get(j) == xj) continue;
                 double del = x.get(j) - xj;
-                dlx = Math.max(dlx, Math.abs(del));
+                dlx = FastMath.max(dlx, FastMath.abs(del));
 
                 for (int i = 0; i < s.size(); i++) {
                     if (Thread.currentThread().isInterrupted()) {

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.Discretizer.Discretization;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ import java.util.Map;
 
 import static edu.cmu.tetrad.data.Discretizer.discretize;
 import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Implements a conditional Gaussian likelihood. Please note that this this likelihood will be maximal only if the
@@ -73,7 +74,7 @@ public class ConditionalGaussianLikelihood {
     private boolean discretize;
 
     // A constant.
-    private static final double LOG2PI = log(2.0 * Math.PI);
+    private static final double LOG2PI = log(2.0 * FastMath.PI);
 
     public void setRows(List<Integer> rows) {
         this.rows = rows;

@@ -21,6 +21,8 @@
 
 package edu.cmu.tetradapp.workbench;
 
+import org.apache.commons.math3.util.FastMath;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
@@ -82,10 +84,10 @@ class Rubberband extends JComponent {
      * initial location point to the point specified as the argument.
      */
     public void updateTrackPoint(Point p) {
-        int newLocX = Math.min(p.x, this.anchor.x);
-        int newLocY = Math.min(p.y, this.anchor.y);
-        int deltaX = Math.abs(p.x - this.anchor.x);
-        int deltaY = Math.abs(p.y - this.anchor.y);
+        int newLocX = FastMath.min(p.x, this.anchor.x);
+        int newLocY = FastMath.min(p.y, this.anchor.y);
+        int deltaX = FastMath.abs(p.x - this.anchor.x);
+        int deltaY = FastMath.abs(p.y - this.anchor.y);
         setLocation(newLocX, newLocY);
         setSize(deltaX, deltaY);
     }

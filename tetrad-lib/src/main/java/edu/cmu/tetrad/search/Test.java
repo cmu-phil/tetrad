@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.util.StatUtils;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ public class Test {
         List<Double> logs = new ArrayList<>();
 
         for (double _a : a) {
-            logs.add(Math.log(_a));
+            logs.add(FastMath.log(_a));
         }
 
         double sum = 0.0;
@@ -51,7 +52,7 @@ public class Test {
 
         double logsum = StatUtils.logsum(logs);
 
-        System.out.println(Math.exp(logsum) + " " + sum);
+        System.out.println(FastMath.exp(logsum) + " " + sum);
     }
 
 }

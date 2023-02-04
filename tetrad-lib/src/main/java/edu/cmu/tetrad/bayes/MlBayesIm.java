@@ -33,8 +33,8 @@ import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.pow;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.pow;
 
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm

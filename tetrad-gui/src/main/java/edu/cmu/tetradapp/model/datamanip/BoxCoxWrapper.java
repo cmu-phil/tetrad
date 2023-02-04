@@ -26,6 +26,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * @author Tyler
@@ -74,9 +75,9 @@ public class BoxCoxWrapper extends DataWrapper {
                 double d2;
 
                 if (lambda == 0.0) {
-                    d2 = Math.log(y);
+                    d2 = FastMath.log(y);
                 } else {
-                    d2 = (Math.pow(y, lambda) - 1.0) / lambda;
+                    d2 = (FastMath.pow(y, lambda) - 1.0) / lambda;
                 }
 
                 transformedData.setDouble(i, j, d2);
@@ -96,13 +97,13 @@ public class BoxCoxWrapper extends DataWrapper {
                 double d2;
 
                 if (lambda != 0 && y >= 0.0) {
-                    d2 = (Math.pow(y + 1.0, lambda) - 1.0) / lambda;
+                    d2 = (FastMath.pow(y + 1.0, lambda) - 1.0) / lambda;
                 } else if (lambda == 0 && y >= 0.0) {
-                    d2 = Math.log(y + 1.0);
+                    d2 = FastMath.log(y + 1.0);
                 } else if (lambda != 2 && y < 0.0) {
-                    d2 = (Math.pow(1.0 - y, 2.0 - lambda) - 1) / (lambda - 2.0);
+                    d2 = (FastMath.pow(1.0 - y, 2.0 - lambda) - 1) / (lambda - 2.0);
                 } else if (lambda == 2 && y < 0.0) {
-                    d2 = -Math.log(1.0 - y);
+                    d2 = -FastMath.log(1.0 - y);
                 } else {
                     throw new IllegalStateException("Impossible state.");
                 }

@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
-import static java.lang.Math.min;
+import static org.apache.commons.math3.util.FastMath.min;
 
 
 /**

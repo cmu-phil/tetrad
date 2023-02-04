@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Calculates the structural Hamming distance (SHD) between the estimated graph and
@@ -32,6 +33,6 @@ public class SHD implements Statistic {
 
     @Override
     public double getNormValue(double value) {
-        return 1.0 - Math.tanh(0.001 * value);
+        return 1.0 - FastMath.tanh(0.001 * value);
     }
 }

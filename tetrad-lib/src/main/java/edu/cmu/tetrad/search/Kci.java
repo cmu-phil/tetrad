@@ -18,12 +18,13 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.StatUtils.median;
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /***
  * Kernal Independence Test (KCI).
@@ -740,7 +741,7 @@ public class Kci implements IndependenceTest {
                 D = new Matrix(topIndices.size(), topIndices.size());
 
                 for (int i = 0; i < topIndices.size(); i++) {
-                    D.set(i, i, Math.sqrt(evxAll[topIndices.get(i)]));
+                    D.set(i, i, FastMath.sqrt(evxAll[topIndices.get(i)]));
                 }
 
                 RealMatrix V0 = svd.getV();

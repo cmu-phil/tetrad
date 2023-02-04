@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -511,7 +512,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     public int getMinChunk(int n) {
         // The minimum number of operations to do before parallelizing.
         int minChunk = 100;
-        return Math.max(n / this.maxThreads, minChunk);
+        return FastMath.max(n / this.maxThreads, minChunk);
     }
 
     class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
@@ -600,10 +601,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
-                int numNodesPerTask = Math.max(100, nodes.size() / TsFges2.this.maxThreads);
+                int numNodesPerTask = FastMath.max(100, nodes.size() / TsFges2.this.maxThreads);
 
                 for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
-                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
+                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, FastMath.min(nodes.size(), i + numNodesPerTask),
                             nodes, emptySet);
                     tasks.add(task);
                     task.fork();
@@ -1125,7 +1126,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         List<Node> TNeighbors = getTNeighbors(a, b);
         int _maxIndegree = this.maxIndegree == -1 ? 1000 : this.maxIndegree;
 
-        int _max = Math.min(TNeighbors.size(), _maxIndegree - this.graph.getIndegree(b));
+        int _max = FastMath.min(TNeighbors.size(), _maxIndegree - this.graph.getIndegree(b));
 
         Set<Set<Node>> previousCliques = new HashSet<>();
         previousCliques.add(new HashSet<>());
@@ -1947,7 +1948,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         int ntiers = this.knowledge.getNumTiers();
         int indx_tier = this.knowledge.isInWhichTier(x);
         int indy_tier = this.knowledge.isInWhichTier(y);
-        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
         List tier_x = this.knowledge.getTier(indx_tier);

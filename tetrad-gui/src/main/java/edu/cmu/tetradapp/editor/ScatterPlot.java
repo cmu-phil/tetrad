@@ -30,12 +30,13 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
+import org.apache.commons.math3.util.FastMath;
 
 import java.awt.geom.Point2D;
 import java.util.*;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * This is the scatterplot model class holding the necessary information to
@@ -118,7 +119,7 @@ public class ScatterPlot {
     }
 
     private double fisherz(double r) {
-        return 0.5 * Math.sqrt(getSampleSize() - 3.0) * (log(1.0 + r) - log(1.0 - r));
+        return 0.5 * FastMath.sqrt(getSampleSize() - 3.0) * (log(1.0 + r) - log(1.0 - r));
     }
 
     /**
@@ -128,7 +129,7 @@ public class ScatterPlot {
         double min = Double.POSITIVE_INFINITY;
         Vector<Point2D.Double> cleanedSampleValues = getSievedValues();
         for (Point2D.Double cleanedSampleValue : cleanedSampleValues) {
-            min = Math.min(min, cleanedSampleValue.getX());
+            min = FastMath.min(min, cleanedSampleValue.getX());
         }
         return min;
     }
@@ -140,7 +141,7 @@ public class ScatterPlot {
         double min = Double.POSITIVE_INFINITY;
         Vector<Point2D.Double> cleanedSampleValues = getSievedValues();
         for (Point2D.Double cleanedSampleValue : cleanedSampleValues) {
-            min = Math.min(min, cleanedSampleValue.getY());
+            min = FastMath.min(min, cleanedSampleValue.getY());
         }
         return min;
     }
@@ -152,7 +153,7 @@ public class ScatterPlot {
         double max = Double.NEGATIVE_INFINITY;
         Vector<Point2D.Double> cleanedSampleValues = getSievedValues();
         for (Point2D.Double cleanedSampleValue : cleanedSampleValues) {
-            max = Math.max(max, cleanedSampleValue.getX());
+            max = FastMath.max(max, cleanedSampleValue.getX());
         }
         return max;
     }
@@ -164,7 +165,7 @@ public class ScatterPlot {
         double max = Double.NEGATIVE_INFINITY;
         Vector<Point2D.Double> cleanedSampleValues = getSievedValues();
         for (Point2D.Double cleanedSampleValue : cleanedSampleValues) {
-            max = Math.max(max, cleanedSampleValue.getY());
+            max = FastMath.max(max, cleanedSampleValue.getY());
         }
         return max;
     }

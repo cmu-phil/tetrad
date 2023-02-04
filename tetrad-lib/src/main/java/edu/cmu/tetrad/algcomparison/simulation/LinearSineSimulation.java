@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -175,8 +176,8 @@ public class LinearSineSimulation implements Simulation {
                     double m0 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
                     double m1 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
                     for (int i = 1; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
-                        m0 = Math.min(m0, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
-                        m1 = Math.max(m1, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
+                        m0 = FastMath.min(m0, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
+                        m1 = FastMath.max(m1, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
                     }
                     double[] temp = new double[3];
                     temp[0] = m0;
@@ -222,7 +223,7 @@ public class LinearSineSimulation implements Simulation {
                     double[] gammaCoefficients = new double[parents.length];
                     for (int j = 0; j < parents.length; j++) {
                         String key2 = continuousParents.get(j).toString();
-                        gammaCoefficients[j] = (bounds.get(key2)[1] - bounds.get(key2)[0]) / (2 * Math.PI * RandomUtil.getInstance().nextUniform(this.gammaLow, this.gammaHigh));
+                        gammaCoefficients[j] = (bounds.get(key2)[1] - bounds.get(key2)[0]) / (2 * FastMath.PI * RandomUtil.getInstance().nextUniform(this.gammaLow, this.gammaHigh));
                     }
                     gamma.put(key, gammaCoefficients);
                 }
@@ -230,22 +231,22 @@ public class LinearSineSimulation implements Simulation {
                 value += intercept.get(key)[0];
                 if (!continuousParents.isEmpty()) {
                     for (int x = 0; x < parents.length; x++) {
-                        value += linear.get(key)[x] * parents[x] + beta.get(key)[x] * Math.sin(parents[x] / (gamma.get(key)[x]));
+                        value += linear.get(key)[x] * parents[x] + beta.get(key)[x] * FastMath.sin(parents[x] / (gamma.get(key)[x]));
                     }
                 }
 
                 mixedData.setDouble(i, mixedIndex, value);
 
                 mean += value;
-                var += Math.pow(value, 2);
+                var += FastMath.pow(value, 2);
             }
             if (continuousParents.size() == 0) {
                 var = 1;
             } else {
                 mean /= mixedData.getNumRows();
                 var /= mixedData.getNumRows();
-                var -= Math.pow(mean, 2);
-                var = Math.sqrt(var);
+                var -= FastMath.pow(mean, 2);
+                var = FastMath.sqrt(var);
             }
 
             double noiseVar = RandomUtil.getInstance().nextUniform(this.varLow, this.varHigh);

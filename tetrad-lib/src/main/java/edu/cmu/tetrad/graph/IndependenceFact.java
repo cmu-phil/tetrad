@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -173,7 +174,7 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
         List<Node> z = getZ();
         List<Node> factZ = fact.getZ();
 
-        int max = Math.max(z.size(), factZ.size());
+        int max = FastMath.max(z.size(), factZ.size());
 
         for (int i = 0; i < max; i++) {
             if (z.size() <= i && factZ.size() > i) {

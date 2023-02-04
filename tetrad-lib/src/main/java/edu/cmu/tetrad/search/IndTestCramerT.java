@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -230,12 +231,12 @@ public final class IndTestCramerT implements IndependenceTest {
         submatrix = submatrix.inverse();
 
         double a = -1.0 * submatrix.get(0, 1);
-        double b = Math.sqrt(submatrix.get(0, 0) * submatrix.get(1, 1));
+        double b = FastMath.sqrt(submatrix.get(0, 0) * submatrix.get(1, 1));
 
         this.storedR = a / b; // Store R so P value can be calculated.
 
-        if (Math.abs(this.storedR) > 1) {
-            this.storedR = Math.signum(this.storedR);
+        if (FastMath.abs(this.storedR) > 1) {
+            this.storedR = FastMath.signum(this.storedR);
         }
 
         if (Double.isNaN(this.storedR)) {
@@ -261,7 +262,7 @@ public final class IndTestCramerT implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * Integrator.getArea(pdf(), Math.abs(this.storedR), 1.0, 100);
+        return 2.0 * Integrator.getArea(pdf(), FastMath.abs(this.storedR), 1.0, 100);
     }
 
     /**
@@ -409,7 +410,7 @@ public final class IndTestCramerT implements IndependenceTest {
         if (pdf() == null || pdf().getK() != k) {
             this.cutoff = cutoff(k, alpha);
         }
-        return Math.abs(r) <= this.cutoff;
+        return FastMath.abs(r) <= this.cutoff;
     }
 
     private double cutoff(int k, double alpha) {

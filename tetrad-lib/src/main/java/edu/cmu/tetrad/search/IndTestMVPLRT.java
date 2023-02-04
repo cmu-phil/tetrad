@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,7 +128,7 @@ public class IndTestMVPLRT implements IndependenceTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        this.pValue = Math.min(p_0, p_1);
+        this.pValue = FastMath.min(p_0, p_1);
 
         boolean independent = this.pValue > this.alpha;
 

@@ -38,7 +38,7 @@ import java.util.Map;
 
 import static edu.cmu.tetrad.data.Discretizer.discretize;
 import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Implements a conditional Gaussian likelihood. Please note that this this likelihood will be maximal only if the
@@ -77,7 +77,7 @@ public class ConditionalGaussianOtherLikelihood {
     private final ArrayList<Integer> all;
 
     // A constant.
-    private static final double LOGMATH2PI = log(2.0 * Math.PI);
+    private static final double LOGMATH2PI = log(2.0 * FastMath.PI);
 
     /**
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom
@@ -330,7 +330,7 @@ public class ConditionalGaussianOtherLikelihood {
     // the denominator is a mixture of Gaussians.
     private Ret likelihoodMixed(List<ContinuousVariable> X, List<DiscreteVariable> A, DiscreteVariable B) {
         int k = X.size();
-        double g = Math.pow(2.0 * Math.PI, -0.5 * k) * Math.exp(-0.5 * k);
+        double g = FastMath.pow(2.0 * FastMath.PI, -0.5 * k) * FastMath.exp(-0.5 * k);
 
         int[] continuousCols = new int[k];
         for (int j = 0; j < k; j++) continuousCols[j] = this.nodesHash.get(X.get(j));
@@ -375,7 +375,7 @@ public class ConditionalGaussianOtherLikelihood {
             double[] factors = new double[x.size()];
 
             for (int u = 0; u < x.size(); u++) {
-                factors[u] = g * Math.pow(sigmas.get(u).det(), -0.5);
+                factors[u] = g * FastMath.pow(sigmas.get(u).det(), -0.5);
             }
 
             double[] a = new double[x.size()];
@@ -415,7 +415,7 @@ public class ConditionalGaussianOtherLikelihood {
     }
 
     private double prob(Double factor, Matrix inv, Vector x) {
-        return factor * Math.exp(-0.5 * inv.times(x).dotProduct(x));
+        return factor * FastMath.exp(-0.5 * inv.times(x).dotProduct(x));
     }
 
     // Calculates the means of the columns of x.

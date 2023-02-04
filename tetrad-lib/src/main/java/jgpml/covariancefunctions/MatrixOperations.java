@@ -28,6 +28,7 @@
 package jgpml.covariancefunctions;
 
 import Jama.Matrix;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Some useful operations defined over Matrices
@@ -46,7 +47,7 @@ public class MatrixOperations {
         Matrix out = new Matrix(A.getRowDimension(), A.getColumnDimension());
         for (int i = 0; i < A.getRowDimension(); i++)
             for (int j = 0; j < A.getColumnDimension(); j++)
-                out.set(i, j, Math.exp(A.get(i, j)));
+                out.set(i, j, FastMath.exp(A.get(i, j)));
 
         return out;
     }
@@ -92,7 +93,7 @@ public class MatrixOperations {
         Matrix out = new Matrix(A.getRowDimension(), A.getColumnDimension());
         for (int i = 0; i < A.getRowDimension(); i++)
             for (int j = 0; j < A.getColumnDimension(); j++)
-                out.set(i, j, Math.asin(A.get(i, j)));
+                out.set(i, j, FastMath.asin(A.get(i, j)));
 
         return out;
     }
@@ -108,7 +109,7 @@ public class MatrixOperations {
         Matrix out = new Matrix(A.getRowDimension(), A.getColumnDimension());
         for (int i = 0; i < A.getRowDimension(); i++)
             for (int j = 0; j < A.getColumnDimension(); j++)
-                out.set(i, j, Math.sqrt(A.get(i, j)));
+                out.set(i, j, FastMath.sqrt(A.get(i, j)));
 
         return out;
     }
@@ -177,7 +178,7 @@ public class MatrixOperations {
                 var = var * (i - 1) / i + ((A.get(0, i) - m) * (A.get(0, i) - m)) / (i - 1);
             }
             Matrix M = new Matrix(1, 1);
-            M.set(0, 0, Math.sqrt(var));
+            M.set(0, 0, FastMath.sqrt(var));
             return M;
         } else {
             Matrix M = new Matrix(1, A.getColumnDimension());
@@ -188,7 +189,7 @@ public class MatrixOperations {
                     m = (m * (j - 1) + A.get(j, i)) / j;
                     var = var * (j - 1) / j + ((A.get(j, i) - m) * (A.get(j, i) - m)) / (j - 1);
                 }
-                M.set(0, i, Math.sqrt(var));
+                M.set(0, i, FastMath.sqrt(var));
             }
             return M;
         }

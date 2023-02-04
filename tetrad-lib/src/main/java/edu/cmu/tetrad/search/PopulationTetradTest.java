@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
 
@@ -77,15 +78,15 @@ public class PopulationTetradTest implements TetradTest {
             this.bvalues[i] = false;
         }
 
-        if (Math.abs(p_12 * p_34 - p_13 * p_24) < this.epsilon) {
+        if (FastMath.abs(p_12 * p_34 - p_13 * p_24) < this.epsilon) {
             count++;
             this.bvalues[0] = true;
         }
-        if (Math.abs(p_12 * p_34 - p_14 * p_23) < this.epsilon) {
+        if (FastMath.abs(p_12 * p_34 - p_14 * p_23) < this.epsilon) {
             count++;
             this.bvalues[1] = true;
         }
-        if (Math.abs(p_13 * p_24 - p_14 * p_23) < this.epsilon) {
+        if (FastMath.abs(p_13 * p_24 - p_14 * p_23) < this.epsilon) {
             count++;
             this.bvalues[2] = true;
         }
@@ -108,7 +109,7 @@ public class PopulationTetradTest implements TetradTest {
         double p_13 = this.CorrelationMatrix.getValue(v1, v3);
         double p_24 = this.CorrelationMatrix.getValue(v2, v4);
         double p_34 = this.CorrelationMatrix.getValue(v3, v4);
-        this.bvalues[0] = Math.abs(p_12 * p_34 - p_13 * p_24) < this.epsilon;
+        this.bvalues[0] = FastMath.abs(p_12 * p_34 - p_13 * p_24) < this.epsilon;
         return this.bvalues[0];
     }
 

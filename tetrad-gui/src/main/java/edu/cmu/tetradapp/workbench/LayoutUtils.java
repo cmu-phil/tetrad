@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.GraphEditorUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -89,7 +90,7 @@ public class LayoutUtils {
         }
 
         int lag0YDiff = maxLag0Y - minLag0Y;
-        int ySpace = Math.max(lag0YDiff + 25, 100);
+        int ySpace = FastMath.max(lag0YDiff + 25, 100);
 
         int minY = Integer.MAX_VALUE;
 
@@ -146,7 +147,7 @@ public class LayoutUtils {
         }
 
         int lag0YDiff = maxLag0Y - minLag0Y;
-        int ySpace = Math.max(lag0YDiff + 25, 100);
+        int ySpace = FastMath.max(lag0YDiff + 25, 100);
 
         int minY = Integer.MAX_VALUE;
 
@@ -203,7 +204,7 @@ public class LayoutUtils {
         }
 
         int lag0XDiff = maxLag0X - minLag0X;
-        int xSpace = Math.max(lag0XDiff + 25, 90);
+        int xSpace = FastMath.max(lag0XDiff + 25, 90);
 
         int minX = Integer.MAX_VALUE;
 
@@ -260,7 +261,7 @@ public class LayoutUtils {
         }
 
         int lag0XDiff = maxLag0X - minLag0X;
-        int xSpace = Math.max(lag0XDiff + 25, 90);
+        int xSpace = FastMath.max(lag0XDiff + 25, 90);
 
         int minX = Integer.MAX_VALUE;
 
@@ -507,7 +508,7 @@ public class LayoutUtils {
 
         Rectangle r = layoutEditable.getVisibleRect();
 
-        int m = Math.min(r.width, r.height) / 2;
+        int m = FastMath.min(r.width, r.height) / 2;
         int radius = m - 50;
         int centerx = r.x + m;
         int centery = r.y + m;

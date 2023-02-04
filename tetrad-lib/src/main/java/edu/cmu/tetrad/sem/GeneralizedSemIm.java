@@ -37,6 +37,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizer;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -113,7 +114,7 @@ public class GeneralizedSemIm implements IM, Simulator {
             double value = semIm.getParamValue(paramObject);
 
             if (paramObject.getType() == ParamType.VAR) {
-                value = Math.sqrt(value);
+                value = FastMath.sqrt(value);
             }
 
             setParameterValue(parameter, value);
@@ -689,8 +690,8 @@ public class GeneralizedSemIm implements IM, Simulator {
 
                     // If any of the variables hasn't converged or if any of the variable values has gone
                     // outside of the bound (-1e6, 1e6), judge nonconvergence and pick another random starting point.
-                    if (!(Math.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
-                        if (!(Math.abs(variableValues.get(node.getName())) < 1e6)) {
+                    if (!(FastMath.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
+                        if (!(FastMath.abs(variableValues.get(node.getName())) < 1e6)) {
                             if (count < 1000) {
                                 row--;
                                 continue ROW;
@@ -849,7 +850,7 @@ public class GeneralizedSemIm implements IM, Simulator {
                 boolean converged = true;
 
                 for (int j = 0; j < t1.length; j++) {
-                    if (Math.abs(t2[j] - t1[j]) > epsilon) {
+                    if (FastMath.abs(t2[j] - t1[j]) > epsilon) {
                         converged = false;
                         break;
                     }
@@ -940,7 +941,7 @@ public class GeneralizedSemIm implements IM, Simulator {
             for (int i = 0; i < values.length; i++) {
                 Node node = variableNodes.get(i);
 
-                if (!(Math.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
+                if (!(FastMath.abs(variableValues.get(node.getName()) - values[i]) < delta)) {
                     allInRange = false;
                     break;
                 }

@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.biolingua;
 
 import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.SymMatrixF;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Implements an algorithm for revising regulatory models with expression data.
@@ -37,7 +38,7 @@ import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.SymMatrixF;
 
 public class Biolingua {
     private static final float ALMOST_ZERO = (float) 0.00001;
-    //    private static final double LOG_2 = Math.log(2);
+    //    private static final double LOG_2 = FastMath.log(2);
 
     // TODO: consider making the signif level another parameter of the algorithm
     private static final float SIGNIF_LEVEL = (float) 0.05;
@@ -397,7 +398,7 @@ public class Biolingua {
 
 
     private static boolean isZero(float x) {
-        return (Math.abs(x) <= Biolingua.ALMOST_ZERO);
+        return (FastMath.abs(x) <= Biolingua.ALMOST_ZERO);
     }
 
 }

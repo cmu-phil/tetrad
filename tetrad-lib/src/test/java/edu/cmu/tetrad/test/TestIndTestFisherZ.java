@@ -39,7 +39,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.*;
 import static org.junit.Assert.assertEquals;
 
 

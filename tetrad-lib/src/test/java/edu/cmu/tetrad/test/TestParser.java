@@ -25,6 +25,7 @@ import edu.cmu.tetrad.calculator.expression.ConstantExpression;
 import edu.cmu.tetrad.calculator.expression.Context;
 import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.parser.ExpressionParser;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Test;
 
 import java.text.ParseException;
@@ -113,7 +114,7 @@ public final class TestParser {
         assertTrue(expression.evaluate(new TestingContext()) == ConstantExpression.PI.evaluate(null));
 
         expression = parse(parser, ConstantExpression.PI.getName() + "+ 2");
-        assertTrue(expression.evaluate(new TestingContext()) == Math.PI + 2);
+        assertTrue(expression.evaluate(new TestingContext()) == FastMath.PI + 2);
     }
 
 

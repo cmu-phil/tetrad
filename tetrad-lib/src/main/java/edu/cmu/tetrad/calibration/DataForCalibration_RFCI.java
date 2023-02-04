@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -84,11 +85,12 @@ public class DataForCalibration_RFCI {
             System.out.println("Warning: The program stopped because the Prob File already exists in the following path: \n"+ dirname+ "/" + probFileName);
             return;
         }
-        String ConfigString = String.valueOf(Math.random());
+        String ConfigString = String.valueOf(
+                FastMath.random());
         System.out.println(ConfigString + ": Started!");
 
 
-        int LV = (int) Math.floor(numLatentConfounders * numVars);
+        int LV = (int) FastMath.floor(numLatentConfounders * numVars);
         System.out.println("LV: " + LV);
         Graph dag = DFC.makeDAG(numVars, edgesPerNode, LV);
 

@@ -37,7 +37,7 @@ import java.util.Map;
 
 import static edu.cmu.tetrad.data.Discretizer.discretize;
 import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Implements a conditional Gaussian likelihood. Please note that this this likelihood will be maximal only if the
@@ -76,7 +76,7 @@ public class DiscreteMixedLikelihood {
     private final ArrayList<Integer> all;
 
     // A constant.
-    private static final double LOG2PI = log(2.0 * Math.PI);
+    private static final double LOG2PI = log(2.0 * FastMath.PI);
 
     /**
      * A return value for a likelihood--returns a likelihood value and the degrees of freedom

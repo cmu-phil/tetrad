@@ -1,11 +1,12 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.min;
+import static org.apache.commons.math3.util.FastMath.min;
 
 public class RandomGraph {
     public static Graph randomDag(int numNodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
@@ -851,7 +852,7 @@ public class RandomGraph {
             NumberFormat nf = NumberFormat.getInstance();
             nf.setMaximumFractionDigits(0);
 
-            int numDigits = (int) Math.ceil(Math.log(this.numNodes) / Math.log(10.0));
+            int numDigits = (int) FastMath.ceil(FastMath.log(this.numNodes) / FastMath.log(10.0));
             nf.setMinimumIntegerDigits(numDigits);
             nf.setGroupingUsed(false);
 
@@ -1123,7 +1124,7 @@ public class RandomGraph {
          * Initializes the graph to have no edges.
          */
         private void initializeGraphAsEmpty() {
-            int max = Math.max(getMaxInDegree() + getMaxOutDegree(), getMaxDegree());
+            int max = FastMath.max(getMaxInDegree() + getMaxOutDegree(), getMaxDegree());
             max += 1;
 
             this.parentMatrix = new int[getNumNodes()][max];

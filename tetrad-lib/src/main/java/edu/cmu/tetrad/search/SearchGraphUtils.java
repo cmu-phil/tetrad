@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
@@ -34,7 +35,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.max;
+import static org.apache.commons.math3.util.FastMath.max;
 import static java.util.Collections.sort;
 
 /**
@@ -187,7 +188,7 @@ public final class SearchGraphUtils {
         adj.remove(c);
         adj.remove(a);
 
-        for (int d = 0; d <= Math.min(1000, adj.size()); d++) {
+        for (int d = 0; d <= FastMath.min(1000, adj.size()); d++) {
             ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
             int[] choice;
 
@@ -301,7 +302,7 @@ public final class SearchGraphUtils {
         if (_depth == -1) {
             _depth = 1000;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             if (_nodes.size() >= d) {
@@ -1166,7 +1167,7 @@ public final class SearchGraphUtils {
 
     public static List<Set<Node>> powerSet(List<Node> nodes) {
         List<Set<Node>> subsets = new ArrayList<>();
-        int total = (int) Math.pow(2, nodes.size());
+        int total = (int) FastMath.pow(2, nodes.size());
         for (int i = 0; i < total; i++) {
             Set<Node> newSet = new HashSet<>();
             String selection = Integer.toBinaryString(i);
@@ -1288,7 +1289,7 @@ public final class SearchGraphUtils {
         if (_depth == -1) {
             _depth = 1000;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
@@ -1315,7 +1316,7 @@ public final class SearchGraphUtils {
         _nodes.remove(x);
         TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);

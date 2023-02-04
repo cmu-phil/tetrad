@@ -28,6 +28,7 @@
 package jgpml.covariancefunctions;
 
 import Jama.Matrix;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
 
@@ -71,7 +72,7 @@ public class CovNoise implements CovarianceFunction {
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double s2 = Math.exp(2 * loghyper.get(0, 0));                             // noise variance
+        double s2 = FastMath.exp(2 * loghyper.get(0, 0));                             // noise variance
 
         return Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(s2);
 
@@ -90,7 +91,7 @@ public class CovNoise implements CovarianceFunction {
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double s2 = Math.exp(2 * loghyper.get(0, 0));                             // noise variance
+        double s2 = FastMath.exp(2 * loghyper.get(0, 0));                             // noise variance
 
         double[] a = new double[Xstar.getRowDimension()];
         Arrays.fill(a, s2);
@@ -118,7 +119,7 @@ public class CovNoise implements CovarianceFunction {
             throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
         //noise parameter
-        double s2 = Math.exp(2 * loghyper.get(0, 0));
+        double s2 = FastMath.exp(2 * loghyper.get(0, 0));
 
         return Matrix.identity(X.getRowDimension(), X.getRowDimension()).times(2 * s2);
     }

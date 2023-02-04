@@ -34,6 +34,7 @@ import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.pitt.dbmi.data.reader.Delimiter;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.File;
 import java.io.IOException;
@@ -475,7 +476,7 @@ public class MixedUtils {
                 // d-d edges use one vector and permute edges, could use different strategy
                 if (cL > 0 && pL > 0) {
                     double[][] newWeights = new double[cL][pL];
-                    w = Math.abs(w);
+                    w = FastMath.abs(w);
                     double bgW = w / ((double) pL - 1.0);
                     double[] weightVals;
 
@@ -631,7 +632,7 @@ public class MixedUtils {
         double vMax = 0;
         for (int i = 0; i < L; i++) {
             vec[i] = vec[i] - vMean;
-            if (Math.abs(vec[i]) > Math.abs(vMax))
+            if (FastMath.abs(vec[i]) > FastMath.abs(vMax))
                 vMax = vec[i];
         }
 
@@ -684,7 +685,7 @@ public class MixedUtils {
         Set<Edge> edgesT = pT.getEdges();
         Set<Edge> edgesE = pE.getEdges();
 
-        //differences += Math.abs(e1.size() - e2.size());
+        //differences += FastMath.abs(e1.size() - e2.size());
 
         //for (int i = 0; i < e1.size(); i++) {
         int edgeType;

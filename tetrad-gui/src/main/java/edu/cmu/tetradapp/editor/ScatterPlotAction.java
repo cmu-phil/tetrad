@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetradapp.util.DesktopController;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -89,8 +90,8 @@ class ScatterPlotAction extends AbstractAction {
             dim = frame.getSize();
         }
 
-        int x = (int) (150 * Math.cos(index * 15 * (Math.PI / 180)));
-        int y = (int) (150 * Math.sin(index * 15 * (Math.PI / 180)));
+        int x = (int) (150 * FastMath.cos(index * 15 * (FastMath.PI / 180)));
+        int y = (int) (150 * FastMath.sin(index * 15 * (FastMath.PI / 180)));
         x += (dim.width - bounds.width) / 2;
         y += (dim.height - bounds.height) / 2;
         dialog.setLocation(x, y);

@@ -5,12 +5,11 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.channels.MembershipKey;
 import java.util.*;
 import java.util.concurrent.Callable;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
-import static java.lang.Math.floor;
+import static org.apache.commons.math3.util.FastMath.floor;
 import static java.util.Collections.sort;
 
 

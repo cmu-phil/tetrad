@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class MVPScore implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.likelihood = new MVPLikelihood(dataSet, structurePrior, fDegree, discretize);
-        this.logn = Math.log(dataSet.getNumRows());
+        this.logn = FastMath.log(dataSet.getNumRows());
     }
 
     public double localScore(int i, int... parents) {
@@ -133,7 +134,7 @@ public class MVPScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(this.dataSet.getNumRows()));
+        return (int) FastMath.ceil(FastMath.log(this.dataSet.getNumRows()));
     }
 
     @Override

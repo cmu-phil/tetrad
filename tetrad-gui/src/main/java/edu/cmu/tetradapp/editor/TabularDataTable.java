@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.table.AbstractTableModel;
 import java.beans.PropertyChangeListener;
@@ -79,7 +80,7 @@ class TabularDataTable extends AbstractTableModel {
      */
     public int getRowCount() {
         int maxRowCount = this.dataSet.getNumRows() + 3;
-        return Math.max(maxRowCount, 100);
+        return FastMath.max(maxRowCount, 100);
     }
 
     /**
