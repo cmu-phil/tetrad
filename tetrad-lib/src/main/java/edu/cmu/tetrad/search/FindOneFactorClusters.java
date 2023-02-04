@@ -54,7 +54,7 @@ public class FindOneFactorClusters {
     private final TestType testType;
     private List<List<Node>> clusters;
     private boolean verbose;
-    private boolean significanceCalculated;
+    private boolean significanceChecked;
     private final Algorithm algorithm;
 
     public FindOneFactorClusters(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha) {
@@ -357,6 +357,9 @@ public class FindOneFactorClusters {
 
                     _cluster.add(o);
 
+                    if (significanceChecked && significance(_cluster2) < alpha) {
+                        _cluster2.remove(o);
+                    }
                 }
 
                 // This takes out all pure clusters that are subsets of _cluster.
@@ -611,7 +614,7 @@ public class FindOneFactorClusters {
             all.addAll(cluster);
         }
 
-        if (this.significanceCalculated) {
+        if (this.significanceChecked) {
             for (Set<Integer> _out : out) {
                 try {
                     double p = significance(new ArrayList<>(_out));
@@ -1112,12 +1115,12 @@ public class FindOneFactorClusters {
         }
     }
 
-    public boolean isSignificanceCalculated() {
-        return this.significanceCalculated;
+    public boolean isSignificanceChecked() {
+        return this.significanceChecked;
     }
 
-    public void setSignificanceCalculated(boolean significanceCalculated) {
-        this.significanceCalculated = significanceCalculated;
+    public void setSignificanceChecked(boolean significanceChecked) {
+        this.significanceChecked = significanceChecked;
     }
 
     public enum Algorithm {SAG, GAP}
