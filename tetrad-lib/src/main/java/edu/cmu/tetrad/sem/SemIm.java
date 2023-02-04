@@ -713,10 +713,10 @@ public final class SemIm implements IM, ISemIm {
 
     public SemIm(SemPm semPm, List<Node> variableNodes, List<Node> measuredNodes, Matrix edgeCoef, double[] variableMeansStdDev) {
         this.semPm = semPm;
-        this.variableNodes = variableNodes;
-        this.measuredNodes = measuredNodes;
-        this.edgeCoef = edgeCoef;
-        this.variableMeansStdDev = variableMeansStdDev;
+        this.variableNodes = new ArrayList<>(variableNodes);
+        this.measuredNodes = new ArrayList<>(measuredNodes);
+        this.edgeCoef = new Matrix(edgeCoef);
+        this.variableMeansStdDev = Arrays.copyOf(variableMeansStdDev, variableMeansStdDev.length);
     }
 
     /**
@@ -1485,7 +1485,7 @@ public final class SemIm implements IM, ISemIm {
         }
     }
 
-    public DataSet  simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
+    public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         int errorType = this.params.getInt(Params.SIMULATION_ERROR_TYPE);
         double errorParam1 = params.getDouble(Params.SIMULATION_PARAM1);
         double errorParam2 = params.getDouble(Params.SIMULATION_PARAM2);
@@ -2103,7 +2103,6 @@ public final class SemIm implements IM, ISemIm {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
