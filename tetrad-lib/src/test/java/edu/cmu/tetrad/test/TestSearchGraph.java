@@ -27,8 +27,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.SublistGenerator;
 import org.junit.Test;
 
 import java.util.*;

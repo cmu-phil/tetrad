@@ -23,8 +23,6 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.util.IntTextField;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;

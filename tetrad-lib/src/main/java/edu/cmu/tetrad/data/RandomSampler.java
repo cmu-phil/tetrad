@@ -24,7 +24,6 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**

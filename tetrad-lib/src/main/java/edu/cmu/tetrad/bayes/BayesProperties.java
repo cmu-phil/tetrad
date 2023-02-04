@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**

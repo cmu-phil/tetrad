@@ -9,8 +9,8 @@ import java.util.*;
 import java.util.concurrent.Callable;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
-import static org.apache.commons.math3.util.FastMath.floor;
 import static java.util.Collections.sort;
+import static org.apache.commons.math3.util.FastMath.floor;
 
 
 /**

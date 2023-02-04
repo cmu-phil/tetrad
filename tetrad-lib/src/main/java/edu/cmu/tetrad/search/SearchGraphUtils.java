@@ -35,8 +35,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static org.apache.commons.math3.util.FastMath.max;
 import static java.util.Collections.sort;
+import static org.apache.commons.math3.util.FastMath.max;
 
 /**
  * Graph utilities for search algorithm. Lots of orientation method, for

@@ -21,7 +21,9 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Dag;
+import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

@@ -32,7 +32,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.*;
+import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
+import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
