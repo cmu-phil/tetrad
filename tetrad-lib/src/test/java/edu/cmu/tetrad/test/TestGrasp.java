@@ -68,7 +68,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.search.OtherPermAlgs.Method.SP;
-import static java.util.Collections.shuffle;
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 
 /**
@@ -2531,7 +2531,7 @@ public final class TestGrasp {
 //        }
 
 
-//            Collections.shuffle(algorithms);
+//            RandomUtil.shuffle(algorithms);
 
         Algorithms _algorithms = new Algorithms();
 
@@ -3221,9 +3221,9 @@ public final class TestGrasp {
                             l.add(w);
                         }
 
-                        Collections.shuffle(l);
-                        Collections.shuffle(l);
-                        Collections.shuffle(l);
+                        shuffle(l);
+                        shuffle(l);
+                        shuffle(l);
 
                         int[] perm = new int[l.size()];
                         for (int w = 0; w < V.size(); w++) {

@@ -36,6 +36,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
@@ -294,7 +295,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
                                 + "the number of data sets: " + randomSelectionSize + " > " + dataSets.size());
                     }
-                    Collections.shuffle(dataSets);
+                    RandomUtil.shuffle(dataSets);
 
                     List<DataModel> sub = new ArrayList<>();
                     for (int j = 0; j < randomSelectionSize; j++) {

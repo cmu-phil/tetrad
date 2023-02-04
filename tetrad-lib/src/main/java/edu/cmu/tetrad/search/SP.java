@@ -13,8 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.util.Collections.shuffle;
-
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
  * Implements various permutation algorithms, including BOSS and GASP.

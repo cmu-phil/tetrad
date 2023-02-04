@@ -9,8 +9,8 @@ import java.nio.channels.MembershipKey;
 import java.util.*;
 import java.util.concurrent.Callable;
 
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 import static java.lang.Math.floor;
-import static java.util.Collections.shuffle;
 import static java.util.Collections.sort;
 
 

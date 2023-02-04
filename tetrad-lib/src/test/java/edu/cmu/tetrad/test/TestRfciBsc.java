@@ -48,8 +48,10 @@ public class TestRfciBsc {
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
+        RandomUtil.getInstance().setSeed(seed);
+
         // simulate data from instantiated model
-        DataSet fullData = bayesIm.simulateData(sampleSize, seed, true);
+        DataSet fullData = bayesIm.simulateData(sampleSize, true);
         TestRfciBsc.refineData(fullData);
         DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
@@ -119,8 +121,10 @@ public class TestRfciBsc {
         RandomGraph.fixLatents4(LV, dag);
         System.out.println("Variables set to be latent:" + TestRfciBsc.getLatents(dag));
 
+        RandomUtil.getInstance().setSeed(seed);
+
         // simulate data from instantiated model
-        DataSet fullData = im.simulateData(sampleSize, seed, true);
+        DataSet fullData = im.simulateData(sampleSize, true);
         TestRfciBsc.refineData(fullData);
 
         DataSet dataSet = DataUtils.restrictToMeasured(fullData);

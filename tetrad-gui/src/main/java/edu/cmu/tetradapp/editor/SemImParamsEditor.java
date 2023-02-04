@@ -201,7 +201,7 @@ public class SemImParamsEditor extends JPanel implements ParameterEditor {
 
         Box b4b = Box.createHorizontalBox();
 //        b4b.add(Box.createHorizontalStrut(10));
-        b4b.add(new JLabel("Error covariance values are drawn from "));
+        b4b.add(new JLabel("Covariance for correlated error terms are drawn from "));
         b4b.add(new BigLabel("("));
         b4b.add(covLowField);
         b4b.add(new BigLabel(", "));

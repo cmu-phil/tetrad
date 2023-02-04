@@ -22,10 +22,7 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.MatrixUtils;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -1191,7 +1188,7 @@ public final class NumberObjectDataSet
             permutation.add(i);
         }
 
-        Collections.shuffle(permutation);
+        RandomUtil.shuffle(permutation);
 
         Number[][] data2 = new Number[this.data.length][this.data[0].length];
 

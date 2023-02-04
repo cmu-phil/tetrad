@@ -31,6 +31,7 @@ import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
 
@@ -200,7 +201,7 @@ public class StabilityUtils {
         int[][] sampMat = new int[numSub][subSize];
 
         for (int i = 0; i < numSub; i++) {
-            Collections.shuffle(indices);
+            RandomUtil.shuffle(indices);
             int[] curSamp;
             SAMP:
             while (true) {
@@ -224,7 +225,7 @@ public class StabilityUtils {
             indices.add(i);
         }
 
-        Collections.shuffle(indices);
+        RandomUtil.shuffle(indices);
         int[] samp = new int[subSize];
         for (int i = 0; i < subSize; i++) {
             samp[i] = indices.get(i);

@@ -11,6 +11,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +40,10 @@ public class SemThenDiscretize implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
+        if (parameters.getLong(Params.SEED) != -1L) {
+            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+        }
+
         double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
         boolean discrete = parameters.getString("dataType").equals("discrete");
@@ -95,6 +100,7 @@ public class SemThenDiscretize implements Simulation {
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
+        parameters.add(Params.SEED);
         return parameters;
     }
 
@@ -120,7 +126,7 @@ public class SemThenDiscretize implements Simulation {
 
         if (this.shuffledOrder == null) {
             List<Node> shuffledNodes = new ArrayList<>(continuousData.getVariables());
-            Collections.shuffle(shuffledNodes);
+            RandomUtil.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
 

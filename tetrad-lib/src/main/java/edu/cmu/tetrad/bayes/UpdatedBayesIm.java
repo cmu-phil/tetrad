@@ -277,9 +277,9 @@ public final class UpdatedBayesIm implements BayesIm {
         return getBayesIm().simulateData(sampleSize, latentDataSaved);
     }
 
-    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        return getBayesIm().simulateData(sampleSize, seed, latentDataSaved);
-    }
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        return getBayesIm().simulateData(sampleSize, seed, latentDataSaved);
+//    }
 
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
         throw new UnsupportedOperationException();
