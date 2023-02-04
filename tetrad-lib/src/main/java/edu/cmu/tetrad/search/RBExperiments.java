@@ -216,8 +216,10 @@ public class RBExperiments {
             throw new RuntimeException(e);
         }
 
+        RandomUtil.getInstance().setSeed(round * 1000000L + 71512);
+
         // simulate data from instantiated model
-        DataSet fullData = im.simulateData(numCases, round * 1000000 + 71512, true);
+        DataSet fullData = im.simulateData(numCases, /*round * 1000000 + 71512,*/ true);
         fullData = refineData(fullData);
         DataSet data = DataUtils.restrictToMeasured(fullData);
 

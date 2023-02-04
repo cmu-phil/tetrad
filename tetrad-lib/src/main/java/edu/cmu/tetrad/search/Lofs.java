@@ -88,7 +88,7 @@ public class Lofs {
         Graph graph = new EdgeListGraph(skeleton.getNodes());
 
         List<Node> nodes = skeleton.getNodes();
-//        Collections.shuffle(nodes);
+//        RandomUtil.shuffle(nodes);
 
         if (isR1Done()) {
             ruleR1(skeleton, graph, nodes);
@@ -160,7 +160,7 @@ public class Lofs {
 
     private void ruleR2(Graph skeleton, Graph graph) {
         Set<Edge> edgeList1 = skeleton.getEdges();
-//        Collections.shuffle(edgeList1);
+//        RandomUtil.shuffle(edgeList1);
 
         for (Edge adj : edgeList1) {
             Node x = adj.getNode1();

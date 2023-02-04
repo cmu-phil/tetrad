@@ -510,7 +510,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                         return;
                     }
 
-                    RandomUtil.getInstance().setSeed(new Date().getTime());
+//                    RandomUtil.getInstance().setSeed(new Date().getTime());
                     Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), GraphEditor.this.parameters);
 
                     boolean addCycles = GraphEditor.this.parameters.getBoolean("randomAddCycles", false);

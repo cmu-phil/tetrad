@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static java.util.Collections.shuffle;
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
  * Implementation of the experimental BRIDGES algorithm

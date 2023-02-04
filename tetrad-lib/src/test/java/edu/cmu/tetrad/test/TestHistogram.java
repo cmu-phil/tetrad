@@ -72,8 +72,8 @@ public final class TestHistogram {
         histogram.setTarget("X1");
         histogram.setNumBins(20);
 
-        assertEquals(5.33, histogram.getMax(), 0.01);
-        assertEquals(-4.97, histogram.getMin(), 0.01);
+        assertEquals(3.65, histogram.getMax(), 0.01);
+        assertEquals(-3.46, histogram.getMin(), 0.01);
         assertEquals(1000, histogram.getN());
 
         histogram.setTarget("X1");
@@ -83,8 +83,8 @@ public final class TestHistogram {
 
         histogram.removeConditioningVariable("X3");
 
-        assertEquals(5.33, histogram.getMax(), 0.01);
-        assertEquals(-4.97, histogram.getMin(), 0.01);
+        assertEquals(3.65, histogram.getMax(), 0.01);
+        assertEquals(-3.46, histogram.getMin(), 0.01);
 //        assertEquals( 142, histogram.getN());
 
         double[] arr = histogram.getContinuousData("X2");

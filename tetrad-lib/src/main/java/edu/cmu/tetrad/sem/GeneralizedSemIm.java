@@ -282,12 +282,12 @@ public class GeneralizedSemIm implements IM, Simulator {
         return simulateDataFisher(sampleSize);
     }
 
-    @Override
-    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(seed);
-        return simulateData(sampleSize, latentDataSaved);
-    }
+//    @Override
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateData(sampleSize, latentDataSaved);
+//    }
 
     private DataSet simulateTimeSeries(int sampleSize) {
         SemGraph semGraph = new SemGraph(getSemPm().getGraph());

@@ -31,8 +31,6 @@ import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
-import static java.lang.Math.min;
-import static java.util.Collections.shuffle;
 
 /**
  * Basic graph utilities.

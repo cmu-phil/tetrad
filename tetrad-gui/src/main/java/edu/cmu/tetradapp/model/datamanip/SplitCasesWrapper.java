@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
@@ -81,7 +82,7 @@ public class SplitCasesWrapper extends DataWrapper {
         }
 
         if (params.getBoolean("dataShuffled", true)) {
-            Collections.shuffle(indices);
+            RandomUtil.shuffle(indices);
         }
 
         SplitCasesSpec spec = (SplitCasesSpec) params.get("splitCasesSpec", null);

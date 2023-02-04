@@ -133,7 +133,6 @@ public class MixedUtils {
      * Makes a deep copy of a dataset (Nodes copied as well). Useful for paralellization
      *
      * @param ds dataset to be copied
-     * @return
      */
     public static DataSet deepCopy(DataSet ds) {
         List<Node> vars = new ArrayList<>(ds.getNumColumns());
@@ -542,7 +541,7 @@ public class MixedUtils {
         for (int i = 0; i < a.length; i++) {
             l.add(i, a[i]);
         }
-        Collections.shuffle(l);
+        RandomUtil.shuffle(l);
         for (int i = 0; i < a.length; i++) {
             out[i] = l.get(i);
         }
@@ -556,7 +555,7 @@ public class MixedUtils {
         for (int i = 0; i < a.length; i++) {
             l.add(i, a[i]);
         }
-        Collections.shuffle(l);
+        RandomUtil.shuffle(l);
         for (int i = 0; i < a.length; i++) {
             out[i] = l.get(i);
         }

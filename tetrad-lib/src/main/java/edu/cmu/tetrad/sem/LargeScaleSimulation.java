@@ -54,7 +54,6 @@ public final class LargeScaleSimulation {
     private double[][] coefs;
     private double[] errorVars;
     private double[] means;
-    private transient TetradAlgebra algebra;
     private final List<Node> variableNodes;
     private final Graph graph;
     private double coefLow;
@@ -215,7 +214,7 @@ public final class LargeScaleSimulation {
         NormalDistribution normal = new NormalDistribution(new Well1024a(++this.seed), 0, 1);
 
         Matrix B = new Matrix(getCoefficientMatrix());
-        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix iMinusBInv = Matrix.identity(B.rows()).minus(B).inverse();
 
         double[][] all = new double[this.variableNodes.size()][sampleSize];
 
@@ -512,14 +511,6 @@ public final class LargeScaleSimulation {
         }
 
         this.alreadySetUp = true;
-    }
-
-    public TetradAlgebra getAlgebra() {
-        if (this.algebra == null) {
-            this.algebra = new TetradAlgebra();
-        }
-
-        return this.algebra;
     }
 
     public Graph getGraph() {

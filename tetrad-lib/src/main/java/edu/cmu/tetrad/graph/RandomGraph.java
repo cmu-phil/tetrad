@@ -6,7 +6,6 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Math.min;
-import static java.util.Collections.shuffle;
 
 public class RandomGraph {
     public static Graph randomDag(int numNodes, int numLatentConfounders, int maxNumEdges, int maxDegree, int maxIndegree, int maxOutdegree, boolean connected) {
@@ -149,7 +148,7 @@ public class RandomGraph {
         do {
             dag = new EdgeListGraph(nodes);
 
-            shuffle(allEdges);
+            RandomUtil.shuffle(allEdges);
 
             while (!allEdges.isEmpty() && dag.getNumEdges() < numEdges) {
                 List<Integer> e = allEdges.removeFirst();
@@ -202,7 +201,7 @@ public class RandomGraph {
             throw new IllegalArgumentException("For the Bollobas et al. algorithm," + "\napha + beta + gamma = 1, so alpha + beta must be < 1.");
         }
 
-        shuffle(_nodes);
+        RandomUtil.shuffle(_nodes);
 
         LinkedList<Node> nodes = new LinkedList<>();
         nodes.add(_nodes.get(0));
@@ -585,7 +584,7 @@ public class RandomGraph {
 
     public static void addTwoCycles(Graph graph, int numTwoCycles) {
         List<Edge> edges = new ArrayList<>(graph.getEdges());
-        shuffle(edges);
+        RandomUtil.shuffle(edges);
 
         for (int i = 0; i < min(numTwoCycles, edges.size()); i++) {
             Edge edge = edges.get(i);
@@ -1237,4 +1236,5 @@ public class RandomGraph {
             }
         }
     }
+
 }

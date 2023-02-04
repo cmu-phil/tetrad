@@ -458,7 +458,7 @@ public final class DagEditor extends JPanel
                         return;
                     }
 
-                    RandomUtil.getInstance().setSeed(new Date().getTime());
+//                    RandomUtil.getInstance().setSeed(new Date().getTime());
                     Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), DagEditor.this.parameters);
 
                     boolean addCycles = DagEditor.this.parameters.getBoolean("randomAddCycles", false);

@@ -1038,7 +1038,7 @@ public final class DataUtils {
             availRows.add(i);
         }
 
-        Collections.shuffle(availRows);
+        RandomUtil.shuffle(availRows);
 
         List<Integer> addedRows = new ArrayList<>();
         int[] rows = new int[_size];
@@ -1080,7 +1080,7 @@ public final class DataUtils {
             availRows.add(i);
         }
 
-        Collections.shuffle(availRows);
+        RandomUtil.shuffle(availRows);
 
         List<Integer> addedRows = new ArrayList<>();
         int[] rows = new int[_size];
@@ -1160,7 +1160,7 @@ public final class DataUtils {
         List<Integer> rows = new ArrayList<>();
         for (int i = 0; i < data.getNumRows(); i++) rows.add(i);
 
-        Collections.shuffle(rows);
+        RandomUtil.shuffle(rows);
 
         int split = (int) (rows.size() * percentTest);
 
@@ -1235,7 +1235,7 @@ public final class DataUtils {
 
         List<Integer> indicesList = new ArrayList<>();
         for (int i = 0; i < numVariables; i++) indicesList.add(i);
-        Collections.shuffle(indicesList);
+        RandomUtil.shuffle(indicesList);
 
         int[] indices = new int[numVariables];
 
@@ -1252,7 +1252,7 @@ public final class DataUtils {
         List<Node> vars = new ArrayList<>();
 
         List<Node> variables = dataSets.get(0).getVariables();
-        Collections.shuffle(variables);
+        RandomUtil.shuffle(variables);
 
         for (Node node : variables) {
             Node _node = dataSets.get(0).getVariable(node.getName());

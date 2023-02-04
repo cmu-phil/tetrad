@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ForkJoinPool;
 
-import static java.util.Collections.shuffle;
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
  * @author jdramsey@andrew.cmu.edu

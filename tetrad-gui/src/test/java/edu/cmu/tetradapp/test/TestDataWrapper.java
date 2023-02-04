@@ -22,8 +22,13 @@
 package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetradapp.model.DataWrapper;
 import org.junit.Test;
 
@@ -86,6 +91,37 @@ public class TestDataWrapper {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testDoubleDataBox() {
+        Graph graph = RandomGraph.randomGraph(5, 0, 10, 100, 100, 100, false);
+
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet dataSet = im.simulateData(200, false);
+
+        DataBox box = new DoubleDataBox(dataSet.getDoubleData().toArray());
+
+        List<Node> vars = dataSet.getVariables();
+        List<Node> shuffled = new ArrayList<>(vars);
+        RandomUtil.shuffle(shuffled);
+
+        int[] rows = new int[dataSet.getNumRows()];
+        for (int i = 0; i < rows.length; i++) rows[i] = i;
+
+        int[] _shuffled = new int[dataSet.getNumColumns()];
+        for (int j = 0; j < vars.size(); j++) _shuffled[j] = shuffled.indexOf(vars.get(j));
+
+        int[] inverse = new int[dataSet.getNumColumns()];
+        for (int j = 0; j < vars.size(); j++) inverse[j] = vars.indexOf(shuffled.get(j));
+
+        DataBox box2 = box.viewSelection(rows, _shuffled);
+        DataBox box3 = box2.viewSelection(rows, inverse);
+
+        DataSet dataSet1 = new BoxDataSet(box3, dataSet.getVariables());
+
+        assert (dataSet.equals(dataSet1));
     }
 }
 

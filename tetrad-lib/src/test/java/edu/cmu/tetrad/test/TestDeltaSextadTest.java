@@ -30,6 +30,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Test;
 
@@ -224,7 +225,7 @@ public class TestDeltaSextadTest {
         indices.add(5);
         indices.add(7);
 
-        Collections.shuffle(indices);
+        RandomUtil.shuffle(indices);
 
         int x1 = indices.get(0);
         int x2 = indices.get(1);

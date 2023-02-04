@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
@@ -273,7 +274,7 @@ public class TestFci {
             DataSet marginalData = data.copy();
 
             List<Node> variables = marginalData.getVariables();
-            Collections.shuffle(variables);
+            RandomUtil.shuffle(variables);
 
             for (int m = 0; m < numVarsToMarginalize; m++) {
                 marginalData.removeColumn(marginalData.getColumn(variables.get(m)));

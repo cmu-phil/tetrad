@@ -558,12 +558,12 @@ public class StandardizedSemIm implements Simulator {
         return simulateDataReducedForm(sampleSize, latentDataSaved);
     }
 
-    @Override
-    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(seed);
-        return simulateData(sampleSize, latentDataSaved);
-    }
+//    @Override
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateData(sampleSize, latentDataSaved);
+//    }
 
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         this.edgeCoef = null;
@@ -574,7 +574,7 @@ public class StandardizedSemIm implements Simulator {
 
         // Calculate inv(I - edgeCoefC)
         Matrix B = edgeCoef().transpose();
-        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix iMinusBInv = Matrix.identity(B.rows()).minus(B).inverse();
 
         // Pick error values e, for each calculate inv * e.
         Matrix sim = new Matrix(sampleSize, numVars);

@@ -12,6 +12,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -38,7 +39,10 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
+//        if (parameters.getLong(Params.SEED) != -1L) {
+//            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+//        }
+
         this.dataSets = new ArrayList<>();
         this.graphs = new ArrayList<>();
 
@@ -108,6 +112,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
+//        parameters.add(Params.SEED);
 
         return parameters;
 

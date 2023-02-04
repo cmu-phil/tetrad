@@ -77,7 +77,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             setDag(new Dag());
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
-            RandomUtil.getInstance().setSeed(new Date().getTime());
+//            RandomUtil.getInstance().setSeed(new Date().getTime());
             setDag(new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), params)));
         }
         log();
