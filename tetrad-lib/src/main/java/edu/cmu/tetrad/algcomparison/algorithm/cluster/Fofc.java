@@ -137,6 +137,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+        parameters.add(Params.ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.USE_GAP);
