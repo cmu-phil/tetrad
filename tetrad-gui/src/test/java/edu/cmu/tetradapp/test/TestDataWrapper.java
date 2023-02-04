@@ -32,11 +32,9 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetradapp.model.DataWrapper;
 import org.junit.Test;
 
-import javax.swing.*;
 import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -123,7 +121,7 @@ public class TestDataWrapper {
 
         DataSet dataSet1 = new BoxDataSet(box3, dataSet.getVariables());
 
-        assert(dataSet.equals(dataSet1));
+        assert (dataSet.equals(dataSet1));
     }
 }
 

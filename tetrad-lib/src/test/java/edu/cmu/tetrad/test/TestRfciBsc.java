@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Jan 10, 2019 12:23:21 PM
@@ -52,7 +51,7 @@ public class TestRfciBsc {
         RandomUtil.getInstance().setSeed(seed);
 
         // simulate data from instantiated model
-        DataSet fullData = bayesIm.simulateData(sampleSize,true);
+        DataSet fullData = bayesIm.simulateData(sampleSize, true);
         TestRfciBsc.refineData(fullData);
         DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 

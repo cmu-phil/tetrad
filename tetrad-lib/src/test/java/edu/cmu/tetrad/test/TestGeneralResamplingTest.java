@@ -48,7 +48,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Aug 17, 2017 2:28:48 PM
@@ -138,7 +137,7 @@ public class TestGeneralResamplingTest {
 
         RandomUtil.getInstance().setSeed(seed);
 
-        DataSet data = im.simulateData(numCases,false);
+        DataSet data = im.simulateData(numCases, false);
 
         Parameters parameters = new Parameters();
         parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
@@ -259,7 +258,7 @@ public class TestGeneralResamplingTest {
 
         RandomUtil.getInstance().setSeed(seed);
 
-        DataSet data = im.simulateData(numCases,false);
+        DataSet data = im.simulateData(numCases, false);
 
         Parameters parameters = new Parameters();
         parameters.set(Params.STRUCTURE_PRIOR, structurePrior);
