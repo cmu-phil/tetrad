@@ -400,14 +400,14 @@ public final class SemIm implements IM, ISemIm {
 
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("coefLow");
-        parameters.add("coefHigh");
-        parameters.add("covLow");
-        parameters.add("covHigh");
-        parameters.add("varLow");
-        parameters.add("varHigh");
-        parameters.add("coefSymmetric");
-        parameters.add("covSymmetric");
+        parameters.add(Params.COEF_LOW);
+        parameters.add(Params.COEF_HIGH);
+        parameters.add(Params.COV_LOW);
+        parameters.add(Params.COV_HIGH);
+        parameters.add(Params.VAR_LOW);
+        parameters.add(Params.VAR_HIGH);
+        parameters.add(Params.COEF_SYMMETRIC);
+        parameters.add(Params.COV_SYMMETRIC);
         return parameters;
     }
 
