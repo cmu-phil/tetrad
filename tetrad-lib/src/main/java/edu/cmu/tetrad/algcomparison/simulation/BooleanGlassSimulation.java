@@ -13,6 +13,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.*;
 
@@ -35,7 +37,9 @@ public class BooleanGlassSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
+        if (parameters.getLong(Params.SEED) != -1L) {
+            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+        }
 
         this.graph = this.randomGraph.createGraph(parameters);
 
@@ -156,6 +160,7 @@ public class BooleanGlassSimulation implements Simulation {
         parameters.add("sampleSampleVariability");
         parameters.add("chipChipVariability");
         parameters.add("pixelDigitalization");
+        parameters.add(Params.SEED);
 
         return parameters;
     }

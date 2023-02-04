@@ -55,7 +55,9 @@ public class GeneralSemSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
+        if (parameters.getLong(Params.SEED) != -1L) {
+            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+        }
 
         Graph graph = this.randomGraph.createGraph(parameters);
 
@@ -155,6 +157,7 @@ public class GeneralSemSimulation implements Simulation {
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.GUARANTEE_IID);
+        parameters.add(Params.SEED);
 
         return parameters;
     }

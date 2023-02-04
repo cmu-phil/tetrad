@@ -44,7 +44,9 @@ public class LinearSineSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
+        if (parameters.getLong(Params.SEED) != -1L) {
+            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+        }
 
         setInterceptLow(parameters.getDouble("interceptLow"));
         setInterceptHigh(parameters.getDouble("interceptHigh"));
@@ -111,6 +113,7 @@ public class LinearSineSimulation implements Simulation {
         parameters.add("betaHigh");
         parameters.add("gammaLow");
         parameters.add("gammaHigh");
+        parameters.add(Params.SEED);
         return parameters;
     }
 
