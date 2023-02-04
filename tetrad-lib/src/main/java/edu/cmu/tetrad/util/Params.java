@@ -233,6 +233,7 @@ public final class Params {
     public static final String IMAGES_META_ALG = "imagesMetaAlg";
     
     public static final String SEED = "seed";
+    public static final String SIGNIFICANCE_CHECKED = "significanceChecked";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

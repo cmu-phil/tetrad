@@ -63,6 +63,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
             edu.cmu.tetrad.search.FindOneFactorClusters search
                     = new edu.cmu.tetrad.search.FindOneFactorClusters(cov, testType, algorithm, alpha);
+            search.setSignificanceCalculated(parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             Graph graph = search.search();
@@ -140,6 +141,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         parameters.add(Params.ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
+        parameters.add(Params.SIGNIFICANCE_CHECKED);
         parameters.add(Params.USE_GAP);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.VERBOSE);
