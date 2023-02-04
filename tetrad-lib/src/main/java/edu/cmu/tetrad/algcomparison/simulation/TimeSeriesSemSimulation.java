@@ -39,9 +39,9 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (parameters.getLong(Params.SEED) != -1L) {
-            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
-        }
+//        if (parameters.getLong(Params.SEED) != -1L) {
+//            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+//        }
 
         this.dataSets = new ArrayList<>();
         this.graphs = new ArrayList<>();
@@ -112,7 +112,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
-        parameters.add(Params.SEED);
+//        parameters.add(Params.SEED);
 
         return parameters;
 

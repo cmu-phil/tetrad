@@ -57,9 +57,9 @@ public class LinearFisherModel implements Simulation, TakesData {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (parameters.getLong(Params.SEED) != -1L) {
-            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
-        }
+//        if (parameters.getLong(Params.SEED) != -1L) {
+//            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+//        }
 
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
@@ -198,7 +198,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.STANDARDIZE);
-        parameters.add(Params.SEED);
+//        parameters.add(Params.SEED);
 
         return parameters;
     }

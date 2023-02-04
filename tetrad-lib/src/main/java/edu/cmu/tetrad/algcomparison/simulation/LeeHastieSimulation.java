@@ -39,9 +39,9 @@ public class LeeHastieSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-        if (parameters.getLong(Params.SEED) != -1L) {
-            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
-        }
+//        if (parameters.getLong(Params.SEED) != -1L) {
+//            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+//        }
 
         double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
@@ -116,7 +116,7 @@ public class LeeHastieSimulation implements Simulation {
         parameters.add(Params.SAVE_LATENT_VARS);
 
         parameters.add(Params.VERBOSE);
-        parameters.add(Params.SEED);
+//        parameters.add(Params.SEED);
 
         return parameters;
     }
