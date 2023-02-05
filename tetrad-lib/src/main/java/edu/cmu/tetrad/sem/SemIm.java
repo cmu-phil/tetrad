@@ -30,13 +30,14 @@ import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
 import java.util.*;
 
-import static java.lang.Math.sqrt;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Stores an instantiated structural equation model (SEM), with error covariance
@@ -1027,7 +1028,7 @@ public final class SemIm implements IM, ISemIm {
         double fml;
 
         try {
-            fml = Math.log(sigma.det()) + (s.times(sigma.inverse())).trace() - Math.log(s.det()) - getMeasuredNodes().size();
+            fml = FastMath.log(sigma.det()) + (s.times(sigma.inverse())).trace() - FastMath.log(s.det()) - getMeasuredNodes().size();
         } catch (Exception e) {
             return Double.NaN;
         }
@@ -1079,9 +1080,9 @@ public final class SemIm implements IM, ISemIm {
      */
     public double getBicScore() {
         int dof = getSemPm().getDof();
-//        return getChiSquare() - dof * Math.log(sampleSize);
+//        return getChiSquare() - dof * FastMath.log(sampleSize);
 
-        return getChiSquare() - dof * Math.log(this.sampleSize);
+        return getChiSquare() - dof * FastMath.log(this.sampleSize);
 
     }
 
@@ -1669,7 +1670,7 @@ public final class SemIm implements IM, ISemIm {
     public double getPValue(Parameter parameter, int maxFreeParams) {
         double tValue = getTValue(parameter, maxFreeParams);
         int df = getSampleSize() - 1;
-        return 2.0 * (1.0 - ProbUtils.tCdf(Math.abs(tValue), df));
+        return 2.0 * (1.0 - ProbUtils.tCdf(FastMath.abs(tValue), df));
     }
 
     public boolean isParameterBoundsEnforced() {
@@ -1933,7 +1934,7 @@ public final class SemIm implements IM, ISemIm {
                 if (getParams().getBoolean("coefSymmetric", true)) {
                     return value;
                 } else {
-                    return Math.abs(value);
+                    return FastMath.abs(value);
                 }
             } else if (parameter.getType() == ParamType.COVAR) {
                 double covLow = getParams().getDouble("covLow", 0.1);
@@ -1942,7 +1943,7 @@ public final class SemIm implements IM, ISemIm {
                 if (getParams().getBoolean("covSymmetric", true)) {
                     return value;
                 } else {
-                    return Math.abs(value);
+                    return FastMath.abs(value);
                 }
             } else { //if (parameter.getType() == ParamType.VAR) {
                 return RandomUtil.getInstance().nextUniform(getParams().getDouble("varLow", 1), getParams().getDouble("varHigh", 3));
@@ -2057,8 +2058,8 @@ public final class SemIm implements IM, ISemIm {
 
     private double logDet(Matrix matrix2D) {
         double det = matrix2D.det();
-        return Math.log(Math.abs(det));
-//        return det > 0 ? Math.log(det) : 0;
+        return FastMath.log(FastMath.abs(det));
+//        return det > 0 ? FastMath.log(det) : 0;
     }
 
     private double traceAInvB(Matrix A, Matrix B) {

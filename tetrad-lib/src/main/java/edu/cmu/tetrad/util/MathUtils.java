@@ -21,8 +21,10 @@
 
 package edu.cmu.tetrad.util;
 
+import org.apache.commons.math3.util.FastMath;
+
 /**
- * Some extra mathematical functions not contained in java.lang.Math.
+ * Some extra mathematical functions not contained in org.apache.commons.math3.util.FastMath.
  *
  * @author Joseph Ramsey
  */
@@ -33,7 +35,7 @@ public class MathUtils {
      * @return the logistic function of x = 1 / (1 + exp(-x)).
      */
     public static double logistic(double x) {
-        return 1. / (1. + Math.exp(-x));
+        return 1. / (1. + FastMath.exp(-x));
     }
 
     public static int factorial(int n) {
@@ -50,7 +52,7 @@ public class MathUtils {
         double i = 0;
 
         for (int j = 1; j <= n; j++) {
-            i += Math.log(j);
+            i += FastMath.log(j);
         }
 
         return i;
@@ -60,11 +62,11 @@ public class MathUtils {
         if (a == 0 && b == 0) {
             return 1;
         } else if (a == 0 && b > 0) {
-            return (int) Math.round(Math.exp(1 - (MathUtils.logFactorial(b) + MathUtils.logFactorial(-b))));
+            return (int) FastMath.round(FastMath.exp(1 - (MathUtils.logFactorial(b) + MathUtils.logFactorial(-b))));
         } else if (a > 0 && b == 0) {
-            return (int) Math.round(Math.exp(MathUtils.logFactorial(a) - (1 + MathUtils.logFactorial(a))));
+            return (int) FastMath.round(FastMath.exp(MathUtils.logFactorial(a) - (1 + MathUtils.logFactorial(a))));
         } else if (a > 0 && b > 0) {
-            return (int) Math.round(Math.exp(MathUtils.logFactorial(a) - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b))));
+            return (int) FastMath.round(FastMath.exp(MathUtils.logFactorial(a) - (MathUtils.logFactorial(b) + MathUtils.logFactorial(a - b))));
         } else {
             throw new IllegalArgumentException();
         }

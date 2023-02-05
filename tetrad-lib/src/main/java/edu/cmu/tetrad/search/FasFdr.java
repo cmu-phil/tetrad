@@ -24,13 +24,14 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.sqrt;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Implements the "fast adjacency search" used in several causal algorithm in this package. In the fast adjacency
@@ -278,8 +279,8 @@ public class FasFdr implements IFas {
                 double r = -inv.get(i, j) / sqrt(inv.get(i, i) * inv.get(j, j));
 
                 double fisherZ = sqrt(sampleSize - (nodes.size() - 2) - 3.0) *
-                        0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
-                double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
+                        0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
+                double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(fisherZ)));
 
                 boolean independent = pvalue > test.getAlpha();
 

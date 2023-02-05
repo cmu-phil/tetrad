@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.MeasurementModelWrapper;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -108,7 +109,7 @@ public final class ClusterEditor extends JPanel {
         b1.add(Box.createHorizontalGlue());
         b1.add(new JLabel("# Clusters = "));
         int numClusters = this.clusters.getNumClusters();
-        numClusters = Math.max(numClusters, 3);
+        numClusters = FastMath.max(numClusters, 3);
         SpinnerNumberModel spinnerNumberModel
                 = new SpinnerNumberModel(numClusters, 3, 100, 1);
         spinnerNumberModel.addChangeListener(e -> {
@@ -141,9 +142,9 @@ public final class ClusterEditor extends JPanel {
     private void setNumDisplayClusters(int numClusters) {
         if (numClusters < 0) {
             int numStoredClusters = getClustersPrivate().getNumClusters();
-            int n = (int) Math.pow(getVarNames().size(), 0.5);
+            int n = (int) FastMath.pow(getVarNames().size(), 0.5);
             int defaultNumClusters = n + 1;
-            int numClusters2 = Math.max(numStoredClusters, defaultNumClusters);
+            int numClusters2 = FastMath.max(numStoredClusters, defaultNumClusters);
             this.clusters.setNumClusters(numClusters2);
         } else {
             this.clusters.setNumClusters(numClusters);

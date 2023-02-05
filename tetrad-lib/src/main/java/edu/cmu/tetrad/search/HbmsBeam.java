@@ -31,6 +31,7 @@ import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -557,14 +558,14 @@ public final class HbmsBeam implements Hbsms {
             int sampleSize = scorer.getSampleSize();
 
             this.chisq = (sampleSize - 1) * getFml();
-            this.bic = this.chisq - this.dof * Math.log(sampleSize);
+            this.bic = this.chisq - this.dof * FastMath.log(sampleSize);
         }
 
         private Score() {
             int sampleSize = 1000;
             this.fml = Double.POSITIVE_INFINITY;
             this.chisq = (sampleSize - 1) * this.fml;
-            this.bic = this.chisq - this.dof * Math.log(sampleSize);
+            this.bic = this.chisq - this.dof * FastMath.log(sampleSize);
         }
 
         public SemIm getEstimatedSem() {

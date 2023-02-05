@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;

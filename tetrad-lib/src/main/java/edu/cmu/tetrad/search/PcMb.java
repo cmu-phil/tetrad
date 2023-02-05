@@ -24,9 +24,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -731,7 +732,7 @@ public final class PcMb implements MbSearch, GraphSearch {
         if (_depth == -1) {
             _depth = Integer.MAX_VALUE;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             if (Thread.currentThread().isInterrupted()) {
@@ -767,7 +768,7 @@ public final class PcMb implements MbSearch, GraphSearch {
         if (_depth == -1) {
             _depth = Integer.MAX_VALUE;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             if (Thread.currentThread().isInterrupted()) {

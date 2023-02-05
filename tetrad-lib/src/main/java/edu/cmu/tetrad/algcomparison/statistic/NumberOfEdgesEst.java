@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Prints the number of edges in the true graph.
@@ -28,6 +29,6 @@ public class NumberOfEdgesEst implements Statistic {
 
     @Override
     public double getNormValue(double value) {
-        return Math.tanh(value);
+        return FastMath.tanh(value);
     }
 }

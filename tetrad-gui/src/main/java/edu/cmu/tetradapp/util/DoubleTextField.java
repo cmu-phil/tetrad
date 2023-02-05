@@ -21,6 +21,8 @@
 
 package edu.cmu.tetradapp.util;
 
+import org.apache.commons.math3.util.FastMath;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
@@ -208,7 +210,7 @@ public class DoubleTextField extends JTextField {
         } else {
             setHorizontalAlignment(SwingConstants.RIGHT);
 
-            if (Math.abs(value) < this.smallNumberCutoff && value != 0.0) {
+            if (FastMath.abs(value) < this.smallNumberCutoff && value != 0.0) {
                 setText(this.smallNumberFormat.format(value));
             } else {
                 setText(nf.format(value));

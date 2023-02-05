@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Variable;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ class NormalityTests {
         }
         result.append("\n\nKolmogorov Smirnov:\n--------------------------------\n");
         double[] ksResults = NormalityTests.kolmogorovSmirnov(dataSet, variable);
-        double ksStat = Math.round((ksResults[0] * 10000000.0)) / 10000000.0;
+        double ksStat = FastMath.round((ksResults[0] * 10000000.0)) / 10000000.0;
         result.append("K-S Statistic: ").append(ksStat).append("\n\n");
         result.append("Significance Levels:\t.20\t.15\t.10\t.05\t.01\nK-S Critical Values:");
 
@@ -145,7 +146,7 @@ class NormalityTests {
         for (int i = 1; i <= n; i++) {
             double x = data[i - 1];
             double idealValue = idealDistribution.cdf(x);
-            double difference = Math.abs(idealValue - ((double) i / n));
+            double difference = FastMath.abs(idealValue - ((double) i / n));
             if (difference > d) {
                 d = difference;
             }
@@ -304,19 +305,19 @@ class NormalityTests {
         else {
             switch (level) {
                 case (1):
-                    criticalValue = 1.07 / Math.sqrt(n);
+                    criticalValue = 1.07 / FastMath.sqrt(n);
                     break;
                 case (2):
-                    criticalValue = 1.14 / Math.sqrt(n);
+                    criticalValue = 1.14 / FastMath.sqrt(n);
                     break;
                 case (3):
-                    criticalValue = 1.22 / Math.sqrt(n);
+                    criticalValue = 1.22 / FastMath.sqrt(n);
                     break;
                 case (4):
-                    criticalValue = 1.36 / Math.sqrt(n);
+                    criticalValue = 1.36 / FastMath.sqrt(n);
                     break;
                 case (5):
-                    criticalValue = 1.63 / Math.sqrt(n);
+                    criticalValue = 1.63 / FastMath.sqrt(n);
                     break;
             }
         }
@@ -361,7 +362,7 @@ class NormalityTests {
         }
 
         sd /= dataSet.getNumRows() - 1.0;
-        sd = Math.sqrt(sd);
+        sd = FastMath.sqrt(sd);
 
         double[] result = new double[2];
         result[0] = mean;

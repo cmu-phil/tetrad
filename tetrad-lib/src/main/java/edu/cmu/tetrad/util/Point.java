@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.util;
 
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -73,7 +74,7 @@ public class Point implements Comparable<Point> {
 
         for (int i = 0; i < getSize(); i++) {
             if (getValue(i) != p.getValue(i)) {
-                return (int) Math.signum(p.getValue(i) - getValue(i));
+                return (int) FastMath.signum(p.getValue(i) - getValue(i));
             }
         }
 

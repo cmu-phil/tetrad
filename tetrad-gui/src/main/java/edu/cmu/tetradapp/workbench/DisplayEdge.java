@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -407,13 +408,13 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 //        Endpoint endpointB = this.getModelEdge().getEndpoint2();
 //
 //        if (endpointA == Endpoint.ARROW) {
-//            x1 += Math.signum(x2 - x1) * getStrokeWidth();
-//            y1 += Math.signum(x2 - x1) * getStrokeWidth();
+//            x1 += FastMath.signum(x2 - x1) * getStrokeWidth();
+//            y1 += FastMath.signum(x2 - x1) * getStrokeWidth();
 //        }
 //
 //        if (endpointB == Endpoint.ARROW) {
-//            x2 += Math.signum(x1 - x2) * getStrokeWidth();
-//            y2 += Math.signum(x1 - x2) * getStrokeWidth();
+//            x2 += FastMath.signum(x1 - x2) * getStrokeWidth();
+//            y2 += FastMath.signum(x1 - x2) * getStrokeWidth();
 //        }
 
         // This silly-looking next line is required to get around an annoying
@@ -667,10 +668,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         Point c2 = new Point((int) (r2.x + r2.width / 2.0),
                 (int) (r2.y + r2.height / 2.0));
 
-        double angle = Math.atan2(c1.y - c2.y, c1.x - c2.x);
-        angle += Math.PI / 2;
-        Point d = new Point((int) (this.offset * Math.cos(angle)),
-                (int) (this.offset * Math.sin(angle)));
+        double angle = FastMath.atan2(c1.y - c2.y, c1.x - c2.x);
+        angle += FastMath.PI / 2;
+        Point d = new Point((int) (this.offset * FastMath.cos(angle)),
+                (int) (this.offset * FastMath.sin(angle)));
         c1.translate(d.x, d.y);
         c2.translate(d.x, d.y);
 
@@ -719,7 +720,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
         d = (p1.x - p2.x) * (p1.x - p2.x);
         d += (p1.y - p2.y) * (p1.y - p2.y);
-        d = Math.sqrt(d);
+        d = FastMath.sqrt(d);
 
         return d;
     }
@@ -793,8 +794,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     private void drawArrowEndpoint(Point from, Point to, Graphics g) {
         double a = to.x - from.x;
         double b = from.y - to.y;
-        double theta = Math.atan2(b, a);
-        int itheta = (int) ((theta * 360.0) / (2.0 * Math.PI) + 180);
+        double theta = FastMath.atan2(b, a);
+        int itheta = (int) ((theta * 360.0) / (2.0 * FastMath.PI) + 180);
 
 //        g.fillArc(to.x - 18, to.y - 18, 36, 36, itheta - 15, 30);
         g.fillArc(to.x - 18, to.y - 18, 36, 36,
@@ -807,8 +808,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     private void drawSessionArrowEndpoint(Point from, Point to, Graphics g) {
         double a = to.x - from.x;
         double b = from.y - to.y;
-        double theta = Math.atan2(b, a);
-        int itheta = (int) ((theta * 360.0) / (2.0 * Math.PI) + 180);
+        double theta = FastMath.atan2(b, a);
+        int itheta = (int) ((theta * 360.0) / (2.0 * FastMath.PI) + 180);
 
 //        g.fillArc(to.x - 18, to.y - 18, 36, 36, itheta - 15, 30);
         g.fillArc(to.x - 18, to.y - 18, 36, 36,
@@ -825,10 +826,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         int diameter = 12 + (int) getStrokeWidth();
         double a = to.x - from.x;
         double b = from.y - to.y;
-        double theta = Math.atan2(b, a);
-        //        int itheta = (int) ((theta * 360.0) / (2.0 * Math.PI) + 180);
-        int xminus = (int) (Math.cos(theta) * diameter / 2);
-        int yplus = (int) (Math.sin(theta) * diameter / 2);
+        double theta = FastMath.atan2(b, a);
+        //        int itheta = (int) ((theta * 360.0) / (2.0 * FastMath.PI) + 180);
+        int xminus = (int) (FastMath.cos(theta) * diameter / 2);
+        int yplus = (int) (FastMath.sin(theta) * diameter / 2);
 
         g.fillOval(to.x - xminus - diameter / 2, to.y + yplus - diameter / 2,
                 diameter, diameter);
@@ -903,7 +904,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 //        int d = 7;    // halfwidth of the sleeve.
         int d = (int) getStrokeWidth() + 6;    // halfwidth of the sleeve.
 
-        if (Math.abs(pp.getFrom().y - pp.getTo().y) <= 3) {
+        if (FastMath.abs(pp.getFrom().y - pp.getTo().y) <= 3) {
             return DisplayEdge.getHorizSleeve(pp, d);
         }
 
@@ -918,7 +919,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         double sx, sy;
 
         sx = (double) (d * d) / (1.0 + (qx * qx) / (qy * qy));
-        sx = Math.pow(sx, 0.5);
+        sx = FastMath.pow(sx, 0.5);
         sy = -(qx / qy) * sx;
         sx += (double) pp.getFrom().x + 1.0;
         sy += (double) pp.getFrom().y + 1.0;
@@ -994,10 +995,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
                 Point c2 = new Point((int) (r2.x + r2.width / 2.0),
                         (int) (r2.y + r2.height / 2.0));
 
-                double angle = Math.atan2(c1.y - c2.y, c1.x - c2.x);
-                angle += Math.PI / 2;
-                Point d = new Point((int) (this.offset * Math.cos(angle)),
-                        (int) (this.offset * Math.sin(angle)));
+                double angle = FastMath.atan2(c1.y - c2.y, c1.x - c2.x);
+                angle += FastMath.PI / 2;
+                Point d = new Point((int) (this.offset * FastMath.cos(angle)),
+                        (int) (this.offset * FastMath.sin(angle)));
 
                 r1.translate(d.x, d.y);
                 r2.translate(d.x, d.y);

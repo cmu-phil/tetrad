@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -185,7 +186,7 @@ public class SemBicScoreImages implements ISemBicScore {
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > -0.25 * getPenaltyDiscount() * Math.log(this.sampleSize);
+        return bump > -0.25 * getPenaltyDiscount() * FastMath.log(this.sampleSize);
     }
 
     public DataSet getDataSet() {

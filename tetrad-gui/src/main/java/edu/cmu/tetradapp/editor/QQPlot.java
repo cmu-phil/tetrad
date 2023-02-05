@@ -25,6 +25,7 @@ import cern.jet.random.engine.MersenneTwister;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 
@@ -196,8 +197,9 @@ class QQPlot {
         double mid = low + ((high - low) / 2.);
         //System.out.println("Mid: " + mid);
         double cdfResult = n.cdf(mid);
-        //System.out.println("CDF: " + cdfResult + " Abs value of difference: " + Math.abs(cdfResult - quantile) + " Count: " + count);
-        if (Math.abs(cdfResult - quantile) < precision || count > searchCap) {
+        //System.out.println("CDF: " + cdfResult + " Abs value of difference: " + FastMath.abs(cdfResult - quantile) + " Count: " + count);
+        if (
+                FastMath.abs(cdfResult - quantile) < precision || count > searchCap) {
             //System.out.println("Found result: " + mid);
             return mid;
         } else {
@@ -304,7 +306,7 @@ class QQPlot {
             sd = 1.0;
         } else {
             sd /= this.dataSet.getNumRows() - 1.0;
-            sd = Math.sqrt(sd);
+            sd = FastMath.sqrt(sd);
         }
 
         //System.out.println("Mean: " + mean + " SD: " + sd + " Min: " + this.minData + " Max: " + this.maxData);

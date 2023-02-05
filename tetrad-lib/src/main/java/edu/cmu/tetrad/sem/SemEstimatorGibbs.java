@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -249,7 +250,7 @@ public final class SemEstimatorGibbs {
                     double rj = 0.0, accept = 0.0, cand = 0.0;
 
                     while (!realdraw || rj <= accept) {
-                        cand = mean[0] + Math.max(RandomUtil.getInstance().nextNormal(0, 1) * Math.sqrt(vr), 0);
+                        cand = mean[0] + FastMath.max(RandomUtil.getInstance().nextNormal(0, 1) * FastMath.sqrt(vr), 0);
                         realdraw = (constraint.wouldBeSatisfied(cand));
                         if (realdraw) {
 
@@ -258,10 +259,10 @@ public final class SemEstimatorGibbs {
                             double dcand = -1.0 * neglogpost(param, cand, parameters);
 //							System.out.println("dcand end");
                             double numer = dcand - dmean;
-                            double denom1 = (-1.0 * Math.sqrt(cand - mean[0]) /
-                                    (2.0 * vr)) - Math.log(this.stretch2);
+                            double denom1 = (-1.0 * FastMath.sqrt(cand - mean[0]) /
+                                    (2.0 * vr)) - FastMath.log(this.stretch2);
                             rj = numer - denom1;
-                            accept = Math.log(RandomUtil.getInstance().nextDouble());
+                            accept = FastMath.log(RandomUtil.getInstance().nextDouble());
 
                             final int rejectionThreshold = 5;
 
@@ -324,21 +325,21 @@ public final class SemEstimatorGibbs {
         //init
         x = w = v = bx;
         e = d = 0.0;
-        a = Math.min(ax, cx);
-        b = Math.max(ax, cx);
+        a = FastMath.min(ax, cx);
+        b = FastMath.max(ax, cx);
         fw = fv = fx = neglogpost(param, x, parameters);
 
         for (iter = 1; iter <= ITMAX; iter++) {
             xm = 0.5 * (a + b);
-            tol1 = tol * Math.abs(x) + ZEPS;
+            tol1 = tol * FastMath.abs(x) + ZEPS;
             tol2 = 2.0 * tol1;
 
-            if (Math.abs(x - xm) <= tol2 - 0.5 * (b - a)) {
+            if (FastMath.abs(x - xm) <= tol2 - 0.5 * (b - a)) {
                 xmin[0] = x;
                 return fx;
             }
 
-            if (Math.abs(e) > tol1) {
+            if (FastMath.abs(e) > tol1) {
                 r = (x - w) * (fx - fv);
                 q = (x - v) * (fx - fw);
                 p = (x - v) * q - (x - w) * r;
@@ -346,11 +347,11 @@ public final class SemEstimatorGibbs {
 
                 if (q > 0.0) p = -p;
 
-                q = Math.abs(q);
+                q = FastMath.abs(q);
                 etemp = e;
                 e = d;
 
-                if ((Math.abs(p) >= Math.abs(0.5 * q * etemp)) ||
+                if ((FastMath.abs(p) >= FastMath.abs(0.5 * q * etemp)) ||
                         (p <= q * (a - x)) || (p >= q * (b - x))) {
                     e = (x >= xm) ? a - x : b - x;
                     d = CGOLD * e;
@@ -358,15 +359,15 @@ public final class SemEstimatorGibbs {
                     d = p / q;
                     u = x + d;
                     if ((u - a) < tol2 || (b - u) < tol2)
-                        d = (xm - x >= 0.0) ? Math.abs(tol1) : -Math.abs(tol1);
+                        d = (xm - x >= 0.0) ? FastMath.abs(tol1) : -FastMath.abs(tol1);
                 }
             } else {
                 e = (x >= xm) ? a - x : b - x;
                 d = CGOLD * e;
             }
 
-            double s = (tol1 > -0.0) ? Math.abs(d) : -Math.abs(d);
-            u = (Math.abs(d) >= tol1) ? x + d : x + s;
+            double s = (tol1 > -0.0) ? FastMath.abs(d) : -FastMath.abs(d);
+            u = (FastMath.abs(d) >= tol1) ? x + d : x + s;
             fu = neglogpost(param, u, parameters);
             if (fu <= fx) {
                 if (u >= x) a = x;

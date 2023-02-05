@@ -20,15 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.EdgewiseComparisonModel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-
-import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
 
 /**
  * Provides a little display/editor for notes in the session workbench. This may

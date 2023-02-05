@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Returns edges whose entries in the precision matrix exceed a certain threshold.
@@ -60,13 +61,13 @@ public class InverseCorrelation {
                 double b = inverse.get(i, i);
                 double c = inverse.get(j, j);
 
-                double r = -a / Math.sqrt(b * c);
+                double r = -a / FastMath.sqrt(b * c);
 
                 int sampleSize = this.data.getNumRows();
                 int z = this.data.getNumColumns();
 
-                double fisherZ = Math.sqrt(sampleSize - z - 3.0) *
-                        0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+                double fisherZ = FastMath.sqrt(sampleSize - z - 3.0) *
+                        0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
                 double p = getPValue(fisherZ);
 
@@ -83,7 +84,7 @@ public class InverseCorrelation {
     }
 
     public double getPValue(double z) {
-        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(z)));
+        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(z)));
     }
 }
 

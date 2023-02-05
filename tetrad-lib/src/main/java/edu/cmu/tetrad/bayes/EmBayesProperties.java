@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ProbUtils;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.HashMap;
 import java.util.List;
@@ -191,7 +192,7 @@ public final class EmBayesProperties {
                 _case[j] = reorderedDataSet.getInt(i, j);
             }
 
-            score += Math.log(probs.getCellProb(_case));
+            score += FastMath.log(probs.getCellProb(_case));
         }
 
         return score;
@@ -216,7 +217,7 @@ public final class EmBayesProperties {
     private double parameterPenalty() {
         int numParams = numNonredundantParams();
         double r = this.dataSet.getNumRows();
-        return (double) numParams * Math.log(r) / 2.;
+        return (double) numParams * FastMath.log(r) / 2.;
     }
 
     private Graph getGraph() {

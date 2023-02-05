@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -630,7 +631,7 @@ public class TimeSeriesUtils {
             double realEigenvalue = realEigenvalues[i];
             double imagEigenvalue = imagEigenvalues[i];
             System.out.println("Real eigenvalues are : " + realEigenvalue + " and imag part : " + imagEigenvalue);
-            double modulus = Math.sqrt(Math.pow(realEigenvalue, 2) + Math.pow(imagEigenvalue, 2));
+            double modulus = FastMath.sqrt(FastMath.pow(realEigenvalue, 2) + FastMath.pow(imagEigenvalue, 2));
 
             if (modulus >= 1.0) {
                 return false;

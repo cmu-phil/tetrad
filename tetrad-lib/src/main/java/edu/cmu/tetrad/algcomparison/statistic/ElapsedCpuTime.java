@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Records the elapsed time of the algorithm in seconds. This is a placeholder, really;
@@ -30,6 +31,6 @@ public class ElapsedCpuTime implements Statistic {
 
     @Override
     public double getNormValue(double value) {
-        return 1 - Math.tanh(0.001 * value);
+        return 1 - FastMath.tanh(0.001 * value);
     }
 }

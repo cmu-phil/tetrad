@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TextTable;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -149,7 +150,7 @@ class DescriptiveStats {
     }
 
     private static double standardErrorMean(double stdDev, double sampleSize) {
-        return stdDev / (Math.sqrt(sampleSize));
+        return stdDev / (FastMath.sqrt(sampleSize));
     }
 
     /**
@@ -178,7 +179,7 @@ class DescriptiveStats {
 
         double[] result = new double[3];
         result[2] = sd; //this is still the variance at this point
-        sd = Math.sqrt(sd);
+        sd = FastMath.sqrt(sd);
 
         result[0] = mean;
         result[1] = sd;

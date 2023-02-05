@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -968,7 +969,7 @@ public final class DirichletBayesIm implements BayesIm {
                         continue;
                     }
 
-                    if (Math.abs(probability - otherProbability)
+                    if (FastMath.abs(probability - otherProbability)
                             > DirichletBayesIm.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }

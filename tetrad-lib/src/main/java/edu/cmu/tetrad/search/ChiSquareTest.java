@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.util.CombinationIterator;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
 
@@ -157,7 +158,7 @@ public class ChiSquareTest {
                     }
 
                     double expected = (sumRow * sumCol) / (double) total;
-                    _xSquare += Math.pow(observed - expected, 2.0) / expected;
+                    _xSquare += FastMath.pow(observed - expected, 2.0) / expected;
                 }
             }
 

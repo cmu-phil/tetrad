@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -214,7 +215,7 @@ public final class OrientCollidersMaxP {
         }
 
         if (mycollider2) {
-            colliders.put(new Triple(a, b, c), Math.abs(s2));
+            colliders.put(new Triple(a, b, c), FastMath.abs(s2));
         }
     }
 

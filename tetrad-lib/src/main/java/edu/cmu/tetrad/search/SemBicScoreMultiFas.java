@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,7 +134,7 @@ public class SemBicScoreMultiFas implements ISemBicScore {
 
             N = this.covMap.get(score).getSampleSize();
 
-            sum += -N * Math.log(1.0 - r * r) - p * getPenaltyDiscount() * Math.log(N);
+            sum += -N * FastMath.log(1.0 - r * r) - p * getPenaltyDiscount() * FastMath.log(N);
         }
 
         return sum;
@@ -221,7 +222,7 @@ public class SemBicScoreMultiFas implements ISemBicScore {
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > -0.25 * getPenaltyDiscount() * Math.log(this.sampleSize);
+        return bump > -0.25 * getPenaltyDiscount() * FastMath.log(this.sampleSize);
     }
 
     public DataSet getDataSet() {

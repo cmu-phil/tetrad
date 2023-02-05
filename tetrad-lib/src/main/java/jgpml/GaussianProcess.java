@@ -33,6 +33,7 @@ import jgpml.covariancefunctions.CovLINone;
 import jgpml.covariancefunctions.CovNoise;
 import jgpml.covariancefunctions.CovSum;
 import jgpml.covariancefunctions.CovarianceFunction;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Main class of the package, contains the objects that constitutes a Gaussian Process as well
@@ -138,8 +139,8 @@ public class GaussianProcess {
             // compute the negative log marginal likelihood
             double lml = (y.transpose().times(this.alpha).times(0.5)).get(0, 0);
 
-            for (int i = 0; i < this.L.getRowDimension(); i++) lml += Math.log(this.L.get(i, i));
-            lml += 0.5 * n * Math.log(2 * Math.PI);
+            for (int i = 0; i < this.L.getRowDimension(); i++) lml += FastMath.log(this.L.get(i, i));
+            lml += 0.5 * n * FastMath.log(2 * FastMath.PI);
 
 
             Matrix W = GaussianProcess.bSubstitutionWithTranspose(this.L, (GaussianProcess.fSubstitution(this.L, Matrix.identity(n, n)))).minus(this.alpha.times(this.alpha.transpose()));     // precompute for convenience
@@ -341,7 +342,7 @@ public class GaussianProcess {
         d0 = s.times(-1).transpose().times(s).get(0, 0);
         x3 = red / (1 - d0);                                  // initial step is red/(|s|+1)
 
-        int nCycles = Math.abs(length);
+        int nCycles = FastMath.abs(length);
 
         int success;
 
@@ -355,7 +356,7 @@ public class GaussianProcess {
             Matrix X0 = params.copy();
             Matrix dF0 = df0.copy();
 
-            M = (length > 0) ? GaussianProcess.MAX : Math.min(GaussianProcess.MAX, -length - i);
+            M = (length > 0) ? GaussianProcess.MAX : FastMath.min(GaussianProcess.MAX, -length - i);
 
             while (true) {                            // keep extrapolating as long as necessary
 
@@ -406,7 +407,7 @@ public class GaussianProcess {
                 A = 6 * (f1 - f2) + 3 * (d2 + d1) * (x2 - x1);     // make cubic extrapolation
                 B = 3 * (f2 - f1) - (2 * d1 + d2) * (x2 - x1);
 
-                x3 = x1 - d1 * (x2 - x1) * (x2 - x1) / (B + Math.sqrt(B * B - A * d1 * (x2 - x1)));  // num. error possible, ok!
+                x3 = x1 - d1 * (x2 - x1) * (x2 - x1) / (B + FastMath.sqrt(B * B - A * d1 * (x2 - x1)));  // num. error possible, ok!
 
                 if (Double.isNaN(x3) || Double.isInfinite(x3) || x3 < 0)     // num prob | wrong sign?
                     x3 = x2 * GaussianProcess.EXT;                             // extrapolate maximum amount
@@ -421,7 +422,7 @@ public class GaussianProcess {
             x4 = 0;
             d4 = 0;
 
-            while ((Math.abs(d3) > -GaussianProcess.SIG * d0 ||
+            while ((FastMath.abs(d3) > -GaussianProcess.SIG * d0 ||
                     f3 > f0 + x3 * GaussianProcess.RHO * d0) && M > 0) {               // keep interpolating
 
                 if (d3 > 0 || f3 > f0 + x3 * GaussianProcess.RHO * d0) {                // choose subinterval
@@ -439,14 +440,14 @@ public class GaussianProcess {
                 } else {
                     A = 6 * (f2 - f4) / (x4 - x2) + 3 * (d4 + d2);                        // cubic interpolation
                     B = 3 * (f4 - f2) - (2 * d2 + d4) * (x4 - x2);
-                    x3 = x2 + (Math.sqrt(B * B - A * d2 * (x4 - x2) * (x4 - x2)) - B) / A;      // num. error possible, ok!
+                    x3 = x2 + (FastMath.sqrt(B * B - A * d2 * (x4 - x2) * (x4 - x2)) - B) / A;      // num. error possible, ok!
                 }
 
                 if (Double.isNaN(x3) || Double.isInfinite(x3)) {
                     x3 = (x2 + x4) / 2;               // if we had a numerical problem then bisect
                 }
 
-                x3 = Math.max(Math.min(x3, x4 - GaussianProcess.INT * (x4 - x2)), x2 + GaussianProcess.INT * (x4 - x2));  // don't accept too close
+                x3 = FastMath.max(FastMath.min(x3, x4 - GaussianProcess.INT * (x4 - x2)), x2 + GaussianProcess.INT * (x4 - x2));  // don't accept too close
 
                 Matrix m1 = s.times(x3).plus(params);
                 //f3 = f.evaluate(m1,cf, in, out, df3);
@@ -465,7 +466,7 @@ public class GaussianProcess {
 
             }                                                    // end interpolation
 
-            if (Math.abs(d3) < -GaussianProcess.SIG * d0 && f3 < f0 + x3 * GaussianProcess.RHO * d0) {     // if line search succeeded
+            if (FastMath.abs(d3) < -GaussianProcess.SIG * d0 && f3 < f0 + x3 * GaussianProcess.RHO * d0) {     // if line search succeeded
                 params = s.times(x3).plus(params);
                 f0 = f3;
 
@@ -494,7 +495,7 @@ public class GaussianProcess {
                     d0 = s.times(-1).transpose().times(s).get(0, 0);
                 }
 
-                x3 = x3 * Math.min(GaussianProcess.RATIO, d3 / (d0 - Double.MIN_VALUE));    // slope ratio but max RATIO
+                x3 = x3 * FastMath.min(GaussianProcess.RATIO, d3 / (d0 - Double.MIN_VALUE));    // slope ratio but max RATIO
                 ls_failed = 0;                                          // this line search did not fail
 
             } else {
@@ -503,7 +504,7 @@ public class GaussianProcess {
                 f0 = F0;
                 df0 = dF0;                     // restore best point so far
 
-                if (ls_failed == 1 || i > Math.abs(length)) {    // line search failed twice in a row
+                if (ls_failed == 1 || i > FastMath.abs(length)) {    // line search failed twice in a row
                     break;                                      // or we ran out of time, so we give up
                 }
 
@@ -545,7 +546,7 @@ public class GaussianProcess {
 
         double[][] logtheta0 = {
                 {0.1},
-                {Math.log(0.1)}
+                {FastMath.log(0.1)}
         };
 
         Matrix params0 = new Matrix(logtheta0);

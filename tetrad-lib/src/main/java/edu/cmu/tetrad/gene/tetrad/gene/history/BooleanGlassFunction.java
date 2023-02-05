@@ -23,6 +23,7 @@ package edu.cmu.tetrad.gene.tetrad.gene.history;
 
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Normal;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -257,7 +258,7 @@ public class BooleanGlassFunction implements UpdateFunction {
         double v3 = this.errorDistributions[factor].nextRandom();
         double v4 = v0 + v1 + v2 + v3;
 
-        return Math.max(this.lowerBound, v4);
+        return FastMath.max(this.lowerBound, v4);
     }
 
     /**

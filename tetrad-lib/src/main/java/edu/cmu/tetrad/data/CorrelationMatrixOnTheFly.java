@@ -31,7 +31,7 @@ import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.sqrt;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Stores a covariance matrix together with variable names and sample size,

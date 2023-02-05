@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.special.Gamma;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -171,7 +172,7 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
     private double getPriorForStructure(int numParents, int N) {
         double e = getStructurePrior();
         int vm = N - 1;
-        return numParents * Math.log(e / (vm)) + (vm - numParents) * Math.log(1.0 - (e / (vm)));
+        return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
     }
 
     @Override
@@ -271,7 +272,7 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(this.sampleSize));
+        return (int) FastMath.ceil(FastMath.log(this.sampleSize));
     }
 
     @Override

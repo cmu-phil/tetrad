@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class SimpleDemoGA {
             }
         }
 
-        int chunk = Math.min(25, population.getNumGenes() / 2);
+        int chunk = FastMath.min(25, population.getNumGenes() / 2);
         List<Callable<Boolean>> tasks = new ArrayList<>();
 
         for (int k = 0; k < numIterations; k++) {

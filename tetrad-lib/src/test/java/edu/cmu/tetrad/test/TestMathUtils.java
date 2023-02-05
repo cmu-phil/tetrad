@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.MathUtils;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -29,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 
 
 /**
- * Tests some extra mathematical functions not contained in java.lang.Math.
+ * Tests some extra mathematical functions not contained in org.apache.commons.math3.util.FastMath.
  *
  * @author Joseph Ramsey
  */
@@ -46,8 +47,9 @@ public class TestMathUtils {
     public void testExpSums() {
         final double d = 100.0;
 
-        assertEquals(7.22E86, Math.exp(d + d), 1E86);
-        assertEquals(7.22E86, Math.exp(d) * Math.exp(d), 1E86);
+        assertEquals(7.22E86,
+                FastMath.exp(d + d), 1E86);
+        assertEquals(7.22E86, FastMath.exp(d) * FastMath.exp(d), 1E86);
     }
 }
 

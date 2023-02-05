@@ -32,9 +32,12 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /*
  * Implements a degenerate Gaussian score as a LRT.

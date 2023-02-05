@@ -28,8 +28,6 @@ import edu.cmu.tetradapp.app.SessionEditorWorkbench;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;
