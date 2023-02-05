@@ -117,17 +117,20 @@ public final class Knowledge implements TetradSerializable {
         return new Knowledge();
     }
 
+    // Checking this spec can cause the drag and drop feature to fail.
     private boolean checkVarName(String name) {
-        return Knowledge.VARNAME_PATTERN.matcher(name).matches();
+        return true;
+//        return Knowledge.VARNAME_PATTERN.matcher(name).matches();
     }
 
+    // Checking this spec can cause the drag and drop feature to fail.
     private String checkSpec(String spec) {
-        Matcher matcher = Knowledge.SPEC_PATTERN.matcher(spec);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException(spec + ": Cpdag names can consist of alphabetic "
-                    + "characters plus :, _, -, and .. A wildcard '*' may be included to match a "
-                    + "string of such characters.");
-        }
+//        Matcher matcher = Knowledge.SPEC_PATTERN.matcher(spec);
+//        if (!matcher.matches()) {
+//            throw new IllegalArgumentException(spec + ": Cpdag names can consist of alphabetic "
+//                    + "characters plus :, _, -, and .. A wildcard '*' may be included to match a "
+//                    + "string of such characters.");
+//        }
 
         return spec.replace(".", "\\.");
     }
