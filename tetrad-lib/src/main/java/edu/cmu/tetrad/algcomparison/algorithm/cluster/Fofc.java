@@ -61,10 +61,22 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 algorithm = FindOneFactorClusters.Algorithm.SAG;
             }
 
+
+
             edu.cmu.tetrad.search.FindOneFactorClusters search
                     = new edu.cmu.tetrad.search.FindOneFactorClusters(cov, testType, algorithm, alpha);
             search.setSignificanceChecked(parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+            if (parameters.getInt(Params.CHECK_TYPE) == 1) {
+                search.setCheckType(ClusterSignificance.CheckType.Significance);
+            } else if (parameters.getInt(Params.CHECK_TYPE) == 2) {
+                search.setCheckType(ClusterSignificance.CheckType.Clique);
+            } else if (parameters.getInt(Params.CHECK_TYPE) == 3) {
+                search.setCheckType(ClusterSignificance.CheckType.None);
+            } else {
+                throw new IllegalArgumentException("Unexpected check type");
+            }
 
             Graph graph = search.search();
 
@@ -144,6 +156,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         parameters.add(Params.SIGNIFICANCE_CHECKED);
         parameters.add(Params.USE_GAP);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
+        parameters.add(Params.CHECK_TYPE);
         parameters.add(Params.VERBOSE);
 
         return parameters;

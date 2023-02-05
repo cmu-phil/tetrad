@@ -5,7 +5,10 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -51,6 +54,16 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
             BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);
             bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+            if (parameters.getInt(Params.CHECK_TYPE) == 1) {
+                bpc.setCheckType(ClusterSignificance.CheckType.Significance);
+            } else if (parameters.getInt(Params.CHECK_TYPE) == 2) {
+                bpc.setCheckType(ClusterSignificance.CheckType.Clique);
+            } else if (parameters.getInt(Params.CHECK_TYPE) == 3) {
+                bpc.setCheckType(ClusterSignificance.CheckType.None);
+            } else {
+                throw new IllegalArgumentException("Unexpected check type");
+            }
 
             Graph graph = bpc.search();
 
@@ -128,6 +141,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
+        parameters.add(Params.CHECK_TYPE);
         parameters.add(Params.VERBOSE);
 
         return parameters;

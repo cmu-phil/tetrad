@@ -184,6 +184,7 @@ public final class Params {
     public static final String USE_MAX_P_ORIENTATION_HEURISTIC = "useMaxPOrientationHeuristic";
     public static final String USE_SKEW_ADJACENCIES = "useSkewAdjacencies";
     public static final String USE_WISHART = "useWishart";
+    public static final String CHECK_TYPE = "checkType";
     public static final String VAR_HIGH = "varHigh";
     public static final String VAR_LOW = "varLow";
     public static final String VERBOSE = "verbose";
