@@ -23,9 +23,9 @@ package edu.cmu.tetradapp.model;
 
 //package
 
-import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Ccd;

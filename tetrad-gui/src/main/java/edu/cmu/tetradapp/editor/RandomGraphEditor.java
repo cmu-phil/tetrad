@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IntTextField;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -92,7 +93,8 @@ class RandomGraphEditor extends JPanel {
                 oldNumLatents == getNumLatents()) {
             setNumMeasuredNodes(oldNumMeasured);
             setNumLatents(oldNumLatents);
-            setMaxEdges(Math.min(getMaxEdges(), oldNumNodes * (oldNumNodes - 1) / 2));
+            setMaxEdges(
+                    FastMath.min(getMaxEdges(), oldNumNodes * (oldNumNodes - 1) / 2));
         }
 
         this.numNodesField = new IntTextField(getNumMeasuredNodes(), 4);
@@ -505,7 +507,7 @@ class RandomGraphEditor extends JPanel {
         this.parameters.set("newGraphNumMeasuredNodes", numMeasuredNodes);
 
         if (isConnected()) {
-            setMaxEdges(Math.max(getMaxEdges(), numMeasuredNodes + getNumLatents()));
+            setMaxEdges(FastMath.max(getMaxEdges(), numMeasuredNodes + getNumLatents()));
         }
     }
 

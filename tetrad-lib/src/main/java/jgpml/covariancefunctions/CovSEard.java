@@ -28,6 +28,7 @@
 package jgpml.covariancefunctions;
 
 import Jama.Matrix;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
 
@@ -90,7 +91,7 @@ public class CovSEard implements CovarianceFunction {
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + this.numParameters);
 
         Matrix ell = exp(loghyper.getMatrix(0, this.D - 1, 0, 0));                         // characteristic length scales
-        double sf2 = Math.exp(2 * loghyper.get(this.D, 0));                              // signal variance
+        double sf2 = FastMath.exp(2 * loghyper.get(this.D, 0));                              // signal variance
 
         Matrix diag = new Matrix(this.D, this.D);
         for (int i = 0; i < this.D; i++)
@@ -117,7 +118,7 @@ public class CovSEard implements CovarianceFunction {
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + this.numParameters);
 
         Matrix ell = exp(loghyper.getMatrix(0, this.D - 1, 0, 0));                         // characteristic length scales
-        double sf2 = Math.exp(2 * loghyper.get(this.D, 0));                              // signal variance
+        double sf2 = FastMath.exp(2 * loghyper.get(this.D, 0));                              // signal variance
 
         double[] a = new double[Xstar.getRowDimension()];
         Arrays.fill(a, sf2);
@@ -154,7 +155,7 @@ public class CovSEard implements CovarianceFunction {
         Matrix A = null;
 
         Matrix ell = exp(loghyper.getMatrix(0, this.D - 1, 0, 0));                         // characteristic length scales
-        double sf2 = Math.exp(2 * loghyper.get(this.D, 0));                              // signal variance
+        double sf2 = FastMath.exp(2 * loghyper.get(this.D, 0));                              // signal variance
         // noise variance
 
         if (this.K.getRowDimension() != X.getRowDimension() || this.K.getColumnDimension() != X.getRowDimension()) {

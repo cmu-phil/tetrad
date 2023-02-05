@@ -3,7 +3,6 @@ package edu.cmu.tetrad.simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphPersistence;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;

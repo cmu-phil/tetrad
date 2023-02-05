@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DeltaSextadTest;
 import edu.cmu.tetrad.search.IntSextad;
@@ -37,7 +37,6 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;

@@ -23,8 +23,8 @@ package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.special.Gamma;
 
-import static java.lang.Math.exp;
-import static java.lang.Math.round;
+import static org.apache.commons.math3.util.FastMath.exp;
+import static org.apache.commons.math3.util.FastMath.round;
 
 /**
  * Generates (nonrecursively) all of the sublists of size b from a list of size a,

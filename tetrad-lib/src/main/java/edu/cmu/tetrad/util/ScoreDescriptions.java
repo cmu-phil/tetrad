@@ -23,8 +23,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;

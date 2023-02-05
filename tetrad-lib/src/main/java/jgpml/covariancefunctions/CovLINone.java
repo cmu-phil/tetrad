@@ -28,6 +28,7 @@
 package jgpml.covariancefunctions;
 
 import Jama.Matrix;
+import org.apache.commons.math3.util.FastMath;
 
 import static jgpml.covariancefunctions.MatrixOperations.addValue;
 import static jgpml.covariancefunctions.MatrixOperations.sumRows;
@@ -69,7 +70,7 @@ public class CovLINone implements CovarianceFunction {
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double it2 = Math.exp(-2 * loghyper.get(0, 0));
+        double it2 = FastMath.exp(-2 * loghyper.get(0, 0));
 
         Matrix A = X.times(X.transpose());
         return addValue(A, 1).times(it2);
@@ -87,7 +88,7 @@ public class CovLINone implements CovarianceFunction {
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double it2 = Math.exp(-2 * loghyper.get(0, 0));
+        double it2 = FastMath.exp(-2 * loghyper.get(0, 0));
 
         Matrix A = sumRows(Xstar.arrayTimes(Xstar));
 
@@ -115,7 +116,7 @@ public class CovLINone implements CovarianceFunction {
         if (index > numParameters() - 1)
             throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
-        double it2 = Math.exp(-2 * loghyper.get(0, 0));
+        double it2 = FastMath.exp(-2 * loghyper.get(0, 0));
         Matrix A = X.times(X.transpose());
         return addValue(A, 1).times(-2 * it2);
     }

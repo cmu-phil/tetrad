@@ -37,10 +37,10 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -174,7 +174,7 @@ public final class IndTestRegression implements IndependenceTest {
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(this.fishersZ)));
+        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(this.fishersZ)));
     }
 
     /**

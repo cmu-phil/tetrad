@@ -21,8 +21,6 @@ package edu.pitt.dbmi.data.reader.covariance;
 import edu.pitt.dbmi.data.reader.DataFileReader;
 import edu.pitt.dbmi.data.reader.DataReaderException;
 import edu.pitt.dbmi.data.reader.Delimiter;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;

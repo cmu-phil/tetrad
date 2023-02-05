@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
@@ -140,7 +141,7 @@ public final class LvSwap implements GraphSearch {
             List<Node> xParents = GBoss.getParents(x);
 
             int _depth = depth < 0 ? xParents.size() : depth;
-            _depth = Math.min(_depth, xParents.size());
+            _depth = FastMath.min(_depth, xParents.size());
 
             // Order of increasing size
             SublistGenerator gen = new SublistGenerator(xParents.size(), _depth);
@@ -394,7 +395,7 @@ public final class LvSwap implements GraphSearch {
                         List<Node> children = new ArrayList<>(scorer.getAdjacentNodes(y));
 
                         int _depth = depth < 0 ? children.size() : depth;
-                        _depth = Math.min(_depth, children.size());
+                        _depth = FastMath.min(_depth, children.size());
 
                         // Order of increasing size
                         SublistGenerator gen = new SublistGenerator(children.size(), _depth);

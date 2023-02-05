@@ -24,11 +24,12 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.sqrt;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 
 /**
@@ -908,7 +909,7 @@ public class FindOneFactorClusters {
             for (int j = i + 1; j < cluster.size(); j++) {
                 double r = this.corr.getValue(cluster.get(i), cluster.get(j));
                 int N = this.corr.getSampleSize();
-                double f = sqrt(N) * Math.log((1. + r) / (1. - r));
+                double f = sqrt(N) * FastMath.log((1. + r) / (1. - r));
                 double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(f)));
                 if (p > this.alpha) count++;
             }

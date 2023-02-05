@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Calculates the Matthew's correlation coefficient for adjacencies. See this page in
@@ -48,6 +49,6 @@ public class MathewsCorrAdj implements Statistic {
 
         if (b == 0) b = 1;
 
-        return a / Math.sqrt(b);
+        return a / FastMath.sqrt(b);
     }
 }

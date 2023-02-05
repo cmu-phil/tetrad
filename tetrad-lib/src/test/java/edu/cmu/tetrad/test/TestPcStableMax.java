@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DelimiterType;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;

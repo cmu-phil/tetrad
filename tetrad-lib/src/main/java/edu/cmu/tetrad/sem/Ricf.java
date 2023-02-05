@@ -35,6 +35,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.SemGraph;
 import edu.cmu.tetrad.util.MatrixUtils;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -663,7 +664,7 @@ public class Ricf {
     private double lik(DoubleMatrix2D K, DoubleMatrix2D S, int n, int k) {
         Algebra algebra = new Algebra();
         DoubleMatrix2D SK = algebra.mult(S, K);
-        return (algebra.trace(SK) - Math.log(algebra.det(SK)) - k) * n;
+        return (algebra.trace(SK) - FastMath.log(algebra.det(SK)) - k) * n;
     }
 
     //==============================PRIVATE METHODS=======================//

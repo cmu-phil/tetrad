@@ -27,7 +27,6 @@ import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.SemGraphWrapper;

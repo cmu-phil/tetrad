@@ -23,6 +23,7 @@ package edu.cmu.tetrad.util;
 
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import org.apache.commons.math3.linear.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -239,7 +240,7 @@ public class Matrix implements TetradSerializable {
     public boolean equals(Matrix m, double tolerance) {
         for (int i = 0; i < this.apacheData.getRowDimension(); i++) {
             for (int j = 0; j < this.apacheData.getColumnDimension(); j++) {
-                if (Math.abs(this.apacheData.getEntry(i, j) - m.apacheData.getEntry(i, j)) > tolerance) {
+                if (FastMath.abs(this.apacheData.getEntry(i, j) - m.apacheData.getEntry(i, j)) > tolerance) {
                     return false;
                 }
             }

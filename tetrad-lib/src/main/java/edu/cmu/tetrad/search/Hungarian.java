@@ -26,8 +26,8 @@ import edu.cmu.tetrad.util.RandomUtil;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import static java.lang.Math.floor;
-import static java.lang.Math.round;
+import static org.apache.commons.math3.util.FastMath.floor;
+import static org.apache.commons.math3.util.FastMath.round;
 
 /**
  * The Hungarian algorithm for solving the N-Queens problem.

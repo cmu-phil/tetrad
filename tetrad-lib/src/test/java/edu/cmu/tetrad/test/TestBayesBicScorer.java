@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.MathUtils;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -68,14 +69,14 @@ public final class TestBayesBicScorer {
     }
 
     private double prior(double e) {
-        double choose = Math.exp(MathUtils.choose(10 - 1, 1));
-        return choose * Math.pow(e / (10 - 1), 1) * Math.pow(1.0 - e / (10 - 1), (10 - 1 - 1));
+        double choose = FastMath.exp(MathUtils.choose(10 - 1, 1));
+        return choose * FastMath.pow(e / (10 - 1), 1) * FastMath.pow(1.0 - e / (10 - 1), (10 - 1 - 1));
     }
 
     // Greg's structure prior
     private double prior2(double e, int k, int v) {
-        double choose = Math.exp(MathUtils.choose(v - 1, k));
-        return 1.0 / choose;//k * Math.log(e / (v - 1)) + (v - k - 1) * Math.log(1.0 - (e / (v - 1)));
+        double choose = FastMath.exp(MathUtils.choose(v - 1, k));
+        return 1.0 / choose;//k * FastMath.log(e / (v - 1)) + (v - k - 1) * FastMath.log(1.0 - (e / (v - 1)));
     }
 }
 

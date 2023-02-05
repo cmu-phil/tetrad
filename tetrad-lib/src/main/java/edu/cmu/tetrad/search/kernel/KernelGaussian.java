@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.kernel;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Gaussian kernel for a given bandwidth. Default bandwidth is set using the median distance heuristic.
@@ -71,7 +72,7 @@ public final class KernelGaussian implements Kernel {
      * @param j second point
      */
     public double eval(double i, double j) {
-        return Math.exp(-.5 * (Math.pow((i - j), 2) / Math.pow(this.sigma, 2)));
+        return FastMath.exp(-.5 * (FastMath.pow((i - j), 2) / FastMath.pow(this.sigma, 2)));
     }
 
     /**
@@ -92,11 +93,11 @@ public final class KernelGaussian implements Kernel {
         int col = dataset.getColumn(node);
         int m = dataset.getNumRows();
 
-        double[] diff = new double[(int) Math.pow(m, 2) - m];
+        double[] diff = new double[(int) FastMath.pow(m, 2) - m];
         int c = 0;
         for (int i = 0; i < (m - 1); i++) {
             for (int j = (i + 1); j < m; j++) {
-                diff[c] = Math.abs(dataset.getDouble(i, col) - dataset.getDouble(j, col));
+                diff[c] = FastMath.abs(dataset.getDouble(i, col) - dataset.getDouble(j, col));
                 c++;
             }
         }

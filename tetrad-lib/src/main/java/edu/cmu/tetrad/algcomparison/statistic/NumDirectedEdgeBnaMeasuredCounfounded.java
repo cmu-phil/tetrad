@@ -6,8 +6,8 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import static edu.cmu.tetrad.algcomparison.statistic.NumCommonMeasuredAncestorBidirected.existsCommonAncestor;
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
+import static edu.cmu.tetrad.algcomparison.statistic.NumCommonMeasuredAncestorBidirected.existsCommonAncestor;
 
 /**
  * The bidirected true positives.

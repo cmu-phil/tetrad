@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -289,10 +290,10 @@ class GranularityListener implements FocusListener, ActionListener {
 
     public void focusLost(FocusEvent evt) {
         JScrollBar currentBar = ((JScrollBar) this.sp.scrollers.get(this.index));
-        currentBar.setValue((int) Math.floor(currentBar.getMinimum()));
+        currentBar.setValue((int) FastMath.floor(currentBar.getMinimum()));
         int newVisibleAmount = (int) Double.parseDouble(((JTextField) this.sp.granularity.get(this.index)).getText());
-        if (newVisibleAmount > Math.ceil(currentBar.getMaximum()) - Math.floor(currentBar.getMinimum()))
-            newVisibleAmount = (int) (Math.ceil(currentBar.getMaximum()) - Math.floor(currentBar.getMinimum()));
+        if (newVisibleAmount > FastMath.ceil(currentBar.getMaximum()) - FastMath.floor(currentBar.getMinimum()))
+            newVisibleAmount = (int) (FastMath.ceil(currentBar.getMaximum()) - FastMath.floor(currentBar.getMinimum()));
         currentBar.setVisibleAmount(newVisibleAmount);
         ((JLabel) this.sp.slideLabels.get(this.index)).setText("Viewing Range: [" + currentBar.getValue() +
                 ", " + (currentBar.getValue() + currentBar.getVisibleAmount()) + "]");
@@ -365,7 +366,7 @@ class AddVariableListener implements ActionListener {
             if (temp > max) max = temp;
         }
 
-        this.sp.scrollers.add(new JScrollBar(Adjustable.HORIZONTAL, (int) Math.floor(min), 1, (int) Math.floor(min), (int) Math.ceil(max)));
+        this.sp.scrollers.add(new JScrollBar(Adjustable.HORIZONTAL, (int) FastMath.floor(min), 1, (int) FastMath.floor(min), (int) FastMath.ceil(max)));
 
         Box hBox10 = Box.createHorizontalBox();
         hBox10.add(Box.createHorizontalStrut(10));

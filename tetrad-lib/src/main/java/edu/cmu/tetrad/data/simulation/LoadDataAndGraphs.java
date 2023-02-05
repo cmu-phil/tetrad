@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.data.simulation;
 
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.graph.LayoutUtil;

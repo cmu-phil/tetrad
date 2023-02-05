@@ -22,7 +22,6 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetradapp.workbench.DisplayEdge;
-import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 import edu.cmu.tetradapp.workbench.PointPair;
 
 import java.awt.*;

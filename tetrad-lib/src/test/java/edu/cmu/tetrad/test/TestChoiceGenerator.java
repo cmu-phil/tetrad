@@ -22,9 +22,9 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.SelectionGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

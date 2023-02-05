@@ -24,7 +24,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 
 import java.io.PrintStream;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * GesSearch is an implementation of the GES algorithm, as specified in

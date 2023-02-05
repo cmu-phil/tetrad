@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.Callable;
 
-import static java.lang.Math.floor;
+import static org.apache.commons.math3.util.FastMath.floor;
 
 
 /**

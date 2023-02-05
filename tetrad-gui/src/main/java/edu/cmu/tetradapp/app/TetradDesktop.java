@@ -28,6 +28,7 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.ui.tool.SessionFileTransferHandler;
 import edu.cmu.tetradapp.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -135,7 +136,7 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         // Set the "small" size of the frame so that it has sensible
         // bounds when the users unmazimizes it.
         Dimension fullSize = this.desktopPane.getSize();
-        int smallSize = Math.min(fullSize.width - TetradDesktop.MARGIN, fullSize.height
+        int smallSize = FastMath.min(fullSize.width - TetradDesktop.MARGIN, fullSize.height
                 - TetradDesktop.MARGIN);
         Dimension size = new Dimension(smallSize, smallSize);
         TetradDesktop.setGoodBounds(frame, this.desktopPane, size);
@@ -188,9 +189,9 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             y = topMargin;
         }
 
-        int height = Math.min(preferredSize.height, getHeight() - topMargin
+        int height = FastMath.min(preferredSize.height, getHeight() - topMargin
                 - bottomMargin);
-        int width = Math.min(preferredSize.width, getWidth() - leftMargin
+        int width = FastMath.min(preferredSize.width, getWidth() - leftMargin
                 - rightMargin);
 
         if (x + width > getWidth() - rightMargin) {

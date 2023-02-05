@@ -2,6 +2,7 @@ package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +75,7 @@ public class Gdistance {
 
         List<Edge> taskEdges = new ArrayList<>();
         //can change the times 3.0 part if it seems better to do so
-        int taskSize = (int) Math.ceil(graph1.getNumEdges() / (5.0 * this.cores));
+        int taskSize = (int) FastMath.ceil(graph1.getNumEdges() / (5.0 * this.cores));
         System.out.println(" edges1: " + graph1.getNumEdges() + " taskSize: " + taskSize);
 
         for (Edge edge1 : graph1.getEdges()) {
@@ -188,10 +189,10 @@ public class Gdistance {
         double value23 = locationMap.getDouble(2, column2);
 
         //taxicab distance
-        //double taxicab = Math.abs(value11 - value21) + Math.abs(value12 - value22) + Math.abs(value13 - value23);
+        //double taxicab = FastMath.abs(value11 - value21) + FastMath.abs(value12 - value22) + FastMath.abs(value13 - value23);
         //euclidian distance instead of taxicab
 
-        return Math.sqrt((value11 - value21) * x * (value11 - value21) * x + (value12 - value22) * y *
+        return FastMath.sqrt((value11 - value21) * x * (value11 - value21) * x + (value12 - value22) * y *
                 (value12 - value22) * y + (value13 - value23) * z * (value13 - value23) * z);
     }
 
@@ -229,7 +230,7 @@ public class Gdistance {
             double dist21 = Gdistance.nodesDistance(node12, node21, locationMap, xD, yD, zD);
 
             //then return the minimum of the two ways of pairing nodes from each edge
-            return Math.min(dist11 + dist22, dist12 + dist21);
+            return FastMath.min(dist11 + dist22, dist12 + dist21);
         }
 
     }

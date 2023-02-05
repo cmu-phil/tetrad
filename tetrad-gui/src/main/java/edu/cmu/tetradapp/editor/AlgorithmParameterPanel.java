@@ -35,25 +35,15 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LongTextField;
 import edu.cmu.tetradapp.util.StringTextField;
-import java.awt.BorderLayout;
+
+import javax.swing.*;
+import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 
 /**
  * Dec 4, 2017 5:05:42 PM

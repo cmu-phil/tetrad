@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -462,7 +463,7 @@ public final class PcAll implements GraphSearch {
         List<Node> adjk = g.getAdjacentNodes(k);
         List<List<Node>> sepsets = new ArrayList<>();
 
-        for (int d = 0; d <= Math.max(adji.size(), adjk.size()); d++) {
+        for (int d = 0; d <= FastMath.max(adji.size(), adjk.size()); d++) {
             if (adji.size() >= 2 && d <= adji.size()) {
                 ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;

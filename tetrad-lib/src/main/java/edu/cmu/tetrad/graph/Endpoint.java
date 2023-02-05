@@ -23,8 +23,6 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.TetradSerializable;
 
-import java.io.ObjectStreamException;
-
 /**
  * A typesafe enumeration of the types of endpoints that are permitted in
  * Tetrad-style graphs: null (-), arrow (-&gt;), circle (-o), start (-*),

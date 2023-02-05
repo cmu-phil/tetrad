@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.bayes;
 
 import edu.cmu.tetrad.graph.Graph;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * <p>Provides a static method for finding the Euclidean distance between a pair
@@ -62,7 +63,7 @@ final class BayesImDistanceFunction {
             }
         }
 
-        return Math.sqrt(sum);
+        return FastMath.sqrt(sum);
     }
 }
 

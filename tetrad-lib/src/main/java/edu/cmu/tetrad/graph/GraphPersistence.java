@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;

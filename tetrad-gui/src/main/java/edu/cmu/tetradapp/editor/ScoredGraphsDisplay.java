@@ -32,6 +32,7 @@ import edu.cmu.tetradapp.model.ScoredGraphsWrapper;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -112,7 +113,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         if (max != Double.NEGATIVE_INFINITY) {
             Collections.sort(dags, new Comparator<Graph>() {
                 public int compare(Graph graph, Graph graph1) {
-                    return (int) Math.signum(ScoredGraphsDisplay.this.dagsToScores.get(graph) - ScoredGraphsDisplay.this.dagsToScores.get(graph1));
+                    return (int) FastMath.signum(ScoredGraphsDisplay.this.dagsToScores.get(graph) - ScoredGraphsDisplay.this.dagsToScores.get(graph1));
                 }
             });
         }

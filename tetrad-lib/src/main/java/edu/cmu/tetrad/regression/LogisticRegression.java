@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -193,7 +194,7 @@ public class LogisticRegression implements TetradSerializable {
         for (int j = 1; j <= numRegressors; j++) {
             xMeans[j] /= nc;
             xStdDevs[j] /= nc;
-            xStdDevs[j] = Math.sqrt(Math.abs(xStdDevs[j] - xMeans[j] * xMeans[j]));
+            xStdDevs[j] = FastMath.sqrt(FastMath.abs(xStdDevs[j] - xMeans[j] * xMeans[j]));
         }
         xMeans[0] = 0.0;
         xStdDevs[0] = 1.0;
@@ -210,7 +211,7 @@ public class LogisticRegression implements TetradSerializable {
         double[] parStdErr = new double[numRegressors + 1];
         double[] coefficients;
 
-        par[0] = Math.log((double) ny1 / (double) ny0);
+        par[0] = FastMath.log((double) ny1 / (double) ny0);
         for (int j = 1; j <= numRegressors; j++) {
             par[j] = 0.0;
         }
@@ -224,7 +225,7 @@ public class LogisticRegression implements TetradSerializable {
         double ll = 1e+10;
         double llN = 0.0;
 
-        while (Math.abs(llP - ll) > 1e-7) {   /// 1e-7
+        while (FastMath.abs(llP - ll) > 1e-7) {   /// 1e-7
 
             llP = ll;
             ll = 0.0;
@@ -244,20 +245,20 @@ public class LogisticRegression implements TetradSerializable {
                 }
 
                 if (v > 15.0) {
-                    lnV = -Math.exp(-v);
+                    lnV = -FastMath.exp(-v);
                     ln1mV = -v;
-                    q = Math.exp(-v);
-                    v = Math.exp(lnV);
+                    q = FastMath.exp(-v);
+                    v = FastMath.exp(lnV);
                 } else {
                     if (v < -15.0) {
                         lnV = v;
-                        ln1mV = -Math.exp(v);
-                        q = Math.exp(v);
-                        v = Math.exp(lnV);
+                        ln1mV = -FastMath.exp(v);
+                        q = FastMath.exp(v);
+                        v = FastMath.exp(lnV);
                     } else {
-                        v = 1.0 / (1 + Math.exp(-v));
-                        lnV = Math.log(v);
-                        ln1mV = Math.log(1.0 - v);
+                        v = 1.0 / (1 + FastMath.exp(-v));
+                        lnV = FastMath.log(v);
+                        ln1mV = FastMath.log(1.0 - v);
                         q = v * (1.0 - v);
                     }
                 }
@@ -315,15 +316,15 @@ public class LogisticRegression implements TetradSerializable {
 
         for (int j = 1; j <= numRegressors; j++) {
             par[j] = par[j] / xStdDevs[j];
-            parStdErr[j] = Math.sqrt(arr[j][j]) / xStdDevs[j];
+            parStdErr[j] = FastMath.sqrt(arr[j][j]) / xStdDevs[j];
             par[0] = par[0] - par[j] * xMeans[j];
             double zScore = par[j] / parStdErr[j];
-            double prob = norm(Math.abs(zScore));
+            double prob = norm(FastMath.abs(zScore));
 
             pValues[j] = prob;
         }
 
-        parStdErr[0] = Math.sqrt(arr[0][0]);
+        parStdErr[0] = FastMath.sqrt(arr[0][0]);
         double zScore = par[0] / parStdErr[0];
         pValues[0] = norm(zScore);
 
@@ -339,11 +340,11 @@ public class LogisticRegression implements TetradSerializable {
 
     private double norm(double z) {
         double q = z * z;
-        final double piOver2 = Math.PI / 2.0;
+        final double piOver2 = FastMath.PI / 2.0;
 
-        if (Math.abs(q) > 7.0) {
-            return (1.0 - 1.0 / q + 3.0 / (q * q)) * Math.exp(-q / 2.0) /
-                    (Math.abs(z) * Math.sqrt(piOver2));
+        if (FastMath.abs(q) > 7.0) {
+            return (1.0 - 1.0 / q + 3.0 / (q * q)) * FastMath.exp(-q / 2.0) /
+                    (FastMath.abs(z) * FastMath.sqrt(piOver2));
         } else {
             return new ChiSquaredDistribution(1).cumulativeProbability(q);
         }

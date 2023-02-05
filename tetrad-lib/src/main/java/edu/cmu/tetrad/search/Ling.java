@@ -50,7 +50,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * The code used within this class is largely Gustave Lacerda's, which corresponds to his essay, Discovering Cyclic

@@ -31,10 +31,10 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -183,8 +183,8 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         if (r > 1) r = 1;
         if (r < -1) r = -1;
 
-        this.fishersZ = Math.sqrt(sampleSize() - z.size() - 3.0) *
-                0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+        this.fishersZ = FastMath.sqrt(sampleSize() - z.size() - 3.0) *
+                0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
         if (Double.isNaN(this.fishersZ)) {
             throw new IllegalArgumentException("The Fisher's Z " +
@@ -192,10 +192,10 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
                     " | " + z + " is undefined.");
         }
 
-        boolean indFisher = !(Math.abs(this.fishersZ) > this.thresh);
+        boolean indFisher = !(FastMath.abs(this.fishersZ) > this.thresh);
 
         //System.out.println("thresh = " + thresh);
-        //if(Math.abs(fishersZ) > 1.96) indFisher = false; //Two sided with alpha = 0.05
+        //if(FastMath.abs(fishersZ) > 1.96) indFisher = false; //Two sided with alpha = 0.05
         //Two sided
 
         if (this.verbose) {
@@ -216,7 +216,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * @return the probability associated with the most recently computed independence test.
      */
     public double getPValue() {
-        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(this.fishersZ)));
+        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(this.fishersZ)));
     }
 
     /**

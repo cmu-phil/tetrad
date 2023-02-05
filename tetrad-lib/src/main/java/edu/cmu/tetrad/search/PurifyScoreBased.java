@@ -29,6 +29,7 @@ import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MatrixUtils;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -505,7 +506,7 @@ public class PurifyScoreBased implements IPurify {
                 if (newScore == -Double.MAX_VALUE) {
                     break;
                 }
-            } while (Math.abs(score - newScore) > 1.E-3);
+            } while (FastMath.abs(score - newScore) > 1.E-3);
             System.out.println(newScore);
             if (newScore > bestScore && !Double.isInfinite(newScore)) {
                 bestScore = newScore;
@@ -1294,13 +1295,13 @@ public class PurifyScoreBased implements IPurify {
             change = 0.;
             for (int i = 0; i < this.covErrors.length; i++) {
                 for (int j = i; j < this.covErrors.length; j++) {
-                    change += Math.abs(
+                    change += FastMath.abs(
                             this.oldCovErrors[i][j] - this.covErrors[i][j]);
                 }
             }
             for (int i = 0; i < this.numObserved; i++) {
                 for (int j = 0; j < this.betas[i].length; j++) {
-                    change += Math.abs(this.oldBetas[i][j] - this.betas[i][j]);
+                    change += FastMath.abs(this.oldBetas[i][j] - this.betas[i][j]);
                 }
             }
             iter++;
@@ -1369,7 +1370,7 @@ public class PurifyScoreBased implements IPurify {
             }
 
             return -semIm.getTruncLL() - 0.5 * semIm.getNumFreeParams() *
-                    Math.log(this.covarianceMatrix.getSampleSize());
+                    FastMath.log(this.covarianceMatrix.getSampleSize());
         } catch (java.lang.IllegalArgumentException e) {
             System.out.println("** Warning: " + e.toString());
             return -Double.MAX_VALUE;
@@ -1662,7 +1663,7 @@ public class PurifyScoreBased implements IPurify {
             System.out.println("trunk ll = " + semIm.getTruncLL());
 
             return -semIm.getTruncLL() - 0.5 * semIm.getNumFreeParams() *
-                    Math.log(this.covarianceMatrix.getSampleSize());
+                    FastMath.log(this.covarianceMatrix.getSampleSize());
         } catch (IllegalArgumentException e) {
             return -Double.MAX_VALUE;
         }

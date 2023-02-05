@@ -1,8 +1,14 @@
 package edu.cmu.tetrad.algcomparison.algorithm.external;
 
 import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
-import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.SimpleDataLoader;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.data.reader.Delimiter;
 

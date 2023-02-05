@@ -1,11 +1,15 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 import static java.lang.Double.NEGATIVE_INFINITY;

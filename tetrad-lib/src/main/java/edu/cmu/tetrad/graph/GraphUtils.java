@@ -22,8 +22,13 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.search.FciOrient;
+import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.SepsetProducer;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.TextTable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;

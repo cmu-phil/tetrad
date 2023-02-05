@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
 
@@ -151,13 +152,13 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
                 int rowCount = n_j[rowIndex];
 
                 if (cellCount == 0) continue;
-                lik += cellCount * Math.log(cellCount / (double) rowCount);
+                lik += cellCount * FastMath.log(cellCount / (double) rowCount);
             }
         }
 
         int params = r * (c - 1);
 
-        double score = 2 * lik - this.penaltyDiscount * params * Math.log(N) + 2 * getPriorForStructure(parents.length);
+        double score = 2 * lik - this.penaltyDiscount * params * FastMath.log(N) + 2 * getPriorForStructure(parents.length);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
@@ -169,7 +170,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
     private double getPriorForStructure(int numParents) {
         double e = getStructurePrior();
         int vm = this.data.length - 1;
-        return numParents * Math.log(e / (vm)) + (vm - numParents) * Math.log(1.0 - (e / (vm)));
+        return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
     }
 
     @Override

@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;
@@ -1373,7 +1374,7 @@ public class Dci {
     private void simpleColliderIterator(int skeletonsLeft) {
         Set<Set<Triple>> necessaryEdges = new HashSet<>();
         PowerSet<Triple> pset = new PowerSet<>(this.currentPossibleColliders);
-        int psetsize = (int) java.lang.Math.pow(2, this.currentPossibleColliders.size());
+        int psetsize = (int) org.apache.commons.math3.util.FastMath.pow(2, this.currentPossibleColliders.size());
         for (Set<Triple> set : pset) {
             System.out.println("Searching Possible PAGs: " + psetsize + " (" + skeletonsLeft + " Skeletons Remaining)");
             psetsize--;
@@ -1905,7 +1906,7 @@ public class Dci {
             }
 //            condSet.remove(remove);
             int c = 1;
-            int cs = (int) Math.pow(2, condSet.size());
+            int cs = (int) FastMath.pow(2, condSet.size());
             for (Set<Node> set : new PowerSet<>(condSet)) {
                 System.out.println("Resolving inconsistencies... " + c + " of " + cs + " (" + p + " of " + pairs.size() + " pairs)");
                 c++;
@@ -2013,7 +2014,7 @@ public class Dci {
             possibleNodes.addAll(graph.getAdjacentNodes(x));
             possibleNodes.addAll(graph.getAdjacentNodes(y));
             int c = 1;
-            int ps = (int) Math.pow(2, possibleNodes.size());
+            int ps = (int) FastMath.pow(2, possibleNodes.size());
             for (Set<Node> condSet : new PowerSet<>(possibleNodes)) {
                 System.out.println("Getting closure set... " + c + " of " + ps + "(" + p + " of " + pairs.size() + " remaining)");
                 if (graph.paths().isDSeparatedFrom(x, y, new ArrayList<>(condSet))) {

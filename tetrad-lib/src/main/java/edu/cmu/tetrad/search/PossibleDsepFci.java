@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -133,7 +134,7 @@ public class PossibleDsepFci {
 
         int _depth = getDepth() == -1 ? 1000 : getDepth();
 
-        for (int d = 0; d <= Math.min(_depth, possParents.size()); d++) {
+        for (int d = 0; d <= FastMath.min(_depth, possParents.size()); d++) {
             ChoiceGenerator cg = new ChoiceGenerator(possParents.size(), d);
             int[] choice;
 

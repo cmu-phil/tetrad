@@ -25,6 +25,7 @@ import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -395,12 +396,12 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
         if (min != Double.NEGATIVE_INFINITY && max != Double.POSITIVE_INFINITY) {
             f = min + ((double) slider / n) * (max - min);
         } else if (min != Double.NEGATIVE_INFINITY) {
-            f = min + Math.tan(((double) slider / n) * (Math.PI / 2));
+            f = min + FastMath.tan(((double) slider / n) * (FastMath.PI / 2));
         } else if (max != Double.POSITIVE_INFINITY) {
-            f = max + Math.tan(-(((double) n - slider) / n) * (Math.PI / 2));
+            f = max + FastMath.tan(-(((double) n - slider) / n) * (FastMath.PI / 2));
 //            System.out.println("slider = " + slider + " min = " + min + " max = " + max + "  f = " + f);
         } else {
-            f = Math.tan(-Math.PI / 2 + ((double) slider / n) * Math.PI);
+            f = FastMath.tan(-FastMath.PI / 2 + ((double) slider / n) * FastMath.PI);
         }
         return f;
     }
@@ -410,15 +411,15 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
         if (min != Double.NEGATIVE_INFINITY && max != Double.POSITIVE_INFINITY) {
             x = n * (value - min) / (max - min);
         } else if (min != Double.NEGATIVE_INFINITY) {
-            x = (2. * n) / Math.PI * Math.atan(value - min);
+            x = (2. * n) / FastMath.PI * FastMath.atan(value - min);
         } else if (max != Double.POSITIVE_INFINITY) {
-            x = n + (2. * n) / Math.PI * Math.atan(value - max);
+            x = n + (2. * n) / FastMath.PI * FastMath.atan(value - max);
 //            System.out.println("value = " + value + " x = " + x);
         } else {
-            x = (n / Math.PI) * (Math.atan(value) + Math.PI / 2);
+            x = (n / FastMath.PI) * (FastMath.atan(value) + FastMath.PI / 2);
         }
 
-        int slider = (int) Math.round(x);
+        int slider = (int) FastMath.round(x);
         if (slider > 100) {
             slider = 100;
         }

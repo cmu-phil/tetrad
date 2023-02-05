@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Tests the MeasurementSimulator class using diagnostics devised by Richard
@@ -256,8 +257,8 @@ public class TestMeasurementSimulator extends TestCase {
         double gene3time1mean =
                 Descriptive.mean(new DoubleArrayList(measuredData[2][0]));
 
-        TestCase.assertEquals(Math.abs(0.1 * gene2time1mean), gene2time1sd, 0.03);
-        TestCase.assertEquals(Math.abs(0.1 * gene3time1mean), gene3time1sd, 0.03);
+        TestCase.assertEquals(FastMath.abs(0.1 * gene2time1mean), gene2time1sd, 0.03);
+        TestCase.assertEquals(FastMath.abs(0.1 * gene3time1mean), gene3time1sd, 0.03);
     }
 
     /**

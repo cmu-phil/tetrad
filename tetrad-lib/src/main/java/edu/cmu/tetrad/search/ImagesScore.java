@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
 
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Implements a score to average results over multiple scores.

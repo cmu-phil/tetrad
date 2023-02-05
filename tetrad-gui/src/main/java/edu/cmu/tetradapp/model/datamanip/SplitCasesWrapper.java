@@ -29,7 +29,6 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**

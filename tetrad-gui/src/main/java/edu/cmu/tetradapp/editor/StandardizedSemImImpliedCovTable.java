@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.table.AbstractTableModel;
 import java.text.NumberFormat;
@@ -165,7 +166,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
                 double d1 = implCovar[i][j];
                 double d2 = implCovar[i][i];
                 double d3 = implCovar[j][j];
-                double d4 = d1 / Math.pow(d2 * d3, 0.5);
+                double d4 = d1 / FastMath.pow(d2 * d3, 0.5);
 
                 if (d4 <= 1.0 || Double.isNaN(d4)) {
                     corr[i][j] = d4;
@@ -173,7 +174,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
                     throw new IllegalArgumentException(
                             "Off-diagonal element at (" + i + ", " + j +
                                     ") cannot be converted to correlation: " +
-                                    d1 + " <= Math.pow(" + d2 + " * " + d3 +
+                                    d1 + " <= FastMath.pow(" + d2 + " * " + d3 +
                                     ", 0.5)");
                 }
             }

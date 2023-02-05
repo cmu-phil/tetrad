@@ -28,6 +28,7 @@
 package jgpml.covariancefunctions;
 
 import Jama.Matrix;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Neural network covariance function with a single parameter for the distance
@@ -77,11 +78,11 @@ public class CovNNoneNoise implements CovarianceFunction {
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double ell = Math.exp(loghyper.get(0, 0));
+        double ell = FastMath.exp(loghyper.get(0, 0));
         double em2 = 1 / (ell * ell);
         double oneplusem2 = 1 + em2;
-        double sf2 = Math.exp(2 * loghyper.get(1, 0));
-        double s2 = Math.exp(2 * loghyper.get(2, 0));
+        double sf2 = FastMath.exp(2 * loghyper.get(1, 0));
+        double s2 = FastMath.exp(2 * loghyper.get(2, 0));
 
         int m = X.getRowDimension();
         int n = X.getColumnDimension();
@@ -101,7 +102,7 @@ public class CovNNoneNoise implements CovarianceFunction {
 
         double[] dq = new double[m];
         for (int i = 0; i < m; i++) {
-            dq[i] = Math.sqrt(oneplusem2 + this.q[i][i]);
+            dq[i] = FastMath.sqrt(oneplusem2 + this.q[i][i]);
         }
 
         //K = new Matrix(m,m);
@@ -114,7 +115,7 @@ public class CovNNoneNoise implements CovarianceFunction {
             for (int j = 0; j < m; j++) {
                 double t = (em2 + this.q[i][j]) / (dqi * dq[j]);
                 this.k[i][j] = t;
-                a[i][j] = sf2 * Math.asin(t);
+                a[i][j] = sf2 * FastMath.asin(t);
             }
             a[i][i] += s2;
         }
@@ -135,11 +136,11 @@ public class CovNNoneNoise implements CovarianceFunction {
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double ell = Math.exp(loghyper.get(0, 0));
+        double ell = FastMath.exp(loghyper.get(0, 0));
         double em2 = 1 / (ell * ell);
         double oneplusem2 = 1 + em2;
-        double sf2 = Math.exp(2 * loghyper.get(1, 0));
-        double s2 = Math.exp(2 * loghyper.get(2, 0));
+        double sf2 = FastMath.exp(2 * loghyper.get(1, 0));
+        double s2 = FastMath.exp(2 * loghyper.get(2, 0));
 
 
         int m = X.getRowDimension();
@@ -163,7 +164,7 @@ public class CovNNoneNoise implements CovarianceFunction {
         Matrix A = new Matrix(mstar, 1);
         double[][] a = A.getArray();
         for (int i = 0; i < mstar; i++) {
-            a[i][0] = sf2 * Math.asin((em2 + sumxstardotTimesxstar[i]) / (oneplusem2 + sumxstardotTimesxstar[i])) + s2;
+            a[i][0] = sf2 * FastMath.asin((em2 + sumxstardotTimesxstar[i]) / (oneplusem2 + sumxstardotTimesxstar[i])) + s2;
         }
 
 
@@ -193,7 +194,7 @@ public class CovNNoneNoise implements CovarianceFunction {
 
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < mstar; j++) {
-                b[i][j] = sf2 * Math.asin(b[i][j] / Math.sqrt((sumxstardotTimesxstar[j] + oneplusem2) * sumxdotTimesx[i]));
+                b[i][j] = sf2 * FastMath.asin(b[i][j] / FastMath.sqrt((sumxstardotTimesxstar[j] + oneplusem2) * sumxdotTimesx[i]));
             }
         }
 
@@ -217,11 +218,11 @@ public class CovNNoneNoise implements CovarianceFunction {
         if (index > numParameters() - 1)
             throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
-        double ell = Math.exp(loghyper.get(0, 0));
+        double ell = FastMath.exp(loghyper.get(0, 0));
         double em2 = 1 / (ell * ell);
         double oneplusem2 = 1 + em2;
-        double twosf2 = 2 * Math.exp(2 * loghyper.get(1, 0));
-        double twos2 = 2 * Math.exp(2 * loghyper.get(2, 0));
+        double twosf2 = 2 * FastMath.exp(2 * loghyper.get(1, 0));
+        double twos2 = 2 * FastMath.exp(2 * loghyper.get(2, 0));
 
         int m = X.getRowDimension();
         int n = X.getColumnDimension();
@@ -243,7 +244,7 @@ public class CovNNoneNoise implements CovarianceFunction {
 
         double[] dq = new double[m];
         for (int i = 0; i < m; i++) {
-            dq[i] = Math.sqrt(oneplusem2 + this.q[i][i]);
+            dq[i] = FastMath.sqrt(oneplusem2 + this.q[i][i]);
         }
 //        double[][] k=null;
         if (this.k == null || this.k.length != m || this.k[0].length != m) {
@@ -276,9 +277,9 @@ public class CovNNoneNoise implements CovarianceFunction {
                 for (int i = 0; i < m; i++) {
                     double vi = v[i];
                     for (int j = 0; j < m; j++) {
-                        double t = (this.q[i][j] + em2) / (Math.sqrt(dq[i]) * Math.sqrt(dq[j]));
+                        double t = (this.q[i][j] + em2) / (FastMath.sqrt(dq[i]) * FastMath.sqrt(dq[j]));
                         double kij = this.k[i][j];
-                        this.q[i][j] = -twosf2 * ((t - (0.5 * kij * (vi + v[j]))) / Math.sqrt(1 - kij * kij));
+                        this.q[i][j] = -twosf2 * ((t - (0.5 * kij * (vi + v[j]))) / FastMath.sqrt(1 - kij * kij));
                     }
                 }
 
@@ -289,7 +290,7 @@ public class CovNNoneNoise implements CovarianceFunction {
             case 1:
                 for (int i = 0; i < m; i++) {
                     for (int j = 0; j < m; j++) {
-                        this.k[i][j] = Math.asin(this.k[i][j]) * twosf2;
+                        this.k[i][j] = FastMath.asin(this.k[i][j]) * twosf2;
                     }
                 }
                 A = new Matrix(this.k);
@@ -320,9 +321,9 @@ public class CovNNoneNoise implements CovarianceFunction {
 
         for (int i = 0; i < X.getRowDimension(); i++)
             for (int j = 0; j < X.getColumnDimension(); j++)
-                X.set(i, j, Math.random());
+                X.set(i, j, FastMath.random());
 
-        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}, {Math.log(0.1)}});
+        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}, {FastMath.log(0.1)}});
 
         Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
 
