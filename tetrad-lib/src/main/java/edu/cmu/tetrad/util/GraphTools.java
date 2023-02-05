@@ -5,7 +5,11 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.EdgeTypeProbability;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+import static edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble.Highest;
+import static edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble.Majority;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A utility for computing frequency probabilities.
@@ -137,6 +142,42 @@ public final class GraphTools {
         return highestEdgeTypeProb;
     }
 
+    private static EdgeTypeProbability getHighestEdgeTypeProbability(List<EdgeTypeProbability> edgeTypeProbabilities, ResamplingEdgeEnsemble edgeEnsemble) {
+        EdgeTypeProbability highestEdgeTypeProb = null;
+
+        if (!(edgeTypeProbabilities == null || edgeTypeProbabilities.isEmpty())) {
+            double maxEdgeProb = 0;
+            double noEdgeProb = 0;
+            for (EdgeTypeProbability etp : edgeTypeProbabilities) {
+                EdgeTypeProbability.EdgeType edgeType = etp.getEdgeType();
+                double prob = etp.getProbability();
+                if (edgeType == EdgeTypeProbability.EdgeType.nil) {
+                    noEdgeProb = prob;
+                } else {
+                    if (prob > maxEdgeProb) {
+                        highestEdgeTypeProb = etp;
+                        maxEdgeProb = prob;
+                    }
+                }
+            }
+
+            switch (edgeEnsemble) {
+                case Highest:
+                    if (noEdgeProb > maxEdgeProb) {
+                        highestEdgeTypeProb = null;
+                    }
+                    break;
+                case Majority:
+                    if (noEdgeProb > maxEdgeProb || maxEdgeProb < .5) {
+                        highestEdgeTypeProb = null;
+                    }
+                    break;
+            }
+        }
+
+        return highestEdgeTypeProb;
+    }
+
     private static Edge createEdge(EdgeTypeProbability edgeTypeProbability, Node n1, Node n2) {
         if (edgeTypeProbability == null) {
             return null;
@@ -180,7 +221,8 @@ public final class GraphTools {
     }
 
     public static Graph createHighEdgeProbabilityGraph(List<Graph> graphs) {
-        if (graphs == null || graphs.isEmpty()) {
+        graphs = addPagColorings(graphs);
+        if (graphs.isEmpty()) {
             return new EdgeListGraph();
         }
 
@@ -210,6 +252,56 @@ public final class GraphTools {
         graph = computeEdgeProbabilities(graph);
 
         return graph;
+    }
+
+    public static Graph createHighEdgeProbabilityGraph(List<Graph> graphs, ResamplingEdgeEnsemble edgeEnsemble) {
+        graphs = addPagColorings(graphs);
+        if (graphs.isEmpty()) {
+            return new EdgeListGraph();
+        }
+
+        List<Node> nodes = graphs.get(0).getNodes();
+        Collections.sort(nodes);
+
+        Graph graph = new EdgeListGraph(nodes);
+        for (Edge e : getUndirectedEdges(graphs)) {
+            Node n1 = e.getNode1();
+            Node n2 = e.getNode2();
+
+            List<EdgeTypeProbability> edgeTypeProbabilities = getEdgeTypeProbabilities(n1, n2, graphs);
+
+            EdgeTypeProbability highestEdgeTypeProb = getHighestEdgeTypeProbability(edgeTypeProbabilities, edgeEnsemble);
+            Edge edge = createEdge(highestEdgeTypeProb, n1, n2);
+            if (edge != null) {
+                for (EdgeTypeProbability etp : edgeTypeProbabilities) {
+                    edge.addEdgeTypeProbability(etp);
+                }
+
+                for (Edge.Property property : highestEdgeTypeProb.getProperties()) {
+                    edge.addProperty(property);
+                }
+
+                graph.addEdge(edge);
+            }
+        }
+
+        graph = computeEdgeProbabilities(graph);
+
+        return graph;
+    }
+
+    private static List<Graph> addPagColorings(List<Graph> graphs) {
+        if (graphs == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return graphs.stream()
+                .filter(graph -> graph != null)
+                .map(graph -> {
+                    GraphUtils.addPagColoring(graph);
+                    return graph;
+                })
+                .collect(Collectors.toList());
     }
 
 }
