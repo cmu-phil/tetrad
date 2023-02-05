@@ -28,6 +28,7 @@ import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.SplashScreen;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -172,7 +173,7 @@ public final class Tetrad implements PropertyChangeListener {
             @Override
             public Dimension getPreferredSize() {
                 Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-                double minLength = Math.min(size.getWidth(), size.getHeight());
+                double minLength = FastMath.min(size.getWidth(), size.getHeight());
                 double height = minLength * 0.8;
                 double width = height * (4.0 / 3);
 

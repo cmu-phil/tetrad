@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Performs conditional independence tests of discrete data using the G Square method. Degrees of freedom are calculated

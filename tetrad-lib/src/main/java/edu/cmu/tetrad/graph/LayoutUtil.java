@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.text.NumberFormat;
@@ -49,8 +50,8 @@ public class LayoutUtil {
         double phi = .75 * 6.28;    // start from 12 o'clock.
 
         for (Node node : nodes) {
-            int centerX = centerx + (int) (radius * Math.cos(phi));
-            int centerY = centery + (int) (radius * Math.sin(phi));
+            int centerX = centerx + (int) (radius * FastMath.cos(phi));
+            int centerY = centery + (int) (radius * FastMath.sin(phi));
 
             node.setCenterX(centerX);
             node.setCenterY(centerY);
@@ -395,7 +396,7 @@ public class LayoutUtil {
                         return;
                     }
 
-                    if (Math.abs(delta - oldDelta) < 0.001) {
+                    if (FastMath.abs(delta - oldDelta) < 0.001) {
                         this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
                                 2 * jump) - jump;
                         this.p[m[0]][1] += RandomUtil.getInstance().nextInt(
@@ -448,7 +449,7 @@ public class LayoutUtil {
 
             for (int i = 0; i < n - 1; i++) {
                 for (int j = i + 1; j < n; j++) {
-                    sum += 0.5 * this.k[i][j] * Math.pow(distance(i, j) - this.l[i][j], 2.0);
+                    sum += 0.5 * this.k[i][j] * FastMath.pow(distance(i, j) - this.l[i][j], 2.0);
                 }
             }
 
@@ -480,7 +481,7 @@ public class LayoutUtil {
         private double delta(int i) {
             double partialX = firstPartial(i, 0, 1.e-4);
             double partialY = firstPartial(i, 1, 1.e-4);
-            return Math.sqrt(partialX * partialX + partialY * partialY);
+            return FastMath.sqrt(partialX * partialX + partialY * partialY);
         }
 
         private double firstPartial(int i, int var, double h) {
@@ -526,7 +527,7 @@ public class LayoutUtil {
             double x2 = this.p[j][0];
             double y2 = this.p[j][1];
 
-            return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+            return FastMath.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
         }
 
         /**
@@ -560,7 +561,7 @@ public class LayoutUtil {
 
                 for (int i = 0; i < getComponentNodes().size(); i++) {
                     for (int j = 0; j < getComponentNodes().size(); j++) {
-                        I2[i][j] = Math.min(I1[i][j], I1[i][k] + I1[k][j]);
+                        I2[i][j] = FastMath.min(I1[i][j], I1[i][k] + I1[k][j]);
                     }
                 }
 
@@ -749,9 +750,9 @@ public class LayoutUtil {
                     double norm = norm(nodeDisposition()[v][0], nodeDisposition()[v][1]);
 
                     nodePosition()[v][0] += (nodeDisposition()[v][0] / norm) *
-                            Math.min(norm, getTemperature());
+                            FastMath.min(norm, getTemperature());
                     nodePosition()[v][1] += (nodeDisposition()[v][1] / norm) *
-                            Math.min(norm, getTemperature());
+                            FastMath.min(norm, getTemperature());
 
                     if (Double.isNaN(nodePosition()[v][0]) ||
                             Double.isNaN(nodePosition()[v][1])) {
@@ -806,7 +807,7 @@ public class LayoutUtil {
         }
 
         private double norm(double x, double y) {
-            return Math.sqrt(x * x + y * y);
+            return FastMath.sqrt(x * x + y * y);
         }
 
         private Graph graph() {

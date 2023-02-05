@@ -28,6 +28,7 @@
 package jgpml.covariancefunctions;
 
 import Jama.Matrix;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
 
@@ -73,8 +74,8 @@ public class CovSEiso implements CovarianceFunction {
         if (loghyper.getColumnDimension() != 1 || loghyper.getRowDimension() != numParameters())
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
-        double ell = Math.exp(loghyper.get(0, 0));
-        double sf2 = Math.exp(2 * loghyper.get(1, 0));
+        double ell = FastMath.exp(loghyper.get(0, 0));
+        double sf2 = FastMath.exp(2 * loghyper.get(1, 0));
 
         return exp(CovSEiso.squareDist(X.transpose().times(1 / ell)).times(-0.5)).times(sf2);
     }
@@ -93,8 +94,8 @@ public class CovSEiso implements CovarianceFunction {
             throw new IllegalArgumentException("Wrong number of hyperparameters, " + loghyper.getRowDimension() + " instead of " + numParameters());
 
 
-        double ell = Math.exp(loghyper.get(0, 0));
-        double sf2 = Math.exp(2 * loghyper.get(1, 0));
+        double ell = FastMath.exp(loghyper.get(0, 0));
+        double sf2 = FastMath.exp(2 * loghyper.get(1, 0));
         double[] a = new double[Xstar.getRowDimension()];
         Arrays.fill(a, sf2);
         Matrix A = new Matrix(a, a.length);
@@ -120,8 +121,8 @@ public class CovSEiso implements CovarianceFunction {
         if (index > numParameters() - 1)
             throw new IllegalArgumentException("Wrong hyperparameters index " + index + " it should be smaller or equal to " + (numParameters() - 1));
 
-        double ell = Math.exp(loghyper.get(0, 0));
-        double sf2 = Math.exp(2 * loghyper.get(1, 0));
+        double ell = FastMath.exp(loghyper.get(0, 0));
+        double sf2 = FastMath.exp(2 * loghyper.get(1, 0));
 
         Matrix tmp = CovSEiso.squareDist(X.transpose().times(1 / ell));
         Matrix A = null;

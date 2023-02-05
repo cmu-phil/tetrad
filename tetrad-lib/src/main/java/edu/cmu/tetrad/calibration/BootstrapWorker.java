@@ -2,6 +2,7 @@ package edu.cmu.tetrad.calibration;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
 //MP: Each BootstrapWorker object will run the RFCI method on one Bootstrap and append the results to the results list
 class BootstrapWorker extends Thread {
     //MP: Class variables declaration
-    private static final int nprocessor = Math.max(Runtime.getRuntime().availableProcessors() - 1, 1); // Retain one processor for the current process
+    private static final int nprocessor = FastMath.max(Runtime.getRuntime().availableProcessors() - 1, 1); // Retain one processor for the current process
 
     public static double alpha;
     public static int BootstrapNum = -1; // total number of bootstrap instances that must be executed

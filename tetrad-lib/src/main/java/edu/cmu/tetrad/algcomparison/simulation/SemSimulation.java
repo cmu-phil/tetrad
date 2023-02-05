@@ -14,6 +14,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +87,7 @@ public class SemSimulation implements Simulation {
                 for (int k = 0; k < dataSet.getNumRows(); k++) {
                     for (int j = 0; j < dataSet.getNumColumns(); j++) {
                         double d = dataSet.getDouble(k, j);
-                        double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
                         dataSet.setDouble(k, j, d + norm);
                     }
                 }

@@ -28,6 +28,7 @@ import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.util.IntSpinner;
 import edu.cmu.tetradapp.workbench.LayoutUtils;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -180,7 +181,7 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         JLabel discreteLabel = new JLabel("Variables:");
 
         JScrollPane discreteListPane = new JScrollPane(discretizeVariableList);
-        int width2 = Math.max(100, discreteLabel.getPreferredSize().width);
+        int width2 = FastMath.max(100, discreteLabel.getPreferredSize().width);
         LayoutUtils.setAllSizes(discreteListPane, new Dimension(width2, 350 - discreteLabel.getPreferredSize().height));
 
         discreteSelectionBox.add(Box.createVerticalStrut(5));

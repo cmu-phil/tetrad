@@ -24,6 +24,7 @@ package edu.cmu.tetrad.calculator.expression;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -291,7 +292,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.ceil(getExpressions().get(0).evaluate(context));
+                    return FastMath.ceil(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -315,7 +316,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.signum(getExpressions().get(0).evaluate(context));
+                    return FastMath.signum(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -342,7 +343,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.cos(getExpressions().get(0).evaluate(context));
+                    return FastMath.cos(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -366,7 +367,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.cosh(getExpressions().get(0).evaluate(context));
+                    return FastMath.cosh(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -390,7 +391,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.acos(getExpressions().get(0).evaluate(context));
+                    return FastMath.acos(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -418,7 +419,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.floor(getExpressions().get(0).evaluate(context));
+                    return FastMath.floor(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -445,7 +446,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.abs(getExpressions().get(0).evaluate(context));
+                    return FastMath.abs(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -469,7 +470,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.log10(getExpressions().get(0).evaluate(context));
+                    return FastMath.log10(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -556,7 +557,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.log(getExpressions().get(0).evaluate(context));
+                    return FastMath.log(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -582,7 +583,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.random();
+                    return FastMath.random();
                 }
             };
         }
@@ -609,7 +610,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.round(getExpressions().get(0).evaluate(context));
+                    return FastMath.round(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -637,7 +638,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.tan(getExpressions().get(0).evaluate(context));
+                    return FastMath.tan(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -661,7 +662,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.tanh(getExpressions().get(0).evaluate(context));
+                    return FastMath.tanh(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -685,7 +686,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.atan(getExpressions().get(0).evaluate(context));
+                    return FastMath.atan(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -710,7 +711,7 @@ public class ExpressionManager {
 
                 public double evaluate(Context context) {
                     double t = getExpressions().get(0).evaluate(context);
-                    return 1.0 / (1.0 + Math.exp(-t));
+                    return 1.0 / (1.0 + FastMath.exp(-t));
                 }
             };
         }
@@ -737,7 +738,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.sqrt(getExpressions().get(0).evaluate(context));
+                    return FastMath.sqrt(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -764,7 +765,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.sin(getExpressions().get(0).evaluate(context));
+                    return FastMath.sin(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -788,7 +789,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.sinh(getExpressions().get(0).evaluate(context));
+                    return FastMath.sinh(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -812,7 +813,7 @@ public class ExpressionManager {
                 static final long serialVersionUID = 23L;
 
                 public double evaluate(Context context) {
-                    return Math.asin(getExpressions().get(0).evaluate(context));
+                    return FastMath.asin(getExpressions().get(0).evaluate(context));
                 }
             };
         }
@@ -845,7 +846,7 @@ public class ExpressionManager {
                     Expression exp1 = getExpressions().get(0);
                     Expression exp2 = getExpressions().get(1);
 
-                    return Math.pow(exp1.evaluate(context), exp2.evaluate(context));
+                    return FastMath.pow(exp1.evaluate(context), exp2.evaluate(context));
                 }
             };
         }
@@ -873,7 +874,7 @@ public class ExpressionManager {
                     Expression exp1 = getExpressions().get(0);
                     Expression exp2 = getExpressions().get(1);
 
-                    return /*signum(exp1.evaluate(context)) **/ Math.pow(exp1.evaluate(context), exp2.evaluate(context));
+                    return /*signum(exp1.evaluate(context)) **/ FastMath.pow(exp1.evaluate(context), exp2.evaluate(context));
                 }
             };
         }
@@ -898,7 +899,7 @@ public class ExpressionManager {
 
                 public double evaluate(Context context) {
                     Expression exp1 = getExpressions().get(0);
-                    return Math.exp(exp1.evaluate(context));
+                    return FastMath.exp(exp1.evaluate(context));
                 }
             };
         }
@@ -1806,7 +1807,7 @@ public class ExpressionManager {
                         totalA += a[i];
                     }
 
-                    if (Math.abs(totalA - 1.0) > 1e-2) {
+                    if (FastMath.abs(totalA - 1.0) > 1e-2) {
                         throw new IllegalArgumentException("Coefficients must sum to 1.0: " + totalA);
                     }
 
@@ -2365,7 +2366,7 @@ public class ExpressionManager {
                     double[] pout = new double[p.length];
 
                     for (int i = 0; i < p.length; i++) {
-                        pout[i] = Math.exp(p[i]);
+                        pout[i] = FastMath.exp(p[i]);
                         sum += pout[i];
                     }
 

@@ -11,14 +11,15 @@ import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
-import static java.lang.Math.exp;
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.exp;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Dec 17, 2018 3:28:15 PM
@@ -517,7 +518,7 @@ public class RfciBsc implements GraphSearch {
         if (lnYminusLnX < RfciBsc.MININUM_EXPONENT) {
             return lnX;
         } else {
-            double w = Math.log1p(exp(lnYminusLnX));
+            double w = FastMath.log1p(exp(lnYminusLnX));
             return w + lnX;
         }
     }

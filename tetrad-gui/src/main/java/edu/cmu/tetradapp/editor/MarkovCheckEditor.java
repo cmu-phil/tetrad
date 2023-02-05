@@ -35,6 +35,7 @@ import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -54,7 +55,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
-import static java.lang.Math.min;
+import static org.apache.commons.math3.util.FastMath.min;
 
 
 /**
@@ -697,7 +698,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private int getChunkSize(int n) {
-        int chunk = (int) Math.ceil((n / ((double) (5 * Runtime.getRuntime().availableProcessors()))));
+        int chunk = (int) FastMath.ceil((n / ((double) (5 * Runtime.getRuntime().availableProcessors()))));
         if (chunk < 1) chunk = 1;
         return chunk;
     }

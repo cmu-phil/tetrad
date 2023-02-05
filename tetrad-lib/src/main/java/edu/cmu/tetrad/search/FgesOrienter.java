@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -546,8 +547,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                             }
 //
 //                            if (bump > 0.0) {
-                            if (bump > -getPenaltyDiscount() * Math.log(sampleSize())) {
-//                                if (bump > -getPenaltyDiscount() * Math.log(sampleSize())) {
+                            if (bump > -getPenaltyDiscount() * FastMath.log(sampleSize())) {
+//                                if (bump > -getPenaltyDiscount() * FastMath.log(sampleSize())) {
                                 Edge edge = Edges.undirectedEdge(x, y);
                                 effectEdgesGraph.addEdge(edge);
                             }
@@ -815,7 +816,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         Set<Node> naYX = FgesOrienter.getNaYX(a, b, graph);
         List<Node> t = FgesOrienter.getTNeighbors(a, b, graph);
 
-        int _depth = Math.min(t.size(), this.depth == -1 ? 1000 : this.depth);
+        int _depth = FastMath.min(t.size(), this.depth == -1 ? 1000 : this.depth);
 
         clearArrow(a, b);
 
@@ -928,7 +929,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         clearArrow(a, b);
 
         List<Node> _naYX = new ArrayList<>(naYX);
-//        final int _depth = Math.min(_naYX.size(), depth == -1 ? 1000 : depth);
+//        final int _depth = FastMath.min(_naYX.size(), depth == -1 ? 1000 : depth);
 
         SublistGenerator gen = new SublistGenerator(_naYX.size(), _naYX.size());
         int[] choice;
@@ -1606,7 +1607,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
     // Calculates the BIC score.
     private double score(double residualVariance, int n, int p, double c) {
-        return -n * Math.log(residualVariance) - c * getK(p) * Math.log(n);
+        return -n * FastMath.log(residualVariance) - c * getK(p) * FastMath.log(n);
     }
 
     // Degrees of freedom--a stringent choice.

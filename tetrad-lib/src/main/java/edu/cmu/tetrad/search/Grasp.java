@@ -14,7 +14,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.util.Collections.*;
+import static java.util.Collections.shuffle;
 
 
 /**

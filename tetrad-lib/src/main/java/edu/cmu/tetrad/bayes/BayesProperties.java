@@ -27,8 +27,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.util.FastMath;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -121,7 +121,7 @@ public final class BayesProperties {
         this.dof = nDiff;
 
         int N = this.dataSet.getNumRows();
-        this.bic = 2 * r1.getLik() - r1.getDof() * Math.log(N);
+        this.bic = 2 * r1.getLik() - r1.getDof() * FastMath.log(N);
         System.out.println("bic = " + this.bic);
 
         System.out.println("chisq = " + chisq);
@@ -202,7 +202,7 @@ public final class BayesProperties {
 
                 if (p == 0) continue ROW;
 
-                lik0 += Math.log(p);
+                lik0 += FastMath.log(p);
             }
 
             lik += lik0;
@@ -320,7 +320,7 @@ public final class BayesProperties {
                 int rowCount = n_j[rowIndex];
 
                 if (cellCount == 0) continue;
-                lik += cellCount * Math.log(cellCount / (double) rowCount);
+                lik += cellCount * FastMath.log(cellCount / (double) rowCount);
                 d++;
             }
 

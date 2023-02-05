@@ -31,8 +31,6 @@ import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.*;
 import edu.cmu.tetradapp.util.DesktopController;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.LayoutStyle.ComponentPlacement;

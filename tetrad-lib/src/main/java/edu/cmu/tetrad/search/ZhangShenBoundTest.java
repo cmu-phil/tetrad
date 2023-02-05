@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Implements the continuous BIC score for FGES.

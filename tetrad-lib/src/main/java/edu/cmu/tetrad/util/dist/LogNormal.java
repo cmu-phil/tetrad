@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.util.dist;
 
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Represents a lognormal distribution for purposes of sampling.
@@ -76,7 +77,7 @@ public class LogNormal implements Distribution {
 
     public double nextRandom() {
         double random = RandomUtil.getInstance().nextNormal(0, this.sd);
-        return Math.exp(random);
+        return FastMath.exp(random);
     }
 
     public String toString() {

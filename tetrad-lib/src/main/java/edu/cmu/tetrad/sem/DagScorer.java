@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -245,7 +246,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
 
         double fml = logDetSigma + traceSSigmaInv - logDetSample - pPlusQ;
 
-        if (Math.abs(fml) < 0) {
+        if (FastMath.abs(fml) < 0) {
             fml = 0.0;
         }
 
@@ -267,7 +268,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
      */
     public double getBicScore() {
         int dof = getDof();
-        return getChiSquare() - dof * Math.log(getSampleSize());
+        return getChiSquare() - dof * FastMath.log(getSampleSize());
     }
 
     /**
@@ -340,7 +341,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
     }
 
     private double logDet(Matrix matrix2D) {
-        return Math.log(matrix2D.det());
+        return FastMath.log(matrix2D.det());
     }
 
     private double traceAInvB(Matrix A, Matrix B) {
@@ -385,7 +386,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
     private double logDetSample() {
         if (this.logDetSample == 0.0 && sampleCovar() != null) {
             double det = sampleCovar().det();
-            this.logDetSample = Math.log(det);
+            this.logDetSample = FastMath.log(det);
         }
 
         return this.logDetSample;

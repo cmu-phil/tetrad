@@ -1,8 +1,8 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Vector;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -265,7 +266,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
                     List<VarianceTask> tasks = new ArrayList<>();
 
                     for (int i = 0; i < numIntervals; i++) {
-                        VarianceTask task = new VarianceTask(chunk, from + i * step, Math.min(from + (i + 1) * step, to));
+                        VarianceTask task = new VarianceTask(chunk, from + i * step, FastMath.min(from + (i + 1) * step, to));
                         tasks.add(task);
                     }
 
@@ -279,7 +280,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         int NTHREADS = Runtime.getRuntime().availableProcessors() * 10;
         int _chunk = variables.size() / NTHREADS + 1;
         int minChunk = 100;
-        int chunk = Math.max(_chunk, minChunk);
+        int chunk = FastMath.max(_chunk, minChunk);
 
         VarianceTask task = new VarianceTask(chunk, 0, variables.size());
         ForkJoinPoolInstance.getInstance().getPool().invoke(task);

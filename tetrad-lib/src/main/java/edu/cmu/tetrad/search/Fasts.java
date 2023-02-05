@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -516,8 +517,8 @@ public class Fasts implements IFas {
         int ntiers = this.knowledge.getNumTiers();
         int indx_tier = this.knowledge.isInWhichTier(x);
         int indy_tier = this.knowledge.isInWhichTier(y);
-        int max_tier = Math.max(indx_tier, indy_tier);
-        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int max_tier = FastMath.max(indx_tier, indy_tier);
+        int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
         List tier_x = this.knowledge.getTier(indx_tier);
@@ -651,7 +652,7 @@ public class Fasts implements IFas {
         int ntiers = this.knowledge.getNumTiers();
         int indx_tier = this.knowledge.isInWhichTier(x);
         int indy_tier = this.knowledge.isInWhichTier(y);
-        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
         List tier_x = this.knowledge.getTier(indx_tier);

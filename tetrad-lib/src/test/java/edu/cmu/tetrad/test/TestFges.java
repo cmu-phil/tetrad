@@ -37,13 +37,17 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.sem.*;
+import edu.cmu.tetrad.sem.GeneralizedSemIm;
+import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -1175,9 +1179,9 @@ public class TestFges {
 
                 double sum = adjPrecision + adjRecall + arrowPrecision + arrowRecall;
                 double mcAdj = (adjTp * adjTn - adjFp * adjFn) /
-                        Math.sqrt((adjTp + adjFp) * (adjTp + adjFn) * (adjTn + adjFp) * (adjTn + adjFn));
+                        FastMath.sqrt((adjTp + adjFp) * (adjTp + adjFn) * (adjTn + adjFp) * (adjTn + adjFn));
                 double mcOr = (arrowsTp * arrowsTn - arrowsFp * arrowsFn) /
-                        Math.sqrt((arrowsTp + arrowsFp) * (arrowsTp + arrowsFn) *
+                        FastMath.sqrt((arrowsTp + arrowsFp) * (arrowsTp + arrowsFn) *
                                 (arrowsTn + arrowsFp) * (arrowsTn + arrowsFn));
                 double f1Adj = 2 * (adjPrecision * adjRecall) / (adjPrecision + adjRecall);
                 double f1Arrows = 2 * (arrowPrecision * arrowRecall) / (arrowPrecision + arrowRecall);

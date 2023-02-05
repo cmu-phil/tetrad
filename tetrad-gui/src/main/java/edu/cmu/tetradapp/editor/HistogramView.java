@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntSpinner;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -189,8 +190,8 @@ public class HistogramView extends JPanel {
             Histogram histogram = this.getHistogram();
             int[] freqs = histogram.getFrequencies();
             int categories = freqs.length;
-//            int barWidth = Math.max((WIDTH - PADDINGX) / categories, 12) - SPACE;
-            int barWidth = Math.max((HistogramPanel.WIDTH - HistogramPanel.PADDINGX) / categories, 2) - HistogramPanel.SPACE;
+//            int barWidth = FastMath.max((WIDTH - PADDINGX) / categories, 12) - SPACE;
+            int barWidth = FastMath.max((HistogramPanel.WIDTH - HistogramPanel.PADDINGX) / categories, 2) - HistogramPanel.SPACE;
             final int height = HistogramPanel.HEIGHT - HistogramPanel.PADDINGY;
             int topFreq = HistogramPanel.getMax(freqs);
             double scale = HistogramPanel.DISPLAYED_HEIGHT / (double) topFreq;
@@ -203,7 +204,7 @@ public class HistogramView extends JPanel {
             // draw the histogram
             for (int i = 0; i < categories; i++) {
                 int freq = freqs[i];
-                int y = (int) Math.ceil(scale * freq);
+                int y = (int) FastMath.ceil(scale * freq);
                 int x = HistogramPanel.SPACE * (i + 1) + barWidth * i + HistogramPanel.PADDINGX;
                 g2d.setColor(HistogramPanel.getBarColor(i));
                 Rectangle rect = new Rectangle(x, (height - y), barWidth, y);
@@ -242,7 +243,7 @@ public class HistogramView extends JPanel {
 
             // draw the side line
             g2d.setColor(HistogramPanel.LINE_COLOR);
-            int topY = height - (int) Math.ceil(scale * topFreq);
+            int topY = height - (int) FastMath.ceil(scale * topFreq);
             String top = String.valueOf(topFreq);
             g2d.drawString(top, HistogramPanel.PADDINGX - fontMetrics.stringWidth(top), topY - 2);
             g2d.drawLine(HistogramPanel.PADDINGX - HistogramPanel.DASH, topY, HistogramPanel.PADDINGX, topY);
@@ -275,14 +276,14 @@ public class HistogramView extends JPanel {
 
         private Map<Integer, Double> pickGoodPointsAndValues(double minValue, double maxValue) {
             double range = maxValue - minValue;
-            int powerOfTen = (int) Math.floor(Math.log(range) / Math.log(10));
+            int powerOfTen = (int) FastMath.floor(FastMath.log(range) / FastMath.log(10));
             Map<Integer, Double> points = new HashMap<>();
 
-            int low = (int) Math.floor(minValue / Math.pow(10, powerOfTen));
-            int high = (int) Math.ceil(maxValue / Math.pow(10, powerOfTen));
+            int low = (int) FastMath.floor(minValue / FastMath.pow(10, powerOfTen));
+            int high = (int) FastMath.ceil(maxValue / FastMath.pow(10, powerOfTen));
 
             for (int i = low; i < high; i++) {
-                double realValue = i * Math.pow(10, powerOfTen);
+                double realValue = i * FastMath.pow(10, powerOfTen);
                 Integer intValue = translateToInt(minValue, maxValue, realValue);
 
                 if (intValue == null) {
@@ -305,7 +306,7 @@ public class HistogramView extends JPanel {
 
             double ratio = (value - minValue) / (maxValue - minValue);
 
-            int intValue = (int) (Math.round(HistogramPanel.PADDINGX + ratio * (double) (332 - HistogramPanel.PADDINGX)));
+            int intValue = (int) (FastMath.round(HistogramPanel.PADDINGX + ratio * (double) (332 - HistogramPanel.PADDINGX)));
 
             if (intValue < HistogramPanel.PADDINGX || intValue > 332) {
                 return null;

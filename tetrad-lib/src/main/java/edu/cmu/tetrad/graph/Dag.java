@@ -24,7 +24,10 @@ package edu.cmu.tetrad.graph;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a directed acyclic graph--that is, a graph containing only

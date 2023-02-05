@@ -9,6 +9,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class FactorAnalysis implements Algorithm {
 
                 for (int i = 0; i < rotatedSolution.rows(); i++) {
                     for (int j = 0; j < rotatedSolution.columns(); j++) {
-                        if (Math.abs(rotatedSolution.get(i, j)) > threshold) {
+                        if (FastMath.abs(rotatedSolution.get(i, j)) > threshold) {
                             graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
                         }
                     }
@@ -76,7 +77,7 @@ public class FactorAnalysis implements Algorithm {
 
                 for (int i = 0; i < unrotatedSolution.rows(); i++) {
                     for (int j = 0; j < unrotatedSolution.columns(); j++) {
-                        if (Math.abs(unrotatedSolution.get(i, j)) > threshold) {
+                        if (FastMath.abs(unrotatedSolution.get(i, j)) > threshold) {
                             graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
                         }
                     }
@@ -124,7 +125,7 @@ public class FactorAnalysis implements Algorithm {
                 } else if (i > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
-                    token += Math.abs(coefficient) > threshold ? "*" : " ";
+                    token += FastMath.abs(coefficient) > threshold ? "*" : " ";
                     table.setToken(i, j, token);
                 }
             }

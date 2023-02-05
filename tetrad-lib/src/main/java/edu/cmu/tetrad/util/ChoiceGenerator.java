@@ -24,8 +24,8 @@ package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.special.Gamma;
 
-import static java.lang.Math.exp;
-import static java.lang.Math.round;
+import static org.apache.commons.math3.util.FastMath.exp;
+import static org.apache.commons.math3.util.FastMath.round;
 
 /**
  * Generates (nonrecursively) all of the combinations of a choose b, where a, b

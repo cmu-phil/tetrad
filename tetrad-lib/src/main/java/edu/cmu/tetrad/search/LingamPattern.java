@@ -32,6 +32,7 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -200,11 +201,11 @@ public class LingamPattern {
 
             for (int i2 = 0; i2 < residualsArray.size(); i2++) {
                 residualsArray.set(i2, (residualsArray.get(i2) - mean) / std);
-                residualsArray.set(i2, Math.abs(residualsArray.get(i2)));
+                residualsArray.set(i2, FastMath.abs(residualsArray.get(i2)));
             }
 
             double _mean = Descriptive.mean(residualsArray);
-            double diff = _mean - Math.sqrt(2.0 / Math.PI);
+            double diff = _mean - FastMath.sqrt(2.0 / FastMath.PI);
             score += diff * diff;
         }
 

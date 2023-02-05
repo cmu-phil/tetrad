@@ -22,6 +22,8 @@
 package edu.cmu.tetrad.gene.tetrad.gene.algorithm.reveal;
 
 
+import org.apache.commons.math3.util.FastMath;
+
 /**
  * Provides the methods for computing mutual information between expression
  * levels between genes and, for a given gene, between points in time determined
@@ -137,7 +139,7 @@ public class RevealEvaluator {
     public double entropy(int[] x) {
         double h = 0.0;
         int n = x.length;
-        double ln2 = Math.log(2.0);
+        double ln2 = FastMath.log(2.0);
 
         int n0 = 0;
         for (int j : x) {
@@ -151,7 +153,7 @@ public class RevealEvaluator {
             return h;
         } else {
             p = (double) n0 / (double) n;
-            h = -(p * Math.log(p) + (1.0 - p) * Math.log(1.0 - p)) / ln2;
+            h = -(p * FastMath.log(p) + (1.0 - p) * FastMath.log(1.0 - p)) / ln2;
         }
         return h;
     }
@@ -167,7 +169,7 @@ public class RevealEvaluator {
         double h = 0.0;
         int n = this.cases.length - lag;
 
-        double ln2 = Math.log(2.0);  //TODO:  move outside
+        double ln2 = FastMath.log(2.0);  //TODO:  move outside
 
         int n0 = 0;
         for (int i = 0; i < n; i++) {
@@ -181,7 +183,7 @@ public class RevealEvaluator {
             return h;
         } else {
             p = (double) n0 / (double) n;
-            h = -(p * Math.log(p) + (1.0 - p) * Math.log(1.0 - p)) / ln2;
+            h = -(p * FastMath.log(p) + (1.0 - p) * FastMath.log(1.0 - p)) / ln2;
         }
         return h;
     }
@@ -194,7 +196,7 @@ public class RevealEvaluator {
         double h = 0.0;
         int[][] ns = new int[2][2];
         int n = x.length;
-        double ln2 = Math.log(2.0);
+        double ln2 = FastMath.log(2.0);
 
         ns[0][0] = 0;
         ns[0][1] = 0;
@@ -221,22 +223,22 @@ public class RevealEvaluator {
         if (p[0][0] == 0.0) {
             lp00 = 0.0;
         } else {
-            lp00 = -p[0][0] * Math.log(p[0][0]);
+            lp00 = -p[0][0] * FastMath.log(p[0][0]);
         }
         if (p[0][1] == 0.0) {
             lp01 = 0.0;
         } else {
-            lp01 = -p[0][1] * Math.log(p[0][1]);
+            lp01 = -p[0][1] * FastMath.log(p[0][1]);
         }
         if (p[1][0] == 0.0) {
             lp10 = 0.0;
         } else {
-            lp10 = -p[1][0] * Math.log(p[1][0]);
+            lp10 = -p[1][0] * FastMath.log(p[1][0]);
         }
         if (p[1][1] == 0.0) {
             lp11 = 0.0;
         } else {
-            lp11 = -p[1][1] * Math.log(p[1][1]);
+            lp11 = -p[1][1] * FastMath.log(p[1][1]);
         }
 
         h = lp00 + lp01 + lp10 + lp11;
@@ -249,7 +251,7 @@ public class RevealEvaluator {
         int m = y.length;
         //System.out.println("m = " + m);
         int n = x.length;
-        double ln2 = Math.log(2.0);
+        double ln2 = FastMath.log(2.0);
 
         if (y[0].length != n) {
             System.out.println("x and rows of y and must have same length");
@@ -291,7 +293,7 @@ public class RevealEvaluator {
             if (p == 0.0) {
                 continue;
             }
-            h -= p * Math.log(p);
+            h -= p * FastMath.log(p);
         }
 
         h /= ln2;

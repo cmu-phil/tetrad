@@ -22,7 +22,9 @@
 package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.distribution.*;
-import org.apache.commons.math3.random.*;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.SynchronizedRandomGenerator;
+import org.apache.commons.math3.random.Well44497b;
 
 import java.util.*;
 

@@ -34,8 +34,8 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static org.apache.commons.math3.util.FastMath.max;
+import static org.apache.commons.math3.util.FastMath.min;
 
 /**
  * GesSearch is an implementation of the GES algorithm, as specified in

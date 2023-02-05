@@ -25,7 +25,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphPersistence;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import javax.swing.*;

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.Vector;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
 import java.util.List;
@@ -177,7 +178,7 @@ public class RegressionDataset implements Regression {
         this.res2 = res2.getColumn(0);
 
         double rss = RegressionDataset.rss(x, y, b);
-        double se = Math.sqrt(rss / (n - k));
+        double se = FastMath.sqrt(rss / (n - k));
         double tss = RegressionDataset.tss(y);
         double r2 = 1.0 - (rss / tss);
 
@@ -187,9 +188,9 @@ public class RegressionDataset implements Regression {
 
         for (int i = 0; i < x.columns(); i++) {
             double _s = se * se * xTxInv.get(i, i);
-            double _se = Math.sqrt(_s);
+            double _se = FastMath.sqrt(_s);
             double _t = b.get(i, 0) / _se;
-            double _p = (1.0 - ProbUtils.tCdf(Math.abs(_t), n - k));
+            double _p = (1.0 - ProbUtils.tCdf(FastMath.abs(_t), n - k));
 
             sqErr.set(i, _se);
             t.set(i, _t);
@@ -245,7 +246,7 @@ public class RegressionDataset implements Regression {
         //  y.copy().assign(yHat, PlusMult.plusMult(-1));
 
         double rss = RegressionDataset.rss(x, y, b);
-        double se = Math.sqrt(rss / (n - k));
+        double se = FastMath.sqrt(rss / (n - k));
         double tss = RegressionDataset.tss(y);
         double r2 = 1.0 - (rss / tss);
 
@@ -255,9 +256,9 @@ public class RegressionDataset implements Regression {
 
         for (int i = 0; i < x.columns(); i++) {
             double _s = se * se * xTxInv.get(i, i);
-            double _se = Math.sqrt(_s);
+            double _se = FastMath.sqrt(_s);
             double _t = b.get(i, 0) / _se;
-            double _p = (1.0 - ProbUtils.tCdf(Math.abs(_t), n - k));
+            double _p = (1.0 - ProbUtils.tCdf(FastMath.abs(_t), n - k));
 
             sqErr.set(i, _se);
             t.set(i, _t);

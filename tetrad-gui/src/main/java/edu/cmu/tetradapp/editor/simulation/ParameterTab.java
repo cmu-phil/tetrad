@@ -22,7 +22,6 @@ import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.data.simulation.LoadContinuousDataAndGraphs;
 import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.ParameterComponents;

@@ -31,6 +31,7 @@ import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.util.FastMath;
 
 import java.rmi.MarshalledObject;
 import java.util.*;
@@ -283,16 +284,16 @@ public final class DataUtils {
             for (int i = 0; i < x1.length; i++) {
                 if (isUnlog) {
                     if (base == 0) {
-                        x1[i] = Math.exp(x1Orig[i]) - a;
+                        x1[i] = FastMath.exp(x1Orig[i]) - a;
                     } else {
-                        x1[i] = Math.pow(base, (x1Orig[i])) - a;
+                        x1[i] = FastMath.pow(base, (x1Orig[i])) - a;
                     }
                 } else {
-                    double log = Math.log(a + x1Orig[i]);
+                    double log = FastMath.log(a + x1Orig[i]);
                     if (base == 0) {
                         x1[i] = log;
                     } else {
-                        x1[i] = log / Math.log(base);
+                        x1[i] = log / FastMath.log(base);
                     }
                 }
             }
@@ -327,7 +328,7 @@ public final class DataUtils {
                 norm += v * v;
             }
 
-            norm = Math.sqrt(norm / (data.rows() - 1));
+            norm = FastMath.sqrt(norm / (data.rows() - 1));
 
             for (int i = 0; i < data.rows(); i++) {
                 data2.set(i, j, data2.get(i, j) / norm);
@@ -358,7 +359,7 @@ public final class DataUtils {
             norm += v * v;
         }
 
-        norm = Math.sqrt(norm / (data2.length - 1));
+        norm = FastMath.sqrt(norm / (data2.length - 1));
 
         for (int i = 0; i < data2.length; i++) {
             data2[i] = data2[i] / norm;
@@ -389,7 +390,7 @@ public final class DataUtils {
             norm += v * v;
         }
 
-        norm = Math.sqrt(norm / (data2.size() - 1));
+        norm = FastMath.sqrt(norm / (data2.size() - 1));
 
         for (int i = 0; i < data2.size(); i++) {
             data2.set(i, data2.get(i) / norm);
@@ -909,7 +910,7 @@ public final class DataUtils {
 
             Runnable worker = () -> {
                 int chunk = rowDimension / NTHREADS + 1;
-                for (int row = _t * chunk; row < Math.min((_t + 1) * chunk, rowDimension); row++) {
+                for (int row = _t * chunk; row < FastMath.min((_t + 1) * chunk, rowDimension); row++) {
                     if ((row + 1) % 100 == 0) System.out.println(row + 1);
 
                     for (int col = 0; col < columnDimension; ++col) {
@@ -1387,7 +1388,7 @@ public final class DataUtils {
             Matrix data = dataSet.getDoubleData();
             Matrix X = data.like();
             double n = dataSet.getNumRows();
-//            delta = 1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
+//            delta = 1.0 / (4.0 * FastMath.pow(n, 0.25) * FastMath.sqrt(FastMath.PI * FastMath.log(n)));
 
             NormalDistribution normalDistribution = new NormalDistribution();
 

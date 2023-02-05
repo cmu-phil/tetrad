@@ -26,7 +26,6 @@ import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 
 /**

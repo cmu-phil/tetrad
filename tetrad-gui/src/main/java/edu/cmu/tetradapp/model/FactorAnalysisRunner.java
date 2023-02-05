@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FactorAnalysis;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -111,7 +112,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
 
         for (int i = 0; i < getRotatedSolution().rows(); i++) {
             for (int j = 0; j < getRotatedSolution().columns(); j++) {
-                if (Math.abs(getRotatedSolution().get(i, j)) > getThreshold()) {
+                if (FastMath.abs(getRotatedSolution().get(i, j)) > getThreshold()) {
                     graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
                 }
             }
@@ -132,7 +133,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
                 } else if (i > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
-                    token += Math.abs(coefficient) > threshold ? "*" : " ";
+                    token += FastMath.abs(coefficient) > threshold ? "*" : " ";
                     table.setToken(i, j, token);
                 }
             }

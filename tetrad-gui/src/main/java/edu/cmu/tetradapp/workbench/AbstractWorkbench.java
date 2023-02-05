@@ -22,10 +22,10 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -1303,7 +1303,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private static double distance(Point p1, Point p2) {
         double d = (p1.x - p2.x) * (p1.x - p2.x);
         d += (p1.y - p2.y) * (p1.y - p2.y);
-        d = Math.sqrt(d);
+        d = FastMath.sqrt(d);
         return d;
     }
 
@@ -1826,7 +1826,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Point pointA = connectedPoints.getFrom();
         Point pointB = connectedPoints.getTo();
         double length = AbstractWorkbench.distance(pointA, pointB);
-        double endpointRadius = Math.min(20.0, length / 3.0);
+        double endpointRadius = FastMath.min(20.0, length / 3.0);
 
         if (e.isShiftDown()) {
             if (AbstractWorkbench.distance(point, pointA) < endpointRadius) {
@@ -2139,8 +2139,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         int x = node.getLocation().x;
         int y = node.getLocation().y;
 
-        x = Math.max(x, 0);
-        y = Math.max(y, 0);
+        x = FastMath.max(x, 0);
+        y = FastMath.max(y, 0);
 
         node.setLocation(x, y);
     }
@@ -2159,12 +2159,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             int x = _node.getLocation().x;
             int y = _node.getLocation().y;
 
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
+            minX = FastMath.min(minX, x);
+            minY = FastMath.min(minY, y);
         }
 
-        minX = Math.min(minX, 0);
-        minY = Math.min(minY, 0);
+        minX = FastMath.min(minX, 0);
+        minY = FastMath.min(minY, 0);
 
         for (DisplayNode _node : dragNodes) {
             int x = _node.getLocation().x;

@@ -28,8 +28,8 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
-import static java.lang.Math.pow;
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.pow;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Checks conditional independence of variable in a continuous data set using Daudin's method. See

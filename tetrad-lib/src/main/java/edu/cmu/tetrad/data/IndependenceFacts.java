@@ -25,8 +25,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndTestDSep;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.PermutationGenerator;
+import edu.cmu.tetrad.util.SublistGenerator;
 
 import java.util.*;
 

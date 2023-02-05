@@ -13,7 +13,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
 import static edu.cmu.tetrad.graph.Edges.directedEdge;
-import static java.lang.Math.min;
+import static org.apache.commons.math3.util.FastMath.min;
 
 
 /**

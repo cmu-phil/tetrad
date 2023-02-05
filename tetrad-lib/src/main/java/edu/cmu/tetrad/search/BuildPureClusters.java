@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -1667,7 +1668,7 @@ public final class BuildPureClusters {
         boolean[] marked = new boolean[clustering.size()];
         boolean[] buffer = new boolean[this.numVariables()];
 
-        int max = Math.min(clustering.size(), 1000);
+        int max = FastMath.min(clustering.size(), 1000);
 
         boolean[][] compatibility = new boolean[clustering.size()][clustering.size()];
         if (need3) {

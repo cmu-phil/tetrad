@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -152,7 +153,7 @@ public class DirichletScore implements LocalDiscreteScore {
                 double alpha = cellPrior + n_jk[j][k];
                 double pk = (alpha) / rowSum;
                 if (Double.isInfinite(pk)) continue;
-                double _score = (alpha - 1) * Math.log(pk);
+                double _score = (alpha - 1) * FastMath.log(pk);
                 rowScore += _score;
                 cellCount++;
             }

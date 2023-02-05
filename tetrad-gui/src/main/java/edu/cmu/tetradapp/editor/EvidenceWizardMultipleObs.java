@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.UpdaterWrapper;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
@@ -172,7 +173,7 @@ class EvidenceWizardMultipleObs extends JPanel {
                             "Unidentifiable" + ",  log odds = " +
                             "*" + "\n");
                 } else {
-                    double logOdds = Math.log(prob / (1. - prob));
+                    double logOdds = FastMath.log(prob / (1. - prob));
 
                     marginalsArea.append("Category " +
                             bayesPm.getCategory(selectedNode, j) + ": p = " +
@@ -231,7 +232,7 @@ class EvidenceWizardMultipleObs extends JPanel {
                 marginalsArea.append("Unidentifiable" + "\t");
                 marginalsArea.append("*");
             } else {
-                double logOdds = Math.log(prob / (1. - prob));
+                double logOdds = FastMath.log(prob / (1. - prob));
                 marginalsArea.append(nf.format(prob) + "\t");
                 marginalsArea.append(nf.format(logOdds));
             }

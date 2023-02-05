@@ -18,6 +18,8 @@
  */
 package edu.pitt.dbmi.algo.bayesian.constraint.inference;
 
+import org.apache.commons.math3.util.FastMath;
+
 import java.util.Arrays;
 
 /**
@@ -110,7 +112,7 @@ public class BCCausalInference {
         double lnMarginalLikelihood_Y = scoreNode(y, 2, countsTracker);  // the 2 indicates the scoring of Y
         double lnMarginalLikelihood_X_Y = lnMarginalLikelihood_X + lnMarginalLikelihood_Y;  // lnMarginalLikelihood_X_Y is the ln of the marginal likelihood, assuming X and Y are conditionally independence given Z.
         probability = priorIndependent(x, y, z); // p should be in (0, 1), and thus, not 0 or 1.
-        double lnPrior_X_Y = Math.log(probability);
+        double lnPrior_X_Y = FastMath.log(probability);
         double score_X_Y = lnMarginalLikelihood_X_Y + lnPrior_X_Y;
 
         countsTracker.numOfNodes++;
@@ -126,13 +128,13 @@ public class BCCausalInference {
         double lnMarginalLikelihood_XY = scoreNode(xy, 3, countsTracker);  // the 3 indicates the scoring of XY, which assumes X and Y are dependent given Z;
         //Note: lnMarginalLikelihood_XY is not used, but the above call to ScoreNode creates scores^[*, 3], which is used below
         countsTracker.numOfNodes--;
-        double lnTermPrior_X_Y = Math.log(probability) / countsTracker.numOfScores;  // this is equal to ln(p^(1/numberOfScores))
-        double lnTermPrior_XY = Math.log(1 - Math.exp(lnTermPrior_X_Y));  // this is equal to ln(1 - p^(1/numberOfScores))
+        double lnTermPrior_X_Y = FastMath.log(probability) / countsTracker.numOfScores;  // this is equal to ln(p^(1/numberOfScores))
+        double lnTermPrior_XY = FastMath.log(1 - FastMath.exp(lnTermPrior_X_Y));  // this is equal to ln(1 - p^(1/numberOfScores))
         double scoreAll = 0;  // will contain the sum over the scores of all hypotheses
         for (int i = 1; i <= countsTracker.numOfScores; i++) {
             scoreAll += BCCausalInference.lnXpluslnY(lnTermPrior_X_Y + (scores[i][1] + scores[i][2]), lnTermPrior_XY + scores[i][3]);
         }
-        double probInd = Math.exp(score_X_Y - scoreAll);
+        double probInd = FastMath.exp(score_X_Y - scoreAll);
 
         if (constraint == OP.INDEPENDENT) {
             probability = probInd;  // return P(X independent Y given Z | data)
@@ -373,7 +375,7 @@ public class BCCausalInference {
         int size = (2 * maxCases) + maxValues;
         double[] logFact = new double[size + 1];
         for (int i = 1; i < logFact.length; i++) {
-            logFact[i] = Math.log(i) + logFact[i - 1];
+            logFact[i] = FastMath.log(i) + logFact[i - 1];
         }
 
         return logFact;
@@ -397,7 +399,7 @@ public class BCCausalInference {
 
         return (lnYminusLnX < Double.MIN_EXPONENT)
                 ? lnX
-                : Math.log1p(Math.exp(lnYminusLnX)) + lnX;
+                : FastMath.log1p(FastMath.exp(lnYminusLnX)) + lnX;
     }
 
     private double gammln(double xx) {
@@ -408,7 +410,7 @@ public class BCCausalInference {
                 return gammlnCore(xx);
             } else {
                 double z = 1 - xx;
-                return Math.log(Math.PI * z) - gammlnCore(1 + z) - Math.log(Math.sin(Math.PI * z));
+                return FastMath.log(FastMath.PI * z) - gammlnCore(1 + z) - FastMath.log(FastMath.sin(FastMath.PI * z));
             }
         }
     }
@@ -430,14 +432,14 @@ public class BCCausalInference {
 
         double x = xx - one;
         double tmp = x + fpf;
-        tmp = (x + half) * Math.log(tmp) - tmp;
+        tmp = (x + half) * FastMath.log(tmp) - tmp;
         double ser = one;
         for (int j = 1; j <= 6; j++) {
             x += one;
             ser += cof[j] / x;
         }
 
-        return tmp + Math.log(stp * ser);
+        return tmp + FastMath.log(stp * ser);
     }
 
     private static class CountsTracker {
