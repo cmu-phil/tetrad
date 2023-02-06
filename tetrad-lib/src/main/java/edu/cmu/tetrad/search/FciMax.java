@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.SublistGenerator;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -182,7 +179,7 @@ public final class FciMax implements GraphSearch {
     }
 
     public Graph search() {
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         Fas fas = new Fas(getIndependenceTest());
         this.logger.log("info", "Starting FCI algorithm.");
@@ -229,7 +226,7 @@ public final class FciMax implements GraphSearch {
         addColliders(graph);
         fciOrient.doFinalOrientation(graph);
 
-        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long stop =  MillisecondTimes.timeMillis();
 
         this.elapsedTime = stop - start;
 

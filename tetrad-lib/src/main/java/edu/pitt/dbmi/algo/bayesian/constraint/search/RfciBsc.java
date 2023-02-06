@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 import org.apache.commons.math3.util.FastMath;
@@ -75,7 +76,7 @@ public class RfciBsc implements GraphSearch {
     @Override
     public Graph search() {
         long stop = 0;
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getIndependenceTest();
 
@@ -363,7 +364,7 @@ public class RfciBsc implements GraphSearch {
             this.out.println("graphRBD:\n" + this.graphRBD);
             this.out.println("graphRBI:\n" + this.graphRBI);
 
-            stop = System.currentTimeMillis();
+            stop = MillisecondTimes.timeMillis();
 
             this.out.println("Elapsed " + (stop - start) + " ms");
         }

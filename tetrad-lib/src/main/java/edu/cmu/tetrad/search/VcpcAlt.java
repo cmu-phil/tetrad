@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -207,7 +208,7 @@ public final class VcpcAlt implements GraphSearch {
         Vcfas fas = new Vcfas(getIndependenceTest());
         this.definitelyNonadjacencies = new HashSet<>();
 
-        long startTime =edu.cmu.tetrad.util.Timer.timeMillis();
+        long startTime = MillisecondTimes.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
 
@@ -420,7 +421,7 @@ public final class VcpcAlt implements GraphSearch {
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
-        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");

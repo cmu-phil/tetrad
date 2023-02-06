@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
@@ -199,7 +200,7 @@ public final class FgesMb {
     public Graph search(List<Node> targets) {
 
         // Assumes one-edge faithfulness.
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         if (targets == null) {
             throw new NullPointerException();
@@ -237,7 +238,7 @@ public final class FgesMb {
         fes();
         bes();
 
-        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 

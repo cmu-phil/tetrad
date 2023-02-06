@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.HashSet;
@@ -203,7 +204,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
     public Graph search(List<Node> nodes) {
         TetradLogger.getInstance().log("info", "Starting TimeSeriesLagSearch.");
         TetradLogger.getInstance().log("info", "Independence test = " + this.independenceTest + ".");
-        long startTime =edu.cmu.tetrad.util.Timer.timeMillis();
+        long startTime = MillisecondTimes.timeMillis();
         this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
@@ -235,7 +236,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
-        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");

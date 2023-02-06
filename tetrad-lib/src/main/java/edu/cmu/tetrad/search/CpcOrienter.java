@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
@@ -131,7 +132,7 @@ public final class CpcOrienter implements Reorienter {
     public void orient(Graph graph) {
         TetradLogger.getInstance().log("info", "Starting CPC Orienter algorithm.");
         TetradLogger.getInstance().log("info", "Independence test = " + this.independenceTest + ".");
-        long startTime =edu.cmu.tetrad.util.Timer.timeMillis();
+        long startTime = MillisecondTimes.timeMillis();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -151,7 +152,7 @@ public final class CpcOrienter implements Reorienter {
         meekRules.orientImplied(graph);
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
-        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");

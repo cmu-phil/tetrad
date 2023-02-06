@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -66,7 +67,7 @@ public class GraspTol {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
@@ -95,7 +96,7 @@ public class GraspTol {
                 shuffle(order);
             }
 
-            this.start =  edu.cmu.tetrad.util.Timer.timeMillis();
+            this.start =  MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -116,7 +117,7 @@ public class GraspTol {
 
         this.scorer.score(bestPerm);
 
-        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long stop =  MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
@@ -167,7 +168,7 @@ public class GraspTol {
                                 System.out.println("# Edges = " + scorer.getNumEdges()
                                         + " Score = " + scorer.score()
                                         + " (betterMutation)"
-                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
+                                        + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " sp"));
                             }
                         }
                     }
@@ -269,7 +270,7 @@ public class GraspTol {
             TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
                     + " Score = " + scorer.score()
                     + " (GRaSP)"
-                    + " Elapsed " + ((System.currentTimeMillis() - this.start) / 1000.0 + " s"));
+                    + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();

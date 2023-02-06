@@ -30,6 +30,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
@@ -245,14 +246,14 @@ public class StabilityUtils {
 
         final double lambda = .1;
         SearchWrappers.MGMWrapper mgm = new SearchWrappers.MGMWrapper(lambda, lambda, lambda);
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
         DoubleMatrix2D xi = StabilityUtils.StabilitySearch(ds, mgm, 8, 200);
-        long end = System.currentTimeMillis();
+        long end = MillisecondTimes.timeMillis();
         System.out.println("Not parallel: " + ((end - start) / 1000.0));
 
-        start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        start =  MillisecondTimes.timeMillis();
         DoubleMatrix2D xi2 = StabilityUtils.StabilitySearchPar(ds, mgm, 8, 200);
-        end = System.currentTimeMillis();
+        end = MillisecondTimes.timeMillis();
         System.out.println("Parallel: " + ((end - start) / 1000.0));
 
         System.out.println(xi);

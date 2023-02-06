@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
@@ -70,7 +71,7 @@ class GeneralizedTemplateEditor extends JComponent {
      * The time that the selectded text should be colored. (Must do this all indirectly using a thread because we cannot
      * saveTemplate to the text pane.
      */
-    private long recolorTime = System.currentTimeMillis();
+    private long recolorTime = MillisecondTimes.timeMillis();
 
     /**
      * The text pane in which parsed text is rendered, typed, and colored.
@@ -374,7 +375,7 @@ class GeneralizedTemplateEditor extends JComponent {
                 StyleConstants.setForeground(black, Color.BLACK);
 
                 while (!this.stop) {
-                    if (System.currentTimeMillis() < GeneralizedTemplateEditor.this.recolorTime) {
+                    if (MillisecondTimes.timeMillis() < GeneralizedTemplateEditor.this.recolorTime) {
                         continue;
                     }
 
@@ -804,7 +805,7 @@ class GeneralizedTemplateEditor extends JComponent {
             this.color = Color.BLACK;
             this.start = 0;
             this.stringWidth = expressionString.length();
-            this.recolorTime = System.currentTimeMillis();
+            this.recolorTime = MillisecondTimes.timeMillis();
 
             String startsWithText = this.startsWithField.getValue().trim();
 
@@ -831,7 +832,7 @@ class GeneralizedTemplateEditor extends JComponent {
             this.color = Color.RED;
             this.start = e.getErrorOffset();
             this.stringWidth = parser.getNextOffset() - e.getErrorOffset();
-            this.recolorTime = System.currentTimeMillis();
+            this.recolorTime = MillisecondTimes.timeMillis();
         }
 
         this.latestParser = parser;

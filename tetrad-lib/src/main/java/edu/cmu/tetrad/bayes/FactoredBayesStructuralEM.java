@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.HashSet;
@@ -107,7 +108,7 @@ public final class FactoredBayesStructuralEM {
      */
     public BayesIm iterate() {
 
-        double start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        double start =  MillisecondTimes.timeMillis();
 
         BdeMetricCache bdeMetricCache = new BdeMetricCache(this.dataSet, this.bayesPmM0);
 

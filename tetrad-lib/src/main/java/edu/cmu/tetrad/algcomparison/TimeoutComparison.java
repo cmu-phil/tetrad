@@ -816,7 +816,7 @@ public class TimeoutComparison {
     }
 
     private String dateTimeNow() {
-        return TimeoutComparison.DF.format(new Date(System.currentTimeMillis()));
+        return TimeoutComparison.DF.format(new Date(MillisecondTimes.timeMillis()));
     }
 
     private void shutdownAndAwaitTermination(ExecutorService pool) {
@@ -1073,7 +1073,7 @@ public class TimeoutComparison {
         System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
                 + " simulationWrapper: " + simulationWrapper.getDescription());
 
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
         Graph out;
 
         try {
@@ -1123,7 +1123,7 @@ public class TimeoutComparison {
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
         int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         long elapsed = stop - start;
 

@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.HashSet;
@@ -221,7 +222,7 @@ public class Pcd implements GraphSearch {
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime =edu.cmu.tetrad.util.Timer.timeMillis();
+        long startTime = MillisecondTimes.timeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
@@ -255,7 +256,7 @@ public class Pcd implements GraphSearch {
 
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
-        this.elapsedTime =edu.cmu.tetrad.util.Timer.timeMillis() - startTime;
+        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
         this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.log("info", "Finishing PC Algorithm.");

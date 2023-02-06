@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.MillisecondTimes;
 
 import java.util.Collections;
 
@@ -74,7 +75,7 @@ public final class FasLofs implements GraphSearch {
      * and some of the adjacencies may be two-cycles.
      */
     public Graph search() {
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         SemBicScore score = new SemBicScore(new CovarianceMatrix(this.dataSet));
         score.setPenaltyDiscount(this.penaltyDiscount);
@@ -98,7 +99,7 @@ public final class FasLofs implements GraphSearch {
 
         System.out.println("Done");
 
-        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long stop =  MillisecondTimes.timeMillis();
         this.elapsed = stop - start;
 
         return graph;

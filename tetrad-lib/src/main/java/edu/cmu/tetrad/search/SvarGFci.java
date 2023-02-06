@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
@@ -136,7 +137,7 @@ public final class SvarGFci implements GraphSearch {
 
 
     public Graph search() {
-        long time1 =edu.cmu.tetrad.util.Timer.timeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         List<Node> nodes = getIndependenceTest().getVariables();
 

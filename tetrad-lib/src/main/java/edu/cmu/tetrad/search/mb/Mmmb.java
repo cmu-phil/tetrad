@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MbSearch;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -111,14 +112,14 @@ public final class Mmmb implements MbSearch {
     public List<Node> findMb(Node target) {
         TetradLogger.getInstance().log("info", "target = " + target);
         this.numIndTests = 0;
-        long time =edu.cmu.tetrad.util.Timer.timeMillis();
+        long time = MillisecondTimes.timeMillis();
 
         this.pc = new HashMap<>();
         this.trimmed = new HashSet<>();
 
         List<Node> nodes = mmmb(target);
 
-        long time2 =edu.cmu.tetrad.util.Timer.timeMillis() - time;
+        long time2 = MillisecondTimes.timeMillis() - time;
         TetradLogger.getInstance().log("info", "Number of seconds: " + (time2 / 1000.0));
         TetradLogger.getInstance().log("info", "Number of independence tests performed: " +
                 this.numIndTests);

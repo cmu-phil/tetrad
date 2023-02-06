@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.OrderedPair;
 import edu.cmu.tetrad.util.PermutationGenerator;
-import edu.cmu.tetrad.util.Timer;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -64,7 +64,7 @@ public class OtherPermAlgs {
 
     public List<Node> bestOrder(@NotNull List<Node> _order) {
         List<Node> order = new ArrayList<>(_order);
-        long start = Timer.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         if (useScore && !(score instanceof GraphScore)) {
             scorer = new TeyssierScorer(test, score);
@@ -94,7 +94,7 @@ public class OtherPermAlgs {
                 shuffle(order);
             }
 
-            this.start =  edu.cmu.tetrad.util.Timer.timeMillis();
+            this.start =  MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -129,7 +129,7 @@ public class OtherPermAlgs {
             }
         }
 
-        long stop =  Timer.timeMillis();
+        long stop =  MillisecondTimes.timeMillis();
 
         if (verbose) {
             System.out.println("Final order = " + scorer.getPi());
@@ -179,7 +179,7 @@ public class OtherPermAlgs {
             System.out.println("# Edges = " + scorer.getNumEdges()
                     + " Score = " + scorer.score()
                     + " (ESP)"
-                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                    + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();
@@ -202,7 +202,7 @@ public class OtherPermAlgs {
             System.out.println("# Edges = " + scorer.getNumEdges()
                     + " Score = " + scorer.score()
                     + " (GASP))"
-                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                    + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();
@@ -350,7 +350,7 @@ public class OtherPermAlgs {
                     + " Score = " + scorer.score()
                     + " #round = " + numRounds
                     + " (RCG)"
-                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                    + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
         }
 
         scorer.goToBookmark(1);
@@ -417,7 +417,7 @@ public class OtherPermAlgs {
                     + " Score = " + scorer.score()
                     + " (SP)"
 //                    + " # frugal CPDAGs = " + frugalCpdags.size()
-                    + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
+                    + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " sp"));
         }
 
         System.out.println("Frugal CPDAGs: ");

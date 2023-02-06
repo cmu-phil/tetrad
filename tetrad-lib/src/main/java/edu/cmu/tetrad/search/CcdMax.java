@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
@@ -197,7 +198,7 @@ public final class CcdMax implements GraphSearch {
     //======================================== PRIVATE METHODS ====================================//
 
     private Graph fastAdjacencySearch() {
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         FasConcurrent fas = new FasConcurrent(this.independenceTest);
         fas.setDepth(getDepth());
@@ -210,7 +211,7 @@ public final class CcdMax implements GraphSearch {
             this.sepsetMap = fas.getSepsets();
         }
 
-        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long stop =  MillisecondTimes.timeMillis();
         this.elapsed = stop - start;
 
         return new EdgeListGraph(graph);

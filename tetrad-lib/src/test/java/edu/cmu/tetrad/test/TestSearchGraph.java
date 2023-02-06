@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.SublistGenerator;
 import org.junit.Test;
@@ -180,11 +181,11 @@ public final class TestSearchGraph {
 
         Rfci fci = new Rfci(test);
         Fas fas = new Fas(test);
-        start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        start =  MillisecondTimes.timeMillis();
         fci.setDepth(depth);
         fci.setVerbose(false);
         fci.search(fas, fas.getNodes());
-        stop = System.currentTimeMillis();
+        stop = MillisecondTimes.timeMillis();
 
         System.out.println("DSEP RFCI");
         System.out.println("# dsep checks = " + fas.getNumIndependenceTests());
@@ -198,10 +199,10 @@ public final class TestSearchGraph {
 
         Rfci fci3 = new Rfci(test2);
         Fas fas2 = new Fas(test2);
-        start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        start =  MillisecondTimes.timeMillis();
         fci3.setDepth(depth);
         fci3.search(fas2, fas2.getNodes());
-        stop = System.currentTimeMillis();
+        stop = MillisecondTimes.timeMillis();
 
         System.out.println("FISHER Z RFCI");
         System.out.println("# indep checks = " + fas.getNumIndependenceTests());

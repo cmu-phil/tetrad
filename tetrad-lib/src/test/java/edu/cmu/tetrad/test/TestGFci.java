@@ -31,6 +31,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
 import org.junit.Test;
@@ -220,11 +221,11 @@ public class TestGFci {
         GFci gFci = new GFci(test, score);
         gFci.setFaithfulnessAssumed(true);
 
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         gFci.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
     }
@@ -248,11 +249,11 @@ public class TestGFci {
         GFci gFci = new GFci(test, bDeuScore);
         gFci.setFaithfulnessAssumed(true);
 
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         gFci.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
     }
@@ -279,11 +280,11 @@ public class TestGFci {
         gFci.setCompleteRuleSetUsed(false);
         gFci.setVerbose(true);
 
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         gFci.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
     }

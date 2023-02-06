@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
@@ -180,7 +181,7 @@ public final class Fci implements GraphSearch {
     }
 
     public Graph search() {
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         Fas fas = new Fas(getIndependenceTest());
         this.logger.log("info", "Starting FCI algorithm.");
@@ -226,7 +227,7 @@ public final class Fci implements GraphSearch {
 
         fciOrient.doFinalOrientation(graph);
 
-        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long stop =  MillisecondTimes.timeMillis();
 
         this.elapsedTime = stop - start;
 

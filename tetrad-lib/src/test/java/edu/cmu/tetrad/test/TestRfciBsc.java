@@ -9,6 +9,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.XdslXmlParser;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Builder;
 import nu.xom.Document;
@@ -78,11 +79,11 @@ public class TestRfciBsc {
         rfciBsc.setOutputRBD(true);
         rfciBsc.setVerbose(true);
 
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         rfciBsc.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
         System.out.println("\nBSC-I: " + rfciBsc.getBscI());
@@ -152,11 +153,11 @@ public class TestRfciBsc {
         rfciBsc.setOutputRBD(true);
         rfciBsc.setVerbose(true);
 
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         rfciBsc.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
         System.out.println("\nBSC-I: " + rfciBsc.getBscI());

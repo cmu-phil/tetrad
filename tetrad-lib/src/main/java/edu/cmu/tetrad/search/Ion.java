@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -129,11 +130,11 @@ public class Ion {
      */
     public List<Graph> search() {
 
-        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+        long start =  MillisecondTimes.timeMillis();
         TetradLogger.getInstance().log("info", "Starting ION Search.");
         logGraphs("\nInitial Pags: ", this.input);
         TetradLogger.getInstance().log("info", "Transfering local information.");
-        long steps =edu.cmu.tetrad.util.Timer.timeMillis();
+        long steps = MillisecondTimes.timeMillis();
 
         /*
          * Step 1 - Create the empty graph
@@ -154,7 +155,7 @@ public class Ion {
         for (NodePair pair : nonIntersection(graph)) {
             graph.addEdge(new Edge(pair.getFirst(), pair.getSecond(), Endpoint.CIRCLE, Endpoint.CIRCLE));
         }
-        TetradLogger.getInstance().log("info", "Steps 1-2: " + (System.currentTimeMillis() - steps) / 1000. + "s");
+        TetradLogger.getInstance().log("info", "Steps 1-2: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
         System.out.println("step2");
         System.out.println(graph);
 
@@ -163,7 +164,7 @@ public class Ion {
          *
          * Branch and prune step that blocks problematic undirectedPaths, possibly d-connecting undirectedPaths
          */
-        steps =edu.cmu.tetrad.util.Timer.timeMillis();
+        steps = MillisecondTimes.timeMillis();
         Queue<Graph> searchPags = new LinkedList<>();
         // place graph constructed in step 2 into the queue
         searchPags.offer(graph);
@@ -290,9 +291,9 @@ public class Ion {
                             break;
                         }
                     }
-                    float starthitset =edu.cmu.tetrad.util.Timer.timeMillis();
+                    float starthitset = MillisecondTimes.timeMillis();
                     Collection<GraphChange> hittingSets = IonHittingSet.findHittingSet(possibleChanges);
-                    this.recHitTimes.add((System.currentTimeMillis() - starthitset) / 1000.);
+                    this.recHitTimes.add((MillisecondTimes.timeMillis() - starthitset) / 1000.);
                     // Part 3.c - checks the newly constructed graphs from 3.b and rejects those that
                     // cycles or produce independencies known not to occur from the input PAGs or
                     // include undirectedPaths from definite nonancestors
@@ -393,7 +394,7 @@ public class Ion {
                 }
             }
         }
-        TetradLogger.getInstance().log("info", "Step 3: " + (System.currentTimeMillis() - steps) / 1000. + "s");
+        TetradLogger.getInstance().log("info", "Step 3: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
 
         /*
          * Step 4
@@ -401,7 +402,7 @@ public class Ion {
          * Finds redundant undirectedPaths and uses this information to expand the list
          * of possible graphs
          */
-        steps =edu.cmu.tetrad.util.Timer.timeMillis();
+        steps = MillisecondTimes.timeMillis();
         Map<Edge, Boolean> necEdges;
         Set<Graph> outputPags = new HashSet<>();
         while (!step3Pags.isEmpty()) {
@@ -467,7 +468,7 @@ public class Ion {
         }
         outputPags = removeMoreSpecific(outputPags);
 
-        TetradLogger.getInstance().log("info", "Step 4: " + (System.currentTimeMillis() - steps) / 1000. + "s");
+        TetradLogger.getInstance().log("info", "Step 4: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
 
         /*
          * Step 5
@@ -475,7 +476,7 @@ public class Ion {
          * Generate the Markov equivalence classes for graphs and accept only
          * those that do not predict false d-separations
          */
-        steps =edu.cmu.tetrad.util.Timer.timeMillis();
+        steps = MillisecondTimes.timeMillis();
         Set<Graph> outputSet = new HashSet<>();
         for (Graph pag : outputPags) {
             Set<Triple> unshieldedPossibleColliders = new HashSet<>();
@@ -505,8 +506,8 @@ public class Ion {
             }
         }
         this.output.addAll(outputSet);
-        TetradLogger.getInstance().log("info", "Step 5: " + (System.currentTimeMillis() - steps) / 1000. + "s");
-        this.runtime = ((System.currentTimeMillis() - start) / 1000.);
+        TetradLogger.getInstance().log("info", "Step 5: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
+        this.runtime = ((MillisecondTimes.timeMillis() - start) / 1000.);
         logGraphs("\nReturning output (" + this.output.size() + " Graphs):", this.output);
         double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;

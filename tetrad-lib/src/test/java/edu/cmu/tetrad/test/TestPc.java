@@ -27,6 +27,7 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
@@ -351,11 +352,11 @@ public class TestPc {
                     throw new IllegalStateException();
             }
 
-            long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+            long start =  MillisecondTimes.timeMillis();
 
             Graph out = search.search();
 
-            long stop = System.currentTimeMillis();
+            long stop = MillisecondTimes.timeMillis();
 
             long elapsed = stop - start;
             totalElapsed += elapsed;
@@ -744,9 +745,9 @@ public class TestPc {
 
             out = trim(out, target);
 
-            long start =  edu.cmu.tetrad.util.Timer.timeMillis();
+            long start =  MillisecondTimes.timeMillis();
 
-            long stop = System.currentTimeMillis();
+            long stop = MillisecondTimes.timeMillis();
 
             long elapsed = stop - start;
 

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
@@ -233,10 +234,10 @@ public final class SvarFci implements GraphSearch {
         }
 
         // Step CI C (Zhang's step F3.)
-        long time5 =edu.cmu.tetrad.util.Timer.timeMillis();
+        long time5 = MillisecondTimes.timeMillis();
         //fciOrientbk(getKnowledge(), graph, independenceTest.getVariable());    - Robert Tillman 2008
 
-        long time6 =edu.cmu.tetrad.util.Timer.timeMillis();
+        long time6 = MillisecondTimes.timeMillis();
         this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
 
         SvarFciOrient fciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
