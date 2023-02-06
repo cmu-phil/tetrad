@@ -5,16 +5,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.GraphTools;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.*;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -275,7 +268,7 @@ public class GeneralResamplingTest {
     public Graph search() {
         long start, stop;
 
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
 
         if (this.algorithm != null) {
             this.resamplingSearch.setAlgorithm(this.algorithm);
@@ -313,14 +306,14 @@ public class GeneralResamplingTest {
         if (this.verbose) {
             this.out.println("Resampling number is : " + this.graphs.size());
         }
-        stop = System.currentTimeMillis();
+        stop = MillisecondTimes.timeMillis();
         if (this.verbose) {
             this.out.println("Processing time of total resamplings : " + (stop - start) / 1000.0 + " sec");
         }
 
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         Graph graph = GraphTools.createHighEdgeProbabilityGraph(this.graphs, edgeEnsemble);
-        stop = System.currentTimeMillis();
+        stop = MillisecondTimes.timeMillis();
         if (this.verbose) {
             this.out.println("Final Resampling Search Result:");
             this.out.println(GraphUtils.graphToText(graph, false));

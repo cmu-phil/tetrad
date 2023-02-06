@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.HashSet;
@@ -165,7 +166,7 @@ public class PcStableMax implements GraphSearch {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        long startTime = System.currentTimeMillis();
+        long startTime = MillisecondTimes.timeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
@@ -200,7 +201,7 @@ public class PcStableMax implements GraphSearch {
 
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
-        this.elapsedTime = System.currentTimeMillis() - startTime;
+        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
         this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.log("info", "Finishing PC Algorithm.");

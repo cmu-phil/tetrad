@@ -185,7 +185,7 @@ public final class SemEstimator implements TetradSerializable {
             TetradLogger.getInstance().log("info", "Num restarts = " + getSemOptimizer().getNumRestarts());
         }
 
-        //long time = System.currentTimeMillis();
+        //long time = MillisecondTimes.timeMillis();
         //System.out.println("Start timer.");
 
         // Forget any previous estimation results. (If the estimation fails,

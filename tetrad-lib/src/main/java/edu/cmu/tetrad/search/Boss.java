@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +27,7 @@ public class Boss {
     private Knowledge knowledge = new Knowledge();
     private final TeyssierScorer scorer;
     private long start;
+    long stop;
     private boolean useScore = true;
     private boolean useRaskuttiUhler;
     private boolean useDataOrder = true;
@@ -63,7 +65,7 @@ public class Boss {
         scorer.setKnowledge(knowledge);
 
         List<Node> bestPerm;
-        long start = System.currentTimeMillis();
+        long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
         this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
@@ -87,7 +89,7 @@ public class Boss {
                 shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
+            this.start =  MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -121,7 +123,7 @@ public class Boss {
 
         this.scorer.score(bestPerm);
 
-        long stop = System.currentTimeMillis();
+        this.stop =  MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("\nFinal " + algType + " order = " + this.scorer.getPi());
@@ -174,7 +176,7 @@ public class Boss {
 //                    scorer.bookmark();
 //
 //                    if (verbose) {
-//                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutation1)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+//                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutation1)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
 //                    }
 //                }
 //            }
@@ -226,8 +228,8 @@ public class Boss {
                     }
 
                     if (verbose) {
-                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                     }
                 }
             }
@@ -282,7 +284,7 @@ public class Boss {
                     }
 
                     if (verbose) {
-                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                     }
                 }
 
@@ -337,14 +339,14 @@ public class Boss {
                     }
 
                     if (verbose) {
-                        System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                     }
                 }
 
                 scorer.bookmark();
 
                 if (verbose) {
-                    System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                    System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                 }
             }
 

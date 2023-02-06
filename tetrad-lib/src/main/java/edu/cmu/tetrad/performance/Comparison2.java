@@ -10,6 +10,7 @@ import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.ScoreType;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
@@ -128,7 +129,7 @@ public class Comparison2 {
                 throw new IllegalArgumentException("Algorithm not set.");
             }
 
-            long time1 = System.currentTimeMillis();
+            long time1 = MillisecondTimes.timeMillis();
 
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
                 Pc search = new Pc(test);
@@ -171,7 +172,7 @@ public class Comparison2 {
                 throw new IllegalArgumentException("Unrecognized algorithm.");
             }
 
-            long time2 = System.currentTimeMillis();
+            long time2 = MillisecondTimes.timeMillis();
 
             long elapsed = time2 - time1;
             result.setElapsed(elapsed);
@@ -368,7 +369,7 @@ public class Comparison2 {
             throw new IllegalArgumentException("Algorithm not set.");
         }
 
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
             if (test == null) {
@@ -434,7 +435,7 @@ public class Comparison2 {
             throw new IllegalArgumentException("Unrecognized algorithm.");
         }
 
-        long time2 = System.currentTimeMillis();
+        long time2 = MillisecondTimes.timeMillis();
 
         long elapsed = time2 - time1;
         result.setElapsed(elapsed);

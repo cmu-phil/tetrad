@@ -7,6 +7,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingSearch;
 
@@ -115,7 +116,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     public Graph call() {
         long start;
         long stop;
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             this.out.println("thread started ... ");
@@ -146,7 +147,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
                 graph = this.multiDataSetAlgorithm.search(this.dataModels, this.parameters);
             }
 
-            stop = System.currentTimeMillis();
+            stop = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
                 this.out.println("processing time of resampling for a thread was: "

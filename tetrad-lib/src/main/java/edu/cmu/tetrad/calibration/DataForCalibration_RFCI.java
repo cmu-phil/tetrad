@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.File;
@@ -125,7 +126,7 @@ public class DataForCalibration_RFCI {
 
         Graph estPag;
 
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
 //        if (algorithm.equals("RFCI")) {
 
@@ -146,7 +147,7 @@ public class DataForCalibration_RFCI {
 //            System.out.println("invalid search algorithm");
 //            return;
 //        }
-        long time2 = System.currentTimeMillis();
+        long time2 = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed (running RFCI on the data): " + (time2 - time1) / 1000 + " sec");
 
@@ -164,7 +165,7 @@ public class DataForCalibration_RFCI {
         BootstrapWorker.BootstrapNum = numBootstrapSamples;
 
         long start, stop;
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         for (int i1 = 0; i1 < numBootstrapSamples; i1++) {
             DataSet bootstrapSample = DFC.bootStrapSampling(data, data.getNumRows());
             if (algorithm.equals("RFCI")) {
@@ -184,7 +185,7 @@ public class DataForCalibration_RFCI {
             e.printStackTrace();
         }
 
-        stop = System.currentTimeMillis();
+        stop = MillisecondTimes.timeMillis();
         System.out.println("Bootstrap finished in " + (stop - start) + " ms");
         // estimate P_ij
         System.out.println("Probability estimates...");
@@ -196,9 +197,9 @@ public class DataForCalibration_RFCI {
             return;
         }
 
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         DFC.probDistribution(truePag, estPag, frequency, DFC.outProb, algorithm);
-        stop = System.currentTimeMillis();
+        stop = MillisecondTimes.timeMillis();
         System.out.println("probDistribution finished in " + (stop - start) + " ms");
         System.out.println("Writing Probs File: done!");
 

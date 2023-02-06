@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -117,7 +118,7 @@ public class PcLocal implements GraphSearch {
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      */
     public Graph search() {
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         if (this.externalGraph != null) {
             this.graph = new EdgeListGraph(this.externalGraph);
@@ -162,7 +163,7 @@ public class PcLocal implements GraphSearch {
 
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
-        long time2 = System.currentTimeMillis();
+        long time2 = MillisecondTimes.timeMillis();
         this.elapsedTime = time2 - time1;
 
         return this.graph;

@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
@@ -202,7 +203,7 @@ public class Dci {
      * Begins the DCI search procedure, described at each step
      */
     public List<Graph> search() {
-        this.elapsedTime = System.currentTimeMillis();
+        this.elapsedTime = MillisecondTimes.timeMillis();
 
         /*
          * Step 1 - Create the complete graph
@@ -286,7 +287,7 @@ public class Dci {
         /*
          * Step 6 - returns the output set of consistent graphs
          */
-        this.elapsedTime = System.currentTimeMillis() - this.elapsedTime;
+        this.elapsedTime = MillisecondTimes.timeMillis() - this.elapsedTime;
         System.out.println(this.output.size());
         return new ArrayList<>(this.output);
     }

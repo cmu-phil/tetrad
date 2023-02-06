@@ -304,7 +304,7 @@ public class CovNNone implements CovarianceFunction {
 
 //            System.out.println("")
 //
-//        long start = System.currentTimeMillis()
+//        long start =  edu.cmu.tetrad.util.Timer.currentThreadCpuTimeMilliseconds()
 
         Matrix d = cf.computeDerivatives(logtheta, X, 1);
 

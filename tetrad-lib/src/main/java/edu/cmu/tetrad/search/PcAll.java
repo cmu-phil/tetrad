@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
@@ -304,7 +305,7 @@ public final class PcAll implements GraphSearch {
 
         this.independenceTest.setVerbose(this.verbose);
 
-        long startTime = System.currentTimeMillis();
+        long startTime = MillisecondTimes.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
 
@@ -372,7 +373,7 @@ public final class PcAll implements GraphSearch {
         meekRules.setVerbose(true);
         meekRules.orientImplied(this.graph);
 
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");

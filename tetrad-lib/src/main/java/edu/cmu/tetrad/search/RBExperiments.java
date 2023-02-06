@@ -7,6 +7,7 @@ import edu.cmu.tetrad.bayes.DirichletEstimator;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.performance.Comparison;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
@@ -234,23 +235,23 @@ public class RBExperiments {
         PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
 
         // run RFCI to get a PAG using chi-squared test
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         Graph rfciPag = runPagCs(data, alpha);
-        long RfciTime = System.currentTimeMillis() - start;
+        long RfciTime = MillisecondTimes.timeMillis() - start;
         System.out.println("RFCI done!");
 
         // run RFCI-BSC (RB) search using BSC test and obtain constraints that
         // are queried during the search
         List<Graph> bscPags = new ArrayList<>();
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         IndTestProbabilistic testBSC = runRB(data, bscPags, numModels, threshold1);
-        long BscRfciTime = System.currentTimeMillis() - start;
+        long BscRfciTime = MillisecondTimes.timeMillis() - start;
         Map<IndependenceFact, Double> H = testBSC.getH();
         //		out.println("H Size:" + H.size());
         System.out.println("RB (RFCI-BSC) done!");
         //
         // create empirical data for constraints
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         DataSet depData = createDepDataFiltering(H, data, numBootstrapSamples, threshold2, lower, upper);
         out.println("DepData(row,col):" + depData.getNumRows() + "," + depData.getNumColumns());
         System.out.println("Dep data creation done!");
@@ -266,23 +267,23 @@ public class RBExperiments {
         BayesPm pmHat = new BayesPm(estDepBN, 2, 2);
         DirichletBayesIm prior = DirichletBayesIm.symmetricDirichletIm(pmHat, 0.5);
         BayesIm imHat = DirichletEstimator.estimate(prior, depData);
-        Long BscdTime = System.currentTimeMillis() - start;
+        Long BscdTime = MillisecondTimes.timeMillis() - start;
         System.out.println("Dependency BN_Param done");
 
         // compute scores of graphs that are output by RB search using BSC-I and
         // BSC-D methods
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         allScores lnProbs = getLnProbsAll(bscPags, H, data, imHat, estDepBN);
-        Long mutualTime = (System.currentTimeMillis() - start) / 2;
+        Long mutualTime = (MillisecondTimes.timeMillis() - start) / 2;
 
         // normalize the scores
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         Map<Graph, Double> normalizedDep = normalProbs(lnProbs.LnBSCD);
-        Long dTime = System.currentTimeMillis() - start;
+        Long dTime = MillisecondTimes.timeMillis() - start;
 
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         Map<Graph, Double> normalizedInd = normalProbs(lnProbs.LnBSCI);
-        Long iTime = System.currentTimeMillis() - start;
+        Long iTime = MillisecondTimes.timeMillis() - start;
 
         // get the most probable PAG using each scoring method
         normalizedDep = MapUtil.sortByValue(normalizedDep);
