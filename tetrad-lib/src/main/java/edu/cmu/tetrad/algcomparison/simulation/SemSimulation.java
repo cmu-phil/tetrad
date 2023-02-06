@@ -172,9 +172,11 @@ public class SemSimulation implements Simulation {
         // constructor. :-( So don't change this code!!! Please!!! -JR 2023/02/04
         SemIm im = new SemIm(pm, parameters);
 
-        if (this.im == null) {
+        // Not setting this im messes up algcomparison. -JR 20230206
+
+//        if (this.im == null) {
             this.im = im;
-        }
+//        }
 
         // Need this in case the SEM IM is given externally.
         this.im.setParams(parameters);

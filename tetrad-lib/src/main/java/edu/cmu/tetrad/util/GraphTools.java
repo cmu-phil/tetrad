@@ -1,22 +1,9 @@
 package edu.cmu.tetrad.util;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.EdgeTypeProbability;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
-import static edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble.Highest;
-import static edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble.Majority;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**

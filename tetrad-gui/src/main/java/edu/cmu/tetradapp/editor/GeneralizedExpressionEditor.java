@@ -25,6 +25,7 @@ import edu.cmu.tetrad.calculator.parser.ExpressionParser;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.util.MillisecondTimes;
 
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
@@ -65,7 +66,7 @@ class GeneralizedExpressionEditor extends JComponent {
      * The time that the selectded text should be colored. (Must do this all indirectly using a thread because
      * we cannot listen to the text pane.
      */
-    private long recolorTime = System.currentTimeMillis();
+    private long recolorTime = MillisecondTimes.timeMillis();
 
     /**
      * The text pane in which parsed text is rendered, typed, and colored.
@@ -294,7 +295,7 @@ class GeneralizedExpressionEditor extends JComponent {
                 StyleConstants.setForeground(black, Color.BLACK);
 
                 while (!stop) {
-                    if (System.currentTimeMillis() < recolorTime) {
+                    if (MillisecondTimes.timeMillis() < recolorTime) {
                         continue;
                     }
 
@@ -504,7 +505,7 @@ class GeneralizedExpressionEditor extends JComponent {
                 StyleConstants.setForeground(black, Color.BLACK);
 
                 while (!stop) {
-                    if (System.currentTimeMillis() < recolorTime) {
+                    if (MillisecondTimes.timeMillis() < recolorTime) {
                         continue;
                     }
 
@@ -617,13 +618,13 @@ class GeneralizedExpressionEditor extends JComponent {
             this.color = Color.BLACK;
             this.start = 0;
             this.stringWidth = expressionString.length();
-            this.recolorTime = System.currentTimeMillis();
+            this.recolorTime = MillisecondTimes.timeMillis();
             valueExpressionString = expressionString;
         } catch (ParseException e) {
             this.color = Color.RED;
             this.start = e.getErrorOffset();
             this.stringWidth = parser.getNextOffset() - e.getErrorOffset();
-            this.recolorTime = System.currentTimeMillis();
+            this.recolorTime = MillisecondTimes.timeMillis();
             valueExpressionString = null;
         }
 

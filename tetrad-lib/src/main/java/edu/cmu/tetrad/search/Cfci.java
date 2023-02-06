@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
@@ -155,7 +156,7 @@ public final class Cfci implements GraphSearch {
     }
 
     public Graph search() {
-        long beginTime = System.currentTimeMillis();
+        long beginTime = MillisecondTimes.timeMillis();
         if (this.verbose) {
             this.logger.log("info", "Starting FCI algorithm.");
             this.logger.log("info", "Independence test = " + this.independenceTest + ".");
@@ -182,17 +183,17 @@ public final class Cfci implements GraphSearch {
 
         // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
         if (isPossibleDsepSearchDone()) {
-            long time1 = System.currentTimeMillis();
+            long time1 = MillisecondTimes.timeMillis();
             ruleR0(this.independenceTest, this.depth, this.sepsets);
 
-            long time2 = System.currentTimeMillis();
+            long time2 = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
                 this.logger.log("info", "Step C: " + (time2 - time1) / 1000. + "s");
             }
 
             // Step FCI D.
-            long time3 = System.currentTimeMillis();
+            long time3 = MillisecondTimes.timeMillis();
 
             PossibleDsepFci possibleDSep = new PossibleDsepFci(this.graph, this.independenceTest);
             possibleDSep.setDepth(getDepth());
@@ -201,7 +202,7 @@ public final class Cfci implements GraphSearch {
 
             // We use these sepsets though.
             this.sepsets.addAll(possibleDSep.search());
-            long time4 = System.currentTimeMillis();
+            long time4 = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
                 this.logger.log("info", "Step D: " + (time4 - time3) / 1000. + "s");
@@ -212,11 +213,11 @@ public final class Cfci implements GraphSearch {
         }
 
         // Step CI C (Zhang's step F3.)
-        long time5 = System.currentTimeMillis();
+        long time5 = MillisecondTimes.timeMillis();
         fciOrientbk(getKnowledge(), this.graph, this.variables);
         ruleR0(this.independenceTest, this.depth, this.sepsets);
 
-        long time6 = System.currentTimeMillis();
+        long time6 = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             this.logger.log("info", "Step CI C: " + (time6 - time5) / 1000. + "s");
@@ -235,7 +236,7 @@ public final class Cfci implements GraphSearch {
         fciOrient.ruleR0(this.graph);
         fciOrient.doFinalOrientation(this.graph);
 
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
 
         if (this.verbose) {

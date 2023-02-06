@@ -191,7 +191,7 @@ public final class LvSwap implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
-        alg.setAlgType(Boss.AlgType.BOSS2);
+        alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
@@ -266,7 +266,7 @@ public final class LvSwap implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
-        alg.setAlgType(Boss.AlgType.BOSS2);
+        alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
