@@ -78,7 +78,7 @@ public class TestRfciBsc {
         rfciBsc.setOutputRBD(true);
         rfciBsc.setVerbose(true);
 
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         rfciBsc.search();
 
@@ -152,7 +152,7 @@ public class TestRfciBsc {
         rfciBsc.setOutputRBD(true);
         rfciBsc.setVerbose(true);
 
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         rfciBsc.search();
 

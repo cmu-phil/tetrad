@@ -251,7 +251,7 @@ public final class VcpcFast implements GraphSearch {
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime = System.currentTimeMillis();
+        long startTime =edu.cmu.tetrad.util.Timer.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
 
@@ -447,7 +447,7 @@ public final class VcpcFast implements GraphSearch {
         System.out.println("VCPC:");
 
 //        System.out.println("# of patterns: " + patterns.size());
-        long endTime = System.currentTimeMillis();
+        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         System.out.println("Search Time (seconds):" + (this.elapsedTime) / 1000 + " s");

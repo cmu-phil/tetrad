@@ -275,7 +275,7 @@ public class GeneralResamplingTest {
     public Graph search() {
         long start, stop;
 
-        start = System.currentTimeMillis();
+        start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         if (this.algorithm != null) {
             this.resamplingSearch.setAlgorithm(this.algorithm);
@@ -318,7 +318,7 @@ public class GeneralResamplingTest {
             this.out.println("Processing time of total resamplings : " + (stop - start) / 1000.0 + " sec");
         }
 
-        start = System.currentTimeMillis();
+        start =  edu.cmu.tetrad.util.Timer.timeMillis();
         Graph graph = GraphTools.createHighEdgeProbabilityGraph(this.graphs, edgeEnsemble);
         stop = System.currentTimeMillis();
         if (this.verbose) {

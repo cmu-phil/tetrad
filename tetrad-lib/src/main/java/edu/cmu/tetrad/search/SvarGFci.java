@@ -136,7 +136,7 @@ public final class SvarGFci implements GraphSearch {
 
 
     public Graph search() {
-        long time1 = System.currentTimeMillis();
+        long time1 =edu.cmu.tetrad.util.Timer.timeMillis();
 
         List<Node> nodes = getIndependenceTest().getVariables();
 

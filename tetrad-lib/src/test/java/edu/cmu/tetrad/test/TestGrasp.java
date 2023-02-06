@@ -1201,7 +1201,7 @@ public final class TestGrasp {
     public void bryanCheckDensityClaims() {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
         boolean usePearl = true;
         int numVars = 5; // Will change this in OtherParams.sp() too
 

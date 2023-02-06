@@ -170,7 +170,7 @@ public final class PcMb implements MbSearch, GraphSearch {
      * @param targets The targets variable.
      */
     public Graph search(List<Node> targets) {
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
@@ -627,7 +627,7 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     private void finishUp(long start, Graph graph) {
-        long stop = System.currentTimeMillis();
+        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsedTime = stop - start;
         double seconds = this.elapsedTime / 1000d;
 

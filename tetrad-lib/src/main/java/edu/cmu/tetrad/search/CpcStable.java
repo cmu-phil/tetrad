@@ -204,7 +204,7 @@ public final class CpcStable implements GraphSearch {
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime = System.currentTimeMillis();
+        long startTime =edu.cmu.tetrad.util.Timer.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
@@ -237,7 +237,7 @@ public final class CpcStable implements GraphSearch {
 
         meekRules.orientImplied(getGraph());
 
-        long endTime = System.currentTimeMillis();
+        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");

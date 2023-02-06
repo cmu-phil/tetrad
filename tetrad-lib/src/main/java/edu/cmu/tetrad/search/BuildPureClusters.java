@@ -169,7 +169,7 @@ public final class BuildPureClusters {
      * @return the result search graph, or null if there is no model.
      */
     public Graph search() {
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         TetradLogger.getInstance().log("info", "BPC alpha = " + this.alpha + " test = " + this.sigTestType);
 
@@ -193,7 +193,7 @@ public final class BuildPureClusters {
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
 
-        long stop = System.currentTimeMillis();
+        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
         long elapsed = stop - start;
 
         TetradLogger.getInstance().log("elapsed", "Elapsed " + elapsed + " ms");

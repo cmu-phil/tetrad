@@ -304,7 +304,7 @@ public final class PcAll implements GraphSearch {
 
         this.independenceTest.setVerbose(this.verbose);
 
-        long startTime = System.currentTimeMillis();
+        long startTime =edu.cmu.tetrad.util.Timer.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
 
@@ -372,7 +372,7 @@ public final class PcAll implements GraphSearch {
         meekRules.setVerbose(true);
         meekRules.orientImplied(this.graph);
 
-        long endTime = System.currentTimeMillis();
+        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");

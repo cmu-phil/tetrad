@@ -252,7 +252,7 @@ public final class SampleVcpcFast implements GraphSearch {
         Vcfas fas = new Vcfas(getIndependenceTest());
         this.definitelyNonadjacencies = new HashSet<>();
 
-        long startTime = System.currentTimeMillis();
+        long startTime =edu.cmu.tetrad.util.Timer.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
 
@@ -549,7 +549,7 @@ public final class SampleVcpcFast implements GraphSearch {
 
         System.out.println("Sample VCPC:");
         System.out.println("# of CPDAGs: " + CPDAGs.size());
-        long endTime = System.currentTimeMillis();
+        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         System.out.println("Search Time (seconds):" + (this.elapsedTime) / 1000 + " s");

@@ -38,7 +38,7 @@ public class BossMB {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order, List<Node> targets) {
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer2(this.score);
@@ -58,7 +58,7 @@ public class BossMB {
                 RandomUtil.shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
+            this.start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -115,7 +115,7 @@ public class BossMB {
 
         this.graph = SearchGraphUtils.cpdagForDag(this.graph);
 
-        long stop = System.currentTimeMillis();
+        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());

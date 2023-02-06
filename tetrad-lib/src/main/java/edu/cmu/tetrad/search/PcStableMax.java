@@ -165,7 +165,7 @@ public class PcStableMax implements GraphSearch {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        long startTime = System.currentTimeMillis();
+        long startTime =edu.cmu.tetrad.util.Timer.timeMillis();
 
         if (getIndependenceTest() == null) {
             throw new NullPointerException();
@@ -200,7 +200,7 @@ public class PcStableMax implements GraphSearch {
 
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
-        this.elapsedTime = System.currentTimeMillis() - startTime;
+        this.elapsedTime =edu.cmu.tetrad.util.Timer.timeMillis() - startTime;
 
         this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.log("info", "Finishing PC Algorithm.");

@@ -205,7 +205,7 @@ public final class Fask implements GraphSearch {
      * and some of the adjacencies may be two-cycles.
      */
     public Graph search() {
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
         NumberFormat nf = new DecimalFormat("0.000");
 
         DataSet dataSet = DataUtils.standardizeData(this.dataSet);
@@ -393,7 +393,7 @@ public final class Fask implements GraphSearch {
             }
         }
 
-        long stop = System.currentTimeMillis();
+        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsed = stop - start;
 
         this.graph = graph;

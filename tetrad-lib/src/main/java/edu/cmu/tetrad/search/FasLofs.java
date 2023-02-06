@@ -74,7 +74,7 @@ public final class FasLofs implements GraphSearch {
      * and some of the adjacencies may be two-cycles.
      */
     public Graph search() {
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         SemBicScore score = new SemBicScore(new CovarianceMatrix(this.dataSet));
         score.setPenaltyDiscount(this.penaltyDiscount);
@@ -98,7 +98,7 @@ public final class FasLofs implements GraphSearch {
 
         System.out.println("Done");
 
-        long stop = System.currentTimeMillis();
+        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsed = stop - start;
 
         return graph;

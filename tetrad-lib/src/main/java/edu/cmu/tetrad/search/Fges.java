@@ -182,7 +182,7 @@ public final class Fges implements GraphSearch, GraphScorer {
      * @return the resulting Pattern.
      */
     public Graph search() {
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
         topGraphs.clear();
 
         graph = new EdgeListGraph(getVariables());
@@ -214,7 +214,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             bes();
         }
 
-        long endTime = System.currentTimeMillis();
+        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsedTime = endTime - start;
 
         if (verbose) {
@@ -379,7 +379,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     private void initializeEffectEdges(final List<Node> nodes) {
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
@@ -401,7 +401,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             ForkJoinPool.commonPool().invokeAll(tasks);
         }
 
-        long stop = System.currentTimeMillis();
+        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         if (verbose) {
             out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");

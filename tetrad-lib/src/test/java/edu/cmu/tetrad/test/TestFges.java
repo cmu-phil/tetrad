@@ -1049,7 +1049,7 @@ public class TestFges {
             Graph out;
             final double penalty = 2;
 
-            long start = System.currentTimeMillis();
+            long start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
             switch (t) {
                 case 0:

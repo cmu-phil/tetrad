@@ -75,7 +75,7 @@ public class RfciBsc implements GraphSearch {
     @Override
     public Graph search() {
         long stop = 0;
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getIndependenceTest();
 

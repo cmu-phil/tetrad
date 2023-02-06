@@ -42,7 +42,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.util.Timer;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 import org.reflections.Reflections;
@@ -1160,9 +1159,7 @@ public class Comparison {
         stdout.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
                 + " simulationWrapper: " + simulationWrapper.getDescription());
 
-        Timer timer = new Timer();
-        timer.start();
-
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
         Graph graphOut;
 
         try {
@@ -1210,10 +1207,12 @@ public class Comparison {
         }
 
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
-//        int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
+        int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
-        timer.stop();
-        long elapsed = timer.getCpuTime();
+//        long stop = System.currentTimeMillis();
+        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
+
+        long elapsed = (stop - start);
 
         saveGraph(this.resultsPath, graphOut, run.getRunIndex(), simIndex, algorithmWrapper, elapsed, stdout);
 

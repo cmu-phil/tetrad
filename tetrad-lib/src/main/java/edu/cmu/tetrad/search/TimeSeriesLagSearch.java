@@ -203,7 +203,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
     public Graph search(List<Node> nodes) {
         TetradLogger.getInstance().log("info", "Starting TimeSeriesLagSearch.");
         TetradLogger.getInstance().log("info", "Independence test = " + this.independenceTest + ".");
-        long startTime = System.currentTimeMillis();
+        long startTime =edu.cmu.tetrad.util.Timer.timeMillis();
         this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
@@ -235,7 +235,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
-        long endTime = System.currentTimeMillis();
+        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");

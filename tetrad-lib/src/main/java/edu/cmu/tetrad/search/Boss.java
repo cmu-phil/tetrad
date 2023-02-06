@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.Timer;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.NumberFormat;
@@ -63,7 +64,7 @@ public class Boss {
         scorer.setKnowledge(knowledge);
 
         List<Node> bestPerm;
-        long start = System.currentTimeMillis();
+        edu.cmu.tetrad.util.Timer timer = new Timer(); timer.start();
         order = new ArrayList<>(order);
 
         this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
@@ -87,7 +88,7 @@ public class Boss {
                 shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
+            this.start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -121,12 +122,12 @@ public class Boss {
 
         this.scorer.score(bestPerm);
 
-        long stop = System.currentTimeMillis();
+        timer.stop(); long elapsed = timer.getCpuTime();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("\nFinal " + algType + " order = " + this.scorer.getPi());
             TetradLogger.getInstance().forceLogMessage("Final score = " + this.scorer.score());
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
+            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (elapsed) / 1000.0 + " s");
         }
 
         return bestPerm;

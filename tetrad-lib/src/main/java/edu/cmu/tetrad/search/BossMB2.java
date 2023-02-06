@@ -52,14 +52,14 @@ public class BossMB2 {
      * Prints local graphs for all variables and returns the one of them.
      */
     public Graph search(@NotNull List<Node> order) {
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
         order = new ArrayList<>(order);
 
         TeyssierScorer2 scorer0 = new TeyssierScorer2(this.score);
         scorer0.setKnowledge(this.knowledge);
         scorer0.score(order);
 
-        this.start = System.currentTimeMillis();
+        this.start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         makeValidKnowledgeOrder(order);
 
@@ -111,7 +111,7 @@ public class BossMB2 {
             }
         }
 
-        long stop = System.currentTimeMillis();
+        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         System.out.println("Elapsed time = " + (stop - start) / 1000.0 + " s");
 

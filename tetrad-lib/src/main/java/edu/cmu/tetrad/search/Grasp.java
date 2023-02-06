@@ -29,7 +29,6 @@ public class Grasp {
     private IndependenceTest test;
     private Knowledge knowledge = new Knowledge();
     private TeyssierScorer scorer;
-    private long start;
     // flags
     private boolean useScore = true;
     private boolean useRaskuttiUhler;
@@ -43,6 +42,8 @@ public class Grasp {
     // other params
     private int depth = 4;
     private int numStarts = 1;
+    private final edu.cmu.tetrad.util.Timer timer = new edu.cmu.tetrad.util.Timer();
+
 
     public Grasp(@NotNull Score score) {
         this.score = score;
@@ -63,7 +64,7 @@ public class Grasp {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
-        long start = System.currentTimeMillis();
+        timer.start();
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
@@ -93,8 +94,6 @@ public class Grasp {
                 shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
-
             makeValidKnowledgeOrder(order);
 
             this.scorer.score(order);
@@ -111,11 +110,11 @@ public class Grasp {
 
         this.scorer.score(bestPerm);
 
-        long stop = System.currentTimeMillis();
+        timer.stop();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
+            TetradLogger.getInstance().forceLogMessage(timer.getCpuTimeString());
         }
 
         return bestPerm;
@@ -180,7 +179,7 @@ public class Grasp {
             TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
                     + " Score = " + scorer.score()
                     + " (GRaSP)"
-                    + " Elapsed " + ((System.currentTimeMillis() - this.start) / 1000.0 + " s"));
+                    + timer.getCpuTimeString());
         }
 
         return scorer.getPi();
@@ -203,7 +202,7 @@ public class Grasp {
                 if (covered && tucks.contains(tuck)) continue;
                 if (currentDepth > depth[1] && !covered) continue;
 
-                int[] idcs = new int[] {scorer.index(x), scorer.index(y)};
+                int[] idcs = new int[]{scorer.index(x), scorer.index(y)};
 
                 int i = idcs[0];
                 scorer.bookmark(currentDepth);

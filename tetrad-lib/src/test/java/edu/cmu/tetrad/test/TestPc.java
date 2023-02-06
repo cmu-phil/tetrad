@@ -351,7 +351,7 @@ public class TestPc {
                     throw new IllegalStateException();
             }
 
-            long start = System.currentTimeMillis();
+            long start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
             Graph out = search.search();
 
@@ -744,7 +744,7 @@ public class TestPc {
 
             out = trim(out, target);
 
-            long start = System.currentTimeMillis();
+            long start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
             long stop = System.currentTimeMillis();
 

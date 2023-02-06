@@ -117,7 +117,7 @@ public class PcLocal implements GraphSearch {
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
      */
     public Graph search() {
-        long time1 = System.currentTimeMillis();
+        long time1 =edu.cmu.tetrad.util.Timer.timeMillis();
 
         if (this.externalGraph != null) {
             this.graph = new EdgeListGraph(this.externalGraph);
@@ -162,7 +162,7 @@ public class PcLocal implements GraphSearch {
 
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
-        long time2 = System.currentTimeMillis();
+        long time2 =edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsedTime = time2 - time1;
 
         return this.graph;

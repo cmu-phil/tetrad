@@ -172,7 +172,7 @@ public final class Rfci implements GraphSearch {
     }
 
     public Graph search(IFas fas, List<Node> nodes) {
-        long beginTime = System.currentTimeMillis();
+        long beginTime =edu.cmu.tetrad.util.Timer.timeMillis();
         independenceTest.setVerbose(verbose);
 
         this.logger.log("info", "Starting FCI algorithm.");
@@ -182,7 +182,7 @@ public final class Rfci implements GraphSearch {
 
         this.graph = new EdgeListGraph(nodes);
 
-        long start1 = System.currentTimeMillis();
+        long start1 =edu.cmu.tetrad.util.Timer.timeMillis();
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
@@ -192,19 +192,19 @@ public final class Rfci implements GraphSearch {
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         this.sepsets = fas.getSepsets();
 
-        long stop1 = System.currentTimeMillis();
-        long start2 = System.currentTimeMillis();
+        long stop1 =edu.cmu.tetrad.util.Timer.timeMillis();
+        long start2 =edu.cmu.tetrad.util.Timer.timeMillis();
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         fciOrientbk(getKnowledge(), this.graph, this.variables);
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
         doFinalOrientation();
 
-        long endTime = System.currentTimeMillis();
+        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsedTime = endTime - beginTime;
 
         this.logger.log("graph", "Returning graph: " + this.graph);
-        long stop2 = System.currentTimeMillis();
+        long stop2 =edu.cmu.tetrad.util.Timer.timeMillis();
 
         this.logger.log("info", "Elapsed time adjacency search = " + (stop1 - start1) / 1000L + "s");
         this.logger.log("info", "Elapsed time orientation search = " + (stop2 - start2) / 1000L + "s");

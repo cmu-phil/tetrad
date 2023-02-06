@@ -199,7 +199,7 @@ public final class FgesMb {
     public Graph search(List<Node> targets) {
 
         // Assumes one-edge faithfulness.
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         if (targets == null) {
             throw new NullPointerException();
@@ -237,7 +237,7 @@ public final class FgesMb {
         fes();
         bes();
 
-        long endTime = System.currentTimeMillis();
+        long endTime =edu.cmu.tetrad.util.Timer.timeMillis();
         this.elapsedTime = endTime - start;
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 

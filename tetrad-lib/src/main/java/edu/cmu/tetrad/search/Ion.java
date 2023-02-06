@@ -129,11 +129,11 @@ public class Ion {
      */
     public List<Graph> search() {
 
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
         TetradLogger.getInstance().log("info", "Starting ION Search.");
         logGraphs("\nInitial Pags: ", this.input);
         TetradLogger.getInstance().log("info", "Transfering local information.");
-        long steps = System.currentTimeMillis();
+        long steps =edu.cmu.tetrad.util.Timer.timeMillis();
 
         /*
          * Step 1 - Create the empty graph
@@ -163,7 +163,7 @@ public class Ion {
          *
          * Branch and prune step that blocks problematic undirectedPaths, possibly d-connecting undirectedPaths
          */
-        steps = System.currentTimeMillis();
+        steps =edu.cmu.tetrad.util.Timer.timeMillis();
         Queue<Graph> searchPags = new LinkedList<>();
         // place graph constructed in step 2 into the queue
         searchPags.offer(graph);
@@ -290,7 +290,7 @@ public class Ion {
                             break;
                         }
                     }
-                    float starthitset = System.currentTimeMillis();
+                    float starthitset =edu.cmu.tetrad.util.Timer.timeMillis();
                     Collection<GraphChange> hittingSets = IonHittingSet.findHittingSet(possibleChanges);
                     this.recHitTimes.add((System.currentTimeMillis() - starthitset) / 1000.);
                     // Part 3.c - checks the newly constructed graphs from 3.b and rejects those that
@@ -401,7 +401,7 @@ public class Ion {
          * Finds redundant undirectedPaths and uses this information to expand the list
          * of possible graphs
          */
-        steps = System.currentTimeMillis();
+        steps =edu.cmu.tetrad.util.Timer.timeMillis();
         Map<Edge, Boolean> necEdges;
         Set<Graph> outputPags = new HashSet<>();
         while (!step3Pags.isEmpty()) {
@@ -475,7 +475,7 @@ public class Ion {
          * Generate the Markov equivalence classes for graphs and accept only
          * those that do not predict false d-separations
          */
-        steps = System.currentTimeMillis();
+        steps =edu.cmu.tetrad.util.Timer.timeMillis();
         Set<Graph> outputSet = new HashSet<>();
         for (Graph pag : outputPags) {
             Set<Triple> unshieldedPossibleColliders = new HashSet<>();

@@ -180,7 +180,7 @@ public final class TestSearchGraph {
 
         Rfci fci = new Rfci(test);
         Fas fas = new Fas(test);
-        start = System.currentTimeMillis();
+        start =  edu.cmu.tetrad.util.Timer.timeMillis();
         fci.setDepth(depth);
         fci.setVerbose(false);
         fci.search(fas, fas.getNodes());
@@ -198,7 +198,7 @@ public final class TestSearchGraph {
 
         Rfci fci3 = new Rfci(test2);
         Fas fas2 = new Fas(test2);
-        start = System.currentTimeMillis();
+        start =  edu.cmu.tetrad.util.Timer.timeMillis();
         fci3.setDepth(depth);
         fci3.search(fas2, fas2.getNodes());
         stop = System.currentTimeMillis();

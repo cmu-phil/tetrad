@@ -115,7 +115,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     public Graph call() {
         long start;
         long stop;
-        start = System.currentTimeMillis();
+        start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         if (this.verbose) {
             this.out.println("thread started ... ");

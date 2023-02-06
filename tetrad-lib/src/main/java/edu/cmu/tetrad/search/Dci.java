@@ -202,7 +202,7 @@ public class Dci {
      * Begins the DCI search procedure, described at each step
      */
     public List<Graph> search() {
-        this.elapsedTime = System.currentTimeMillis();
+        this.elapsedTime =edu.cmu.tetrad.util.Timer.timeMillis();
 
         /*
          * Step 1 - Create the complete graph
@@ -286,7 +286,7 @@ public class Dci {
         /*
          * Step 6 - returns the output set of consistent graphs
          */
-        this.elapsedTime = System.currentTimeMillis() - this.elapsedTime;
+        this.elapsedTime =edu.cmu.tetrad.util.Timer.timeMillis() - this.elapsedTime;
         System.out.println(this.output.size());
         return new ArrayList<>(this.output);
     }

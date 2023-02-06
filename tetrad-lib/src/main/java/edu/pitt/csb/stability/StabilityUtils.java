@@ -245,12 +245,12 @@ public class StabilityUtils {
 
         final double lambda = .1;
         SearchWrappers.MGMWrapper mgm = new SearchWrappers.MGMWrapper(lambda, lambda, lambda);
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
         DoubleMatrix2D xi = StabilityUtils.StabilitySearch(ds, mgm, 8, 200);
         long end = System.currentTimeMillis();
         System.out.println("Not parallel: " + ((end - start) / 1000.0));
 
-        start = System.currentTimeMillis();
+        start =  edu.cmu.tetrad.util.Timer.timeMillis();
         DoubleMatrix2D xi2 = StabilityUtils.StabilitySearchPar(ds, mgm, 8, 200);
         end = System.currentTimeMillis();
         System.out.println("Parallel: " + ((end - start) / 1000.0));

@@ -107,7 +107,7 @@ public final class FactoredBayesStructuralEM {
      */
     public BayesIm iterate() {
 
-        double start = System.currentTimeMillis();
+        double start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         BdeMetricCache bdeMetricCache = new BdeMetricCache(this.dataSet, this.bayesPmM0);
 

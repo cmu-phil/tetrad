@@ -54,7 +54,7 @@ public class SP {
 
     public List<Node> bestOrder(@NotNull List<Node> _order) {
         List<Node> order = new ArrayList<>(_order);
-        long start = System.currentTimeMillis();
+        long start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         if (useScore && !(score instanceof GraphScore)) {
             scorer = new TeyssierScorer(test, score);
@@ -78,7 +78,7 @@ public class SP {
                 shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
+            this.start =  edu.cmu.tetrad.util.Timer.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -97,7 +97,7 @@ public class SP {
             }
         }
 
-        long stop = System.currentTimeMillis();
+        long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         if (verbose) {
             System.out.println("Final order = " + scorer.getPi());

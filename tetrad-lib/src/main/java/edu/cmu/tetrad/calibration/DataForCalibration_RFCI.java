@@ -164,7 +164,7 @@ public class DataForCalibration_RFCI {
         BootstrapWorker.BootstrapNum = numBootstrapSamples;
 
         long start, stop;
-        start = System.currentTimeMillis();
+        start =  edu.cmu.tetrad.util.Timer.timeMillis();
         for (int i1 = 0; i1 < numBootstrapSamples; i1++) {
             DataSet bootstrapSample = DFC.bootStrapSampling(data, data.getNumRows());
             if (algorithm.equals("RFCI")) {
@@ -196,7 +196,7 @@ public class DataForCalibration_RFCI {
             return;
         }
 
-        start = System.currentTimeMillis();
+        start =  edu.cmu.tetrad.util.Timer.timeMillis();
         DFC.probDistribution(truePag, estPag, frequency, DFC.outProb, algorithm);
         stop = System.currentTimeMillis();
         System.out.println("probDistribution finished in " + (stop - start) + " ms");
