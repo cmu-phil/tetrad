@@ -54,51 +54,49 @@ public class Timer {
     }
 
     /**
-     * @return The elapsed wall time im seconds, in millisecond precision.
+     * @return The elapsed wall time im in milliseconds.
      */
-    public double getWallTime() {
-        return round(stopWall - (double) startWall) / 1000.0;
+    public long getWallTime() {
+        return stopWall - startWall;
     }
 
     /**
-     * @return The elapsed user time in seconds, in millisecond precision.
+     * @return The elapsed user time in milliseconds.
      */
-    public double getUserTime() {
-        return round((stopUser - startUser) / 1000000.0) / 1000.0;
+    public long getUserTime() {
+        return (stopUser - startUser) / 1000000L;
     }
 
     /**
      * @return The elapsed CPU time in seconds, in millisecond precision.
      */
-    public double getCpuTime() {
-        return round((stopCpu - startCpu) / 1000000.0) / 1000.0;
+    public long getCpuTime() {
+        return (stopCpu - startCpu) / 1000000L;
     }
 
     /**
      * @return A formatted string for the wall time in seconds, in millisecond precision.
      */
     public String getWallTimeString() {
-        return "Wall Time = " + nf.format(getWallTime()) + " s";
+        return "Wall Time = " + nf.format(getWallTime() / 1000.0) + " s";
     }
 
     /**
      * @return A formatted string for the user time in seconds, in millisecond precision.
      */
     public String getUserTimeString() {
-        return "User Time = " + nf.format(getUserTime()) + " s";
+        return "User Time = " + nf.format(getUserTime() / 1000.0) + " s";
     }
 
     /**
      * @return A formatted string for the CPU time in seconds, in millisecond precision.
      */
     public String getCpuTimeString() {
-        return "CPU Time = " + nf.format(getCpuTime()) + " s";
+        return "CPU Time = " + nf.format(getCpuTime() / 1000.0) + " s";
     }
 
     private static void compareTimes() {
-        NumberFormat nf = new DecimalFormat("0.000000");
-
-        int numIter = 10000000;
+        int numIter = 100000000;
 
         Timer timer = new Timer();
         timer.start();
@@ -108,6 +106,8 @@ public class Timer {
         for (int i = 0; i < numIter; i++) {
             sum += log(1000.0);
         }
+
+        System.out.println("Sum = " + sum);
 
         timer.stop();
 

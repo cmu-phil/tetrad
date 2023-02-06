@@ -42,13 +42,12 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.util.Timer;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 import org.reflections.Reflections;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -1161,21 +1160,9 @@ public class Comparison {
         stdout.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
                 + " simulationWrapper: " + simulationWrapper.getDescription());
 
-        ThreadMXBean thMxB = ManagementFactory.getThreadMXBean();
-        System.out.println(("Current thread count:" + thMxB.getThreadCount()));
-        //gets current thread cpu time.
-        System.out.println("CurrentThreadCpuTime: " + thMxB.getCurrentThreadCpuTime());
-        //gets curent thread user time.
-        System.out.println("CurrentThreadUserTime:" + thMxB.getCurrentThreadUserTime());
-        //gets Demon thread count
-        System.out.println("DaemonThreadCount:" + thMxB.getDaemonThreadCount());
-        //gets peaak thread count
-        System.out.println("PeakThreadCount:" + thMxB.getPeakThreadCount());
-        //gets thread count
-        System.out.println("ThreadCount:" + thMxB.getThreadCount());
+        Timer timer = new Timer();
+        timer.start();
 
-//        long start = System.currentTimeMillis();
-        long start = thMxB.getCurrentThreadCpuTime();
         Graph graphOut;
 
         try {
@@ -1223,12 +1210,10 @@ public class Comparison {
         }
 
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
-        int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
+//        int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
-//        long stop = System.currentTimeMillis();
-        long stop = thMxB.getCurrentThreadCpuTime();
-
-        long elapsed = (stop - start) / 1000000L;
+        timer.stop();
+        long elapsed = timer.getCpuTime();
 
         saveGraph(this.resultsPath, graphOut, run.getRunIndex(), simIndex, algorithmWrapper, elapsed, stdout);
 

@@ -2494,6 +2494,8 @@ public final class TestGrasp {
 
         params.set(Params.ADD_ORIGINAL_DATASET, false);
 
+//        params.set(Params.SEED, -1l);
+
         IndependenceWrapper test = new FisherZ();
 
         List<ScoreWrapper> scores = new ArrayList<>();
@@ -2584,6 +2586,7 @@ public final class TestGrasp {
 
 
 //        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
