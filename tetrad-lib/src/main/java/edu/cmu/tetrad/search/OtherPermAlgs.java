@@ -5,8 +5,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.OrderedPair;
-import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.PermutationGenerator;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
