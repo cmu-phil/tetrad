@@ -7,9 +7,13 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.ProbUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Some methods to check significance of clusters for clustering algroithms. It is assumed
@@ -22,6 +26,43 @@ public class ClusterSignificance {
 
     private final List<Node> variables;
     private final DataModel dataModel;
+
+    public void printClusterPValues(Set<List<Integer>> out) {
+        NumberFormat nf = new DecimalFormat("0.000");
+
+        for (List<Integer> _out : out) {
+            ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
+
+            try {
+                double p = clusterSignificance.significance(new ArrayList<>(_out));
+                TetradLogger.getInstance().forceLogMessage("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
+                        + " p = " + nf.format(p));
+            } catch (Exception e) {
+                TetradLogger.getInstance().forceLogMessage("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
+                        + " p = EXCEPTION");
+            }
+        }
+    }
+
+    public static List<Node> variablesForIndices(List<Integer> cluster, List<Node> variables) {
+        List<Node> _cluster = new ArrayList<>();
+
+        for (int c : cluster) {
+            _cluster.add(variables.get(c));
+        }
+
+        return _cluster;
+    }
+
+    static List<List<Node>> variablesForIndices2(Set<List<Integer>> clusters, List<Node> _variables) {
+        List<List<Node>> variables = new ArrayList<>();
+
+        for (List<Integer> cluster : clusters) {
+            variables.add(variablesForIndices(cluster, _variables));
+        }
+
+        return variables;
+    }
 
     public enum CheckType {Significance, Clique, None}
 
@@ -51,18 +92,22 @@ public class ClusterSignificance {
         if (checkType == CheckType.None) {
             return true;
         } else if (checkType == CheckType.Significance) {
-            double chisq = getClusterChiSquare(cluster);
-
-            // From "Algebraic factor analysis: tetrads, triples and beyond" Drton et al.
-            int n = cluster.size();
-            int dof = dofHarman(n);
-            double q = ProbUtils.chisqCdf(chisq, dof);
-            return 1.0 - q > alpha;
+            return significance(cluster) > alpha;
         } else if (checkType == CheckType.Clique) {
             return clique(cluster, alpha);
         } else {
             throw new IllegalArgumentException("Unexpected check type: " + checkType);
         }
+    }
+
+    private double significance(List<Integer> cluster) {
+        double chisq = getClusterChiSquare(cluster);
+
+        // From "Algebraic factor analysis: tetrads, triples and beyond" Drton et al.
+        int n = cluster.size();
+        int dof = dofHarman(n);
+        double q = ProbUtils.chisqCdf(chisq, dof);
+        return 1.0 - q;
     }
 
     private boolean clique(List<Integer> cluster, double alpha) {

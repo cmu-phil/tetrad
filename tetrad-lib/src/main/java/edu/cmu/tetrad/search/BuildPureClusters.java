@@ -200,6 +200,21 @@ public final class BuildPureClusters {
 
         TetradLogger.getInstance().log("elapsed", "Elapsed " + elapsed + " ms");
 
+        Set<List<Integer>> _clustering = new HashSet<>();
+
+        for (int[] _cluster : clustering) {
+            List<Integer> __cluster = new ArrayList<>();
+            for (int i : _cluster) {
+                __cluster.add(i);
+            }
+
+            _clustering.add(__cluster);
+        }
+
+        ClusterSignificance clusterSignificance = new ClusterSignificance(variables, covarianceMatrix);
+        clusterSignificance.printClusterPValues(_clustering);
+
+
         return graph;
     }
 
