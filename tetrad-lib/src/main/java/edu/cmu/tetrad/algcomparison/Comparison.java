@@ -1209,7 +1209,6 @@ public class Comparison {
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
         int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
-//        long stop = System.currentTimeMillis();
         long stop =  edu.cmu.tetrad.util.Timer.timeMillis();
 
         long elapsed = (stop - start);
