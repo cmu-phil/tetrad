@@ -1201,7 +1201,7 @@ public final class TestGrasp {
     public void bryanCheckDensityClaims() {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         boolean usePearl = true;
         int numVars = 5; // Will change this in OtherParams.sp() too
 
@@ -1496,10 +1496,10 @@ public final class TestGrasp {
 
                 }
 
-                System.out.println("\tExists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (System.currentTimeMillis() - start) / 1000.0 + " s)");
+                System.out.println("\tExists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (MillisecondTimes.timeMillis() - start) / 1000.0 + " s)");
             }
 
-            System.out.println("\nTOTAL: exists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (System.currentTimeMillis() - start) / 1000.0 + " s)");
+            System.out.println("\nTOTAL: exists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (MillisecondTimes.timeMillis() - start) / 1000.0 + " s)");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2494,6 +2494,8 @@ public final class TestGrasp {
 
         params.set(Params.ADD_ORIGINAL_DATASET, false);
 
+//        params.set(Params.SEED, -1l);
+
         IndependenceWrapper test = new FisherZ();
 
         List<ScoreWrapper> scores = new ArrayList<>();
@@ -2584,6 +2586,7 @@ public final class TestGrasp {
 
 
 //        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);

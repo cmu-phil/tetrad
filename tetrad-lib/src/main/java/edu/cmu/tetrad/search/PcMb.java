@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.SublistGenerator;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
@@ -170,7 +167,7 @@ public final class PcMb implements MbSearch, GraphSearch {
      * @param targets The targets variable.
      */
     public Graph search(List<Node> targets) {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
@@ -627,7 +624,7 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     private void finishUp(long start, Graph graph) {
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
         double seconds = this.elapsedTime / 1000d;
 

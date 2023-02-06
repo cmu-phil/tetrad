@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -268,7 +269,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
      * @return the resulting Pattern.
      */
     public Set<Node> search2(Graph graph, List<Node> variables) {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         topGraphs.clear();
 
         this.graph = graph;
@@ -293,7 +294,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
 //        change = fes(new ArrayList<>(change));
 //        change = bes(new ArrayList<>(change));
 
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
 
         if (verbose) {
@@ -497,7 +498,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
     }
 
     private void initializeEffectEdges(final List<Node> nodes) {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
@@ -519,7 +520,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
             ForkJoinPool.commonPool().invokeAll(tasks);
         }
 
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
 
         if (verbose) {
             out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");

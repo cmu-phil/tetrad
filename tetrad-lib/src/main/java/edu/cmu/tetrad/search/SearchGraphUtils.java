@@ -1847,7 +1847,7 @@ public final class SearchGraphUtils {
                     Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
                     Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
                     if (edge1 == null || edge2 == null) continue;
-                    builder.append("\n").append(++j1).append(". ").append(edge2).append(" ====> ").append(edge1);
+                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
                 }
             }
 
@@ -1864,7 +1864,7 @@ public final class SearchGraphUtils {
                     Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
                     Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
                     if (edge1 == null || edge2 == null) continue;
-                    builder.append("\n").append(++j1).append(". ").append(edge2).append(" ====> ").append(edge1);
+                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
                 }
             }
         } else {

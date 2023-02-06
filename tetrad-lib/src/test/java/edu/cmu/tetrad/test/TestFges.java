@@ -41,10 +41,7 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TextTable;
+import edu.cmu.tetrad.util.*;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
 import org.apache.commons.math3.util.FastMath;
@@ -1049,7 +1046,7 @@ public class TestFges {
             Graph out;
             final double penalty = 2;
 
-            long start = System.currentTimeMillis();
+            long start =  MillisecondTimes.timeMillis();
 
             switch (t) {
                 case 0:
@@ -1084,7 +1081,7 @@ public class TestFges {
             truth[2] = getSubgraph(dag, true, false, data);
             truth[3] = getSubgraph(dag, false, false, data);
 
-            long stop = System.currentTimeMillis();
+            long stop = MillisecondTimes.timeMillis();
 
             long elapsed = stop - start;
             totalElapsed += elapsed;
