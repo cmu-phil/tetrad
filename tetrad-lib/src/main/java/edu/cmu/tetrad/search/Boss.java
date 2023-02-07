@@ -408,32 +408,9 @@ public class Boss {
         bes.setVerbose(false);
         bes.setKnowledge(knowledge);
         bes.bes(graph, scorer.getPi());
-        List<Node> pi = causalOrder(scorer.getPi(), graph);
+        List<Node> pi = graph.paths().validOrder(scorer.getPi(), true);
         scorer.score(pi);
     }
-
-    private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
-        List<Node> found = new ArrayList<>();
-        HashSet<Node> __found = new HashSet<>();
-        boolean _found = true;
-
-        T:
-        while (_found) {
-            _found = false;
-
-            for (Node node : initialOrder) {
-                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-                    found.add(node);
-                    __found.add(node);
-                    _found = true;
-                    continue T;
-                }
-            }
-        }
-
-        return found;
-    }
-
 
     public int getNumEdges() {
         return this.scorer.getNumEdges();

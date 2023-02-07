@@ -485,11 +485,6 @@ public class TimeLagGraph implements Graph {
         return this.paths;
     }
 
-    public List<Node> getCausalOrdering() {
-        Paths paths1 = getGraph().paths();
-        return paths1.validOrder(getGraph().getNodes(), true);
-    }
-
     public boolean isParameterizable(Node node) {
         return getNodeId(node).getLag() < getNumInitialLags();
     }
