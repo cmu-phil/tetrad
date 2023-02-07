@@ -690,7 +690,6 @@ public class RBExperiments {
         Rfci BSCrfci = new Rfci(BSCtest);
 
         BSCrfci.setVerbose(false);
-        BSCrfci.setCompleteRuleSetUsed(false);
         BSCrfci.setDepth(this.depth);
 
         for (int i = 0; i < numModels; i++) {
@@ -708,7 +707,6 @@ public class RBExperiments {
         Rfci fci1 = new Rfci(test);
         fci1.setDepth(this.depth);
         fci1.setVerbose(false);
-        fci1.setCompleteRuleSetUsed(false);
         Graph PAG_CS = fci1.search();
         PAG_CS = GraphUtils.replaceNodes(PAG_CS, data.getVariables());
         return PAG_CS;
