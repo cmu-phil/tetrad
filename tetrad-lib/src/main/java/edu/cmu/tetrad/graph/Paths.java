@@ -5,6 +5,7 @@ import edu.cmu.tetrad.search.SepsetMap;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradSerializable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -31,6 +32,14 @@ public class Paths implements TetradSerializable {
             throw new IllegalArgumentException("Graph must be acyclic.");
         }
 
+//        return causalOrderOrig(initialOrder);
+        return validOrder(initialOrder, false);
+    }
+
+    @NotNull
+    private List<Node> causalOrderOrig(List<Node> initialOrder) {
+        initialOrder = new ArrayList<>(initialOrder);
+
         List<Node> found = new ArrayList<>();
         HashSet<Node> __found = new HashSet<>();
         boolean _found = true;
@@ -50,6 +59,45 @@ public class Paths implements TetradSerializable {
         }
 
         return found;
+    }
+
+    public List<Node> validOrder(List<Node> initialOrder, boolean forward) {
+        List<Node> _initialOrder = new ArrayList<>(initialOrder);
+        Graph _graph = new EdgeListGraph(graph);
+
+        if (forward) Collections.reverse(_initialOrder);
+        List<Node> newOrder = new ArrayList<>();
+
+        while (!_initialOrder.isEmpty()) {
+            Iterator<Node> itr = _initialOrder.iterator();
+            Node x;
+            do x = itr.next();
+            while (invalidSink(x, _graph));
+            newOrder.add(x);
+            _graph.removeNode(x);
+            itr.remove();
+        }
+
+        Collections.reverse(newOrder);
+
+        return newOrder;
+    }
+
+
+    private boolean invalidSink(Node x, Graph graph) {
+        LinkedList<Node> neighbors = new LinkedList<>();
+
+        for (Edge edge : graph.getEdges(x)) {
+            if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
+            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
+        }
+
+        while (!neighbors.isEmpty()) {
+            Node y = neighbors.pop();
+            for (Node z : neighbors) if (!graph.isAdjacentTo(y, z)) return true;
+        }
+
+        return false;
     }
 
     /**

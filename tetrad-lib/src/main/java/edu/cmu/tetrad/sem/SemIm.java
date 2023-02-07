@@ -679,7 +679,12 @@ public final class SemIm implements IM, ISemIm {
         }
 
         SemGraph semGraph = getSemPm().getGraph();
-        List<Node> tierOrdering = semGraph.getCausalOrdering();
+
+        System.out.println(semGraph);
+
+        semGraph.setShowErrorTerms(false);
+        Paths paths = new Paths(semGraph);
+        List<Node> tierOrdering = paths.getCausalOrdering(semGraph.getNodes());
 
         double[] intercepts = new double[tierOrdering.size()];
 

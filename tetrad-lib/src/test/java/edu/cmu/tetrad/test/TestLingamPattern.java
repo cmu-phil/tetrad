@@ -109,7 +109,12 @@ public class TestLingamPattern {
 
         // Create some index arrays to hopefully speed up the simulation.
         SemGraph graph = semIm.getSemPm().getGraph();
+
+
         List<Node> tierOrdering = graph.getCausalOrdering();
+
+        System.out.println(graph);
+
 
         int[] tierIndices = new int[variableNodes.size()];
 

@@ -355,6 +355,10 @@ public class EdgeListGraph implements Graph {
         List<Node> parents = new ArrayList<>();
         Set<Edge> edges = this.edgeLists.get(node);
 
+        if (edges == null) {
+            System.out.println();
+        }
+
         for (Edge edge : edges) {
             if (edge == null) continue;
 
