@@ -63,6 +63,7 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             search.setKnowledge(this.knowledge);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
@@ -97,6 +98,7 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_PATH_LENGTH);
+        parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
