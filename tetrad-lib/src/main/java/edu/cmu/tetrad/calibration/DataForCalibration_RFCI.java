@@ -358,7 +358,6 @@ public class DataForCalibration_RFCI {
 
         Rfci fci = new Rfci(test);
         fci.setVerbose(false);
-        fci.setCompleteRuleSetUsed(true);
         fci.setDepth(depth);
 
         Graph estPag = fci.search();

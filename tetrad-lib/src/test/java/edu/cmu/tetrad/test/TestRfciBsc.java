@@ -68,7 +68,6 @@ public class TestRfciBsc {
         IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
         edu.cmu.tetrad.search.Rfci rfci = new edu.cmu.tetrad.search.Rfci(test);
         rfci.setVerbose(true);
-        rfci.setCompleteRuleSetUsed(false);
         rfci.setDepth(depth);
 
         edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc rfciBsc = new edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc(rfci);
@@ -142,7 +141,6 @@ public class TestRfciBsc {
         IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
         edu.cmu.tetrad.search.Rfci rfci = new edu.cmu.tetrad.search.Rfci(test);
         rfci.setVerbose(true);
-        rfci.setCompleteRuleSetUsed(false);
         rfci.setDepth(depth);
 
         edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc rfciBsc = new edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc(rfci);

@@ -60,7 +60,6 @@ public class PagSamplingRfci implements Algorithm, HasKnowledge {
         pagSamplingRfci.setKnowledge(this.knowledge);
         pagSamplingRfci.setDepth(parameters.getInt(Params.DEPTH));
         pagSamplingRfci.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
-        pagSamplingRfci.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         pagSamplingRfci.setNumRandomizedSearchModels(parameters.getInt(Params.NUM_RANDOMIZED_SEARCH_MODELS));
 
         // ProbabilisticTest parameters
