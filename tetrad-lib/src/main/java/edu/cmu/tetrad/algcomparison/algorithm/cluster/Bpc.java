@@ -55,6 +55,16 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
             BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);
             bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
+            if (parameters.getInt(Params.CHECK_TYPE) == 1) {
+                bpc.setCheckType(ClusterSignificance.CheckType.Significance);
+            } else if (parameters.getInt(Params.CHECK_TYPE) == 2) {
+                bpc.setCheckType(ClusterSignificance.CheckType.Clique);
+            } else if (parameters.getInt(Params.CHECK_TYPE) == 3) {
+                bpc.setCheckType(ClusterSignificance.CheckType.None);
+            } else {
+                throw new IllegalArgumentException("Unexpected check type");
+            }
+
             Graph graph = bpc.search();
 
             if (!parameters.getBoolean(Params.INCLUDE_STRUCTURE_MODEL)) {
@@ -127,9 +137,11 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
+        parameters.add(Params.ALPHA);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
+        parameters.add(Params.CHECK_TYPE);
         parameters.add(Params.VERBOSE);
 
         return parameters;

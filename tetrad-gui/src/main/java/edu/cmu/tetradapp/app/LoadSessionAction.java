@@ -65,6 +65,11 @@ final class LoadSessionAction extends AbstractAction {
         JFileChooser chooser = new JFileChooser();
         String sessionSaveLocation =
                 Preferences.userRoot().get("sessionSaveLocation", "");
+
+        for (javax.swing.filechooser.FileFilter filter : chooser.getChoosableFileFilters()) {
+            chooser.removeChoosableFileFilter(filter);
+        }
+
         chooser.setCurrentDirectory(new File(sessionSaveLocation));
         chooser.addChoosableFileFilter(new TetFileFilter());
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
