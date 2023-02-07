@@ -2581,7 +2581,7 @@ tabs will not appear.</p> -->
         Search and Generate Graph" which will execute the search.</p>
 
     <p>Notably there are some experimental algorithms available in this box.
-    To see these, select File->Settings->Enable Experimental.</p>
+        To see these, select File->Settings->Enable Experimental.</p>
 
 
     <h2>Search Algorithms</h2>
@@ -2845,37 +2845,37 @@ tabs will not appear.</p> -->
         <a href="#verbose">verbose</a> <a href="#meekVerbose">meekVerbose</a></p>
 
 
-<!--    <h3>The IMaGES Discrete Algorithm (BDeu Score)</h3>-->
+    <!--    <h3>The IMaGES Discrete Algorithm (BDeu Score)</h3>-->
 
-<!--    <h4>Description</h4>-->
+    <!--    <h4>Description</h4>-->
 
-<!--    <div id="imgs_disc">-->
+    <!--    <div id="imgs_disc">-->
 
-<!--        <p>Adjusts the discrete BDeu variable score of FGES so allow for-->
-<!--            multiple datasets as input. The BDeu scores for each data set are-->
-<!--            averaged at each step of the algorithm, producing a model for all-->
-<!--            data sets that assumes they have the same graphical structure across-->
-<!--            dataset. Note that in order to use this algorithm in a nontrivial-->
-<!--            way, one needs to have loaded or simulated multiple dataset.</p>-->
+    <!--        <p>Adjusts the discrete BDeu variable score of FGES so allow for-->
+    <!--            multiple datasets as input. The BDeu scores for each data set are-->
+    <!--            averaged at each step of the algorithm, producing a model for all-->
+    <!--            data sets that assumes they have the same graphical structure across-->
+    <!--            dataset. Note that in order to use this algorithm in a nontrivial-->
+    <!--            way, one needs to have loaded or simulated multiple dataset.</p>-->
 
-<!--    </div>-->
+    <!--    </div>-->
 
-<!--    <h4>Input Assumptions</h4>-->
+    <!--    <h4>Input Assumptions</h4>-->
 
-<!--    <p>A set of discrete datasets with the same variables and sample-->
-<!--        sizes.</p>-->
+    <!--    <p>A set of discrete datasets with the same variables and sample-->
+    <!--        sizes.</p>-->
 
-<!--    <h4>Output Format</h4>-->
+    <!--    <h4>Output Format</h4>-->
 
-<!--    <p>A CPDAG, interpreted as a common model for all datasets.</p>-->
+    <!--    <p>A CPDAG, interpreted as a common model for all datasets.</p>-->
 
-<!--    <h4>Parameters</h4>-->
+    <!--    <h4>Parameters</h4>-->
 
-<!--    <p>All of the parameters from FGES are available for IMaGES.-->
-<!--        Additionally:</p>-->
+    <!--    <p>All of the parameters from FGES are available for IMaGES.-->
+    <!--        Additionally:</p>-->
 
-<!--    <p><a href="#numRuns">numRuns</a>, <a-->
-<!--            href="#randomSelectionSize">randomSelectionSize</a></p>-->
+    <!--    <p><a href="#numRuns">numRuns</a>, <a-->
+    <!--            href="#randomSelectionSize">randomSelectionSize</a></p>-->
 
 
     <h3>The IMaGES Algorithm</h3>
@@ -3031,52 +3031,52 @@ tabs will not appear.</p> -->
             href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
 
 
-<!--    <h3>The RFCI-BSC Algorithm</h3>-->
+    <!--    <h3>The RFCI-BSC Algorithm</h3>-->
 
-<!--    <h4>Description</h4>-->
+    <!--    <h4>Description</h4>-->
 
-<!--    <div id="rfci-bsc">-->
+    <!--    <div id="rfci-bsc">-->
 
-<!--        <p>RFCI-BSC is a combination of the RFCI [Colombo, 2012]-->
-<!--            algorithm and the Bayesian Scoring of Constraints (BSC) method-->
-<!--            [Jabbari, 2017] that can generate and probabilistically score-->
-<!--            multiple models, outputting the most probable one. This search-->
-<!--            algorithm is a hybrid method that derives a Bayesian probability that-->
-<!--            the set of independence tests associated with a given causal model-->
-<!--            are jointly correct. Using this constraint-based scoring method, we-->
-<!--            are able to score multiple causal models, which possibly contain-->
-<!--            latent variables, and output the most probable one. See [Jabbari,-->
-<!--            2017].</p>-->
+    <!--        <p>RFCI-BSC is a combination of the RFCI [Colombo, 2012]-->
+    <!--            algorithm and the Bayesian Scoring of Constraints (BSC) method-->
+    <!--            [Jabbari, 2017] that can generate and probabilistically score-->
+    <!--            multiple models, outputting the most probable one. This search-->
+    <!--            algorithm is a hybrid method that derives a Bayesian probability that-->
+    <!--            the set of independence tests associated with a given causal model-->
+    <!--            are jointly correct. Using this constraint-based scoring method, we-->
+    <!--            are able to score multiple causal models, which possibly contain-->
+    <!--            latent variables, and output the most probable one. See [Jabbari,-->
+    <!--            2017].</p>-->
 
-<!--        <p>Currently, this algorithm can only be accessed if experimental-->
-<!--            algorithms are activated. One may do so by going to the-->
-<!--            File menu, selecting Settings, and then making sure the-->
-<!--            'Experimental' checkbox is checked.</p>-->
+    <!--        <p>Currently, this algorithm can only be accessed if experimental-->
+    <!--            algorithms are activated. One may do so by going to the-->
+    <!--            File menu, selecting Settings, and then making sure the-->
+    <!--            'Experimental' checkbox is checked.</p>-->
 
-<!--    </div>-->
+    <!--    </div>-->
 
-<!--    <h4>Input Assumptions</h4>-->
+    <!--    <h4>Input Assumptions</h4>-->
 
-<!--    <p>The data are discrete only.</p>-->
+    <!--    <p>The data are discrete only.</p>-->
 
-<!--    <h4>Output Format</h4>-->
+    <!--    <h4>Output Format</h4>-->
 
-<!--    <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>-->
+    <!--    <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>-->
 
-<!--    <h4>Parameters</h4>-->
+    <!--    <h4>Parameters</h4>-->
 
-<!--    <p>All of the parameters from RFCI are available for RFCI-BSC.-->
-<!--        Additionally:</p>-->
+    <!--    <p>All of the parameters from RFCI are available for RFCI-BSC.-->
+    <!--        Additionally:</p>-->
 
-<!--    <p><a-->
-<!--            href="#numRandomizedSearchModels">numRandomizedSearchModels</a>, <a-->
-<!--            href="#thresholdNoRandomDataSearch">thresholdNoRandomDataSearch</a>, <a-->
-<!--            href="#cutoffDataSearch">cutoffDataSearch</a>, <a-->
-<!--            href="#thresholdNoRandomConstrainSearch">thresholdNoRandomConstrainSearch-->
-<!--    </a>, <a href="#cutoffConstrainSearch">cutoffConstrainSearch</a>, <a-->
-<!--            href="#numBscBootstrapSamples">numBscBootstrapSamples</a>, <a-->
-<!--            href="#lowerBound">lowerBound</a>, <a href="#upperBound">upperBound</a>,-->
-<!--        <a href="#outputRBD">outputRBD</a></p>-->
+    <!--    <p><a-->
+    <!--            href="#numRandomizedSearchModels">numRandomizedSearchModels</a>, <a-->
+    <!--            href="#thresholdNoRandomDataSearch">thresholdNoRandomDataSearch</a>, <a-->
+    <!--            href="#cutoffDataSearch">cutoffDataSearch</a>, <a-->
+    <!--            href="#thresholdNoRandomConstrainSearch">thresholdNoRandomConstrainSearch-->
+    <!--    </a>, <a href="#cutoffConstrainSearch">cutoffConstrainSearch</a>, <a-->
+    <!--            href="#numBscBootstrapSamples">numBscBootstrapSamples</a>, <a-->
+    <!--            href="#lowerBound">lowerBound</a>, <a href="#upperBound">upperBound</a>,-->
+    <!--        <a href="#outputRBD">outputRBD</a></p>-->
 
     <h3>The GFCI Algorithm</h3>
 
@@ -7748,12 +7748,13 @@ tabs will not appear.</p> -->
         <h3 class="parameter_description"
             id="seed">seed</h3>
         <ul
-            class="parameter_description_list">
+                class="parameter_description_list">
             <li>Short Description: <span
-                    id="seed_short_desc">Seed for pseudorandom number generator (min = -1)</span></li>
+                    id="seed_short_desc">Seed for pseudorandom number generator (-1 = off)</span></li>
             <li>Long Description: <span
                     id="seed_long_desc">The seed is the initial value of the
-                    internal state of the pseudorandom number generator.</span></li>
+                    internal state of the pseudorandom number generator. A value of -1
+                skips setting a new seed.</span></li>
             <li>Default Value: <span
                     id="seed_default_value">-1</span></li>
             <li>Lower Bound:
@@ -8408,6 +8409,25 @@ tabs will not appear.</p> -->
                     id="useWishart_value_type">Boolean</span></li>
         </ul>
 
+        <h3 class="parameter_description" id="checkType">checkType</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="checkType_short_desc">
+                    Model significance check type: 1 = Significance, 2 = Clique, 3 = None
+            <li>Long Description: <span id="checkType_long_desc">
+        		Model significance check type: 1 = Significance, 2 = Clique, 3 = None
+         </span></li>
+            <li>Default Value: <span
+                    id="checkType_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="checkType_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="checkType_upper_bound">3</span></li>
+            <li>Value
+                Type: <span id="checkType_value_type">Integer</span></li>
+        </ul>
+
         <h3 class="parameter_description" id="varHigh">varHigh</h3>
         <ul
                 class="parameter_description_list">
@@ -8425,6 +8445,26 @@ tabs will not appear.</p> -->
                     id="varHigh_upper_bound">1.7976931348623157E308</span></li>
             <li>Value
                 Type: <span id="varHigh_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="significanceChecked">significanceChecked</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="significanceChecked_short_desc">
+                    True if the significance of the cluster should be checked.
+                    </span></li>
+            <li>Long Description: <span id="significanceChecked_long_desc">
+            True if the significance of clusters should be checked, false if not.
+            </span></li>
+            <li>Default Value: <span
+                    id="significanceChecked_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="significanceChecked_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="significanceChecked_upper_bound"></span></li>
+            <li>Value
+                Type: <span id="significanceChecked_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="varLow">varLow</h3>
@@ -8912,6 +8952,9 @@ ga.q = [];
 ga.l = +new Date;
 ga('create', 'UA-XXXXX-Y', 'auto');
 ga('send', 'pageview')
+
+
+
 
 
 

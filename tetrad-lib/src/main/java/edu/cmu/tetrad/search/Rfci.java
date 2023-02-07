@@ -75,6 +75,11 @@ public final class Rfci implements GraphSearch {
     private boolean changeFlag = true;
 
     /**
+     * flag for complete rule set, true if should use complete rule set, false otherwise.
+     */
+    private boolean completeRuleSetUsed = true;
+
+    /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
     private int maxPathLength = -1;
@@ -125,7 +130,7 @@ public final class Rfci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
 
-        Set<Node> remVars = new HashSet<>();
+        List<Node> remVars = new ArrayList<>();
         for (Node node1 : this.variables) {
             boolean search = false;
             for (Node node2 : searchVars) {
@@ -164,7 +169,7 @@ public final class Rfci implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
-        return search(new FasConcurrent(getIndependenceTest()), nodes);
+        return search(new Fas(getIndependenceTest()), nodes);
     }
 
     public Graph search(IFas fas, List<Node> nodes) {
@@ -183,7 +188,6 @@ public final class Rfci implements GraphSearch {
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
         fas.setVerbose(this.verbose);
-//        fas.setFci(true);
         this.graph = fas.search();
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         this.sepsets = fas.getSepsets();
@@ -191,10 +195,15 @@ public final class Rfci implements GraphSearch {
         long stop1 = MillisecondTimes.timeMillis();
         long start2 = MillisecondTimes.timeMillis();
 
+        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
+
+        // For RFCI always executes R5-10
+        orient.setCompleteRuleSetUsed(true);
+
         // The original FCI, with or without JiJi Zhang's orientation rules
-        fciOrientbk(getKnowledge(), this.graph, this.variables);
+        orient.fciOrientbk(getKnowledge(), this.graph, this.variables);
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
-        doFinalOrientation();
+        orient.doFinalOrientation(this.graph);
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
@@ -218,6 +227,22 @@ public final class Rfci implements GraphSearch {
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
+    /**
+     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
+     * should be used. False by default.
+     */
+    public boolean isCompleteRuleSetUsed() {
+        return this.completeRuleSetUsed;
+    }
+
+    /**
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
+     *                            set of the original FCI) should be used. False by default.
+     */
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     //===========================PRIVATE METHODS=========================//
