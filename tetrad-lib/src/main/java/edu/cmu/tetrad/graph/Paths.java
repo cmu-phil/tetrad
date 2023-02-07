@@ -36,30 +36,30 @@ public class Paths implements TetradSerializable {
         return validOrder(initialOrder, false);
     }
 
-    @NotNull
-    private List<Node> causalOrderOrig(List<Node> initialOrder) {
-        initialOrder = new ArrayList<>(initialOrder);
-
-        List<Node> found = new ArrayList<>();
-        HashSet<Node> __found = new HashSet<>();
-        boolean _found = true;
-
-        T:
-        while (_found) {
-            _found = false;
-
-            for (Node node : initialOrder) {
-                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-                    found.add(node);
-                    __found.add(node);
-                    _found = true;
-                    continue T;
-                }
-            }
-        }
-
-        return found;
-    }
+//    @NotNull
+//    private List<Node> causalOrderOrig(List<Node> initialOrder) {
+//        initialOrder = new ArrayList<>(initialOrder);
+//
+//        List<Node> found = new ArrayList<>();
+//        HashSet<Node> __found = new HashSet<>();
+//        boolean _found = true;
+//
+//        T:
+//        while (_found) {
+//            _found = false;
+//
+//            for (Node node : initialOrder) {
+//                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
+//                    found.add(node);
+//                    __found.add(node);
+//                    _found = true;
+//                    continue T;
+//                }
+//            }
+//        }
+//
+//        return found;
+//    }
 
     public List<Node> validOrder(List<Node> initialOrder, boolean forward) {
         List<Node> _initialOrder = new ArrayList<>(initialOrder);
