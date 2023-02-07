@@ -75,11 +75,6 @@ public final class Rfci implements GraphSearch {
     private boolean changeFlag = true;
 
     /**
-     * flag for complete rule set, true if should use complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
-
-    /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
     private int maxPathLength = -1;
@@ -227,22 +222,6 @@ public final class Rfci implements GraphSearch {
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    /**
-     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     //===========================PRIVATE METHODS=========================//

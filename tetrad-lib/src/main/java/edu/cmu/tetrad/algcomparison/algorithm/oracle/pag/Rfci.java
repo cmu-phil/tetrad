@@ -97,7 +97,6 @@ public class Rfci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_PATH_LENGTH);
-//        parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);
