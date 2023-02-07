@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -68,11 +67,6 @@ public final class Rfci implements GraphSearch {
     private final List<Node> variables = new ArrayList<>();
 
     private final IndependenceTest independenceTest;
-
-    /**
-     * change flag for repeat rules
-     */
-    private boolean changeFlag = true;
 
     /**
      * flag for complete rule set, true if should use complete rule set, false otherwise.
@@ -130,7 +124,7 @@ public final class Rfci implements GraphSearch {
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
 
-        Set<Node> remVars = new HashSet<>();
+        List<Node> remVars = new ArrayList<>();
         for (Node node1 : this.variables) {
             boolean search = false;
             for (Node node2 : searchVars) {
@@ -169,7 +163,7 @@ public final class Rfci implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
-        return search(new FasConcurrent(getIndependenceTest()), nodes);
+        return search(new Fas(getIndependenceTest()), nodes);
     }
 
     public Graph search(IFas fas, List<Node> nodes) {
@@ -188,7 +182,6 @@ public final class Rfci implements GraphSearch {
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
         fas.setVerbose(this.verbose);
-//        fas.setFci(true);
         this.graph = fas.search();
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         this.sepsets = fas.getSepsets();
@@ -387,11 +380,11 @@ public final class Rfci implements GraphSearch {
             if (!sepset.contains(j)
                     && this.graph.isAdjacentTo(i, j) && this.graph.isAdjacentTo(j, k)) {
 
-                if (!isArrowpointAllowed(i, j)) {
+                if (!FciOrient.isArrowpointAllowed(i, j, this.graph, this.knowledge)) {
                     continue;
                 }
 
-                if (!isArrowpointAllowed(k, j)) {
+                if (!FciOrient.isArrowpointAllowed(k, j, this.graph, this.knowledge)) {
                     continue;
                 }
 
@@ -428,7 +421,6 @@ public final class Rfci implements GraphSearch {
                     Node[] newTuple = {i, j, k};
                     rTuples.add(newTuple);
                 }
-
             }
         }
 
@@ -577,35 +569,6 @@ public final class Rfci implements GraphSearch {
 //        this.logger.log("info", "Finishing BK Orientation.");
 //    }
 
-
-    /**
-     * Helper method. Appears to check if an arrowpoint is permitted by background knowledge.
-     *
-     * @param x The possible other node.
-     * @param y The possible point node.
-     * @return Whether the arrowpoint is allowed.
-     */
-    private boolean isArrowpointAllowed(Node x, Node y) {
-        return FciOrient.isArrowpointAllowed(x, y, this.graph, this.knowledge);
-
-//        if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
-//            return true;
-//        }
-//
-//        if (this.graph.getEndpoint(x, y) == Endpoint.TAIL) {
-//            return false;
-//        }
-//
-//        if (this.graph.getEndpoint(y, x) == Endpoint.ARROW) {
-//            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
-//        }
-//
-//        if (this.graph.getEndpoint(y, x) == Endpoint.TAIL) {
-//            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
-//        }
-//
-//        return this.graph.getEndpoint(y, x) == Endpoint.CIRCLE;
-    }
 
     /**
      * @return the maximum length of any discriminating path, or -1 of unlimited.
