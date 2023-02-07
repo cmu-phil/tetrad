@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.bayes;
 
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -689,7 +686,9 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         Dag graphH = new Dag(graphWhole.getDag().subgraph(h));
 
         // tier ordering
-        List<Node> tierOrdering = graphH.paths().getCausalOrdering(graphH.getNodes());
+        Paths paths = graphH.paths();
+        List<Node> initialOrder = graphH.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
 
         // convert to the indices of the original graph
         // (from which the subgraph was obtained)

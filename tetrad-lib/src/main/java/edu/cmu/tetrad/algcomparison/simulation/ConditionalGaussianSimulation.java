@@ -5,10 +5,7 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.ParamType;
 import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.sem.SemPm;
@@ -220,7 +217,9 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         Map<Combination, Double> paramValues = new HashMap<>();
 
-        List<Node> tierOrdering = G.paths().getCausalOrdering(G.getNodes());
+        Paths paths = G.paths();
+        List<Node> initialOrder = G.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
 
         int[] tiers = new int[tierOrdering.size()];
 

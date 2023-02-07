@@ -294,7 +294,8 @@ public class LagGraph implements Graph {
     }
 
     public List<Node> getCausalOrdering() {
-        return getGraph().paths().getCausalOrdering(getGraph().getNodes());
+        Paths paths1 = getGraph().paths();
+        return paths1.validOrder(getGraph().getNodes(), true);
     }
 
     public boolean isParameterizable(Node node) {

@@ -5,7 +5,6 @@ import edu.cmu.tetrad.search.SepsetMap;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradSerializable;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -21,46 +20,14 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Finds a causal order for the given graph that is follows the order
-     * of the given initialorder as possible.
-     *
-     * @param initialOrder The order to try to get as close to as possible.
-     * @return Such a causal order.
+     * Returns a valid causal order for either a DAG or a CPDAG.
+     * @param initialOrder Variables in the order will be kept as close to this
+     *                     initial order as possible, either the forward order
+     *                     or the reverse order, depending on the next parameter.
+     * @param forward Whether the variable will be iterated over in forward or
+     *                reverse direction.
+     * @return The valid causal order found.
      */
-    public List<Node> getCausalOrdering(List<Node> initialOrder) {
-        if (graph.paths().existsDirectedCycle()) {
-            throw new IllegalArgumentException("Graph must be acyclic.");
-        }
-
-//        return causalOrderOrig(initialOrder);
-        return validOrder(initialOrder, false);
-    }
-
-//    @NotNull
-//    private List<Node> causalOrderOrig(List<Node> initialOrder) {
-//        initialOrder = new ArrayList<>(initialOrder);
-//
-//        List<Node> found = new ArrayList<>();
-//        HashSet<Node> __found = new HashSet<>();
-//        boolean _found = true;
-//
-//        T:
-//        while (_found) {
-//            _found = false;
-//
-//            for (Node node : initialOrder) {
-//                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-//                    found.add(node);
-//                    __found.add(node);
-//                    _found = true;
-//                    continue T;
-//                }
-//            }
-//        }
-//
-//        return found;
-//    }
-
     public List<Node> validOrder(List<Node> initialOrder, boolean forward) {
         List<Node> _initialOrder = new ArrayList<>(initialOrder);
         Graph _graph = new EdgeListGraph(graph);
@@ -71,8 +38,10 @@ public class Paths implements TetradSerializable {
         while (!_initialOrder.isEmpty()) {
             Iterator<Node> itr = _initialOrder.iterator();
             Node x;
-            do x = itr.next();
-            while (invalidSink(x, _graph));
+            do {
+                if (itr.hasNext()) x = itr.next();
+                else throw new IllegalArgumentException("This graph has a cycle.");
+            } while (invalidSink(x, _graph));
             newOrder.add(x);
             _graph.removeNode(x);
             itr.remove();
