@@ -196,10 +196,15 @@ public final class Rfci implements GraphSearch {
         long stop1 = MillisecondTimes.timeMillis();
         long start2 = MillisecondTimes.timeMillis();
 
+        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
+
+        // For RFCI always executes R5-10
+        orient.setCompleteRuleSetUsed(true);
+
         // The original FCI, with or without JiJi Zhang's orientation rules
-        fciOrientbk(getKnowledge(), this.graph, this.variables);
+        orient.fciOrientbk(getKnowledge(), this.graph, this.variables);
         ruleR0_RFCI(getRTuples());  // RFCI Algorithm 4.4
-        doFinalOrientation();
+        orient.doFinalOrientation(this.graph);
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - beginTime;
@@ -467,108 +472,110 @@ public final class Rfci implements GraphSearch {
         }
     }
 
-    //////////////////////////////////////////////////
-    // Orients the graph according to rules for RFCI
-    //////////////////////////////////////////////////
-    private void doFinalOrientation() {
+//    //////////////////////////////////////////////////
+//    // Orients the graph according to rules for RFCI
+//    //////////////////////////////////////////////////
+//    private void doFinalOrientation() {
+//        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
+//
+//        // For RFCI always executes R5-10
+//        orient.setCompleteRuleSetUsed(true);
+//        orient.doFinalOrientation(this.graph);
+//
+////        // This loop handles Zhang's rules R1-R3 (same as in the original FCI)
+////        this.changeFlag = true;
+////
+////        while (this.changeFlag) {
+////            this.changeFlag = false;
+////            orient.setChangeFlag(false);
+////            orient.rulesR1R2cycle(this.graph);
+////            orient.ruleR3(this.graph);
+////            this.changeFlag = orient.isChangeFlag();
+////            orient.ruleR4B(this.graph);   // some changes to the original R4 inline
+////        }
+////
+////        // For RFCI always executes R5-10
+////
+////        // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
+////        // R5 once.
+////        orient.ruleR5(this.graph);
+////
+////        // Now, by a further remark on page 102, we apply R6,R7 as many times
+////        // as possible.
+////        this.changeFlag = true;
+////
+////        while (this.changeFlag) {
+////            this.changeFlag = false;
+////            orient.setChangeFlag(false);
+////            orient.ruleR6R7(this.graph);
+////            this.changeFlag = orient.isChangeFlag();
+////        }
+////
+////        // Finally, we apply R8-R10 as many times as possible.
+////        this.changeFlag = true;
+////
+////        while (this.changeFlag) {
+////            this.changeFlag = false;
+////            orient.setChangeFlag(false);
+////            orient.rulesR8R9R10(this.graph);
+////            this.changeFlag = orient.isChangeFlag();
+////        }
+//    }
 
-
-        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
-
-        // This loop handles Zhang's rules R1-R3 (same as in the original FCI)
-        this.changeFlag = true;
-
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            orient.setChangeFlag(false);
-            orient.rulesR1R2cycle(this.graph);
-            orient.ruleR3(this.graph);
-            this.changeFlag = orient.isChangeFlag();
-            orient.ruleR4B(this.graph);   // some changes to the original R4 inline
-        }
-
-        // For RFCI always executes R5-10
-
-        // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
-        // R5 once.
-        orient.ruleR5(this.graph);
-
-        // Now, by a further remark on page 102, we apply R6,R7 as many times
-        // as possible.
-        this.changeFlag = true;
-
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            orient.setChangeFlag(false);
-            orient.ruleR6R7(this.graph);
-            this.changeFlag = orient.isChangeFlag();
-        }
-
-        // Finally, we apply R8-R10 as many times as possible.
-        this.changeFlag = true;
-
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            orient.setChangeFlag(false);
-            orient.rulesR8R9R10(this.graph);
-            this.changeFlag = orient.isChangeFlag();
-        }
-    }
-
-    /**
-     * Orients according to background knowledge
-     */
-    private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
-        this.logger.log("info", "Starting BK Orientation.");
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            this.changeFlag = true;
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.changeFlag = true;
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        this.logger.log("info", "Finishing BK Orientation.");
-    }
+//    /**
+//     * Orients according to background knowledge
+//     */
+//    private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
+//        this.logger.log("info", "Starting BK Orientation.");
+//
+//        for (Iterator<KnowledgeEdge> it =
+//             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
+//            KnowledgeEdge edge = it.next();
+//
+//            //match strings to variables in the graph.
+//            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+//            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+//
+//
+//            if (from == null || to == null) {
+//                continue;
+//            }
+//
+//            if (graph.getEdge(from, to) == null) {
+//                continue;
+//            }
+//
+//            // Orient to*-&gt;from
+//            graph.setEndpoint(to, from, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+//        }
+//
+//        for (Iterator<KnowledgeEdge> it =
+//             bk.requiredEdgesIterator(); it.hasNext(); ) {
+//            KnowledgeEdge edge = it.next();
+//
+//            //match strings to variables in this graph
+//            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+//            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+//
+//            if (from == null || to == null) {
+//                continue;
+//            }
+//
+//            if (graph.getEdge(from, to) == null) {
+//                continue;
+//            }
+//
+//            graph.setEndpoint(to, from, Endpoint.TAIL);
+//            graph.setEndpoint(from, to, Endpoint.ARROW);
+//            this.changeFlag = true;
+//            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+//        }
+//
+//        this.logger.log("info", "Finishing BK Orientation.");
+//    }
 
 
     /**
@@ -579,23 +586,25 @@ public final class Rfci implements GraphSearch {
      * @return Whether the arrowpoint is allowed.
      */
     private boolean isArrowpointAllowed(Node x, Node y) {
-        if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
+        return FciOrient.isArrowpointAllowed(x, y, this.graph, this.knowledge);
 
-        if (this.graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
-
-        if (this.graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
-        }
-
-        if (this.graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
-        }
-
-        return this.graph.getEndpoint(y, x) == Endpoint.CIRCLE;
+//        if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
+//            return true;
+//        }
+//
+//        if (this.graph.getEndpoint(x, y) == Endpoint.TAIL) {
+//            return false;
+//        }
+//
+//        if (this.graph.getEndpoint(y, x) == Endpoint.ARROW) {
+//            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
+//        }
+//
+//        if (this.graph.getEndpoint(y, x) == Endpoint.TAIL) {
+//            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
+//        }
+//
+//        return this.graph.getEndpoint(y, x) == Endpoint.CIRCLE;
     }
 
     /**
