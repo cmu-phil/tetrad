@@ -24,6 +24,7 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Paths;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.IOException;
@@ -233,7 +234,9 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
         // Get a tier ordering and convert it to an int array.
         Graph graph = getManipulatedGraph();
-        List<Node> tierOrdering = graph.paths().getCausalOrdering(graph.getNodes());
+        Paths paths = graph.paths();
+        List<Node> initialOrder = graph.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {

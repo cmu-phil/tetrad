@@ -1380,7 +1380,9 @@ public class PerformanceTests {
         } else {
 //            dag = DataGraphUtils.randomDagRandomFowardEdges(vars, 0, numEdges);
             dag = RandomGraph.randomGraph(vars, 0, numEdges, 100, 100, 100, false);
-            List<Node> ordering = dag.paths().getCausalOrdering(dag.getNodes());
+            Paths paths = dag.paths();
+            List<Node> initialOrder = dag.getNodes();
+            List<Node> ordering = paths.validOrder(initialOrder, true);
         }
         System.out.println("DAG = " + dag);
 

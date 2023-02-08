@@ -246,27 +246,8 @@ public class BossMB2 {
         bes.setVerbose(verbose);
         bes.setKnowledge(knowledge);
         bes.bes(graph, scorer.getPi());
-        return causalOrder(scorer.getPi(), graph);
+        return graph.paths().validOrder(scorer.getPi(), true);
     }
-
-    private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
-        List<Node> found = new ArrayList<>();
-        boolean _found = true;
-
-        while (_found) {
-            _found = false;
-
-            for (Node node : initialOrder) {
-                HashSet<Node> __found = new HashSet<>(found);
-                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-                    found.add(node);
-                    _found = true;
-                }
-            }
-        }
-        return found;
-    }
-
 
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
