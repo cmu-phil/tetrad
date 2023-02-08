@@ -201,6 +201,7 @@ public final class CcdMax implements GraphSearch {
         long start =  MillisecondTimes.timeMillis();
 
         FasConcurrent fas = new FasConcurrent(this.independenceTest);
+        fas.setStable(true);
         fas.setDepth(getDepth());
         fas.setKnowledge(this.knowledge);
         fas.setVerbose(false);

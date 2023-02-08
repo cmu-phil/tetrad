@@ -293,10 +293,6 @@ public class LagGraph implements Graph {
         return this.paths;
     }
 
-    public List<Node> getCausalOrdering() {
-        return getGraph().paths().getCausalOrdering(getGraph().getNodes());
-    }
-
     public boolean isParameterizable(Node node) {
         return getGraph().isParameterizable(node);
     }

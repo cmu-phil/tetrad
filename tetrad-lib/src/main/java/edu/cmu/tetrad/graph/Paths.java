@@ -20,36 +20,53 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Finds a causal order for the given graph that is follows the order
-     * of the given initialorder as possible.
-     *
-     * @param initialOrder The order to try to get as close to as possible.
-     * @return Such a causal order.
+     * Returns a valid causal order for either a DAG or a CPDAG.
+     * @param initialOrder Variables in the order will be kept as close to this
+     *                     initial order as possible, either the forward order
+     *                     or the reverse order, depending on the next parameter.
+     * @param forward Whether the variable will be iterated over in forward or
+     *                reverse direction.
+     * @return The valid causal order found.
      */
-    public List<Node> getCausalOrdering(List<Node> initialOrder) {
-        if (graph.paths().existsDirectedCycle()) {
-            throw new IllegalArgumentException("Graph must be acyclic.");
+    public List<Node> validOrder(List<Node> initialOrder, boolean forward) {
+        List<Node> _initialOrder = new ArrayList<>(initialOrder);
+        Graph _graph = new EdgeListGraph(graph);
+
+        if (forward) Collections.reverse(_initialOrder);
+        List<Node> newOrder = new ArrayList<>();
+
+        while (!_initialOrder.isEmpty()) {
+            Iterator<Node> itr = _initialOrder.iterator();
+            Node x;
+            do {
+                if (itr.hasNext()) x = itr.next();
+                else throw new IllegalArgumentException("This graph has a cycle.");
+            } while (invalidSink(x, _graph));
+            newOrder.add(x);
+            _graph.removeNode(x);
+            itr.remove();
         }
 
-        List<Node> found = new ArrayList<>();
-        HashSet<Node> __found = new HashSet<>();
-        boolean _found = true;
+        Collections.reverse(newOrder);
 
-        T:
-        while (_found) {
-            _found = false;
+        return newOrder;
+    }
 
-            for (Node node : initialOrder) {
-                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-                    found.add(node);
-                    __found.add(node);
-                    _found = true;
-                    continue T;
-                }
-            }
+
+    private boolean invalidSink(Node x, Graph graph) {
+        LinkedList<Node> neighbors = new LinkedList<>();
+
+        for (Edge edge : graph.getEdges(x)) {
+            if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
+            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
         }
 
-        return found;
+        while (!neighbors.isEmpty()) {
+            Node y = neighbors.pop();
+            for (Node z : neighbors) if (!graph.isAdjacentTo(y, z)) return true;
+        }
+
+        return false;
     }
 
     /**

@@ -180,9 +180,9 @@ public final class SemEstimator implements TetradSerializable {
     public SemIm estimate() {
         if (getSemOptimizer() != null) {
             getSemOptimizer().setNumRestarts(this.numRestarts);
-            TetradLogger.getInstance().log("info", getSemOptimizer().toString());
-            TetradLogger.getInstance().log("info", "Score = " + getScoreType());
-            TetradLogger.getInstance().log("info", "Num restarts = " + getSemOptimizer().getNumRestarts());
+//            TetradLogger.getInstance().log("info", getSemOptimizer().toString());
+//            TetradLogger.getInstance().log("info", "Score = " + getScoreType());
+//            TetradLogger.getInstance().log("info", "Num restarts = " + getSemOptimizer().getNumRestarts());
         }
 
         //long time = MillisecondTimes.timeMillis();

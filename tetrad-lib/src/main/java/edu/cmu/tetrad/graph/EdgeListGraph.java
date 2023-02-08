@@ -126,7 +126,7 @@ public class EdgeListGraph implements Graph {
         this.nodes = new ArrayList<>(graph.nodes);
         this.edgeLists = new HashMap<>();
         for (Node node : nodes) {
-            edgeLists.put(node, new HashSet<>(graph.edgeLists.get(node)));
+            edgeLists.put(node, Collections.synchronizedSet(new HashSet<>(graph.edgeLists.get(node))));
         }
         this.edgesSet = new HashSet<>(graph.edgesSet);
         this.namesHash = new HashMap<>(graph.namesHash);
@@ -174,6 +174,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean addDirectedEdge(Node node1, Node node2) {
+        if (node1 == null || node2 == null) return false;
         return addEdge(directedEdge(node1, node2));
     }
 
@@ -185,6 +186,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean addUndirectedEdge(Node node1, Node node2) {
+        if (node1 == null || node2 == null) return false;
         return addEdge(Edges.undirectedEdge(node1, node2));
     }
 
@@ -196,6 +198,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean addNondirectedEdge(Node node1, Node node2) {
+        if (node1 == null || node2 == null) return false;
         return addEdge(Edges.nondirectedEdge(node1, node2));
     }
 
@@ -207,6 +210,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean addPartiallyOrientedEdge(Node node1, Node node2) {
+        if (node1 == null || node2 == null) return false;
         return addEdge(Edges.partiallyOrientedEdge(node1, node2));
     }
 
@@ -218,6 +222,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean addBidirectedEdge(Node node1, Node node2) {
+        if (node1 == null || node2 == null) return false;
         return addEdge(Edges.bidirectedEdge(node1, node2));
     }
 
@@ -227,6 +232,7 @@ public class EdgeListGraph implements Graph {
      */
     @Override
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
+        if (node1 == null || node2 == null || node3 == null) return false;
         List<Edge> edges = getEdges(node2);
         boolean circle12 = false;
         boolean circle32 = false;
@@ -258,6 +264,7 @@ public class EdgeListGraph implements Graph {
 
     @Override
     public boolean isDefCollider(Node node1, Node node2, Node node3) {
+        if (node1 == null || node2 == null || node3 == null) return false;
         Edge edge1 = getEdge(node1, node2);
         Edge edge2 = getEdge(node2, node3);
 
@@ -355,6 +362,10 @@ public class EdgeListGraph implements Graph {
         List<Node> parents = new ArrayList<>();
         Set<Edge> edges = this.edgeLists.get(node);
 
+        if (edges == null) {
+            System.out.println();
+        }
+
         for (Edge edge : edges) {
             if (edge == null) continue;
 
@@ -399,6 +410,7 @@ public class EdgeListGraph implements Graph {
             return false;
         }
 
+        // Trying to fix a concurency problem.
         for (Edge edge : this.edgeLists.get(node1)) {
             if (Edges.traverse(node1, edge) == node2 && Edges.traverse(node2, edge) == node1) {
                 return true;
@@ -963,6 +975,8 @@ public class EdgeListGraph implements Graph {
 
         boolean changed = false;
         Set<Edge> edgeList1 = this.edgeLists.get(node);    //list of edges connected to that node
+
+        if (edgeList1 == null) return true;
 
         for (Iterator<Edge> i = edgeList1.iterator(); i.hasNext(); ) {
             Edge edge = (i.next());

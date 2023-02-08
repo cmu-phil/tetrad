@@ -24,8 +24,6 @@ public class PagSamplingRfci implements GraphSearch {
     // Rfci parameters
     private int depth = -1;
     private int maxPathLength = -1;
-    private boolean completeRuleSetUsed = true;
-
     // IndTestProbabilistic parameters
     private boolean threshold;
     private double cutoff = 0.5;
@@ -95,10 +93,6 @@ public class PagSamplingRfci implements GraphSearch {
     /**
      * Call shutdown to reject incoming tasks, and then calling shutdownNow, if
      * necessary, to cancel any lingering tasks.
-     *
-     * @param pool
-     * @see
-     * https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html
      */
     private void shutdownAndAwaitTermination(ExecutorService pool) {
         pool.shutdown();
@@ -137,14 +131,6 @@ public class PagSamplingRfci implements GraphSearch {
 
     public void setMaxPathLength(int maxPathLength) {
         this.maxPathLength = maxPathLength;
-    }
-
-    public boolean isCompleteRuleSetUsed() {
-        return completeRuleSetUsed;
-    }
-
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     public int getNumRandomizedSearchModels() {
@@ -203,7 +189,6 @@ public class PagSamplingRfci implements GraphSearch {
                 Rfci rfci = new Rfci(independenceTest);
                 rfci.setDepth(depth);
                 rfci.setMaxPathLength(maxPathLength);
-                rfci.setCompleteRuleSetUsed(completeRuleSetUsed);
                 rfci.setVerbose(verbose);
 
                 return rfci.search();
