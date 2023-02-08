@@ -199,25 +199,6 @@ public final class SemGraph implements Graph {
         return this.errorNodes.get(node);
     }
 
-    /**
-     * This method returns the nodes of a digraph ordered in such a way that the
-     * parents of any node are contained lower down in the list.
-     *
-     * @return a tier ordering for the nodes in this graph.
-     * @throws IllegalStateException if the graph is cyclic.
-     */
-    public List<Node> getCausalOrdering() {
-        return paths.getCausalOrdering(this.getNodes());
-    }
-
-//    public void setHighlighted(Edge edge, boolean highlighted) {
-//        getGraph().setHighlighted(edge, highlighted);
-//    }
-//
-//    public boolean isHighlighted(Edge edge) {
-//        return getGraph().isHighlighted(edge);
-//    }
-
     public boolean isParameterizable(Node node) {
         return getGraph().isParameterizable(node);
     }

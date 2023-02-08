@@ -679,7 +679,13 @@ public final class SemIm implements IM, ISemIm {
         }
 
         SemGraph semGraph = getSemPm().getGraph();
-        List<Node> tierOrdering = semGraph.getCausalOrdering();
+
+        System.out.println(semGraph);
+
+        semGraph.setShowErrorTerms(false);
+        Paths paths = new Paths(semGraph);
+        List<Node> initialOrder = semGraph.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
 
         double[] intercepts = new double[tierOrdering.size()];
 
@@ -1183,7 +1189,9 @@ public final class SemIm implements IM, ISemIm {
 
         Graph contemporaneousDag = timeSeriesGraph.subgraph(timeSeriesGraph.getLag0Nodes());
 
-        List<Node> tierOrdering = contemporaneousDag.paths().getCausalOrdering(contemporaneousDag.getNodes());
+        Paths paths = contemporaneousDag.paths();
+        List<Node> initialOrder = contemporaneousDag.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
 
         for (int currentStep = 0; currentStep < sampleSize; currentStep++) {
             for (Node to : tierOrdering) {
@@ -1345,7 +1353,9 @@ public final class SemIm implements IM, ISemIm {
 
         // Create some index arrays to hopefully speed up the simulation.
         Graph graph = new EdgeListGraph(getSemPm().getGraph());
-        List<Node> tierOrdering = graph.paths().getCausalOrdering(graph.getNodes());
+        Paths paths = graph.paths();
+        List<Node> initialOrder = graph.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
 
         int[] tierIndices = new int[variableNodes.size()];
 

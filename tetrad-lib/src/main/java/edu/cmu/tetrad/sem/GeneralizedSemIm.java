@@ -318,7 +318,9 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         Graph contemporaneousDag = timeLagGraph.subgraph(timeLagGraph.getLag0Nodes());
 
-        List<Node> tierOrdering = contemporaneousDag.paths().getCausalOrdering(contemporaneousDag.getNodes());
+        Paths paths = contemporaneousDag.paths();
+        List<Node> initialOrder = contemporaneousDag.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
 
         tierOrdering.removeIf(node -> node.getNodeType() == NodeType.ERROR);
 

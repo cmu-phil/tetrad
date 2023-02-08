@@ -3,10 +3,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -153,7 +150,9 @@ public class LinearSineSimulation implements Simulation {
 
         DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
 
-        List<Node> tierOrdering = G.paths().getCausalOrdering(G.getNodes());
+        Paths paths = G.paths();
+        List<Node> initialOrder = G.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
         for (int t = 0; t < tierOrdering.size(); t++) {
             tiers[t] = nodes.indexOf(tierOrdering.get(t));
