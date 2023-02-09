@@ -524,7 +524,7 @@ public final class LvSwap implements GraphSearch {
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(knowledge2);
-        fciOrient.setVerbose(true);
+        fciOrient.setVerbose(verbose);
         fciOrient.doFinalOrientation(G);
     }
 

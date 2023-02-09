@@ -162,7 +162,7 @@ public final class SpFci implements GraphSearch {
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
-        fciOrient.setVerbose(true);
+        fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge2);
 
         fciOrient.doFinalOrientation(graph);

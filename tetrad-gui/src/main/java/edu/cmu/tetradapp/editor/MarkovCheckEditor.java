@@ -619,7 +619,7 @@ public class MarkovCheckEditor extends JPanel {
                             Node y = fact.getY();
                             List<Node> z = fact.getZ();
                             boolean verbose = test.isVerbose();
-                            test.setVerbose(true);
+                            test.setVerbose(verbose);
                             IndependenceResult result = test.checkIndependence(x, y, z);
                             boolean indep = result.independent();
                             double pValue = result.getPValue();
