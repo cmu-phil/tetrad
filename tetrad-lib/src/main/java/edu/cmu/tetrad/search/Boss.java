@@ -96,24 +96,32 @@ public class Boss {
             double s1, s2;
 
             int count = 0;
-            boolean ensureMinimumCount = score instanceof ZhangShenBoundScore;
+//            boolean ensureMinimumCount = score instanceof ZhangShenBoundScore;
+
+            if (algType == AlgType.BOSS1) {
+                betterMutation1(scorer);
+            } else if (algType == AlgType.BOSS2) {
+                betterMutation2(scorer);
+            } else if (algType == AlgType.BOSS3) {
+                betterMutationBryan(scorer);
+            }
 
             do {
                 s1 = scorer.score();
 
                 if (algType == AlgType.BOSS1) {
+                    besMutation(scorer);
                     betterMutation1(scorer);
-                    besMutation(scorer);
                 } else if (algType == AlgType.BOSS2) {
+                    besMutation(scorer);
                     betterMutation2(scorer);
-                    besMutation(scorer);
                 } else if (algType == AlgType.BOSS3) {
-                    betterMutationBryan(scorer);
                     besMutation(scorer);
+                    betterMutationBryan(scorer);
                 }
 
                 s2 = scorer.score();
-            } while (s2 > s1 || (++count <= 5));
+            } while (s2 > s1);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -210,7 +218,7 @@ public class Boss {
 
             for (int i = 1; i < scorer.size(); i++) {
                 Node x = scorer.get(i);
-//                if (!introns1.contains(x)) continue;
+                if (!introns1.contains(x)) continue;
 
                 for (int j = i - 1; j >= 0; j--) {
                     if (!scorer.adjacent(scorer.get(j), x)) continue;
@@ -261,7 +269,7 @@ public class Boss {
                 double _sp = NEGATIVE_INFINITY;
                 scorer.bookmark();
 
-//                if (!introns1.contains(k)) continue;
+                if (!introns1.contains(k)) continue;
 
                 for (int j = 0; j < scorer.size(); j++) {
                     scorer.moveTo(k, j);
