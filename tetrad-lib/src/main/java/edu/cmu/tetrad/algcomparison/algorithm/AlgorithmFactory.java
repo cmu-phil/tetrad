@@ -43,12 +43,12 @@ public class AlgorithmFactory {
         }
 
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        boolean testRequired = algoAnno.requireIndependenceTest(algoClass);
+        boolean testRequired = algoAnno.requiresIndependenceTest(algoClass);
         if (testRequired && test == null) {
             throw new IllegalArgumentException("Test of independence is required.");
         }
 
-        boolean scoreRequired = algoAnno.requireScore(algoClass);
+        boolean scoreRequired = algoAnno.requiresScore(algoClass);
         if (scoreRequired && score == null) {
             throw new IllegalArgumentException("Score is required.");
         }
