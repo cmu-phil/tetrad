@@ -370,7 +370,7 @@ public final class PcAll implements GraphSearch {
 
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(this.knowledge);
-        meekRules.setVerbose(true);
+        meekRules.setVerbose(verbose);
         meekRules.orientImplied(this.graph);
 
         long endTime = MillisecondTimes.timeMillis();
