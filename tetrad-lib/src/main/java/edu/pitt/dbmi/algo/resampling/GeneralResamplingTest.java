@@ -106,7 +106,7 @@ public class GeneralResamplingTest {
     }
 
     private static void countAdjConfMatrix(int[][] adjAr, List<Edge> edges, Graph truth, Graph estimate, int start,
-            int end) {
+                                           int end) {
         if (start == end) {
             Edge edge = edges.get(start);
             Node n1 = truth.getNode(edge.getNode1().toString());
@@ -141,7 +141,7 @@ public class GeneralResamplingTest {
     }
 
     private static void countEdgeTypeConfMatrix(int[][] edgeAr, List<Edge> edges, Graph truth, Graph estimate,
-            int start, int end) {
+                                                int start, int end) {
         if (start == end) {
             Edge edge = edges.get(start);
             Node n1 = truth.getNode(edge.getNode1().toString());
@@ -252,7 +252,7 @@ public class GeneralResamplingTest {
      * Sets the background knowledge.
      *
      * @param knowledge the knowledge object, specifying forbidden and required
-     * edges.
+     *                  edges.
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
@@ -268,7 +268,7 @@ public class GeneralResamplingTest {
     public Graph search() {
         long start, stop;
 
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
 
         if (this.algorithm != null) {
             this.resamplingSearch.setAlgorithm(this.algorithm);
@@ -311,15 +311,15 @@ public class GeneralResamplingTest {
             this.out.println("Processing time of total resamplings : " + (stop - start) / 1000.0 + " sec");
         }
 
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
         Graph graph = GraphTools.createHighEdgeProbabilityGraph(this.graphs, edgeEnsemble);
         stop = MillisecondTimes.timeMillis();
-        if (this.verbose) {
-            this.out.println("Final Resampling Search Result:");
-            this.out.println(GraphUtils.graphToText(graph, false));
-            this.out.println();
-            this.out.println("probDistribution finished in " + (stop - start) + " ms");
-        }
+
+//        if (this.verbose) {
+        TetradLogger.getInstance().forceLogMessage("Final Resampling Search Result:");
+        TetradLogger.getInstance().forceLogMessage(GraphUtils.graphToText(graph, false));
+        TetradLogger.getInstance().forceLogMessage("probDistribution finished in " + (stop - start) + " ms");
+//        }
 
         return graph;
     }

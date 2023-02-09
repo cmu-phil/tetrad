@@ -80,7 +80,7 @@ public class HsimRepeatAC {
             }
             //pass verbose on to the lower level as well
             if (this.verbose) {
-                study.setVerbose(true);
+                study.setVerbose(verbose);
             }
 
             //run the edu.cmu.tetrad.study! yay!
