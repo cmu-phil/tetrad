@@ -35,15 +35,14 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LongTextField;
 import edu.cmu.tetradapp.util.StringTextField;
-
-import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.swing.*;
 
 /**
  * Dec 4, 2017 5:05:42 PM
@@ -109,19 +108,20 @@ public class AlgorithmParameterPanel extends JPanel {
 
         } else if (algorithm instanceof PagSamplingRfci) {
             String title = algorithm.getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
-            
+
             Set<String> params = new LinkedHashSet<>();
             params.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
+            params.add(Params.RESAMPLING_ENSEMBLE);
             params.add(Params.VERBOSE);
             this.mainPanel.add(createSubPanel(title, params, parameters));
             this.mainPanel.add(Box.createVerticalStrut(10));
-            
+
             title = "RFCI Parameters";
             params.clear();
             params.addAll(PagSamplingRfci.RFCI_PARAMETERS);
             this.mainPanel.add(createSubPanel(title, params, parameters));
             this.mainPanel.add(Box.createVerticalStrut(10));
-            
+
             title = "Probabilistic Test Parameters";
             params.clear();
             params.addAll(PagSamplingRfci.PROBABILISTIC_TEST_PARAMETERS);
