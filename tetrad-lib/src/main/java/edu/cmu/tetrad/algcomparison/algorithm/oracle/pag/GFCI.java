@@ -55,16 +55,14 @@ public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-                if (parameters.getInt(Params.TIME_LAG) > 0) {
-                    DataSet dataSet = (DataSet) dataModel;
-                    DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                    if (dataSet.getName() != null) {
-                        timeSeries.setName(dataSet.getName());
-                    }
-                    dataModel = timeSeries;
-                    knowledge = timeSeries.getKnowledge();
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                DataSet dataSet = (DataSet) dataModel;
+                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
                 }
+                dataModel = timeSeries;
+                knowledge = timeSeries.getKnowledge();
             }
 
             GFci search = new GFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
