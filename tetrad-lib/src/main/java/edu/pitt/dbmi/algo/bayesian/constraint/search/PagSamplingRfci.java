@@ -8,7 +8,6 @@ import edu.cmu.tetrad.search.IndTestProbabilistic;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.GraphTools;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -21,20 +20,20 @@ import java.util.concurrent.*;
  */
 public class PagSamplingRfci implements GraphSearch {
 
+    private final int NUM_THREADS = 10;
+
+    // PagSamplingRfci
+    private int numRandomizedSearchModels = 10;
+    private boolean verbose = false;
+
     // Rfci parameters
     private int depth = -1;
     private int maxPathLength = -1;
+
     // IndTestProbabilistic parameters
-    private boolean threshold;
+    private boolean threshold = true;
     private double cutoff = 0.5;
     private double priorEquivalentSampleSize = 10;
-
-    private int numRandomizedSearchModels = 10;
-
-    /**
-     * True if verbose output should be printed.
-     */
-    private boolean verbose;
 
     /**
      * The background knowledge.
@@ -52,7 +51,7 @@ public class PagSamplingRfci implements GraphSearch {
         return GraphTools.createHighEdgeProbabilityGraph(runSearches());
     }
 
-    List<Callable<Graph>> createSearchTasks(int numOfTasks) {
+    List<Callable<Graph>> createTasks(int numOfTasks) {
         List<Callable<Graph>> callableTasks = new LinkedList<>();
 
         for (int i = 0; i < numOfTasks; i++) {
@@ -65,10 +64,10 @@ public class PagSamplingRfci implements GraphSearch {
     private List<Graph> runSearches() {
         List<Graph> graphs = new LinkedList<>();
 
-        ExecutorService pool = Executors.newFixedThreadPool(numRandomizedSearchModels);
+        ExecutorService pool = Executors.newFixedThreadPool(NUM_THREADS);
         try {
-            while (graphs.size() < numRandomizedSearchModels) {
-                List<Callable<Graph>> callableTasks = createSearchTasks(numRandomizedSearchModels - graphs.size());
+            while (graphs.size() < numRandomizedSearchModels && !Thread.currentThread().isInterrupted()) {
+                List<Callable<Graph>> callableTasks = createTasks(numRandomizedSearchModels - graphs.size());
                 List<Future<Graph>> completedTasks = pool.invokeAll(callableTasks);
                 for (Future<Graph> completedTask : completedTasks) {
                     try {
@@ -76,7 +75,7 @@ public class PagSamplingRfci implements GraphSearch {
                         if (graph != null && SearchGraphUtils.isLegalPag(graph).isLegalPag()) {
                             graphs.add(graph);
                         }
-                    } catch (ExecutionException | InterruptedException exception) {
+                    } catch (ExecutionException exception) {
                         exception.printStackTrace(System.err);
                     }
                 }
@@ -97,9 +96,9 @@ public class PagSamplingRfci implements GraphSearch {
     private void shutdownAndAwaitTermination(ExecutorService pool) {
         pool.shutdown();
         try {
-            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+            if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
                 pool.shutdownNow();
-                if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
                     System.err.println("Pool did not terminate");
                 }
             }

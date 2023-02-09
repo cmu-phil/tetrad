@@ -12,13 +12,11 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-
 import java.util.LinkedList;
 import java.util.List;
-
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 /**
  *
@@ -34,15 +32,20 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 @Experimental
 public class PagSamplingRfci implements Algorithm, HasKnowledge {
 
+    public static final List<String> PAG_SAMPLING_RFCI_PARAMETERS = new LinkedList<>();
     public static final List<String> RFCI_PARAMETERS = new LinkedList<>();
     public static final List<String> PROBABILISTIC_TEST_PARAMETERS = new LinkedList<>();
 
     static {
+        // algorithm parameters
+        PAG_SAMPLING_RFCI_PARAMETERS.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
+        PAG_SAMPLING_RFCI_PARAMETERS.add(Params.VERBOSE);
+
+        // Rfci parameters
         RFCI_PARAMETERS.add(Params.DEPTH);
         RFCI_PARAMETERS.add(Params.MAX_PATH_LENGTH);
-        RFCI_PARAMETERS.add(Params.COMPLETE_RULE_SET_USED);
-        RFCI_PARAMETERS.add(Params.TIME_LAG);
 
+        // IndTestProbabilistic parameters
         PROBABILISTIC_TEST_PARAMETERS.add(Params.NO_RANDOMLY_DETERMINED_INDEPENDENCE);
         PROBABILISTIC_TEST_PARAMETERS.add(Params.CUTOFF_IND_TEST);
         PROBABILISTIC_TEST_PARAMETERS.add(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE);
@@ -91,10 +94,9 @@ public class PagSamplingRfci implements Algorithm, HasKnowledge {
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
 
+        parameters.addAll(PAG_SAMPLING_RFCI_PARAMETERS);
         parameters.addAll(RFCI_PARAMETERS);
         parameters.addAll(PROBABILISTIC_TEST_PARAMETERS);
-        parameters.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
-        parameters.add(Params.VERBOSE);
 
         return parameters;
     }
