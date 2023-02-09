@@ -14,10 +14,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BFci;
-import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.GraspFci;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -76,30 +73,33 @@ public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependence
                 knowledge = timeSeries.getKnowledge();
             }
 
-            GraspFci search = new GraspFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            IndependenceTest test = this.test.getTest(dataModel, parameters);
+            Score score = this.score.getScore(dataModel, parameters);
 
-            if (parameters.getInt(Params.BOSS_ALG) == 1) {
-                search.setAlgType(Boss.AlgType.BOSS1);
-            } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
-                search.setAlgType(Boss.AlgType.BOSS2);
-            } else if (parameters.getInt(Params.BOSS_ALG) == 3) {
-                search.setAlgType(Boss.AlgType.BOSS3);
-            } else {
-                throw new IllegalArgumentException("Unrecognized boss algorithm type.");
-            }
+            test.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            GraspFci search = new GraspFci(test, score);
 
-            search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
-            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-            search.setDepth(parameters.getInt(Params.DEPTH));
+            // GRaSP
+            search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
+            search.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
+            search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
+            search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-            search.setKnowledge(knowledge);
-
+            search.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+
+            // FCI
+            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+            search.setPossibleDsepSearchDone(parameters.getBoolean((Params.POSSIBLE_DSEP_DONE)));
+
+            // General
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setKnowledge(this.knowledge);
 
             Object obj = parameters.get(Params.PRINT_STREAM);
 
@@ -110,9 +110,11 @@ public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependence
             return search.search();
         } else {
             GRASP_FCI algorithm = new GRASP_FCI(this.test, this.score);
+
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -139,19 +141,26 @@ public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependence
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
-        params.add(Params.BOSS_ALG);
+        // GRaSP
+        params.add(Params.GRASP_DEPTH);
+        params.add(Params.GRASP_SINGULAR_DEPTH);
+        params.add(Params.GRASP_NONSINGULAR_DEPTH);
+        params.add(Params.GRASP_ORDERED_ALG);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
+        params.add(Params.GRASP_USE_DATA_ORDER);
+        params.add(Params.CACHE_SCORES);
+        params.add(Params.NUM_STARTS);
+
+        // FCI
+        params.add(Params.DEPTH);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
-        params.add(Params.GRASP_USE_SCORE);
-        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
-        params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.DEPTH);
+        params.add(Params.POSSIBLE_DSEP_DONE);
+
+        // General
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
-
-        // Parameters
-        params.add(Params.NUM_STARTS);
 
         return params;
     }
