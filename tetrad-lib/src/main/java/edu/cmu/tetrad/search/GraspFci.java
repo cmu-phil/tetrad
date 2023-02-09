@@ -61,9 +61,6 @@ public final class GraspFci implements GraphSearch {
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
 
-    // The maxDegree for the fast adjacency search.
-    private int maxDegree = -1;
-
     // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
 
@@ -88,7 +85,12 @@ public final class GraspFci implements GraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
-    private Boss.AlgType bossType = Boss.AlgType.BOSS1;
+
+    private boolean ordered=false;
+    private boolean cachingScores = true;
+    private int graspDepth = 3;
+    private int uncoveredDepth = 1;
+    private int nonSingularDepth = 1;
 
     //============================CONSTRUCTORS============================//
     public GraspFci(IndependenceTest test, Score score) {
@@ -113,11 +115,15 @@ public final class GraspFci implements GraphSearch {
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Grasp alg = new Grasp(independenceTest, score);
+        alg.setOrdered(ordered);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(depth);
+        alg.setDepth(graspDepth);
+        alg.setSingularDepth(uncoveredDepth);
+        alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
+        alg.setCacheScores(cachingScores);
         alg.setVerbose(verbose);
 
         List<Node> variables = this.score.getVariables();
@@ -172,23 +178,6 @@ public final class GraspFci implements GraphSearch {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
-    /**
-     * @param maxDegree The maximum indegree of the output graph.
-     */
-    public void setMaxDegree(int maxDegree) {
-        if (maxDegree < -1) {
-            throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + maxDegree);
-        }
-
-        this.maxDegree = maxDegree;
-    }
-
-    /**
-     * Returns The maximum indegree of the output graph.
-     */
-    public int getMaxDegree() {
-        return this.maxDegree;
-    }
 
     // Due to Spirtes.
     public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
@@ -410,7 +399,28 @@ public final class GraspFci implements GraphSearch {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
-    public void setAlgType(Boss.AlgType type) {
-        this.bossType = type;
+    public void setGraspDepth(int graspDepth) {
+        if (graspDepth < -1) throw new IllegalArgumentException("GRaSP depth should be >= -1.");
+        this.graspDepth = graspDepth;
     }
+
+    public void setSingularDepth(int uncoveredDepth) {
+        if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
+        this.uncoveredDepth = uncoveredDepth;
+    }
+
+    public void setNonSingularDepth(int nonSingularDepth) {
+        if (nonSingularDepth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
+        this.nonSingularDepth = nonSingularDepth;
+    }
+
+    public void setOrdered(boolean ordered) {
+        this.ordered = ordered;
+    }
+
+
+    public void setCacheScores(boolean cachingScores) {
+        this.cachingScores = cachingScores;
+    }
+
 }
