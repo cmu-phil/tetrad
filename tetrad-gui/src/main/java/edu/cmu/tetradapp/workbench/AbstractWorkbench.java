@@ -2401,6 +2401,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     public void setDoPagColoring(boolean doPagColoring) {
         this.doPagColoring = doPagColoring;
+        if (doPagColoring) {
+            GraphUtils.addPagColoring(graph);
+        } else {
+            for (Edge edge : graph.getEdges()) {
+                edge.getProperties().clear();
+            }
+        }
         setGraph(graph);
         revalidate();
         repaint();
