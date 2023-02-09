@@ -22,7 +22,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-
 import java.util.List;
 
 /**
@@ -60,6 +59,10 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
 
     public boolean requireScore(Class clazz) {
         return clazz != null && UsesScoreWrapper.class.isAssignableFrom(clazz);
+    }
+
+    public boolean requireInitialGraph(Class clazz) {
+        return clazz != null && clazz.isAnnotationPresent(InitialGraph.class);
     }
 
     public boolean handleUnmeasuredConfounder(Class clazz) {
