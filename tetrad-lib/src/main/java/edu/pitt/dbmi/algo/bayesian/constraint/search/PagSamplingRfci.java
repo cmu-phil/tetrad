@@ -8,6 +8,7 @@ import edu.cmu.tetrad.search.IndTestProbabilistic;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.GraphTools;
+import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -24,6 +25,7 @@ public class PagSamplingRfci implements GraphSearch {
 
     // PagSamplingRfci
     private int numRandomizedSearchModels = 10;
+    private int edgeEnsemble = 2;
     private boolean verbose = false;
 
     // Rfci parameters
@@ -38,7 +40,7 @@ public class PagSamplingRfci implements GraphSearch {
     /**
      * The background knowledge.
      */
-    private Knowledge knowledge = new Knowledge();
+    private Knowledge knowledge;
 
     private final DataSet dataSet;
 
@@ -48,7 +50,23 @@ public class PagSamplingRfci implements GraphSearch {
 
     @Override
     public Graph search() {
-        return GraphTools.createHighEdgeProbabilityGraph(runSearches());
+        List<Graph> graphs = runSearches();
+        ResamplingEdgeEnsemble edgeEnsemble = getEdgeEnsemble(this.edgeEnsemble);
+
+        return GraphTools.createHighEdgeProbabilityGraph(graphs, edgeEnsemble);
+    }
+
+    private ResamplingEdgeEnsemble getEdgeEnsemble(int edgeEnsemble) {
+        switch (edgeEnsemble) {
+            case 1:
+                return ResamplingEdgeEnsemble.Preserved;
+            case 2:
+                return ResamplingEdgeEnsemble.Highest;
+            case 3:
+                return ResamplingEdgeEnsemble.Majority;
+            default:
+                throw new IllegalArgumentException("Unknow edge ensemble = " + edgeEnsemble);
+        }
     }
 
     List<Callable<Graph>> createTasks(int numOfTasks) {
@@ -108,68 +126,40 @@ public class PagSamplingRfci implements GraphSearch {
         }
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    public int getMaxPathLength() {
-        return maxPathLength;
-    }
-
-    public void setMaxPathLength(int maxPathLength) {
-        this.maxPathLength = maxPathLength;
-    }
-
-    public int getNumRandomizedSearchModels() {
-        return numRandomizedSearchModels;
-    }
-
     public void setNumRandomizedSearchModels(int numRandomizedSearchModels) {
         this.numRandomizedSearchModels = numRandomizedSearchModels;
-    }
-
-    public boolean isVerbose() {
-        return verbose;
     }
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public boolean isThreshold() {
-        return threshold;
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    public void setMaxPathLength(int maxPathLength) {
+        this.maxPathLength = maxPathLength;
     }
 
     public void setThreshold(boolean threshold) {
         this.threshold = threshold;
     }
 
-    public double getCutoff() {
-        return cutoff;
-    }
-
     public void setCutoff(double cutoff) {
         this.cutoff = cutoff;
     }
 
-    public double getPriorEquivalentSampleSize() {
-        return priorEquivalentSampleSize;
-    }
-
     public void setPriorEquivalentSampleSize(double priorEquivalentSampleSize) {
         this.priorEquivalentSampleSize = priorEquivalentSampleSize;
+    }
+
+    public void setEdgeEnsemble(int edgeEnsemble) {
+        this.edgeEnsemble = edgeEnsemble;
+    }
+
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
     }
 
     private class RfciSearchTask implements Callable<Graph> {
@@ -184,8 +174,12 @@ public class PagSamplingRfci implements GraphSearch {
                 independenceTest.setThreshold(threshold);
                 independenceTest.setCutoff(cutoff);
                 independenceTest.setPriorEquivalentSampleSize(priorEquivalentSampleSize);
+                independenceTest.setVerbose(verbose);
 
                 Rfci rfci = new Rfci(independenceTest);
+                if (knowledge != null) {
+                    rfci.setKnowledge(knowledge);
+                }
                 rfci.setDepth(depth);
                 rfci.setMaxPathLength(maxPathLength);
                 rfci.setVerbose(verbose);

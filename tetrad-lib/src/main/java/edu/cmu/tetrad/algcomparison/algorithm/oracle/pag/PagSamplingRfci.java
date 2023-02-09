@@ -39,6 +39,7 @@ public class PagSamplingRfci implements Algorithm, HasKnowledge {
     static {
         // algorithm parameters
         PAG_SAMPLING_RFCI_PARAMETERS.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
+        PAG_SAMPLING_RFCI_PARAMETERS.add(Params.RESAMPLING_ENSEMBLE);
         PAG_SAMPLING_RFCI_PARAMETERS.add(Params.VERBOSE);
 
         // Rfci parameters
@@ -53,24 +54,26 @@ public class PagSamplingRfci implements Algorithm, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private final IndependenceWrapper test = new ProbabilisticTest();
-    private Knowledge knowledge = new Knowledge();
+    private Knowledge knowledge;
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         edu.pitt.dbmi.algo.bayesian.constraint.search.PagSamplingRfci pagSamplingRfci = new edu.pitt.dbmi.algo.bayesian.constraint.search.PagSamplingRfci(SimpleDataLoader.getDiscreteDataSet(dataSet));
 
+        // PAG-Sampling-RFCI parameters
+        pagSamplingRfci.setNumRandomizedSearchModels(parameters.getInt(Params.NUM_RANDOMIZED_SEARCH_MODELS));
+        pagSamplingRfci.setEdgeEnsemble(parameters.getInt(Params.RESAMPLING_ENSEMBLE));
+        pagSamplingRfci.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
         // Rfic parameters
         pagSamplingRfci.setKnowledge(this.knowledge);
         pagSamplingRfci.setDepth(parameters.getInt(Params.DEPTH));
         pagSamplingRfci.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
-        pagSamplingRfci.setNumRandomizedSearchModels(parameters.getInt(Params.NUM_RANDOMIZED_SEARCH_MODELS));
 
         // ProbabilisticTest parameters
         pagSamplingRfci.setThreshold(parameters.getBoolean(Params.NO_RANDOMLY_DETERMINED_INDEPENDENCE));
         pagSamplingRfci.setCutoff(parameters.getDouble(Params.CUTOFF_IND_TEST));
         pagSamplingRfci.setPriorEquivalentSampleSize(parameters.getDouble(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE));
-
-        pagSamplingRfci.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return pagSamplingRfci.search();
     }
@@ -108,7 +111,7 @@ public class PagSamplingRfci implements Algorithm, HasKnowledge {
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = knowledge;
     }
 
 }
