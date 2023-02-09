@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.annotation.InitialGraph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -268,7 +269,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * Sets the initial graph.
      */
-    public void setExternalGraph(Graph externalGraph) {
+    public void setInitialGraph(Graph externalGraph) {
         externalGraph = GraphUtils.replaceNodes(externalGraph, variables);
 
         if (verbose) {

@@ -6,6 +6,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.InitialGraph;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -33,12 +34,15 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
+@InitialGraph
 public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
 
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
+
+    private Graph initialGraph = null;
 
     public Fges() {
 
@@ -66,6 +70,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
             edu.cmu.tetrad.search.Fges search
                     = new edu.cmu.tetrad.search.Fges(score);
+            search.setInitialGraph(initialGraph);
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
@@ -147,4 +152,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
         this.score = score;
     }
 
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
+    }
 }
