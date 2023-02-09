@@ -19,13 +19,12 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
-import org.apache.commons.math3.util.FastMath;
-
-import javax.swing.*;
-import javax.swing.table.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.table.*;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Apr 30, 2019 2:30:18 PM
@@ -97,10 +96,10 @@ public class EdgeTypeTable extends JPanel {
             TableCellRenderer headerRenderer = header.getDefaultRenderer();
             header.setDefaultRenderer((tbl, value, isSelected, hasFocus, row, column) -> {
                 Component comp = headerRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
-                if (column >= 9 && column <= 12) {
+                if (column >= 10 && column <= 13) {
                     comp.setForeground(Color.BLUE);
                 }
-                if (column >= 11 && column <= 12) {
+                if (column >= 12 && column <= 13) {
                     comp.setFont(boldFont);
                 }
 
