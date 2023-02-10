@@ -90,7 +90,7 @@ public class Boss {
                 shuffle(order);
             }
 
-            this.start =  MillisecondTimes.timeMillis();
+            this.start = MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -133,7 +133,7 @@ public class Boss {
 
         this.scorer.score(bestPerm);
 
-        this.stop =  MillisecondTimes.timeMillis();
+        this.stop = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("\nFinal " + algType + " order = " + this.scorer.getPi());
@@ -250,7 +250,6 @@ public class Boss {
     }
 
 
-
     public void betterMutation2(@NotNull TeyssierScorer scorer) {
         scorer.bookmark();
         double s1, s2;
@@ -274,14 +273,17 @@ public class Boss {
                     }
 
                     if (verbose) {
-                        System.out.print("\rIndex = " + (scorer.index(k) + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
+                        TetradLogger.getInstance().forceLogMessage("\rIndex = " + (scorer.index(k) + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                     }
                 }
 
                 scorer.goToBookmark();
             }
 
-            System.out.println();
+            if (verbose) {
+                TetradLogger.getInstance().forceLogMessage("\n");
+            }
+
             s2 = scorer.score();
         } while (s2 > s1 + epsilon);
 
