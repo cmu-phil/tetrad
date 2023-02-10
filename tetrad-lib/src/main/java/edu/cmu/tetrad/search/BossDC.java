@@ -112,6 +112,7 @@ public class BossDC {
                 if (!scorer.adjacent(scorer.get(j), x)) continue;
 
                 tuck(x, j, scorer);
+//                scorer.moveTo(x, j);
                 currentScore = scorer.score();
 
                 if (currentScore > bestScore) {
@@ -138,6 +139,7 @@ public class BossDC {
                 if (!scorer.adjacent(scorer.get(j), x)) continue;
 
                 tuck(x, j, scorer);
+//                scorer.moveTo(x, j);
                 currentScore = scorer.score();
 
                 if (currentScore > bestScore){
