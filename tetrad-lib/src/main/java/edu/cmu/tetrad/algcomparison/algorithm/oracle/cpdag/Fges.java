@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -33,7 +34,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
+public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
 
@@ -41,6 +42,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
     private Knowledge knowledge = new Knowledge();
 
     private Graph initialGraph = null;
+    private Algorithm algorithm = null;
 
     public Fges() {
 
@@ -152,5 +154,20 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     public void setInitialGraph(Graph initialGraph) {
         this.initialGraph = initialGraph;
+    }
+
+    @Override
+    public Graph getExternalGraph() {
+        return this.initialGraph;
+    }
+
+    @Override
+    public void setExternalGraph(Graph externalGraph) {
+        this.initialGraph = externalGraph;
+    }
+
+    @Override
+    public void setExternalGraph(Algorithm algorithm) {
+        this.algorithm = algorithm;
     }
 }
