@@ -255,23 +255,13 @@ public class Boss {
         scorer.bookmark();
         double s1, s2;
 
-        Set<Node> introns1;
-        Set<Node> introns2;
-
-        introns2 = new HashSet<>(scorer.getPi());
-
         do {
             s1 = scorer.score();
             scorer.bookmark(1);
 
-            introns1 = introns2;
-            introns2 = new HashSet<>();
-
             for (Node k : scorer.getPi()) {
                 double _sp = NEGATIVE_INFINITY;
                 scorer.bookmark();
-
-                if (!introns1.contains(k)) continue;
 
                 for (int j = 0; j < scorer.size(); j++) {
                     scorer.moveTo(k, j);
@@ -280,27 +270,18 @@ public class Boss {
                         if (!violatesKnowledge(scorer.getPi())) {
                             _sp = scorer.score();
                             scorer.bookmark();
-
-                            if (scorer.index(k) <= j) {
-                                for (int m = scorer.index(k); m <= j; m++) {
-                                    introns2.add(scorer.get(m));
-                                }
-                            } else if (scorer.index(k) > j) {
-                                for (int m = j; m <= scorer.index(k); m++) {
-                                    introns2.add(scorer.get(m));
-                                }
-                            }
                         }
                     }
 
                     if (verbose) {
-                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\rIndex = " + (scorer.index(k) + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                     }
                 }
 
                 scorer.goToBookmark();
             }
 
+            System.out.println();
             s2 = scorer.score();
         } while (s2 > s1 + epsilon);
 
