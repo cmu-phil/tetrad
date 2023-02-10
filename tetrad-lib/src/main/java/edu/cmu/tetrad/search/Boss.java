@@ -36,6 +36,7 @@ public class Boss {
     private int numStarts = 1;
     private AlgType algType = AlgType.BOSS1;
     private boolean caching = true;
+    private double epsilon = 1e-10;
 
     public Boss(@NotNull IndependenceTest test, Score score) {
         this.test = test;
@@ -103,17 +104,26 @@ public class Boss {
 
                 if (algType == AlgType.BOSS1) {
                     betterMutation1(scorer);
-                    besMutation(scorer);
+
+                    if (scorer.score() > s1 + epsilon) {
+                        besMutation(scorer);
+                    }
                 } else if (algType == AlgType.BOSS2) {
                     betterMutation2(scorer);
-                    besMutation(scorer);
+
+                    if (scorer.score() > s1 + epsilon) {
+                        besMutation(scorer);
+                    }
                 } else if (algType == AlgType.BOSS3) {
                     betterMutationBryan(scorer);
-                    besMutation(scorer);
+
+                    if (scorer.score() > s1 + epsilon) {
+                        besMutation(scorer);
+                    }
                 }
 
                 s2 = scorer.score();
-            } while (s2 > s1 || (++count <= 5));
+            } while (s2 > s1 + epsilon || (ensureMinimumCount && ++count <= 5));
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -210,14 +220,14 @@ public class Boss {
 
             for (int i = 1; i < scorer.size(); i++) {
                 Node x = scorer.get(i);
-//                if (!introns1.contains(x)) continue;
+                if (!introns1.contains(x)) continue;
 
                 for (int j = i - 1; j >= 0; j--) {
                     if (!scorer.adjacent(scorer.get(j), x)) continue;
 
                     tuck(x, j, scorer, range);
 
-                    if (scorer.score() > bestScore || violatesKnowledge(scorer.getPi())) {
+                    if (scorer.score() > bestScore + epsilon || violatesKnowledge(scorer.getPi())) {
                         for (int l = range[0]; l <= range[1]; l++) {
                             introns2.add(scorer.get(l));
                         }
@@ -236,7 +246,7 @@ public class Boss {
             if (verbose) {
                 System.out.println();
             }
-        } while (bestScore > originalScore);
+        } while (bestScore > originalScore + epsilon);
     }
 
 
@@ -261,12 +271,12 @@ public class Boss {
                 double _sp = NEGATIVE_INFINITY;
                 scorer.bookmark();
 
-//                if (!introns1.contains(k)) continue;
+                if (!introns1.contains(k)) continue;
 
                 for (int j = 0; j < scorer.size(); j++) {
                     scorer.moveTo(k, j);
 
-                    if (scorer.score() >= _sp) {
+                    if (scorer.score() >= _sp + epsilon) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             _sp = scorer.score();
                             scorer.bookmark();
@@ -292,7 +302,7 @@ public class Boss {
             }
 
             s2 = scorer.score();
-        } while (s2 > s1);
+        } while (s2 > s1 + epsilon);
 
         scorer.goToBookmark(1);
     }
