@@ -30,6 +30,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -46,7 +47,7 @@ public class TestBoss {
         Parameters parameters = new Parameters();
         parameters.set(Params.NUM_RUNS, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
-        parameters.set(Params.NUM_MEASURES, 400);
+        parameters.set(Params.NUM_MEASURES, 100);
         parameters.set(Params.AVG_DEGREE, 20);
         parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.COEF_LOW, 0);
@@ -58,7 +59,7 @@ public class TestBoss {
         parameters.set(Params.SEM_BIC_STRUCTURE_PRIOR, 0);
         parameters.set(Params.ALPHA, 1e-2);
 
-        parameters.set("verbose", true);
+        parameters.set(Params.VERBOSE, true);
 
         Statistics statistics = new Statistics();
         statistics.add(new AdjacencyPrecision());
@@ -69,7 +70,7 @@ public class TestBoss {
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new BDCE(new SemBicScore()));
+        algorithms.add(new BOSS(new FisherZ(), new ZhangShenBoundScore()));
 //        algorithms.add(new BOSSDC(new SemBicScore()));
 
         Simulations simulations = new Simulations();
@@ -81,7 +82,7 @@ public class TestBoss {
         comparison.setShowSimulationIndices(true);
         comparison.setSortByUtility(false);
         comparison.setShowUtilities(false);
-        comparison.setParallelized(true);
+        comparison.setParallelized(false);
 
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
 
