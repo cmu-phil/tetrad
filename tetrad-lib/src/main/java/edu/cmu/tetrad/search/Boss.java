@@ -269,19 +269,20 @@ public class Boss {
                         if (!violatesKnowledge(scorer.getPi())) {
                             _sp = scorer.score();
                             scorer.bookmark();
-                        }
-                    }
 
-                    if (verbose) {
-                        TetradLogger.getInstance().forceLogMessage("\rIndex = " + (scorer.index(k) + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
-                    }
+                            if (verbose) {
+                                System.out.print("\rIndex = " + (scorer.index(k) + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
+                            }
+                        }
+                   }
+
                 }
 
                 scorer.goToBookmark();
             }
 
             if (verbose) {
-                TetradLogger.getInstance().forceLogMessage("\n");
+                System.out.println();
             }
 
             s2 = scorer.score();
