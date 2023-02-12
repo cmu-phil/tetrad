@@ -54,7 +54,7 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
         return clazz != null && HasKnowledge.class.isAssignableFrom(clazz);
     }
 
-    public boolean takesInitialGraph(Class clazz) {
+    public boolean takesExternalGraph(Class clazz) {
         return clazz != null && TakesExternalGraph.class.isAssignableFrom(clazz);
     }
 

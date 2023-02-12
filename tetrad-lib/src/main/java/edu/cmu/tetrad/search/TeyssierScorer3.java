@@ -23,7 +23,7 @@ import static org.apache.commons.math3.util.FastMath.floor;
  * @author josephramsey
  * @author bryanandrews
  */
-public class TeyssierScorer {
+public class TeyssierScorer3 {
     private final List<Node> variables;
     private final Map<Node, Integer> variablesHash;
     private final Score score;
@@ -49,7 +49,7 @@ public class TeyssierScorer {
 
     private GrowShrinkTree GST;
 
-    public TeyssierScorer(IndependenceTest test, Score score) {
+    public TeyssierScorer3(IndependenceTest test, Score score) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
         this.score = score;
@@ -78,7 +78,7 @@ public class TeyssierScorer {
         }
     }
 
-    public TeyssierScorer(TeyssierScorer scorer) {
+    public TeyssierScorer3(TeyssierScorer3 scorer) {
         this.variables = new ArrayList<>(scorer.variables);
         this.variablesHash = new HashMap<>();
 

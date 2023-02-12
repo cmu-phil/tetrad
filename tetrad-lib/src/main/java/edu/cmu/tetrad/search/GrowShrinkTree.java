@@ -7,14 +7,18 @@ import java.util.*;
 
 public class GrowShrinkTree {
     private static Score score;
-    private static List<Node> variables;
+    private static HashMap<Node, Integer> index;
     private final Map<Node, GSTNode> roots;
 
     public GrowShrinkTree(Score score) {
         GrowShrinkTree.score = score;
-        GrowShrinkTree.variables = score.getVariables();
+        GrowShrinkTree.index = new HashMap<>();
+
+        int i = 0;
+        for (Node node : score.getVariables()) GrowShrinkTree.index.put(node, i++);
+
         this.roots = new HashMap<>();
-        for (Node node : GrowShrinkTree.variables) {
+        for (Node node : GrowShrinkTree.score.getVariables()) {
             this.roots.put(node, new GSTNode(node));
         }
     }
@@ -37,7 +41,7 @@ public class GrowShrinkTree {
             this.grow = false;
             this.shrink = false;
 
-            int y = GrowShrinkTree.variables.indexOf(node);
+            int y = GrowShrinkTree.index.get(node);
             this.growScore = GrowShrinkTree.score.localScore(y);
         }
 
@@ -46,12 +50,12 @@ public class GrowShrinkTree {
             this.grow = false;
             this.shrink = false;
 
-            int y = GrowShrinkTree.variables.indexOf(node);
+            int y = GrowShrinkTree.index.get(node);
             int[] X = new int[parents.size() + 1];
 
             int i = 0;
-            for (Node parent : parents) X[i++] = GrowShrinkTree.variables.indexOf(parent);
-            X[i] = GrowShrinkTree.variables.indexOf(add);
+            for (Node parent : parents) X[i++] = GrowShrinkTree.index.get(parent);
+            X[i] = GrowShrinkTree.index.get(add);
 
             this.growScore = GrowShrinkTree.score.localScore(y, X);
         }
@@ -62,7 +66,7 @@ public class GrowShrinkTree {
                 this.grow = true;
                 this.branches = new ArrayList<>();
 
-                for (Node add : GrowShrinkTree.variables) {
+                for (Node add : GrowShrinkTree.score.getVariables()) {
                     if (parents.contains(add) || add == node) continue;
                     GSTNode branch = new GSTNode(node, add, parents);
                     if (this.compareTo(branch) < 0) this.branches.add(branch);
@@ -86,17 +90,17 @@ public class GrowShrinkTree {
 
                 if (parents.isEmpty()) return this.shrinkScore;
 
-                int y = GrowShrinkTree.variables.indexOf(node);
-                int[] X = new int[parents.size() - 1];
-
-                int i = 0;
-                Iterator<Node> itr = parents.iterator();
-                itr.next();
-                while (itr.hasNext()) X[i++] = GrowShrinkTree.variables.indexOf(itr.next());
+                int y = GrowShrinkTree.index.get(node);
                 Node best;
 
                 do {
-                    i = 0;
+                    int[] X = new int[parents.size() - 1];
+
+                    int i = 0;
+                    Iterator<Node> itr = parents.iterator();
+                    itr.next();
+                    while (itr.hasNext()) X[i++] = GrowShrinkTree.index.get(itr.next());
+
                     itr = parents.iterator();
                     Node remove = itr.next();
                     best = null;
@@ -110,7 +114,7 @@ public class GrowShrinkTree {
 
                         if (i < parents.size() - 1) {
                             remove = itr.next();
-                            X[i++] = GrowShrinkTree.variables.indexOf(remove);
+                            X[i++] = GrowShrinkTree.index.get(remove);
                         }
                     } while (i < parents.size() - 1);
 

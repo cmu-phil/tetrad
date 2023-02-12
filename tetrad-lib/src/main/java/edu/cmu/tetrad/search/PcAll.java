@@ -95,7 +95,7 @@ public final class PcAll implements GraphSearch {
     private Concurrent concurrent = Concurrent.YES;
     private ColliderDiscovery colliderDiscovery = ColliderDiscovery.FAS_SEPSETS;
     private ConflictRule conflictRule = ConflictRule.OVERWRITE;
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
@@ -597,8 +597,8 @@ public final class PcAll implements GraphSearch {
         }
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public enum FasType {REGULAR, STABLE}
