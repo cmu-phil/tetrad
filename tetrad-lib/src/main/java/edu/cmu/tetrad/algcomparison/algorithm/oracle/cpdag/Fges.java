@@ -70,7 +70,8 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
 
             edu.cmu.tetrad.search.Fges search
                     = new edu.cmu.tetrad.search.Fges(score);
-            search.setExternalGraph(externalGraph);
+            search.setInitialGraph(externalGraph);
+//            search.setBoundGraph(externalGraph);
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));

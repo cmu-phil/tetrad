@@ -89,7 +89,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * An initial graph to start from.
      */
-    private Graph externalGraph;
+    private Graph initialGraph;
     /**
      * If non-null, edges not adjacent in this graph will not be added.
      */
@@ -192,8 +192,8 @@ public final class Fges implements GraphSearch, GraphScorer {
             boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
         }
 
-        if (externalGraph != null) {
-            graph = new EdgeListGraph(externalGraph);
+        if (initialGraph != null) {
+            graph = new EdgeListGraph(initialGraph);
             graph = GraphUtils.replaceNodes(graph, getVariables());
         }
 
@@ -268,23 +268,24 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * Sets the initial graph.
      */
-    public void setExternalGraph(Graph externalGraph) {
-        if (externalGraph == null) {
-            this.externalGraph = externalGraph;
+    public void setInitialGraph(Graph initialGraph) {
+        if (initialGraph == null) {
+            this.initialGraph = initialGraph;
             return;
         }
-        externalGraph = GraphUtils.replaceNodes(externalGraph, variables);
+
+        initialGraph = GraphUtils.replaceNodes(initialGraph, variables);
 
         if (verbose) {
-            out.println("External graph variables: " + externalGraph.getNodes());
+            out.println("External graph variables: " + initialGraph.getNodes());
             out.println("Data set variables: " + variables);
         }
 
-        if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(variables))) {
+        if (!new HashSet<>(initialGraph.getNodes()).equals(new HashSet<>(variables))) {
             throw new IllegalArgumentException("Variables aren't the same.");
         }
 
-        this.externalGraph = externalGraph;
+        this.initialGraph = initialGraph;
     }
 
     /**
