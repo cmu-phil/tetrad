@@ -89,7 +89,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * An initial graph to start from.
      */
-    private Graph initialGraph;
+    private Graph externalGraph;
     /**
      * If non-null, edges not adjacent in this graph will not be added.
      */
@@ -192,8 +192,8 @@ public final class Fges implements GraphSearch, GraphScorer {
             boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
         }
 
-        if (initialGraph != null) {
-            graph = new EdgeListGraph(initialGraph);
+        if (externalGraph != null) {
+            graph = new EdgeListGraph(externalGraph);
             graph = GraphUtils.replaceNodes(graph, getVariables());
         }
 
@@ -268,9 +268,9 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * Sets the initial graph.
      */
-    public void setInitialGraph(Graph externalGraph) {
+    public void setExternalGraph(Graph externalGraph) {
         if (externalGraph == null) {
-            this.initialGraph = externalGraph;
+            this.externalGraph = externalGraph;
             return;
         }
         externalGraph = GraphUtils.replaceNodes(externalGraph, variables);
@@ -284,7 +284,7 @@ public final class Fges implements GraphSearch, GraphScorer {
             throw new IllegalArgumentException("Variables aren't the same.");
         }
 
-        this.initialGraph = externalGraph;
+        this.externalGraph = externalGraph;
     }
 
     /**

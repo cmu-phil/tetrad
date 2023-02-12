@@ -66,7 +66,7 @@ public class BridgesOld {
 
                     meeks.orientImplied(g);
 
-                    ges.setInitialGraph(g);
+                    ges.setExternalGraph(g);
                     Graph g1 = ges.search();
                     double s1 = ges.getModelScore();
 

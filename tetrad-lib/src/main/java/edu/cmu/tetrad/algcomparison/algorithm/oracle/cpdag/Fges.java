@@ -41,7 +41,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
     private Algorithm algorithm = null;
 
     public Fges() {
@@ -70,7 +70,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
 
             edu.cmu.tetrad.search.Fges search
                     = new edu.cmu.tetrad.search.Fges(score);
-            search.setInitialGraph(initialGraph);
+            search.setExternalGraph(externalGraph);
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
@@ -152,18 +152,14 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
         this.score = score;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
-    }
-
     @Override
     public Graph getExternalGraph() {
-        return this.initialGraph;
+        return this.externalGraph;
     }
 
     @Override
     public void setExternalGraph(Graph externalGraph) {
-        this.initialGraph = externalGraph;
+        this.externalGraph = externalGraph;
     }
 
     @Override
