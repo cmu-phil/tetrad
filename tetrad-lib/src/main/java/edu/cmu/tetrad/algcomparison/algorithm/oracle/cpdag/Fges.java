@@ -65,13 +65,19 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
                 knowledge = timeSeries.getKnowledge();
             }
 
+            Graph _graph = this.algorithm.search(dataModel, parameters);
+
+            if (_graph != null) {
+                this.externalGraph = _graph;
+            }
+
             Score score = this.score.getScore(dataModel, parameters);
             Graph graph;
 
             edu.cmu.tetrad.search.Fges search
                     = new edu.cmu.tetrad.search.Fges(score);
-            search.setInitialGraph(externalGraph);
-//            search.setBoundGraph(externalGraph);
+//            search.setInitialGraph(externalGraph);
+            search.setBoundGraph(externalGraph);
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
@@ -90,6 +96,9 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
             return graph;
         } else {
             Fges fges = new Fges(this.score);
+            if (this.externalGraph != null) {
+                fges.setExternalGraph(this.externalGraph);
+            }
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(
@@ -153,6 +162,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
         this.score = score;
     }
 
+
     @Override
     public Graph getExternalGraph() {
         return this.externalGraph;
@@ -165,6 +175,11 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
 
     @Override
     public void setExternalGraph(Algorithm algorithm) {
+        if (algorithm == null) {
+            throw new IllegalArgumentException("This EB algorithm needs both data and a graph source as inputs; it \n"
+                    + "will orient the edges in the input graph using the data.");
+        }
+
         this.algorithm = algorithm;
     }
 }

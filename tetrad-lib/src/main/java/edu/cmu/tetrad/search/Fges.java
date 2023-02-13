@@ -322,7 +322,11 @@ public final class Fges implements GraphSearch, GraphScorer {
      * If non-null, edges not adjacent in this graph will not be added.
      */
     public void setBoundGraph(Graph boundGraph) {
-        this.boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
+        if (boundGraph == null) {
+            this.boundGraph = null;
+        } else {
+            this.boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
+        }
     }
 
     /**
