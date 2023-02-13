@@ -65,10 +65,12 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
                 knowledge = timeSeries.getKnowledge();
             }
 
-            Graph _graph = this.algorithm.search(dataModel, parameters);
+            if (this.algorithm != null) {
+                Graph _graph = this.algorithm.search(dataModel, parameters);
 
-            if (_graph != null) {
-                this.externalGraph = _graph;
+                if (_graph != null) {
+                    this.externalGraph = _graph;
+                }
             }
 
             Score score = this.score.getScore(dataModel, parameters);
