@@ -298,6 +298,8 @@ public final class PcAll implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
         this.logger.log("info", "Starting algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
         this.ambiguousTriples = new HashSet<>();

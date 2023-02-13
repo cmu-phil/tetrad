@@ -224,22 +224,6 @@ public final class VcpcFast implements GraphSearch {
         return new HashSet<>(this.definitelyNonadjacencies);
     }
 
-    /**
-     * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
-     * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
-     */
-//    public final Graph search() {
-//        return search(independenceTest.getVariable());
-//    }
-
-////    public Graph search(List<Node> nodes) {
-////
-//////        return search(new FasICov2(getIndependenceTest()), nodes);
-//////        return search(new Fas(getIndependenceTest()), nodes);
-////        return search(new Fas(getIndependenceTest()), nodes);
-//    }
-
-
 //  modified FAS into VCFAS; added in definitelyNonadjacencies set of edges.
     public Graph search() {
         this.logger.log("info", "Starting VCCPC algorithm");
