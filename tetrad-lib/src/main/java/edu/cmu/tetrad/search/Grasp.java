@@ -311,12 +311,12 @@ public class Grasp {
     }
 
     public void setSingularDepth(int uncoveredDepth) {
-        if (this.depth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
+        if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
         this.uncoveredDepth = uncoveredDepth;
     }
 
     public void setNonSingularDepth(int nonSingularDepth) {
-        if (this.depth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
+        if (nonSingularDepth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
         this.nonSingularDepth = nonSingularDepth;
     }
 
