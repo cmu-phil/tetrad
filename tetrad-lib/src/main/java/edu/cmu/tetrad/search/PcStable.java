@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -198,6 +199,8 @@ public class PcStable implements GraphSearch {
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
         if (verbose) {
             this.logger.log("info", "Starting PC algorithm");
             this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
