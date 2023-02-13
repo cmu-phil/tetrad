@@ -8,13 +8,13 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -27,27 +27,35 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 
 /**
- * GFCI.
+ * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial
+ * steps of finding adjacencies and unshielded colliders.
+ * <p>
+ * GFCI reference is this:
+ * <p>
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
+ * for Latent Variable Models," JMLR 2016.
  *
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "GFCI",
-        command = "gfci",
+        name = "GRASP-FCI",
+        command = "grasp-fci",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
+@Experimental
+public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public GFCI() {
+    public GRASP_FCI() {
+        // Used for reflection; do not delete.
     }
 
-    public GFCI(IndependenceWrapper test, ScoreWrapper score) {
+    public GRASP_FCI(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -65,15 +73,33 @@ public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
                 knowledge = timeSeries.getKnowledge();
             }
 
-            GFci search = new GFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            IndependenceTest test = this.test.getTest(dataModel, parameters);
+            Score score = this.score.getScore(dataModel, parameters);
+
+            test.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            GraspFci search = new GraspFci(test, score);
+
+            // GRaSP
+            search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
+            search.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
+            search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
+            search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
+            search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
+            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
+            search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
+            search.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
+            search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+
+            // FCI
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
-            search.setKnowledge(this.knowledge);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setPossibleDsepSearchDone(parameters.getBoolean((Params.POSSIBLE_DSEP_DONE)));
+
+            // General
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setKnowledge(this.knowledge);
 
             Object obj = parameters.get(Params.PRINT_STREAM);
 
@@ -83,11 +109,11 @@ public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
             return search.search();
         } else {
-            GFCI algorithm = new GFCI(this.test, this.score);
+            GRASP_FCI algorithm = new GRASP_FCI(this.test, this.score);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
+            search.setKnowledge(data.getKnowledge());
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -102,7 +128,7 @@ public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public String getDescription() {
-        return "GFCI (Greedy Fast Causal Inference) using " + this.test.getDescription()
+        return "GRASP-FCI (GRaSP FCI) using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 
@@ -113,19 +139,32 @@ public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>();
+        List<String> params = new ArrayList<>();
 
-        parameters.add(Params.DEPTH);
-        parameters.add(Params.MAX_DEGREE);
-        parameters.add(Params.MAX_PATH_LENGTH);
-        parameters.add(Params.COMPLETE_RULE_SET_USED);
-        parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
-        parameters.add(Params.POSSIBLE_DSEP_DONE);
-        parameters.add(Params.TIME_LAG);
+        // GRaSP
+        params.add(Params.GRASP_DEPTH);
+        params.add(Params.GRASP_SINGULAR_DEPTH);
+        params.add(Params.GRASP_NONSINGULAR_DEPTH);
+        params.add(Params.GRASP_ORDERED_ALG);
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
+        params.add(Params.GRASP_USE_DATA_ORDER);
+        params.add(Params.CACHE_SCORES);
+        params.add(Params.NUM_STARTS);
 
-        parameters.add(Params.VERBOSE);
-        return parameters;
+        // FCI
+        params.add(Params.DEPTH);
+        params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.COMPLETE_RULE_SET_USED);
+        params.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        params.add(Params.POSSIBLE_DSEP_DONE);
+
+        // General
+        params.add(Params.TIME_LAG);
+        params.add(Params.VERBOSE);
+
+        return params;
     }
+
 
     @Override
     public Knowledge getKnowledge() {
@@ -138,13 +177,8 @@ public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
-    public void setScoreWrapper(ScoreWrapper score) {
-        this.score = score;
-    }
-
-    @Override
-    public ScoreWrapper getScoreWrapper() {
-        return this.score;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
     }
 
     @Override
@@ -153,8 +187,13 @@ public class GFCI implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+    public ScoreWrapper getScoreWrapper() {
+        return this.score;
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
     }
 
 }
