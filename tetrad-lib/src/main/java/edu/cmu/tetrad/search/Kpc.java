@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -221,6 +222,8 @@ public class Kpc implements GraphSearch {
      * All of the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
         this.logger.log("info", "Starting kPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 

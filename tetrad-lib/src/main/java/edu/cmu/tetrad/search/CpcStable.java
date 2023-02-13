@@ -191,6 +191,7 @@ public final class CpcStable implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
         this.graph = new EdgeListGraph(nodes);
 
 
