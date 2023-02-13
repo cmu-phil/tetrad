@@ -769,6 +769,7 @@ public class Fasts implements IFas {
 
     @Override
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
         return null;
     }
 

@@ -118,6 +118,8 @@ public class Fas implements IFas {
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
         if (verbose) {
             this.logger.log("info", "Starting Fast Adjacency Search.");
         }
