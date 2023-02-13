@@ -268,7 +268,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * Sets the initial graph.
      */
-    public void setExternalGraph(Graph externalGraph) {
+    public void setInitialGraph(Graph externalGraph) {
         externalGraph = GraphUtils.replaceNodes(externalGraph, variables);
 
         if (verbose) {

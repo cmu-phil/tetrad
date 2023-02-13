@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -202,6 +203,8 @@ public final class TimeSeriesLagSearch implements GraphSearch {
      * caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      */
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
         TetradLogger.getInstance().log("info", "Starting TimeSeriesLagSearch.");
         TetradLogger.getInstance().log("info", "Independence test = " + this.independenceTest + ".");
         long startTime = MillisecondTimes.timeMillis();

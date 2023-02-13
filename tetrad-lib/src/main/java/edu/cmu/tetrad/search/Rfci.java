@@ -164,6 +164,8 @@ public final class Rfci implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
         return search(new Fas(getIndependenceTest()), nodes);
     }
 

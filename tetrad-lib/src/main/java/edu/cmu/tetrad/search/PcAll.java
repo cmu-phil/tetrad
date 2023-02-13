@@ -95,6 +95,7 @@ public final class PcAll implements GraphSearch {
     private Concurrent concurrent = Concurrent.YES;
     private ColliderDiscovery colliderDiscovery = ColliderDiscovery.FAS_SEPSETS;
     private ConflictRule conflictRule = ConflictRule.OVERWRITE;
+    private Graph initialGraph = null;
 
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
@@ -297,6 +298,8 @@ public final class PcAll implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
         this.logger.log("info", "Starting algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
         this.ambiguousTriples = new HashSet<>();
@@ -594,6 +597,10 @@ public final class PcAll implements GraphSearch {
                 }
             }
         }
+    }
+
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
     }
 
     public enum FasType {REGULAR, STABLE}
