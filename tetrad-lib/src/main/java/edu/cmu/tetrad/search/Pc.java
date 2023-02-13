@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -203,6 +204,8 @@ public class Pc implements GraphSearch {
      * All of the given nodes must be in the domatein of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
         IFas fas;
 
         fas = new Fas(getIndependenceTest());
