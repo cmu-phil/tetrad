@@ -43,7 +43,6 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-@Experimental
 public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;

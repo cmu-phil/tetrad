@@ -147,6 +147,7 @@ public final class Params {
     public static final String OUTPUT_RBD = "outputRBD";
     public static final String PARALLELIZED = "parallelized";
     public static final String PENALTY_DISCOUNT = "penaltyDiscount";
+    public static final String PENALTY_DISCOUNT_ZS = "penaltyDiscountZs";
     public static final String EBIC_GAMMA = "ebicGamma";
     public static final String PERCENT_DISCRETE = "percentDiscrete";
     public static final String PERCENT_RESAMPLE_SIZE = "percentResampleSize";

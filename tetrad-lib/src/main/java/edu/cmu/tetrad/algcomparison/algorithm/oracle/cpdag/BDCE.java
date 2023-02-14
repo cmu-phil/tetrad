@@ -24,11 +24,11 @@ import java.util.List;
  * @author bryanandrews
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-DCE",
-        command = "boss-dce",
-        algoType = AlgType.forbid_latent_common_causes
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BOSS-DCE",
+//        command = "boss-dce",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
 @Bootstrapping
 @Experimental
 public class BDCE implements Algorithm, UsesScoreWrapper {

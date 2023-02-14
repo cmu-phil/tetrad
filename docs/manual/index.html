@@ -3037,53 +3037,33 @@ tabs will not appear.</p> -->
             href="#maxPathLength">maxPathLength</a>, <a
             href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
 
+    <h3>The PAG-Sampling RFCI Algorithm</h3>
 
-    <!--    <h3>The RFCI-BSC Algorithm</h3>-->
+    <h4>Description</h4>
 
-    <!--    <h4>Description</h4>-->
+    <div id="pag-sampling-rfci">
 
-    <!--    <div id="rfci-bsc">-->
+        <p>A modification of the RFCI algorithm which does probabilistic bootstrap
+            sampling with respect to the RFCI PAG output.For discrete data only.
+            Parameters are: (a) Number of search probabilistic models, (b) boostrap
+            ensemble method to use (see bootstrapping), (c) maximimum size of
+            conditioning set (depth), (d) maximum length of any discriminating path
+            (a property for RFCI). This must use the probabilistic test, which must
+            be selected. Parameters for the probabilistic test are (d) independence
+            cutoff threshold, default 0.5, (e) prior equivalent sample size, and
+            (f) whether the cutoff in (d) is used in the independence test calculation;
+            if not, then a coin flip is used (probaility 0.5).
+        </p>
 
-    <!--        <p>RFCI-BSC is a combination of the RFCI [Colombo, 2012]-->
-    <!--            algorithm and the Bayesian Scoring of Constraints (BSC) method-->
-    <!--            [Jabbari, 2017] that can generate and probabilistically score-->
-    <!--            multiple models, outputting the most probable one. This search-->
-    <!--            algorithm is a hybrid method that derives a Bayesian probability that-->
-    <!--            the set of independence tests associated with a given causal model-->
-    <!--            are jointly correct. Using this constraint-based scoring method, we-->
-    <!--            are able to score multiple causal models, which possibly contain-->
-    <!--            latent variables, and output the most probable one. See [Jabbari,-->
-    <!--            2017].</p>-->
+    </div>
 
-    <!--        <p>Currently, this algorithm can only be accessed if experimental-->
-    <!--            algorithms are activated. One may do so by going to the-->
-    <!--            File menu, selecting Settings, and then making sure the-->
-    <!--            'Experimental' checkbox is checked.</p>-->
+    <h4>Input Assumptions</h4>
 
-    <!--    </div>-->
+    <p>A discrete dataset.</p>
 
-    <!--    <h4>Input Assumptions</h4>-->
+    <h4>Output Format</h4>
 
-    <!--    <p>The data are discrete only.</p>-->
-
-    <!--    <h4>Output Format</h4>-->
-
-    <!--    <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>-->
-
-    <!--    <h4>Parameters</h4>-->
-
-    <!--    <p>All of the parameters from RFCI are available for RFCI-BSC.-->
-    <!--        Additionally:</p>-->
-
-    <!--    <p><a-->
-    <!--            href="#numRandomizedSearchModels">numRandomizedSearchModels</a>, <a-->
-    <!--            href="#thresholdNoRandomDataSearch">thresholdNoRandomDataSearch</a>, <a-->
-    <!--            href="#cutoffDataSearch">cutoffDataSearch</a>, <a-->
-    <!--            href="#thresholdNoRandomConstrainSearch">thresholdNoRandomConstrainSearch-->
-    <!--    </a>, <a href="#cutoffConstrainSearch">cutoffConstrainSearch</a>, <a-->
-    <!--            href="#numBscBootstrapSamples">numBscBootstrapSamples</a>, <a-->
-    <!--            href="#lowerBound">lowerBound</a>, <a href="#upperBound">upperBound</a>,-->
-    <!--        <a href="#outputRBD">outputRBD</a></p>-->
+    <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>
 
     <h3>The GFCI Algorithm</h3>
 
@@ -4028,6 +4008,27 @@ tabs will not appear.</p> -->
 
     <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
 
+    <h3>Kim et al. Scores</h3>
+
+    <div id="kim-bic-tests"><p>
+        This is a set of generalized information criterion (GIC) scores, used as tests,
+        based on the paper, Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection
+        criteria on high dimensions. The Journal 0of Machine Learning Research,
+        13(1), 1037-1057. One needs to select which lambda to use in place of the
+        usual lambda for the linear, Gaussian BIC score. An penalty discount parameter
+        may also be specified, though this is by default for these scores equal
+        to 1 (since the lambda choice is essentially picking a penalty discount
+        for you).
+    </p>
+    </div>
+
+    <h3>MAG SEM BIC Test</h3>
+
+    <div id="mag-sem-bic-test"><p>
+        This gives a BIC score (used as a test here) for a Mixed Ancestral Graph (MAG).
+    </p>
+    </div>
+
     <h3>Probabilistic Test</h3>
 
     <div id="prob-test"><p> The Probabilistic Test applies a Bayesian
@@ -4354,9 +4355,46 @@ tabs will not appear.</p> -->
         recommended depending on how many variables there are per sample. </p>
     </div>
 
-    <h4>Parameters</h4>
+    <h3>Kim et al. Scores</h3>
 
-    <p><a href="#ebicGamma">ebicGamma</a></p>
+    <div id="kim-scores"><p>
+        This is a set of generalized information criterion (GIC) scores based on
+        the paper, Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection
+        criteria on high dimensions. The Journal 0of Machine Learning Research,
+        13(1), 1037-1057. One needs to select which lambda to use in place of the
+        usual lambda for the linear, Gaussian BIC score. An penalty discount parameter
+        may also be specified, though this is by default for these scores equal
+        to 1 (since the lambda choice is essentially picking a penalty discount
+        for you).
+    </p>
+    </div>
+
+    <h3>Poisson Prior Score</h3>
+
+    <div id="poisson-prior-score"><p>
+        This is likelihood score attenuated by the log
+        of the Poisson distribution. It has one parameter, lambda, from the Poisson
+        distribution, which acts as a structure prior.
+    </p>
+    </div>
+
+    <h3>Zhang-Shen Bound Score</h3>
+
+    <div id="zsbound-score"><p>
+        Uses Theorem 1 from Zhang, Y., & Shen, X. (2010). Model selection procedure for
+        high‐dimensional data. Statistical Analysis and Data Mining: The ASA Data
+        Science Journal, 3(5), 350-358, to make a score that controls false positives.
+        The is one parameter, the "risk bound", a number between 0 and 1 (a bound on
+        false positive risk probability).
+    </p>
+    </div>
+
+    <h3>MAG SEM BIC Score</h3>
+
+    <div id="mag-sem-bic-score"><p>
+        This gives a BIC score for a Mixed Ancestral Graph (MAG).
+    </p>
+    </div>
 
     <div id="parameters"><h2>Search Parameters</h2>
 
@@ -7238,6 +7276,29 @@ tabs will not appear.</p> -->
                         id="penaltyDiscount_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span
                     id="penaltyDiscount_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="penaltyDiscountZs">penaltyDiscountZs</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="penaltyDiscountZs_short_desc">Penalty discount (min =
+        0.0)</span></li>
+            <li>Long Description: <span
+                    id="penaltyDiscountZs_long_desc"> The parameter c added to a modified
+        BIC score of the form 2L – c k lambda, where L is the likelihood, k the
+        number of degrees of freedom, and lambda the choice of GIC lambda. Higher c yield
+        sparser graphs. </span></li>
+            <li>Default Value: <span
+                    id="penaltyDiscountZs_default_value">1.0</span></li>
+            <li>Lower Bound:
+                <span id="penaltyDiscountZs_lower_bound">0.0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="penaltyDiscountZs_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span
+                    id="penaltyDiscountZs_value_type">Double</span></li>
         </ul>
 
         <h3 id="zSRiskBound" class="parameter_description">zSRiskBound</h3>
