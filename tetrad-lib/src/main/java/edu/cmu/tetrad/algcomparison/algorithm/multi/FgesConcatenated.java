@@ -75,7 +75,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
             }
 
             if (initial != null) {
-                search.setExternalGraph(initial);
+                search.setBoundGraph(initial);
             }
 
             return search.search();

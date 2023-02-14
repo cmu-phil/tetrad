@@ -138,7 +138,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
                     g.removeEdge(edge);
                     g.addEdge(reversed);
 
-                    fges.setExternalGraph(g);
+                    fges.setInitialGraph(g);
                     Graph g1 = fges.search();
                     double s1 = fges.getModelScore();
 
