@@ -1964,47 +1964,6 @@ public final class SearchGraphUtils {
         return counts;
     }
 
-    public static Graph reorient(Graph graph, DataModel dataModel, Knowledge knowledge) {
-        if (dataModel instanceof DataModelList) {
-            DataModelList list = (DataModelList) dataModel;
-            List<DataModel> dataSets = new ArrayList<>(list);
-            Fges images = new Fges(new SemBicScoreImages(dataSets));
-
-            images.setBoundGraph(graph);
-            images.setKnowledge(knowledge);
-            return images.search();
-        } else if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
-
-            Score score;
-
-            if (dataModel.isContinuous()) {
-                score = new SemBicScore(new CovarianceMatrix(dataSet));
-            } else if (dataSet.isDiscrete()) {
-                score = new BDeuScore(dataSet);
-            } else {
-                throw new NullPointerException();
-            }
-
-            Fges ges = new Fges(score);
-
-            ges.setBoundGraph(graph);
-            ges.setKnowledge(knowledge);
-            return ges.search();
-        } else if (dataModel instanceof CovarianceMatrix) {
-            ICovarianceMatrix cov = (CovarianceMatrix) dataModel;
-            Score score = new SemBicScore(cov);
-
-            Fges ges = new Fges(score);
-
-            ges.setBoundGraph(graph);
-            ges.setKnowledge(knowledge);
-            return ges.search();
-        }
-
-        throw new IllegalStateException("Can do that that reorientation.");
-    }
-
     @NotNull
     public static Graph dagToPag(Graph trueGraph) {
         return new DagToPag(trueGraph).convert();
